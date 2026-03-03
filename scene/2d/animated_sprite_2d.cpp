@@ -30,6 +30,7 @@
 
 #include "animated_sprite_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -117,10 +118,12 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 		return;
 	}
 	if (!Engine::get_singleton()->is_editor_hint()) {
-		if (p_property.name == "frame" && playing) {
-			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "frame") {
+			if (playing) {
+				p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+			}
+			return;
 		}
-		return;
 	}
 	if (p_property.name == "animation") {
 		List<StringName> names;

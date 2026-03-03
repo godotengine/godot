@@ -178,7 +178,7 @@ public:
 	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddForce instead.
 	inline void				AddForce(Vec3Arg inForce)										{ JPH_ASSERT(IsDynamic()); (Vec3::sLoadFloat3Unsafe(mMotionProperties->mForce) + inForce).StoreFloat3(&mMotionProperties->mForce); }
 
-	/// Add force (unit: N) at inPosition for the next time step, will be reset after the next call to PhysicsSystem::Update.
+	/// Add force (unit: N) at world space position inPosition for the next time step, will be reset after the next call to PhysicsSystem::Update.
 	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddForce instead.
 	inline void				AddForce(Vec3Arg inForce, RVec3Arg inPosition);
 
@@ -444,7 +444,7 @@ private:
 	// 122 bytes up to here (64-bit mode, single precision, 16-bit ObjectLayer)
 };
 
-static_assert(JPH_CPU_ADDRESS_BITS != 64 || JPH_RVECTOR_ALIGNMENT < 16 || sizeof(Body) == JPH_IF_SINGLE_PRECISION_ELSE(128, 160), "Body size is incorrect");
+static_assert(sizeof(void *) != 8 || JPH_RVECTOR_ALIGNMENT < 16 || sizeof(Body) == JPH_IF_SINGLE_PRECISION_ELSE(128, 160), "Body size is incorrect");
 static_assert(alignof(Body) == max(JPH_VECTOR_ALIGNMENT, JPH_RVECTOR_ALIGNMENT), "Body should properly align");
 
 JPH_NAMESPACE_END

@@ -224,7 +224,7 @@ uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer
 
 #pragma mark - Format Conversions
 
-static const MTL::TextureType TEXTURE_TYPE[RD::TEXTURE_TYPE_MAX] = {
+static const MTL::TextureType TEXTURE_TYPE[RDD::TEXTURE_TYPE_MAX] = {
 	MTL::TextureType1D,
 	MTL::TextureType2D,
 	MTL::TextureType3D,
@@ -550,7 +550,7 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 		return 0;
 	}
 	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
-	return obj->allocatedSize();
+	return NS::Object::sendMessageSafe<NS::UInteger>(obj, _MTL_PRIVATE_SEL(allocatedSize));
 }
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
@@ -665,7 +665,7 @@ bool RenderingDeviceDriverMetal::texture_can_make_shared_with_format(TextureID p
 
 #pragma mark - Sampler
 
-static const MTL::CompareFunction COMPARE_OPERATORS[RD::COMPARE_OP_MAX] = {
+static const MTL::CompareFunction COMPARE_OPERATORS[RDD::COMPARE_OP_MAX] = {
 	MTL::CompareFunctionNever,
 	MTL::CompareFunctionLess,
 	MTL::CompareFunctionEqual,
@@ -676,7 +676,7 @@ static const MTL::CompareFunction COMPARE_OPERATORS[RD::COMPARE_OP_MAX] = {
 	MTL::CompareFunctionAlways,
 };
 
-static const MTL::StencilOperation STENCIL_OPERATIONS[RD::STENCIL_OP_MAX] = {
+static const MTL::StencilOperation STENCIL_OPERATIONS[RDD::STENCIL_OP_MAX] = {
 	MTL::StencilOperationKeep,
 	MTL::StencilOperationZero,
 	MTL::StencilOperationReplace,
@@ -687,7 +687,7 @@ static const MTL::StencilOperation STENCIL_OPERATIONS[RD::STENCIL_OP_MAX] = {
 	MTL::StencilOperationDecrementWrap,
 };
 
-static const MTL::BlendFactor BLEND_FACTORS[RD::BLEND_FACTOR_MAX] = {
+static const MTL::BlendFactor BLEND_FACTORS[RDD::BLEND_FACTOR_MAX] = {
 	MTL::BlendFactorZero,
 	MTL::BlendFactorOne,
 	MTL::BlendFactorSourceColor,
@@ -708,7 +708,7 @@ static const MTL::BlendFactor BLEND_FACTORS[RD::BLEND_FACTOR_MAX] = {
 	MTL::BlendFactorSource1Alpha,
 	MTL::BlendFactorOneMinusSource1Alpha,
 };
-static const MTL::BlendOperation BLEND_OPERATIONS[RD::BLEND_OP_MAX] = {
+static const MTL::BlendOperation BLEND_OPERATIONS[RDD::BLEND_OP_MAX] = {
 	MTL::BlendOperationAdd,
 	MTL::BlendOperationSubtract,
 	MTL::BlendOperationReverseSubtract,
@@ -716,7 +716,7 @@ static const MTL::BlendOperation BLEND_OPERATIONS[RD::BLEND_OP_MAX] = {
 	MTL::BlendOperationMax,
 };
 
-static const MTL::SamplerAddressMode ADDRESS_MODES[RD::SAMPLER_REPEAT_MODE_MAX] = {
+static const MTL::SamplerAddressMode ADDRESS_MODES[RDD::SAMPLER_REPEAT_MODE_MAX] = {
 	MTL::SamplerAddressModeRepeat,
 	MTL::SamplerAddressModeMirrorRepeat,
 	MTL::SamplerAddressModeClampToEdge,
@@ -724,7 +724,7 @@ static const MTL::SamplerAddressMode ADDRESS_MODES[RD::SAMPLER_REPEAT_MODE_MAX] 
 	MTL::SamplerAddressModeMirrorClampToEdge,
 };
 
-static const MTL::SamplerBorderColor SAMPLER_BORDER_COLORS[RD::SAMPLER_BORDER_COLOR_MAX] = {
+static const MTL::SamplerBorderColor SAMPLER_BORDER_COLORS[RDD::SAMPLER_BORDER_COLOR_MAX] = {
 	MTL::SamplerBorderColorTransparentBlack,
 	MTL::SamplerBorderColorTransparentBlack,
 	MTL::SamplerBorderColorOpaqueBlack,
@@ -741,9 +741,26 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 	desc->setMinFilter(p_state.min_filter == SAMPLER_FILTER_LINEAR ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
 	desc->setMipFilter(p_state.mip_filter == SAMPLER_FILTER_LINEAR ? MTL::SamplerMipFilterLinear : MTL::SamplerMipFilterNearest);
 
-	desc->setSAddressMode(ADDRESS_MODES[p_state.repeat_u]);
-	desc->setTAddressMode(ADDRESS_MODES[p_state.repeat_v]);
-	desc->setRAddressMode(ADDRESS_MODES[p_state.repeat_w]);
+	MTL::SamplerAddressMode address_u = ADDRESS_MODES[p_state.repeat_u];
+	MTL::SamplerAddressMode address_v = ADDRESS_MODES[p_state.repeat_v];
+	MTL::SamplerAddressMode address_w = ADDRESS_MODES[p_state.repeat_w];
+
+	if (!device_properties->features.supports_border_color) {
+		// Default to clamp to edge if border color is not supported.
+		if (address_u == MTL::SamplerAddressModeClampToBorderColor) {
+			address_u = MTL::SamplerAddressModeClampToEdge;
+		}
+		if (address_v == MTL::SamplerAddressModeClampToBorderColor) {
+			address_v = MTL::SamplerAddressModeClampToEdge;
+		}
+		if (address_w == MTL::SamplerAddressModeClampToBorderColor) {
+			address_w = MTL::SamplerAddressModeClampToEdge;
+		}
+	}
+
+	desc->setSAddressMode(address_u);
+	desc->setTAddressMode(address_v);
+	desc->setRAddressMode(address_w);
 
 	if (p_state.use_anisotropy) {
 		desc->setMaxAnisotropy(p_state.anisotropy_max);
@@ -754,7 +771,9 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 	desc->setLodMinClamp(p_state.min_lod);
 	desc->setLodMaxClamp(p_state.max_lod);
 
-	desc->setBorderColor(SAMPLER_BORDER_COLORS[p_state.border_color]);
+	if (device_properties->features.supports_border_color) {
+		desc->setBorderColor(SAMPLER_BORDER_COLORS[p_state.border_color]);
+	}
 
 	desc->setNormalizedCoordinates(!p_state.unnormalized_uvw);
 
@@ -957,6 +976,10 @@ RDD::DataFormat RenderingDeviceDriverMetal::swap_chain_get_format(SwapChainID p_
 	return swap_chain->data_format;
 }
 
+RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	return RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
@@ -1088,7 +1111,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		options->setEnableLogging(mtl_reflection_data.needs_debug_logging());
 	}
 
-	HashMap<RD::ShaderStage, std::shared_ptr<MDLibrary>> libraries;
+	HashMap<RDD::ShaderStage, std::shared_ptr<MDLibrary>> libraries;
 
 	PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 	Vector<uint8_t> decompressed_code;
@@ -1096,7 +1119,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		const RenderingShaderContainer::Shader &shader = shaders[shader_index];
 		const RSCM::StageData &shader_data = mtl_shaders[shader_index];
 
-		if (shader.shader_stage == RD::ShaderStage::SHADER_STAGE_COMPUTE) {
+		if (shader.shader_stage == RDD::ShaderStage::SHADER_STAGE_COMPUTE) {
 			pipeline_type = PIPELINE_TYPE_COMPUTE;
 		}
 
@@ -1211,7 +1234,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 				shader_name,
 				uniform_sets,
 				mtl_reflection_data.uses_argument_buffers(),
-				libraries[RD::ShaderStage::SHADER_STAGE_COMPUTE]);
+				libraries[RDD::ShaderStage::SHADER_STAGE_COMPUTE]);
 
 		cs->local = MTL::Size(refl.compute_local_size[0], refl.compute_local_size[1], refl.compute_local_size[2]);
 		shader = cs;
@@ -1221,8 +1244,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 				uniform_sets,
 				mtl_reflection_data.needs_view_mask_buffer(),
 				mtl_reflection_data.uses_argument_buffers(),
-				libraries[RD::ShaderStage::SHADER_STAGE_VERTEX],
-				libraries[RD::ShaderStage::SHADER_STAGE_FRAGMENT]);
+				libraries[RDD::ShaderStage::SHADER_STAGE_VERTEX],
+				libraries[RDD::ShaderStage::SHADER_STAGE_FRAGMENT]);
 		shader = rs;
 	}
 

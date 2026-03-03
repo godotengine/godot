@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -561,7 +562,9 @@ void GameView::_update_debugger_buttons() {
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
 	speed_state_button->set_disabled(empty);
-	reset_speed_button->set_disabled(empty);
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+
+	reset_speed_button->set_disabled(empty || disabled);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -676,12 +679,11 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 }
 
 void GameView::_reset_time_scales() {
-	if (!is_visible_in_tree()) {
-		return;
-	}
 	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
 	debugger->reset_time_scale();
-	_update_speed_buttons();
+	if (is_inside_tree()) {
+		_update_speed_buttons();
+	}
 }
 
 void GameView::_speed_state_menu_pressed(int p_id) {

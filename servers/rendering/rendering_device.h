@@ -40,6 +40,7 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
@@ -413,6 +414,7 @@ public:
 	void _texture_clear_color(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	void _texture_clear_depth_stencil(RID p_texture_rid, Texture *p_texture, float p_depth, uint8_t p_stencil, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
+	void _texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format);
 
 	struct TextureGetDataRequest {
 		uint32_t frame_local_index = 0;
@@ -1280,6 +1282,7 @@ public:
 	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	int screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	ColorSpace screen_get_color_space(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 
 private:
@@ -1299,7 +1302,8 @@ private:
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		Vector<RDG::ResourceTracker *> draw_trackers;
 
-		RID scratch_buffer;
+		// Scratch buffer used during build, owned by the AS.
+		RDD::BufferID scratch_buffer;
 		RID vertex_array;
 		RID index_array;
 		RID transform_buffer;
@@ -1836,7 +1840,7 @@ public:
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
-	DeviceType get_device_type() const;
+	RenderingDeviceEnums::DeviceType get_device_type() const;
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
@@ -1909,7 +1913,7 @@ private:
 	void _raytracing_list_set_push_constant(RaytracingListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
 
-VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
+VARIANT_ENUM_CAST_EXT(RenderingDeviceEnums::DeviceType, RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)

@@ -30,6 +30,9 @@
 
 #include "texture_progress_bar.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	_set_texture(&under, p_texture);
 }
@@ -424,7 +427,7 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
-	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_scaled_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
+	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_scaled_rid(), topleft, bottomright, RSE::NINE_PATCH_STRETCH, RSE::NINE_PATCH_STRETCH, true, p_modulate);
 }
 
 void TextureProgressBar::_notification(int p_what) {
@@ -641,9 +644,7 @@ void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
+	} else if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

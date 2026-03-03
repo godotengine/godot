@@ -30,6 +30,8 @@
 
 #include "geometry_2d.h"
 
+#include "core/math/math_funcs_binary.h"
+
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 GODOT_GCC_WARNING_POP
@@ -227,8 +229,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2((uint32_t)results[i].max_h);
-		real_t w = next_power_of_2((uint32_t)results[i].max_w);
+		real_t h = Math::next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = Math::next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;

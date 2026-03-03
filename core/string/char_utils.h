@@ -32,14 +32,28 @@
 
 #include "core/typedefs.h"
 
-#include "char_range.inc"
-
 static constexpr char hex_char_table_upper[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 static constexpr char hex_char_table_lower[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-#define BSEARCH_CHAR_RANGE(m_array) \
+struct CharRange {
+	char32_t start;
+	char32_t end;
+};
+
+extern const CharRange xid_start[];
+extern const int xid_start_size;
+extern const CharRange xid_continue[];
+extern const int xid_continue_size;
+extern const CharRange uppercase_letter[];
+extern const int uppercase_letter_size;
+extern const CharRange lowercase_letter[];
+extern const int lowercase_letter_size;
+extern const CharRange unicode_letter[];
+extern const int unicode_letter_size;
+
+#define BSEARCH_CHAR_RANGE(m_array, m_size) \
 	int low = 0; \
-	int high = std_size(m_array) - 1; \
+	int high = m_size - 1; \
 	int middle = (low + high) / 2; \
 \
 	while (low <= high) { \
@@ -56,24 +70,24 @@ static constexpr char hex_char_table_lower[16] = { '0', '1', '2', '3', '4', '5',
 \
 	return false
 
-constexpr bool is_unicode_identifier_start(char32_t p_char) {
-	BSEARCH_CHAR_RANGE(xid_start);
+inline bool is_unicode_identifier_start(char32_t p_char) {
+	BSEARCH_CHAR_RANGE(xid_start, xid_start_size);
 }
 
-constexpr bool is_unicode_identifier_continue(char32_t p_char) {
-	BSEARCH_CHAR_RANGE(xid_continue);
+inline bool is_unicode_identifier_continue(char32_t p_char) {
+	BSEARCH_CHAR_RANGE(xid_continue, xid_continue_size);
 }
 
-constexpr bool is_unicode_upper_case(char32_t p_char) {
-	BSEARCH_CHAR_RANGE(uppercase_letter);
+inline bool is_unicode_upper_case(char32_t p_char) {
+	BSEARCH_CHAR_RANGE(uppercase_letter, uppercase_letter_size);
 }
 
-constexpr bool is_unicode_lower_case(char32_t p_char) {
-	BSEARCH_CHAR_RANGE(lowercase_letter);
+inline bool is_unicode_lower_case(char32_t p_char) {
+	BSEARCH_CHAR_RANGE(lowercase_letter, lowercase_letter_size);
 }
 
-constexpr bool is_unicode_letter(char32_t p_char) {
-	BSEARCH_CHAR_RANGE(unicode_letter);
+inline bool is_unicode_letter(char32_t p_char) {
+	BSEARCH_CHAR_RANGE(unicode_letter, unicode_letter_size);
 }
 
 #undef BSEARCH_CHAR_RANGE

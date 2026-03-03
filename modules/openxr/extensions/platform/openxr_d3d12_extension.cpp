@@ -34,6 +34,7 @@
 
 #include "../../openxr_util.h"
 
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 

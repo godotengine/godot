@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/doc_data.h"
+#include "core/templates/rb_set.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"

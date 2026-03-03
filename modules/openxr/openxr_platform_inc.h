@@ -33,6 +33,8 @@
 // In various places we need to include platform definitions but we can't
 // include these in our normal header files as we'll end up with issues.
 
+// IWYU pragma: begin_keep
+
 #ifdef VULKAN_ENABLED
 #define XR_USE_GRAPHICS_API_VULKAN
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
@@ -78,9 +80,9 @@
 #endif // X11_ENABLED
 
 #ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
+#define COM_NO_WINDOWS_H
+#include <objbase.h>
+#include <unknwn.h> // codespell:ignore unknwn
 #endif // WINDOWS_ENABLED
 
 #ifdef ANDROID_ENABLED
@@ -90,3 +92,5 @@
 
 // Include platform dependent structs.
 #include <openxr/openxr_platform.h>
+
+// IWYU pragma: end_keep

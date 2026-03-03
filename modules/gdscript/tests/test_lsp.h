@@ -101,6 +101,8 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	String absolute_root = dir->get_current_dir();
 	init_language(absolute_root);
 
+	// Recreate the singleton for each test, to ensure a clean state.
+	memdelete_notnull(GDScriptLanguageProtocol::get_singleton());
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
 	TestGDScriptLanguageProtocolInitializer::setup_client();
 
@@ -492,7 +494,6 @@ func f():
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
 
-		memdelete(proto);
 		memdelete(efs);
 		finish_language();
 	}
@@ -531,7 +532,6 @@ func f():
 			REQUIRE(cls.documentation.contains("t3"));
 		}
 
-		memdelete(proto);
 		memdelete(efs);
 		finish_language();
 	}

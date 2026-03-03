@@ -32,6 +32,8 @@
 
 #include "../gltf_state.h"
 
+#include "core/object/class_db.h"
+
 void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFNode::get_original_name);
 	ClassDB::bind_method(D_METHOD("set_original_name", "original_name"), &GLTFNode::set_original_name);

@@ -41,23 +41,6 @@
 
 #include <objc/message.h>
 
-// Selector helper for calling ObjC methods from C++
-#define _APPLE_PRIVATE_DEF_SEL(accessor, symbol) static SEL s_k##accessor = sel_registerName(symbol)
-#define _APPLE_PRIVATE_SEL(accessor) (Private::Selector::s_k##accessor)
-
-namespace Private::Selector {
-
-_APPLE_PRIVATE_DEF_SEL(setOpaque_, "setOpaque:");
-
-template <typename _Ret, typename... _Args>
-_NS_INLINE _Ret sendMessage(const void *pObj, SEL selector, _Args... args) {
-	using SendMessageProc = _Ret (*)(const void *, SEL, _Args...);
-	const SendMessageProc pProc = reinterpret_cast<SendMessageProc>(&objc_msgSend);
-	return (*pProc)(pObj, selector, args...);
-}
-
-} // namespace Private::Selector
-
 #if defined(VISIONOS_ENABLED)
 #include "modules/visionos_xr/visionos_xr_interface.h"
 #include "platform/visionos/render_mode_visionos.h"
@@ -142,7 +125,7 @@ public:
 			Surface(p_device), layer(p_layer) {
 		layer->setAllowsNextDrawableTimeout(true);
 		layer->setFramebufferOnly(true);
-		Private::Selector::sendMessage<void>(layer, _APPLE_PRIVATE_SEL(setOpaque_), !OS::get_singleton()->is_layered_allowed());
+		layer->setOpaque(!OS::get_singleton()->is_layered_allowed());
 		layer->setPixelFormat(get_pixel_format());
 		layer->setDevice(p_device);
 	}
@@ -271,7 +254,7 @@ public:
 			Surface(p_device), layer(p_layer) {
 		layer->setAllowsNextDrawableTimeout(true);
 		layer->setFramebufferOnly(true);
-		Private::Selector::sendMessage<void>(layer, _APPLE_PRIVATE_SEL(setOpaque_), !OS::get_singleton()->is_layered_allowed());
+		layer->setOpaque(!OS::get_singleton()->is_layered_allowed());
 		layer->setPixelFormat(get_pixel_format());
 		layer->setDevice(p_device);
 #if TARGET_OS_OSX
@@ -468,6 +451,52 @@ void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, Di
 DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverMetal::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_reference_luminance = p_reference_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_reference_luminance;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_linear_luminance_scale;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_max_value(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return MAX(surface->hdr_max_luminance / MAX(surface->hdr_reference_luminance, 1.0f), 1.0f);
 }
 
 uint32_t RenderingContextDriverMetal::surface_get_width(SurfaceID p_surface) const {

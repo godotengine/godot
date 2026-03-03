@@ -30,6 +30,7 @@
 
 #include "foldable_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 

@@ -3034,7 +3034,7 @@ static const int reverse_caps_table[UTL_LEN][2] = {
 	{ 0x1E921, 0x1E943 },
 };
 
-static int _find_upper(int ch) {
+inline int _find_upper(int ch) {
 	int low = 0;
 	int high = LTU_LEN - 1;
 	int middle;
@@ -3054,7 +3054,7 @@ static int _find_upper(int ch) {
 	return ch;
 }
 
-static int _find_lower(int ch) {
+inline int _find_lower(int ch) {
 	int low = 0;
 	int high = UTL_LEN - 1;
 	int middle;

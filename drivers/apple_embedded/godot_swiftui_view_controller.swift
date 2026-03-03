@@ -46,41 +46,10 @@ struct GodotSwiftUIViewController: UIViewControllerRepresentable {
 }
 
 struct GodotWindowScene: Scene {
-	@Environment(\.scenePhase) private var scenePhase
-
-	// UIViewControllerRepresentable does not call viewWillDisappear() nor viewDidDisappear() when
-	// backgrounding the app, or closing the app's main window, update the renderer here.
-	private func updateRenderer(with newPhase: ScenePhase) -> Void {
-		switch newPhase {
-		case .active:
-			print("GodotSwiftUIViewController scene active")
-			GDTAppDelegateService.viewController?.godotView.startRendering()
-		case .inactive:
-			print("GodotSwiftUIViewController scene inactive")
-			GDTAppDelegateService.viewController?.godotView.stopRendering()
-		case .background:
-			print("GodotSwiftUIViewController scene backgrounded")
-			GDTAppDelegateService.viewController?.godotView.stopRendering()
-		@unknown default:
-			print("unknown default")
-		}
-	}
-
 	var body: some Scene {
 		WindowGroup {
-			if #available(iOS 17, *) {
 			GodotSwiftUIViewController()
 				.ignoresSafeArea()
-				.onChange(of: scenePhase) { _, newPhase in
-					updateRenderer(with: newPhase)
-				}
-			} else {
-				GodotSwiftUIViewController()
-					.ignoresSafeArea()
-				.onChange(of: scenePhase) { newPhase in
-					updateRenderer(with: newPhase)
-				}
-			}
 		}
 	}
 }

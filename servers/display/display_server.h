@@ -30,18 +30,17 @@
 
 #pragma once
 
-#include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/templates/rb_map.h"
-#include "core/templates/rb_set.h"
 #include "core/variant/callable.h"
 #include "core/variant/typed_array.h"
-#include "servers/display/native_menu.h"
 
-class Texture2D;
 class AccessibilityDriver;
+class NativeMenu;
+class Texture2D;
 
 namespace InputClassEnums {
 enum MouseMode : int;
@@ -76,6 +75,14 @@ public:
 		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
+	enum ProgressState {
+		PROGRESS_STATE_NOPROGRESS,
+		PROGRESS_STATE_INDETERMINATE,
+		PROGRESS_STATE_NORMAL,
+		PROGRESS_STATE_ERROR,
+		PROGRESS_STATE_PAUSED,
+	};
+
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
 	// project setting hint.
 	enum VSyncMode {
@@ -92,6 +99,8 @@ public:
 		OPENGL_CONTEXT,
 		EGL_DISPLAY,
 		EGL_CONFIG,
+		GLX_VISUALID,
+		GLX_FBCONFIG,
 	};
 
 	enum Context {
@@ -177,6 +186,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_HDR_OUTPUT,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -454,7 +464,7 @@ public:
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
 
-	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) = 0; // Note: internal method used by Window, do not expose.
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -512,12 +522,30 @@ public:
 	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
 	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
 
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_request_hdr_output(const bool p_enable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_requested(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual float window_get_hdr_output_current_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual float window_get_hdr_output_current_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual float window_get_output_max_linear_value(WindowID p_window = MAIN_WINDOW_ID) const;
+
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -707,6 +735,9 @@ public:
 
 	virtual void accessibility_set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in);
 	virtual void accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused);
+	virtual void accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable); // Note: internal method used by Window, do not expose.
+	virtual void accessibility_window_activation_completed(DisplayServer::WindowID p_window_id); // Note: internal method used by Window, do not expose.
+	virtual void accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id); // Note: internal method used by Window, do not expose.
 
 	virtual void accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role);
 	virtual void accessibility_update_set_name(const RID &p_id, const String &p_name);
@@ -939,6 +970,9 @@ public:
 
 	virtual void accessibility_set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) = 0;
 	virtual void accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) = 0;
+	virtual void accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) = 0;
+	virtual void accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) = 0;
+	virtual void accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) = 0;
 
 	virtual void accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) = 0;
 	virtual void accessibility_update_set_name(const RID &p_id, const String &p_name) = 0;
@@ -1027,3 +1061,4 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST(DisplayServer::ProgressState)

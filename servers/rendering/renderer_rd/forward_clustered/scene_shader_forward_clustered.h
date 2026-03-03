@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/rendering_server_types.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -189,7 +190,7 @@ public:
 			RD::VertexFormatID vertex_format_id;
 			RD::FramebufferFormatID framebuffer_format_id;
 			RD::PolygonCullMode cull_mode = RD::POLYGON_CULL_MAX;
-			RS::PrimitiveType primitive_type = RS::PRIMITIVE_MAX;
+			RSE::PrimitiveType primitive_type = RSE::PRIMITIVE_MAX;
 			PipelineVersion version = PipelineVersion::PIPELINE_VERSION_MAX;
 			uint32_t color_pass_flags = 0;
 			ShaderSpecialization shader_specialization = {};
@@ -265,7 +266,7 @@ public:
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
 		bool uses_z_clip_scale = false;
-		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
+		RSE::CullMode cull_mode = RSE::CULL_MODE_DISABLED;
 
 		bool stencil_enabled = false;
 		uint32_t stencil_flags = 0;
@@ -292,7 +293,7 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
+			bool backface_culling = cull_mode == RSE::CULL_MODE_BACK;
 			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe && !uses_z_clip_scale && !stencil_enabled;
 		}
 
@@ -300,7 +301,7 @@ public:
 
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		uint16_t _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
 		RID _get_shader_variant(uint16_t p_shader_version) const;
@@ -369,7 +370,7 @@ public:
 
 	ShaderSpecialization default_specialization = {};
 
-	uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
+	uint32_t pipeline_compilations[RSE::PIPELINE_SOURCE_MAX] = {};
 
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
@@ -380,7 +381,7 @@ public:
 	void enable_advanced_shader_group(bool p_needs_multiview = false);
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;
-	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
+	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
 };
 
 } // namespace RendererSceneRenderImplementation

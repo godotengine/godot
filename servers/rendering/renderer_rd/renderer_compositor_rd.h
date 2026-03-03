@@ -49,15 +49,17 @@ class RendererCompositorRD : public RendererCompositor {
 protected:
 	UniformSetCacheRD *uniform_set_cache = nullptr;
 	FramebufferCacheRD *framebuffer_cache = nullptr;
+
 	RendererCanvasRenderRD *canvas = nullptr;
-	RendererRD::Utilities *utilities = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
+
+	RendererRD::Fog *fog = nullptr;
 	RendererRD::LightStorage *light_storage = nullptr;
 	RendererRD::MaterialStorage *material_storage = nullptr;
 	RendererRD::MeshStorage *mesh_storage = nullptr;
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
-	RendererRD::Fog *fog = nullptr;
-	RendererSceneRenderRD *scene = nullptr;
+	RendererRD::Utilities *utilities = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -68,29 +70,37 @@ protected:
 	};
 
 	struct BlitPushConstant {
-		float src_rect[4];
-		float dst_rect[4];
+		float src_rect[4]; // 16 - 16
+		float dst_rect[4]; // 16 - 32
 
-		float rotation_sin;
-		float rotation_cos;
+		float rotation_sin; // 4 - 36
+		float rotation_cos; // 4 - 40
+		float eye_center[2]; // 8 - 48
 
-		float eye_center[2];
-		float k1;
-		float k2;
+		float k1; // 4 - 52
+		float k2; // 4 - 56
+		float upscale; // 4 - 60
+		float aspect_ratio; // 4 - 64
 
-		float upscale;
-		float aspect_ratio;
-		uint32_t layer;
-		uint32_t convert_to_srgb;
-		uint32_t use_debanding;
-		float pad;
+		uint32_t layer; // 4 - 68
+		uint32_t source_is_srgb; // 4 - 72
+		uint32_t use_debanding; // 4 - 76
+		uint32_t target_color_space; // 4 - 80
+
+		float reference_multiplier; // 4 - 84
+		float output_max_value; // 4 - 88
+		uint32_t pad[2]; // 8 - 96 (padding to reach 16-byte boundary)
+	};
+
+	struct BlitPipelines {
+		RID pipelines[BLIT_MODE_MAX];
 	};
 
 	struct Blit {
 		BlitPushConstant push_constant;
 		BlitShaderRD shader;
 		RID shader_version;
-		RID pipelines[BLIT_MODE_MAX];
+		HashMap<RenderingDevice::FramebufferFormatID, BlitPipelines> pipelines_by_format;
 		RID index_buffer;
 		RID array;
 		RID sampler;
@@ -103,6 +113,9 @@ protected:
 
 	static uint64_t frame;
 	static RendererCompositorRD *singleton;
+
+	BlitPipelines _get_blit_pipelines_for_format(RenderingDevice::FramebufferFormatID format);
+	float _compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance, const float p_linear_luminance_scale);
 
 public:
 	virtual RendererUtilities *get_utilities() override { return utilities; }
@@ -119,11 +132,11 @@ public:
 	virtual RendererCanvasRender *get_canvas() override { return canvas; }
 	virtual RendererSceneRender *get_scene() override { return scene; }
 
-	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
 
 	virtual void initialize() override;
 	virtual void begin_frame(double frame_step) override;
-	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) override;
+	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) override;
 
 	virtual bool is_opengl() override { return false; }
 	virtual void gl_end_frame(bool p_swap_buffers) override {}

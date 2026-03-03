@@ -195,6 +195,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	// for later creating windows using this display
 	if (vi) {
 		gl_display.x_vi = *vi;
+		gl_display.x_fbconfig = fbconfig;
 	}
 
 	XFree(vi);
@@ -380,6 +381,28 @@ void *GLManager_X11::get_glx_context(DisplayServer::WindowID p_window_id) {
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 
 	return (void *)disp.context->glx_context;
+}
+
+VisualID GLManager_X11::get_glx_visualid(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return (VisualID)0;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return disp.x_vi.visualid;
+}
+
+void *GLManager_X11::get_glx_fbconfig(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return nullptr;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return disp.x_fbconfig;
 }
 
 GLManager_X11::GLManager_X11(const Vector2i &p_size, ContextType p_context_type) {

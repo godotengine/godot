@@ -30,6 +30,8 @@
 
 #include "container.h"
 
+#include "core/object/class_db.h"
+
 void Container::_child_minsize_changed() {
 	update_minimum_size();
 	queue_sort();

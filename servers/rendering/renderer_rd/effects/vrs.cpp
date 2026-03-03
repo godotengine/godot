@@ -29,11 +29,13 @@
 /**************************************************************************/
 
 #include "vrs.h"
+
 #include "../renderer_compositor_rd.h"
 #include "../storage_rd/texture_storage.h"
 #include "../uniform_set_cache_rd.h"
 
 #ifndef XR_DISABLED
+#include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
@@ -78,7 +80,7 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 	ERR_FAIL_NULL(material_storage);
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
 
@@ -113,13 +115,13 @@ Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
 
 void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_target);
-	RS::ViewportVRSUpdateMode vrs_update_mode = texture_storage->render_target_get_vrs_update_mode(p_render_target);
+	RSE::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_target);
+	RSE::ViewportVRSUpdateMode vrs_update_mode = texture_storage->render_target_get_vrs_update_mode(p_render_target);
 
-	if (vrs_mode != RS::VIEWPORT_VRS_DISABLED && vrs_update_mode != RS::VIEWPORT_VRS_UPDATE_DISABLED) {
+	if (vrs_mode != RSE::VIEWPORT_VRS_DISABLED && vrs_update_mode != RSE::VIEWPORT_VRS_UPDATE_DISABLED) {
 		RD::get_singleton()->draw_command_begin_label("VRS Setup");
 
-		if (vrs_mode == RS::VIEWPORT_VRS_TEXTURE) {
+		if (vrs_mode == RSE::VIEWPORT_VRS_TEXTURE) {
 			RID vrs_texture = texture_storage->render_target_get_vrs_texture(p_render_target);
 			if (vrs_texture.is_valid()) {
 				RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
@@ -130,7 +132,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 				}
 			}
 #ifndef XR_DISABLED
-		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
+		} else if (vrs_mode == RSE::VIEWPORT_VRS_XR) {
 			Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
 			if (interface.is_valid() && interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_UNIFIED) {
 				RID vrs_texture = interface->get_vrs_texture();
@@ -147,8 +149,8 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 #endif // XR_DISABLED
 		}
 
-		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {
-			texture_storage->render_target_set_vrs_update_mode(p_render_target, RS::VIEWPORT_VRS_UPDATE_DISABLED);
+		if (vrs_update_mode == RSE::VIEWPORT_VRS_UPDATE_ONCE) {
+			texture_storage->render_target_set_vrs_update_mode(p_render_target, RSE::VIEWPORT_VRS_UPDATE_DISABLED);
 		}
 
 		RD::get_singleton()->draw_command_end_label();

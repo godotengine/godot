@@ -30,7 +30,9 @@
 
 #include "navigation_link_3d.h"
 
+#include "core/object/class_db.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_ENABLED
 void NavigationLink3D::_update_debug_mesh() {

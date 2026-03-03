@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -153,6 +154,11 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 			if (p_markers.has(d.id())) {
 				r_result += "\"{...}\"";
 				ERR_FAIL_MSG("Converting circular structure to JSON.");
+			}
+
+			if (d.is_empty()) {
+				r_result += "{}";
+				return;
 			}
 
 			r_result += '{';

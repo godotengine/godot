@@ -33,6 +33,7 @@
 #include "upnp_device.h"
 
 #include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 
 class UPNP : public RefCounted {
 	GDCLASS(UPNP, RefCounted);

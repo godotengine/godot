@@ -50,7 +50,7 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
 #include <cstddef>
@@ -118,6 +118,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool supports_image_atomic_32_bit = false; /**< If true, 32-bit atomic operations on images are supported by the GPU. */
 	bool supports_image_atomic_64_bit = false; /**< If true, 64-bit atomic operations on images are supported by the GPU. */
 	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
+	bool supports_border_color = false; /**< If true, sampler border color (clamp-to-border) is supported. Requires Apple7+. */
 	bool supports_residency_sets = false; /**< If true, residency sets (MTLResidencySet) are supported by the OS. */
 
 	/*!
@@ -172,7 +173,7 @@ struct MetalLimits {
 	uint32_t minSubgroupSize; /**< The minimum number of threads in a SIMD-group. */
 	uint32_t maxSubgroupSize; /**< The maximum number of threads in a SIMD-group. */
 	BitField<RDD::ShaderStage> subgroupSupportedShaderStages;
-	BitField<RD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
+	BitField<RDD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
@@ -188,11 +189,11 @@ public:
 	// maj * 10000 + min * 100 + patch
 	uint32_t os_version;
 
-	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
+	SampleCount find_nearest_supported_sample_count(RDD::TextureSamples p_samples) const;
 
 	MetalDeviceProperties(MTL::Device *p_device);
 	~MetalDeviceProperties();
 
 private:
-	static const SampleCount sample_count[RenderingDevice::TextureSamples::TEXTURE_SAMPLES_MAX];
+	static const SampleCount sample_count[RDD::TextureSamples::TEXTURE_SAMPLES_MAX];
 };

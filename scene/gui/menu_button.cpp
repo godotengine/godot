@@ -30,7 +30,9 @@
 
 #include "menu_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
+#include "servers/rendering/rendering_server.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());

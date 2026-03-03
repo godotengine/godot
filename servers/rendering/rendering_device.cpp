@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/profiling/profiling.h"
 #include "core/templates/fixed_vector.h"
 #include "modules/modules_enabled.gen.h"
@@ -427,23 +428,28 @@ Error RenderingDevice::acceleration_structure_build(RID p_acceleration_structure
 
 	uint64_t scratch_size = driver->acceleration_structure_get_scratch_size_bytes(accel->driver_id);
 
-	const Buffer *scratch_buffer = storage_buffer_owner.get_or_null(accel->scratch_buffer);
-	if (scratch_buffer && driver->buffer_get_allocation_size(scratch_buffer->driver_id) < scratch_size) {
-		scratch_buffer = nullptr;
-		free_rid(accel->scratch_buffer);
-		accel->scratch_buffer = RID();
-	}
-	if (accel->scratch_buffer == RID()) {
-		accel->scratch_buffer = storage_buffer_create(scratch_size, { nullptr, 0 }, RDD::BUFFER_USAGE_STORAGE_BIT | RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
-		ERR_FAIL_COND_V(accel->scratch_buffer == RID(), ERR_CANT_CREATE);
-	}
-
-	if (scratch_buffer == nullptr) {
-		scratch_buffer = storage_buffer_owner.get_or_null(accel->scratch_buffer);
-		ERR_FAIL_NULL_V_MSG(scratch_buffer, ERR_CANT_CREATE, "Scratch buffer is not valid.");
+	if (accel->scratch_buffer) {
+		uint64_t scratch_buffer_size = driver->buffer_get_allocation_size(accel->scratch_buffer);
+		if (scratch_buffer_size < scratch_size) {
+			Buffer to_dispose = Buffer();
+			to_dispose.driver_id = accel->scratch_buffer;
+			DEV_ASSERT(scratch_buffer_size <= UINT32_MAX);
+			to_dispose.size = scratch_buffer_size;
+			frames[frame].buffers_to_dispose_of.push_back(to_dispose);
+			accel->scratch_buffer = RDD::BufferID();
+		}
 	}
 
-	draw_graph.add_acceleration_structure_build(accel->driver_id, scratch_buffer->driver_id, accel->draw_tracker, accel->draw_trackers);
+	if (!accel->scratch_buffer) {
+		accel->scratch_buffer = driver->buffer_create(scratch_size, RDD::BUFFER_USAGE_STORAGE_BIT | RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+		ERR_FAIL_COND_V(!accel->scratch_buffer, ERR_CANT_CREATE);
+
+		_THREAD_SAFE_LOCK_
+		buffer_memory += scratch_size;
+		_THREAD_SAFE_UNLOCK_
+	}
+
+	draw_graph.add_acceleration_structure_build(accel->driver_id, accel->scratch_buffer, accel->draw_tracker, accel->draw_trackers);
 
 	return OK;
 }
@@ -2199,6 +2205,14 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return 0;
 		default:
 			return 0;
+	}
+}
+
+void RenderingDevice::_texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(texture);
+	if (!texture->allowed_shared_formats.has(p_shareable_format)) {
+		texture->allowed_shared_formats.push_back(p_shareable_format);
 	}
 }
 
@@ -4863,6 +4877,17 @@ RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_for
 	return const_cast<RenderingDevice *>(this)->framebuffer_format_create(screen_attachment);
 }
 
+RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServer::WindowID p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), COLOR_SPACE_MAX, "Screen was never prepared.");
+
+	ColorSpace color_space = driver->swap_chain_get_color_space(it->value);
+	ERR_FAIL_COND_V_MSG(color_space == COLOR_SPACE_MAX, COLOR_SPACE_MAX, "Unknown color space.");
+	return color_space;
+}
+
 Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
@@ -6559,7 +6584,7 @@ RenderingDevice::TransferWorker *RenderingDevice::_acquire_transfer_worker(uint3
 				driver->buffer_free(transfer_worker->staging_buffer);
 			}
 
-			uint32_t new_staging_buffer_size = next_power_of_2(expected_buffer_size);
+			uint32_t new_staging_buffer_size = Math::next_power_of_2(expected_buffer_size);
 			transfer_worker->staging_buffer_size_allocated = new_staging_buffer_size;
 			transfer_worker->staging_buffer = driver->buffer_create(new_staging_buffer_size, RDD::BUFFER_USAGE_TRANSFER_FROM_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 		}
@@ -7142,8 +7167,8 @@ String RenderingDevice::get_device_name() const {
 	return device.name;
 }
 
-RenderingDevice::DeviceType RenderingDevice::get_device_type() const {
-	return DeviceType(device.type);
+RenderingDeviceEnums::DeviceType RenderingDevice::get_device_type() const {
+	return RenderingDeviceEnums::DeviceType(device.type);
 }
 
 String RenderingDevice::get_device_api_name() const {
@@ -7228,10 +7253,16 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 	while (frames[p_frame].acceleration_structures_to_dispose_of.front()) {
 		AccelerationStructure &acceleration_structure = frames[p_frame].acceleration_structures_to_dispose_of.front()->get();
 
-		if (acceleration_structure.scratch_buffer != RID()) {
-			free_rid(acceleration_structure.scratch_buffer);
-		}
 		driver->acceleration_structure_free(acceleration_structure.driver_id);
+
+		if (acceleration_structure.scratch_buffer) {
+			size_t scratch_size = driver->buffer_get_allocation_size(acceleration_structure.scratch_buffer);
+			_THREAD_SAFE_LOCK_
+			buffer_memory -= scratch_size;
+			_THREAD_SAFE_UNLOCK_
+
+			driver->buffer_free(acceleration_structure.scratch_buffer);
+		}
 
 		frames[p_frame].acceleration_structures_to_dispose_of.pop_front();
 	}
@@ -7820,10 +7851,10 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	download_staging_buffers.max_size = upload_staging_buffers.max_size;
 
 	texture_upload_region_size_px = GLOBAL_GET("rendering/rendering_device/staging_buffer/texture_upload_region_size_px");
-	texture_upload_region_size_px = nearest_power_of_2_templated(texture_upload_region_size_px);
+	texture_upload_region_size_px = Math::nearest_power_of_2_templated(texture_upload_region_size_px);
 
 	texture_download_region_size_px = GLOBAL_GET("rendering/rendering_device/staging_buffer/texture_download_region_size_px");
-	texture_download_region_size_px = nearest_power_of_2_templated(texture_download_region_size_px);
+	texture_download_region_size_px = Math::nearest_power_of_2_templated(texture_download_region_size_px);
 
 	// Ensure current staging block is valid and at least one per frame exists.
 	upload_staging_buffers.current = 0;
@@ -8505,12 +8536,12 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_memory_by_object_type", "type"), &RenderingDevice::get_device_memory_by_object_type);
 	ClassDB::bind_method(D_METHOD("get_device_allocs_by_object_type", "type"), &RenderingDevice::get_device_allocs_by_object_type);
 
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_OTHER);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_INTEGRATED_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_DISCRETE_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_VIRTUAL_GPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_CPU);
-	BIND_ENUM_CONSTANT(DEVICE_TYPE_MAX);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_OTHER);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_INTEGRATED_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_DISCRETE_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_VIRTUAL_GPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_CPU);
+	BIND_ENUM_CONSTANT(RenderingDeviceEnums::DEVICE_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_LOGICAL_DEVICE);
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_PHYSICAL_DEVICE);
@@ -9024,6 +9055,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_IMAGE_ATOMIC_32_BIT);
 	BIND_ENUM_CONSTANT(SUPPORTS_RAY_QUERY);
 	BIND_ENUM_CONSTANT(SUPPORTS_RAYTRACING_PIPELINE);
+	BIND_ENUM_CONSTANT(SUPPORTS_HDR_OUTPUT);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);

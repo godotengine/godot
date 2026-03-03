@@ -31,6 +31,7 @@
 #include "split_container.h"
 #include "split_container.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
@@ -39,8 +40,21 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+	ERR_FAIL_NULL(sc);
 
 	if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
+		return;
+	}
+
+	if ((sc->vertical && p_event->is_action_pressed("ui_up", true)) || (!sc->vertical && !is_layout_rtl() && p_event->is_action_pressed("ui_left", true)) || (!sc->vertical && is_layout_rtl() && p_event->is_action_pressed("ui_right", true))) {
+		sc->set_split_offset(sc->get_split_offset(dragger_index) - (sc->vertical ? sc->get_size().height : sc->get_size().width) * 0.1, dragger_index);
+		sc->clamp_split_offset(dragger_index);
+		accept_event();
+		return;
+	} else if ((sc->vertical && p_event->is_action_pressed("ui_down", true)) || (!sc->vertical && !is_layout_rtl() && p_event->is_action_pressed("ui_right", true)) || (!sc->vertical && is_layout_rtl() && p_event->is_action_pressed("ui_left", true))) {
+		sc->set_split_offset(sc->get_split_offset(dragger_index) + (sc->vertical ? sc->get_size().height : sc->get_size().width) * 0.1, dragger_index);
+		sc->clamp_split_offset(dragger_index);
+		accept_event();
 		return;
 	}
 
@@ -64,6 +78,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 				queue_redraw();
 				sc->emit_signal(SNAME("drag_ended"));
 			}
+			accept_event();
 		}
 	}
 
@@ -102,7 +117,7 @@ void SplitContainerDragger::_accessibility_action_inc(const Variant &p_data) {
 	if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
 		return;
 	}
-	sc->set_split_offset(sc->get_split_offset(dragger_index) - 10, dragger_index);
+	sc->set_split_offset(sc->get_split_offset(dragger_index) - (sc->vertical ? sc->get_size().height : sc->get_size().width) * 0.1, dragger_index);
 	sc->clamp_split_offset(dragger_index);
 }
 
@@ -112,7 +127,7 @@ void SplitContainerDragger::_accessibility_action_dec(const Variant &p_data) {
 	if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
 		return;
 	}
-	sc->set_split_offset(sc->get_split_offset(dragger_index) + 10, dragger_index);
+	sc->set_split_offset(sc->get_split_offset(dragger_index) + (sc->vertical ? sc->get_size().height : sc->get_size().width) * 0.1, dragger_index);
 	sc->clamp_split_offset(dragger_index);
 }
 
@@ -185,6 +200,9 @@ void SplitContainerDragger::update_touch_dragger() {
 void SplitContainerDragger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			if (dragger_index < 0) {
+				return;
+			}
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
@@ -765,6 +783,9 @@ void SplitContainer::_resort() {
 }
 
 void SplitContainer::_update_draggers() {
+	if (!is_visible_in_tree()) {
+		return;
+	}
 	const int valid_child_count = (int)valid_children.size();
 	const int dragger_count = MAX(valid_child_count - 1, 1);
 	const int draggers_size_diff = dragger_count - (int)dragging_area_controls.size();

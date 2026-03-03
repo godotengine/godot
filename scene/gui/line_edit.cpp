@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/alt_codes.h"
@@ -42,6 +43,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
@@ -660,13 +662,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Ref<InputEventKey> k = p_event;
-
-	if (k.is_null()) {
-		return;
-	}
-
-	if (editable && !editing && k->is_action_pressed("ui_text_submit", false)) {
+	if (editable && !editing && p_event->is_action_pressed("ui_text_submit", false)) {
 		edit();
 		emit_signal(SNAME("editing_toggled"), true);
 		accept_event();
@@ -675,7 +671,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	// Open context menu.
 	if (context_menu_enabled) {
-		if (k->is_action("ui_menu", true)) {
+		if (p_event->is_action("ui_menu", true)) {
 			_update_context_menu();
 			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
 			menu->set_position(get_screen_transform().xform(pos));
@@ -689,19 +685,19 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (is_shortcut_keys_enabled()) {
-		if (k->is_action("ui_copy", true)) {
+		if (p_event->is_action("ui_copy", true)) {
 			copy_text();
 			accept_event();
 			return;
 		}
 
-		if (k->is_action("ui_text_select_all", true)) {
+		if (p_event->is_action("ui_text_select_all", true)) {
 			select();
 			accept_event();
 			return;
 		}
 
-		if (k->is_action("ui_cut", true)) {
+		if (p_event->is_action("ui_cut", true)) {
 			if (editable) {
 				cut_text();
 			} else {
@@ -713,6 +709,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (!editing) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_null()) {
 		return;
 	}
 

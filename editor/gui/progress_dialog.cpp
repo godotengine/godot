@@ -30,8 +30,8 @@
 
 #include "progress_dialog.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
-#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
@@ -286,7 +286,7 @@ ProgressDialog::ProgressDialog() {
 	// We want to cover the entire screen to prevent the user from interacting with the Editor.
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	// Be sure it's the top most component.
-	set_z_index(RS::CANVAS_ITEM_Z_MAX);
+	set_z_index(RSE::CANVAS_ITEM_Z_MAX);
 	singleton = this;
 	hide();
 

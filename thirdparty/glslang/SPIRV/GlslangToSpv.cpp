@@ -5181,6 +5181,11 @@ spv::Id TGlslangToSpvTraverser::createSpvVariable(const glslang::TIntermSymbol* 
     glslang::TQualifier typeQualifier = node->getType().getQualifier();
     TranslateMemoryDecoration(typeQualifier, topLevelDecorations, glslangIntermediate->usingVulkanMemoryModel());
     for (auto deco : topLevelDecorations) {
+#ifdef __APPLE__
+        if (deco != spv::Decoration::Restrict &&
+            deco != spv::Decoration::RestrictPointer &&
+            deco != spv::Decoration::RestrictPointerEXT)
+#endif
         builder.addDecoration(var, deco);
     }
     return var;

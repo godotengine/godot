@@ -31,7 +31,9 @@
 #include "openxr_spatial_plane_tracking.h"
 
 #include "../../openxr_api.h"
+
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -447,9 +449,9 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 		}
 
 		// Build our array with data.
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = vertices;
-		arr[RS::ARRAY_INDEX] = mesh.indices;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = vertices;
+		arr[RSE::ARRAY_INDEX] = mesh.indices;
 
 		// Create our array mesh.
 		array_mesh.instantiate();

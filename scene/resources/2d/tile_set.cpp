@@ -33,11 +33,13 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
@@ -1399,7 +1401,7 @@ RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_
 RBSet<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
 	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileMapCell>());
 	_update_terrains_cache();
-	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	return RBSet<TileMapCell>(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 }
 
 TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
@@ -1408,7 +1410,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 
 	// Count the sum of probabilities.
 	double sum = 0.0;
-	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	RBSet<TileMapCell> set(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 	for (const TileMapCell &E : set) {
 		if (E.source_id >= 0) {
 			Ref<TileSetSource> source = sources[E.source_id];
@@ -4235,10 +4237,14 @@ void TileSet::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
-	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	if (p_property.name == "tile_layout") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
+	} else if (p_property.name == "tile_offset_axis") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
 	}
 }
 

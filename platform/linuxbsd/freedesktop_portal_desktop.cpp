@@ -34,6 +34,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"

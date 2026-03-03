@@ -361,11 +361,11 @@ bool VariantUtilityFunctions::is_finite(double x) {
 	return Math::is_finite(x);
 }
 
-double VariantUtilityFunctions::ease(float x, float curve) {
+double VariantUtilityFunctions::ease(double x, double curve) {
 	return Math::ease(x, curve);
 }
 
-int VariantUtilityFunctions::step_decimals(float step) {
+int VariantUtilityFunctions::step_decimals(double step) {
 	return Math::step_decimals(step);
 }
 
@@ -769,7 +769,7 @@ int64_t VariantUtilityFunctions::clampi(int64_t x, int64_t min, int64_t max) {
 }
 
 int64_t VariantUtilityFunctions::nearest_po2(int64_t x) {
-	return nearest_power_of_2_templated(uint64_t(x));
+	return Math::nearest_power_of_2_templated(uint64_t(x));
 }
 
 // Random

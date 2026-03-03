@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "rasterizer_gles3.h"
-#include "storage/utilities.h"
 
 #ifdef GLES3_ENABLED
 
@@ -37,7 +36,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-#include "storage/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -92,8 +92,6 @@
 bool RasterizerGLES3::screen_flipped_y = false;
 #endif
 
-bool RasterizerGLES3::gles_over_gl = true;
-
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;
@@ -123,23 +121,6 @@ void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	} else {
 		glFinish();
 	}
-}
-
-void RasterizerGLES3::clear_depth(float p_depth) {
-#ifdef GL_API_ENABLED
-	if (is_gles_over_gl()) {
-		glClearDepth(p_depth);
-	}
-#endif // GL_API_ENABLED
-#ifdef GLES_API_ENABLED
-	if (!is_gles_over_gl()) {
-		glClearDepthf(p_depth);
-	}
-#endif // GLES_API_ENABLED
-}
-
-void RasterizerGLES3::clear_stencil(int32_t p_stencil) {
-	glClearStencil(p_stencil);
 }
 
 #ifdef CAN_DEBUG
@@ -255,7 +236,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	bool has_egl = (eglGetProcAddress != nullptr);
 #endif
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (has_egl && !glad_loaded && gladLoadGL((GLADloadfunc)&_egl_load_function_wrapper)) {
 			glad_loaded = true;
 		}
@@ -266,7 +247,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // EGL_ENABLED
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (!glad_loaded && gladLoaderLoadGL()) {
 			glad_loaded = true;
 		}
@@ -281,7 +262,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// or we need to actually test for this situation before constructing this.
 	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
 
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (GLAD_GL_ARB_debug_output) {
 				glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -297,7 +278,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// For debugging
 #ifdef CAN_DEBUG
 #ifdef GL_API_ENABLED
-	if (gles_over_gl) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
 			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 			glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
@@ -309,7 +290,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
-	if (!gles_over_gl) {
+	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
 			if (!callback) {
@@ -386,7 +367,7 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first) {
+void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_blit.render_target);
 
 	ERR_FAIL_NULL(rt);
@@ -461,13 +442,13 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 }
 
 // is this p_screen useless in a multi window environment?
-void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	for (int i = 0; i < p_amount; i++) {
 		_blit_render_target_to_screen(p_screen, p_render_targets[i], i == 0);
 	}
 }
 
-void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -485,7 +466,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
 
-	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
 #ifdef WINDOWS_ENABLED
 	if (!screen_flipped_y)
@@ -501,7 +482,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 	screenrect.size /= win_size;
 
 	GLES3::Texture *t = texture_storage->get_texture(texture);
-	t->gl_set_filter(p_use_filter ? RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR : RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	t->gl_set_filter(p_use_filter ? RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR : RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	copy_effects->copy_to_rect(screenrect);

@@ -32,7 +32,9 @@
 
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -122,14 +124,17 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			if (mode != PROJECTION_PERSPECTIVE) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "size") {
 			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "frustum_offset") {
 			if (mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		}
 	}
 

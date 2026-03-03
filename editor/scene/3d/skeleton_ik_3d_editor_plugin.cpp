@@ -30,6 +30,7 @@
 
 #include "skeleton_ik_3d_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "scene/3d/skeleton_ik_3d.h"

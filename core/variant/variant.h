@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -53,9 +54,10 @@
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/bit_field.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/list.h"
-#include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
@@ -149,30 +151,6 @@ public:
 	};
 
 private:
-	struct Pools {
-		union BucketSmall {
-			BucketSmall() {}
-			~BucketSmall() {}
-			Transform2D _transform2d;
-			::AABB _aabb;
-		};
-		union BucketMedium {
-			BucketMedium() {}
-			~BucketMedium() {}
-			Basis _basis;
-			Transform3D _transform3d;
-		};
-		union BucketLarge {
-			BucketLarge() {}
-			~BucketLarge() {}
-			Projection _projection;
-		};
-
-		static PagedAllocator<BucketSmall, true> _bucket_small;
-		static PagedAllocator<BucketMedium, true> _bucket_medium;
-		static PagedAllocator<BucketLarge, true> _bucket_large;
-	};
-
 	friend struct _VariantCall;
 	friend class VariantInternal;
 	template <typename>
@@ -434,10 +412,12 @@ public:
 	operator int32_t() const;
 	operator int16_t() const;
 	operator int8_t() const;
+	operator Math::int_alt_t() const;
 	operator uint64_t() const;
 	operator uint32_t() const;
 	operator uint16_t() const;
 	operator uint8_t() const;
+	operator Math::uint_alt_t() const;
 
 	operator ObjectID() const;
 
@@ -510,10 +490,12 @@ public:
 	Variant(int32_t p_int32);
 	Variant(int16_t p_int16);
 	Variant(int8_t p_int8);
+	Variant(Math::int_alt_t p_int_alt);
 	Variant(uint64_t p_uint64);
 	Variant(uint32_t p_uint32);
 	Variant(uint16_t p_uint16);
 	Variant(uint8_t p_uint8);
+	Variant(Math::uint_alt_t p_uint_alt);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
@@ -833,11 +815,13 @@ public:
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
 
-	//argsVariant call()
+	[[nodiscard]] bool operator==(const Variant &p_variant) const;
+	[[nodiscard]] bool operator<(const Variant &p_variant) const;
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator!=(const Variant &p_variant) const { return !(*this == p_variant); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<=(const Variant &p_variant) const { return !(p_variant < *this); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const Variant &p_variant) const { return p_variant < *this; }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const Variant &p_variant) const { return !(*this < p_variant); }
 
-	bool operator==(const Variant &p_variant) const;
-	bool operator!=(const Variant &p_variant) const;
-	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 
