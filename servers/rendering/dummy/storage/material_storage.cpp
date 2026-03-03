@@ -47,7 +47,7 @@ MaterialStorage::~MaterialStorage() {
 	global_shader_variables.clear();
 }
 
-void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) {
+void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) {
 	ERR_FAIL_COND(global_shader_variables.has(p_name));
 
 	global_shader_variables[p_name] = p_type;
@@ -63,17 +63,17 @@ void MaterialStorage::global_shader_parameter_remove(const StringName &p_name) {
 
 Vector<StringName> MaterialStorage::global_shader_parameter_get_list() const {
 	Vector<StringName> names;
-	for (const KeyValue<StringName, RS::GlobalShaderParameterType> &E : global_shader_variables) {
+	for (const KeyValue<StringName, RSE::GlobalShaderParameterType> &E : global_shader_variables) {
 		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 	return names;
 }
 
-RS::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type(const StringName &p_name) const {
+RSE::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type(const StringName &p_name) const {
 	if (!global_shader_variables.has(p_name)) {
 		print_line("don't have name, sorry");
-		return RS::GLOBAL_VAR_TYPE_MAX;
+		return RSE::GLOBAL_VAR_TYPE_MAX;
 	}
 
 	return global_shader_variables[p_name];
@@ -93,7 +93,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 
 			String type = d["type"];
 
-			static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
+			static const char *global_var_type_names[RSE::GLOBAL_VAR_TYPE_MAX] = {
 				"bool",
 				"bvec2",
 				"bvec3",
@@ -125,16 +125,16 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"samplerExternalOES"
 			};
 
-			RS::GlobalShaderParameterType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
+			RSE::GlobalShaderParameterType gvtype = RSE::GLOBAL_VAR_TYPE_MAX;
 
-			for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
+			for (int i = 0; i < RSE::GLOBAL_VAR_TYPE_MAX; i++) {
 				if (global_var_type_names[i] == type) {
-					gvtype = RS::GlobalShaderParameterType(i);
+					gvtype = RSE::GlobalShaderParameterType(i);
 					break;
 				}
 			}
 
-			ERR_CONTINUE(gvtype == RS::GLOBAL_VAR_TYPE_MAX); //type invalid
+			ERR_CONTINUE(gvtype == RSE::GLOBAL_VAR_TYPE_MAX); //type invalid
 
 			if (!global_shader_variables.has(name)) {
 				global_shader_parameter_add(name, gvtype, Variant());
@@ -167,21 +167,21 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
 
-	RS::ShaderMode new_mode;
+	RSE::ShaderMode new_mode;
 	if (mode_string == "canvas_item") {
-		new_mode = RS::SHADER_CANVAS_ITEM;
+		new_mode = RSE::SHADER_CANVAS_ITEM;
 	} else if (mode_string == "particles") {
-		new_mode = RS::SHADER_PARTICLES;
+		new_mode = RSE::SHADER_PARTICLES;
 	} else if (mode_string == "spatial") {
-		new_mode = RS::SHADER_SPATIAL;
+		new_mode = RSE::SHADER_SPATIAL;
 	} else if (mode_string == "sky") {
-		new_mode = RS::SHADER_SKY;
+		new_mode = RSE::SHADER_SKY;
 	} else if (mode_string == "fog") {
-		new_mode = RS::SHADER_FOG;
+		new_mode = RSE::SHADER_FOG;
 	} else if (mode_string == "texture_blit") {
-		new_mode = RS::SHADER_TEXTURE_BLIT;
+		new_mode = RSE::SHADER_TEXTURE_BLIT;
 	} else {
-		new_mode = RS::SHADER_MAX;
+		new_mode = RSE::SHADER_MAX;
 		ERR_FAIL_MSG("Shader type " + mode_string + " not supported in Dummy renderer.");
 	}
 	ShaderCompiler::IdentifierActions actions;

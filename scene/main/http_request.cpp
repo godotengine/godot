@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_gzip.h"
+#include "core/object/class_db.h"
 #include "core/os/thread.h"
 #include "scene/main/timer.h"
 
@@ -231,6 +232,22 @@ Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
 	return OK;
 }
 
+bool HTTPRequest::_is_automatic_redirect() const {
+	if (unlikely(method == HTTPClient::METHOD_CONNECT)) {
+		// Never automatically redirect CONNECT requests.
+		return false;
+	} else if (response_code == 301 || response_code == 302 || response_code == 303 || response_code == 305) {
+		// We change unsafe methods to GET for 301, 302, and 303, so these are always redirected.
+		// 305 is deprecated and treated as equivalent to 302.
+		return true;
+	} else if ((response_code == 307 || response_code == 308) && _is_method_safe()) {
+		// We only automatically redirect for safe methods on method-preserving status codes.
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool HTTPRequest::_handle_response(bool *ret_value) {
 	if (!client->has_response()) {
 		_defer_done(RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
@@ -251,8 +268,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		response_headers.push_back(E);
 	}
 
-	if (response_code == 301 || response_code == 302) {
-		// Handle redirect.
+	if (_is_automatic_redirect()) {
+		// Follow redirect.
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
 			_defer_done(RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PackedByteArray());

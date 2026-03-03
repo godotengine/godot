@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -42,6 +43,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
@@ -102,7 +105,7 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 		RID root_vp = st->get_root()->get_viewport_rid();
 		RenderingServer::get_singleton()->viewport_set_active(root_vp, false);
 
-		RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+		RS::get_singleton()->viewport_set_update_mode(p_viewport, RSE::VIEWPORT_UPDATE_ONCE);
 		RS::get_singleton()->draw(false);
 
 		// Let main viewport and children be drawn again.
@@ -122,7 +125,7 @@ void EditorResourcePreviewGenerator::request_draw_and_wait(RID viewport) const {
 }
 
 void EditorResourcePreviewGenerator::DrawRequester::_prepare_draw(RID p_viewport) {
-	RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+	RS::get_singleton()->viewport_set_update_mode(p_viewport, RSE::VIEWPORT_UPDATE_ONCE);
 	RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 }
 

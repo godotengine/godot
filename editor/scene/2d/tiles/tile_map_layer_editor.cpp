@@ -30,6 +30,7 @@
 
 #include "tile_map_layer_editor.h"
 
+#include "core/object/class_db.h"
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -3701,7 +3702,10 @@ void TileMapLayerEditor::_notification(int p_what) {
 				custom_overlay->set_visible(is_visible_in_tree());
 			}
 			if (is_visible()) {
-				CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				// Fix: Don't change the tool if we are in scene paint mode.
+				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SCENE_PAINT) {
+					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				}
 			}
 		} break;
 

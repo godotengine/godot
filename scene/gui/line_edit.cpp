@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/alt_codes.h"
@@ -41,7 +42,8 @@
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display/display_server.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
@@ -1232,22 +1234,22 @@ void LineEdit::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TEXT_FIELD);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TEXT_FIELD);
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			if (using_placeholder && !placeholder.is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_placeholder(ae, atr(placeholder));
+				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder));
 			}
 			if (!placeholder.is_empty() && get_accessibility_name().is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, atr(placeholder));
+				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_READONLY, !editable);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &LineEdit::_accessibility_action_set_selection));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &LineEdit::_accessibility_action_replace_selected));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &LineEdit::_accessibility_action_set_value));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &LineEdit::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &LineEdit::_accessibility_action_set_selection));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &LineEdit::_accessibility_action_replace_selected));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &LineEdit::_accessibility_action_set_value));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &LineEdit::_accessibility_action_menu));
 			const String &lang = language.is_empty() ? _get_locale() : language;
-			DisplayServer::get_singleton()->accessibility_update_set_language(ae, lang);
+			AccessibilityServer::get_singleton()->update_set_language(ae, lang);
 
 			bool rtl = is_layout_rtl();
 			Ref<StyleBox> style = theme_cache.normal;
@@ -1312,16 +1314,16 @@ void LineEdit::_notification(int p_what) {
 			float text_off_x = x_ofs + scroll_offset;
 
 			if (accessibility_text_root_element.is_null()) {
-				accessibility_text_root_element = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height, -1, true);
+				accessibility_text_root_element = AccessibilityServer::get_singleton()->create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height, -1, true);
 			}
 
 			Transform2D text_xform;
 			text_xform.set_origin(Vector2i(text_off_x, y_ofs));
-			DisplayServer::get_singleton()->accessibility_update_set_transform(accessibility_text_root_element, text_xform);
+			AccessibilityServer::get_singleton()->update_set_transform(accessibility_text_root_element, text_xform);
 			if (selection.enabled) {
-				DisplayServer::get_singleton()->accessibility_update_set_text_selection(ae, accessibility_text_root_element, selection.begin, accessibility_text_root_element, selection.end);
+				AccessibilityServer::get_singleton()->update_set_text_selection(ae, accessibility_text_root_element, selection.begin, accessibility_text_root_element, selection.end);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_text_selection(ae, accessibility_text_root_element, caret_column, accessibility_text_root_element, caret_column);
+				AccessibilityServer::get_singleton()->update_set_text_selection(ae, accessibility_text_root_element, caret_column, accessibility_text_root_element, caret_column);
 			}
 		} break;
 
@@ -3122,7 +3124,7 @@ void LineEdit::_shape() {
 	}
 
 	if (accessibility_text_root_element.is_valid()) {
-		DisplayServer::get_singleton()->accessibility_free_element(accessibility_text_root_element);
+		AccessibilityServer::get_singleton()->free_element(accessibility_text_root_element);
 		accessibility_text_root_element = RID();
 	}
 

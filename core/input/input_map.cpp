@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
@@ -203,6 +204,22 @@ void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputE
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 	if (_find_event(input_map[p_action], p_event, true)) {
 		return; // Already added.
+	}
+
+	// Normalize legacy device IDs: before the device ID change,
+	// keyboard and mouse events defaulted to device=0.
+	if (p_event->get_device() == 0) {
+		switch (p_event->get_type()) {
+			case InputEventType::KEY:
+				p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+				break;
+			case InputEventType::MOUSE_BUTTON:
+			case InputEventType::MOUSE_MOTION:
+				p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+				break;
+			default:
+				break;
+		}
 	}
 
 	input_map[p_action].inputs.push_back(p_event);

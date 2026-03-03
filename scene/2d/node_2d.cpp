@@ -30,7 +30,10 @@
 
 #include "node_2d.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -433,7 +436,7 @@ void Node2D::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

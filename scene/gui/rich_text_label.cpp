@@ -34,6 +34,7 @@
 #include "core/input/input_map.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
@@ -42,7 +43,8 @@
 #include "scene/main/timer.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display/display_server.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -66,6 +68,14 @@ Rect2i _merge_or_copy_rect(const Rect2i &p_a, const Rect2i &p_b) {
 		return p_b;
 	} else {
 		return p_a.merge(p_b);
+	}
+}
+
+RichTextLabel::Line::~Line() {
+	if (accessibility_line_element.is_valid()) {
+		AccessibilityServer::get_singleton()->free_element(accessibility_line_element);
+		accessibility_line_element = RID();
+		accessibility_text_element = RID();
 	}
 }
 
@@ -514,23 +524,31 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					table->columns[i].width = 0;
 				}
 
-				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
-				int base_column_width = available_width / col_count;
+				// Compute width for each column.
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
+				_update_table_column_width(table, available_width);
 
+				// Resize for elements in the table.
+				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const int frame_padding_space = Math::ceil(frame->padding.position.x + frame->padding.size.x);
+
+					int column = idx % col_count;
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
-						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						int w = table->columns[column].width - frame_padding_space;
 						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
+					idx++;
 				}
 
-				_set_table_size(table, available_width);
+				// Compute size and offset for each element in the table.
+				_update_table_size(table);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
 				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
@@ -552,6 +570,41 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 
 	l.offset.y = p_h;
 	return _calculate_line_vertical_offset(l);
+}
+
+int RichTextLabel::_get_line_max_width(ItemFrame *p_frame, int p_line) const {
+	ERR_FAIL_NULL_V(p_frame, 0);
+	ERR_FAIL_INDEX_V(p_line, (int)p_frame->lines.size(), 0);
+
+	Line &l = p_frame->lines[p_line];
+	MutexLock lock(l.text_buf->get_mutex());
+
+	int max_width = Math::ceil(l.text_buf->get_non_wrapped_size().x);
+
+	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
+		if (it->type != ITEM_TABLE) {
+			continue;
+		}
+
+		ItemTable *table = static_cast<ItemTable *>(it);
+
+		// Subtract the table's width recorded in text_buf.
+		max_width -= table->total_width;
+
+		// Recalculate the maximum width of the table.
+		const int col_count = table->columns.size();
+		max_width += theme_cache.table_h_separation * col_count;
+
+		// The columns in the nested table have already been calculated in _shape_line().
+		for (ItemTable::Column &C : table->columns) {
+			max_width += C.max_width;
+		}
+	}
+
+	max_width += Math::ceil(p_frame->padding.position.x + p_frame->padding.size.x + l.indent);
+
+	return max_width;
 }
 
 float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset) {
@@ -691,51 +744,69 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				ItemTable *table = static_cast<ItemTable *>(it);
 				int col_count = table->columns.size();
 				int t_char_count = 0;
+
 				// Set minimums to zero.
 				for (int i = 0; i < col_count; i++) {
 					table->columns[i].min_width = 0;
 					table->columns[i].max_width = 0;
 					table->columns[i].width = 0;
 				}
+
 				// Compute minimum width for each cell.
-				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * (col_count - 1);
-				int base_column_width = available_width / col_count;
 				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const real_t frame_padding_space = frame->padding.position.x + frame->padding.size.x;
+
 					int column = idx % col_count;
+					ItemTable::Column &C = table->columns[column];
+
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+						Line &line = frame->lines[i];
+						MutexLock sub_lock(line.text_buf->get_mutex());
 
 						int char_offset = l.char_offset + l.char_count;
-						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
+						int w = _find_margin(line.from, p_base_font, p_base_font_size) + 1;
 						prev_h = _shape_line(frame, i, p_base_font, p_base_font_size, w, prev_h, &char_offset);
 						int cell_ch = (char_offset - (l.char_offset + l.char_count));
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
 						remaining_characters -= cell_ch;
 
-						table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].indent + std::ceil(frame->lines[i].text_buf->get_size().x));
-						table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].indent + std::ceil(frame->lines[i].text_buf->get_non_wrapped_size().x));
+						C.min_width = MAX(C.min_width, Math::ceil(frame_padding_space + line.indent) + Math::ceil(line.text_buf->get_size().x));
+						C.max_width = MAX(C.max_width, _get_line_max_width(frame, i));
 					}
 					idx++;
 				}
+
+				// Compute width for each column.
+				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
+				_update_table_column_width(table, available_width);
+
+				// Resize for elements in the table.
+				idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
+					const int frame_padding_space = Math::ceil(frame->padding.position.x + frame->padding.size.x);
+
+					int column = idx % col_count;
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
-						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+						int w = table->columns[column].width - frame_padding_space;
 						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
+					idx++;
 				}
 
-				_set_table_size(table, available_width);
+				// Compute size and offset for each element in the table.
+				_update_table_size(table);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
 				if (table->rows_baseline.size() != 0 && row_idx < (int)table->rows_baseline.size()) {
@@ -763,85 +834,98 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	return _calculate_line_vertical_offset(l);
 }
 
-void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
-	int col_count = p_table->columns.size();
+void RichTextLabel::_update_table_column_width(ItemTable *p_table, int p_available_width) {
+	const int col_count = p_table->columns.size();
 
-	// Compute available width and total ratio (for expanders).
-	int total_ratio = 0;
-	int remaining_width = p_available_width;
-	p_table->total_width = theme_cache.table_h_separation;
+	LocalVector<bool> columns_will_stretch;
+	columns_will_stretch.resize(col_count);
+
+	int total_ratio = 0; // The total ratio of the columns that will stretch.
+	p_table->total_width = 0;
+	float remaining_width = 0; // The available width of the columns that will stretch.
 
 	for (int i = 0; i < col_count; i++) {
-		remaining_width -= p_table->columns[i].min_width;
-		if (p_table->columns[i].max_width > p_table->columns[i].min_width) {
-			p_table->columns[i].expand = true;
+		ItemTable::Column &C = p_table->columns[i];
+		p_table->total_width += C.min_width;
+		C.width = C.min_width;
+		if (C.max_width > C.min_width) {
+			C.expand = true; // Like a hack.
 		}
-		if (p_table->columns[i].expand) {
-			total_ratio += p_table->columns[i].expand_ratio;
+		columns_will_stretch[i] = C.expand;
+		if (columns_will_stretch[i]) {
+			remaining_width += C.min_width;
+			total_ratio += C.expand_ratio;
 		}
 	}
 
-	// Assign actual widths.
-	for (int i = 0; i < col_count; i++) {
-		p_table->columns[i].width = p_table->columns[i].min_width;
-		if (p_table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
-			p_table->columns[i].width += p_table->columns[i].expand_ratio * remaining_width / total_ratio;
-		}
-		if (i != col_count - 1) {
-			p_table->total_width += p_table->columns[i].width + theme_cache.table_h_separation;
-		} else {
-			p_table->total_width += p_table->columns[i].width;
-		}
-		p_table->columns[i].width_with_padding = p_table->columns[i].width;
+	int diff = p_available_width - p_table->total_width;
+	if (diff < 0) {
+		diff = 0; // Avoid negative stretch space.
 	}
+	remaining_width += diff;
 
 	// Resize to max_width if needed and distribute the remaining space.
 	bool table_need_fit = true;
 	while (table_need_fit) {
 		table_need_fit = false;
-		// Fit slim.
+		float error = 0.0; // Keep track of accumulated error in pixels.
+
 		for (int i = 0; i < col_count; i++) {
-			if (!p_table->columns[i].expand || !p_table->columns[i].shrink) {
+			if (!columns_will_stretch[i]) {
 				continue;
 			}
-			int dif = p_table->columns[i].width - p_table->columns[i].max_width;
-			if (dif > 0) {
+			ItemTable::Column &C = p_table->columns[i];
+
+			float final_pixel_size = remaining_width * C.expand_ratio / total_ratio;
+			error += Math::fract(final_pixel_size);
+
+			if (C.shrink && final_pixel_size > C.max_width) {
+				columns_will_stretch[i] = false;
+				total_ratio -= C.expand_ratio;
 				table_need_fit = true;
-				p_table->columns[i].width = p_table->columns[i].max_width;
-				p_table->total_width -= dif;
-				total_ratio -= p_table->columns[i].expand_ratio;
-				p_table->columns[i].width_with_padding = p_table->columns[i].width;
+				remaining_width -= C.max_width;
+				C.width = C.max_width;
+				break;
 			}
-		}
-		// Grow.
-		remaining_width = p_available_width - p_table->total_width;
-		if (remaining_width > 0 && total_ratio > 0) {
-			for (int i = 0; i < col_count; i++) {
-				if (p_table->columns[i].expand) {
-					int dif = p_table->columns[i].max_width - p_table->columns[i].width;
-					if (dif > 0) {
-						int slice = p_table->columns[i].expand_ratio * remaining_width / total_ratio;
-						int incr = MIN(dif, slice);
-						p_table->columns[i].width += incr;
-						p_table->total_width += incr;
-						p_table->columns[i].width_with_padding = p_table->columns[i].width;
-					}
-				}
+
+			if (final_pixel_size < C.min_width) {
+				// If available stretching area is too small for widget,
+				// then remove it from stretching area.
+				columns_will_stretch[i] = false;
+				total_ratio -= C.expand_ratio;
+				table_need_fit = true;
+				remaining_width -= C.min_width;
+				C.width = C.min_width;
+				break;
+			}
+
+			C.width = final_pixel_size;
+			// Dump accumulated error if one pixel or more.
+			if (error >= 1) {
+				C.width += 1;
+				error -= 1;
 			}
 		}
 	}
+
+	// Recalculate total width.
+	p_table->total_width = theme_cache.table_h_separation * col_count;
+	for (ItemTable::Column &C : p_table->columns) {
+		p_table->total_width += C.width;
+	}
+}
+
+void RichTextLabel::_update_table_size(ItemTable *p_table) {
+	const int col_count = p_table->columns.size();
 
 	// Update line width and get total height.
 	int idx = 0;
 	p_table->total_height = 0;
 	p_table->rows.clear();
-	p_table->rows_no_padding.clear();
 	p_table->rows_baseline.clear();
 
 	Vector2 offset = Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_v_separation * 0.5).floor();
 	float row_height = 0.0;
-	float row_top_padding = 0.0;
-	float row_bottom_padding = 0.0;
 	const List<Item *>::Element *prev = p_table->subitems.front();
 
 	for (const List<Item *>::Element *E = prev; E; E = E->next()) {
@@ -849,21 +933,19 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
 
 		int column = idx % col_count;
+		const real_t frame_padding_space = frame->padding.position.x + frame->padding.size.x;
 
-		offset.x += frame->padding.position.x;
+		offset += frame->padding.position;
 		float yofs = 0.0;
 		float prev_h = 0.0;
 		float row_baseline = 0.0;
 		for (int i = 0; i < (int)frame->lines.size(); i++) {
-			MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
+			Line &line = frame->lines[i];
+			MutexLock sub_lock(line.text_buf->get_mutex());
+			line.text_buf->set_width(p_table->columns[column].width - Math::ceil(frame_padding_space + line.indent));
+			line.offset.y = prev_h;
 
-			frame->lines[i].text_buf->set_width(p_table->columns[column].width);
-			p_table->columns[column].width = MAX(p_table->columns[column].width, std::ceil(frame->lines[i].text_buf->get_size().x));
-			p_table->columns[column].width_with_padding = MAX(p_table->columns[column].width_with_padding, std::ceil(frame->lines[i].text_buf->get_size().x + frame->padding.position.x + frame->padding.size.x));
-
-			frame->lines[i].offset.y = prev_h;
-
-			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+			float h = line.text_buf->get_size().y + (line.text_buf->get_line_count() - 1) * theme_cache.line_separation;
 			if (i > 0) {
 				h += theme_cache.paragraph_separation + theme_cache.line_separation;
 			}
@@ -874,48 +956,28 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 				h = MIN(h, frame->max_size_over.y);
 			}
 			yofs += h;
-			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
+			prev_h = line.offset.y + line.text_buf->get_size().y + line.text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 
-			frame->lines[i].offset += offset;
-			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
+			line.offset += offset;
+			row_baseline = MAX(row_baseline, line.text_buf->get_line_ascent(line.text_buf->get_line_count() - 1));
 		}
-		row_top_padding = MAX(row_top_padding, frame->padding.position.y);
-		row_bottom_padding = MAX(row_bottom_padding, frame->padding.size.y);
-		offset.x += p_table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
 
-		row_height = MAX(yofs, row_height);
+		offset -= frame->padding.position;
+		offset.x += p_table->columns[column].width + theme_cache.table_h_separation;
+
+		row_height = MAX(yofs + frame->padding.position.y + frame->padding.size.y, row_height);
 		// Add row height after last column of the row or last cell of the table.
 		if (column == col_count - 1 || E->next() == nullptr) {
 			offset.x = Math::floor(theme_cache.table_h_separation * 0.5);
-			float row_contents_height = row_height;
-			row_height += row_top_padding + row_bottom_padding;
 			row_height += theme_cache.table_v_separation;
+			p_table->rows.push_back(row_height);
+			p_table->rows_baseline.push_back(p_table->total_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
 			p_table->total_height += row_height;
 			offset.y += row_height;
-			p_table->rows.push_back(row_height);
-			p_table->rows_no_padding.push_back(row_contents_height);
-			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
-			for (const List<Item *>::Element *F = prev; F; F = F->next()) {
-				ItemFrame *in_frame = static_cast<ItemFrame *>(F->get());
-				for (int i = 0; i < (int)in_frame->lines.size(); i++) {
-					in_frame->lines[i].offset.y += row_top_padding;
-				}
-				if (in_frame == frame) {
-					break;
-				}
-			}
 			row_height = 0.0;
-			row_top_padding = 0.0;
-			row_bottom_padding = 0.0;
 			prev = E->next();
 		}
 		idx++;
-	}
-
-	// Recalculate total width.
-	p_table->total_width = 0;
-	for (int i = 0; i < col_count; i++) {
-		p_table->total_width += p_table->columns[i].width_with_padding + theme_cache.table_h_separation;
 	}
 }
 
@@ -1108,6 +1170,14 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								int col_count = table->columns.size();
 								int row_count = table->rows.size();
 
+								Point2 table_ofs = p_ofs + rect.position + off;
+								if (rtl) {
+									table_ofs -= Vector2(h_separation * 0.5, v_separation * 0.5).ceil();
+								} else {
+									table_ofs -= Vector2(h_separation * 0.5, v_separation * 0.5).floor();
+								}
+
+								bool right_has_border = false;
 								int idx = 0;
 								for (Item *E : table->subitems) {
 									ItemFrame *frame = static_cast<ItemFrame *>(E);
@@ -1115,26 +1185,43 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									int col = idx % col_count;
 									int row = idx / col_count;
 
+									const Size2 cell_size = Size2(table->columns[col].width + h_separation, table->rows[row]);
+
 									if (frame->lines.size() != 0 && row < row_count) {
-										Vector2 coff = frame->lines[0].offset;
+										Vector2 coff = frame->lines[0].offset - frame->padding.position;
 										coff.x -= frame->lines[0].indent;
 										if (rtl) {
 											coff.x = rect.size.width - table->columns[col].width - coff.x;
 										}
+
+										const Point2 cell_ofs = table_ofs + coff;
+										Rect2 cell_rect = Rect2(cell_ofs, cell_size);
+
+										Color row_bg;
 										if (row % 2 == 0) {
-											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
-											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
-											}
+											row_bg = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 										} else {
-											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
-											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
+											row_bg = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
+										}
+										if (row_bg.a > 0.0) {
+											if (right_has_border) {
+												// To prevent the border of the right cell from being covered.
+												cell_rect.size.x -= 1;
+												draw_rect(cell_rect, row_bg, true);
+												cell_rect.size.x += 1;
+											} else {
+												draw_rect(cell_rect, row_bg, true);
 											}
 										}
+
+										right_has_border = false;
+
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), bc, false);
+											if (rtl && col < col_count - 1) {
+												right_has_border = true;
+											}
+											draw_rect(cell_rect, bc, false);
 										}
 									}
 
@@ -2054,14 +2141,14 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 	if (l.accessibility_line_element.is_valid()) {
 		return;
 	}
-	l.accessibility_line_element = DisplayServer::get_singleton()->accessibility_create_sub_element(p_id, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+	l.accessibility_line_element = AccessibilityServer::get_singleton()->create_sub_element(p_id, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 
 	MutexLock lock(l.text_buf->get_mutex());
 
 	const RID &line_ae = l.accessibility_line_element;
 
 	Rect2 ae_rect = Rect2(p_ofs, Size2(p_width, l.text_buf->get_size().y + l.text_buf->get_line_count() * theme_cache.line_separation));
-	DisplayServer::get_singleton()->accessibility_update_set_bounds(line_ae, ae_rect);
+	AccessibilityServer::get_singleton()->update_set_bounds(line_ae, ae_rect);
 	ac_element_bounds_cache[line_ae] = ae_rect;
 
 	Item *it_from = l.from;
@@ -2099,15 +2186,15 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 			}
 		}
 
-		l.accessibility_text_element = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-		DisplayServer::get_singleton()->accessibility_update_set_value(l.accessibility_text_element, l_text);
+		l.accessibility_text_element = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
+		AccessibilityServer::get_singleton()->update_set_value(l.accessibility_text_element, l_text);
 		ae_rect = Rect2(p_ofs + off, text_buf->get_size());
-		DisplayServer::get_singleton()->accessibility_update_set_bounds(l.accessibility_text_element, ae_rect);
+		AccessibilityServer::get_singleton()->update_set_bounds(l.accessibility_text_element, ae_rect);
 		ac_element_bounds_cache[l.accessibility_text_element] = ae_rect;
 
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, true));
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, false));
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)l.from));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, true));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, false));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)l.from));
 	}
 
 	Vector2 off;
@@ -2171,9 +2258,9 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 				switch (it->type) {
 					case ITEM_IMAGE: {
 						ItemImage *img = static_cast<ItemImage *>(it);
-						RID img_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
+						RID img_ae = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_IMAGE);
 
-						DisplayServer::get_singleton()->accessibility_update_set_name(img_ae, img->alt_text);
+						AccessibilityServer::get_singleton()->update_set_name(img_ae, img->alt_text);
 						if (img->pad) {
 							Size2 pad_size = rect.size.min(img->image->get_size());
 							Vector2 pad_off = (rect.size - pad_size) / 2;
@@ -2181,12 +2268,12 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 						} else {
 							ae_rect = Rect2(p_ofs + rect.position + off, rect.size);
 						}
-						DisplayServer::get_singleton()->accessibility_update_set_bounds(img_ae, ae_rect);
+						AccessibilityServer::get_singleton()->update_set_bounds(img_ae, ae_rect);
 						ac_element_bounds_cache[img_ae] = ae_rect;
 
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
 
 						it->accessibility_item_element = img_ae;
 					} break;
@@ -2195,31 +2282,31 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 						float h_separation = theme_cache.table_h_separation;
 						float v_separation = theme_cache.table_v_separation;
 
-						RID table_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_TABLE);
+						RID table_ae = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TABLE);
 
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
 
-						DisplayServer::get_singleton()->accessibility_update_set_name(table_ae, table->name);
-						DisplayServer::get_singleton()->accessibility_update_set_role(table_ae, DisplayServer::AccessibilityRole::ROLE_TABLE);
-						DisplayServer::get_singleton()->accessibility_update_set_table_column_count(table_ae, col_count);
-						DisplayServer::get_singleton()->accessibility_update_set_table_row_count(table_ae, row_count);
+						AccessibilityServer::get_singleton()->update_set_name(table_ae, table->name);
+						AccessibilityServer::get_singleton()->update_set_role(table_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TABLE);
+						AccessibilityServer::get_singleton()->update_set_table_column_count(table_ae, col_count);
+						AccessibilityServer::get_singleton()->update_set_table_row_count(table_ae, row_count);
 						ae_rect = Rect2(p_ofs + rect.position + off + Vector2(0, TS->shaped_text_get_ascent(rid)), rect.size);
-						DisplayServer::get_singleton()->accessibility_update_set_bounds(table_ae, ae_rect);
+						AccessibilityServer::get_singleton()->update_set_bounds(table_ae, ae_rect);
 						ac_element_bounds_cache[table_ae] = ae_rect;
 
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
 
 						Vector<RID> row_aes;
 						Vector2 row_off = Vector2(0, TS->shaped_text_get_ascent(rid));
 						for (int j = 0; j < row_count; j++) {
-							RID row_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(table_ae, DisplayServer::AccessibilityRole::ROLE_ROW);
+							RID row_ae = AccessibilityServer::get_singleton()->create_sub_element(table_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_ROW);
 
-							DisplayServer::get_singleton()->accessibility_update_set_table_row_index(row_ae, j);
+							AccessibilityServer::get_singleton()->update_set_table_row_index(row_ae, j);
 							ae_rect = Rect2(p_ofs + rect.position + off + row_off, Size2(rect.size.x, table->rows[j]));
-							DisplayServer::get_singleton()->accessibility_update_set_bounds(row_ae, ae_rect);
+							AccessibilityServer::get_singleton()->update_set_bounds(row_ae, ae_rect);
 							ac_element_bounds_cache[row_ae] = ae_rect;
 							row_off.y += table->rows[j];
 
@@ -2234,7 +2321,7 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 							int row = idx / col_count;
 
 							for (int j = 0; j < (int)frame->lines.size(); j++) {
-								RID cell_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(row_aes[row], DisplayServer::AccessibilityRole::ROLE_CELL);
+								RID cell_ae = AccessibilityServer::get_singleton()->create_sub_element(row_aes[row], AccessibilityServerEnums::AccessibilityRole::ROLE_CELL);
 
 								if (frame->lines.size() != 0 && row < row_count) {
 									Vector2 coff = frame->lines[0].offset;
@@ -2243,10 +2330,10 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 										coff.x = rect.size.width - table->columns[col].width - coff.x;
 									}
 									ae_rect = Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row]));
-									DisplayServer::get_singleton()->accessibility_update_set_bounds(cell_ae, ae_rect);
+									AccessibilityServer::get_singleton()->update_set_bounds(cell_ae, ae_rect);
 									ac_element_bounds_cache[cell_ae] = ae_rect;
 								}
-								DisplayServer::get_singleton()->accessibility_update_set_table_cell_position(cell_ae, row, col);
+								AccessibilityServer::get_singleton()->update_set_table_cell_position(cell_ae, row, col);
 
 								_accessibility_update_line(cell_ae, frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_vsep);
 							}
@@ -2337,7 +2424,7 @@ void RichTextLabel::_invalidate_accessibility() {
 			ItemFrame *fr = static_cast<ItemFrame *>(it);
 			for (size_t i = 0; i < fr->lines.size(); i++) {
 				if (fr->lines[i].accessibility_line_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(fr->lines[i].accessibility_line_element);
+					AccessibilityServer::get_singleton()->free_element(fr->lines[i].accessibility_line_element);
 				}
 				fr->lines[i].accessibility_line_element = RID();
 				fr->lines[i].accessibility_text_element = RID();
@@ -2392,29 +2479,29 @@ void RichTextLabel::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &RichTextLabel::_accessibility_action_menu));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &RichTextLabel::_accessibility_scroll_down));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &RichTextLabel::_accessibility_scroll_up));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &RichTextLabel::_accessibility_scroll_set));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &RichTextLabel::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &RichTextLabel::_accessibility_scroll_down));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &RichTextLabel::_accessibility_scroll_up));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &RichTextLabel::_accessibility_scroll_set));
 
 			if (_validate_line_caches()) {
-				DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_BUSY, false);
+				AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_BUSY, false);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_BUSY, true);
+				AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_BUSY, true);
 				return; // Do not update internal elements if threaded procesisng is not done.
 			}
 
 			if (accessibility_scroll_element.is_null()) {
-				accessibility_scroll_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+				accessibility_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 			}
 			Rect2 text_rect = _get_text_rect();
 
 			Transform2D scroll_xform;
 			scroll_xform.set_origin(Vector2i(0, -vscroll->get_value()));
-			DisplayServer::get_singleton()->accessibility_update_set_transform(accessibility_scroll_element, scroll_xform);
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_scroll_element, text_rect);
+			AccessibilityServer::get_singleton()->update_set_transform(accessibility_scroll_element, scroll_xform);
+			AccessibilityServer::get_singleton()->update_set_bounds(accessibility_scroll_element, text_rect);
 
 			MutexLock data_lock(data_mutex);
 
@@ -6062,9 +6149,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find_char('x');
 					if (sep == -1) {
+						if (bbcode_value.ends_with("%")) {
+							width_in_percent = true;
+						}
 						width = bbcode_value.to_int();
 					} else {
+						if (bbcode_value.substr(0, sep).ends_with("%")) {
+							width_in_percent = true;
+						}
 						width = bbcode_value.substr(0, sep).to_int();
+						if (bbcode_value.substr(sep + 1).ends_with("%")) {
+							height_in_percent = true;
+						}
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {

@@ -30,8 +30,16 @@
 
 #pragma once
 
+#include "core/object/worker_thread_pool.h"
+#include "core/os/mutex.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
-#include "servers/rendering/rendering_server.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #define PRINT_PIPELINE_COMPILATION_KEYS 0
 
@@ -99,7 +107,7 @@ public:
 	}
 
 	// Start compilation of a pipeline ahead of time in the background. Returns true if the compilation was started, false if it wasn't required. Source is only used for collecting statistics.
-	void compile_pipeline(const Key &p_key, uint32_t p_key_hash, RS::PipelineSource p_source, bool p_high_priority) {
+	void compile_pipeline(const Key &p_key, uint32_t p_key_hash, RSE::PipelineSource p_source, bool p_high_priority) {
 		DEV_ASSERT((creation_object != nullptr) && (creation_function != nullptr) && "Creation object and function was not set before attempting to compile a pipeline.");
 
 		MutexLock local_lock(local_mutex);
@@ -119,19 +127,19 @@ public:
 #if PRINT_PIPELINE_COMPILATION_KEYS
 		String source_name = "UNKNOWN";
 		switch (p_source) {
-			case RS::PIPELINE_SOURCE_CANVAS:
+			case RSE::PIPELINE_SOURCE_CANVAS:
 				source_name = "CANVAS";
 				break;
-			case RS::PIPELINE_SOURCE_MESH:
+			case RSE::PIPELINE_SOURCE_MESH:
 				source_name = "MESH";
 				break;
-			case RS::PIPELINE_SOURCE_SURFACE:
+			case RSE::PIPELINE_SOURCE_SURFACE:
 				source_name = "SURFACE";
 				break;
-			case RS::PIPELINE_SOURCE_DRAW:
+			case RSE::PIPELINE_SOURCE_DRAW:
 				source_name = "DRAW";
 				break;
-			case RS::PIPELINE_SOURCE_SPECIALIZATION:
+			case RSE::PIPELINE_SOURCE_SPECIALIZATION:
 				source_name = "SPECIALIZATION";
 				break;
 		}
@@ -168,7 +176,7 @@ public:
 	}
 
 	// Retrieve a pipeline. It'll return an empty pipeline if it's not available yet, but it'll be guaranteed to succeed if 'wait for compilation' is true and stall as necessary. Source is just an optional number to aid debugging.
-	RID get_pipeline(const Key &p_key, uint32_t p_key_hash, bool p_wait_for_compilation, RS::PipelineSource p_source) {
+	RID get_pipeline(const Key &p_key, uint32_t p_key_hash, bool p_wait_for_compilation, RSE::PipelineSource p_source) {
 		RBMap<uint32_t, RID>::Element *e = hash_map.find(p_key_hash);
 
 		if (e == nullptr) {

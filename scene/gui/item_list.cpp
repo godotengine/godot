@@ -31,8 +31,11 @@
 #include "item_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
@@ -533,7 +536,7 @@ void ItemList::set_item_count(int p_count) {
 	if (items.size() > p_count) {
 		for (int i = p_count; i < items.size(); i++) {
 			if (items[i].accessibility_item_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(items.write[i].accessibility_item_element);
+				AccessibilityServer::get_singleton()->free_element(items.write[i].accessibility_item_element);
 				items.write[i].accessibility_item_element = RID();
 			}
 		}
@@ -554,7 +557,7 @@ void ItemList::remove_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (items[p_idx].accessibility_item_element.is_valid()) {
-		DisplayServer::get_singleton()->accessibility_free_element(items.write[p_idx].accessibility_item_element);
+		AccessibilityServer::get_singleton()->free_element(items.write[p_idx].accessibility_item_element);
 		items.write[p_idx].accessibility_item_element = RID();
 	}
 	items.remove_at(p_idx);
@@ -571,7 +574,7 @@ void ItemList::remove_item(int p_idx) {
 void ItemList::clear() {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].accessibility_item_element.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(items.write[i].accessibility_item_element);
+			AccessibilityServer::get_singleton()->free_element(items.write[i].accessibility_item_element);
 			items.write[i].accessibility_item_element = RID();
 		}
 	}
@@ -1244,7 +1247,7 @@ void ItemList::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
 	} else {
 		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page());
@@ -1252,7 +1255,7 @@ void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
 	} else {
 		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page());
@@ -1260,7 +1263,7 @@ void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
 	} else {
 		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page());
@@ -1268,7 +1271,7 @@ void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_right(const Variant &p_data) {
-	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
 		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
 	} else {
 		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page());
@@ -1320,47 +1323,47 @@ void ItemList::_notification(int p_what) {
 
 			force_update_list_size();
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, items.size());
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE, select_mode == SELECT_MULTI);
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &ItemList::_accessibility_action_scroll_down));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &ItemList::_accessibility_action_scroll_up));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &ItemList::_accessibility_action_scroll_left));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &ItemList::_accessibility_action_scroll_right));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &ItemList::_accessibility_action_scroll_set));
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, items.size());
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, select_mode == SELECT_MULTI);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &ItemList::_accessibility_action_scroll_down));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &ItemList::_accessibility_action_scroll_up));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &ItemList::_accessibility_action_scroll_left));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &ItemList::_accessibility_action_scroll_right));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &ItemList::_accessibility_action_scroll_set));
 
 			if (accessibility_scroll_element.is_null()) {
-				accessibility_scroll_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+				accessibility_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 			}
 
 			Transform2D scroll_xform;
 			scroll_xform.set_origin(Vector2i(-scroll_bar_h->get_value(), -scroll_bar_v->get_value()));
-			DisplayServer::get_singleton()->accessibility_update_set_transform(accessibility_scroll_element, scroll_xform);
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_scroll_element, Rect2(0, 0, scroll_bar_h->get_max(), scroll_bar_v->get_max()));
+			AccessibilityServer::get_singleton()->update_set_transform(accessibility_scroll_element, scroll_xform);
+			AccessibilityServer::get_singleton()->update_set_bounds(accessibility_scroll_element, Rect2(0, 0, scroll_bar_h->get_max(), scroll_bar_v->get_max()));
 
 			for (int i = 0; i < items.size(); i++) {
 				const Item &item = items.write[i];
 
 				if (item.accessibility_item_element.is_null()) {
-					item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+					item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(accessibility_scroll_element, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
 					item.accessibility_item_dirty = true;
 				}
 				if (item.accessibility_item_dirty || i == hovered || i == prev_hovered) {
-					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ItemList::_accessibility_action_scroll_into_view).bind(i));
-					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ItemList::_accessibility_action_focus).bind(i));
-					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ItemList::_accessibility_action_blur).bind(i));
+					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ItemList::_accessibility_action_scroll_into_view).bind(i));
+					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ItemList::_accessibility_action_focus).bind(i));
+					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ItemList::_accessibility_action_blur).bind(i));
 
-					DisplayServer::get_singleton()->accessibility_update_set_list_item_index(item.accessibility_item_element, i);
-					DisplayServer::get_singleton()->accessibility_update_set_list_item_level(item.accessibility_item_element, 0);
-					DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(item.accessibility_item_element, item.selected);
-					DisplayServer::get_singleton()->accessibility_update_set_name(item.accessibility_item_element, item.xl_text);
-					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
+					AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
+					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, item.selected);
+					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, item.xl_text);
+					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
 					if (item.tooltip_enabled) {
-						DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
+						AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
 					}
 
 					Rect2 r = get_item_rect(i);
-					DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(r.position, r.size));
+					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(r.position, r.size));
 
 					item.accessibility_item_dirty = false;
 				}

@@ -37,7 +37,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Texture2D);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/resources/texture.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/display_server_headless.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/rendering_server.h"
@@ -57,8 +59,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #endif
 
 DisplayServer *DisplayServer::singleton = nullptr;
-
-DisplayServer::AccessibilityMode DisplayServer::accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
 
 bool DisplayServer::hidpi_allowed = false;
 
@@ -642,473 +642,477 @@ void DisplayServer::window_set_ime_position(const Point2i &p_pos, WindowID p_win
 	WARN_PRINT("IME not supported by this display server.");
 }
 
-RID DisplayServer::accessibility_create_element(WindowID p_window, DisplayServer::AccessibilityRole p_role) {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_create_element(p_window, p_role);
+#ifndef DISABLE_DEPRECATED
+
+RID DisplayServer::accessibility_create_element(WindowID p_window, AccessibilityRole p_role) {
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->create_element(p_window, (AccessibilityServerEnums::AccessibilityRole)p_role);
 	} else {
 		return RID();
 	}
 }
 
-RID DisplayServer::accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos) {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_create_sub_element(p_parent_rid, p_role, p_insert_pos);
+RID DisplayServer::accessibility_create_sub_element(const RID &p_parent_rid, AccessibilityRole p_role, int p_insert_pos) {
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->create_sub_element(p_parent_rid, (AccessibilityServerEnums::AccessibilityRole)p_role, p_insert_pos);
 	} else {
 		return RID();
 	}
 }
 
 RID DisplayServer::accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos, bool p_is_last_line) {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_create_sub_text_edit_elements(p_parent_rid, p_shaped_text, p_min_height, p_insert_pos, p_is_last_line);
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->create_sub_text_edit_elements(p_parent_rid, p_shaped_text, p_min_height, p_insert_pos, p_is_last_line);
 	} else {
 		return RID();
 	}
 }
 
 bool DisplayServer::accessibility_has_element(const RID &p_id) const {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_has_element(p_id);
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->has_element(p_id);
 	} else {
 		return false;
 	}
 }
 
 void DisplayServer::accessibility_free_element(const RID &p_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_free_element(p_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->free_element(p_id);
 	}
 }
 
 void DisplayServer::accessibility_element_set_meta(const RID &p_id, const Variant &p_meta) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_element_set_meta(p_id, p_meta);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->element_set_meta(p_id, p_meta);
 	}
 }
 
 Variant DisplayServer::accessibility_element_get_meta(const RID &p_id) const {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_element_get_meta(p_id);
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->element_get_meta(p_id);
 	} else {
 		return Variant();
 	}
 }
 
 void DisplayServer::accessibility_update_if_active(const Callable &p_callable) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_if_active(p_callable);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_if_active(p_callable);
 	}
 }
 
 void DisplayServer::accessibility_update_set_focus(const RID &p_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_focus(p_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_focus(p_id);
 	}
 }
 
 RID DisplayServer::accessibility_get_window_root(DisplayServer::WindowID p_window_id) const {
-	if (accessibility_driver) {
-		return accessibility_driver->accessibility_get_window_root(p_window_id);
+	if (AccessibilityServer::get_singleton()) {
+		return AccessibilityServer::get_singleton()->get_window_root(p_window_id);
 	} else {
 		return RID();
 	}
 }
 
 void DisplayServer::accessibility_set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_set_window_rect(p_window_id, p_rect_out, p_rect_in);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->set_window_rect(p_window_id, p_rect_out, p_rect_in);
 	}
 }
 
 void DisplayServer::accessibility_set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_set_window_focused(p_window_id, p_focused);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->set_window_focused(p_window_id, p_focused);
 	}
 }
 
 void DisplayServer::accessibility_set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_set_window_callbacks(p_window_id, p_activate_callable, p_deativate_callable);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->set_window_callbacks(p_window_id, p_activate_callable, p_deativate_callable);
 	}
 }
 
 void DisplayServer::accessibility_window_activation_completed(DisplayServer::WindowID p_window_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_window_activation_completed(p_window_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->window_activation_completed(p_window_id);
 	}
 }
 
 void DisplayServer::accessibility_window_deactivation_completed(DisplayServer::WindowID p_window_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_window_deactivation_completed(p_window_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->window_deactivation_completed(p_window_id);
 	}
 }
 
-void DisplayServer::accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_role(p_id, p_role);
+void DisplayServer::accessibility_update_set_role(const RID &p_id, AccessibilityRole p_role) {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_role(p_id, (AccessibilityServerEnums::AccessibilityRole)p_role);
 	}
 }
 
 void DisplayServer::accessibility_update_set_name(const RID &p_id, const String &p_name) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_name(p_id, p_name);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_name(p_id, p_name);
 	}
 }
 
 void DisplayServer::accessibility_update_set_description(const RID &p_id, const String &p_description) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_description(p_id, p_description);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_description(p_id, p_description);
 	}
 }
 
 void DisplayServer::accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_extra_info(p_id, p_name_extra_info);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_extra_info(p_id, p_name_extra_info);
 	}
 }
 
 void DisplayServer::accessibility_update_set_value(const RID &p_id, const String &p_value) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_value(p_id, p_value);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_value(p_id, p_value);
 	}
 }
 
 void DisplayServer::accessibility_update_set_tooltip(const RID &p_id, const String &p_tooltip) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_tooltip(p_id, p_tooltip);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_tooltip(p_id, p_tooltip);
 	}
 }
 
 void DisplayServer::accessibility_update_set_bounds(const RID &p_id, const Rect2 &p_rect) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_bounds(p_id, p_rect);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_bounds(p_id, p_rect);
 	}
 }
 
 void DisplayServer::accessibility_update_set_transform(const RID &p_id, const Transform2D &p_transform) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_transform(p_id, p_transform);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_transform(p_id, p_transform);
 	}
 }
 
 void DisplayServer::accessibility_update_add_child(const RID &p_id, const RID &p_child_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_child(p_id, p_child_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_child(p_id, p_child_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_controls(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_controls(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_controls(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_details(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_details(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_details(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_described_by(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_described_by(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_described_by(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_flow_to(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_flow_to(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_flow_to(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_labeled_by(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_labeled_by(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_labeled_by(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_add_related_radio_group(const RID &p_id, const RID &p_related_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_related_radio_group(p_id, p_related_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_related_radio_group(p_id, p_related_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_active_descendant(const RID &p_id, const RID &p_other_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_active_descendant(p_id, p_other_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_active_descendant(p_id, p_other_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_next_on_line(const RID &p_id, const RID &p_other_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_next_on_line(p_id, p_other_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_next_on_line(p_id, p_other_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_previous_on_line(const RID &p_id, const RID &p_other_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_previous_on_line(p_id, p_other_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_previous_on_line(p_id, p_other_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_member_of(const RID &p_id, const RID &p_group_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_member_of(p_id, p_group_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_member_of(p_id, p_group_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_in_page_link_target(const RID &p_id, const RID &p_other_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_in_page_link_target(p_id, p_other_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_in_page_link_target(p_id, p_other_id);
 	}
 }
 
 void DisplayServer::accessibility_update_set_error_message(const RID &p_id, const RID &p_other_id) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_error_message(p_id, p_other_id);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_error_message(p_id, p_other_id);
 	}
 }
 
-void DisplayServer::accessibility_update_set_live(const RID &p_id, DisplayServer::AccessibilityLiveMode p_live) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_live(p_id, p_live);
+void DisplayServer::accessibility_update_set_live(const RID &p_id, AccessibilityLiveMode p_live) {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_live(p_id, (AccessibilityServerEnums::AccessibilityLiveMode)p_live);
 	}
 }
 
-void DisplayServer::accessibility_update_add_action(const RID &p_id, DisplayServer::AccessibilityAction p_action, const Callable &p_callable) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_action(p_id, p_action, p_callable);
+void DisplayServer::accessibility_update_add_action(const RID &p_id, AccessibilityAction p_action, const Callable &p_callable) {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_action(p_id, (AccessibilityServerEnums::AccessibilityAction)p_action, p_callable);
 	}
 }
 
 void DisplayServer::accessibility_update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_add_custom_action(p_id, p_action_id, p_action_description);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_add_custom_action(p_id, p_action_id, p_action_description);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_row_count(const RID &p_id, int p_count) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_row_count(p_id, p_count);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_row_count(p_id, p_count);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_column_count(const RID &p_id, int p_count) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_column_count(p_id, p_count);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_column_count(p_id, p_count);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_row_index(const RID &p_id, int p_index) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_row_index(p_id, p_index);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_row_index(p_id, p_index);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_column_index(const RID &p_id, int p_index) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_column_index(p_id, p_index);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_column_index(p_id, p_index);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_cell_position(const RID &p_id, int p_row_index, int p_column_index) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_cell_position(p_id, p_row_index, p_column_index);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_cell_position(p_id, p_row_index, p_column_index);
 	}
 }
 
 void DisplayServer::accessibility_update_set_table_cell_span(const RID &p_id, int p_row_span, int p_column_span) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_table_cell_span(p_id, p_row_span, p_column_span);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_table_cell_span(p_id, p_row_span, p_column_span);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_item_count(const RID &p_id, int p_size) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_item_count(p_id, p_size);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_item_count(p_id, p_size);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_item_index(const RID &p_id, int p_index) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_item_index(p_id, p_index);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_item_index(p_id, p_index);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_item_level(const RID &p_id, int p_level) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_item_level(p_id, p_level);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_item_level(p_id, p_level);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_item_selected(const RID &p_id, bool p_selected) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_item_selected(p_id, p_selected);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_item_selected(p_id, p_selected);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_item_expanded(const RID &p_id, bool p_expanded) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_item_expanded(p_id, p_expanded);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_item_expanded(p_id, p_expanded);
 	}
 }
 
-void DisplayServer::accessibility_update_set_popup_type(const RID &p_id, DisplayServer::AccessibilityPopupType p_popup) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_popup_type(p_id, p_popup);
+void DisplayServer::accessibility_update_set_popup_type(const RID &p_id, AccessibilityPopupType p_popup) {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_popup_type(p_id, (AccessibilityServerEnums::AccessibilityPopupType)p_popup);
 	}
 }
 
 void DisplayServer::accessibility_update_set_checked(const RID &p_id, bool p_checekd) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_checked(p_id, p_checekd);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_checked(p_id, p_checekd);
 	}
 }
 
 void DisplayServer::accessibility_update_set_num_value(const RID &p_id, double p_position) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_num_value(p_id, p_position);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_num_value(p_id, p_position);
 	}
 }
 
 void DisplayServer::accessibility_update_set_num_range(const RID &p_id, double p_min, double p_max) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_num_range(p_id, p_min, p_max);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_num_range(p_id, p_min, p_max);
 	}
 }
 
 void DisplayServer::accessibility_update_set_num_step(const RID &p_id, double p_step) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_num_step(p_id, p_step);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_num_step(p_id, p_step);
 	}
 }
 
 void DisplayServer::accessibility_update_set_num_jump(const RID &p_id, double p_jump) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_num_jump(p_id, p_jump);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_num_jump(p_id, p_jump);
 	}
 }
 
 void DisplayServer::accessibility_update_set_scroll_x(const RID &p_id, double p_position) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_scroll_x(p_id, p_position);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_scroll_x(p_id, p_position);
 	}
 }
 
 void DisplayServer::accessibility_update_set_scroll_x_range(const RID &p_id, double p_min, double p_max) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_scroll_x_range(p_id, p_min, p_max);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_scroll_x_range(p_id, p_min, p_max);
 	}
 }
 
 void DisplayServer::accessibility_update_set_scroll_y(const RID &p_id, double p_position) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_scroll_y(p_id, p_position);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_scroll_y(p_id, p_position);
 	}
 }
 
 void DisplayServer::accessibility_update_set_scroll_y_range(const RID &p_id, double p_min, double p_max) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_scroll_y_range(p_id, p_min, p_max);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_scroll_y_range(p_id, p_min, p_max);
 	}
 }
 
 void DisplayServer::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_text_decorations(p_id, p_underline, p_strikethrough, p_overline);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_text_decorations(p_id, p_underline, p_strikethrough, p_overline, Color(0, 0, 0, 1));
 	}
 }
 
 void DisplayServer::accessibility_update_set_text_align(const RID &p_id, HorizontalAlignment p_align) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_text_align(p_id, p_align);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_text_align(p_id, p_align);
 	}
 }
 
 void DisplayServer::accessibility_update_set_text_selection(const RID &p_id, const RID &p_text_start_id, int p_start_char, const RID &p_text_end_id, int p_end_char) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_text_selection(p_id, p_text_start_id, p_start_char, p_text_end_id, p_end_char);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_text_selection(p_id, p_text_start_id, p_start_char, p_text_end_id, p_end_char);
 	}
 }
 
-void DisplayServer::accessibility_update_set_flag(const RID &p_id, DisplayServer::AccessibilityFlags p_flag, bool p_value) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_flag(p_id, p_flag, p_value);
+void DisplayServer::accessibility_update_set_flag(const RID &p_id, AccessibilityFlags p_flag, bool p_value) {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_flag(p_id, (AccessibilityServerEnums::AccessibilityFlags)p_flag, p_value);
 	}
 }
 
 void DisplayServer::accessibility_update_set_classname(const RID &p_id, const String &p_classname) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_classname(p_id, p_classname);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_classname(p_id, p_classname);
 	}
 }
 
 void DisplayServer::accessibility_update_set_placeholder(const RID &p_id, const String &p_placeholder) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_placeholder(p_id, p_placeholder);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_placeholder(p_id, p_placeholder);
 	}
 }
 
 void DisplayServer::accessibility_update_set_language(const RID &p_id, const String &p_language) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_language(p_id, p_language);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_language(p_id, p_language);
 	}
 }
 
 void DisplayServer::accessibility_update_set_text_orientation(const RID &p_id, bool p_vertical) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_text_orientation(p_id, p_vertical);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_text_orientation(p_id, p_vertical);
 	}
 }
 
 void DisplayServer::accessibility_update_set_list_orientation(const RID &p_id, bool p_vertical) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_list_orientation(p_id, p_vertical);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_list_orientation(p_id, p_vertical);
 	}
 }
 
 void DisplayServer::accessibility_update_set_shortcut(const RID &p_id, const String &p_shortcut) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_shortcut(p_id, p_shortcut);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_shortcut(p_id, p_shortcut);
 	}
 }
 
 void DisplayServer::accessibility_update_set_url(const RID &p_id, const String &p_url) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_url(p_id, p_url);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_url(p_id, p_url);
 	}
 }
 
 void DisplayServer::accessibility_update_set_role_description(const RID &p_id, const String &p_description) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_role_description(p_id, p_description);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_role_description(p_id, p_description);
 	}
 }
 
 void DisplayServer::accessibility_update_set_state_description(const RID &p_id, const String &p_description) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_state_description(p_id, p_description);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_state_description(p_id, p_description);
 	}
 }
 
 void DisplayServer::accessibility_update_set_color_value(const RID &p_id, const Color &p_color) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_color_value(p_id, p_color);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_color_value(p_id, p_color);
 	}
 }
 
 void DisplayServer::accessibility_update_set_background_color(const RID &p_id, const Color &p_color) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_background_color(p_id, p_color);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_background_color(p_id, p_color);
 	}
 }
 
 void DisplayServer::accessibility_update_set_foreground_color(const RID &p_id, const Color &p_color) {
-	if (accessibility_driver) {
-		accessibility_driver->accessibility_update_set_foreground_color(p_id, p_color);
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->update_set_foreground_color(p_id, p_color);
 	}
 }
+
+#endif // DISABLE_DEPRECATED
 
 Point2i DisplayServer::ime_get_selection() const {
 	ERR_FAIL_V_MSG(Point2i(), "IME or NOTIFICATION_WM_IME_UPDATE not supported by this display server.");
@@ -1423,7 +1427,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
 	ClassDB::bind_method(D_METHOD("global_menu_get_system_menu_roots"), &DisplayServer::global_menu_get_system_menu_roots);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &DisplayServer::tts_is_speaking);
 	ClassDB::bind_method(D_METHOD("tts_is_paused"), &DisplayServer::tts_is_paused);
@@ -1577,6 +1581,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_should_reduce_transparency"), &DisplayServer::accessibility_should_reduce_transparency);
 	ClassDB::bind_method(D_METHOD("accessibility_screen_reader_active"), &DisplayServer::accessibility_screen_reader_active);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("accessibility_create_element", "window_id", "role"), &DisplayServer::accessibility_create_element);
 	ClassDB::bind_method(D_METHOD("accessibility_create_sub_element", "parent_rid", "role", "insert_pos"), &DisplayServer::accessibility_create_sub_element, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos", "is_last_line"), &DisplayServer::accessibility_create_sub_text_edit_elements, DEFVAL(-1), DEFVAL(false));
@@ -1653,6 +1658,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_color_value", "id", "color"), &DisplayServer::accessibility_update_set_color_value);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_background_color", "id", "color"), &DisplayServer::accessibility_update_set_background_color);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_foreground_color", "id", "color"), &DisplayServer::accessibility_update_set_foreground_color);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
@@ -1719,7 +1725,7 @@ void DisplayServer::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
-#endif
+#endif // DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_SUBWINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_TOUCHSCREEN);
 	BIND_ENUM_CONSTANT(FEATURE_MOUSE);
@@ -1755,6 +1761,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_ACCESSIBILITY_SCREEN_READER);
 	BIND_ENUM_CONSTANT(FEATURE_HDR_OUTPUT);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(ROLE_UNKNOWN);
 	BIND_ENUM_CONSTANT(ROLE_DEFAULT_BUTTON);
 	BIND_ENUM_CONSTANT(ROLE_AUDIO);
@@ -1802,6 +1809,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROLE_DIALOG);
 	BIND_ENUM_CONSTANT(ROLE_TOOLTIP);
 	BIND_ENUM_CONSTANT(ROLE_REGION);
+	BIND_ENUM_CONSTANT(ROLE_TEXT_RUN);
 
 	BIND_ENUM_CONSTANT(POPUP_MENU);
 	BIND_ENUM_CONSTANT(POPUP_LIST);
@@ -1863,6 +1871,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
+#endif // DISABLE_DEPRECATED
 
 	BIND_CONSTANT(INVALID_SCREEN);
 	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);

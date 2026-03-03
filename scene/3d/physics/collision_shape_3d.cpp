@@ -30,6 +30,7 @@
 
 #include "collision_shape_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/vehicle_body_3d.h"
@@ -54,7 +55,7 @@ void CollisionShape3D::make_convex_from_siblings() {
 				for (int j = 0; j < m->get_surface_count(); j++) {
 					Array a = m->surface_get_arrays(j);
 					if (!a.is_empty()) {
-						Vector<Vector3> v = a[RenderingServer::ARRAY_VERTEX];
+						Vector<Vector3> v = a[RSE::ARRAY_VERTEX];
 						for (int k = 0; k < v.size(); k++) {
 							vertices.append(mi->get_transform().xform(v[k]));
 						}
@@ -320,11 +321,9 @@ void CollisionShape3D::_shape_changed() {
 #endif // DEBUG_ENABLED
 
 CollisionShape3D::CollisionShape3D() {
-	//indicator = RenderingServer::get_singleton()->mesh_create();
 	set_notify_local_transform(true);
 	debug_color = _get_default_debug_color();
 }
 
 CollisionShape3D::~CollisionShape3D() {
-	//RenderingServer::get_singleton()->free(indicator);
 }

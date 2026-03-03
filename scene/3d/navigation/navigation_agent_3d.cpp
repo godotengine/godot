@@ -31,8 +31,10 @@
 #include "navigation_agent_3d.h"
 
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent3D::get_rid);
@@ -347,7 +349,6 @@ void NavigationAgent3D::_notification(int p_what) {
 void NavigationAgent3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "keep_y_velocity" && use_3d_avoidance) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-		return;
 	}
 }
 

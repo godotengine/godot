@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_mobile.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "render_forward_mobile.h"
+#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
@@ -57,7 +58,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-	cull_mode = RS::CULL_MODE_BACK;
+	cull_mode = RSE::CULL_MODE_BACK;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -111,9 +112,9 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
 	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -166,7 +167,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.uniforms = &uniforms;
 
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
+	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 
 	if (err != OK) {
 		if (version.is_valid()) {
@@ -260,12 +261,12 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
 	} else {
-		return RS::ShaderNativeSourceCode();
+		return RenderingServerTypes::ShaderNativeSourceCode();
 	}
 }
 
@@ -317,7 +318,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		}
 	}
 
-	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
+	RD::RenderPrimitive primitive_rd_table[RSE::PRIMITIVE_MAX] = {
 		RD::RENDER_PRIMITIVE_POINTS,
 		RD::RENDER_PRIMITIVE_LINES,
 		RD::RENDER_PRIMITIVE_LINESTRIPS,
@@ -528,7 +529,7 @@ RendererRD::MaterialStorage::ShaderData *SceneShaderForwardMobile::_create_shade
 }
 
 void SceneShaderForwardMobile::MaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+	priority = p_priority - RSE::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
 void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
@@ -937,7 +938,7 @@ void SceneShaderForwardMobile::set_default_specialization(const ShaderSpecializa
 	}
 }
 
-uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RS::PipelineSource p_source) {
+uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RSE::PipelineSource p_source) {
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 	return pipeline_compilations[p_source];
 }

@@ -31,10 +31,12 @@
 #include "gpu_particles_collision_3d.h"
 
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void GPUParticlesCollision3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;
@@ -52,7 +54,7 @@ void GPUParticlesCollision3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 }
 
-GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_type) {
+GPUParticlesCollision3D::GPUParticlesCollision3D(RSE::ParticlesCollisionType p_type) {
 	collision = RS::get_singleton()->particles_collision_create();
 	RS::get_singleton()->particles_collision_set_collision_type(collision, p_type);
 	set_base(collision);
@@ -87,7 +89,7 @@ AABB GPUParticlesCollisionSphere3D::get_aabb() const {
 }
 
 GPUParticlesCollisionSphere3D::GPUParticlesCollisionSphere3D() :
-		GPUParticlesCollision3D(RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE) {
+		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE) {
 }
 
 GPUParticlesCollisionSphere3D::~GPUParticlesCollisionSphere3D() {
@@ -135,7 +137,7 @@ AABB GPUParticlesCollisionBox3D::get_aabb() const {
 }
 
 GPUParticlesCollisionBox3D::GPUParticlesCollisionBox3D() :
-		GPUParticlesCollision3D(RS::PARTICLES_COLLISION_TYPE_BOX_COLLIDE) {
+		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_BOX_COLLIDE) {
 }
 
 GPUParticlesCollisionBox3D::~GPUParticlesCollisionBox3D() {
@@ -656,7 +658,7 @@ GPUParticlesCollisionSDF3D::BakeStepFunc GPUParticlesCollisionSDF3D::bake_step_f
 GPUParticlesCollisionSDF3D::BakeEndFunc GPUParticlesCollisionSDF3D::bake_end_function = nullptr;
 
 GPUParticlesCollisionSDF3D::GPUParticlesCollisionSDF3D() :
-		GPUParticlesCollision3D(RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE) {
+		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_SDF_COLLIDE) {
 }
 
 GPUParticlesCollisionSDF3D::~GPUParticlesCollisionSDF3D() {
@@ -780,7 +782,7 @@ Vector3 GPUParticlesCollisionHeightField3D::get_size() const {
 
 void GPUParticlesCollisionHeightField3D::set_resolution(Resolution p_resolution) {
 	resolution = p_resolution;
-	RS::get_singleton()->particles_collision_set_height_field_resolution(_get_collision(), RS::ParticlesCollisionHeightfieldResolution(resolution));
+	RS::get_singleton()->particles_collision_set_height_field_resolution(_get_collision(), RSE::ParticlesCollisionHeightfieldResolution(resolution));
 	update_gizmos();
 	RS::get_singleton()->particles_collision_height_field_update(_get_collision());
 }
@@ -839,7 +841,7 @@ AABB GPUParticlesCollisionHeightField3D::get_aabb() const {
 }
 
 GPUParticlesCollisionHeightField3D::GPUParticlesCollisionHeightField3D() :
-		GPUParticlesCollision3D(RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE) {
+		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE) {
 }
 
 GPUParticlesCollisionHeightField3D::~GPUParticlesCollisionHeightField3D() {
@@ -904,7 +906,7 @@ void GPUParticlesAttractor3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 }
 
-GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_type) {
+GPUParticlesAttractor3D::GPUParticlesAttractor3D(RSE::ParticlesCollisionType p_type) {
 	collision = RS::get_singleton()->particles_collision_create();
 	RS::get_singleton()->particles_collision_set_collision_type(collision, p_type);
 	set_base(collision);
@@ -938,7 +940,7 @@ AABB GPUParticlesAttractorSphere3D::get_aabb() const {
 }
 
 GPUParticlesAttractorSphere3D::GPUParticlesAttractorSphere3D() :
-		GPUParticlesAttractor3D(RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT) {
+		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT) {
 }
 
 GPUParticlesAttractorSphere3D::~GPUParticlesAttractorSphere3D() {
@@ -986,7 +988,7 @@ AABB GPUParticlesAttractorBox3D::get_aabb() const {
 }
 
 GPUParticlesAttractorBox3D::GPUParticlesAttractorBox3D() :
-		GPUParticlesAttractor3D(RS::PARTICLES_COLLISION_TYPE_BOX_ATTRACT) {
+		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_BOX_ATTRACT) {
 }
 
 GPUParticlesAttractorBox3D::~GPUParticlesAttractorBox3D() {
@@ -1048,7 +1050,7 @@ AABB GPUParticlesAttractorVectorField3D::get_aabb() const {
 }
 
 GPUParticlesAttractorVectorField3D::GPUParticlesAttractorVectorField3D() :
-		GPUParticlesAttractor3D(RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
+		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
 }
 
 GPUParticlesAttractorVectorField3D::~GPUParticlesAttractorVectorField3D() {

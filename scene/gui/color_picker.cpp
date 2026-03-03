@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/math/expression.h"
+#include "core/object/class_db.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"
@@ -53,6 +54,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -81,8 +83,8 @@ void ColorPicker::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_COLOR_PICKER);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_COLOR_PICKER);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, color);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2433,9 +2435,9 @@ void ColorPickerButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_DIALOG);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_DIALOG);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, color);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -2574,8 +2576,8 @@ void ColorPresetButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, preset_color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, preset_color);
 		} break;
 
 		case NOTIFICATION_DRAW: {

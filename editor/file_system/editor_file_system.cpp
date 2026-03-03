@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
@@ -237,6 +238,12 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	for (EditorFileSystemDirectory *dir : subdirs) {
 		memdelete(dir);
 	}
+}
+
+void EditorFileSystemImportFormatSupportQuery::_bind_methods() {
+	GDVIRTUAL_BIND(_is_active);
+	GDVIRTUAL_BIND(_get_file_extensions);
+	GDVIRTUAL_BIND(_query);
 }
 
 EditorFileSystem::ScannedDirectory::~ScannedDirectory() {

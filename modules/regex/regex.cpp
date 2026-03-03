@@ -31,6 +31,7 @@
 #include "regex.h"
 #include "regex.compat.inc"
 
+#include "core/object/class_db.h"
 #include "core/os/memory.h"
 
 extern "C" {

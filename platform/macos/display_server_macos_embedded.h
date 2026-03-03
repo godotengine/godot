@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_embedded.h                                             */
+/*  display_server_macos_embedded.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -40,7 +40,7 @@ class NativeMenu;
 class RenderingContextDriver;
 class RenderingDevice;
 
-struct DisplayServerEmbeddedState {
+struct DisplayServerMacOSEmbeddedState {
 	/*! Default to a scale of 2.0, which is the most common. */
 	float screen_max_scale = 2.0f;
 	float screen_dpi = 96.0f;
@@ -49,18 +49,24 @@ struct DisplayServerEmbeddedState {
 	/*! The display ID of the window which is displaying the embedded process content. */
 	uint32_t display_id = -1;
 
+	/*! The current maximum EDR value for the display. */
+	double screen_max_edr = 1.0;
+	/*! The maximum possible EDR value for the display. */
+	double screen_max_potential_edr = 1.0;
+
 	void serialize(PackedByteArray &r_data);
 	Error deserialize(const PackedByteArray &p_data);
 
-	_FORCE_INLINE_ bool operator==(const DisplayServerEmbeddedState &p_other) const {
-		return screen_max_scale == p_other.screen_max_scale && screen_dpi == p_other.screen_dpi && display_id == p_other.display_id;
+	_FORCE_INLINE_ bool operator==(const DisplayServerMacOSEmbeddedState &p_other) const {
+		return screen_max_scale == p_other.screen_max_scale && screen_dpi == p_other.screen_dpi && screen_window_scale == p_other.screen_window_scale && display_id == p_other.display_id && screen_max_edr == p_other.screen_max_edr && screen_max_potential_edr == p_other.screen_max_potential_edr;
 	}
 };
 
-class DisplayServerEmbedded : public DisplayServerMacOSBase {
-	GDSOFTCLASS(DisplayServerEmbedded, DisplayServerMacOSBase)
+/// "Embedded" as in "Embedded in the Godot editor window".
+class DisplayServerMacOSEmbedded : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerMacOSEmbedded, DisplayServerMacOSBase)
 
-	DisplayServerEmbeddedState state;
+	DisplayServerMacOSEmbeddedState state;
 
 	NativeMenu *native_menu = nullptr;
 
@@ -82,24 +88,16 @@ class DisplayServerEmbedded : public DisplayServerMacOSBase {
 	GLManagerEmbedded *gl_manager = nullptr;
 #endif
 
-#if defined(RD_ENABLED)
-	RenderingContextDriver *rendering_context = nullptr;
-	RenderingDevice *rendering_device = nullptr;
-#endif
-
 	String rendering_driver;
 
+	HDROutput hdr_output;
+
+	HDROutput &_get_hdr_output(WindowID p_window) override;
+	const HDROutput &_get_hdr_output(WindowID p_window) const override;
+
 	Point2i ime_last_position;
-	Point2i im_selection;
-	String im_text;
 
-	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
-	bool mouse_mode_override_enabled = false;
-	void _mouse_update_mode();
-
-	CursorShape cursor_shape = CURSOR_ARROW;
+	void _mouse_apply_mode(MouseMode p_prev_mode, MouseMode p_new_mode) override;
 
 	struct Joy {
 		String name;
@@ -134,16 +132,7 @@ public:
 	void send_window_event(DisplayServer::WindowEvent p_event, DisplayServer::WindowID p_id = MAIN_WINDOW_ID) const;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
-	virtual void beep() const override;
-
 	// MARK: - Mouse
-	virtual void mouse_set_mode(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode() const override;
-	virtual void mouse_set_mode_override(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode_override() const override;
-	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
-	virtual bool mouse_is_mode_override_enabled() const override;
-
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
@@ -154,14 +143,11 @@ public:
 	virtual String get_name() const override;
 
 	virtual int get_screen_count() const override;
-	virtual int get_primary_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
@@ -216,17 +202,15 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
-	void update_im_text(const Point2i &p_selection, const String &p_text);
-	virtual Point2i ime_get_selection() const override;
-	virtual String ime_get_text() const override;
-
 	virtual void cursor_set_shape(CursorShape p_shape) override;
-	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
-	void set_state(const DisplayServerEmbeddedState &p_state);
+	void window_get_edr_values(WindowID p_window, CGFloat *r_max_potential_edr_value, CGFloat *r_max_edr_value) const override;
+	void update_screen_parameters();
+
+	void set_state(const DisplayServerMacOSEmbeddedState &p_state);
 	virtual void swap_buffers() override;
 
-	DisplayServerEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
-	~DisplayServerEmbedded();
+	DisplayServerMacOSEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	~DisplayServerMacOSEmbedded();
 };

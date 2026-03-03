@@ -30,9 +30,11 @@
 
 #include "canvas_layer.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void CanvasLayer::set_layer(int p_xform) {
 	layer = p_xform;
@@ -337,7 +339,7 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 
 	ADD_GROUP("Layer", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_LAYER_MIN) + "," + itos(RSE::CANVAS_LAYER_MAX) + ",1"), "set_layer", "get_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");

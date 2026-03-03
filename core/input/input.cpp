@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 #ifdef DEV_ENABLED

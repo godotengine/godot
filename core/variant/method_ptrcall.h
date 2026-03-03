@@ -270,9 +270,32 @@ struct PtrToArg<const T *> {
 	}
 };
 
+// This is for Ref.
+
+template <typename T>
+struct PtrToArg<Ref<T>> {
+	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
+		// p_ptr points to a RefCounted object
+		return Ref<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+
+	typedef Ref<T> EncodeT;
+
+	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
+		// p_ptr points to an EncodeT object which is a Ref<T> object.
+		*(const_cast<Ref<T> *>(reinterpret_cast<const Ref<T> *>(p_ptr))) = p_val;
+	}
+};
+
 // This is for RequiredParam.
 
-template <class T>
+template <typename T>
+class RequiredParam;
+
+template <typename T>
 struct PtrToArg<RequiredParam<T>> {
 	typedef typename RequiredParam<T>::persistent_type EncodeT;
 
@@ -290,7 +313,10 @@ struct PtrToArg<RequiredParam<T>> {
 
 // This is for RequiredResult.
 
-template <class T>
+template <typename T>
+class RequiredResult;
+
+template <typename T>
 struct PtrToArg<RequiredResult<T>> {
 	typedef typename RequiredResult<T>::ptr_type EncodeT;
 

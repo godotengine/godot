@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"

@@ -35,6 +35,7 @@
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "servers/display/display_server.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -476,6 +477,7 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
+	LocalVector<ObjectID> hdr_viewports;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -497,8 +499,6 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
-
-	bool _should_display_update_spinner() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
@@ -641,7 +641,6 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
-	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -943,6 +942,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void register_hdr_viewport(Viewport *p_viewport);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -1045,6 +1045,7 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
+	bool is_scene_unsaved(int p_idx);
 };
 
 struct EditorProgressBG {

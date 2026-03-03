@@ -81,6 +81,7 @@ class EditorPropertyVariant : public EditorProperty {
 
 	void _change_type(int p_to_type);
 	void _popup_edit_menu();
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -404,6 +405,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyInteger();
@@ -413,6 +415,8 @@ class EditorPropertyObjectID : public EditorProperty {
 	GDCLASS(EditorPropertyObjectID, EditorProperty);
 	Button *edit = nullptr;
 	String base_type;
+
+	ObjectID _get_object_id() const;
 	void _edit_pressed();
 
 protected:
@@ -455,6 +459,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyFloat();

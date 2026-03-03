@@ -33,8 +33,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/string/string_builder.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_include_db.h"
 
 #define ENABLE_SHADER_CACHE 1
@@ -434,9 +434,9 @@ Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int 
 	return _build_variant_stage_sources(p_variant, compile_data);
 }
 
-RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
+RenderingServerTypes::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	RS::ShaderNativeSourceCode source_code;
+	RenderingServerTypes::ShaderNativeSourceCode source_code;
 	ERR_FAIL_NULL_V(version, source_code);
 
 	MutexLock lock(*version->mutex);
@@ -450,7 +450,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_VERTEX]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
@@ -463,7 +463,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 
@@ -476,7 +476,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_COMPUTE]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "compute";
 			stage.code = builder.as_string();
 
@@ -489,7 +489,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_RAYGEN]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "raygen";
 			stage.code = builder.as_string();
 
@@ -501,7 +501,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_ANY_HIT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "any_hit";
 			stage.code = builder.as_string();
 
@@ -513,7 +513,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_CLOSEST_HIT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "closest_hit";
 			stage.code = builder.as_string();
 
@@ -525,7 +525,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_MISS]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "miss";
 			stage.code = builder.as_string();
 
@@ -537,7 +537,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_INTERSECTION]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "intersection";
 			stage.code = builder.as_string();
 

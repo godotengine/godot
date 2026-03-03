@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectFilter" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a filter to the audio bus.
+		Base class for filters. Use effects that inherit this class instead of using it directly.
 	</brief_description>
 	<description>
-		Allows frequencies other than the [member cutoff_hz] to pass.
+		A "filter" controls the gain of frequencies, using [member cutoff_hz] as a frequency threshold. Filters can help to give room for each sound, and create interesting effects.
+		There are different types of filter that inherit this class:
+		Shelf filters: [AudioEffectLowShelfFilter] and [AudioEffectHighShelfFilter]
+		Band-pass and notch filters: [AudioEffectBandPassFilter], [AudioEffectBandLimitFilter], and [AudioEffectNotchFilter]
+		Low/high-pass filters: [AudioEffectLowPassFilter] and [AudioEffectHighPassFilter]
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 	</tutorials>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" default="2000.0">
-			Threshold frequency for the filter, in Hz.
+			Frequency threshold for the filter, in Hz. Value can range from 1 to 20500.
 		</member>
 		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB" default="0">
-			Steepness of the cutoff curve in dB per octave, also known as the order of the filter. Higher orders have a more aggressive cutoff.
+			Steepness of the cutoff curve in dB per octave (twice the frequency above [member cutoff_hz], or half the frequency below [member cutoff_hz]), also known as the "order" of the filter. Higher orders have a more aggressive cutoff.
 		</member>
 		<member name="gain" type="float" setter="set_gain" getter="get_gain" default="1.0">
-			Gain amount of the frequencies after the filter.
+			Gain of the frequencies affected by the filter. This property is only available for [AudioEffectLowShelfFilter] and [AudioEffectHighShelfFilter]. Value can range from 0 to 4.
 		</member>
 		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance" default="0.5">
-			Amount of boost in the frequency range near the cutoff frequency.
+			Gain at or directly next to the [member cutoff_hz] frequency threshold. Value can range from 0 to 1.
+			Its exact behavior depends on the selected filter type:
+			- For shelf filters, it accentuates or masks the order by increasing frequencies right next to the [member cutoff_hz] frequency and decreasing frequencies on the opposite side.
+			- For the band-pass and notch filters, it widens or narrows the filter at the [member cutoff_hz] frequency threshold.
+			- For low/high-pass filters, it increases or decreases frequencies at the [member cutoff_hz] frequency threshold.
 		</member>
 	</members>
 	<constants>
 		<constant name="FILTER_6DB" value="0" enum="FilterDB">
-			Cutting off at 6dB per octave.
+			Cutting off at 6 dB per octave. One octave is twice the frequency above [member cutoff_hz], or half the frequency below [member cutoff_hz].
 		</constant>
 		<constant name="FILTER_12DB" value="1" enum="FilterDB">
-			Cutting off at 12dB per octave.
+			Cutting off at 12 dB per octave. One octave is twice the frequency above [member cutoff_hz], or half the frequency below [member cutoff_hz].
 		</constant>
 		<constant name="FILTER_18DB" value="2" enum="FilterDB">
-			Cutting off at 18dB per octave.
+			Cutting off at 18 dB per octave. One octave is twice the frequency above [member cutoff_hz], or half the frequency below [member cutoff_hz].
 		</constant>
 		<constant name="FILTER_24DB" value="3" enum="FilterDB">
-			Cutting off at 24dB per octave.
+			Cutting off at 24 dB per octave. One octave is twice the frequency above [member cutoff_hz], or half the frequency below [member cutoff_hz].
 		</constant>
 	</constants>
 </class>

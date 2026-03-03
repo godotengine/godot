@@ -163,7 +163,7 @@ private:
 	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
-	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
+	bool has_func_name(RSE::ShaderMode p_mode, const String &p_func_name) const;
 
 	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
 

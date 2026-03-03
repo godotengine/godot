@@ -36,6 +36,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
@@ -106,6 +107,7 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/rendering/rendering_server.h"
 
 constexpr real_t DISTANCE_DEFAULT = 4;
 
@@ -2692,6 +2694,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", event_mod)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
+			times_focused_consecutively += 1;
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", event_mod)) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
@@ -2873,6 +2876,8 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 	translation *= cursor.distance / DISTANCE_DEFAULT;
 	camera_transform.translate_local(translation);
 	cursor.pos = camera_transform.origin;
+
+	_disable_follow_mode();
 }
 
 void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
@@ -3181,6 +3186,8 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 	const Vector3 motion = direction * speed * delta;
 	cursor.pos += motion;
 	cursor.eye_pos += motion;
+
+	_disable_follow_mode();
 }
 
 void Node3DEditorViewport::set_message(const String &p_message, float p_time) {
@@ -3224,10 +3231,6 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
 	viewport->set_transparent_background(transparent_background);
-
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
@@ -3383,6 +3386,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			_update_freelook(delta);
+
+			if (focused_node_id.is_valid() && get_selected_count() > 0 && times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0) {
+				Node *focused_node = ObjectDB::get_instance<Node>(focused_node_id);
+				if (focused_node) {
+					follow_mode->set_text(vformat(TTR("Following %s"), focused_node->get_name()));
+					follow_mode->set_button_icon(get_editor_theme_icon(focused_node->get_class()));
+					follow_mode->show();
+					focus_selection();
+				} else {
+					_disable_follow_mode();
+				}
+			} else {
+				follow_mode->hide();
+			}
 
 			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
 			if (previewing_cinema && scene_root != nullptr) {
@@ -3679,6 +3696,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			override_label_colors(view_display_menu);
 			override_button_stylebox(translation_preview_button, information_3d_stylebox);
 			override_label_colors(translation_preview_button);
+			override_button_stylebox(follow_mode, information_3d_stylebox);
+			override_label_colors(follow_mode);
 			override_button_stylebox(preview_camera, information_3d_stylebox);
 			override_label_colors(preview_camera);
 
@@ -4087,6 +4106,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_CENTER_TO_ORIGIN: {
 			cursor.pos = Vector3(0, 0, 0);
+			_disable_follow_mode();
 
 		} break;
 		case VIEW_CENTER_TO_SELECTION: {
@@ -4460,37 +4480,37 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 		move_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
 		RS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 		scale_gizmo_instance[i] = RS::get_singleton()->instance_create();
 		RS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(scale_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 		scale_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
 		RS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 		axis_gizmo_instance[i] = RS::get_singleton()->instance_create();
 	}
@@ -4499,10 +4519,10 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(axis_gizmo_instance[i], true);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(axis_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 
 	for (int i = 0; i < 4; i++) {
@@ -4510,10 +4530,10 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 
 	// Create trackball sphere instance
@@ -4521,10 +4541,10 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 	RS::get_singleton()->instance_set_base(trackball_sphere_instance, spatial_editor->get_trackball_sphere_gizmo()->get_rid());
 	RS::get_singleton()->instance_set_scenario(trackball_sphere_instance, get_tree()->get_root()->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_set_visible(trackball_sphere_instance, false);
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(trackball_sphere_instance, RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(trackball_sphere_instance, RSE::SHADOW_CASTING_SETTING_OFF);
 	RS::get_singleton()->instance_set_layer_mask(trackball_sphere_instance, layer);
-	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
@@ -4541,6 +4561,11 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 	RS::get_singleton()->free_rid(rotate_gizmo_instance[3]);
 
 	RS::get_singleton()->free_rid(trackball_sphere_instance);
+}
+
+void Node3DEditorViewport::_disable_follow_mode() {
+	// Exit follow mode by resetting the number of times the follow shortcut was used consecutively.
+	times_focused_consecutively = 0;
 }
 
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
@@ -4967,6 +4992,10 @@ void Node3DEditorViewport::focus_selection() {
 	int count = 0;
 
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	focused_node_id = ObjectID();
+	if (!selection.is_empty()) {
+		focused_node_id = selection.front()->get()->get_instance_id();
+	}
 
 	for (Node *node : selection) {
 		Node3D *node_3d = Object::cast_to<Node3D>(node);
@@ -6394,6 +6423,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_separator();
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
+	view_display_menu->get_popup()->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
 	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
@@ -6420,6 +6450,12 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	translation_preview_button = memnew(EditorTranslationPreviewButton);
 	hbox->add_child(translation_preview_button);
+
+	follow_mode = memnew(Button);
+	follow_mode->set_tooltip_text(TTR("Click to stop following this node as it moves."));
+	follow_mode->hide();
+	vbox->add_child(follow_mode);
+	follow_mode->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditorViewport::_disable_follow_mode));
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTRC("Preview"));
@@ -6620,6 +6656,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
+
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
@@ -6648,8 +6686,8 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 			int mid_w = size.width * ratio_h;
 			int mid_h = size.height * ratio_v;
 
-			dragging_h = mb->get_position().x > (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
-			dragging_v = mb->get_position().y > (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
+			dragging_h = mb->get_position().x >= (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
+			dragging_v = mb->get_position().y >= (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
 
 			drag_begin_pos = mb->get_position();
 			drag_begin_ratio.x = ratio_h;
@@ -6696,8 +6734,8 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 			bool was_hovering_h = hovering_h;
 			bool was_hovering_v = hovering_v;
-			hovering_h = mm->get_position().x > (mid_w - h_sep / 2) && mm->get_position().x < (mid_w + h_sep / 2);
-			hovering_v = mm->get_position().y > (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
+			hovering_h = mm->get_position().x >= (mid_w - h_sep / 2) && mm->get_position().x < (mid_w + h_sep / 2);
+			hovering_v = mm->get_position().y >= (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
 
 			if (was_hovering_h != hovering_h || was_hovering_v != hovering_v) {
 				queue_redraw();
@@ -7083,18 +7121,18 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
-			RS::SHADOW_CASTING_SETTING_OFF);
+			RSE::SHADOW_CASTING_SETTING_OFF);
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_offset,
-			RS::SHADOW_CASTING_SETTING_OFF);
+			RSE::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	si->sbox_instance_xray = RenderingServer::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
@@ -7103,18 +7141,18 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray,
-			RS::SHADOW_CASTING_SETTING_OFF);
+			RSE::SHADOW_CASTING_SETTING_OFF);
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray_offset,
-			RS::SHADOW_CASTING_SETTING_OFF);
+			RSE::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
 	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 	return si;
 }
@@ -7866,17 +7904,17 @@ void fragment() {
 		origin_points.set(5, Vector3(0.0, 0.5, 0.0));
 
 		Array d;
-		d.resize(RS::ARRAY_MAX);
-		d[RenderingServer::ARRAY_VERTEX] = origin_points;
+		d.resize(RSE::ARRAY_MAX);
+		d[RSE::ARRAY_VERTEX] = origin_points;
 
 		origin_mesh = RenderingServer::get_singleton()->mesh_create();
 
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RenderingServer::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RSE::PRIMITIVE_TRIANGLES, d);
 		RenderingServer::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
 
 		origin_multimesh = RenderingServer::get_singleton()->multimesh_create();
 		RenderingServer::get_singleton()->multimesh_set_mesh(origin_multimesh, origin_mesh);
-		RenderingServer::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RS::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
+		RenderingServer::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RSE::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
 		RenderingServer::get_singleton()->multimesh_set_visible_instances(origin_multimesh, -1);
 
 		LocalVector<float> distances;
@@ -7923,10 +7961,10 @@ void fragment() {
 
 		origin_instance = RenderingServer::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RSE::SHADOW_CASTING_SETTING_OFF);
 
 		Ref<Shader> grid_shader = memnew(Shader);
 		grid_shader->set_code(R"(
@@ -8655,20 +8693,20 @@ void Node3DEditor::_init_grid() {
 		// Create a mesh from the pushed vector points and colors.
 		grid[c] = RenderingServer::get_singleton()->mesh_create();
 		Array d;
-		d.resize(RS::ARRAY_MAX);
-		d[RenderingServer::ARRAY_VERTEX] = (Vector<Vector3>)grid_points[c];
-		d[RenderingServer::ARRAY_COLOR] = (Vector<Color>)grid_colors[c];
-		d[RenderingServer::ARRAY_NORMAL] = (Vector<Vector3>)grid_normals[c];
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], RenderingServer::PRIMITIVE_LINES, d);
+		d.resize(RSE::ARRAY_MAX);
+		d[RSE::ARRAY_VERTEX] = (Vector<Vector3>)grid_points[c];
+		d[RSE::ARRAY_COLOR] = (Vector<Color>)grid_colors[c];
+		d[RSE::ARRAY_NORMAL] = (Vector<Vector3>)grid_normals[c];
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], RSE::PRIMITIVE_LINES, d);
 		RenderingServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
 		grid_instance[c] = RenderingServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
 
 		// Yes, the end of this line is supposed to be a.
 		RenderingServer::get_singleton()->instance_set_visible(grid_instance[c], grid_visible[a]);
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[c], RS::SHADOW_CASTING_SETTING_OFF);
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[c], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(grid_instance[c], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
-		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 }
 
@@ -9145,11 +9183,14 @@ void Node3DEditor::_update_theme() {
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			tool_button[TOOL_MODE_TRANSFORM]->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
-			tool_button[TOOL_MODE_MOVE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
+			const String show_list_tooltip = TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.");
+			tool_button[TOOL_MODE_TRANSFORM]->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
+			tool_button[TOOL_MODE_MOVE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
+			tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
+			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
+			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(show_list_tooltip);
+			tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + show_list_tooltip);
+			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + show_list_tooltip);
 			_update_gizmos_menu();
 		} break;
 
@@ -10016,7 +10057,8 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTRC("Show list of selectable nodes at position clicked."));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_accessibility_name(TTRC("Show List of Selectable Nodes"));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);

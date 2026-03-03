@@ -32,6 +32,8 @@
 #include "tile_map.compat.inc"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
