@@ -1283,6 +1283,16 @@ void VisualServerCanvas::canvas_item_add_texture_multirect_region(RID p_item, co
 	rect->sources = p_src_rects;
 
 	canvas_item->rect_dirty = true;
+
+	// Precalculate bound as a one off, so it doesn't need to be done every frame.
+	int num_rects = p_rects.size();
+	if (num_rects) {
+		rect->bound = p_rects[0];
+		for (int n = 1; n < num_rects; n++) {
+			rect->bound = p_rects[n].merge(rect->bound);
+		}
+	}
+
 	canvas_item->commands.push_back(rect);
 }
 
