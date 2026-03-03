@@ -30,6 +30,8 @@
 
 #include "gdscript_analyzer.h"
 
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "gdscript.h"
 #include "gdscript_utility_callable.h"
 #include "gdscript_utility_functions.h"
@@ -961,8 +963,27 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				push_error(R"(Typed dictionaries require exactly two collection element types.)", p_type);
 				return bad_type;
 			}
+
+		/// [Monarch] Bind those type arguments to the generic parameters.
+		} else if(result.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+			int expected_arg_count = result.class_type->generic_parameters.size();
+			int got = p_type -> container_types.size();
+
+			if(got != expected_arg_count) {
+				push_error(vformat(R"([Reginleif] The type %s is generic over %d argument(s), but during instantiation, %d argument(s) were provided.)", first, expected_arg_count, got));
+				return bad_type;
+			}
+
+			///
+			for(int i = 0; i < got; i++) {
+				GDScriptParser::TypeNode* contained_type = p_type->container_types[i];
+				GDScriptParser::DataType arg_type = type_from_metatype(resolve_datatype(contained_type));
+				StringName param_name = result.class_type->generic_parameters[i]->name;
+				result.generic_type_bindings[param_name] = arg_type;
+			}
+
 		} else {
-			push_error(R"(Only arrays and dictionaries can specify collection element types.)", p_type);
+			push_error(R"([Reginleif] Only arrays, dictionaries and generic classes can specify type arguments.)", p_type);
 			return bad_type;
 		}
 	}

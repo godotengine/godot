@@ -142,8 +142,10 @@ public:
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
 
-		// [Monarch] Reginleif addition. A dedicated generic parameter field!
+		/// [Monarch] Reginleif addition. A dedicated generic parameter field!
 		StringName generic_param;
+		/// [Monarch] Reginleif addition. Stores concrete type argument bindings for generic classes.
+		HashMap<StringName, DataType> generic_type_bindings;
 
 		_FORCE_INLINE_ bool is_set() const { return kind != RESOLVING && kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool is_resolving() const { return kind == RESOLVING; }
