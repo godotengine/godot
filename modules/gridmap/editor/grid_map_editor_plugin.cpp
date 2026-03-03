@@ -1334,8 +1334,8 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			if (input_action == INPUT_PAINT) {
-				// Simulate mouse released event to stop drawing when editor focus exists.
+			if (input_action == INPUT_PAINT || input_action == INPUT_ERASE || input_action == INPUT_SELECT) {
+				// Simulate mouse released event to stop drawing when editor focus exits.
 				Ref<InputEventMouseButton> release;
 				release.instantiate();
 				release->set_button_index(MouseButton::LEFT);
