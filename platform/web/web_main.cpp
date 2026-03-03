@@ -35,6 +35,7 @@
 #include "core/config/engine.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "scene/main/scene_tree.h"

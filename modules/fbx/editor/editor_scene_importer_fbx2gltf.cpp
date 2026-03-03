@@ -31,6 +31,7 @@
 #include "editor_scene_importer_fbx2gltf.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "editor_scene_importer_ufbx.h"
 

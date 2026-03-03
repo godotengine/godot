@@ -35,6 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
+#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>

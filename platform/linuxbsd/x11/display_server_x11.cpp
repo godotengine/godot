@@ -40,6 +40,7 @@
 #include "core/math/math_funcs.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"

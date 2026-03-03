@@ -30,8 +30,6 @@
 
 #include "text_server_fb.h"
 
-#include "core/object/callable_method_pointer.h"
-
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -40,6 +38,7 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/translation_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/variant/callable_method_pointer.hpp>
 
 #define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
 
@@ -53,6 +52,8 @@ using namespace godot;
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 

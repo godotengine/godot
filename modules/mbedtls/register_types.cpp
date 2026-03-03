@@ -36,6 +36,7 @@
 #include "stream_peer_mbedtls.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 
 #if MBEDTLS_VERSION_MAJOR >= 3
 #include <psa/crypto.h>
