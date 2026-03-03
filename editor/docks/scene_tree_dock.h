@@ -157,7 +157,6 @@ class SceneTreeDock : public EditorDock {
 	Label *delete_dialog_label = nullptr;
 	CheckBox *delete_tracks_checkbox = nullptr;
 	ConfirmationDialog *editable_instance_remove_dialog = nullptr;
-	ConfirmationDialog *revoke_node_exposure_dialog = nullptr;
 	ConfirmationDialog *placeholder_editable_instance_remove_dialog = nullptr;
 
 	ReparentDialog *reparent_dialog = nullptr;
