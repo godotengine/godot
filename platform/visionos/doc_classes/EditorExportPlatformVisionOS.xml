@@ -21,7 +21,8 @@
 			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
 		<member name="application/bundle_identifier" type="String" setter="" getter="">
-			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			Unique application identifier. Case-insensitive. Can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			Apple recommends using reverse-DNS format (e.g. com.example) of a domain you own, so that your bundle ID is guaranteed to be unique. See [url=https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleidentifier]CFBundleIdentifier[/url].
 		</member>
 		<member name="application/code_sign_identity_debug" type="String" setter="" getter="">
 			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used for debug export.
