@@ -2067,10 +2067,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Node *scene_root = get_tree()->get_edited_scene_root();
 
 	const bool member_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
-	const bool export_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
+	const bool export_drop_modifier_pressed = !member_drop_modifier_pressed && Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
+	const String indentation = line.left(MIN(drop_at_column, te->get_first_non_whitespace_column(drop_at_line)));
 
 	if (selection_index < 0) {
 		is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
@@ -2101,15 +2102,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				text_to_drop = _get_dropped_resource_as_member(resource, is_empty_line, allow_uid);
 			}
 		} else if (export_drop_modifier_pressed) {
+			add_new_line = true;
 			Vector<ObjectID> obj_ids = _get_objects_for_export_assignment();
 			text_to_drop = _get_dropped_resource_as_exported_member(resource, obj_ids);
-
 		} else {
 			text_to_drop = _quote_drop_data(path);
-		}
-
-		if (is_empty_line) {
-			text_to_drop += "\n";
 		}
 	}
 
@@ -2137,20 +2134,16 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 		}
 		String join_string;
-		if (is_empty_line) {
-			int indent_level = te->get_indent_level(drop_at_line);
-			if (te->is_indent_using_spaces()) {
-				join_string = "\n" + String(" ").repeat(indent_level);
-			} else {
-				join_string = "\n" + String("\t").repeat(indent_level / te->get_tab_size());
-			}
+		if (export_drop_modifier_pressed) {
+			// Export modifiers must be on separate lines and cannot be indented.
+			join_string = "\n";
+			add_new_line = true;
+		} else if (is_empty_line) {
+			join_string = "\n" + indentation;
 		} else {
 			join_string = ", ";
 		}
 		text_to_drop = join_string.join(parts);
-		if (is_empty_line) {
-			text_to_drop += join_string;
-		}
 	}
 
 	if (type == "nodes") {
@@ -2174,7 +2167,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		if (member_drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
-			add_new_line = !is_empty_line && drop_at_column != 0;
+			add_new_line = true;
 
 			for (int i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];
@@ -2209,11 +2202,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					text_to_drop += "\n";
 				}
 			}
-
-			if (is_empty_line || drop_at_column == 0) {
-				text_to_drop += "\n";
-			}
 		} else if (export_drop_modifier_pressed) {
+			add_new_line = true;
 			Vector<ObjectID> obj_ids = _get_objects_for_export_assignment();
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2231,7 +2221,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					node_script = node_script->get_base_script();
 				}
 				const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
-				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
+				text_to_drop += vformat("@export var %s: %s", variable_name, class_name);
+				if (i < nodes.size() - 1) {
+					text_to_drop += "\n";
+				}
 
 				for (ObjectID obj_id : obj_ids) {
 					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node, class_name });
@@ -2283,10 +2276,18 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->remove_secondary_carets();
 	te->deselect();
 	te->set_caret_line(drop_at_line);
-	if (add_new_line) {
+	if (add_new_line && drop_at_column != 0) {
+		// Drop the text on a new line after the drop at line.
 		te->set_caret_column(te->get_line(drop_at_line).length());
 		text_to_drop = "\n" + text_to_drop;
 	} else {
+		if (add_new_line) {
+			// Drop the text on a new line before the drop at line.
+			text_to_drop += "\n";
+		} else if (is_empty_line) {
+			// Add new empty line after dropped text.
+			text_to_drop += "\n" + indentation;
+		}
 		te->set_caret_column(drop_at_column);
 	}
 	te->insert_text_at_caret(text_to_drop);
