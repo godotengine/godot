@@ -390,6 +390,9 @@ private:
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
 
+	Ref<ConfigFile> main_editor_layout;
+	bool new_layout_created = false;
+
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
@@ -657,6 +660,7 @@ private:
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
 
+	void _ensure_editor_layout();
 	void _save_editor_layout();
 	void _load_editor_layout();
 
@@ -988,6 +992,8 @@ public:
 
 	bool is_scene_in_use(const String &p_path);
 
+	Ref<ConfigFile> get_editor_layout_file();
+	void save_editor_layout_file();
 	void save_editor_layout_delayed();
 	void save_default_environment();
 

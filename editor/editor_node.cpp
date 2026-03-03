@@ -5581,6 +5581,16 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
+Ref<ConfigFile> EditorNode::get_editor_layout_file() {
+	_ensure_editor_layout();
+	return main_editor_layout;
+}
+
+void EditorNode::save_editor_layout_file() {
+	ERR_FAIL_COND_MSG(main_editor_layout.is_null(), "Editor layout isn't loaded.");
+	main_editor_layout->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+}
+
 OS::ProcessID EditorNode::has_child_process(OS::ProcessID p_pid) const {
 	return project_run_bar->has_child_process(p_pid);
 }
@@ -6186,22 +6196,28 @@ void EditorNode::_copy_warning(const String &p_str) {
 	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
 }
 
+void EditorNode::_ensure_editor_layout() {
+	if (main_editor_layout.is_valid()) {
+		return;
+	}
+	main_editor_layout.instantiate();
+	Error err = main_editor_layout->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	new_layout_created = (err != OK);
+}
+
 void EditorNode::_save_editor_layout() {
 	if (!load_editor_layout_done) {
 		return;
 	}
-	Ref<ConfigFile> config;
-	config.instantiate();
-	// Load and amend existing config if it exists.
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	_ensure_editor_layout();
 
-	editor_dock_manager->save_docks_to_config(config, "docks");
-	_save_open_scenes_to_config(config);
-	_save_central_editor_layout_to_config(config);
-	_save_window_settings_to_config(config, "EditorWindow");
-	editor_data.get_plugin_window_layout(config);
+	editor_dock_manager->save_docks_to_config(main_editor_layout, "docks");
+	_save_open_scenes_to_config(main_editor_layout);
+	_save_central_editor_layout_to_config(main_editor_layout);
+	_save_window_settings_to_config(main_editor_layout, "EditorWindow");
+	editor_data.get_plugin_window_layout(main_editor_layout);
 
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	save_editor_layout_file();
 }
 
 void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout) {
@@ -6226,10 +6242,8 @@ void EditorNode::save_editor_layout_delayed() {
 void EditorNode::_load_editor_layout() {
 	EditorProgress ep("loading_editor_layout", TTR("Loading editor"), 5);
 	ep.step(TTR("Loading editor layout..."), 0, true);
-	Ref<ConfigFile> config;
-	config.instantiate();
-	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-	if (err != OK) { // No config.
+	_ensure_editor_layout();
+	if (new_layout_created) {
 		// If config is not found, expand the res:// folder and favorites by default.
 		TreeItem *root = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("res://", 0);
 		if (root) {
@@ -6248,18 +6262,19 @@ void EditorNode::_load_editor_layout() {
 			// Initialize some default values.
 			bottom_panel->load_layout_from_config(default_layout, EDITOR_NODE_CONFIG_SECTION);
 		}
+		new_layout_created = false;
 	} else {
 		ep.step(TTR("Loading docks..."), 1, true);
-		editor_dock_manager->load_docks_from_config(config, "docks", true);
+		editor_dock_manager->load_docks_from_config(main_editor_layout, "docks", true);
 
 		ep.step(TTR("Reopening scenes..."), 2, true);
-		_load_open_scenes_from_config(config);
+		_load_open_scenes_from_config(main_editor_layout);
 
 		ep.step(TTR("Loading central editor layout..."), 3, true);
-		_load_central_editor_layout_from_config(config);
+		_load_central_editor_layout_from_config(main_editor_layout);
 
 		ep.step(TTR("Loading plugin window layout..."), 4, true);
-		editor_data.set_plugin_window_layout(config);
+		editor_data.set_plugin_window_layout(main_editor_layout);
 
 		ep.step(TTR("Editor layout ready."), 5, true);
 	}
@@ -6372,16 +6387,11 @@ bool EditorNode::has_scenes_in_session() {
 	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return false;
 	}
-	Ref<ConfigFile> config;
-	config.instantiate();
-	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-	if (err != OK) {
+	_ensure_editor_layout();
+	if (!main_editor_layout->has_section(EDITOR_NODE_CONFIG_SECTION) || !main_editor_layout->has_section_key(EDITOR_NODE_CONFIG_SECTION, "open_scenes")) {
 		return false;
 	}
-	if (!config->has_section(EDITOR_NODE_CONFIG_SECTION) || !config->has_section_key(EDITOR_NODE_CONFIG_SECTION, "open_scenes")) {
-		return false;
-	}
-	Array scenes = config->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
+	Array scenes = main_editor_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
 	return !scenes.is_empty();
 }
 

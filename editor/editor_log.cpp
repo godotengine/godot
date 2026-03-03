@@ -166,10 +166,7 @@ void EditorLog::_start_state_save_timer() {
 }
 
 void EditorLog::_save_state() {
-	Ref<ConfigFile> config;
-	config.instantiate();
-	// Load and amend existing config if it exists.
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	Ref<ConfigFile> config = EditorNode::get_singleton()->get_editor_layout_file();
 
 	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
@@ -179,15 +176,13 @@ void EditorLog::_save_state() {
 	config->set_value(section, "collapse", collapse);
 	config->set_value(section, "show_search", search_box->is_visible());
 
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	EditorNode::get_singleton()->save_editor_layout_file();
 }
 
 void EditorLog::_load_state() {
 	is_loading_state = true;
 
-	Ref<ConfigFile> config;
-	config.instantiate();
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	const Ref<ConfigFile> config = EditorNode::get_singleton()->get_editor_layout_file();
 
 	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
 	const String section = "editor_log";
