@@ -60,8 +60,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 DisplayServer *DisplayServer::singleton = nullptr;
 
-bool DisplayServer::hidpi_allowed = false;
-
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
