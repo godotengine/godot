@@ -5890,6 +5890,12 @@
 		</constant>
 		<constant name="MOTION_BLUR_TILE_SIZE_EXTRA_LARGE" value="3" enum="MotionBlurTileSize">
 		</constant>
+		<constant name="MOTION_BLUR_FRAMERATE_MODE_NATIVE" value="0" enum="MotionBlurFramerateMode">
+		</constant>
+		<constant name="MOTION_BLUR_FRAMERATE_MODE_CAPPED" value="1" enum="MotionBlurFramerateMode">
+		</constant>
+		<constant name="MOTION_BLUR_FRAMERATE_MODE_FIXED" value="2" enum="MotionBlurFramerateMode">
+		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.
 		</constant>
