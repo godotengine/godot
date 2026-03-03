@@ -38,6 +38,7 @@ class Button;
 class ConfigFile;
 class Control;
 class EditorDock;
+class MenuButton;
 class PopupMenu;
 class TabBar;
 class TabContainer;
@@ -187,6 +188,7 @@ private:
 	VBoxContainer *dock_select_popup_vb = nullptr;
 
 	Button *make_float_button = nullptr;
+	MenuButton *screen_select_button = nullptr;
 	Button *tab_move_left_button = nullptr;
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
@@ -202,8 +204,10 @@ private:
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
+	void _float_dock_on_screen(int p_screen);
 
 	void _update_buttons();
+	void _update_screen_menu();
 
 protected:
 	void _notification(int p_what);
