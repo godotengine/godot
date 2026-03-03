@@ -1073,13 +1073,14 @@ void Animation::_track_update_hash(int p_track) {
 	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
 	TypeHash thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
 
-	while(true) {
-		// In an astronomically rare cases, multiple
+	while (true) {
+		// Ensure there is one and only one hash for each unique path
+		// In case of a duplicate hash, first check the nodepath. If it is not the same, probe the hash until it is unique
 		if (track_hash_map.has(thash)) {
-			// Hash collision or just the same track
+			// Hash collision, or the same track
 			TrackCacheRef &ref = track_hash_map.get(thash);
-			if(ref.nodepath != track_path) {
-				// Not the same track. Probe the hash.
+			if (ref.nodepath != track_path) {
+				// Not the same track. Check the next probe
 				thash = hash_murmur3_one_32(thash, tracks[p_track]->probe++);
 				continue;
 			} else {

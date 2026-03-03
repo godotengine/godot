@@ -258,7 +258,10 @@ private:
 		NodePath nodepath;
 
 		TrackCacheRef() = default;
-		TrackCacheRef(NodePath path) { ref_counter = 1; nodepath = path; };
+		TrackCacheRef(NodePath path) {
+			ref_counter = 1;
+			nodepath = path;
+		}
 	};
 	static inline AHashMap<TypeHash, TrackCacheRef> track_hash_map;
 
