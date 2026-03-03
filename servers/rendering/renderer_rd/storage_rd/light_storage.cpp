@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
+#include "core/os/os.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"

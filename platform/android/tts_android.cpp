@@ -34,6 +34,7 @@
 #include "os_android.h"
 #include "thread_jandroid.h"
 
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 
 bool TTS_Android::initialized = false;

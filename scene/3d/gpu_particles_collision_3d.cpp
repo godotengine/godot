@@ -33,6 +33,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/viewport.h"

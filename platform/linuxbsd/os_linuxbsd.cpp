@@ -34,13 +34,15 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
-#ifdef SDL_ENABLED
-#include "drivers/sdl/joypad_sdl.h"
-#endif
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"

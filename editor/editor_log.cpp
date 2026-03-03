@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/inspector_dock.h"

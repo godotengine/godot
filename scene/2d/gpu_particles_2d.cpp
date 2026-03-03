@@ -32,6 +32,7 @@
 #include "gpu_particles_2d.compat.inc"
 
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"

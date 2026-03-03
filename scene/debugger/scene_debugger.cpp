@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/array.h"

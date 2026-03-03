@@ -100,6 +100,7 @@
 #endif
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "main/main.h"
 
 #ifdef TOOLS_ENABLED

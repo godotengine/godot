@@ -42,6 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 

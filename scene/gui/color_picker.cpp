@@ -34,6 +34,7 @@
 #include "core/io/image.h"
 #include "core/math/expression.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"

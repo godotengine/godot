@@ -39,6 +39,7 @@
 #include "core/input/input_event.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 

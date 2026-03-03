@@ -33,6 +33,7 @@
 #ifndef WEB_ENABLED
 
 #include "core/io/stream_peer_tls.h"
+#include "core/os/os.h"
 
 CryptoCore::RandomGenerator *WSLPeer::_static_rng = nullptr;
 
