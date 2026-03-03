@@ -53,6 +53,13 @@
 #endif
 #endif
 
+#define ServerName PhysicsServer2D
+#define ServerNameWrapMT PhysicsServer2DWrapMT
+#define server_name physics_server_2d
+#define WRITE_ACTION
+
+#include "servers/server_wrap_mt_common.h"
+
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	GDSOFTCLASS(PhysicsServer2DWrapMT, PhysicsServer2D);
 
@@ -72,13 +79,6 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	void _thread_sync();
 
 public:
-#define ServerName PhysicsServer2D
-#define ServerNameWrapMT PhysicsServer2DWrapMT
-#define server_name physics_server_2d
-#define WRITE_ACTION
-
-#include "servers/server_wrap_mt_common.h"
-
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)

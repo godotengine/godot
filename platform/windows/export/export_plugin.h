@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/file_access.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export_platform_pc.h"
 #include "editor/settings/editor_settings.h"
 
@@ -65,7 +65,7 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);

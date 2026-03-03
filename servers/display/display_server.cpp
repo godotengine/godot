@@ -38,6 +38,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/input/input.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server_headless.h"
@@ -1154,25 +1155,25 @@ bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
 
-void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServer::enable_for_stealing_focus(ProcessID pid) {
 }
 
-Error DisplayServer::embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServer::embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServer::request_close_embedded_process(ProcessID p_pid) {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServer::remove_embedded_process(ProcessID p_pid) {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
 
-OS::ProcessID DisplayServer::get_focused_process_id() {
+ProcessID DisplayServer::get_focused_process_id() {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return 0;
 }

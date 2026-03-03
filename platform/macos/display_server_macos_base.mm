@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "drivers/png/png_driver_common.h"
 
 #if defined(RD_ENABLED)
