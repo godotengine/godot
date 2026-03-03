@@ -2846,6 +2846,19 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				}
 			}
 		}
+
+		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+			const Node *source_node = N->get();
+			if (source_node->get_scene_file_path().is_empty()) {
+				continue;
+			}
+
+			NodePath relative_path = get_path_to(source_node);
+			Node *duplicated_node = node->get_node_or_null(relative_path);
+			ERR_CONTINUE(!duplicated_node);
+
+			duplicated_node->data.editable_instance = source_node->data.editable_instance;
+		}
 	}
 
 	if (get_name() != String()) {
