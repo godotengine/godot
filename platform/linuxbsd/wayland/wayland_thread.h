@@ -88,7 +88,7 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/input/input_event.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server_enums.h"
 
@@ -573,7 +573,7 @@ public:
 		// Only a client per PID can create a window.
 		HashMap<int, struct godot_embedded_client *> mapped_clients;
 
-		OS::ProcessID focused_pid = -1;
+		ProcessID focused_pid = -1;
 	};
 
 	struct EmbeddedClientState {
@@ -1204,7 +1204,7 @@ public:
 
 	struct godot_embedding_compositor *get_embedding_compositor();
 
-	OS::ProcessID embedded_compositor_get_focused_pid();
+	ProcessID embedded_compositor_get_focused_pid();
 
 	Error init();
 	void destroy();
