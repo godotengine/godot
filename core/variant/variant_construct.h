@@ -37,6 +37,7 @@
 #include "core/io/compression.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant_internal.h"
 

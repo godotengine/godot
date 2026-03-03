@@ -32,7 +32,7 @@
 
 #include "core/object/object.h"
 #include "core/templates/hash_map.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
