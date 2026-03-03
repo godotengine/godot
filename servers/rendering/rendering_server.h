@@ -183,6 +183,8 @@ public:
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 
+	virtual void material_set_layer_mask(RID p_material, uint32_t p_layer_mask) = 0;
+
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
 
 	virtual void material_set_use_debanding(bool p_enable) = 0;
