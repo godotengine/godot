@@ -72,6 +72,15 @@
 				Fails if it doesn't exist. Use [method has_icon] to check for existence.
 			</description>
 		</method>
+		<method name="clear_sound">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the sound property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_sound] to check for existence.
+			</description>
+		</method>
 		<method name="clear_stylebox">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -211,6 +220,28 @@
 				Returns a list of all unique theme type names for icon properties. Use [method get_type_list] to get a list of all unique theme types.
 			</description>
 		</method>
+		<method name="get_sound" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the sound property defined by [param name] and [param theme_type], if it exists.
+				Returns the engine fallback sound value if the property doesn't exist (see [member ThemeDB.fallback_sound]). Use [method has_sound] to check for existence.
+			</description>
+		</method>
+		<method name="get_sound_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for sound properties defined with [param theme_type]. Use [method get_sound_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_sound_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for sound properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
 		<method name="get_stylebox" qualifiers="const">
 			<return type="StyleBox" />
 			<param index="0" name="name" type="StringName" />
@@ -347,6 +378,15 @@
 				Returns [code]false[/code] if it doesn't exist. Use [method set_icon] to define it.
 			</description>
 		</method>
+		<method name="has_sound" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the sound property defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_sound] to define it.
+			</description>
+		</method>
 		<method name="has_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -440,6 +480,16 @@
 				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_icon] to check for existence, and [method clear_icon] to remove the existing property.
 			</description>
 		</method>
+		<method name="rename_sound">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the sound property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_sound] to check for existence, and [method clear_sound] to remove the existing property.
+			</description>
+		</method>
 		<method name="rename_stylebox">
 			<return type="void" />
 			<param index="0" name="old_name" type="StringName" />
@@ -516,6 +566,15 @@
 				Creates or changes the value of the icon property defined by [param name] and [param theme_type]. Use [method clear_icon] to remove the property.
 			</description>
 		</method>
+		<method name="set_sound">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="sound" type="AudioStream" />
+			<description>
+				Creates or changes the value of the sound property defined by [param name] and [param theme_type]. Use [method clear_sound] to remove the property.
+			</description>
+		</method>
 		<method name="set_stylebox">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -582,7 +641,10 @@
 		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
 			Theme's [StyleBox] item type.
 		</constant>
-		<constant name="DATA_TYPE_MAX" value="6" enum="DataType">
+		<constant name="DATA_TYPE_SOUND" value="6" enum="DataType">
+			Theme's [AudioStream] item type.
+		</constant>
+		<constant name="DATA_TYPE_MAX" value="7" enum="DataType">
 			Maximum value for the DataType enum.
 		</constant>
 	</constants>

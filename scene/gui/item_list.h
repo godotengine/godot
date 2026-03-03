@@ -189,6 +189,10 @@ protected:
 
 		Ref<Texture2D> scroll_hint;
 		Color scroll_hint_color;
+
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
+		Ref<AudioStream> item_selected_disabled_sound;
 	} theme_cache;
 
 	void _notification(int p_what);

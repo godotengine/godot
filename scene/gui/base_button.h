@@ -46,6 +46,12 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+	} theme_cache;
+
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;

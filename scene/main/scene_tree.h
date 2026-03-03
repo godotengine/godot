@@ -41,6 +41,9 @@
 #include <cstdlib>
 
 class ArrayMesh;
+class AudioStream;
+class AudioStreamPlayback;
+class AudioStreamPlayer;
 class InputEvent;
 class Material;
 class MultiplayerAPI;
@@ -80,6 +83,24 @@ public:
 
 	void release_connections();
 };
+
+// class SceneTreeAudioStreamPlayer : public RefCounted {
+// 	GDCLASS(SceneTreeAudioStreamPlayer, RefCounted);
+
+// 	Ref<AudioStream> stream;
+// 	Ref<AudioStreamPlayback> stream_playback;
+
+// protected:
+// 	static void _bind_methods();
+
+// public:
+// 	void set_stream(Ref<AudioStream> p_stream);
+// 	Ref<AudioStream> get_stream() const;
+
+// 	Ref<AudioStreamPlayback> get_stream_playback() const;
+
+// 	SceneTreeAudioStreamPlayer();
+// };
 
 class SceneTree : public MainLoop {
 	_THREAD_SAFE_CLASS_
@@ -212,11 +233,13 @@ private:
 	Ref<Material> debug_paths_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
+	StringName gui_theme_bus;
 
 	void _flush_scene_change();
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
+	// List<Ref<SceneTreeAudioStreamPlayer>> audio_stream_players;
 
 	///network///
 
@@ -233,6 +256,7 @@ private:
 	void node_renamed(Node *p_node);
 	void process_timers(double p_delta, bool p_physics_frame);
 	void process_tweens(double p_delta, bool p_physics_frame);
+	// void process_audio_stream_players(double p_delta);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);

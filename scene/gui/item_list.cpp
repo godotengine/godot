@@ -770,6 +770,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (closest != hovered) {
 			prev_hovered = hovered;
 			hovered = closest;
+			if (hovered != -1 && !items[hovered].disabled) {
+				play_theme_sound(theme_cache.item_hovered_sound);
+			}
 			queue_accessibility_update();
 			queue_redraw();
 		}
@@ -780,41 +783,48 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		int closest = get_item_at_position(mb->get_position(), true);
 
-		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
+		const bool input_can_select = mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT);
+
+		if (closest != -1 && input_can_select) {
 			int i = closest;
 
-			if (items[i].disabled) {
-				// Don't emit any signal or do any action with clicked item when disabled.
-				return;
-			}
+			// Don't emit any signal or do any action with clicked item when disabled (other than playing the "disabled" audio feedback).
+			const bool audio_only = items[i].disabled;
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
+			if (!audio_only && select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
-				// Range selection.
+				if (!audio_only) {
+					// Range selection.
 
-				int from = current;
-				int to = i;
-				if (i < current) {
-					SWAP(from, to);
-				}
-				for (int j = from; j <= to; j++) {
-					if (!CAN_SELECT(j)) {
-						// Item is not selectable during a range selection, so skip it.
-						continue;
+					int from = current;
+					int to = i;
+					if (i < current) {
+						SWAP(from, to);
 					}
-					bool selected = !items[j].selected;
-					select(j, false);
-					if (selected) {
-						emit_signal(SNAME("multi_selected"), j, true);
+					for (int j = from; j <= to; j++) {
+						if (!CAN_SELECT(j)) {
+							// Item is not selectable during a range selection, so skip it.
+							continue;
+						}
+						bool selected = !items[j].selected;
+						select(j, false);
+						if (selected) {
+							emit_signal(SNAME("multi_selected"), j, true);
+						}
 					}
 				}
-				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				if (input_can_select) {
+					play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
+				}
+				if (!audio_only) {
+					emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				}
 
 			} else {
-				if (!mb->is_double_click() &&
+				if (!audio_only && !mb->is_double_click() &&
 						!mb->is_command_or_control_pressed() &&
 						select_mode == SELECT_MULTI &&
 						items[i].selectable &&
@@ -826,35 +836,55 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (select_mode == SELECT_TOGGLE) {
 					if (items[i].selectable) {
-						if (items[i].selected) {
-							deselect(i);
-							current = i;
-							emit_signal(SNAME("multi_selected"), i, false);
-						} else {
-							select(i, false);
-							current = i;
-							emit_signal(SNAME("multi_selected"), i, true);
+						if (!audio_only) {
+							if (items[i].selected) {
+								deselect(i);
+								current = i;
+								emit_signal(SNAME("multi_selected"), i, false);
+							} else {
+								select(i, false);
+								current = i;
+								emit_signal(SNAME("multi_selected"), i, true);
+							}
+						}
+
+						if (input_can_select) {
+							play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 						}
 					}
 				} else if (items[i].selectable && (!items[i].selected || allow_reselect)) {
-					select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
+					if (!audio_only) {
+						select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
+					}
 
-					if (select_mode == SELECT_SINGLE) {
-						emit_signal(SceneStringName(item_selected), i);
-					} else {
-						emit_signal(SNAME("multi_selected"), i, true);
+					if (input_can_select) {
+						play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
+					}
+
+					if (!audio_only) {
+						if (select_mode == SELECT_SINGLE) {
+							emit_signal(SceneStringName(item_selected), i);
+						} else {
+							emit_signal(SNAME("multi_selected"), i, true);
+						}
 					}
 				}
 
-				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				if (!audio_only) {
+					emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
-					emit_signal(SNAME("item_activated"), i);
+					if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+						emit_signal(SNAME("item_activated"), i);
+					}
 				}
 			}
 
 			return;
 		} else if (closest != -1) {
+			if (input_can_select) {
+				play_theme_sound(items[closest].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
+			}
+
 			if (!items[closest].disabled) {
 				emit_signal(SNAME("item_clicked"), closest, get_local_mouse_position(), mb->get_button_index());
 			}
@@ -963,6 +993,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1009,6 +1040,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1069,6 +1101,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1098,6 +1131,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1111,9 +1145,11 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current >= 0 && current < items.size()) {
 				if (CAN_SELECT(current) && !items[current].selected) {
 					select(current, false);
+					play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 					emit_signal(SNAME("multi_selected"), current, true);
 				} else if (items[current].selected) {
 					deselect(current);
+					play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 					emit_signal(SNAME("multi_selected"), current, false);
 				}
 			}
@@ -1121,6 +1157,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current >= 0 && current < items.size() && !items[current].disabled) {
+				play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 				emit_signal(SNAME("item_activated"), current);
 			}
 		} else {
@@ -1154,6 +1191,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					if (items[i].text.findn(search_string) == 0) {
+						play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
@@ -1968,6 +2006,7 @@ void ItemList::_shift_range_select(int p_from, int p_to) {
 		if (i >= MIN(shift_anchor, p_to) && i <= MAX(shift_anchor, p_to)) {
 			if (!is_selected(i)) {
 				select(i, false);
+				play_theme_sound(get_theme_sound(SNAME("focus_sound")));
 				emit_signal(SNAME("multi_selected"), i, true);
 			}
 		} else if (is_selected(i)) {
@@ -2488,6 +2527,10 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_hovered_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_selected_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_selected_disabled_sound);
 
 	Item defaults(true);
 

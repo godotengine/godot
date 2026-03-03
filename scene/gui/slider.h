@@ -77,6 +77,10 @@ private:
 		bool center_grabber = false;
 		int grabber_offset = 0;
 		int tick_offset = 0;
+
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+		Ref<AudioStream> value_changed_sound;
 	} theme_cache;
 
 protected:

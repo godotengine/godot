@@ -42,6 +42,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "scene/animation/tween.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
@@ -146,6 +147,79 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 
 bool SceneTree::_physics_interpolation_enabled = false;
 bool SceneTree::_physics_interpolation_enabled_in_project = false;
+
+// void SceneTreeAudioStreamPlayer::_bind_methods() {
+// 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &SceneTreeAudioStreamPlayer::set_stream);
+// 	ClassDB::bind_method(D_METHOD("get_stream"), &SceneTreeAudioStreamPlayer::get_stream);
+
+// 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &SceneTreeAudioStreamPlayer::get_stream_playback);
+
+// 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
+
+// 	ADD_SIGNAL(MethodInfo("finished"));
+// }
+
+// void SceneTreeAudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
+// 	stream = p_stream;
+
+// 	if (stream.is_valid()) {
+// 		stream_playback = stream->instantiate_playback();
+// 	}
+
+// 	if (stream_playback.is_null()) {
+// 		return;
+// 	}
+
+// 	// TODO: Add a parameter to control output bus.
+
+// 	Vector<AudioFrame> volume_vector;
+// 	// We need at most four stereo pairs (for 7.1 systems).
+// 	volume_vector.resize(4);
+
+// 	// Initialize the volume vector to zero.
+// 	for (AudioFrame &channel_volume_db : volume_vector) {
+// 		channel_volume_db = AudioFrame(0, 0);
+// 	}
+
+// 	// TODO: Add option to change volume dB.
+// 	float volume_linear = Math::db_to_linear(0.0);
+
+// 	// Set the volume vector up according to the speaker mode and mix target.
+// 	// TODO do we need to scale the volume down when we output to more channels?
+// 	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+// 		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+// 	} else {
+// 		switch (1) {
+// 			case 1: {
+// 				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+// 			} break;
+// 			case 2: {
+// 				// TODO Make sure this is right.
+// 				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+// 				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+// 				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
+// 				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
+// 			} break;
+// 			case 3: {
+// 				// TODO Make sure this is right.
+// 				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+// 			} break;
+// 		}
+// 	}
+
+// 	AudioServer::get_singleton()->start_playback_stream(stream_playback, SNAME("Master"), volume_vector);
+// 	//active.set();
+// }
+
+// Ref<AudioStream> SceneTreeAudioStreamPlayer::get_stream() const {
+// 	return stream;
+// }
+
+// Ref<AudioStreamPlayback> SceneTreeAudioStreamPlayer::get_stream_playback() const {
+// 	return stream_playback;
+// }
+
+// SceneTreeAudioStreamPlayer::SceneTreeAudioStreamPlayer() {}
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -723,6 +797,7 @@ bool SceneTree::process(double p_time) {
 
 	process_timers(p_time, false); //go through timers
 	process_tweens(p_time, false);
+	// process_audio_stream_players(p_time);
 
 	flush_transform_notifications(); // Additional transforms after timers update.
 
@@ -846,6 +921,40 @@ void SceneTree::process_tweens(double p_delta, bool p_physics) {
 		E = N;
 	}
 }
+
+// void SceneTree::process_audio_stream_players(double p_delta) {
+// 	_THREAD_SAFE_METHOD_
+// 	// This method works similarly to how SceneTreeTimers are handled.
+// 	List<Ref<SceneTreeAudioStreamPlayer>>::Element *L = audio_stream_players.back();
+
+// 	for (List<Ref<SceneTreeAudioStreamPlayer>>::Element *E = audio_stream_players.front(); E;) {
+// 		List<Ref<SceneTreeAudioStreamPlayer>>::Element *N = E->next();
+// 		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+// 		// for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+// 		// 	if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+// 		// 		playbacks_to_remove.push_back(playback);
+// 		// 	}
+// 		// }
+// 		// // Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+// 		// for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+// 		// 	stream_playbacks.erase(playback);
+// 		// }
+// 		if (E->get()->get_stream_playback().is_valid() && AudioServer::get_singleton()->is_playback_active(E->get()->get_stream_playback())) {
+// 			print_line("Freeing audio");
+// 			// This node is no longer actively playing audio.
+// 			//active.clear();
+// 			//set_process_internal(false);
+// 			E->get()->emit_signal(SNAME("finished"));
+// 			AudioServer::get_singleton()->stop_playback_stream(E->get()->get_stream_playback());
+// 			audio_stream_players.erase(E);
+// 		}
+// 		if (E == L) {
+// 			// Break on last, so if new timers were added during list traversal, ignore them.
+// 			break;
+// 		}
+// 		E = N;
+// 	}
+// }
 
 void SceneTree::finalize() {
 	_flush_delete_queue();
@@ -2037,6 +2146,7 @@ SceneTree::SceneTree() {
 	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
 	accessibility_upd_per_sec = GLOBAL_GET(SNAME("accessibility/general/updates_per_second"));
+	gui_theme_bus = GLOBAL_GET("audio/buses/gui_theme_bus");
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
