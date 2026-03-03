@@ -1023,7 +1023,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	/// [Monarch] Reginleif: if the resolved type is a generic class but no type arguments
 	/// were provided (container_types was empty so the binding block above was skipped),
 	/// that means the user wrote e.g. `var x: Box` instead of `var x: Box[int]`.
-	if (result.kind == GDScriptParser::DataType::GENERIC_TYPE &&
+	if ((result.kind == GDScriptParser::DataType::CLASS ||
+	     result.kind == GDScriptParser::DataType::SCRIPT||
+		 result.kind == GDScriptParser::DataType::GENERIC_TYPE) &&
 			result.generic_type_bindings.is_empty() &&
 			result.class_type != nullptr &&
 			result.class_type->has_generic_parameters()) {
