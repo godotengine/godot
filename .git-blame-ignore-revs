@@ -84,3 +84,6 @@ f5a290ac462765afca34e64dd39f883511510147
 
 # Style: Add `class_db.h` includes explicitly
 e380a417526c11f15a9ddb3997292409b10da2af
+
+# Move DisplayServer enums and typedefs to DisplayServerEnums
+a447ac95ec170ee117c2eae55f1bfff0d0cf0dce
