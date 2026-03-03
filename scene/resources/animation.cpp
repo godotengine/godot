@@ -1000,7 +1000,12 @@ void Animation::remove_track(int p_track) {
 	}
 
 	memdelete(t);
-	track_hash_map.erase(tracks[p_track]->thash);
+	TrackCacheRef &ref = track_hash_map[tracks[p_track]->thash];
+	if (ref.ref_counter == 1) {
+		track_hash_map.erase(tracks[p_track]->thash);
+	} else {
+		ref.ref_counter--;
+	}
 	tracks.remove_at(p_track);
 	emit_changed();
 	_check_capture_included();
@@ -1067,18 +1072,25 @@ void Animation::_track_update_hash(int p_track) {
 	const NodePath &track_path = tracks[p_track]->path;
 	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
 	TypeHash thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
-	StringName tname = StringName(StringName(String(track_path) + itos(track_cache_type)));
 
-	if (track_hash_map.has(thash)) {
-		StringName cached_path = track_hash_map.get(thash);
-		if(cached_path != tname) {
-			do {
+	while(true) {
+		// In an astronomically rare cases, multiple
+		if (track_hash_map.has(thash)) {
+			// Hash collision or just the same track
+			TrackCacheRef &ref = track_hash_map.get(thash);
+			if(ref.nodepath != track_path) {
+				// Not the same track. Probe the hash.
 				thash = hash_murmur3_one_32(thash, tracks[p_track]->probe++);
-			} while (track_hash_map.has(thash));
-			track_hash_map.insert(thash, tname);
+				continue;
+			} else {
+				// Same track. Increment the reference counter and break
+				ref.ref_counter++;
+				break;
+			}
 		}
-	} else {
-		track_hash_map.insert(thash, tname);
+		// Unique hash
+		track_hash_map.insert(thash, TrackCacheRef(track_path));
+		break;
 	}
 	tracks[p_track]->thash = thash;
 }

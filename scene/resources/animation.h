@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
 
 #define ANIM_MIN_LENGTH 0.001
@@ -251,7 +252,15 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
-	static inline AHashMap<TypeHash, StringName> track_hash_map;
+
+	struct TrackCacheRef {
+		uint8_t ref_counter;
+		NodePath nodepath;
+
+		TrackCacheRef() = default;
+		TrackCacheRef(NodePath path) { ref_counter = 1; nodepath = path; };
+	};
+	static inline AHashMap<TypeHash, TrackCacheRef> track_hash_map;
 
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
