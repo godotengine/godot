@@ -32,6 +32,7 @@
 
 #ifdef VISIONOS_ENABLED
 
+#include "core/templates/safe_refcount.h"
 #include "drivers/metal/metal_objects_shared.h"
 #include "drivers/metal/rendering_context_driver_metal.h"
 #include "drivers/metal/rendering_device_driver_metal.h"
@@ -108,6 +109,11 @@ private:
 		RD::Texture current_rasterization_rate_map;
 		RID current_rasterization_rate_map_id;
 
+		// Cached render target size, set in pre_render() on the render thread
+		// and read from the game thread via get_render_target_size().
+		SafeNumeric<uint32_t> cached_render_target_width{ 0 };
+		SafeNumeric<uint32_t> cached_render_target_height{ 0 };
+
 	public:
 		void initialize();
 		void uninitialize();
@@ -116,11 +122,13 @@ private:
 		// p_current_frame should be an cp_frame_t pointer casted to uint64_t
 		void set_current_frame(uint64_t p_current_frame);
 
+		// Safe to be called from the game thread
 		void start_frame_update();
 		void end_frame_update();
-
-		uint32_t get_view_count();
 		Size2 get_render_target_size();
+
+		// Only safe to be called from the render thread
+		uint32_t get_view_count();
 		Transform3D get_camera_transform();
 		Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform);
 		Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far);
@@ -175,14 +183,13 @@ public:
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 
+	// Methods called from the game thread
 	virtual void process() override;
+	virtual Size2 get_render_target_size() override;
 
-	// Render thread methods
+	// Methods only called from the render thread
 	virtual uint32_t get_view_count() override {
 		return rt.get_view_count();
-	}
-	virtual Size2 get_render_target_size() override {
-		return rt.get_render_target_size();
 	}
 	virtual Transform3D get_camera_transform() override {
 		return rt.get_camera_transform();
