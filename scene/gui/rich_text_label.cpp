@@ -183,7 +183,8 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 				}
 			} break;
 			case ITEM_TABLE: {
-				offset += 1;
+				ItemTable *table = static_cast<ItemTable *>(it);
+				offset += table->char_count;
 			} break;
 			default:
 				break;
@@ -723,6 +724,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					}
 					idx++;
 				}
+				table->char_count = t_char_count;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
