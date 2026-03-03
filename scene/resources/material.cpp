@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
@@ -79,6 +80,36 @@ int Material::get_render_priority() const {
 	return render_priority;
 }
 
+void Material::set_layer_mask(uint32_t p_layer_mask) {
+	layer_mask = p_layer_mask;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_layer_mask(material, p_layer_mask);
+	}
+}
+
+uint32_t Material::get_layer_mask() const {
+	return layer_mask;
+}
+
+void Material::set_layer_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
+	uint32_t mask = get_layer_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_layer_mask(mask);
+}
+
+bool Material::get_layer_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
+	return layer_mask & (1 << (p_layer_number - 1));
+}
+
 RID Material::get_rid() const {
 	return material;
 }
@@ -87,6 +118,8 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 	if (!_can_do_next_pass() && p_property.name == "next_pass") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (!_can_use_render_priority() && p_property.name == "render_priority") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (!_can_use_layer_mask() && p_property.name == "layer_mask") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -148,6 +181,12 @@ bool Material::_can_use_render_priority() const {
 	return ret;
 }
 
+bool Material::_can_use_layer_mask() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_use_layer_mask, ret);
+	return ret;
+}
+
 Ref<Resource> Material::create_placeholder() const {
 	Ref<PlaceholderMaterial> placeholder;
 	placeholder.instantiate();
@@ -161,12 +200,18 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
 
+	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &Material::set_layer_mask);
+	ClassDB::bind_method(D_METHOD("get_layer_mask"), &Material::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_layer_mask_value", "layer_number", "value"), &Material::set_layer_mask_value);
+	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &Material::get_layer_mask_value);
+
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, Material::get_class_static()), "set_next_pass", "get_next_pass");
 
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);
@@ -176,10 +221,12 @@ void Material::_bind_methods() {
 	GDVIRTUAL_BIND(_get_shader_mode)
 	GDVIRTUAL_BIND(_can_do_next_pass)
 	GDVIRTUAL_BIND(_can_use_render_priority)
+	GDVIRTUAL_BIND(_can_use_layer_mask)
 }
 
 Material::Material() {
 	render_priority = 0;
+	layer_mask = 0xFFFFFFFF;
 }
 
 Material::~Material() {
@@ -503,6 +550,7 @@ void ShaderMaterial::_check_material_rid() const {
 		}
 
 		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_render_priority(), shader_rid));
+		RS::get_singleton()->material_set_layer_mask(_get_material(), get_layer_mask());
 
 		for (KeyValue<StringName, Variant> param : param_cache) {
 			if (param.value.get_type() == Variant::OBJECT) {
@@ -549,6 +597,10 @@ bool ShaderMaterial::_can_do_next_pass() const {
 }
 
 bool ShaderMaterial::_can_use_render_priority() const {
+	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+}
+
+bool ShaderMaterial::_can_use_layer_mask() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
@@ -2105,6 +2157,7 @@ void BaseMaterial3D::_check_material_rid() {
 		}
 
 		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_render_priority(), shader_rid));
+		RS::get_singleton()->material_set_layer_mask(_get_material(), get_layer_mask());
 
 		for (KeyValue<StringName, Variant> param : pending_params) {
 			RS::get_singleton()->material_set_param(_get_material(), param.key, param.value);

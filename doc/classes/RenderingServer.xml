@@ -2354,6 +2354,14 @@
 				Returns the value of a certain material's parameter.
 			</description>
 		</method>
+		<method name="material_set_layer_mask">
+			<return type="void" />
+			<param index="0" name="material" type="RID" />
+			<param index="1" name="layer_mask" type="int" />
+			<description>
+				Sets a material's layer mask.
+			</description>
+		</method>
 		<method name="material_set_next_pass">
 			<return type="void" />
 			<param index="0" name="material" type="RID" />
