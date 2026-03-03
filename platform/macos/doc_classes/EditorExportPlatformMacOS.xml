@@ -22,7 +22,7 @@
 		</member>
 		<member name="application/bundle_identifier" type="String" setter="" getter="">
 			Unique application identifier. Case-insensitive. Can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
-			Apple recommends using reverse-DNS format (e.g. com.example) of a domain you own, so that your bundle ID is guaranteed to be unique. See [url=https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleidentifier]CFBundleIdentifier[/url].
+			Apple recommends using reverse-DNS format (e.g. [code]com.example.your-game[/code]) of a domain you own, so that your bundle ID is guaranteed to be unique. See [url=https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleidentifier]CFBundleIdentifier[/url].
 		</member>
 		<member name="application/copyright" type="String" setter="" getter="">
 			Copyright notice for the bundle visible to the user (in English).
