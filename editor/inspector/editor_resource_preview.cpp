@@ -568,6 +568,12 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 				call_invalidated = true;
 			}
 		}
+
+		// Evict the ID-based cache entry for the in-memory resource at p_path, if one exists.
+		Ref<Resource> cached_res = ResourceCache::get_ref(p_path);
+		if (cached_res.is_valid()) {
+			cache.erase("ID:" + itos(cached_res->get_instance_id()));
+		}
 	}
 
 	if (call_invalidated) { //do outside mutex

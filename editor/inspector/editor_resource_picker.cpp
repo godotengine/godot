@@ -273,6 +273,19 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 	}
 }
 
+void EditorResourcePicker::_on_preview_invalidated(const String &p_path) {
+	if (!preview_rect || edited_resource.is_null() || edited_resource->get_path() != p_path) {
+		return;
+	}
+
+	// The in-memory resource may still hold stale image data.
+	// Explicitly reload it here so that the preview is generated from fresh data.
+	if (edited_resource->editor_can_reload_from_file()) {
+		edited_resource->reload_from_file();
+	}
+	_update_resource();
+}
+
 void EditorResourcePicker::_update_menu() {
 	if (edit_menu && edit_menu->is_visible()) {
 		edit_button->set_pressed(false);
@@ -1048,6 +1061,7 @@ void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			EditorNode::get_singleton()->connect("resource_counter_changed", callable_mp(this, &EditorResourcePicker::_update_resource));
+			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &EditorResourcePicker::_on_preview_invalidated));
 			_update_resource();
 			[[fallthrough]];
 		}
@@ -1088,11 +1102,15 @@ void EditorResourcePicker::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
 			Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_resource);
+			Callable preview_invalidated = callable_mp(this, &EditorResourcePicker::_on_preview_invalidated);
 			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
 				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
 			if (EditorNode::get_singleton()->is_connected("resource_counter_changed", resource_counter_changed)) {
 				EditorNode::get_singleton()->disconnect("resource_counter_changed", resource_counter_changed);
+			}
+			if (EditorResourcePreview::get_singleton()->is_connected("preview_invalidated", preview_invalidated)) {
+				EditorResourcePreview::get_singleton()->disconnect("preview_invalidated", preview_invalidated);
 			}
 		} break;
 	}
