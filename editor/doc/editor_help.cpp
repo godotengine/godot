@@ -2789,8 +2789,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			// Compensate for `\n` removed before the loop.
 			if (pos < bbcode.length()) {
-				// `\n` starts a new paragraph, `\r` just adds a break to existing one.
-				p_rt->add_text("\r");
+				if (bbcode.substr(pos, 10) == "[codeblock") {
+					// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+					p_rt->add_text("\r");
+				} else {
+					p_rt->add_newline();
+				}
 			}
 		} else if (tag == "kbd") {
 			int end_pos = bbcode.find("[/kbd]", brk_end + 1);
