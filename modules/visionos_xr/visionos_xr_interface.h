@@ -36,6 +36,8 @@
 #include "drivers/metal/rendering_context_driver_metal.h"
 #include "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
 #include "servers/xr/xr_vrs.h"
@@ -125,7 +127,7 @@ private:
 		Rect2i get_render_region();
 
 		void pre_render();
-		Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect);
+		Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect);
 		void encode_present(MTL3::MDCommandBuffer *p_cmd_buffer);
 		void end_frame();
 
@@ -197,7 +199,7 @@ public:
 	virtual void pre_render() override {
 		rt.pre_render();
 	}
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override {
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override {
 		return rt.post_draw_viewport(p_render_target, p_screen_rect);
 	}
 	void encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {

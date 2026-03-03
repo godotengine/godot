@@ -36,11 +36,14 @@
 #import <CompositorServices/CompositorServices.h>
 
 #include "core/input/input.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "drivers/metal/metal3_objects.h"
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "visionos_simd_helpers.h"
 
 #include "core/os/thread.h"
@@ -484,17 +487,17 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 	}
 }
 
-Vector<BlitToScreen> VisionOSXRInterface::RenderThread::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
-	ERR_NOT_ON_RENDER_THREAD_V(Vector<BlitToScreen>());
+Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+	ERR_NOT_ON_RENDER_THREAD_V(Vector<RenderingServerTypes::BlitToScreen>());
 
 	if (!initialized) {
-		return Vector<BlitToScreen>();
+		return Vector<RenderingServerTypes::BlitToScreen>();
 	}
 
 	// We're overriding the color and depth textures, no need for screen blits, return empty BlitToScreen vector
 	// However, we need to acquire the dummy frame buffer
 	RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
-	return Vector<BlitToScreen>();
+	return Vector<RenderingServerTypes::BlitToScreen>();
 }
 
 void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {

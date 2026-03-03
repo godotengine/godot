@@ -114,7 +114,7 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
 	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
-	config.delegateClass = [GDTApplicationDelegate class];
+	config.delegateClass = [GDTAppDelegate class];
 	return config;
 }
 

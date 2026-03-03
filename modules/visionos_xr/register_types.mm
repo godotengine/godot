@@ -34,6 +34,8 @@
 
 #include "visionos_xr_interface.h"
 
+#include "core/object/class_db.h"
+
 Ref<VisionOSXRInterface> visionos_xr;
 
 void initialize_visionos_xr_module(ModuleInitializationLevel p_level) {
