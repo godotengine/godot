@@ -69,6 +69,7 @@ private:
 
 #ifndef PHYSICS_3D_DISABLED
 	bool use_collision = false;
+	bool use_backface_collision = false;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
@@ -106,6 +107,7 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 #ifndef PHYSICS_3D_DISABLED
+	void _build_collision_shape(bool p_recreate = false);
 	void _update_collision_faces();
 	bool _is_debug_collision_shape_visible();
 	void _update_debug_collision_shape();
@@ -140,6 +142,8 @@ public:
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
+	void set_use_backface_collision(bool p_enable);
+	bool is_using_backface_collision() const;
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

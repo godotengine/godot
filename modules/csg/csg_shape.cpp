@@ -93,28 +93,23 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		return;
 	}
 
-	if (use_collision) {
-		root_collision_shape.instantiate();
-		root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
-		set_collision_layer(collision_layer);
-		set_collision_mask(collision_mask);
-		set_collision_priority(collision_priority);
-		_make_dirty(); //force update
-	} else {
-		PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
-		root_collision_instance = RID();
-		root_collision_shape.unref();
-	}
+	_build_collision_shape();
 	notify_property_list_changed();
 }
 
 bool CSGShape3D::is_using_collision() const {
 	return use_collision;
+}
+
+void CSGShape3D::set_use_backface_collision(bool p_enable) {
+	use_backface_collision = p_enable;
+	if (use_collision) {
+		_build_collision_shape(true);
+	}
+}
+
+bool CSGShape3D::is_using_backface_collision() const {
+	return use_backface_collision;
 }
 
 void CSGShape3D::set_collision_layer(uint32_t p_layer) {
@@ -764,6 +759,33 @@ Vector<Vector3> CSGShape3D::_get_brush_collision_faces() {
 	return collision_faces;
 }
 
+void CSGShape3D::_build_collision_shape(bool p_recreate) {
+	if (!is_inside_tree() || !is_root_shape()) {
+		return;
+	}
+
+	if (!use_collision || p_recreate) {
+		PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
+		root_collision_instance = RID();
+		root_collision_shape.unref();
+	}
+
+	if (use_collision || p_recreate) {
+		root_collision_shape.instantiate();
+		root_collision_shape->set_backface_collision_enabled(use_backface_collision);
+		root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
+		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		set_collision_layer(collision_layer);
+		set_collision_mask(collision_mask);
+		set_collision_priority(collision_priority);
+		_make_dirty(); //force update
+	}
+}
+
 void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		root_collision_shape->set_faces(_get_brush_collision_faces());
@@ -778,9 +800,11 @@ Ref<ConcavePolygonShape3D> CSGShape3D::bake_collision_shape() {
 	Ref<ConcavePolygonShape3D> baked_collision_shape;
 	if (is_root_shape() && root_collision_shape.is_valid()) {
 		baked_collision_shape.instantiate();
+		baked_collision_shape->set_backface_collision_enabled(use_backface_collision);
 		baked_collision_shape->set_faces(root_collision_shape->get_faces());
 	} else if (is_root_shape()) {
 		baked_collision_shape.instantiate();
+		baked_collision_shape->set_backface_collision_enabled(use_backface_collision);
 		baked_collision_shape->set_faces(_get_brush_collision_faces());
 	}
 	return baked_collision_shape;
@@ -897,6 +921,7 @@ void CSGShape3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
+				root_collision_shape->set_backface_collision_enabled(use_backface_collision);
 				root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
 				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
 				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
@@ -957,6 +982,8 @@ void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name.begins_with("use_backface_collision") && !bool(get("use_collision"))) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -1009,6 +1036,8 @@ void CSGShape3D::_bind_methods() {
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape3D::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape3D::is_using_collision);
+	ClassDB::bind_method(D_METHOD("set_use_backface_collision", "enable"), &CSGShape3D::set_use_backface_collision);
+	ClassDB::bind_method(D_METHOD("is_using_backface_collision"), &CSGShape3D::is_using_backface_collision);
 
 	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CSGShape3D::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CSGShape3D::get_collision_layer);
@@ -1046,6 +1075,7 @@ void CSGShape3D::_bind_methods() {
 #ifndef PHYSICS_3D_DISABLED
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_backface_collision"), "set_use_backface_collision", "is_using_backface_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");

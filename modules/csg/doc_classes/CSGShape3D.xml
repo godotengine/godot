@@ -94,6 +94,9 @@
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" deprecated="The CSG library no longer uses snapping.">
 			This property does nothing.
 		</member>
+		<member name="use_backface_collision" type="bool" setter="set_use_backface_collision" getter="is_using_backface_collision" default="false">
+			If set to [code]true[/code], collisions occur on both sides of the concave shape faces. Otherwise, they occur only on the front normals. See also [member ConcavePolygonShape3D.backface_collision].
+		</member>
 		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
 			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden. See also [member collision_mask] and [member collision_priority].
 		</member>
