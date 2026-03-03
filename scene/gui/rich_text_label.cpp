@@ -43,7 +43,7 @@
 #include "scene/main/timer.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display/display_server.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
@@ -68,6 +68,14 @@ Rect2i _merge_or_copy_rect(const Rect2i &p_a, const Rect2i &p_b) {
 		return p_b;
 	} else {
 		return p_a.merge(p_b);
+	}
+}
+
+RichTextLabel::Line::~Line() {
+	if (accessibility_line_element.is_valid()) {
+		AccessibilityServer::get_singleton()->free_element(accessibility_line_element);
+		accessibility_line_element = RID();
+		accessibility_text_element = RID();
 	}
 }
 
@@ -2133,14 +2141,14 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 	if (l.accessibility_line_element.is_valid()) {
 		return;
 	}
-	l.accessibility_line_element = DisplayServer::get_singleton()->accessibility_create_sub_element(p_id, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+	l.accessibility_line_element = AccessibilityServer::get_singleton()->create_sub_element(p_id, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 
 	MutexLock lock(l.text_buf->get_mutex());
 
 	const RID &line_ae = l.accessibility_line_element;
 
 	Rect2 ae_rect = Rect2(p_ofs, Size2(p_width, l.text_buf->get_size().y + l.text_buf->get_line_count() * theme_cache.line_separation));
-	DisplayServer::get_singleton()->accessibility_update_set_bounds(line_ae, ae_rect);
+	AccessibilityServer::get_singleton()->update_set_bounds(line_ae, ae_rect);
 	ac_element_bounds_cache[line_ae] = ae_rect;
 
 	Item *it_from = l.from;
@@ -2178,15 +2186,15 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 			}
 		}
 
-		l.accessibility_text_element = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-		DisplayServer::get_singleton()->accessibility_update_set_value(l.accessibility_text_element, l_text);
+		l.accessibility_text_element = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
+		AccessibilityServer::get_singleton()->update_set_value(l.accessibility_text_element, l_text);
 		ae_rect = Rect2(p_ofs + off, text_buf->get_size());
-		DisplayServer::get_singleton()->accessibility_update_set_bounds(l.accessibility_text_element, ae_rect);
+		AccessibilityServer::get_singleton()->update_set_bounds(l.accessibility_text_element, ae_rect);
 		ac_element_bounds_cache[l.accessibility_text_element] = ae_rect;
 
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, true));
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, false));
-		DisplayServer::get_singleton()->accessibility_update_add_action(l.accessibility_text_element, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)l.from));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, true));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)l.from, true, false));
+		AccessibilityServer::get_singleton()->update_add_action(l.accessibility_text_element, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)l.from));
 	}
 
 	Vector2 off;
@@ -2250,9 +2258,9 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 				switch (it->type) {
 					case ITEM_IMAGE: {
 						ItemImage *img = static_cast<ItemImage *>(it);
-						RID img_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
+						RID img_ae = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_IMAGE);
 
-						DisplayServer::get_singleton()->accessibility_update_set_name(img_ae, img->alt_text);
+						AccessibilityServer::get_singleton()->update_set_name(img_ae, img->alt_text);
 						if (img->pad) {
 							Size2 pad_size = rect.size.min(img->image->get_size());
 							Vector2 pad_off = (rect.size - pad_size) / 2;
@@ -2260,12 +2268,12 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 						} else {
 							ae_rect = Rect2(p_ofs + rect.position + off, rect.size);
 						}
-						DisplayServer::get_singleton()->accessibility_update_set_bounds(img_ae, ae_rect);
+						AccessibilityServer::get_singleton()->update_set_bounds(img_ae, ae_rect);
 						ac_element_bounds_cache[img_ae] = ae_rect;
 
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
-						DisplayServer::get_singleton()->accessibility_update_add_action(img_ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
+						AccessibilityServer::get_singleton()->update_add_action(img_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
 
 						it->accessibility_item_element = img_ae;
 					} break;
@@ -2274,31 +2282,31 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 						float h_separation = theme_cache.table_h_separation;
 						float v_separation = theme_cache.table_v_separation;
 
-						RID table_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(line_ae, DisplayServer::AccessibilityRole::ROLE_TABLE);
+						RID table_ae = AccessibilityServer::get_singleton()->create_sub_element(line_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TABLE);
 
 						int col_count = table->columns.size();
 						int row_count = table->rows.size();
 
-						DisplayServer::get_singleton()->accessibility_update_set_name(table_ae, table->name);
-						DisplayServer::get_singleton()->accessibility_update_set_role(table_ae, DisplayServer::AccessibilityRole::ROLE_TABLE);
-						DisplayServer::get_singleton()->accessibility_update_set_table_column_count(table_ae, col_count);
-						DisplayServer::get_singleton()->accessibility_update_set_table_row_count(table_ae, row_count);
+						AccessibilityServer::get_singleton()->update_set_name(table_ae, table->name);
+						AccessibilityServer::get_singleton()->update_set_role(table_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TABLE);
+						AccessibilityServer::get_singleton()->update_set_table_column_count(table_ae, col_count);
+						AccessibilityServer::get_singleton()->update_set_table_row_count(table_ae, row_count);
 						ae_rect = Rect2(p_ofs + rect.position + off + Vector2(0, TS->shaped_text_get_ascent(rid)), rect.size);
-						DisplayServer::get_singleton()->accessibility_update_set_bounds(table_ae, ae_rect);
+						AccessibilityServer::get_singleton()->update_set_bounds(table_ae, ae_rect);
 						ac_element_bounds_cache[table_ae] = ae_rect;
 
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
-						DisplayServer::get_singleton()->accessibility_update_add_action(table_ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, true));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &RichTextLabel::_accessibility_focus_item).bind((uint64_t)it, false, false));
+						AccessibilityServer::get_singleton()->update_add_action(table_ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &RichTextLabel::_accessibility_scroll_to_item).bind((uint64_t)it));
 
 						Vector<RID> row_aes;
 						Vector2 row_off = Vector2(0, TS->shaped_text_get_ascent(rid));
 						for (int j = 0; j < row_count; j++) {
-							RID row_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(table_ae, DisplayServer::AccessibilityRole::ROLE_ROW);
+							RID row_ae = AccessibilityServer::get_singleton()->create_sub_element(table_ae, AccessibilityServerEnums::AccessibilityRole::ROLE_ROW);
 
-							DisplayServer::get_singleton()->accessibility_update_set_table_row_index(row_ae, j);
+							AccessibilityServer::get_singleton()->update_set_table_row_index(row_ae, j);
 							ae_rect = Rect2(p_ofs + rect.position + off + row_off, Size2(rect.size.x, table->rows[j]));
-							DisplayServer::get_singleton()->accessibility_update_set_bounds(row_ae, ae_rect);
+							AccessibilityServer::get_singleton()->update_set_bounds(row_ae, ae_rect);
 							ac_element_bounds_cache[row_ae] = ae_rect;
 							row_off.y += table->rows[j];
 
@@ -2313,7 +2321,7 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 							int row = idx / col_count;
 
 							for (int j = 0; j < (int)frame->lines.size(); j++) {
-								RID cell_ae = DisplayServer::get_singleton()->accessibility_create_sub_element(row_aes[row], DisplayServer::AccessibilityRole::ROLE_CELL);
+								RID cell_ae = AccessibilityServer::get_singleton()->create_sub_element(row_aes[row], AccessibilityServerEnums::AccessibilityRole::ROLE_CELL);
 
 								if (frame->lines.size() != 0 && row < row_count) {
 									Vector2 coff = frame->lines[0].offset;
@@ -2322,10 +2330,10 @@ void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int
 										coff.x = rect.size.width - table->columns[col].width - coff.x;
 									}
 									ae_rect = Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row]));
-									DisplayServer::get_singleton()->accessibility_update_set_bounds(cell_ae, ae_rect);
+									AccessibilityServer::get_singleton()->update_set_bounds(cell_ae, ae_rect);
 									ac_element_bounds_cache[cell_ae] = ae_rect;
 								}
-								DisplayServer::get_singleton()->accessibility_update_set_table_cell_position(cell_ae, row, col);
+								AccessibilityServer::get_singleton()->update_set_table_cell_position(cell_ae, row, col);
 
 								_accessibility_update_line(cell_ae, frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_vsep);
 							}
@@ -2416,7 +2424,7 @@ void RichTextLabel::_invalidate_accessibility() {
 			ItemFrame *fr = static_cast<ItemFrame *>(it);
 			for (size_t i = 0; i < fr->lines.size(); i++) {
 				if (fr->lines[i].accessibility_line_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(fr->lines[i].accessibility_line_element);
+					AccessibilityServer::get_singleton()->free_element(fr->lines[i].accessibility_line_element);
 				}
 				fr->lines[i].accessibility_line_element = RID();
 				fr->lines[i].accessibility_text_element = RID();
@@ -2471,29 +2479,29 @@ void RichTextLabel::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &RichTextLabel::_accessibility_action_menu));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &RichTextLabel::_accessibility_scroll_down));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &RichTextLabel::_accessibility_scroll_up));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &RichTextLabel::_accessibility_scroll_set));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &RichTextLabel::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &RichTextLabel::_accessibility_scroll_down));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &RichTextLabel::_accessibility_scroll_up));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &RichTextLabel::_accessibility_scroll_set));
 
 			if (_validate_line_caches()) {
-				DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_BUSY, false);
+				AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_BUSY, false);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_BUSY, true);
+				AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_BUSY, true);
 				return; // Do not update internal elements if threaded procesisng is not done.
 			}
 
 			if (accessibility_scroll_element.is_null()) {
-				accessibility_scroll_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+				accessibility_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 			}
 			Rect2 text_rect = _get_text_rect();
 
 			Transform2D scroll_xform;
 			scroll_xform.set_origin(Vector2i(0, -vscroll->get_value()));
-			DisplayServer::get_singleton()->accessibility_update_set_transform(accessibility_scroll_element, scroll_xform);
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_scroll_element, text_rect);
+			AccessibilityServer::get_singleton()->update_set_transform(accessibility_scroll_element, scroll_xform);
+			AccessibilityServer::get_singleton()->update_set_bounds(accessibility_scroll_element, text_rect);
 
 			MutexLock data_lock(data_mutex);
 
@@ -6141,9 +6149,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find_char('x');
 					if (sep == -1) {
+						if (bbcode_value.ends_with("%")) {
+							width_in_percent = true;
+						}
 						width = bbcode_value.to_int();
 					} else {
+						if (bbcode_value.substr(0, sep).ends_with("%")) {
+							width_in_percent = true;
+						}
 						width = bbcode_value.substr(0, sep).to_int();
+						if (bbcode_value.substr(sep + 1).ends_with("%")) {
+							height_in_percent = true;
+						}
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {

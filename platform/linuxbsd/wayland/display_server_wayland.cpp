@@ -43,6 +43,7 @@
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/main_loop.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 #include "servers/rendering/rendering_server.h"
@@ -63,10 +64,6 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
 #include "wayland/egl_manager_wayland_gles.h"
-#endif
-
-#ifdef ACCESSKIT_ENABLED
-#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #ifdef DBUS_ENABLED
@@ -238,11 +235,9 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		} break;
 #endif
 
-#ifdef ACCESSKIT_ENABLED
 		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
-			return (accessibility_driver != nullptr);
+			return AccessibilityServer::get_singleton()->is_supported();
 		} break;
-#endif
 
 		default: {
 			return false;
@@ -747,15 +742,11 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+	if (!AccessibilityServer::get_singleton()->window_create(wd.id, nullptr)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
 		}
-		memdelete(accessibility_driver);
-		accessibility_driver = nullptr;
 	}
-#endif
 
 	// NOTE: Remember to clear its position if this window will be a toplevel. We
 	// can only know once we show it.
@@ -907,11 +898,7 @@ void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 		popup_menu_list.pop_back();
 	}
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		accessibility_driver->window_destroy(p_window_id);
-	}
-#endif
+	AccessibilityServer::get_singleton()->window_destroy(p_window_id);
 
 	if (wd.visible) {
 #ifdef VULKAN_ENABLED
@@ -1752,20 +1739,12 @@ void DisplayServerWayland::process_events() {
 			_send_window_event(winev_msg->event, winev_msg->id);
 
 			if (winev_msg->event == WINDOW_EVENT_FOCUS_IN) {
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(winev_msg->id, true);
-				}
-#endif
+				AccessibilityServer::get_singleton()->set_window_focused(winev_msg->id, true);
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 				}
 			} else if (winev_msg->event == WINDOW_EVENT_FOCUS_OUT) {
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(winev_msg->id, false);
-				}
-#endif
+				AccessibilityServer::get_singleton()->set_window_focused(winev_msg->id, false);
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
@@ -2056,16 +2035,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
-		accessibility_driver = memnew(AccessibilityDriverAccessKit);
-		if (accessibility_driver->init() != OK) {
-			memdelete(accessibility_driver);
-			accessibility_driver = nullptr;
-		}
-	}
-#endif
-
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
@@ -2243,15 +2212,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+	if (!AccessibilityServer::get_singleton()->window_create(wd.id, nullptr)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
 		}
-		memdelete(accessibility_driver);
-		accessibility_driver = nullptr;
 	}
-#endif
 
 	show_window(MAIN_WINDOW_ID);
 
@@ -2321,10 +2286,8 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 		if (!window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, id)) {
 			toplevels.push_back(id);
-#ifdef ACCESSKIT_ENABLED
-		} else if (accessibility_driver) {
-			accessibility_driver->window_destroy(id);
-#endif
+		} else {
+			AccessibilityServer::get_singleton()->window_destroy(id);
 		}
 	}
 
@@ -2349,12 +2312,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 #ifdef SPEECHD_ENABLED
 	if (tts) {
 		memdelete(tts);
-	}
-#endif
-
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		memdelete(accessibility_driver);
 	}
 #endif
 
