@@ -363,6 +363,11 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 	}
 }
 
+void TileSetEditor::_set_tile_set_changed_needs_update(bool p_needs_update) {
+	tile_set_changed_needs_update = p_needs_update;
+	set_process_internal(p_needs_update);
+}
+
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -400,7 +405,7 @@ void TileSetEditor::_notification(int p_what) {
 				sources_advanced_menu_button->set_disabled(read_only);
 				source_sort_button->set_disabled(read_only);
 
-				tile_set_changed_needs_update = false;
+				_set_tile_set_changed_needs_update(false);
 			}
 		} break;
 
@@ -460,7 +465,7 @@ void TileSetEditor::_update_patterns_list() {
 }
 
 void TileSetEditor::_tile_set_changed() {
-	tile_set_changed_needs_update = true;
+	_set_tile_set_changed_needs_update(true);
 }
 
 void TileSetEditor::_tab_changed(int p_tab_changed) {
@@ -823,7 +828,7 @@ TileSetEditor::TileSetEditor() {
 	set_global(false);
 	set_transient(true);
 
-	set_process_internal(true);
+	set_process_internal(false);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
