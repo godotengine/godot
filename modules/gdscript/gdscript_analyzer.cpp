@@ -3677,6 +3677,25 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
 		}
 
+		// Check if the called function is deprecated or experimental.
+		if (!is_constructor && base_type.kind == GDScriptParser::DataType::CLASS && base_type.class_type != nullptr) {
+			List<GDScriptParser::ClassNode *> class_list;
+			get_class_node_current_scope_classes(base_type.class_type, &class_list, p_call);
+			for (GDScriptParser::ClassNode *cl : class_list) {
+				if (cl->has_member(p_call->function_name)) {
+					const GDScriptParser::ClassNode::Member &member = cl->get_member(p_call->function_name);
+					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+						if (member.function->is_deprecated) {
+							parser->push_warning(p_call, GDScriptWarning::DEPRECATED_MEMBER_USED, "function", p_call->function_name, member.function->deprecated_message);
+						} else if (member.function->is_experimental) {
+							parser->push_warning(p_call, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "function", p_call->function_name, member.function->experimental_message);
+						}
+					}
+					break;
+				}
+			}
+		}
+
 		// Consider `emit_signal()`, `connect()`, and `disconnect()` as implicit uses of the signal.
 		if (is_self && (p_call->function_name == SNAME("emit_signal") || p_call->function_name == SNAME("connect") || p_call->function_name == SNAME("disconnect")) && !p_call->arguments.is_empty()) {
 			const GDScriptParser::ExpressionNode *signal_arg = p_call->arguments[0];
@@ -4163,6 +4182,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			if (script_class->outer != nullptr) {
 				p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
 			}
+#ifdef DEBUG_ENABLED
+			if (script_class->is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "class", name, script_class->deprecated_message);
+			} else if (script_class->is_experimental) {
+				parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "class", name, script_class->experimental_message);
+			}
+#endif // DEBUG_ENABLED
 			return;
 		}
 
@@ -4181,6 +4207,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->reduced_value = member.constant->initializer->reduced_value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					p_identifier->constant_source = member.constant;
+#ifdef DEBUG_ENABLED
+					if (member.constant->is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "constant", name, member.constant->deprecated_message);
+					} else if (member.constant->is_experimental) {
+						parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "constant", name, member.constant->experimental_message);
+					}
+#endif // DEBUG_ENABLED
 					return;
 				}
 
@@ -4206,6 +4239,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
+#ifdef DEBUG_ENABLED
+						if (member.variable->is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "variable", name, member.variable->deprecated_message);
+						} else if (member.variable->is_experimental) {
+							parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "variable", name, member.variable->experimental_message);
+						}
+#endif // DEBUG_ENABLED
 						return;
 					}
 				} break;
@@ -4216,6 +4256,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
 						p_identifier->signal_source = member.signal;
 						member.signal->usages += 1;
+#ifdef DEBUG_ENABLED
+						if (member.signal->is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "signal", name, member.signal->deprecated_message);
+						} else if (member.signal->is_experimental) {
+							parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "signal", name, member.signal->experimental_message);
+						}
+#endif // DEBUG_ENABLED
 						return;
 					}
 				} break;
@@ -4226,6 +4273,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
 						p_identifier->function_source = member.function;
 						p_identifier->function_source_is_static = member.function->is_static;
+#ifdef DEBUG_ENABLED
+						if (member.function->is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "function", name, member.function->deprecated_message);
+						} else if (member.function->is_experimental) {
+							parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "function", name, member.function->experimental_message);
+						}
+#endif // DEBUG_ENABLED
 						return;
 					}
 				} break;
@@ -4233,6 +4287,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::CLASS: {
 					reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
+#ifdef DEBUG_ENABLED
+					if (member.m_class->is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_MEMBER_USED, "class", name, member.m_class->deprecated_message);
+					} else if (member.m_class->is_experimental) {
+						parser->push_warning(p_identifier, GDScriptWarning::EXPERIMENTAL_MEMBER_USED, "class", name, member.m_class->experimental_message);
+					}
+#endif // DEBUG_ENABLED
 					return;
 				}
 
