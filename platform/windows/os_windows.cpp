@@ -2730,7 +2730,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	bool ok = true;
 #ifdef GLES3_ENABLED
 	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+	if (test_gl_manager_native->window_create(DisplayServerEnums::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
 		RasterizerGLES3::make_current(true);
 	} else {
 		ok = false;

@@ -31,11 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -317,7 +318,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;

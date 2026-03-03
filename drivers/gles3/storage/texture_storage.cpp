@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"

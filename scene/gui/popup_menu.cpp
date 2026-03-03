@@ -43,6 +43,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 HashMap<NativeMenu::SystemMenus, PopupMenu *> PopupMenu::system_menus;
 
@@ -3368,9 +3369,9 @@ void PopupMenu::_native_popup(const Rect2i &p_rect) {
 	Point2i popup_pos = p_rect.position;
 	if (is_embedded()) {
 		popup_pos = get_embedder()->get_screen_transform().xform(popup_pos); // Note: for embedded windows "screen transform" is transform relative to embedder not the actual screen.
-		DisplayServer::WindowID wid = get_window_id();
-		if (wid == DisplayServer::INVALID_WINDOW_ID) {
-			wid = DisplayServer::MAIN_WINDOW_ID;
+		DisplayServerEnums::WindowID wid = get_window_id();
+		if (wid == DisplayServerEnums::INVALID_WINDOW_ID) {
+			wid = DisplayServerEnums::MAIN_WINDOW_ID;
 		}
 		popup_pos += DisplayServer::get_singleton()->window_get_position(wid);
 	}

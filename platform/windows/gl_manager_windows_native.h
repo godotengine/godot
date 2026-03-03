@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #include <windows.h>
 
@@ -60,7 +60,7 @@ private:
 		HGLRC hRC;
 	};
 
-	RBMap<DisplayServer::WindowID, GLWindow> _windows;
+	RBMap<DisplayServerEnums::WindowID, GLWindow> _windows;
 	LocalVector<GLDisplay> _displays;
 
 	GLWindow *_current_window = nullptr;
@@ -82,22 +82,22 @@ private:
 	Error _create_context(GLWindow &win, GLDisplay &gl_display);
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	Error window_create(DisplayServerEnums::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height);
+	void window_destroy(DisplayServerEnums::WindowID p_window_id);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {}
 
 	void release_current();
 	void swap_buffers();
 
-	void window_make_current(DisplayServer::WindowID p_window_id);
+	void window_make_current(DisplayServerEnums::WindowID p_window_id);
 
 	Error initialize();
 
-	void set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use);
-	bool is_using_vsync(DisplayServer::WindowID p_window_id) const;
+	void set_use_vsync(DisplayServerEnums::WindowID p_window_id, bool p_use);
+	bool is_using_vsync(DisplayServerEnums::WindowID p_window_id) const;
 
-	HDC get_hdc(DisplayServer::WindowID p_window_id);
-	HGLRC get_hglrc(DisplayServer::WindowID p_window_id);
+	HDC get_hdc(DisplayServerEnums::WindowID p_window_id);
+	HGLRC get_hglrc(DisplayServerEnums::WindowID p_window_id);
 
 	GLManagerNative_Windows();
 	~GLManagerNative_Windows();

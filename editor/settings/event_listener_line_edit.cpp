@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/gui/dialogs.h"
 #include "servers/display/accessibility_server.h"
 

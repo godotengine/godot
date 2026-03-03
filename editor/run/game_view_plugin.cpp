@@ -54,6 +54,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
+#include "servers/display/display_server.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	if (!is_feature_enabled) {
@@ -723,7 +724,7 @@ void GameView::_update_speed_state_size() {
 }
 
 GameView::EmbedAvailability GameView::_get_embed_available() {
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 		return EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED;
 	}
 	if (get_tree()->get_root()->is_embedding_subwindows()) {
@@ -750,14 +751,14 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
 
-	DisplayServer::WindowMode window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED) {
+	DisplayServerEnums::WindowMode window_mode = (DisplayServerEnums::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MINIMIZED) {
 		return EMBED_NOT_AVAILABLE_MINIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MAXIMIZED) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MAXIMIZED) {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServer::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		return EMBED_NOT_AVAILABLE_FULLSCREEN;
 	}
 
@@ -945,7 +946,7 @@ void GameView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 				// Embedding available.
 				int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 				switch (game_mode) {
@@ -1099,7 +1100,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Add the editor window's native ID so the started game can directly set it as its parent.
 	List<String>::Element *N = r_arguments.insert_before(user_args_element, "--wid");
-	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, get_window()->get_window_id())));
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");
