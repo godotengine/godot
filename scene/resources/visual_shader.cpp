@@ -30,6 +30,7 @@
 
 #include "visual_shader.h"
 
+#include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant_utility.h"
 #include "scene/resources/visual_shader_nodes.h"

@@ -33,6 +33,7 @@
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 

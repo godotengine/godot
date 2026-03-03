@@ -30,6 +30,7 @@
 
 #include "style_box_texture.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 float StyleBoxTexture::get_style_margin(Side p_side) const {

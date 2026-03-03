@@ -30,6 +30,7 @@
 
 #include "csharp_script.h"
 
+#include "core/object/class_db.h"
 #include "godotsharp_dirs.h"
 #include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"

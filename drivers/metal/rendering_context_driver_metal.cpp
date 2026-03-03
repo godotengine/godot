@@ -119,7 +119,7 @@ public:
 		layer = nullptr;
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count) override final {
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -153,6 +153,28 @@ public:
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
 			// Reserve space for the drawable texture.
 			frame_buffers[i].set_texture_count(1);
+		}
+
+		if (hdr_output) {
+			layer->setWantsExtendedDynamicRangeContent(true);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatRGBA16Float);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
+			r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			pixel_format = MTL::PixelFormatRGBA16Float;
+		} else {
+			layer->setWantsExtendedDynamicRangeContent(false);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
+			pixel_format = MTL::PixelFormatBGRA8Unorm;
 		}
 
 		return OK;
@@ -256,7 +278,7 @@ public:
 		memdelete_arr(frame_buffers);
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count) override final {
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -379,13 +401,12 @@ DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(Sur
 
 void RenderingContextDriverMetal::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
 	Surface *surface = (Surface *)(p_surface);
-	surface->hdr_output = p_enabled;
-	surface->needs_resize = true;
+	surface->set_hdr_output_enabled(p_enabled);
 }
 
 bool RenderingContextDriverMetal::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
-	return surface->hdr_output;
+	return surface->is_hdr_output_enabled();
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
@@ -394,7 +415,7 @@ void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(Sur
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
-	Surface *surface = (Surface *)(p_surface);
+	const Surface *surface = (Surface *)(p_surface);
 	return surface->hdr_reference_luminance;
 }
 
@@ -404,18 +425,16 @@ void RenderingContextDriverMetal::surface_set_hdr_output_max_luminance(SurfaceID
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
-	Surface *surface = (Surface *)(p_surface);
+	const Surface *surface = (Surface *)(p_surface);
 	return surface->hdr_max_luminance;
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
-	Surface *surface = (Surface *)(p_surface);
-	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
-	return surface->hdr_linear_luminance_scale;
+	return surface->hdr_reference_luminance;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_max_value(SurfaceID p_surface) const {

@@ -183,10 +183,20 @@ struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	}
 };
 
-template <class T>
+template <typename T>
+struct GetTypeInfo<Ref<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+	}
+};
+
+template <typename T>
 class RequiredParam;
 
-template <class T>
+template <typename T>
 class RequiredResult;
 
 template <typename T>

@@ -30,9 +30,10 @@
 
 #include "button.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/dialogs.h"
-
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 Size2 Button::get_minimum_size() const {
 	Ref<Texture2D> _icon = icon;
@@ -159,15 +160,15 @@ void Button::_notification(int p_what) {
 
 			const String &ac_name = get_accessibility_name();
 			if (!xl_text.is_empty() && ac_name.is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+				AccessibilityServer::get_singleton()->update_set_name(ae, xl_text);
 			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
+				AccessibilityServer::get_singleton()->update_set_name(ae, ac_name + ": " + xl_text);
 			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
+				AccessibilityServer::get_singleton()->update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
 			}
 			AcceptDialog *dlg = Object::cast_to<AcceptDialog>(get_parent());
 			if (dlg && dlg->get_ok_button() == this) {
-				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DEFAULT_BUTTON);
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_DEFAULT_BUTTON);
 			}
 		} break;
 

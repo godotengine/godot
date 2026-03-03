@@ -31,6 +31,7 @@
 #include "navigation_region_2d.h"
 
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"

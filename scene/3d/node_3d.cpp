@@ -31,9 +31,11 @@
 #include "node_3d.h"
 
 #include "core/math/transform_interpolator.h"
+#include "core/object/class_db.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 /*
@@ -140,7 +142,7 @@ void Node3D::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

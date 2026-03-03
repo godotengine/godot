@@ -30,6 +30,7 @@
 
 #include "joint_3d_gizmo_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/physics/joints/cone_twist_joint_3d.h"

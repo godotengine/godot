@@ -30,6 +30,7 @@
 
 #include "placeholder_textures.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void PlaceholderTexture2D::set_size(Size2 p_size) {

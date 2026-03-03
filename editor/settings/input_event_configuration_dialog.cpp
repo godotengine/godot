@@ -56,6 +56,19 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		// Update Label
 		event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 
+		bool exists = false;
+		for (const Variant &v : action_events) {
+			Ref<InputEvent> ie = v;
+			if (ie.is_null()) {
+				continue;
+			} else if (ie->is_match(p_event)) {
+				exists = true;
+				break;
+			}
+		}
+		event_exists->set_visible(exists);
+		get_ok_button()->set_disabled(exists);
+
 		Ref<InputEventKey> k = p_event;
 		Ref<InputEventMouseButton> mb = p_event;
 		Ref<InputEventJoypadButton> joyb = p_event;
@@ -195,6 +208,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		original_event = Ref<InputEvent>();
 		event_listener->clear_event();
 		event_as_text->set_text(TTRC("No Event Configured"));
+		event_exists->set_visible(false);
+		get_ok_button()->set_disabled(false);
 
 		additional_options_container->hide();
 		input_list_tree->deselect_all();
@@ -584,6 +599,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
 
 			event_as_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			event_exists->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			_update_input_list();
 		} break;
@@ -596,8 +612,20 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 	}
 }
 
-void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
+void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name, const Dictionary &p_current_action) {
+	action_events = p_current_action.get("events", Array()).duplicate();
+
 	if (p_event.is_valid()) {
+		// Here we remove one instance of the InputEvent being edited so it doesn't immediately get flagged as duplicated in the dialog.
+		for (int i = 0; i < action_events.size(); i++) {
+			Ref<InputEvent> ie = action_events[i];
+			if (ie.is_null()) {
+				continue;
+			} else if (ie->is_match(p_event)) {
+				action_events.remove_at(i);
+				break;
+			}
+		}
 		_set_event(p_event->duplicate(), p_event->duplicate());
 	} else {
 		// Clear Event
@@ -778,4 +806,9 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	additional_options_container->add_child(location_container);
 
 	main_vbox->add_child(additional_options_container);
+
+	event_exists = memnew(Label(TTRC("Error: This action already contains this input event.")));
+	event_exists->set_theme_type_variation("HeaderSmall");
+	event_exists->set_visible(false);
+	main_vbox->add_child(event_exists);
 }

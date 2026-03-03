@@ -38,12 +38,14 @@
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/main_loop.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"
 #include "drivers/unix/os_unix.h"
 #include "main/main.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
@@ -78,10 +80,6 @@
 #include "x11/gl_manager_x11_egl.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
-#endif
-
-#ifdef ACCESSKIT_ENABLED
-#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #ifdef DBUS_ENABLED
@@ -234,11 +232,9 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		} break;
 #endif
 
-#ifdef ACCESSKIT_ENABLED
 		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
-			return (accessibility_driver != nullptr);
+			return AccessibilityServer::get_singleton()->is_supported();
 		} break;
-#endif
 
 		default: {
 			return false;
@@ -2108,11 +2104,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		accessibility_driver->window_destroy(p_id);
-	}
-#endif
+	AccessibilityServer::get_singleton()->window_destroy(p_id);
 
 	if (wd.xic) {
 		XDestroyIC(wd.xic);
@@ -5126,11 +5118,7 @@ void DisplayServerX11::process_events() {
 				static unsigned int focus_order = 0;
 				wd.focus_order = ++focus_order;
 
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(window_id, true);
-				}
-#endif
+				AccessibilityServer::get_singleton()->set_window_focused(window_id, true);
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 
 				if (mouse_mode_grab) {
@@ -5182,11 +5170,8 @@ void DisplayServerX11::process_events() {
 				wd.focused = false;
 
 				Input::get_singleton()->release_pressed_events();
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(window_id, false);
-				}
-#endif
+
+				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 
 				if (mouse_mode_grab) {
@@ -6511,15 +6496,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
 #endif
-#ifdef ACCESSKIT_ENABLED
-		if (accessibility_driver && !accessibility_driver->window_create(id, nullptr)) {
+		if (!AccessibilityServer::get_singleton()->window_create(id, nullptr)) {
 			if (OS::get_singleton()->is_stdout_verbose()) {
 				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
 			}
-			memdelete(accessibility_driver);
-			accessibility_driver = nullptr;
 		}
-#endif
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
 		if (!wd.no_focus && !wd.is_popup) {
@@ -7047,16 +7028,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
-		accessibility_driver = memnew(AccessibilityDriverAccessKit);
-		if (accessibility_driver->init() != OK) {
-			memdelete(accessibility_driver);
-			accessibility_driver = nullptr;
-		}
-	}
-#endif
-
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
@@ -7465,11 +7436,7 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 #endif
 
-#ifdef ACCESSKIT_ENABLED
-		if (accessibility_driver) {
-			accessibility_driver->window_destroy(E.key);
-		}
-#endif
+		AccessibilityServer::get_singleton()->window_destroy(E.key);
 
 		WindowData &wd = E.value;
 		if (wd.xic) {
@@ -7545,11 +7512,7 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		memdelete(accessibility_driver);
-	}
-#endif
+
 #ifdef SPEECHD_ENABLED
 	if (tts) {
 		memdelete(tts);

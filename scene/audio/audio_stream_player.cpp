@@ -31,16 +31,17 @@
 #include "audio_stream_player.h"
 #include "audio_stream_player.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/display/display_server.h"
+#include "servers/display/accessibility_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ACCESSIBILITY_UPDATE) {
 		RID ae = get_accessibility_element();
 		ERR_FAIL_COND(ae.is_null());
 
-		DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_AUDIO);
+		AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_AUDIO);
 	} else {
 		internal->notification(p_what);
 	}

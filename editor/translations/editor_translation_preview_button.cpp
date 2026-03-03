@@ -30,6 +30,7 @@
 
 #include "editor_translation_preview_button.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 

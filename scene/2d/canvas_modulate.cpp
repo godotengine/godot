@@ -30,6 +30,7 @@
 
 #include "canvas_modulate.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void CanvasModulate::_on_in_canvas_visibility_changed(bool p_new_visibility) {

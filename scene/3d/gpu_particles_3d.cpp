@@ -31,6 +31,7 @@
 #include "gpu_particles_3d.h"
 #include "gpu_particles_3d.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"

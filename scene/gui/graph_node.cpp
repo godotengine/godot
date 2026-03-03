@@ -30,10 +30,12 @@
 
 #include "graph_node.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
@@ -606,13 +608,13 @@ void GraphNode::_notification(int p_what) {
 			} else {
 				name += ", " + vformat(ETR("has %d slots"), slot_count);
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_OUTPUT, ETR("Follow Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_slot));
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST);
+			AccessibilityServer::get_singleton()->update_set_name(ae, name);
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_OUTPUT, ETR("Follow Output Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_slot));
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			selected_slot = -1;

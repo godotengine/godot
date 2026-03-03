@@ -29,13 +29,72 @@
 /**************************************************************************/
 
 #import "display_server_macos_base.h"
+#import "godot_application_delegate.h"
 #import "key_mapping_macos.h"
 #import "tts_macos.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/main_loop.h"
 #include "drivers/png/png_driver_common.h"
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_context_driver.h"
+#include "servers/rendering/rendering_device.h"
+#endif
+
 #import <Carbon/Carbon.h>
+
+void DisplayServerMacOSBase::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
+		return;
+	}
+
+	MouseMode prev_mode = mouse_mode;
+	mouse_mode = wanted_mouse_mode;
+	_mouse_apply_mode(prev_mode, wanted_mouse_mode);
+}
+
+void DisplayServerMacOSBase::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerMacOSBase::mouse_get_mode() const {
+	return mouse_mode;
+}
+
+void DisplayServerMacOSBase::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerMacOSBase::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerMacOSBase::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerMacOSBase::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
+}
 
 void DisplayServerMacOSBase::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
@@ -101,6 +160,14 @@ bool DisplayServerMacOSBase::clipboard_has_image() const {
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
 	return result;
+}
+
+CGDirectDisplayID DisplayServerMacOSBase::_get_display_id_for_screen(NSScreen *p_screen) {
+	if (@available(macOS 26.0, *)) {
+		return [p_screen CGDirectDisplayID];
+	} else {
+		return [[p_screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+	}
 }
 
 void DisplayServerMacOSBase::initialize_tts() const {
@@ -384,6 +451,85 @@ void DisplayServerMacOSBase::set_system_theme_change_callback(const Callable &p_
 	system_theme_changed = p_callable;
 }
 
+bool DisplayServerMacOSBase::screen_is_kept_on() const {
+	return (screen_keep_on_assertion);
+}
+
+void DisplayServerMacOSBase::screen_set_keep_on(bool p_enable) {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
+	if (p_enable) {
+		String app_name_string = GLOBAL_GET("application/config/name");
+		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
+		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
+		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);
+	}
+}
+
+int DisplayServerMacOSBase::accessibility_should_increase_contrast() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getHighContrast];
+}
+
+int DisplayServerMacOSBase::accessibility_should_reduce_animation() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceMotion];
+}
+
+int DisplayServerMacOSBase::accessibility_should_reduce_transparency() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getReduceTransparency];
+}
+
+int DisplayServerMacOSBase::accessibility_screen_reader_active() const {
+	return [(GodotApplicationDelegate *)[[NSApplication sharedApplication] delegate] getVoiceOver];
+}
+
+void DisplayServerMacOSBase::update_im_text(const Point2i &p_selection, const String &p_text) {
+	im_selection = p_selection;
+	im_text = p_text;
+
+	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+}
+
+Point2i DisplayServerMacOSBase::ime_get_selection() const {
+	return im_selection;
+}
+
+String DisplayServerMacOSBase::ime_get_text() const {
+	return im_text;
+}
+
+DisplayServer::CursorShape DisplayServerMacOSBase::cursor_get_shape() const {
+	return cursor_shape;
+}
+
+void DisplayServerMacOSBase::beep() const {
+	NSBeep();
+}
+
+int DisplayServerMacOSBase::get_primary_screen() const {
+	return 0;
+}
+
+float DisplayServerMacOSBase::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSScreen *screen = [screenArray objectAtIndex:p_screen];
+		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode(_get_display_id_for_screen(screen));
+		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
+		return (float)displayRefreshRate;
+	}
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+	return SCREEN_REFRESH_RATE_FALLBACK;
+}
+
 void DisplayServerMacOSBase::emit_system_theme_changed() {
 	if (system_theme_changed.is_valid()) {
 		Variant ret;
@@ -395,6 +541,138 @@ void DisplayServerMacOSBase::emit_system_theme_changed() {
 	}
 }
 
+// MARK: - HDR / EDR
+
+void DisplayServerMacOSBase::_update_hdr_output(WindowID p_window, const HDROutput &p_hdr) {
+#ifdef RD_ENABLED
+	if (!rendering_context) {
+		return;
+	}
+
+	CGFloat max_potential_edr, max_edr;
+	window_get_edr_values(p_window, &max_potential_edr, &max_edr);
+	bool desired_hdr_enabled = p_hdr.requested && max_potential_edr > 1.0f;
+	bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
+	if (current_hdr_enabled != desired_hdr_enabled) {
+		rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
+	}
+
+	float reference_luminance = _calculate_current_reference_luminance(max_potential_edr, max_edr);
+	rendering_context->window_set_hdr_output_reference_luminance(p_window, reference_luminance);
+
+	float max_luminance = p_hdr.is_auto_max_luminance() ? max_potential_edr * HARDWARE_REFERENCE_LUMINANCE_NITS : p_hdr.max_luminance;
+	rendering_context->window_set_hdr_output_max_luminance(p_window, max_luminance);
+#endif
+}
+
+bool DisplayServerMacOSBase::window_is_hdr_output_supported(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		return false;
+	}
+#endif
+	CGFloat max_potential_edr;
+	window_get_edr_values(p_window, &max_potential_edr, nullptr);
+	return max_potential_edr > 1.0f;
+}
+
+void DisplayServerMacOSBase::window_request_hdr_output(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(p_enabled && rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT), "HDR output is not supported by the rendering device.");
+#endif
+
+	HDROutput &hdr = _get_hdr_output(p_window);
+	hdr.requested = p_enabled;
+	_update_hdr_output(p_window, hdr);
+}
+
+bool DisplayServerMacOSBase::window_is_hdr_output_requested(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	return _get_hdr_output(p_window).requested;
+}
+
+bool DisplayServerMacOSBase::window_is_hdr_output_enabled(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerMacOSBase::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Apple devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+}
+
+float DisplayServerMacOSBase::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	return -1.0f; // Always auto-adjusted by the OS on Apple platforms.
+}
+
+constexpr float DisplayServerMacOSBase::_calculate_current_reference_luminance(CGFloat p_max_potential_edr_value, CGFloat p_max_edr_value) const {
+	return (p_max_potential_edr_value * HARDWARE_REFERENCE_LUMINANCE_NITS) / p_max_edr_value;
+}
+
+float DisplayServerMacOSBase::window_get_hdr_output_current_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+	return 200.0f;
+}
+
+void DisplayServerMacOSBase::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	HDROutput &hdr = _get_hdr_output(p_window);
+
+	if (hdr.max_luminance == p_max_luminance) {
+		return;
+	}
+	hdr.max_luminance = p_max_luminance;
+	_update_hdr_output(p_window, hdr);
+}
+
+float DisplayServerMacOSBase::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	return _get_hdr_output(p_window).max_luminance;
+}
+
+float DisplayServerMacOSBase::window_get_hdr_output_current_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const HDROutput &hdr = _get_hdr_output(p_window);
+	if (hdr.is_auto_max_luminance()) {
+		CGFloat max_potential_edr;
+		window_get_edr_values(p_window, &max_potential_edr, nullptr);
+		return max_potential_edr * HARDWARE_REFERENCE_LUMINANCE_NITS;
+	}
+	return hdr.max_luminance;
+}
+
+float DisplayServerMacOSBase::window_get_output_max_linear_value(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window);
+	}
+#endif
+
+	return 1.0f; // SDR
+}
+
 DisplayServerMacOSBase::DisplayServerMacOSBase() {
 	KeyMappingMacOS::initialize();
 
@@ -404,6 +682,8 @@ DisplayServerMacOSBase::DisplayServerMacOSBase() {
 		initialize_tts();
 	}
 
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
 	// Register to be notified on keyboard layout changes.
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
 			nullptr, _keyboard_layout_changed,
@@ -412,5 +692,10 @@ DisplayServerMacOSBase::DisplayServerMacOSBase() {
 }
 
 DisplayServerMacOSBase::~DisplayServerMacOSBase() {
+	if (screen_keep_on_assertion) {
+		IOPMAssertionRelease(screen_keep_on_assertion);
+		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
 }

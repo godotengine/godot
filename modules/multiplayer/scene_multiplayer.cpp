@@ -32,6 +32,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED

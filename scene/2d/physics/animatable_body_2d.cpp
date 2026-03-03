@@ -30,6 +30,8 @@
 
 #include "animatable_body_2d.h"
 
+#include "core/object/class_db.h"
+
 void AnimatableBody2D::set_sync_to_physics(bool p_enable) {
 	if (sync_to_physics == p_enable) {
 		return;

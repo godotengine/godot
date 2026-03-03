@@ -31,6 +31,7 @@
 #include "godot_instance.h"
 
 #include "core/extension/gdextension_manager.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"

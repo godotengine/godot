@@ -30,6 +30,7 @@
 
 #include "mesh_library.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h" // IWYU pragma: Needed to bind RSE enums.
 

@@ -60,7 +60,7 @@
 			[b]Note:[/b] Only available for SVG images.
 		</member>
 		<member name="editor/scale_with_editor_scale" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], scales the imported image to match [member EditorSettings.interface/editor/custom_display_scale]. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
+			If [code]true[/code], scales the imported image to match [member EditorSettings.interface/editor/appearance/custom_display_scale]. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
 			[b]Note:[/b] Only available for SVG images.
 		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="false">

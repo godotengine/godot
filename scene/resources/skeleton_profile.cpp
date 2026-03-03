@@ -31,6 +31,7 @@
 #include "skeleton_profile.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 	ERR_FAIL_COND_V(is_read_only, false);

@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"

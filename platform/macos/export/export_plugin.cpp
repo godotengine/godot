@@ -35,6 +35,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/plist.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"

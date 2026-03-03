@@ -30,6 +30,9 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "canvas_item.h"
+
+#include "core/object/class_db.h"
 #include "scene/resources/font.h"
 
 void CanvasItem::_draw_string_bind_compat_104872(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
@@ -90,4 +93,4 @@ void CanvasItem::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("draw_multiline_colors", "points", "colors", "width"), &CanvasItem::_draw_multiline_colors_bind_compat_84523, DEFVAL(-1.0));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

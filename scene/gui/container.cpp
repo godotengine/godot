@@ -30,6 +30,9 @@
 
 #include "container.h"
 
+#include "core/object/class_db.h"
+#include "servers/display/accessibility_server.h"
+
 void Container::_child_minsize_changed() {
 	update_minimum_size();
 	queue_sort();
@@ -189,9 +192,9 @@ void Container::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			if (accessibility_region) {
-				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_REGION);
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_REGION);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 			}
 		} break;
 
