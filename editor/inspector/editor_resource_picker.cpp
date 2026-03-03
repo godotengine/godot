@@ -278,8 +278,7 @@ void EditorResourcePicker::_on_preview_invalidated(const String &p_path) {
 		return;
 	}
 
-	// The in-memory resource may still hold stale image data.
-	// Explicitly reload it here so that the preview is generated from fresh data.
+	// The in-memory resource may still hold stale data. Explicitly reload it here
 	if (edited_resource->editor_can_reload_from_file()) {
 		edited_resource->reload_from_file();
 	}
