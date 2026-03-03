@@ -181,7 +181,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 		return;
 	}
-	if (p_event->is_action_released(SNAME("ui_cancel"), true)) {
+	if (p_event->is_action_released(SNAME("ui_cancel"), true) && hold_event.is_valid()) {
 		event_to_check = hold_event;
 		hold_next = 0;
 		hold_event = Ref<InputEvent>();
