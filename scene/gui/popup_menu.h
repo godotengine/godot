@@ -37,14 +37,24 @@
 #include "scene/resources/text_line.h"
 #include "servers/display/native_menu.h"
 
+class LineEdit;
 class PanelContainer;
 class Timer;
+class VBoxContainer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
+public:
+	enum FilterBehavior {
+		FILTER_NORMAL,
+		FILTER_ALWAYS_HIDE,
+		FILTER_ALWAYS_SHOW,
+	};
+
+private:
 	struct Item {
 		mutable RID accessibility_item_element;
 		mutable bool accessibility_item_dirty = true;
@@ -86,6 +96,8 @@ class PopupMenu : public Popup {
 		bool shortcut_is_disabled = false;
 		bool allow_echo = false;
 		bool submenu_bound = false;
+		bool hidden = false;
+		FilterBehavior filter_behavior = FILTER_NORMAL;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -139,6 +151,7 @@ class PopupMenu : public Popup {
 	bool mouse_movement_was_tested = false;
 	Point2 panel_offset_start;
 	float submenu_timer_popup_delay = 0.2;
+	bool filter_enabled = false;
 	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
@@ -177,6 +190,8 @@ class PopupMenu : public Popup {
 	String search_string = "";
 
 	PanelContainer *panel = nullptr;
+	VBoxContainer *vbox = nullptr;
+	LineEdit *filter = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
@@ -235,12 +250,16 @@ class PopupMenu : public Popup {
 	void _close_pressed();
 	void _menu_changed();
 	void _input_from_window_internal(const Ref<InputEvent> &p_event);
+	void _filter_gui_input(const Ref<InputEvent> &p_event);
 	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
 	void _set_item_checkable_type(int p_index, int p_checkable_type);
 	int _get_item_checkable_type(int p_index) const;
 	void _native_popup(const Rect2i &p_rect);
 	String _atr(int p_idx, const String &p_text) const;
 	void _submenu_hidden();
+	void _update_wrapped_size(bool p_keep_width = false);
+	void _apply_filter(const String &p_text);
+	void _reset_filter();
 
 	bool shrink_height = true;
 	bool shrink_width = true;
@@ -414,6 +433,12 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
+	void set_filter_enabled(bool p_enabled);
+	bool is_filter_enabled() const;
+
+	void set_item_filter_behavior(int p_idx, FilterBehavior p_behavior);
+	FilterBehavior get_item_filter_behavior(int p_idx) const;
+
 	void set_shrink_height(bool p_shrink);
 	bool get_shrink_height() const;
 
@@ -425,3 +450,5 @@ public:
 	PopupMenu();
 	~PopupMenu();
 };
+
+VARIANT_ENUM_CAST(PopupMenu::FilterBehavior);

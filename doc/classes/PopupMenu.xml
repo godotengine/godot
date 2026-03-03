@@ -245,6 +245,13 @@
 				Returns the auto translate mode of the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_filter_behavior" qualifiers="const">
+			<return type="int" enum="PopupMenu.FilterBehavior" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the filter behavior of the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="index" type="int" />
@@ -495,6 +502,14 @@
 				Enables/disables the item at the given [param index]. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
+		<method name="set_item_filter_behavior">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="behavior" type="int" enum="PopupMenu.FilterBehavior" />
+			<description>
+				Sets the filter behavior of the item at the given [param index]. See [member filter_enabled].
+			</description>
+		</method>
 		<method name="set_item_icon">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -653,6 +668,9 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
+		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled" default="false">
+			If [code]true[/code], adds a [LineEdit] filter input at the top of the [PopupMenu] that can be used to filter items. See [method set_item_filter_behavior] for ways to configure how items are affected by the filter.
+		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>
@@ -711,6 +729,17 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="FILTER_NORMAL" value="0" enum="FilterBehavior">
+			The item is visible when it matches the filter and hidden when it doesn't. This is the default behavior.
+		</constant>
+		<constant name="FILTER_ALWAYS_HIDE" value="1" enum="FilterBehavior">
+			The item is always hidden when there's a filter.
+		</constant>
+		<constant name="FILTER_ALWAYS_SHOW" value="2" enum="FilterBehavior">
+			The item is always visible when there's a filter.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.

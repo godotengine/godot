@@ -303,9 +303,11 @@ void EditorResourcePicker::_update_menu_items() {
 		// Add an option to load a resource from a file using the QuickOpen dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("LoadQuick")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
 		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
+		edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 
 		// Add an option to load a resource from a file using the regular file dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
+		edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 	}
 
 	// Add options for changing existing value of the resource.
@@ -321,14 +323,17 @@ void EditorResourcePicker::_update_menu_items() {
 		} else {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Edit"), OBJ_MENU_INSPECT);
 		}
+		edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 
 		if (is_editable()) {
 			if (!_is_custom_type_script()) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+				edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 			}
 			bool unique_enabled = _is_uniqueness_enabled();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 			edit_menu->set_item_disabled(-1, !unique_enabled);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 
 			String modifier = "Ctrl";
 			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
@@ -350,6 +355,7 @@ void EditorResourcePicker::_update_menu_items() {
 				unique_enabled = _is_uniqueness_enabled(true);
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 				edit_menu->set_item_disabled(-1, !unique_enabled);
+				edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 				if (!unique_enabled) {
 					Ref<Resource> parent_res = _has_parent_resource();
 					if (EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
@@ -359,12 +365,15 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 		}
 	}
 
@@ -394,11 +403,14 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (edited_resource.is_valid()) {
 			edit_menu->add_item(TTRC("Copy"), OBJ_MENU_COPY);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 		}
 
 		if (paste_valid) {
 			edit_menu->add_item(TTRC("Paste"), OBJ_MENU_PASTE);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_HIDE);
 		}
 	}
 
@@ -652,6 +664,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		HashSet<StringName> allowed_types(allowed_types_without_convert);
 		if (!allowed_types.is_empty()) {
 			edit_menu->add_separator(TTRC("New"));
+			edit_menu->set_item_filter_behavior(-1, PopupMenu::FILTER_ALWAYS_SHOW);
 		}
 
 		for (const StringName &E : allowed_types) {
@@ -1233,6 +1246,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->set_filter_enabled(true);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
