@@ -6339,6 +6339,12 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		return true;
 	}
 
+	/// [Monarch] This is required to make generic params compatible with anything.
+	/// Change down the line with concrete type resolution.
+	if(p_target.kind == GDScriptParser::DataType::GENERIC_TYPE || p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		return true;
+	}
+
 	if (p_target.kind == GDScriptParser::DataType::BUILTIN) {
 		bool valid = p_source.kind == GDScriptParser::DataType::BUILTIN && p_target.builtin_type == p_source.builtin_type;
 		if (!valid && p_allow_implicit_conversion) {
