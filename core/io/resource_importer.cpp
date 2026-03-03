@@ -393,6 +393,17 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	return pat.type;
 }
 
+String ResourceFormatImporter::get_resource_script_class(const String &p_path) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat, false);
+
+	if (err != OK) {
+		return String();
+	}
+
+	return ResourceLoader::get_resource_script_class(pat.path);
+}
+
 ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
