@@ -229,7 +229,8 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 				}
 			} break;
 			case ITEM_TABLE: {
-				offset += 1;
+				ItemTable *table = static_cast<ItemTable *>(it);
+				offset += table->char_count;
 			} break;
 			default:
 				break;
@@ -817,6 +818,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					}
 					idx++;
 				}
+				table->char_count = t_char_count;
 
 				// Compute width for each column.
 				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
