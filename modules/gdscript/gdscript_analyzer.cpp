@@ -31,6 +31,7 @@
 #include "gdscript_analyzer.h"
 
 #include "core/string/ustring.h"
+#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 #include "gdscript.h"
 #include "gdscript_utility_callable.h"
@@ -433,6 +434,34 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 			push_error(vformat(R"(Class "%s" hides a global script class.)", class_name), p_class->identifier);
 		} else if (ProjectSettings::get_singleton()->has_autoload(class_name) && ProjectSettings::get_singleton()->get_autoload(class_name).is_singleton) {
 			push_error(vformat(R"(Class "%s" hides an autoload singleton.)", class_name), p_class->identifier);
+		}
+	}
+
+	/// [Monarch] Generic param names are validated here. 
+	/// Disallow any dupes like Stuff[T, T, T] and don't shadow globals or bbuilt-ins.
+	HashSet<StringName> seen_generic_params;
+	for(GDScriptParser::IdentifierNode* param : p_class->generic_parameters) {
+		if (param == nullptr) { continue; }
+
+		const StringName this_name = param -> name;
+
+		if (seen_generic_params.has(this_name)) {
+			push_error(vformat(R"([Reginleif] Caught duplicate generic parameter '%s'.)", this_name), param);
+			continue;
+		}
+
+		seen_generic_params.insert(this_name);
+
+		if (GDScriptParser::get_builtin_type(this_name) < Variant::VARIANT_MAX) {
+			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides a built-in type.)", this_name), param);
+		} else if (class_exists(this_name)) {
+			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides a native class.)", this_name), param);
+		} else if (ScriptServer::is_global_class(this_name) &&
+				(!GDScript::is_canonically_equal_paths(ScriptServer::get_global_class_path(this_name), parser->script_path) || p_class != parser->head)) {
+			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides a global script class.)", this_name), param);
+		} else if (ProjectSettings::get_singleton()->has_autoload(this_name) &&
+				ProjectSettings::get_singleton()->get_autoload(this_name).is_singleton) {
+			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides an autoload singleton.)", this_name), param);
 		}
 	}
 
@@ -1024,8 +1053,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	/// were provided (container_types was empty so the binding block above was skipped),
 	/// that means the user wrote e.g. `var x: Box` instead of `var x: Box[int]`.
 	if ((result.kind == GDScriptParser::DataType::CLASS ||
-	     result.kind == GDScriptParser::DataType::SCRIPT||
-		 result.kind == GDScriptParser::DataType::GENERIC_TYPE) &&
+	     result.kind == GDScriptParser::DataType::SCRIPT ) &&
 			result.generic_type_bindings.is_empty() &&
 			result.class_type != nullptr &&
 			result.class_type->has_generic_parameters()) {
