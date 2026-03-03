@@ -7693,8 +7693,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					grid_visible[i] = grid_enabled;
 				}
 			}
-			_finish_grid();
-			_init_grid();
+			grid_init_draw = false; // redraw
+			update_grid();
 
 			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), grid_enabled);
 
@@ -8735,7 +8735,7 @@ void Node3DEditor::update_grid() {
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
 	bool changed_y_signature = ((grid_camera_last_update_position.y >= 0.0f && camera_position.y <= 0.0f) || (grid_camera_last_update_position.y <= 0.0f && camera_position.y >= 0.0f));
-	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f ||  changed_y_signature)  {
+	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f || changed_y_signature) {
 		_finish_grid();
 		if (camera_position.y >= 0.0f || grid_bottom_enabled) {
 			_init_grid();
