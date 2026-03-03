@@ -321,7 +321,10 @@ void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bo
 	for (int i = 0; i < cc; i++) {
 		Node *child = p_node->get_child(i);
 
-		if (child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) && child->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+		is_exposed = is_exposed || child->has_meta(META_EXPOSED_IN_INSTANCE);
+
+		if (is_exposed) {
 			_update_node_subtree(child, p_parent, p_force);
 
 			if (HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child)) {
@@ -355,7 +358,11 @@ int SceneTreeEditor::get_visible_exposed_node_count(Node *p_node) {
 		if (!node) {
 			continue;
 		}
-		if (node->has_meta(META_EXPOSED_IN_OWNER) || node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+
+		bool is_exposed = node->has_meta(META_EXPOSED_IN_OWNER) && node->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+		is_exposed = is_exposed || node->has_meta(META_EXPOSED_IN_INSTANCE);
+
+		if (is_exposed) {
 			count++;
 		}
 
@@ -405,7 +412,6 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
 			TreeItem *last_inserted = get_last_exposed_tree_item(p_parent);
-			;
 			_update_exposed_nodes(p_node, p_parent, p_force, last_inserted);
 			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
 			return;

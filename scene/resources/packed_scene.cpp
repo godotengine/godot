@@ -552,10 +552,18 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							} else if (n.owner == 0) {
 								// Check whether a node's parent is no longer exposed. This only matters within the Editor.
 								NODE_FROM_ID(nowner, n.owner);
-								if (nowner != parent && parent->get_owner() != ret_nodes[0] && !parent->has_meta(META_EXPOSED_IN_INSTANCE) && !parent->has_meta(META_EXPOSED_IN_OWNER)) {
+
+								Node *edited_root = ret_nodes[0];
+								Node *parent_owner = parent != nullptr ? parent->get_owner() : nullptr;
+								Node *parent_owner_owner = parent_owner != nullptr ? parent_owner->get_owner() : nullptr;
+
+								bool is_parent_exposed_in_instance = parent->has_meta(META_EXPOSED_IN_INSTANCE);
+								bool is_parent_exposed_via_owner = parent->has_meta(META_EXPOSED_IN_OWNER) && (parent_owner == edited_root || parent_owner_owner == edited_root);
+
+								if (nowner != parent && nowner == edited_root && parent_owner != edited_root && !is_parent_exposed_in_instance && !is_parent_exposed_via_owner) {
 									bool in_editable_instance = false;
 									if (parent->get_owner()) {
-										NodePath rel_path = ret_nodes[0]->get_path_to(parent->get_owner());
+										NodePath rel_path = edited_root->get_path_to(parent->get_owner());
 										for (const NodePath &p : editable_instances) {
 											if (p == rel_path) {
 												in_editable_instance = true;
@@ -571,7 +579,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 																	  .trim_prefix("./")
 																	  .replace_char('/', '@');
 
-											parent = ret_nodes[0];
+											parent = edited_root;
 										}
 									}
 								}
@@ -741,7 +749,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	for (const NodePath &e_path : exposed_nodes) {
 		Node *ei = ret_nodes[0]->get_node_or_null(e_path);
 		if (ei) {
-			ei->set_meta(META_EXPOSED_IN_OWNER, true);
+			if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
+				if (ei->get_owner() == ret_nodes[0] || ei->has_meta(META_EXPOSED_IN_OWNER)) {
+					ei->set_meta(META_EXPOSED_IN_OWNER, true);
+				}
+			}
 			if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
 				ei->set_meta(META_MARKED_FOR_EXPOSURE, true);
 			}
