@@ -859,7 +859,8 @@ else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
-        else:
+        elif not methods.using_emcc(env):
+            # Emscripten uses -s for build options, so it is excluded.
             env.AppendUnique(LINKFLAGS=["-s"])
 
     # Linker needs optimization flags too, at least for Emscripten.
