@@ -32,16 +32,7 @@
 
 namespace DisplayServerEnums {
 
-enum HandleType {
-	DISPLAY_HANDLE,
-	WINDOW_HANDLE,
-	WINDOW_VIEW,
-	OPENGL_CONTEXT,
-	EGL_DISPLAY,
-	EGL_CONFIG,
-	GLX_VISUALID,
-	GLX_FBCONFIG,
-};
+/* MAIN */
 
 enum Context {
 	CONTEXT_EDITOR,
@@ -90,6 +81,16 @@ enum Feature {
 	FEATURE_HDR_OUTPUT,
 };
 
+/* RENDERING DEVICE */
+
+enum RenderingDeviceCreationStatus {
+	UNKNOWN,
+	SUCCESS,
+	FAILURE,
+};
+
+/* TTS */
+
 enum TTSUtteranceEvent {
 	TTS_UTTERANCE_STARTED,
 	TTS_UTTERANCE_ENDED,
@@ -98,13 +99,97 @@ enum TTSUtteranceEvent {
 	TTS_UTTERANCE_MAX,
 };
 
+/* MOUSE */
+
+// Keep synced with InputClassEnums::MouseMode enum.
+enum MouseMode {
+	MOUSE_MODE_VISIBLE, // Input::MouseMode::MOUSE_MODE_VISIBLE
+	MOUSE_MODE_HIDDEN, // Input::MouseMode::MOUSE_MODE_HIDDEN
+	MOUSE_MODE_CAPTURED, // Input::MouseMode::MOUSE_MODE_CAPTURED
+	MOUSE_MODE_CONFINED, // Input::MouseMode::MOUSE_MODE_CONFINED
+	MOUSE_MODE_CONFINED_HIDDEN, // Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN
+	MOUSE_MODE_MAX, // Input::MouseMode::MOUSE_MODE_MAX
+};
+
+// Keep synced with InputClassEnums and Control enums.
+#undef CursorShape
+enum CursorShape {
+	CURSOR_ARROW,
+	CURSOR_IBEAM,
+	CURSOR_POINTING_HAND,
+	CURSOR_CROSS,
+	CURSOR_WAIT,
+	CURSOR_BUSY,
+	CURSOR_DRAG,
+	CURSOR_CAN_DROP,
+	CURSOR_FORBIDDEN,
+	CURSOR_VSIZE,
+	CURSOR_HSIZE,
+	CURSOR_BDIAGSIZE,
+	CURSOR_FDIAGSIZE,
+	CURSOR_MOVE,
+	CURSOR_VSPLIT,
+	CURSOR_HSPLIT,
+	CURSOR_HELP,
+	CURSOR_MAX
+};
+
+/* KEYBOARD */
+
+// Keep synced with LineEdit::VirtualKeyboardType enum.
+enum VirtualKeyboardType {
+	KEYBOARD_TYPE_DEFAULT,
+	KEYBOARD_TYPE_MULTILINE,
+	KEYBOARD_TYPE_NUMBER,
+	KEYBOARD_TYPE_NUMBER_DECIMAL,
+	KEYBOARD_TYPE_PHONE,
+	KEYBOARD_TYPE_EMAIL_ADDRESS,
+	KEYBOARD_TYPE_PASSWORD,
+	KEYBOARD_TYPE_URL
+};
+
+/* SCREEN */
+
+// Keep synced with EditorSettings::InitialScreen enum.
+enum {
+	INVALID_SCREEN = -1,
+	SCREEN_WITH_MOUSE_FOCUS = -4,
+	SCREEN_WITH_KEYBOARD_FOCUS = -3,
+	SCREEN_PRIMARY = -2,
+	SCREEN_OF_MAIN_WINDOW = -1, // Note: for the main window, determine screen from position.
+};
+
+// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
+// project setting hint.
+enum ScreenOrientation {
+	SCREEN_LANDSCAPE,
+	SCREEN_PORTRAIT,
+	SCREEN_REVERSE_LANDSCAPE,
+	SCREEN_REVERSE_PORTRAIT,
+	SCREEN_SENSOR_LANDSCAPE,
+	SCREEN_SENSOR_PORTRAIT,
+	SCREEN_SENSOR,
+};
+
+/* WINDOW */
+
 typedef int WindowID;
-typedef int IndicatorID;
 
 enum {
 	MAIN_WINDOW_ID = 0,
 	INVALID_WINDOW_ID = -1,
 	INVALID_INDICATOR_ID = -1
+};
+
+enum HandleType {
+	DISPLAY_HANDLE,
+	WINDOW_HANDLE,
+	WINDOW_VIEW,
+	OPENGL_CONTEXT,
+	EGL_DISPLAY,
+	EGL_CONFIG,
+	GLX_VISUALID,
+	GLX_FBCONFIG,
 };
 
 enum WindowMode {
@@ -173,60 +258,6 @@ enum WindowResizeEdge {
 	WINDOW_EDGE_MAX,
 };
 
-// Keep synced with InputClassEnums::MouseMode enum.
-enum MouseMode {
-	MOUSE_MODE_VISIBLE, // Input::MouseMode::MOUSE_MODE_VISIBLE
-	MOUSE_MODE_HIDDEN, // Input::MouseMode::MOUSE_MODE_HIDDEN
-	MOUSE_MODE_CAPTURED, // Input::MouseMode::MOUSE_MODE_CAPTURED
-	MOUSE_MODE_CONFINED, // Input::MouseMode::MOUSE_MODE_CONFINED
-	MOUSE_MODE_CONFINED_HIDDEN, // Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN
-	MOUSE_MODE_MAX, // Input::MouseMode::MOUSE_MODE_MAX
-};
-
-// Keep synced with InputClassEnums and Control enums.
-#undef CursorShape
-enum CursorShape {
-	CURSOR_ARROW,
-	CURSOR_IBEAM,
-	CURSOR_POINTING_HAND,
-	CURSOR_CROSS,
-	CURSOR_WAIT,
-	CURSOR_BUSY,
-	CURSOR_DRAG,
-	CURSOR_CAN_DROP,
-	CURSOR_FORBIDDEN,
-	CURSOR_VSIZE,
-	CURSOR_HSIZE,
-	CURSOR_BDIAGSIZE,
-	CURSOR_FDIAGSIZE,
-	CURSOR_MOVE,
-	CURSOR_VSPLIT,
-	CURSOR_HSPLIT,
-	CURSOR_HELP,
-	CURSOR_MAX
-};
-
-// Keep synced with EditorSettings::InitialScreen enum.
-enum {
-	INVALID_SCREEN = -1,
-	SCREEN_WITH_MOUSE_FOCUS = -4,
-	SCREEN_WITH_KEYBOARD_FOCUS = -3,
-	SCREEN_PRIMARY = -2,
-	SCREEN_OF_MAIN_WINDOW = -1, // Note: for the main window, determine screen from position.
-};
-
-// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
-// project setting hint.
-enum ScreenOrientation {
-	SCREEN_LANDSCAPE,
-	SCREEN_PORTRAIT,
-	SCREEN_REVERSE_LANDSCAPE,
-	SCREEN_REVERSE_PORTRAIT,
-	SCREEN_SENSOR_LANDSCAPE,
-	SCREEN_SENSOR_PORTRAIT,
-	SCREEN_SENSOR,
-};
-
 // Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
 // project setting hint.
 enum VSyncMode {
@@ -234,27 +265,6 @@ enum VSyncMode {
 	VSYNC_ENABLED,
 	VSYNC_ADAPTIVE,
 	VSYNC_MAILBOX
-};
-
-enum FileDialogMode {
-	FILE_DIALOG_MODE_OPEN_FILE,
-	FILE_DIALOG_MODE_OPEN_FILES,
-	FILE_DIALOG_MODE_OPEN_DIR,
-	FILE_DIALOG_MODE_OPEN_ANY,
-	FILE_DIALOG_MODE_SAVE_FILE,
-	FILE_DIALOG_MODE_SAVE_MAX
-};
-
-// Keep synced with LineEdit::VirtualKeyboardType enum.
-enum VirtualKeyboardType {
-	KEYBOARD_TYPE_DEFAULT,
-	KEYBOARD_TYPE_MULTILINE,
-	KEYBOARD_TYPE_NUMBER,
-	KEYBOARD_TYPE_NUMBER_DECIMAL,
-	KEYBOARD_TYPE_PHONE,
-	KEYBOARD_TYPE_EMAIL_ADDRESS,
-	KEYBOARD_TYPE_PASSWORD,
-	KEYBOARD_TYPE_URL
 };
 
 enum ProgressState {
@@ -265,13 +275,24 @@ enum ProgressState {
 	PROGRESS_STATE_PAUSED,
 };
 
-enum RenderingDeviceCreationStatus {
-	UNKNOWN,
-	SUCCESS,
-	FAILURE,
+/* DIALOGS */
+
+enum FileDialogMode {
+	FILE_DIALOG_MODE_OPEN_FILE,
+	FILE_DIALOG_MODE_OPEN_FILES,
+	FILE_DIALOG_MODE_OPEN_DIR,
+	FILE_DIALOG_MODE_OPEN_ANY,
+	FILE_DIALOG_MODE_SAVE_FILE,
+	FILE_DIALOG_MODE_SAVE_MAX
 };
 
+/* STATUS INDICATOR */
+
+typedef int IndicatorID;
+
 #ifndef DISABLE_DEPRECATED
+
+/* ACCESSIBILITY */
 
 enum AccessibilityRole {
 	ROLE_UNKNOWN,
