@@ -20,7 +20,7 @@
 			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]kebab-case[/code].
 		</constant>
 		<constant name="SCRIPT_NAME_CASING_CAMEL_CASE" value="4" enum="ScriptNameCasing">
-			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]cascalCase[/code].
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]camelCase[/code].
 		</constant>
 	</constants>
 </class>
