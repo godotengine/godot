@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 

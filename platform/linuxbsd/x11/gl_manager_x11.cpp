@@ -32,6 +32,7 @@
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 
 #include "thirdparty/glad/glad/glx.h"

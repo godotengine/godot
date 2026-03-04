@@ -40,6 +40,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"

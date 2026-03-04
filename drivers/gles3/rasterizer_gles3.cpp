@@ -37,6 +37,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -211,6 +212,13 @@ void RasterizerGLES3::finalize() {
 	memdelete(texture_storage);
 	memdelete(utilities);
 	memdelete(config);
+}
+
+void RasterizerGLES3::make_current(bool p_gles_over_gl) {
+	RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
+	OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
+	_create_func = _create_current;
+	low_end = true;
 }
 
 RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
