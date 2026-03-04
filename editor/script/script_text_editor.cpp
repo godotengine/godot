@@ -1161,11 +1161,18 @@ void ScriptTextEditor::_on_caret_moved() {
 	if (code_editor->is_previewing_navigation_change()) {
 		return;
 	}
+	if (is_layout_pending_in_tree()) {
+		call_on_all_layout_pending_finished(callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+		return;
+	}
+	// When previous_line < 0, it means the user has just switched to this editor from a different one
+	// (which already saved a state in the history). In this case, we should not save this editor's previous state.
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (Math::abs(current_line - previous_line) >= 10) {
+	if (previous_line >= 0 && Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
+		nav_state["ensure_caret_visible"] = true;
 		emit_signal(SNAME("request_save_previous_state"), nav_state);
 		store_previous_state();
 	}
@@ -1887,6 +1894,11 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				previous_line = -1;
+			}
 		} break;
 	}
 }

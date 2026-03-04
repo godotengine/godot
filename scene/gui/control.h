@@ -225,6 +225,8 @@ private:
 		bool updating_last_minimum_size = false;
 		bool block_minimum_size_adjust = false;
 
+		bool layout_pending = false;
+
 		bool size_warning = true;
 
 		// Container sizing.
@@ -553,6 +555,13 @@ public:
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
+
+	bool is_layout_pending() const;
+	bool is_layout_pending_in_tree() const;
+	void layout_pending_start();
+	void layout_pending_finish();
+	Control *get_layout_pending_control_in_tree() const;
+	void call_on_all_layout_pending_finished(const Callable &p_callable);
 
 	// Container sizing.
 
