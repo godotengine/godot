@@ -30,19 +30,6 @@
 
 #include "thorvg_svg_in_ot.h"
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/classes/xml_parser.hpp>
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/templates/vector.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/error/error_macros.h"
 #include "core/io/xml_parser.h"
 #include "core/os/memory.h"
@@ -52,7 +39,6 @@ using namespace godot;
 #include "core/variant/variant.h"
 
 #include "modules/modules_enabled.gen.h" // For svg, freetype.
-#endif
 
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
@@ -180,11 +166,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				if (!is_in_defs && parser->has_attribute("id")) {
 					const String &gl_name = parser->get_named_attribute_value("id");
 					if (gl_name.begins_with("glyph")) {
-#ifdef GDEXTENSION
-						int dot_pos = gl_name.find(".");
-#else
 						int dot_pos = gl_name.find_char('.');
-#endif // GDEXTENSION
 						int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
 
 						TVG_NodeCache node_cache = TVG_NodeCache();

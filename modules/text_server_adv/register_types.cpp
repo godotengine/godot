@@ -53,27 +53,3 @@ void uninitialize_text_server_adv_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 }
-
-#ifdef GDEXTENSION
-
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/core/memory.hpp>
-
-using namespace godot;
-
-extern "C" {
-
-GDExtensionBool GDE_EXPORT textserver_advanced_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-	GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
-
-	init_obj.register_initializer(&initialize_text_server_adv_module);
-	init_obj.register_terminator(&uninitialize_text_server_adv_module);
-	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SERVERS);
-
-	return init_obj.init();
-}
-
-} // ! extern "C"
-
-#endif // ! GDEXTENSION
