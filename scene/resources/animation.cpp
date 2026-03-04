@@ -32,7 +32,6 @@
 #include "animation.compat.inc"
 
 #include "core/io/marshalls.h"
-#include "core/object/callable_method_pointer.h"
 #include "core/object/class_db.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
