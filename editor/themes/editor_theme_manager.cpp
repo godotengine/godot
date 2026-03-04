@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"

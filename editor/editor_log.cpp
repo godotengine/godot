@@ -31,6 +31,7 @@
 #include "editor_log.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

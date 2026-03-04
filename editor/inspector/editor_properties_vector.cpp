@@ -30,6 +30,7 @@
 
 #include "editor_properties_vector.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/settings/editor_settings.h"

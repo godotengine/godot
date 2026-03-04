@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/audio/audio_stream_preview.h"
