@@ -139,27 +139,50 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			Variant m;
 			if (p_instance->get(E, m)) {
 				const String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
+				if (m.get_type() == Variant::OBJECT && !m.is_null()) {
+					Variant inst_id = ((Object *)m)->get_instance_id();
+					String name;
+					ScriptInstance *script_instance = m.get_validated_object()->get_script_instance();
+					if (script_instance) {
+						Ref<Script> script = script_instance->get_script();
+						if (script.is_valid()) {
+							name = script->get_global_name();
+						}
+					}
 
-				PropertyInfo pi;
-				const PropertyInfo *pi_ptr = non_exported_members.getptr(E);
-				if (pi_ptr == nullptr) {
-					pi.type = m.get_type();
+					PropertyInfo pi(inst_id.get_type(), "Members/" + script_path + E, PROPERTY_HINT_OBJECT_ID, name.is_empty() ? m.get_validated_object()->get_class() : name);
+					properties.push_back(SceneDebuggerProperty(pi, inst_id));
 				} else {
-					pi = *pi_ptr;
-				}
-				pi.name = "Members/" + script_path + E;
+					PropertyInfo pi;
+					const PropertyInfo *pi_ptr = non_exported_members.getptr(E);
+					if (pi_ptr == nullptr) {
+						pi.type = m.get_type();
+					} else {
+						pi = *pi_ptr;
+					}
+					pi.name = "Members/" + script_path + E;
 
-				properties.push_back(SceneDebuggerProperty(pi, m));
+					properties.push_back(SceneDebuggerProperty(pi, m));
+				}
 			}
 		}
 	}
 	// Constants
 	for (KeyValue<const Script *, HashMap<StringName, Variant>> &sc : constants) {
 		for (const KeyValue<StringName, Variant> &E : sc.value) {
-			String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
-			if (E.value.get_type() == Variant::OBJECT) {
+			const String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
+			if (E.value.get_type() == Variant::OBJECT && !E.value.is_null()) {
 				Variant inst_id = ((Object *)E.value)->get_instance_id();
-				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
+				String name;
+				ScriptInstance *script_instance = E.value.get_validated_object()->get_script_instance();
+				if (script_instance) {
+					Ref<Script> script = script_instance->get_script();
+					if (script.is_valid()) {
+						name = script->get_global_name();
+					}
+				}
+
+				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, name.is_empty() ? E.value.get_validated_object()->get_class() : name);
 				properties.push_back(SceneDebuggerProperty(pi, inst_id));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
@@ -248,7 +271,9 @@ void SceneDebuggerObject::deserialize(uint64_t p_id, const String &p_class_name,
 					var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
 					pinfo.type = var.get_type();
 					pinfo.hint = PROPERTY_HINT_OBJECT_ID;
-					pinfo.hint_string = "Object";
+					if (pinfo.hint_string.is_empty()) {
+						pinfo.hint_string = "Object";
+					}
 				}
 			}
 		}
