@@ -31,6 +31,7 @@
 #include "gpu_particles_3d.h"
 #include "gpu_particles_3d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/3d/cpu_particles_3d.h"

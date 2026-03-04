@@ -54,6 +54,7 @@
 #include "rendering_context_driver_metal.h"
 #include "rendering_shader_container_metal.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"

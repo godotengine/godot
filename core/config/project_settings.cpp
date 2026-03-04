@@ -48,6 +48,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/config/engine.h"
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
 

@@ -35,6 +35,7 @@
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_user_presence_extension.h"
 
+#include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"

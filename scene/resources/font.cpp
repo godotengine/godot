@@ -31,6 +31,7 @@
 #include "font.h"
 #include "font.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/io/image_loader.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"

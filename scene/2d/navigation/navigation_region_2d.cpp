@@ -30,6 +30,7 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"

@@ -30,6 +30,7 @@
 
 #include "renderer_viewport.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"

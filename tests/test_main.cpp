@@ -30,6 +30,7 @@
 
 #include "test_main.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
