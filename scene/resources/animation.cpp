@@ -34,8 +34,6 @@
 #include "core/io/marshalls.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/object/class_db.h"
-#include <iostream>
-#include <string>
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -1111,12 +1109,6 @@ void Animation::unref_or_erase(Track *p_track, const TypeHash thash) {
 	} else {
 		ref->references.erase(p_track);
 	}
-
-	std::cout << "deh" << std::endl;
-	for (const KeyValue<TypeHash, TrackHashRef *> &K : track_hash_map) {
-		std::cout << K.key << "->" << int(track_hash_map[K.key]->references.size()) << std::endl;
-	}
-	std::cout << std::endl;
 }
 
 void Animation::ensure_hashes() {
@@ -1168,12 +1160,6 @@ void Animation::ensure_hashes() {
 			break;
 		}
 	}
-
-	std::cout << "ensure" << std::endl;
-	for (const KeyValue<TypeHash, TrackHashRef *> &K : track_hash_map) {
-		std::cout << K.key << "->" << int(track_hash_map[K.key]->references.size()) << std::endl;
-	}
-	std::cout << std::endl;
 
 	dirty_tracks.clear();
 	track_hash_is_dirty = false;
