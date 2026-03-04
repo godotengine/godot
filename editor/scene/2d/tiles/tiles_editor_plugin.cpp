@@ -32,6 +32,7 @@
 
 #include "tile_set_editor.h"
 
+#include "core/object/callable_mp.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"

@@ -30,6 +30,7 @@
 
 #include "inspector_dock.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"

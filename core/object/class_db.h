@@ -34,10 +34,6 @@
 #include "core/object/object.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
-
-// Makes callable_mp readily available in all classes connecting signals.
-// Needs to come after method_bind and object have been included.
-#include "core/object/callable_method_pointer.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 

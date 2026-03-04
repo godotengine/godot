@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"

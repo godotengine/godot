@@ -30,6 +30,7 @@
 
 #include "add_metadata_dialog.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/themes/editor_scale.h"

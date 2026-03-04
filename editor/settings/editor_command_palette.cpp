@@ -30,6 +30,7 @@
 
 #include "editor_command_palette.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

@@ -31,6 +31,7 @@
 #include "input_event_configuration_dialog.h"
 
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"

@@ -30,6 +30,7 @@
 
 #include "property_selector.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"

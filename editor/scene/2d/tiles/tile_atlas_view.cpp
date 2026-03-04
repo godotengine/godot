@@ -30,6 +30,7 @@
 
 #include "tile_atlas_view.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"

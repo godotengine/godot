@@ -38,7 +38,6 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/translation_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/variant/callable_method_pointer.hpp>
 
 using namespace godot;
 
@@ -50,7 +49,7 @@ using namespace godot;
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"

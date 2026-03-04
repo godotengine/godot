@@ -31,6 +31,7 @@
 #include "animatable_body_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void AnimatableBody2D::set_sync_to_physics(bool p_enable) {

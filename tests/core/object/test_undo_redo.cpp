@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_undo_redo)
 
+#include "core/object/callable_mp.h"
 #include "core/object/undo_redo.h"
 
 namespace TestUndoRedo {

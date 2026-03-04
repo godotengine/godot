@@ -32,6 +32,7 @@
 #include "spring_bone_simulator_3d.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 

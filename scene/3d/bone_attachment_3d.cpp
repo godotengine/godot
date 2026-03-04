@@ -32,6 +32,7 @@
 #include "bone_attachment_3d.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {

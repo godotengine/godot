@@ -30,6 +30,7 @@
 
 #include "bone_twist_disperser_3d.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 bool BoneTwistDisperser3D::_set(const StringName &p_path, const Variant &p_value) {

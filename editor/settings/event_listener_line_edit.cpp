@@ -31,6 +31,7 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/gui/dialogs.h"

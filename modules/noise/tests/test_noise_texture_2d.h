@@ -32,6 +32,7 @@
 
 #include "../noise_texture_2d.h"
 
+#include "core/object/callable_mp.h"
 #include "tests/test_macros.h"
 
 namespace TestNoiseTexture2D {

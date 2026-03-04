@@ -30,6 +30,7 @@
 
 #include "audio_stream_import_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"

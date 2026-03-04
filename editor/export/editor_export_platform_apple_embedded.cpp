@@ -32,6 +32,7 @@
 
 #include "core/io/json.h"
 #include "core/io/plist.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/os/process_id.h"
 #include "core/string/translation_server.h"

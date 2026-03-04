@@ -31,6 +31,7 @@
 #include "abstract_polygon_2d_editor.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

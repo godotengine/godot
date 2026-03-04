@@ -37,6 +37,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
