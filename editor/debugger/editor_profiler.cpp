@@ -257,7 +257,7 @@ void EditorProfiler::_update_plot() {
 			}
 
 			int current = (i * max_profiles_shown / w) + left_border;
-			int current_next = CLAMP(((i+1) * max_profiles_shown / w) + left_border, 0, total_metrics-1);
+			int current_next = CLAMP(((i + 1) * max_profiles_shown / w) + left_border, 0, total_metrics - 1);
 
 			for (const StringName &E : plot_sigs) {
 				float peak_value = 0;
@@ -267,7 +267,7 @@ void EditorProfiler::_update_plot() {
 				do {
 					const Metric &m = _get_frame_metric(current_inner);
 					float frame_value = 0;
-					
+
 					HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 					if (F) {
 						frame_value = F->value->total_time;
@@ -281,7 +281,7 @@ void EditorProfiler::_update_plot() {
 							frame_value = G->value->total;
 						}
 					}
-					
+
 					peak_value = MAX(peak_value, frame_value);
 					min_value = MIN(min_value, frame_value);
 					current_inner++;
