@@ -30,10 +30,47 @@
 
 #include "variant.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector2);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector2i);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Rect2);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Rect2i);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector3);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector3i);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector4);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Vector4i);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Plane);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, AABB);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Quaternion);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Basis);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Transform2D);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Transform3D);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Projection);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Color);
+
+STATIC_ASSERT_INCOMPLETE_TYPE(class, NodePath);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RID);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
+
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, PropertyInfo);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, MethodInfo);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, Face3);
+STATIC_ASSERT_INCOMPLETE_TYPE(struct, IPAddress);
+
+STATIC_ASSERT_INCOMPLETE_TYPE(class, CoreStringNames);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
+
+#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
 #include "core/io/resource.h"
+#include "core/math/face3.h"
 #include "core/math/math_funcs.h"
+#include "core/math/rect2i.h"
 #include "core/variant/variant_parser.h"
 #include "core/variant/variant_pools.h"
 

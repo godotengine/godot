@@ -45,6 +45,8 @@
 //   There's no backwards communication from the driver to query data from RenderingDevice.
 // ***********************************************************************************
 
+#include "core/math/vector2i.h"
+#include "core/math/vector3i.h"
 #include "core/object/object.h"
 #include "core/templates/paged_allocator.h"
 #include "core/variant/type_info.h"

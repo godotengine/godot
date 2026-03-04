@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs_binary.h"
+#include "core/math/rect2i.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "scene/resources/bit_map.h"

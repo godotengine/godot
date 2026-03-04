@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_object)
 
+#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"

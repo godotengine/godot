@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
 
 class VelocityTracker3D : public RefCounted {

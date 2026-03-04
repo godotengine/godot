@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/core_string_names.h"
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"

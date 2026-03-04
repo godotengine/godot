@@ -33,6 +33,10 @@
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/string/node_path.h"
+#endif
+
 class Array;
 class InputEvent;
 class Node;

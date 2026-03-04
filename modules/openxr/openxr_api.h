@@ -36,6 +36,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
+#include "core/math/rect2i.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"

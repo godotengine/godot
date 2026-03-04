@@ -31,6 +31,7 @@
 #include "editor_spin_slider.h"
 
 #include "core/config/engine.h"
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/object/class_db.h"

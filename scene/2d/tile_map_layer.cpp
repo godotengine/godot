@@ -30,6 +30,7 @@
 
 #include "tile_map_layer.h"
 
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"

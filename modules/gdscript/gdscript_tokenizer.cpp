@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/string/char_utils.h"
+#include "core/string/node_path.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/text/text_server.h"

@@ -30,6 +30,7 @@
 
 #include "navigation_agent_2d.h"
 
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"
 #include "scene/2d/navigation/navigation_link_2d.h"

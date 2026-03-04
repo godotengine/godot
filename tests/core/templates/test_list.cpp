@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_list)
 
+#include "core/math/color.h"
 #include "core/templates/list.h"
 
 namespace TestList {

@@ -30,6 +30,7 @@
 
 #include "animation_state_machine_editor.h"
 
+#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"

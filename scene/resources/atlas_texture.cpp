@@ -30,6 +30,7 @@
 
 #include "atlas_texture.h"
 
+#include "core/math/rect2i.h"
 #include "core/object/class_db.h"
 
 int AtlasTexture::get_width() const {

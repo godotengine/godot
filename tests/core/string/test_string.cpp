@@ -32,6 +32,11 @@
 
 TEST_FORCE_LINK(test_string)
 
+#include "core/io/ip_address.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/math/vector4.h"
 #include "core/string/ustring.h"
 
 namespace TestString {

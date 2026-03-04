@@ -32,6 +32,7 @@
 
 #include "animation_track_editor_plugins.h"
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/object/class_db.h"

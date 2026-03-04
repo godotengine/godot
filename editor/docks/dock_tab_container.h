@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "editor/docks/editor_dock.h"
 #include "scene/gui/tab_container.h"
 

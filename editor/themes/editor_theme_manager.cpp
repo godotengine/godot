@@ -30,6 +30,7 @@
 
 #include "editor_theme_manager.h"
 
+#include "core/core_string_names.h"
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_string_names.h"

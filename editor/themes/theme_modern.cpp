@@ -30,6 +30,7 @@
 
 #include "theme_modern.h"
 
+#include "core/core_string_names.h"
 #include "core/math/math_defs.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"

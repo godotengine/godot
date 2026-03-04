@@ -31,6 +31,7 @@
 #include "animated_sprite_2d.h"
 
 #include "core/config/engine.h"
+#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"

@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "core/math/color.h"
 #include "core/object/object.h"
-#include "core/variant/type_info.h"
 
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 

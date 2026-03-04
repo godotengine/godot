@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_command_queue)
 
 #include "core/config/project_settings.h"
+#include "core/math/transform_3d.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"

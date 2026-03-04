@@ -32,6 +32,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/rect2i.h"
 
 String ResourceImporterImageFont::get_importer_name() const {
 	return "font_data_image";

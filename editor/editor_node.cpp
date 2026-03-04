@@ -31,6 +31,7 @@
 #include "editor_node.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"

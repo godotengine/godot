@@ -32,6 +32,23 @@
 
 #include "math_fieldwise.h"
 
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/math/vector4.h"
+#include "core/math/vector4i.h"
+
 #define SETUP_TYPE(m_type) \
 	m_type source = p_source; \
 	m_type target = p_target;

@@ -32,6 +32,12 @@
 
 TEST_FORCE_LINK(test_variant_utility)
 
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/math/vector4.h"
 #include "core/variant/variant_utility.h"
 
 namespace TestVariantUtility {

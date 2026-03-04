@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/rect2i.h"
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"

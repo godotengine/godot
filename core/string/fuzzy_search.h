@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/vector2i.h"
 #include "core/variant/variant.h"
 
 class FuzzyTokenMatch;

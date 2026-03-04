@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_server_enums.h"
 

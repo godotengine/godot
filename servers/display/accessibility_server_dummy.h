@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rid.h"
 #include "servers/display/accessibility_server.h"
 
 class AccessibilityServerDummy : public AccessibilityServer {

@@ -30,6 +30,7 @@
 
 #include "default_theme.h"
 
+#include "core/core_string_names.h"
 #include "core/io/image.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"

@@ -34,6 +34,7 @@
 #include "core/os/mutex.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
 

@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_bit_map)
 
+#include "core/math/rect2i.h"
 #include "scene/resources/bit_map.h"
 
 namespace TestBitMap {

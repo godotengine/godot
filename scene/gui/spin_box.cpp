@@ -30,6 +30,7 @@
 
 #include "spin_box.h"
 
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/object/class_db.h"

@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_variant)
 
+#include "core/math/rect2i.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_parser.h"
 

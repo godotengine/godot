@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_dictionary)
 
+#include "core/math/vector2.h"
 #include "core/object/ref_counted.h"
 #include "core/variant/typed_dictionary.h"
 
