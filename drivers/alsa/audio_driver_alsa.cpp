@@ -34,6 +34,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 
 #include <cerrno>

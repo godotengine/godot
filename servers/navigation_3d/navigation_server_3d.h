@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
 #include "core/templates/rid_owner.h"
 
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"

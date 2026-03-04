@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
