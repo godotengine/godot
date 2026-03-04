@@ -160,6 +160,7 @@ void AnimationMixer::_animation_set_cache_update() {
 		for (const KeyValue<StringName, Ref<Animation>> &K : lib.library->animations) {
 			StringName key = lib.name == StringName() ? K.key : StringName(String(lib.name) + "/" + String(K.key));
 			if (!animation_set.has(key)) {
+				K.value->ensure_hashes();
 				AnimationData ad;
 				ad.animation = K.value;
 				ad.animation_library = lib.name;

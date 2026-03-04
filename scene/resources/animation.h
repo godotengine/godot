@@ -253,17 +253,27 @@ private:
 
 	LocalVector<Track *> tracks;
 
-	struct TrackCacheRef {
-		uint8_t ref_counter;
+	struct TrackHashRef {
+		LocalVector<Track *> references;
 		NodePath nodepath;
+		TrackHashRef *next_probe = nullptr;
+		TrackHashRef *prev_probe = nullptr;
 
-		TrackCacheRef() = default;
-		TrackCacheRef(NodePath path) {
-			ref_counter = 1;
-			nodepath = path;
+		TrackHashRef() = default;
+		TrackHashRef(Track *p_track) {
+			references.push_back(p_track);
+			nodepath = p_track->path;
+		}
+		TrackHashRef(const TrackHashRef *p_t) {
+			references = p_t->references;
+			nodepath = p_t->nodepath;
+			next_probe = p_t->next_probe;
 		}
 	};
-	static inline AHashMap<TypeHash, TrackCacheRef> track_hash_map;
+	static inline HashMap<TypeHash, TrackHashRef *> track_hash_map; // common list for thashes among all animations
+	void unref_or_erase(Track *p_track, const TypeHash thash);
+	HashSet<int> dirty_tracks;
+	bool track_hash_is_dirty = false;
 
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
@@ -439,6 +449,7 @@ public:
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
 	TypeHash track_get_type_hash(int p_track) const;
+	void ensure_hashes();
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);

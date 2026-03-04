@@ -32,6 +32,7 @@
 #include "animation.compat.inc"
 
 #include "core/io/marshalls.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/object/class_db.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
@@ -999,13 +1000,9 @@ void Animation::remove_track(int p_track) {
 		} break;
 	}
 
+	unref_or_erase(tracks[p_track], tracks[p_track]->thash);
+
 	memdelete(t);
-	TrackCacheRef &ref = track_hash_map[tracks[p_track]->thash];
-	if (ref.ref_counter == 1) {
-		track_hash_map.erase(tracks[p_track]->thash);
-	} else {
-		ref.ref_counter--;
-	}
 	tracks.remove_at(p_track);
 	emit_changed();
 	_check_capture_included();
@@ -1069,31 +1066,103 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 }
 
 void Animation::_track_update_hash(int p_track) {
-	const NodePath &track_path = tracks[p_track]->path;
-	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	TypeHash thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
-
-	while (true) {
-		// Ensure there is one and only one hash for each unique path
-		// In case of a duplicate hash, first check the nodepath. If it is not the same, probe the hash until it is unique
-		if (track_hash_map.has(thash)) {
-			// Hash collision, or the same track
-			TrackCacheRef &ref = track_hash_map.get(thash);
-			if (ref.nodepath != track_path) {
-				// Not the same track. Check the next probe
-				thash = hash_murmur3_one_32(thash, tracks[p_track]->probe++);
-				continue;
-			} else {
-				// Same track. Increment the reference counter and break
-				ref.ref_counter++;
-				break;
-			}
-		}
-		// Unique hash
-		track_hash_map.insert(thash, TrackCacheRef(track_path));
-		break;
+	dirty_tracks.insert(p_track);
+	if (track_hash_is_dirty) {
+		return;
 	}
-	tracks[p_track]->thash = thash;
+	track_hash_is_dirty = true;
+	callable_mp(this, &Animation::ensure_hashes).call_deferred();
+}
+
+void Animation::unref_or_erase(Track *p_track, const TypeHash thash) {
+	if (thash == 0) {
+		return;
+	}
+	// Remove the element from the references vector of the related TrackHashRef.
+	// If necessary, remove and the deprobe the hashes in the probe chain.
+	TrackHashRef *ref = track_hash_map.get(thash);
+	if (ref->references.size() == 1) {
+		if (ref->next_probe != nullptr) {
+			ref->next_probe->prev_probe = ref->prev_probe;
+		}
+		if (ref->prev_probe != nullptr) {
+			ref->prev_probe->next_probe = ref->next_probe;
+		}
+
+		TypeHash old_hash = thash;
+		TrackHashRef *next = ref->next_probe;
+		// De-probe the hashes in the chain.
+		while (next != nullptr) {
+			// Should be safe to call index 0 since all TrackHashRef needs at least 1 reference to be kept
+			TypeHash temp_hash = next->references[0]->thash;
+			for (Track *deprobe_track : next->references) {
+				deprobe_track->probe--;
+				deprobe_track->thash = old_hash;
+			}
+			track_hash_map[thash] = next;
+
+			old_hash = temp_hash;
+			next = next->next_probe;
+		}
+		track_hash_map.erase(old_hash);
+		memdelete(ref);
+	} else {
+		ref->references.erase(p_track);
+	}
+}
+
+void Animation::ensure_hashes() {
+	if (!track_hash_is_dirty) {
+		return;
+	}
+
+	for (int track : dirty_tracks) {
+		const NodePath &track_path = tracks[track]->path;
+		const TrackType track_cache_type = get_cache_type(tracks[track]->type);
+		TypeHash &thash = tracks[track]->thash;
+		TypeHash old_hash = thash;
+		thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
+
+		// Remove the reference from the TrackHashRef in case of path updates.
+		// old_hash == 0 means this is the first time hash is generated: no need to check the hashmap
+		if (old_hash != 0 && track_hash_map.has(old_hash)) {
+			unref_or_erase(tracks[track], thash);
+		}
+
+		TrackHashRef *link = nullptr;
+		while (true) {
+			// Ensure there is one and only one hash for each unique path.
+			// In case of a duplicate hash, first check the nodepath to see if it is the same track.
+			// If it is not the same, probe the hash until it is unique. During probe, put the collided hashes in a linked list.
+			// Forbid hashes that are equal to 0, it is reserved for first time hashing checks.
+			if (thash == 0 || track_hash_map.has(thash)) {
+				// Hash collision, or the same track
+				TrackHashRef *ref = track_hash_map.get(thash);
+				if (ref->nodepath != track_path) {
+					// Not the same track. Check the next probe
+					thash = hash_murmur3_one_32(thash, tracks[track]->probe++);
+					link = ref;
+					continue;
+				} else {
+					// Same track. Add the track to the references and break
+					ref->references.push_back(tracks[track]);
+					break;
+				}
+			}
+			// Unique hash
+			track_hash_map.insert(thash, memnew(TrackHashRef(tracks[track])));
+			// Put the probed hashes into a linked list structure to de-probe when a collided hash is removed.
+			// De-probing will always guarantee lowest possible probe value for collided hashes after track removals (necessary for edge case scenarios).
+			if (link != nullptr) {
+				link->next_probe = track_hash_map.get(thash);
+				link->next_probe->prev_probe = link;
+			}
+			break;
+		}
+	}
+
+	dirty_tracks.clear();
+	track_hash_is_dirty = false;
 }
 
 Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
@@ -6576,6 +6645,7 @@ Animation::Animation() {
 
 Animation::~Animation() {
 	for (uint32_t i = 0; i < tracks.size(); i++) {
+		unref_or_erase(tracks[i], tracks[i]->thash);
 		memdelete(tracks[i]);
 	}
 }
