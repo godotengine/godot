@@ -98,6 +98,7 @@ public:
 		MOUSE_BEHAVIOR_ENABLED,
 	};
 
+	// Keep synced with InputClassEnums and DisplayServerEnums enums.
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,

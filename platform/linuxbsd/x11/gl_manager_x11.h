@@ -34,7 +34,7 @@
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
@@ -65,7 +65,7 @@ private:
 		bool in_use = false;
 
 		// the external ID .. should match the GL window number .. unused I think
-		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		int width = 0;
 		int height = 0;
 		::Window x11_window;
@@ -112,23 +112,23 @@ private:
 
 public:
 	XVisualInfo get_vi(Display *p_display, Error &r_error);
-	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	Error window_create(DisplayServerEnums::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
+	void window_destroy(DisplayServerEnums::WindowID p_window_id);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
 	void swap_buffers();
 
-	void window_make_current(DisplayServer::WindowID p_window_id);
+	void window_make_current(DisplayServerEnums::WindowID p_window_id);
 
 	Error initialize(Display *p_display);
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	void *get_glx_context(DisplayServer::WindowID p_window_id);
-	void *get_glx_fbconfig(DisplayServer::WindowID p_window_id);
-	VisualID get_glx_visualid(DisplayServer::WindowID p_window_id);
+	void *get_glx_context(DisplayServerEnums::WindowID p_window_id);
+	void *get_glx_fbconfig(DisplayServerEnums::WindowID p_window_id);
+	VisualID get_glx_visualid(DisplayServerEnums::WindowID p_window_id);
 
 	Error open_display(Display *p_display);
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);

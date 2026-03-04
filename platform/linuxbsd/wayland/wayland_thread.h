@@ -88,10 +88,13 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/input/input_event.h"
+#include "core/os/os.h"
 #include "core/os/thread.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #include "wayland_embedder.h"
+
+class Image;
 
 class WaylandThread {
 public:
@@ -108,7 +111,7 @@ public:
 		GDSOFTCLASS(WindowMessage, Message);
 
 	public:
-		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID id = DisplayServerEnums::INVALID_WINDOW_ID;
 	};
 
 	// Message data for window rect changes.
@@ -125,7 +128,7 @@ public:
 		GDSOFTCLASS(WindowEventMessage, WindowMessage);
 
 	public:
-		DisplayServer::WindowEvent event;
+		DisplayServerEnums::WindowEvent event;
 	};
 
 	class InputEventMessage : public Message {
@@ -247,11 +250,11 @@ public:
 	// TODO: Make private?
 
 	struct WindowState {
-		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID parent_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID parent_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		Rect2i rect;
-		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
+		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 
 		// Toplevel states.
 		bool maximized = false; // MUST obey configure size.
@@ -384,8 +387,8 @@ public:
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
 
-		DisplayServer::WindowID pointed_id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID last_pointed_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID last_pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -419,8 +422,8 @@ public:
 		uint64_t button_time = 0;
 		uint64_t motion_time = 0;
 
-		DisplayServer::WindowID proximal_id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID last_proximal_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID proximal_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID last_proximal_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		uint32_t proximity_serial = 0;
 	};
 
@@ -483,7 +486,7 @@ public:
 		struct wl_keyboard *wl_keyboard = nullptr;
 
 		// For key events.
-		DisplayServer::WindowID focused_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID focused_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
@@ -522,7 +525,7 @@ public:
 		struct wl_data_device *wl_data_device = nullptr;
 
 		// Drag and drop.
-		DisplayServer::WindowID dnd_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
 		uint32_t dnd_enter_serial = 0;
 
@@ -547,7 +550,7 @@ public:
 
 		// IME.
 		struct zwp_text_input_v3 *wp_text_input = nullptr;
-		DisplayServer::WindowID ime_window_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID ime_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		bool ime_enabled = false;
 		bool ime_active = false;
 		String ime_text;
@@ -594,7 +597,7 @@ private:
 	Thread events_thread;
 	ThreadData thread_data;
 
-	HashMap<DisplayServer::WindowID, WindowState> windows;
+	HashMap<DisplayServerEnums::WindowID, WindowState> windows;
 
 	List<Ref<Message>> messages;
 
@@ -612,34 +615,34 @@ private:
 	int cursor_scale = 1;
 
 	// Use cursor-shape-v1 protocol if the compositor supports it.
-	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServer::CURSOR_MAX] = {
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //CURSOR_ARROW
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //CURSOR_IBEAM
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //CURSOR_POINTING_HAND
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //CURSOR_CROSS
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //CURSOR_WAIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //CURSOR_BUSY
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //CURSOR_DRAG
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //CURSOR_CAN_DROP
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //CURSOR_FORBIDDEN
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //CURSOR_VSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //CURSOR_HSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //CURSOR_BDIAGSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //CURSOR_FDIAGSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //CURSOR_MOVE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //CURSOR_VSPLIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //CURSOR_HSPLIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //CURSOR_HELP
+	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServerEnums::CURSOR_MAX] = {
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //DisplayServerEnums::CURSOR_ARROW
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //DisplayServerEnums::CURSOR_IBEAM
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //DisplayServerEnums::CURSOR_POINTING_HAND
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //DisplayServerEnums::CURSOR_CROSS
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //DisplayServerEnums::CURSOR_WAIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //DisplayServerEnums::CURSOR_BUSY
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //DisplayServerEnums::CURSOR_DRAG
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //DisplayServerEnums::CURSOR_CAN_DROP
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //DisplayServerEnums::CURSOR_FORBIDDEN
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //DisplayServerEnums::CURSOR_VSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //DisplayServerEnums::CURSOR_HSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //DisplayServerEnums::CURSOR_BDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //DisplayServerEnums::CURSOR_FDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //DisplayServerEnums::CURSOR_MOVE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //DisplayServerEnums::CURSOR_VSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //DisplayServerEnums::CURSOR_HSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //DisplayServerEnums::CURSOR_HELP
 	};
 
 	// Fallback to reading $XCURSOR and system themes if the compositor does not.
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
-	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
+	struct wl_cursor *wl_cursors[DisplayServerEnums::CURSOR_MAX] = {};
 
 	// User-defined cursor overrides. Take precedence over standard and wl cursors.
-	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
+	HashMap<DisplayServerEnums::CursorShape, CustomCursor> custom_cursors;
 
-	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
+	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CURSOR_ARROW;
 	bool cursor_visible = true;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
@@ -1111,40 +1114,40 @@ public:
 
 	void set_icon(const Ref<Image> &p_icon);
 
-	void window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id = DisplayServer::INVALID_WINDOW_ID);
-	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
-	void window_destroy(DisplayServer::WindowID p_window_Id);
+	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
+	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
+	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
 
-	void window_set_parent(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id);
+	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
-	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
-	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
-	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
-	Size2i window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
+	struct wl_surface *window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const;
+	WindowState *window_get_state(DisplayServerEnums::WindowID p_window_id);
+	const WindowState *window_get_state(DisplayServerEnums::WindowID p_window_id) const;
+	Size2i window_set_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
 
-	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
+	void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window);
 
-	void window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
-	void window_set_min_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
+	void window_set_max_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
+	void window_set_min_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
 
-	bool window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode) const;
-	void window_try_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode);
-	DisplayServer::WindowMode window_get_mode(DisplayServer::WindowID p_window_id) const;
+	bool window_can_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode) const;
+	void window_try_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode);
+	DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id) const;
 
-	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
-	void window_set_title(DisplayServer::WindowID p_window_id, const String &p_title);
-	void window_set_app_id(DisplayServer::WindowID p_window_id, const String &p_app_id);
+	void window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless);
+	void window_set_title(DisplayServerEnums::WindowID p_window_id, const String &p_title);
+	void window_set_app_id(DisplayServerEnums::WindowID p_window_id, const String &p_app_id);
 
-	bool window_is_focused(DisplayServer::WindowID p_window_id);
+	bool window_is_focused(DisplayServerEnums::WindowID p_window_id);
 
 	// Optional - requires xdg_activation_v1
-	void window_request_attention(DisplayServer::WindowID p_window_id);
+	void window_request_attention(DisplayServerEnums::WindowID p_window_id);
 
-	void window_start_drag(DisplayServer::WindowID p_window_id);
+	void window_start_drag(DisplayServerEnums::WindowID p_window_id);
 
 	// Optional - require idle_inhibit_unstable_v1
-	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
-	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
+	void window_set_idle_inhibition(DisplayServerEnums::WindowID p_window_id, bool p_enable);
+	bool window_get_idle_inhibition(DisplayServerEnums::WindowID p_window_id) const;
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
@@ -1153,19 +1156,19 @@ public:
 	void pointer_set_hint(const Point2i &p_hint);
 	void pointer_warp(const Point2i &p_to);
 	PointerConstraint pointer_get_constraint() const;
-	DisplayServer::WindowID pointer_get_pointed_window_id() const;
-	DisplayServer::WindowID pointer_get_last_pointed_window_id() const;
+	DisplayServerEnums::WindowID pointer_get_pointed_window_id() const;
+	DisplayServerEnums::WindowID pointer_get_last_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
 	void cursor_set_visible(bool p_visible);
-	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_set_shape(DisplayServerEnums::CursorShape p_cursor_shape);
 
-	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
-	void cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
-	void cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_set_custom_shape(DisplayServerEnums::CursorShape p_cursor_shape);
+	void cursor_shape_set_custom_image(DisplayServerEnums::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
+	void cursor_shape_clear_custom_image(DisplayServerEnums::CursorShape p_cursor_shape);
 
-	void window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id);
-	void window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id);
+	void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window_id);
+	void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window_id);
 
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout_index() const;
@@ -1195,8 +1198,8 @@ public:
 	bool wait_frame_suspend_ms(int p_timeout);
 	bool is_fifo_available() const;
 
-	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
-	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
+	uint64_t window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const;
+	bool window_is_suspended(DisplayServerEnums::WindowID p_window_id) const;
 	bool is_suspended() const;
 
 	struct godot_embedding_compositor *get_embedding_compositor();

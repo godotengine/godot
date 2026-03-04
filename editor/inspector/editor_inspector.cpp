@@ -64,6 +64,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void EditorInspectorActionButton::_notification(int p_what) {
