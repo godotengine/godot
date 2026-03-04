@@ -1074,12 +1074,12 @@ void Animation::_track_update_hash(int p_track) {
 }
 
 void Animation::unref_or_erase(Track *p_track, const TypeHash p_thash) {
-	if (thash == 0) {
+	if (p_thash == 0) {
 		return;
 	}
 	// Remove the element from the references vector of the related TrackHashRef.
 	// If necessary, remove and the deprobe the hashes in the probe chain.
-	TrackHashRef *ref = track_hash_map.get(thash);
+	TrackHashRef *ref = track_hash_map.get(p_thash);
 	if (ref->references.size() == 1) {
 		if (ref->next_probe != nullptr) {
 			ref->next_probe->prev_probe = ref->prev_probe;
@@ -1088,7 +1088,7 @@ void Animation::unref_or_erase(Track *p_track, const TypeHash p_thash) {
 			ref->prev_probe->next_probe = ref->next_probe;
 		}
 
-		TypeHash old_hash = thash;
+		TypeHash old_hash = p_thash;
 		TrackHashRef *next = ref->next_probe;
 		// De-probe the hashes in the chain.
 		while (next != nullptr) {
@@ -1098,7 +1098,7 @@ void Animation::unref_or_erase(Track *p_track, const TypeHash p_thash) {
 				deprobe_track->probe--;
 				deprobe_track->thash = old_hash;
 			}
-			track_hash_map[thash] = next;
+			track_hash_map[p_thash] = next;
 
 			old_hash = temp_hash;
 			next = next->next_probe;
