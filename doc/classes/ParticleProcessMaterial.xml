@@ -286,8 +286,7 @@
 			Align Y axis of particle with the direction of its velocity.
 		</member>
 		<member name="particle_flag_damping_as_friction" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
-			If [code]true[/code], damping is calculated using a realistic, velocity dependent formula.
-			If [code]false[/code], a constant deceleration is applied.
+			If [code]true[/code], damping is calculated using a realistic, velocity-dependent formula. If [code]false[/code], a constant deceleration is applied.
 		</member>
 		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles will not move on the z axis.
