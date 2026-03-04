@@ -30,6 +30,7 @@
 
 #include "editor_scene_exporter_gltf_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 const uint32_t PROP_EDITOR_SCRIPT_VAR = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE;

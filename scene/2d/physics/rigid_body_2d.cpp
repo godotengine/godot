@@ -31,6 +31,7 @@
 #include "rigid_body_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {

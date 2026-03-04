@@ -30,6 +30,7 @@
 
 #include "joint_3d.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void Joint3D::_disconnect_signals() {

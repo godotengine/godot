@@ -33,6 +33,7 @@
 #include "../extensions/openxr_visibility_mask_extension.h"
 #include "../openxr_interface.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/xr/xr_nodes.h"
 #include "servers/rendering/rendering_server.h"

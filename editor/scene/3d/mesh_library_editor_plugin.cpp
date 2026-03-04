@@ -30,6 +30,7 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"

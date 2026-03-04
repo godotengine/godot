@@ -34,6 +34,7 @@
 #include "openxr_eye_gaze_interaction.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "servers/rendering/rendering_server.h"
 
 OpenXRFBFoveationExtension *OpenXRFBFoveationExtension::singleton = nullptr;

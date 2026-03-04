@@ -30,6 +30,7 @@
 
 #include "editor_performance_profiler.h"
 
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_property_name_processor.h"

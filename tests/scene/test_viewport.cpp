@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_viewport)
 
+#include "core/object/callable_mp.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"

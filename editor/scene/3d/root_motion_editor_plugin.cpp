@@ -30,6 +30,7 @@
 
 #include "root_motion_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"

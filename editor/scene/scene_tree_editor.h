@@ -228,7 +228,7 @@ class SceneTreeEditor : public Control {
 	void _revoke_unique_name();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _update_tree(bool p_scroll_to_selected = false);
 
 	void rename_node(Node *p_node, const String &p_name, TreeItem *p_item = nullptr);

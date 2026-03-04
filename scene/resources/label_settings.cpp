@@ -30,6 +30,7 @@
 
 #include "label_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void LabelSettings::_font_changed() {

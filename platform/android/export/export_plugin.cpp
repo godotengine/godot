@@ -40,6 +40,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
@@ -68,7 +69,6 @@
 #endif
 
 #ifndef ANDROID_ENABLED
-#include "core/object/callable_method_pointer.h"
 #endif
 
 static const char *ANDROID_PERMS[] = {

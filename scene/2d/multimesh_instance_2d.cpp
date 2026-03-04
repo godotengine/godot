@@ -30,6 +30,7 @@
 
 #include "multimesh_instance_2d.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 #ifndef NAVIGATION_2D_DISABLED

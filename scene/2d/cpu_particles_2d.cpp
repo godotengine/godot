@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"

@@ -30,6 +30,7 @@
 
 #include "animation_library.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/scene_string_names.h"
 

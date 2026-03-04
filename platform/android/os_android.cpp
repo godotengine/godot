@@ -43,13 +43,13 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/xml_parser.h"
+#include "core/object/callable_mp.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #ifdef TOOLS_ENABLED
-#include "core/object/callable_method_pointer.h"
 #include "editor/editor_node.h"
 #include "editor/run/game_view_plugin.h"
 #endif

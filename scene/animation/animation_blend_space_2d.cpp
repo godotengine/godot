@@ -33,6 +33,7 @@
 #include "animation_blend_tree.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/material.h"
 

@@ -30,6 +30,7 @@
 
 #include "parallax_background_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"

@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 #ifndef NAVIGATION_2D_DISABLED

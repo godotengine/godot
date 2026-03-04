@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

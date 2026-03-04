@@ -31,7 +31,7 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/io/http_client.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
