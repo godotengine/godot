@@ -8,14 +8,19 @@
 	</tutorials>
 	<constants>
 		<constant name="SCRIPT_NAME_CASING_AUTO" value="0" enum="ScriptNameCasing">
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to the script language's preferred casing.
 		</constant>
 		<constant name="SCRIPT_NAME_CASING_PASCAL_CASE" value="1" enum="ScriptNameCasing">
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]PascalCase[/code].
 		</constant>
 		<constant name="SCRIPT_NAME_CASING_SNAKE_CASE" value="2" enum="ScriptNameCasing">
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]snake_case[/code].
 		</constant>
 		<constant name="SCRIPT_NAME_CASING_KEBAB_CASE" value="3" enum="ScriptNameCasing">
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]kebab-case[/code].
 		</constant>
 		<constant name="SCRIPT_NAME_CASING_CAMEL_CASE" value="4" enum="ScriptNameCasing">
+			Used by [member ProjectSettings.editor/naming/script_name_casing] to set the default script name casing to [code]cascalCase[/code].
 		</constant>
 	</constants>
 </class>
