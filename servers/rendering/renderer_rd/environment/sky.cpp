@@ -1151,10 +1151,6 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	correction.add_jitter_offset(p_render_data->scene_data->taa_jitter);
 
 	Projection projection = p_render_data->scene_data->cam_projection;
-	if (p_render_data->scene_data->cam_frustum) {
-		// We don't use a full projection matrix for the sky, this is enough to make up for it.
-		projection[2].y = -projection[2].y;
-	}
 
 	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_render_data->environment);
 
