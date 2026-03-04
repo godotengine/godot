@@ -32,11 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 
 void EmbeddedProcessBase::_notification(int p_what) {
 	switch (p_what) {
@@ -192,7 +195,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING), "Embedded process not supported by this display server.");
+	ERR_FAIL_COND_MSG(!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING), "Embedded process not supported by this display server.");
 
 	if (current_process_id != 0) {
 		// Stop embedding the last process.
@@ -368,7 +371,7 @@ void EmbeddedProcess::_check_mouse_over() {
 	}
 
 	// Don't grab the focus if mouse over another window.
-	DisplayServer::WindowID window_id_over = DisplayServer::get_singleton()->get_window_at_screen_position(mouse_position);
+	DisplayServerEnums::WindowID window_id_over = DisplayServer::get_singleton()->get_window_at_screen_position(mouse_position);
 	if (window_id_over > 0 && window_id_over != window->get_window_id()) {
 		return;
 	}
@@ -376,8 +379,8 @@ void EmbeddedProcess::_check_mouse_over() {
 	// Check if there's an exclusive popup, an open menu, or a tooltip.
 	// We don't want to grab focus to prevent the game window from coming to the front of the modal window
 	// or the open menu from closing when the mouse cursor moves outside the menu and over the embedded game.
-	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-	for (const DisplayServer::WindowID &window_id : wl) {
+	Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServerEnums::WindowID &window_id : wl) {
 		Window *w = Window::get_from_id(window_id);
 		if (w && (w->is_exclusive() || w->get_flag(Window::FLAG_POPUP))) {
 			return;
@@ -427,8 +430,8 @@ void EmbeddedProcess::_check_focused_process_id() {
 }
 
 Window *EmbeddedProcess::_get_current_modal_window() {
-	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-	for (const DisplayServer::WindowID &window_id : wl) {
+	Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServerEnums::WindowID &window_id : wl) {
 		Window *w = Window::get_from_id(window_id);
 		if (!w) {
 			continue;

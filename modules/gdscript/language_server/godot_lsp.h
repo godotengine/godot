@@ -34,6 +34,15 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+// Enable additional LSP related logging.
+//#define DEBUG_LSP
+
+#ifdef DEBUG_LSP
+#define LOG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define LOG_LSP(...)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;
@@ -1068,8 +1077,12 @@ struct CompletionItem {
 			dict["insertText"] = insertText;
 		}
 		if (resolved) {
-			dict["detail"] = detail;
-			dict["documentation"] = documentation.to_json();
+			if (!detail.is_empty()) {
+				dict["detail"] = detail;
+			}
+			if (!documentation.value.is_empty()) {
+				dict["documentation"] = documentation.to_json();
+			}
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
 			if (!sortText.is_empty()) {

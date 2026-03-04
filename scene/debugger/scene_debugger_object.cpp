@@ -34,6 +34,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "scene/main/node.h"
 
 SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	if (!p_obj) {
@@ -109,6 +110,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	}
 
 	HashSet<String> exported_members;
+	HashMap<String, PropertyInfo> non_exported_members;
 
 	if (p_instance) {
 		List<PropertyInfo> pinfo;
@@ -116,6 +118,10 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		for (const PropertyInfo &E : pinfo) {
 			if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
 				exported_members.insert(E.name);
+			} else {
+				PropertyInfo pi = E;
+				pi.usage |= PROPERTY_USAGE_EDITOR;
+				non_exported_members.insert(E.name, pi);
 			}
 		}
 	}
@@ -132,8 +138,17 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 			Variant m;
 			if (p_instance->get(E, m)) {
-				String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
-				PropertyInfo pi(m.get_type(), "Members/" + script_path + E);
+				const String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
+
+				PropertyInfo pi;
+				const PropertyInfo *pi_ptr = non_exported_members.getptr(E);
+				if (pi_ptr == nullptr) {
+					pi.type = m.get_type();
+				} else {
+					pi = *pi_ptr;
+				}
+				pi.name = "Members/" + script_path + E;
+
 				properties.push_back(SceneDebuggerProperty(pi, m));
 			}
 		}
@@ -166,6 +181,10 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
 		if (res.is_valid() && !res->get_path().is_empty()) {
+			// HACK: Overwrite `PropertyInfo` with the current runtime type.
+			// This allows untyped variables to be displayed correctly.
+			prop[1] = Variant::OBJECT;
+
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode

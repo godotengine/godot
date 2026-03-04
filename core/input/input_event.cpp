@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
@@ -131,6 +132,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
+	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
+	BIND_CONSTANT(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -314,8 +317,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-		}
-		if (p_property.name == "ctrl_pressed") {
+		} else if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -662,6 +664,10 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
+InputEventKey::InputEventKey() {
+	set_device(DEVICE_ID_KEYBOARD);
+}
+
 ///////////////////////////////////
 
 void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
@@ -702,6 +708,10 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
+}
+
+InputEventMouse::InputEventMouse() {
+	set_device(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////

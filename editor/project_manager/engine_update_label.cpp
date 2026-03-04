@@ -31,6 +31,7 @@
 #include "engine_update_label.h"
 
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
@@ -188,20 +189,20 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			} else {
 				_set_message(TTR("Update checks disabled."), theme_cache.disabled_color);
 			}
-			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_OFF);
+			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF);
 			set_tooltip_text("");
 			break;
 		}
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
-			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
+			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
 			set_disabled(false);
-			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
+			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("Click to open download page."));
 		} break;
 

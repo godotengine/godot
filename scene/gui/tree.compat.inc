@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "tree.h"
+
+#include "core/object/class_db.h"
+
 void TreeItem::_add_button_bind_compat_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 	add_button(p_column, p_button, p_id, p_disabled, p_tooltip, String());
 }

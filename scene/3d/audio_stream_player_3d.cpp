@@ -32,6 +32,7 @@
 #include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
@@ -378,7 +379,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
 
-	HashSet<Camera3D *> cameras = world_3d->get_cameras();
+	HashSet<Camera3D *> cameras(world_3d->get_cameras());
 	cameras.insert(get_viewport()->get_camera_3d());
 
 #ifndef PHYSICS_3D_DISABLED

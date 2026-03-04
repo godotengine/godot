@@ -32,7 +32,7 @@
 
 #import "dir_access_macos.h"
 #ifdef TOOLS_ENABLED
-#import "display_server_embedded.h"
+#import "display_server_macos_embedded.h"
 #endif
 #import "display_server_macos.h"
 #import "godot_application.h"
@@ -274,7 +274,7 @@ void OS_MacOS::set_cmdline_platform_args(const List<String> &p_args) {
 }
 
 List<String> OS_MacOS::get_cmdline_platform_args() const {
-	return launch_service_args;
+	return List<String>(launch_service_args);
 }
 
 void OS_MacOS::load_shell_environment() const {
@@ -369,11 +369,13 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 
 	// Read framework bundle to get executable name.
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
-	NSBundle *bundle = [NSBundle bundleWithURL:url];
-	if (bundle) {
-		String exe_path = String::utf8([[bundle executablePath] UTF8String]);
-		if (da->file_exists(exe_path)) {
-			return exe_path;
+	if (url) {
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			String exe_path = String::utf8([[bundle executablePath] UTF8String]);
+			if (da->file_exists(exe_path)) {
+				return exe_path;
+			}
 		}
 	}
 
@@ -872,7 +874,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 			// Project started from the editor, inject "path" argument to set instance working directory.
 			char cwd[PATH_MAX];
 			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
-				List<String> arguments = p_arguments;
+				List<String> arguments(p_arguments);
 				arguments.push_back("--path");
 				arguments.push_back(String::utf8(cwd));
 				return create_process(path, arguments, r_child_id, false);
@@ -1280,9 +1282,9 @@ void OS_MacOS_Embedded::run() {
 		ret = Main::start();
 	}
 
-	DisplayServerEmbedded *ds = Object::cast_to<DisplayServerEmbedded>(DisplayServer::get_singleton());
+	DisplayServerMacOSEmbedded *ds = Object::cast_to<DisplayServerMacOSEmbedded>(DisplayServer::get_singleton());
 	if (!ds) {
-		ERR_FAIL_MSG("DisplayServerEmbedded is not initialized.");
+		ERR_FAIL_MSG("DisplayServerMacOSEmbedded is not initialized.");
 	}
 
 	if (ds && ret == EXIT_SUCCESS && main_loop) {
@@ -1322,7 +1324,7 @@ void OS_MacOS_Embedded::run() {
 
 OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
 		OS_MacOS(p_execpath, p_argc, p_argv) {
-	DisplayServerEmbedded::register_embedded_driver();
+	DisplayServerMacOSEmbedded::register_embedded_driver();
 }
 
 #endif

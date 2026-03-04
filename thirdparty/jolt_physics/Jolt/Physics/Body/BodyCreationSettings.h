@@ -102,8 +102,8 @@ public:
 	bool					mAllowSleeping = true;											///< If this body can go to sleep or not
 	float					mFriction = 0.2f;												///< Friction of the body (dimensionless number, usually between 0 and 1, 0 = no friction, 1 = friction force equals force that presses the two bodies together). Note that bodies can have negative friction but the combined friction (see PhysicsSystem::SetCombineFriction) should never go below zero.
 	float					mRestitution = 0.0f;											///< Restitution of body (dimensionless number, usually between 0 and 1, 0 = completely inelastic collision response, 1 = completely elastic collision response). Note that bodies can have negative restitution but the combined restitution (see PhysicsSystem::SetCombineRestitution) should never go below zero.
-	float					mLinearDamping = 0.05f;											///< Linear damping: dv/dt = -c * v. c must be between 0 and 1 but is usually close to 0.
-	float					mAngularDamping = 0.05f;										///< Angular damping: dw/dt = -c * w. c must be between 0 and 1 but is usually close to 0.
+	float					mLinearDamping = 0.05f;											///< Linear damping: dv/dt = -c * v. c. Value should be zero or positive and is usually close to 0.
+	float					mAngularDamping = 0.05f;										///< Angular damping: dw/dt = -c * w. c. Value should be zero or positive and is usually close to 0.
 	float					mMaxLinearVelocity = 500.0f;									///< Maximum linear velocity that this body can reach (m/s)
 	float					mMaxAngularVelocity = 0.25f * JPH_PI * 60.0f;					///< Maximum angular velocity that this body can reach (rad/s)
 	float					mGravityFactor = 1.0f;											///< Value to multiply gravity with for this body

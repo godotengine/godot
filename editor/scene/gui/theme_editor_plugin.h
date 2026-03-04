@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/gui/theme_editor_preview.h"
@@ -42,6 +43,7 @@ class Button;
 class CheckButton;
 class EditorFileDialog;
 class FilterLineEdit;
+class HSplitContainer;
 class ItemList;
 class Label;
 class LineEdit;
@@ -454,6 +456,7 @@ class ThemeEditor : public EditorDock {
 
 	Label *theme_name = nullptr;
 	ThemeItemEditorDialog *theme_edit_dialog = nullptr;
+	HSplitContainer *main_hs = nullptr;
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
@@ -476,6 +479,9 @@ class ThemeEditor : public EditorDock {
 
 protected:
 	void _notification(int p_what);
+
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
 	void edit(const Ref<Theme> &p_theme);

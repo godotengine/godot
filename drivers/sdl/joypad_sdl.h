@@ -39,10 +39,7 @@ typedef struct SDL_Gamepad SDL_Gamepad;
 
 class JoypadSDL {
 public:
-	JoypadSDL();
 	~JoypadSDL();
-
-	static JoypadSDL *get_singleton();
 
 	Error initialize();
 	void process_events();
@@ -65,11 +62,11 @@ private:
 		virtual bool has_joy_motion_sensors() const override;
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) override;
 
+		virtual bool has_joy_vibration() const override;
+
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};
-
-	static JoypadSDL *singleton;
 
 	Joypad joypads[Input::JOYPADS_MAX];
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;

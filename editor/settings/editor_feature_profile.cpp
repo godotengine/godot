@@ -32,6 +32,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"

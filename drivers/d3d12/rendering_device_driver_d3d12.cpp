@@ -32,9 +32,11 @@
 
 #include "d3d12_hooks.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "servers/rendering/rendering_device.h"
+#include "core/os/os.h"
+
 #include "thirdparty/zlib/zlib.h"
 
 #include "d3d12_godot_nir_bridge.h"
@@ -351,6 +353,11 @@ const RenderingDeviceDriverD3D12::D3D12Format RenderingDeviceDriverD3D12::RD_TO_
 	/* DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK */ {},
 };
 
+const DXGI_COLOR_SPACE_TYPE RenderingDeviceDriverD3D12::RD_TO_DXGI_COLOR_SPACE_TYPE[RDD::COLOR_SPACE_MAX]{
+	/* COLOR_SPACE_REC709_LINEAR */ DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709,
+	/* COLOR_SPACE_REC709_NONLINEAR_SRGB */ DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709,
+};
+
 static D3D12_CPU_DESCRIPTOR_HANDLE get_cpu_handle(D3D12_CPU_DESCRIPTOR_HANDLE p_handle, uint64_t p_index, uint32_t p_increment_size) {
 	p_handle.ptr += p_index * p_increment_size;
 	return p_handle;
@@ -470,7 +477,7 @@ void RenderingDeviceDriverD3D12::CPUDescriptorHeapPool::free(const Allocation &p
 	}
 }
 
-static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RD::COMPARE_OP_MAX] = {
+static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RDD::COMPARE_OP_MAX] = {
 	D3D12_COMPARISON_FUNC_NEVER,
 	D3D12_COMPARISON_FUNC_LESS,
 	D3D12_COMPARISON_FUNC_EQUAL,
@@ -484,8 +491,8 @@ static const D3D12_COMPARISON_FUNC RD_TO_D3D12_COMPARE_OP[RD::COMPARE_OP_MAX] = 
 uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_stages_flags_rd() const {
 	// If there's a way to check exactly which are supported, I have yet to find it.
 	return (
-			RenderingDevice::ShaderStage::SHADER_STAGE_FRAGMENT_BIT |
-			RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE_BIT);
+			RenderingDeviceCommons::ShaderStage::SHADER_STAGE_FRAGMENT_BIT |
+			RenderingDeviceCommons::ShaderStage::SHADER_STAGE_COMPUTE_BIT);
 }
 
 uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_operations_flags_rd() const {
@@ -493,14 +500,14 @@ uint32_t RenderingDeviceDriverD3D12::SubgroupCapabilities::supported_operations_
 		return 0;
 	} else {
 		return (
-				RenderingDevice::SubgroupOperations::SUBGROUP_BASIC_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_BALLOT_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_VOTE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_QUAD_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT |
-				RenderingDevice::SubgroupOperations::SUBGROUP_CLUSTERED_BIT);
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_BASIC_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_BALLOT_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_VOTE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_SHUFFLE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_SHUFFLE_RELATIVE_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_QUAD_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_ARITHMETIC_BIT |
+				RenderingDeviceCommons::SubgroupOperations::SUBGROUP_CLUSTERED_BIT);
 	}
 }
 
@@ -570,7 +577,7 @@ void RenderingDeviceDriverD3D12::_debug_message_func(D3D12_MESSAGE_CATEGORY p_ca
 /**** RESOURCE ****/
 /******************/
 
-static const D3D12_RESOURCE_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_RESOURCE_DIMENSION[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_RESOURCE_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_RESOURCE_DIMENSION[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_RESOURCE_DIMENSION_TEXTURE1D,
 	D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 	D3D12_RESOURCE_DIMENSION_TEXTURE3D,
@@ -1070,7 +1077,7 @@ uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer
 /**** TEXTURE ****/
 /*****************/
 
-static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_SRV_DIMENSION_TEXTURE1D,
 	D3D12_SRV_DIMENSION_TEXTURE2D,
 	D3D12_SRV_DIMENSION_TEXTURE3D,
@@ -1080,7 +1087,7 @@ static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV
 	D3D12_SRV_DIMENSION_TEXTURECUBEARRAY,
 };
 
-static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV_MS[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV_MS[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_SRV_DIMENSION_UNKNOWN,
 	D3D12_SRV_DIMENSION_TEXTURE2DMS,
 	D3D12_SRV_DIMENSION_UNKNOWN,
@@ -1090,7 +1097,7 @@ static const D3D12_SRV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_SRV
 	D3D12_SRV_DIMENSION_UNKNOWN,
 };
 
-static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV[RD::TEXTURE_TYPE_MAX] = {
+static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV[RDD::TEXTURE_TYPE_MAX] = {
 	D3D12_UAV_DIMENSION_TEXTURE1D,
 	D3D12_UAV_DIMENSION_TEXTURE2D,
 	D3D12_UAV_DIMENSION_TEXTURE3D,
@@ -1115,7 +1122,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 				msql.SampleCount = (UINT)samples;
 				HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msql, sizeof(msql));
 				if (SUCCEEDED(res) && msql.NumQualityLevels) {
-					int bit = get_shift_from_power_of_2((uint32_t)samples);
+					int bit = Math::get_shift_from_power_of_2((uint32_t)samples);
 					ERR_FAIL_COND_V(bit == -1, 1);
 					mask |= (uint32_t)(1 << bit);
 				}
@@ -1127,7 +1134,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 	if (common == UINT32_MAX) {
 		return 1;
 	} else {
-		return ((uint32_t)1 << nearest_shift(common));
+		return ((uint32_t)1 << Math::nearest_shift(common));
 	}
 }
 
@@ -2707,6 +2714,11 @@ void RenderingDeviceDriverD3D12::command_buffer_execute_secondary(CommandBufferI
 void RenderingDeviceDriverD3D12::_swap_chain_release(SwapChain *p_swap_chain) {
 	_swap_chain_release_buffers(p_swap_chain);
 
+	if (p_swap_chain->render_pass.id != 0) {
+		render_pass_free(p_swap_chain->render_pass);
+		p_swap_chain->render_pass = RenderPassID();
+	}
+
 	p_swap_chain->d3d_swap_chain.Reset();
 }
 
@@ -2725,10 +2737,10 @@ void RenderingDeviceDriverD3D12::_swap_chain_release_buffers(SwapChain *p_swap_c
 	p_swap_chain->framebuffers.clear();
 }
 
-RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
+RDD::RenderPassID RenderingDeviceDriverD3D12::_swap_chain_create_render_pass(RDD::DataFormat p_format) {
 	// Create the render pass that will be used to draw to the swap chain's framebuffers.
 	RDD::Attachment attachment;
-	attachment.format = DATA_FORMAT_R8G8B8A8_UNORM;
+	attachment.format = p_format;
 	attachment.samples = RDD::TEXTURE_SAMPLES_1;
 	attachment.load_op = RDD::ATTACHMENT_LOAD_OP_CLEAR;
 	attachment.store_op = RDD::ATTACHMENT_STORE_OP_STORE;
@@ -2739,14 +2751,30 @@ RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, AttachmentReference());
-	ERR_FAIL_COND_V(!render_pass, SwapChainID());
+	return render_pass_create(attachment, subpass, {}, 1, AttachmentReference());
+}
 
-	// Create the empty swap chain until it is resized.
+void RenderingDeviceDriverD3D12::_determine_swap_chain_format(SwapChain *p_swap_chain, DataFormat &r_format, ColorSpace &r_color_space) {
+	DEV_ASSERT(p_swap_chain);
+	DEV_ASSERT(p_swap_chain->surface != 0);
+
+	// Direct3D Hardware level 10 mandates support for all these formats.
+	// Godot requires at least Hardware level 11, so these formats are guaranteed to be supported.
+	if (context_driver->surface_get_hdr_output_enabled(p_swap_chain->surface)) {
+		r_format = DATA_FORMAT_R16G16B16A16_SFLOAT;
+		r_color_space = COLOR_SPACE_REC709_LINEAR;
+	} else {
+		r_format = DATA_FORMAT_R8G8B8A8_UNORM;
+		r_color_space = COLOR_SPACE_REC709_NONLINEAR_SRGB;
+	}
+}
+
+RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
+	DEV_ASSERT(p_surface != 0);
+
+	// Create an empty swap chain until it is resized.
 	SwapChain *swap_chain = memnew(SwapChain);
 	swap_chain->surface = p_surface;
-	swap_chain->data_format = attachment.format;
-	swap_chain->render_pass = render_pass;
 	return SwapChainID(swap_chain);
 }
 
@@ -2768,30 +2796,36 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	UINT present_flags = 0;
 	UINT creation_flags = 0;
 	switch (surface->vsync_mode) {
-		case DisplayServer::VSYNC_MAILBOX: {
+		case DisplayServerEnums::VSYNC_MAILBOX: {
 			sync_interval = 1;
 			present_flags = DXGI_PRESENT_RESTART;
 		} break;
-		case DisplayServer::VSYNC_ENABLED: {
+		case DisplayServerEnums::VSYNC_ENABLED: {
 			sync_interval = 1;
 			present_flags = 0;
 		} break;
-		case DisplayServer::VSYNC_DISABLED: {
+		case DisplayServerEnums::VSYNC_DISABLED: {
 			sync_interval = 0;
 			present_flags = is_tearing_supported ? DXGI_PRESENT_ALLOW_TEARING : 0;
 			creation_flags = is_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		} break;
-		case DisplayServer::VSYNC_ADAPTIVE: // Unsupported.
+		case DisplayServerEnums::VSYNC_ADAPTIVE: // Unsupported.
 		default:
 			sync_interval = 1;
 			present_flags = 0;
 			break;
 	}
 
-	if (swap_chain->d3d_swap_chain != nullptr && creation_flags != swap_chain->creation_flags) {
-		// The swap chain must be recreated if the creation flags are different.
+	RDD::DataFormat new_data_format;
+	RDD::ColorSpace new_color_space;
+	_determine_swap_chain_format(swap_chain, new_data_format, new_color_space);
+
+	if (swap_chain->d3d_swap_chain != nullptr && (creation_flags != swap_chain->creation_flags || new_data_format != swap_chain->data_format)) {
+		// The swap chain must be recreated if the creation flags or data format are different.
 		_swap_chain_release(swap_chain);
 	}
+
+	swap_chain->data_format = new_data_format;
 
 #ifdef DCOMP_ENABLED
 	bool create_for_composition = OS::get_singleton()->is_layered_allowed();
@@ -2808,6 +2842,10 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, surface->width, surface->height, DXGI_FORMAT_UNKNOWN, creation_flags);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
 	} else {
+		DEV_ASSERT(swap_chain->render_pass.id == 0);
+		swap_chain->render_pass = _swap_chain_create_render_pass(new_data_format);
+		ERR_FAIL_COND_V(!swap_chain->render_pass, ERR_CANT_CREATE);
+
 		swap_chain_desc.BufferCount = p_desired_framebuffer_count;
 		swap_chain_desc.Format = RD_TO_D3D12_FORMAT[swap_chain->data_format].general_format;
 		swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -2847,6 +2885,13 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	}
+
+	if (swap_chain->color_space != new_color_space) {
+		res = swap_chain->d3d_swap_chain->SetColorSpace1(RD_TO_DXGI_COLOR_SPACE_TYPE[new_color_space]);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		swap_chain->color_space = new_color_space;
 	}
 
 #ifdef DCOMP_ENABLED
@@ -2962,10 +3007,14 @@ RDD::DataFormat RenderingDeviceDriverD3D12::swap_chain_get_format(SwapChainID p_
 	return swap_chain->data_format;
 }
 
+RDD::ColorSpace RenderingDeviceDriverD3D12::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
+	return swap_chain->color_space;
+}
+
 void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);
-	render_pass_free(swap_chain->render_pass);
 	memdelete(swap_chain);
 }
 
@@ -5753,9 +5802,11 @@ uint64_t RenderingDeviceDriverD3D12::get_resource_native_handle(DriverResource p
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_total_memory_used() {
-	D3D12MA::TotalStatistics stats;
-	allocator->CalculateStatistics(&stats);
-	return stats.Total.Stats.BlockBytes;
+	D3D12MA::Budget local_budget;
+	D3D12MA::Budget non_local_budget;
+	allocator->GetBudget(&local_budget, &non_local_budget);
+
+	return local_budget.Stats.AllocationBytes + non_local_budget.Stats.AllocationBytes;
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_lazily_memory_used() {
@@ -5858,6 +5909,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_POINT_SIZE:
 			return false;
+		case SUPPORTS_HDR_OUTPUT:
+			return true;
 		default:
 			return false;
 	}
@@ -6275,7 +6328,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
-	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
+	allocator_desc.Flags = D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");

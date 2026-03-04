@@ -34,6 +34,7 @@ import android.Manifest
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.ComponentName
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -71,7 +72,9 @@ import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.openxr.vendors.utils.*
+import java.io.File
 import kotlin.math.min
+import kotlin.text.indexOf
 
 /**
  * Base class for the Godot Android Editor activities.
@@ -198,6 +201,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	protected var gameMenuFragment: GameMenuFragment? = null
 	protected val gameMenuState = Bundle()
 
+	private val updatedCommandLineParams = ArrayList<String>()
+
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
 	internal open fun getEditorWindowInfo() = EDITOR_MAIN_INFO
@@ -319,6 +324,91 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		super.onNewIntent(newIntent)
 	}
 
+	override fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
+		when (intent.action) {
+			Intent.ACTION_VIEW -> {
+				val rootDir = Environment.getExternalStorageDirectory().canonicalPath
+
+				val dataPath = when (intent.scheme) {
+					ContentResolver.SCHEME_FILE -> {
+						intent.data?.path
+					}
+
+					ContentResolver.SCHEME_CONTENT -> {
+						// This approach is not recommend with 'content' scheme, but we require the filesystem path in
+						// order to open its parent directory and load the project.
+						val uriPath = intent.data?.path
+						if (uriPath != null) {
+							// Try and see if the external storage directory is part of the uri path.
+							val rootDirIndex = uriPath.indexOf(rootDir)
+							if (rootDirIndex != -1) {
+								uriPath.substring(rootDirIndex)
+							} else {
+								// Try and see if we can retrieve an existing relative path.
+								val pathParts = uriPath.split(':', '/')
+								var currentPath = ""
+								for (index in pathParts.size -1 downTo 0) {
+									currentPath = if (currentPath == "") {
+										pathParts[index]
+									} else {
+										"${pathParts[index]}/$currentPath"
+									}
+									val currentFile = File(rootDir, currentPath)
+									if (currentFile.exists()) {
+										break
+									}
+								}
+								currentPath
+							}
+						} else {
+							null
+						}
+					}
+
+					else -> null
+				}
+
+				if (!dataPath.isNullOrBlank()) {
+					var dataFile = File(dataPath)
+					if (!dataFile.isAbsolute) {
+						dataFile = File(rootDir, dataPath)
+					}
+
+					val dataDir = dataFile.parentFile
+					if (dataDir?.isDirectory == true) {
+						val loadProjectArgs = arrayOf(EDITOR_ARG, PATH_ARG, dataDir.absolutePath)
+						if (newLaunch) {
+							// Update the command line parameters to load the specified project.
+							updatedCommandLineParams.addAll(loadProjectArgs)
+						} else {
+							// Check if we are already editing the specified directory.
+							var isEditor = false
+							var nextIsPath = false
+							var currentPath = ""
+							for (arg in commandLine) {
+								if (nextIsPath) {
+									currentPath = arg
+									nextIsPath = false
+								}
+
+								if (arg == EDITOR_ARG || arg == EDITOR_ARG_SHORT) {
+									isEditor = true
+								} else if (arg == PATH_ARG) {
+									nextIsPath = true
+								}
+							}
+							if (!isEditor || currentPath != dataDir.absolutePath) {
+								onNewGodotInstanceRequested(loadProjectArgs)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		super.handleStartIntent(intent, newLaunch)
+	}
+
 	protected open fun shouldShowGameMenuBar() = gameMenuContainer != null
 
 	private fun setupGameMenuBar() {
@@ -404,6 +494,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun getCommandLine(): MutableList<String> {
 		val params = super.getCommandLine()
+		if (updatedCommandLineParams.isNotEmpty()) {
+			params.addAll(updatedCommandLineParams)
+		}
 		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}

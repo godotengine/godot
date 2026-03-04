@@ -30,6 +30,9 @@
 
 #include "rigid_body_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
@@ -813,9 +816,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (!contact_monitor && p_property.name == "max_contacts_reported") {
+	} else if (!contact_monitor && p_property.name == "max_contacts_reported") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

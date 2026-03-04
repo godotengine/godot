@@ -30,8 +30,11 @@
 
 #include "sprite_2d.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -150,9 +153,9 @@ void Sprite2D::_notification(int p_what) {
 
 			Rect2 dst_rect = get_rect();
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
-			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_IMAGE);
+			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
+			AccessibilityServer::get_singleton()->update_set_bounds(ae, dst_rect);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -468,9 +471,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (p_property.name == "frame_coords") {
+	} else if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }

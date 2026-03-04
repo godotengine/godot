@@ -33,9 +33,11 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
+#include "servers/rendering/rendering_server.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
@@ -84,8 +86,7 @@ RID Material::get_rid() const {
 void Material::_validate_property(PropertyInfo &p_property) const {
 	if (!_can_do_next_pass() && p_property.name == "next_pass") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (!_can_use_render_priority() && p_property.name == "render_priority") {
+	} else if (!_can_use_render_priority() && p_property.name == "render_priority") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

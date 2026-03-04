@@ -30,6 +30,7 @@
 
 #include "audio_effect_eq.h"
 
+#include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
 void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {

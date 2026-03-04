@@ -30,7 +30,9 @@
 
 #include "particle_process_material.h"
 
+#include "core/object/class_db.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 Mutex ParticleProcessMaterial::dirty_materials_mutex;
 SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
@@ -1461,34 +1463,37 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 
 	switch (p_param) {
+		case PARAM_INITIAL_LINEAR_VELOCITY: {
+			//do none for this one
+		} break;
 		case PARAM_ANGULAR_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angular_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -360, 360);
 		} break;
 		case PARAM_ORBIT_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->orbit_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -2, 2);
 			notify_property_list_changed();
 		} break;
 		case PARAM_LINEAR_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->linear_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -200, 200);
 		} break;
 		case PARAM_RADIAL_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->radial_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -200, 200);
 		} break;
 		case PARAM_TANGENTIAL_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->tangent_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -200, 200);
 		} break;
 		case PARAM_DAMPING: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->damping_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
+			_adjust_curve_range(p_texture, 0, 100);
 		} break;
 		case PARAM_ANGLE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angle_texture, tex_rid);
-			_adjust_curve_range(p_texture, -1, 1);
+			_adjust_curve_range(p_texture, -360, 360);
 		} break;
 		case PARAM_SCALE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, tex_rid);
@@ -1500,36 +1505,35 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 		} break;
 		case PARAM_ANIM_SPEED: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_speed_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
+			_adjust_curve_range(p_texture, 0, 200);
 		} break;
 		case PARAM_ANIM_OFFSET: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_TURB_INFLUENCE_OVER_LIFE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_influence_over_life, tex_rid);
 			_adjust_curve_range(p_texture, 0, 1);
 		} break;
+		case PARAM_TURB_VEL_INFLUENCE: {
+			// Can't happen, but silences warning
+		} break;
+		case PARAM_TURB_INIT_DISPLACEMENT: {
+			// Can't happen, but silences warning
+		} break;
 		case PARAM_RADIAL_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->radial_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_SCALE_OVER_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_over_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
+			_adjust_curve_range(p_texture, 0, 3);
 			notify_property_list_changed();
 		} break;
 		case PARAM_DIRECTIONAL_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->directional_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 1);
 			notify_property_list_changed();
 		} break;
-		case PARAM_INITIAL_LINEAR_VELOCITY:
-		case PARAM_TURB_VEL_INFLUENCE:
-		case PARAM_TURB_INIT_DISPLACEMENT:
-		case PARAM_MAX: {
-			// No curve available.
-		} break;
+		case PARAM_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	_queue_shader_change();
@@ -1880,66 +1884,68 @@ RID ParticleProcessMaterial::get_shader_rid() const {
 }
 
 void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normal_texture" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_frequency" && sub_emitter_mode != SUB_EMITTER_CONSTANT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_end" && sub_emitter_mode != SUB_EMITTER_AT_END) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_collision" && sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_start" && sub_emitter_mode != SUB_EMITTER_AT_START) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") && !tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-		if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "emission_box_extents") {
+		if (emission_shape != EMISSION_SHAPE_BOX) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-
-		if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normal_texture") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_count") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("emission_ring_")) {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_frequency") {
+		if (sub_emitter_mode != SUB_EMITTER_CONSTANT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_end") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_END) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_collision") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_start") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_START) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "collision_friction") {
+		if (collision_mode != COLLISION_RIGID) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "collision_bounce") {
+		if (collision_mode != COLLISION_RIGID) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") {
+		if (!tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") {
+			if (!tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") {
+			if (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
 		}
 	}
@@ -2196,10 +2202,10 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticleProcessMaterial::set_collision_bounce);
 	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticleProcessMaterial::get_collision_bounce);
 
-#define ADD_MIN_MAX_PROPERTY(m_property, m_range, m_parameter_name)                                                                                                                       \
+#define ADD_MIN_MAX_PROPERTY(m_property, m_range, m_parameter_name) \
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, m_property, PROPERTY_HINT_RANGE, m_range, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_param", "get_param", m_parameter_name); \
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_min", PROPERTY_HINT_RANGE, m_range), "set_param_min", "get_param_min", m_parameter_name);                                     \
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_max", PROPERTY_HINT_RANGE, m_range), "set_param_max", "get_param_max", m_parameter_name);                                     \
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_min", PROPERTY_HINT_RANGE, m_range), "set_param_min", "get_param_min", m_parameter_name); \
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_max", PROPERTY_HINT_RANGE, m_range), "set_param_max", "get_param_max", m_parameter_name); \
 	min_max_properties.insert(m_property);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");

@@ -286,7 +286,7 @@ EditorRun::WindowPlacement EditorRun::get_window_placement() {
 
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_HIDPI)) {
 			bool hidpi_proj = GET_CONFIG_WITH_OVERRIDE("display", "window/dpi/allow_hidpi");
 			int display_scale = 1;
 

@@ -31,6 +31,7 @@
 #include "editor_zoom_widget.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
 #include "editor/settings/editor_settings.h"

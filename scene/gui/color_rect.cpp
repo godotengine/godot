@@ -30,6 +30,9 @@
 
 #include "color_rect.h"
 
+#include "core/object/class_db.h"
+#include "servers/display/accessibility_server.h"
+
 void ColorRect::set_color(const Color &p_color) {
 	if (color == p_color) {
 		return;
@@ -49,7 +52,7 @@ void ColorRect::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, color);
 		} break;
 
 		case NOTIFICATION_DRAW: {

@@ -38,43 +38,43 @@
 #include "nav_mesh_generator_2d.h"
 #endif // CLIPPER2_ENABLED
 
-#define COMMAND_1(F_NAME, T_0, D_0)                                     \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(T_0 p_d_0) :                                                   \
-				d_0(p_d_0) {}                                           \
+#define COMMAND_1(F_NAME, T_0, D_0) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		MERGE(F_NAME, _command_2d) \
+		(T_0 p_d_0) : \
+				d_0(p_d_0) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0);                        \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0) {                     \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                           \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		T_1 d_1;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(                                                               \
-				T_0 p_d_0,                                              \
-				T_1 p_d_1) :                                            \
-				d_0(p_d_0),                                             \
-				d_1(p_d_1) {}                                           \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		T_1 d_1; \
+		MERGE(F_NAME, _command_2d) \
+		( \
+				T_0 p_d_0, \
+				T_1 p_d_1) : \
+				d_0(p_d_0), \
+				d_1(p_d_1) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1);                   \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) {            \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0,                                                    \
-				D_1));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0, \
+				D_1)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 void GodotNavigationServer2D::init() {

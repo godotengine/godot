@@ -43,6 +43,7 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+#include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
@@ -523,33 +524,33 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$required_device_capabilities", capabilities);
 	} else if (p_line.contains("$interface_orientations")) {
 		String orientations;
-		const DisplayServer::ScreenOrientation screen_orientation =
-				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		const DisplayServerEnums::ScreenOrientation screen_orientation =
+				DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 		switch (screen_orientation) {
-			case DisplayServer::SCREEN_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				break;
-			case DisplayServer::SCREEN_PORTRAIT:
+			case DisplayServerEnums::SCREEN_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+			case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 				// Allow both landscape orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+			case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 				// Allow both portrait orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR:
+			case DisplayServerEnums::SCREEN_SENSOR:
 				// Allow all screen orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
@@ -561,33 +562,33 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$interface_orientations", orientations);
 	} else if (p_line.contains("$ipad_interface_orientations")) {
 		String orientations;
-		const DisplayServer::ScreenOrientation screen_orientation =
-				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		const DisplayServerEnums::ScreenOrientation screen_orientation =
+				DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 		switch (screen_orientation) {
-			case DisplayServer::SCREEN_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_PORTRAIT:
+			case DisplayServerEnums::SCREEN_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+			case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 				// Allow both landscape orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+			case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 				// Allow both portrait orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR:
+			case DisplayServerEnums::SCREEN_SENSOR:
 				// Allow all screen orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
@@ -2058,6 +2059,12 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		}
 	}
 
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+			export_plugins[i]->end_generate_apple_embedded_project(p_path, export_project_only);
+		}
+	}
+
 	if (export_project_only) {
 		return OK;
 	}
@@ -2618,15 +2625,15 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 	filesystem_da->make_dir_recursive(EditorPaths::get_singleton()->get_temp_dir().path_join(id));
 	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.ipa");
 
-#define CLEANUP_AND_RETURN(m_err)                                                                          \
-	{                                                                                                      \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
 		if (filesystem_da->change_dir(EditorPaths::get_singleton()->get_temp_dir().path_join(id)) == OK) { \
-			filesystem_da->erase_contents_recursive();                                                     \
-			filesystem_da->change_dir("..");                                                               \
-			filesystem_da->remove(id);                                                                     \
-		}                                                                                                  \
-		return m_err;                                                                                      \
-	}                                                                                                      \
+			filesystem_da->erase_contents_recursive(); \
+			filesystem_da->change_dir(".."); \
+			filesystem_da->remove(id); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	Device dev = devices[p_device];

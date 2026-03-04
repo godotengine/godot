@@ -30,8 +30,12 @@
 
 #include "touch_screen_button.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
@@ -126,12 +130,12 @@ void TouchScreenButton::_notification(int p_what) {
 
 			Rect2 dst_rect(Point2(), texture_normal.is_valid() ? texture_normal->get_size() : Size2());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &TouchScreenButton::_accessibility_action_click));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &TouchScreenButton::_accessibility_action_click));
 
-			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
+			AccessibilityServer::get_singleton()->update_set_bounds(ae, dst_rect);
 		} break;
 
 		case NOTIFICATION_DRAW: {

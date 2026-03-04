@@ -32,6 +32,7 @@
 #include "animation_tree.compat.inc"
 
 #include "animation_blend_tree.h"
+#include "core/object/class_db.h"
 #include "scene/animation/animation_player.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -739,7 +740,8 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 	for (const PropertyInfo &E : properties) {
 		if (E.name.begins_with(old_base)) {
 			String new_name = E.name.replace_first(old_base, new_base);
-			property_map[new_name] = property_map[E.name];
+			const Pair<Variant, bool> temp_copy = property_map[E.name];
+			property_map[new_name] = temp_copy;
 			property_map.erase(E.name);
 		}
 	}

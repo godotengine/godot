@@ -32,10 +32,11 @@
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_set.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "shader_types.h"
+#include "servers/rendering/shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
@@ -1397,8 +1398,8 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 
 bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, Vector<Scalar> *r_constant_values) {
 	if (is_shader_inc) {
-		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i))) {
 				if ((current_function == E.key || E.key == "global" || E.key == "constants") && E.value.built_ins.has(p_identifier)) {
 					if (r_data_type) {
 						*r_data_type = E.value.built_ins[p_identifier].type;
@@ -3646,8 +3647,36 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	int builtin_idx = 0;
 
 	if (argcount <= 4) {
-		// test builtins
+		// Test builtins.
 		int idx = 0;
+		int full_match_index = 0;
+
+		while (builtin_func_defs[idx].name) {
+			if (completion_class != builtin_func_defs[idx].tag) {
+				idx++;
+				continue;
+			}
+
+			if (name == builtin_func_defs[idx].name) {
+				bool fail = false;
+
+				for (int i = 0; i < argcount; i++) {
+					if (args[i] != builtin_func_defs[idx].args[i]) {
+						fail = true;
+						break;
+					}
+				}
+
+				if (!fail) {
+					// Full match.
+					full_match_index = idx;
+					break;
+				}
+			}
+
+			idx++;
+		}
+		idx = full_match_index;
 
 		while (builtin_func_defs[idx].name) {
 			if (completion_class != builtin_func_defs[idx].tag) {
@@ -3667,7 +3696,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 					}
 					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::NODE_TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
-						//all good, but needs implicit conversion later
+						// All good, but needs implicit conversion later.
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
 						fail = true;
 						break;
@@ -3685,7 +3714,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
-					fail = true; //make sure the number of arguments matches
+					fail = true; // Make sure the number of arguments matches.
 				}
 
 				if (!fail) {
@@ -3720,7 +3749,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 					}
 
-					//make sure its not an out argument used in the wrong way
+					// Make sure it's not an out argument used in the wrong way.
 					int outarg_idx = 0;
 					while (builtin_func_out_args[outarg_idx].name) {
 						if (String(name) == builtin_func_out_args[outarg_idx].name) {
@@ -3819,14 +3848,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						}
 						outarg_idx++;
 					}
-					//implicitly convert values if possible
+					// Implicitly convert values if possible.
 					for (int i = 0; i < argcount; i++) {
 						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i] || p_func->arguments[i + 1]->type != Node::NODE_TYPE_CONSTANT) {
-							//can't do implicit conversion here
+							// Can't do implicit conversion here.
 							continue;
 						}
 
-						//this is an implicit conversion
+						// This is an implicit conversion.
 						ConstantNode *constant = static_cast<ConstantNode *>(p_func->arguments[i + 1]);
 						ConstantNode *conversion = alloc_node<ConstantNode>();
 
@@ -11201,8 +11230,8 @@ Error ShaderLanguage::_parse_shader_mode(bool p_is_stencil, const Vector<ModeInf
 	bool found = false;
 
 	if (is_shader_inc) {
-		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-			const Vector<ModeInfo> modes = p_is_stencil ? ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i)) : ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			const Vector<ModeInfo> modes = p_is_stencil ? ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i)) : ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
 
 			for (const ModeInfo &info : modes) {
 				const String name = String(info.name);
@@ -11486,8 +11515,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			if (is_shader_inc) {
-				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+				for (int i = 0; i < RSE::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
 
 					for (int j = 0; j < modes.size(); j++) {
 						const ModeInfo &info = modes[j];
@@ -11551,8 +11580,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_STENCIL_MODE: {
 			if (is_shader_inc) {
-				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i));
+				for (int i = 0; i < RSE::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i));
 
 					for (const ModeInfo &info : modes) {
 						if (!info.options.is_empty()) {
@@ -11672,8 +11701,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 				if (comp_ident) {
 					if (is_shader_inc) {
-						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-							const HashMap<StringName, ShaderLanguage::FunctionInfo> &info = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i));
+						for (int i = 0; i < RSE::SHADER_MAX; i++) {
+							const HashMap<StringName, ShaderLanguage::FunctionInfo> &info = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i));
 
 							if (info.has("global")) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info["global"].built_ins) {

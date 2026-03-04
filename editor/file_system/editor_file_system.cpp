@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
@@ -46,6 +47,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
@@ -237,6 +239,12 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	for (EditorFileSystemDirectory *dir : subdirs) {
 		memdelete(dir);
 	}
+}
+
+void EditorFileSystemImportFormatSupportQuery::_bind_methods() {
+	GDVIRTUAL_BIND(_is_active);
+	GDVIRTUAL_BIND(_get_file_extensions);
+	GDVIRTUAL_BIND(_query);
 }
 
 EditorFileSystem::ScannedDirectory::~ScannedDirectory() {
@@ -2544,7 +2552,7 @@ void EditorFileSystem::_notify_filesystem_changed() {
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
-	return valid_extensions;
+	return HashSet<String>(valid_extensions);
 }
 
 void EditorFileSystem::_register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update) {
@@ -3235,9 +3243,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// this could lead to a slow import process, especially when the editor is unfocused.
 	// Temporarily disabling VSync and low_processor_usage_mode while reimporting fixes this.
 	const bool old_low_processor_usage_mode = OS::get_singleton()->is_in_low_processor_usage_mode();
-	const DisplayServer::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	const DisplayServerEnums::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
 	OS::get_singleton()->set_low_processor_usage_mode(false);
-	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServer::VSyncMode::VSYNC_DISABLED);
+	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 
 	Vector<ImportFile> reimport_files;
 
@@ -3689,6 +3697,7 @@ bool EditorFileSystem::_scan_extensions() {
 void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
 	ClassDB::bind_method(D_METHOD("is_scanning"), &EditorFileSystem::is_scanning);
+	ClassDB::bind_method(D_METHOD("is_importing"), &EditorFileSystem::is_importing);
 	ClassDB::bind_method(D_METHOD("get_scanning_progress"), &EditorFileSystem::get_scanning_progress);
 	ClassDB::bind_method(D_METHOD("scan"), &EditorFileSystem::scan);
 	ClassDB::bind_method(D_METHOD("scan_sources"), &EditorFileSystem::scan_changes);

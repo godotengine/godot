@@ -31,12 +31,14 @@
 #include "tab_bar.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 static inline Color _select_color(const Color &p_override_color, const Color &p_default_color) {
 	return p_override_color.a > 0 ? p_override_color : p_default_color;
@@ -372,7 +374,7 @@ RID TabBar::get_tab_accessibility_element(int p_tab) const {
 
 	const Tab &item = tabs[p_tab];
 	if (item.accessibility_item_element.is_null()) {
-		item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB);
+		item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TAB);
 		item.accessibility_item_dirty = true;
 	}
 	return item.accessibility_item_element;
@@ -438,29 +440,29 @@ void TabBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TAB_BAR);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, tabs.size());
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TAB_BAR);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, tabs.size());
 
 			for (int i = 0; i < tabs.size(); i++) {
 				const Tab &item = tabs[i];
 
 				if (item.accessibility_item_element.is_null()) {
-					item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB);
+					item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TAB);
 					item.accessibility_item_dirty = true;
 				}
 
 				if (item.accessibility_item_dirty) {
-					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TabBar::_accessibility_action_scroll_into_view).bind(i));
-					DisplayServer::get_singleton()->accessibility_update_add_action(item.accessibility_item_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &TabBar::_accessibility_action_focus).bind(i));
+					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TabBar::_accessibility_action_scroll_into_view).bind(i));
+					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &TabBar::_accessibility_action_focus).bind(i));
 
-					DisplayServer::get_singleton()->accessibility_update_set_list_item_index(item.accessibility_item_element, i);
-					DisplayServer::get_singleton()->accessibility_update_set_name(item.accessibility_item_element, atr(item.text));
-					DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(item.accessibility_item_element, i == current);
-					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_DISABLED, item.disabled);
-					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
-					DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
+					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
+					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.text));
+					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == current);
+					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
+					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
-					DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, 0), Size2(item.size_cache, get_size().height)));
+					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, 0), Size2(item.size_cache, get_size().height)));
 
 					item.accessibility_item_dirty = false;
 				}
@@ -748,7 +750,7 @@ void TabBar::set_tab_count(int p_count) {
 	if (tabs.size() > p_count) {
 		for (int i = p_count; i < tabs.size(); i++) {
 			if (tabs[i].accessibility_item_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(tabs.write[i].accessibility_item_element);
+				AccessibilityServer::get_singleton()->free_element(tabs.write[i].accessibility_item_element);
 				tabs.write[i].accessibility_item_element = RID();
 			}
 		}
@@ -1339,7 +1341,7 @@ void TabBar::clear_tabs() {
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].accessibility_item_element.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(tabs.write[i].accessibility_item_element);
+			AccessibilityServer::get_singleton()->free_element(tabs.write[i].accessibility_item_element);
 			tabs.write[i].accessibility_item_element = RID();
 		}
 	}
@@ -1359,7 +1361,7 @@ void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 
 	if (tabs[p_idx].accessibility_item_element.is_valid()) {
-		DisplayServer::get_singleton()->accessibility_free_element(tabs.write[p_idx].accessibility_item_element);
+		AccessibilityServer::get_singleton()->free_element(tabs.write[p_idx].accessibility_item_element);
 		tabs.write[p_idx].accessibility_item_element = RID();
 	}
 	tabs.remove_at(p_idx);

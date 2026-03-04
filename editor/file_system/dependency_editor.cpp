@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -239,7 +240,7 @@ List<String> DependencyEditor::_filter_deps(const List<String> &p_deps) {
 	const String filter_text = filter->get_text();
 
 	if (filter_text.is_empty()) {
-		return p_deps;
+		return List<String>(p_deps);
 	}
 
 	List<String> filtered;

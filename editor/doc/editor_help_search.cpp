@@ -30,6 +30,7 @@
 
 #include "editor_help_search.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -40,6 +41,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "servers/display/display_server.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
@@ -196,13 +198,13 @@ void EditorHelpSearch::_confirmed() {
 void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_HELP)) {
 				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_mp(this, &EditorHelpSearch::_native_action_cb));
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_HELP)) {
 				DisplayServer::get_singleton()->help_set_search_callbacks();
 			}
 		} break;

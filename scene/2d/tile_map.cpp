@@ -32,23 +32,25 @@
 #include "tile_map.compat.inc"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
-	if (layer < 0) {                                 \
-		layer = layers.size() + layer;               \
-	};                                               \
-	ERR_FAIL_INDEX(layer, (int)layers.size());       \
+	if (layer < 0) { \
+		layer = layers.size() + layer; \
+	}; \
+	ERR_FAIL_INDEX(layer, (int)layers.size()); \
 	layers[layer]->function(__VA_ARGS__);
 
 #define TILEMAP_CALL_FOR_LAYER_V(layer, err_value, function, ...) \
-	if (layer < 0) {                                              \
-		layer = layers.size() + layer;                            \
-	};                                                            \
-	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value);       \
+	if (layer < 0) { \
+		layer = layers.size() + layer; \
+	}; \
+	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value); \
 	return layers[layer]->function(__VA_ARGS__);
 
 #ifndef NAVIGATION_2D_DISABLED

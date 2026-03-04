@@ -64,7 +64,7 @@ AddMetadataDialog::AddMetadataDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	vbc->add_child(validation_panel);
-	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
+	validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Metadata name is valid."));
 	validation_panel->set_update_callback(callable_mp(this, &AddMetadataDialog::_check_meta_name));
 	validation_panel->set_accept_button(get_ok_button());
 
@@ -104,12 +104,12 @@ void AddMetadataDialog::_check_meta_name() {
 	const String meta_name = add_meta_name->get_text();
 
 	if (meta_name.is_empty()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
 	} else if (!meta_name.is_valid_ascii_identifier()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
 	} else if (_existing_metas.find(meta_name)) {
 		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
 	} else if (meta_name[0] == '_') {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
 	}
 }

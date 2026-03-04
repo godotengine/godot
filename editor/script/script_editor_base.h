@@ -31,13 +31,14 @@
 #pragma once
 
 #include "editor/gui/code_editor.h"
+#include "scene/gui/box_container.h"
 
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
 
-class ScriptEditorBase : public Control {
-	GDCLASS(ScriptEditorBase, Control);
+class ScriptEditorBase : public VBoxContainer {
+	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
 	Ref<Resource> edited_res;
@@ -119,6 +120,8 @@ protected:
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 
+		EDIT_JOIN_LINES,
+
 		BASE_ENUM_COUNT,
 	};
 
@@ -160,7 +163,6 @@ protected:
 
 	bool editor_enabled = false;
 	CodeTextEditor *code_editor = nullptr;
-	HBoxContainer *edit_hb = nullptr;
 
 	GotoLinePopup *goto_line_popup = nullptr;
 

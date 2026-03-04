@@ -365,6 +365,13 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_sources_list();
+			if (tile_set.is_valid()) {
+				_update_patterns_list();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			sources_delete_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			sources_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -827,8 +834,8 @@ TileSetEditor::TileSetEditor() {
 	tabs_bar->set_theme_type_variation("TabBarInner");
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
-	tabs_bar->add_tab(TTR("Tile Sources"));
-	tabs_bar->add_tab(TTR("Patterns"));
+	tabs_bar->add_tab(TTRC("Tile Sources"));
+	tabs_bar->add_tab(TTRC("Patterns"));
 	tabs_bar->connect("tab_changed", callable_mp(this, &TileSetEditor::_tab_changed));
 
 	tile_set_toolbar = memnew(HBoxContainer);
@@ -843,7 +850,7 @@ TileSetEditor::TileSetEditor() {
 	//// Tiles ////
 	// Split container.
 	split_container = memnew(HSplitContainer);
-	split_container->set_name(TTR("Tiles"));
+	split_container->set_name(TTRC("Tiles"));
 	split_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_container->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vb->add_child(split_container);
@@ -859,14 +866,14 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(false);
 	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
-	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
+	source_sort_button->set_tooltip_text(TTRC("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
-	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
-	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
-	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
-	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
+	p->add_radio_check_item(TTRC("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
+	p->add_radio_check_item(TTRC("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
+	p->add_radio_check_item(TTRC("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
+	p->add_radio_check_item(TTRC("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(TileSetSourceItemList);
@@ -890,18 +897,18 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button = memnew(MenuButton);
 	sources_add_button->set_flat(false);
 	sources_add_button->set_theme_type_variation(SceneStringName(FlatButton));
-	sources_add_button->get_popup()->add_item(TTR("Atlas"));
-	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A palette of tiles made from a texture."));
-	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
-	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A collection of scenes that can be instantiated and placed as tiles."));
+	sources_add_button->get_popup()->add_item(TTRC("Atlas"));
+	sources_add_button->get_popup()->set_item_tooltip(-1, TTRC("A palette of tiles made from a texture."));
+	sources_add_button->get_popup()->add_item(TTRC("Scenes Collection"));
+	sources_add_button->get_popup()->set_item_tooltip(-1, TTRC("A collection of scenes that can be instantiated and placed as tiles."));
 	sources_add_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
 	sources_advanced_menu_button->set_flat(false);
 	sources_advanced_menu_button->set_theme_type_variation(SceneStringName(FlatButton));
-	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
-	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
+	sources_advanced_menu_button->get_popup()->add_item(TTRC("Open Atlas Merging Tool"));
+	sources_advanced_menu_button->get_popup()->add_item(TTRC("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
 	sources_advanced_menu_button->set_accessibility_name(TTRC("Advanced"));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
@@ -922,7 +929,7 @@ TileSetEditor::TileSetEditor() {
 	// No source selected.
 	no_source_selected_label = memnew(Label);
 	no_source_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
+	no_source_selected_label->set_text(TTRC("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
 	no_source_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	no_source_selected_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -969,7 +976,7 @@ TileSetEditor::TileSetEditor() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
+	patterns_help_label->set_text(TTRC("Add new patterns in the TileMap editing mode."));
 	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
@@ -994,7 +1001,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		id_edit_dialog->add_child(vbox);
 
-		Label *label = memnew(Label(TTR("Warning: Modifying a source ID will result in all TileMaps using that source to reference an invalid source instead. This may result in unexpected data loss. Change this ID carefully.")));
+		Label *label = memnew(Label(TTRC("Warning: Modifying a source ID will result in all TileMaps using that source to reference an invalid source instead. This may result in unexpected data loss. Change this ID carefully.")));
 		label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 		// Workaround too tall popup window due to text autowrapping. See GH-83546.
 		label->set_custom_minimum_size(Vector2i(400, 0));
@@ -1037,7 +1044,7 @@ bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::
 		id_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(id_label);
 
-		Button *button = memnew(Button(TTR("Edit")));
+		Button *button = memnew(Button(TTRC("Edit")));
 		button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(button);
 		button->connect(SceneStringName(pressed), callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));

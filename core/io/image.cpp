@@ -35,6 +35,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
@@ -1231,14 +1232,14 @@ static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst,
 }
 
 bool Image::is_size_po2() const {
-	return is_power_of_2(width) && is_power_of_2(height);
+	return Math::is_power_of_2(width) && Math::is_power_of_2(height);
 }
 
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
-	int w = next_power_of_2((uint32_t)width);
-	int h = next_power_of_2((uint32_t)height);
+	int w = Math::next_power_of_2((uint32_t)width);
+	int h = Math::next_power_of_2((uint32_t)height);
 	if (p_square) {
 		w = h = MAX(w, h);
 	}
@@ -2612,24 +2613,24 @@ void Image::initialize_data(const char **p_xpm) {
 #define DETECT_ALPHA_MAX_THRESHOLD 254
 #define DETECT_ALPHA_MIN_THRESHOLD 2
 
-#define DETECT_ALPHA(m_value)                          \
-	{                                                  \
-		uint8_t value = m_value;                       \
-		if (value < DETECT_ALPHA_MIN_THRESHOLD)        \
-			bit = true;                                \
+#define DETECT_ALPHA(m_value) \
+	{ \
+		uint8_t value = m_value; \
+		if (value < DETECT_ALPHA_MIN_THRESHOLD) \
+			bit = true; \
 		else if (value < DETECT_ALPHA_MAX_THRESHOLD) { \
-			detected = true;                           \
-			break;                                     \
-		}                                              \
+			detected = true; \
+			break; \
+		} \
 	}
 
 #define DETECT_NON_ALPHA(m_value) \
-	{                             \
-		uint8_t value = m_value;  \
-		if (value > 0) {          \
-			detected = true;      \
-			break;                \
-		}                         \
+	{ \
+		uint8_t value = m_value; \
+		if (value > 0) { \
+			detected = true; \
+			break; \
+		} \
 	}
 
 bool Image::is_invisible() const {

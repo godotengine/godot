@@ -25,8 +25,9 @@
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Node3D[]" />
 			<description>
-				Returns a list of intersecting [PhysicsBody3D]s and [GridMap]s. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				Returns a list of intersecting [PhysicsBody3D]s, [SoftBody3D]s, and [GridMap]s. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
 				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not return any such bodies.
 			</description>
 		</method>
 		<method name="has_overlapping_areas" qualifiers="const">
@@ -39,8 +40,9 @@
 		<method name="has_overlapping_bodies" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if intersecting any [PhysicsBody3D]s or [GridMap]s, otherwise returns [code]false[/code]. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				Returns [code]true[/code] if intersecting any [PhysicsBody3D]s, [SoftBody3D]s, or [GridMap]s, otherwise returns [code]false[/code]. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
 				For performance reasons (collisions are all processed at the same time) the list of overlapping bodies is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not consider such bodies.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
@@ -56,8 +58,9 @@
 			<param index="0" name="body" type="Node" />
 			<description>
 				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area3D], [code]false[/code] otherwise.
+				[param body] argument can either be a [PhysicsBody3D], [SoftBody3D], or a [GridMap] instance. While GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
-				The [param body] argument can either be a [PhysicsBody3D] or a [GridMap] instance. While GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body.
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will return [code]false[/code] in such cases.
 			</description>
 		</method>
 	</methods>
@@ -181,13 +184,15 @@
 		<signal name="body_entered">
 			<param index="0" name="body" type="Node3D" />
 			<description>
-				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody3D], [SoftBody3D] or [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not emit this signal in such cases.
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<param index="0" name="body" type="Node3D" />
 			<description>
-				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody3D], [SoftBody3D] or [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not emit this signal in such cases.
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -196,8 +201,9 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D], [SoftBody3D] or [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer3D].
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not emit this signal in such cases.
 				[b]Example:[/b] Get the [CollisionShape3D] node from the shape index:
 				[codeblocks]
 				[gdscript]
@@ -216,8 +222,9 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when a [Shape3D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				Emitted when a [Shape3D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody3D], [SoftBody3D] or [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 				See also [signal body_shape_entered].
+				[b]Note:[/b] Godot Physics does not support reporting overlaps with [SoftBody3D], so will not emit this signal in such cases.
 			</description>
 		</signal>
 	</signals>

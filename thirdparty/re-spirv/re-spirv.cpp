@@ -182,6 +182,12 @@ namespace respv {
         case SpvOpDPdx:
         case SpvOpDPdy:
         case SpvOpFwidth:
+        case SpvOpDPdxFine:
+        case SpvOpDPdyFine:
+        case SpvOpFwidthFine:
+        case SpvOpDPdxCoarse:
+        case SpvOpDPdyCoarse:
+        case SpvOpFwidthCoarse:
         case SpvOpControlBarrier:
         case SpvOpMemoryBarrier:
         case SpvOpAtomicLoad:
@@ -359,6 +365,12 @@ namespace respv {
         case SpvOpDPdx:
         case SpvOpDPdy:
         case SpvOpFwidth:
+        case SpvOpDPdxFine:
+        case SpvOpDPdyFine:
+        case SpvOpFwidthFine:
+        case SpvOpDPdxCoarse:
+        case SpvOpDPdyCoarse:
+        case SpvOpFwidthCoarse:
         case SpvOpGroupNonUniformElect:
         case SpvOpCopyLogical:
             rOperandWordStart = 3;

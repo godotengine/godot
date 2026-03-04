@@ -32,6 +32,8 @@
 
 #include "export_plugin.h"
 
+#include "core/object/class_db.h"
+
 void register_macos_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformMacOS);
 }

@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -425,7 +426,7 @@ class CharBuffer {
 	int64_t written = 0;
 
 	bool grow() {
-		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
+		if (vector.resize(Math::next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
 			return false;
 		}
 

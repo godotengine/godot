@@ -33,6 +33,7 @@
 #include "editor/scene/material_editor_plugin.h"
 #include "scene/resources/3d/fog_material.h"
 #include "scene/resources/3d/sky_material.h"
+#include "servers/rendering/rendering_server.h"
 
 String StandardMaterial3DConversionPlugin::converts_to() const {
 	return "ShaderMaterial";

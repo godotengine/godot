@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
@@ -50,6 +52,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
@@ -106,21 +110,21 @@ void ProjectListItemControl::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, TTR("Project") + " " + project_title->get_text());
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+			AccessibilityServer::get_singleton()->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_value(ae, project_title->get_text());
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
 
 			ProjectList *pl = get_list();
 			if (pl) {
-				DisplayServer::get_singleton()->accessibility_update_set_list_item_index(ae, pl->get_index(this));
+				AccessibilityServer::get_singleton()->update_set_list_item_index(ae, pl->get_index(this));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_level(ae, 0);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(ae, is_selected);
+			AccessibilityServer::get_singleton()->update_set_list_item_level(ae, 0);
+			AccessibilityServer::get_singleton()->update_set_list_item_selected(ae, is_selected);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -130,7 +134,6 @@ void ProjectListItemControl::_notification(int p_what) {
 				if (idx >= 0) {
 					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
 					pl->select_project(idx, !has_focus(true));
-					pl->ensure_project_visible(idx);
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -536,9 +539,9 @@ void ProjectList::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, _projects.size());
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, _projects.size());
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
 		}
 	}
 }
@@ -1210,7 +1213,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index, true);
+	clicked_project.control->grab_focus(true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,
@@ -1296,9 +1299,6 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
-
-	Item &item = _projects.write[p_index];
-	item.control->grab_focus(p_hide_focus);
 	_select_project_nocheck(p_index, p_hide_focus);
 }
 
