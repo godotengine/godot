@@ -171,7 +171,7 @@ public:
 
 	Variant make_variable_default_value(GDScriptParser::VariableNode *p_variable);
 
-	static bool check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
+	static bool check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr, const GDScriptParser::ClassNode* p_class = nullptr);
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
 	static bool class_exists(const StringName &p_class);
 

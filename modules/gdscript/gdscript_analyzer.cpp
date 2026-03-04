@@ -406,6 +406,15 @@ static bool infer_generic_bindings_from_types(
 
 }
 
+/// [Monarch] in type theory, "open" means that the generic is, as of yet, unbound. useful for determining if
+/// the generic is in a definition context or not, i.e its class is currently being defined. this means that
+/// resolve_generic_type has not run on it yet, and so it remains unsubstituted. you need to know this because
+/// this function relies on the invariant that resolve_generic_type ALWAYS runs before is_type_compatible runs
+/// on any real call site, consuming the GENERIC_TYPE and thereby substituting it away. JESSE DON'T VIOLATE THIS INVARIANT JESSE
+static bool is_generic_in_open_context(const GDScriptParser::DataType& p_generic, const GDScriptParser::ClassNode* p_current_class) {
+	return p_generic.kind == GDScriptParser::DataType::GENERIC_TYPE && p_generic.generic_owner_class != nullptr && p_generic.generic_owner_class == p_current_class;
+}
+
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
@@ -6612,7 +6621,7 @@ bool GDScriptAnalyzer::is_type_compatible_strict_collections(const GDScriptParse
 }
 
 // TODO: Add safe/unsafe return variable (for variant cases)
-bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
+bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node, const GDScriptParser::ClassNode* p_class) {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
@@ -6626,17 +6635,29 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		// TODO: This is acceptable but unsafe. Make sure unsafe line is set.
 		return true;
 	}
-
-	/// [Monarch] If both sides are generic, do a real equality check
-	/// If only one side is generic, we cant decide without concrete bindings yet
+	/// case 1, both sides are generic, in which case, same param owner and name is the only hard equality 
 	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE &&
-			p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		return p_target == p_source;
+		p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+	
+		if (p_target.generic_owner_class == p_source.generic_owner_class) {
+			return p_target == p_source;
+		}
+		return true;
 	}
 	
-	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE || 
-		p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		return true; /// <-- unresolved and thus needs concrete bindings to decide
+
+	/// case 2, source is a free param. only valid if target is the same T, and anything else
+	/// is a definition site error.
+	if (p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		if (is_generic_in_open_context(p_source, p_class)) {
+			return p_target.kind == GDScriptParser::DataType::GENERIC_TYPE && p_target == p_source;
+		}
+		return true;
+	}
+
+	/// case 3, target is generic, source is concrete, should always be fine
+	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		return true;
 	}
 
 	if (p_target.kind == GDScriptParser::DataType::BUILTIN) {
@@ -6763,6 +6784,29 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			}
 			while (src_class != nullptr) {
 				if (src_class == p_target.class_type || src_class->fqcn == p_target.class_type->fqcn) {
+
+					/// if assigning to something that has generic parameters...
+					if(p_target.class_type->has_generic_parameters()) {
+
+						/// if one side is unbound, reject that shit
+						if(p_target.generic_type_bindings.is_empty() || p_source.generic_type_bindings.is_empty()) {
+							return false;
+						}
+
+						/// if both sides are bound, then cool, check binding matches, then have another go
+						for(const GDScriptParser::IdentifierNode* param : p_target.class_type->generic_parameters) {
+							const GDScriptParser::DataType* target_bound = p_target.generic_type_bindings.getptr(param->name);
+							const GDScriptParser::DataType* source_bound = p_source.generic_type_bindings.getptr(param->name);
+							if(target_bound == nullptr || source_bound == nullptr) {
+								return false;
+							}
+
+							if(!check_type_compatibility(*target_bound, *source_bound, p_allow_implicit_conversion)) {
+								return false;
+							}
+						}
+					}
+
 					return true;
 				}
 				src_class = src_class->base_type.class_type;

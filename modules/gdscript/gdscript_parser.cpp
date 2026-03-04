@@ -5386,6 +5386,13 @@ String GDScriptParser::DataType::to_string() const {
 			if (class_type->identifier != nullptr) {
 				return class_type->identifier->name.operator String();
 			}
+			if (class_type->has_generic_parameters()) {
+				String params = class_type->generic_parameters[0]->name;
+				for(int i = 1; i < class_type->generic_parameters.size(); i++) {
+					params += ", "+class_type->generic_parameters[i]->name;
+				}
+				return "["+class_type->fqcn+"]";
+			}
 			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
