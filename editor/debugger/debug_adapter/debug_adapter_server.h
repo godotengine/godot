@@ -40,7 +40,9 @@ class DebugAdapterServer : public EditorPlugin {
 
 	int remote_port = 6006;
 	bool started = false;
+#if !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 	bool polling = false;
+#endif
 	static void thread_func(void *p_userdata);
 
 private:

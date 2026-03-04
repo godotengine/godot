@@ -112,6 +112,8 @@ public:
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 
+	int get_native_fd() const override { return _sock; }
+
 	NetSocketUnix();
 	~NetSocketUnix() override;
 };

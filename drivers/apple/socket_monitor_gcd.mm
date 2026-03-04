@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.h                                                          */
+/*  socket_monitor_gcd.mm                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,22 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "socket_monitor_gcd.h"
 
-#include "core/io/ip.h"
-#include "core/io/socket_server.h"
-#include "core/io/stream_peer_tcp.h"
+#include "core/variant/variant.h"
 
-class TCPServer : public SocketServer {
-	GDCLASS(TCPServer, SocketServer);
+void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
+	stop();
 
-protected:
-	static void _bind_methods();
+	_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, p_fd, 0, dispatch_get_main_queue());
+	if (!_source) {
+		return;
+	}
 
-public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
-	Ref<StreamPeerTCP> take_connection();
-	int get_native_fd() const;
-	Ref<StreamPeerSocket> take_socket_connection() override { return take_connection(); }
-};
+	Callable cb = p_on_readable;
+	dispatch_source_set_event_handler(_source, ^{
+		cb.call_deferred();
+	});
+
+	dispatch_resume(_source);
+	_active = true;
+}
+
+void SocketMonitorGCD::stop() {
+	if (_source) {
+		dispatch_source_cancel(_source);
+		_source = nullptr;
+	}
+	_active = false;
+}
+
+SocketMonitorGCD::~SocketMonitorGCD() {
+	stop();
+}

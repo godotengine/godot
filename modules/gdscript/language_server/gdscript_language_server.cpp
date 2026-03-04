@@ -53,9 +53,11 @@ void GDScriptLanguageServer::_notification(int p_what) {
 				start();
 			}
 
+#if !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 			if (started && !use_thread) {
 				GDScriptLanguageProtocol::get_singleton()->poll(poll_limit_usec);
 			}
+#endif
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -95,8 +97,15 @@ void GDScriptLanguageServer::start() {
 		if (use_thread) {
 			thread_running = true;
 			thread.start(GDScriptLanguageServer::thread_main, this);
+			set_process_internal(false);
+		} else {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+			// GCD dispatch_source monitors handle socket events.
+			set_process_internal(false);
+#else
+			set_process_internal(true);
+#endif
 		}
-		set_process_internal(!use_thread);
 		started = true;
 	}
 }

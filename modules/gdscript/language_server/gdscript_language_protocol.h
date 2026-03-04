@@ -39,6 +39,10 @@
 
 #include "modules/jsonrpc/jsonrpc.h"
 
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#include "drivers/apple/socket_monitor_gcd.h"
+#endif
+
 #define LSP_MAX_BUFFER_SIZE 4194304
 #define LSP_MAX_CLIENTS 8
 
@@ -96,6 +100,15 @@ private:
 	int latest_client_id = LSP_NO_CLIENT;
 	int next_client_id = 0;
 
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	SocketMonitorGCD *_server_monitor = nullptr;
+	HashMap<int, SocketMonitorGCD *> _peer_monitors;
+	bool _handling = false;
+
+	void _on_server_readable();
+	void _on_peer_readable(int p_client_id);
+#endif
+
 	int next_server_id = 0;
 
 	Ref<GDScriptTextDocument> text_document;
@@ -122,6 +135,9 @@ public:
 	_FORCE_INLINE_ SceneCache *get_scene_cache() { return &scene_cache; }
 
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
+
+	void _flush_peer(const Ref<LSPeer> &p_peer);
+	void _flush_all_peers();
 
 	void poll(int p_limit_usec);
 	Error start(int p_port, const IPAddress &p_bind_ip);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.h                                                          */
+/*  socket_monitor_gcd.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,20 +30,19 @@
 
 #pragma once
 
-#include "core/io/ip.h"
-#include "core/io/socket_server.h"
-#include "core/io/stream_peer_tcp.h"
+#include <dispatch/dispatch.h>
 
-class TCPServer : public SocketServer {
-	GDCLASS(TCPServer, SocketServer);
+#include "core/variant/callable.h"
 
-protected:
-	static void _bind_methods();
+class SocketMonitorGCD {
+	dispatch_source_t _source = nullptr;
+	bool _active = false;
 
 public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
-	Ref<StreamPeerTCP> take_connection();
-	int get_native_fd() const;
-	Ref<StreamPeerSocket> take_socket_connection() override { return take_connection(); }
+	// Start monitoring fd for readability. Callback is invoked via
+	// call_deferred() so it runs during Godot's MessageQueue flush.
+	void start(int p_fd, const Callable &p_on_readable);
+	void stop();
+	bool is_active() const { return _active; }
+	~SocketMonitorGCD();
 };

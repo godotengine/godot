@@ -69,3 +69,8 @@ int TCPServer::get_local_port() const {
 Ref<StreamPeerTCP> TCPServer::take_connection() {
 	return _take_connection<StreamPeerTCP>();
 }
+
+int TCPServer::get_native_fd() const {
+	ERR_FAIL_COND_V(_sock.is_null(), -1);
+	return _sock->get_native_fd();
+}

@@ -34,6 +34,11 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 
+int StreamPeerTCP::get_native_fd() const {
+	ERR_FAIL_COND_V(_sock.is_null(), -1);
+	return _sock->get_native_fd();
+}
+
 void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, const NetSocket::Address &p_addr) {
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
