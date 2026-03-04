@@ -69,6 +69,11 @@ public:
 		RENDERING_SOURCE_FALLBACK
 	};
 
+	enum PlatformString {
+		PLATFORM_STRING_FILE_MANAGER_OPEN,
+		PLATFORM_STRING_FILE_MANAGER_SHOW,
+	};
+
 private:
 	static OS *singleton;
 	static uint64_t target_ticks;
@@ -390,6 +395,17 @@ public:
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
+
+	virtual String get_platform_string(PlatformString p_platform_string) const {
+		switch (p_platform_string) {
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in File Manager");
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in File Manager");
+			default:
+				ERR_FAIL_V_MSG("", vformat("Couldn't find a string for platform string: %d.", p_platform_string));
+		}
+	}
 
 #ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
