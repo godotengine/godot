@@ -3524,6 +3524,7 @@ PopupMenu::PopupMenu() {
 	// Scroll Container
 	scroll_container = memnew(ScrollContainer);
 	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	scroll_container->set_use_parent_material(true);
 	panel->add_child(scroll_container, false, INTERNAL_MODE_FRONT);
 
 	// The control which will display the items
@@ -3532,6 +3533,7 @@ PopupMenu::PopupMenu() {
 	control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	control->set_use_parent_material(true);
 	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
 	control->connect(SceneStringName(draw), callable_mp(this, &PopupMenu::_draw_items));
 

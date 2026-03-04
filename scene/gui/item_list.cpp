@@ -2502,10 +2502,12 @@ void ItemList::_bind_methods() {
 
 ItemList::ItemList() {
 	scroll_bar_v = memnew(VScrollBar);
+	scroll_bar_v->set_use_parent_material(true);
 	add_child(scroll_bar_v, false, INTERNAL_MODE_FRONT);
 	scroll_bar_v->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 
 	scroll_bar_h = memnew(HScrollBar);
+	scroll_bar_h->set_use_parent_material(true);
 	add_child(scroll_bar_h, false, INTERNAL_MODE_FRONT);
 	scroll_bar_h->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 
