@@ -30,6 +30,8 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
@@ -50,9 +52,6 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
-
-#include "core/io/file_access.h"
-#include "core/io/resource_loader.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
