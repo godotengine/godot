@@ -32,8 +32,9 @@
 
 #include "nav_rid_2d.h"
 
-#include "core/object/class_db.h"
+#include "core/math/vector2.h"
 #include "core/templates/self_list.h"
+#include "core/templates/vector.h"
 
 class NavAgent2D;
 class NavMap2D;

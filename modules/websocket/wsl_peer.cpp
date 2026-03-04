@@ -33,6 +33,7 @@
 #ifndef WEB_ENABLED
 
 #include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 CryptoCore::RandomGenerator *WSLPeer::_static_rng = nullptr;
@@ -48,6 +49,10 @@ void WSLPeer::deinitialize() {
 		memdelete(_static_rng);
 		_static_rng = nullptr;
 	}
+}
+
+WebSocketPeer *WSLPeer::_create(bool p_notify_postinitialize) {
+	return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize));
 }
 
 ///

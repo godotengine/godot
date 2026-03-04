@@ -35,6 +35,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"

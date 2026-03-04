@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/math/audio_frame.h"
-#include "core/object/class_db.h"
 #include "core/templates/safe_list.h"
 #include "core/variant/variant.h"
 #include "servers/audio/audio_effect.h"

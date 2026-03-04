@@ -36,6 +36,7 @@
 #include "core/io/json.h"
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"

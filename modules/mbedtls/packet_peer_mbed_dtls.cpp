@@ -30,6 +30,8 @@
 
 #include "packet_peer_mbed_dtls.h"
 
+#include "core/object/class_db.h"
+
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
 		return 0;

@@ -32,7 +32,7 @@
 
 #ifdef CLIPPER2_ENABLED
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
 #include "servers/navigation_2d/navigation_server_2d.h"

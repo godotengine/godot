@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
