@@ -30,6 +30,7 @@
 
 #include "editor_plugin_settings.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"

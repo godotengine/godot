@@ -38,6 +38,7 @@
 #include "java_godot_wrapper.h"
 #include "net_socket_android.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"

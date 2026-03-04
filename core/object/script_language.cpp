@@ -30,6 +30,7 @@
 
 #include "script_language.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"

@@ -30,6 +30,7 @@
 
 #include "occluder_instance_3d.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"

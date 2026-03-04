@@ -30,6 +30,7 @@
 
 #include "label_3d.h"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"

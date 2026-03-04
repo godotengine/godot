@@ -30,6 +30,7 @@
 
 #include "renderer_scene_cull.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_method_pointer.h"

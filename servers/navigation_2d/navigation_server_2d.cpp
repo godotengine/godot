@@ -31,6 +31,7 @@
 #include "navigation_server_2d.h"
 #include "navigation_server_2d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "scene/main/node.h"

@@ -34,6 +34,7 @@
 #include "rendering_device_binds.h"
 #include "shader_include_db.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"

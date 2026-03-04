@@ -30,6 +30,7 @@
 
 #include "resource_loader.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/io/dir_access.h"

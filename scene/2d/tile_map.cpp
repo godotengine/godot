@@ -31,6 +31,7 @@
 #include "tile_map.h"
 #include "tile_map.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 

@@ -30,7 +30,6 @@
 
 #include "csharp_script.h"
 
-#include "core/object/class_db.h"
 #include "godotsharp_dirs.h"
 #include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
@@ -49,10 +48,12 @@
 #include "editor/script_templates/templates.gen.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"

@@ -35,6 +35,7 @@
 #include "os_windows.h"
 #include "wgl_detect_version.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"

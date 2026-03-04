@@ -30,6 +30,7 @@
 
 #include "editor_help.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/extension/gdextension.h"

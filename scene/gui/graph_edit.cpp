@@ -31,6 +31,7 @@
 #include "graph_edit.h"
 #include "graph_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"

@@ -30,6 +30,7 @@
 
 #include "grid_map.h"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
