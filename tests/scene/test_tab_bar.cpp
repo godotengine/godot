@@ -36,6 +36,8 @@ TEST_FORCE_LINK(test_tab_bar)
 
 #include "scene/gui/tab_bar.h"
 #include "scene/main/window.h"
+#include "tests/display_server_mock.h"
+#include "tests/signal_watcher.h"
 
 namespace TestTabBar {
 

@@ -32,11 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
+#include "servers/rendering/rendering_server_types.h"
 
-void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
@@ -208,18 +209,18 @@ float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color
 	}
 }
 
-void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
 
-	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
 
-	BlitPipelines blit_pipelines = _get_blit_pipelines_for_format(RD::get_singleton()->screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID));
+	BlitPipelines blit_pipelines = _get_blit_pipelines_for_format(RD::get_singleton()->screen_get_framebuffer_format(DisplayServerEnums::MAIN_WINDOW_ID));
 
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
@@ -245,14 +246,14 @@ void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
-	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(DisplayServer::MAIN_WINDOW_ID);
-	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(DisplayServer::MAIN_WINDOW_ID);
-	const float linear_luminance_scale = RD::get_singleton()->get_context_driver()->window_get_hdr_output_linear_luminance_scale(DisplayServer::MAIN_WINDOW_ID);
-	const float output_max_value = RD::get_singleton()->get_context_driver()->window_get_output_max_linear_value(DisplayServer::MAIN_WINDOW_ID);
+	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float linear_luminance_scale = RD::get_singleton()->get_context_driver()->window_get_hdr_output_linear_luminance_scale(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float output_max_value = RD::get_singleton()->get_context_driver()->window_get_output_max_linear_value(DisplayServerEnums::MAIN_WINDOW_ID);
 	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance, linear_luminance_scale);
 
 	Color clear_color = p_color;
@@ -265,13 +266,13 @@ void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image
 		clear_color.b *= reference_multiplier;
 	}
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, clear_color);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServerEnums::MAIN_WINDOW_ID, clear_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[BLIT_MODE_NORMAL_ALPHA]);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
-	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServer::MAIN_WINDOW_ID);
+	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServerEnums::MAIN_WINDOW_ID);
 	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
 	blit.push_constant.rotation_cos = Math::cos(screen_rotation);
 	blit.push_constant.rotation_sin = Math::sin(screen_rotation);

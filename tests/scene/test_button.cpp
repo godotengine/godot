@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_button)
 
 #include "scene/gui/button.h"
 #include "scene/main/window.h"
+#include "tests/display_server_mock.h"
 
 namespace TestButton {
 

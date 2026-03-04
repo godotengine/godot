@@ -32,7 +32,9 @@
 
 TEST_FORCE_LINK(test_array)
 
+#include "core/object/callable_method_pointer.h"
 #include "core/variant/array.h"
+#include "core/variant/typed_array.h"
 #include "tests/test_tools.h"
 
 namespace TestArray {

@@ -35,6 +35,7 @@
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
@@ -52,6 +53,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
+#include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -218,8 +220,8 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	theme_cache.type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 	theme_cache.override_color = get_theme_color(SNAME("override_color"), SNAME("EditorHelp"));
-	theme_cache.primary_hr_color = Color(theme_cache.title_color, 0.25);
-	theme_cache.secondary_hr_color = Color(theme_cache.comment_color, 0.25);
+	theme_cache.primary_hr_color = get_theme_color(SNAME("primary_hr_color"), SNAME("EditorHelp"));
+	theme_cache.secondary_hr_color = get_theme_color(SNAME("secondary_hr_color"), SNAME("EditorHelp"));
 
 	theme_cache.doc_font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	theme_cache.doc_bold_font = get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
@@ -2739,6 +2741,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_table(2);
+			p_rt->set_table_column_expand(0, true, 1, false);
 
 			p_rt->push_cell();
 			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
@@ -4739,7 +4742,7 @@ void EditorHelpBitTooltip::popup_under_position(const Point2 &p_point) {
 		vr = window->get_usable_parent_rect();
 	}
 
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS) || is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
 			r.position.x = p_point.x - r.size.x - tooltip_offset.x;

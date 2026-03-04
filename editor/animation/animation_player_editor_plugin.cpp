@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -52,6 +53,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 ///////////////////////////////////
@@ -126,13 +128,15 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-			} else if (!player->is_valid()) {
-				// Reset timeline when the player has been stopped externally
-				frame->set_value(0);
-			} else if (last_active) {
-				// Need the last frame after it stopped.
-				frame->set_value(player->get_current_animation_position());
-				track_editor->set_anim_pos(player->get_current_animation_position());
+			} else {
+				if (!player->is_valid()) {
+					// Reset timeline when the player has been stopped externally
+					frame->set_value(0);
+				} else if (last_active) {
+					// Need the last frame after it stopped.
+					frame->set_value(player->get_current_animation_position());
+					track_editor->set_anim_pos(player->get_current_animation_position());
+				}
 				stop->set_button_icon(stop_icon);
 			}
 
@@ -317,7 +321,7 @@ void AnimationPlayerEditor::_play_pressed() {
 
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		PackedStringArray markers = track_editor->get_selected_section();
@@ -338,9 +342,13 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
+		if (!player->is_valid()) {
+			_play_pressed(); // Fallback.
+			return;
+		}
 		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->clear_caches(); //so it won't blend with itself
+			player->clear_caches(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
@@ -369,7 +377,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	String current = _get_current();
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		PackedStringArray markers = track_editor->get_selected_section();
@@ -390,9 +398,13 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	String current = _get_current();
 
 	if (!current.is_empty()) {
+		if (!player->is_valid()) {
+			_play_bw_pressed(); // Fallback.
+			return;
+		}
 		double time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->clear_caches(); //so it won't blend with itself
+			player->clear_caches(); // So it won't blend with itself.
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
@@ -1027,6 +1039,7 @@ void AnimationPlayerEditor::_update_player() {
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
+	int reset_index = -1;
 	bool no_anims_found = true;
 	bool global_animation_library_is_readonly = false;
 	bool all_animation_libraries_are_readonly = libraries.size() > 0;
@@ -1056,6 +1069,9 @@ void AnimationPlayerEditor::_update_player() {
 				path += "/";
 			}
 			path += E;
+			if (E == SceneStringName(RESET)) {
+				reset_index = animation->get_item_count();
+			}
 			animation->add_item(path);
 			if (player->get_assigned_animation() == path) {
 				active_idx = animation->get_selectable_item(true);
@@ -1075,7 +1091,10 @@ void AnimationPlayerEditor::_update_player() {
 		autoplay->set_pressed(animation->get_item_text(active_idx) == player->get_autoplay());
 		_animation_selected(active_idx);
 	} else if (animation->has_selectable_items()) {
-		int item = animation->get_selectable_item();
+		int item = reset_index;
+		if (item == -1) {
+			item = animation->get_selectable_item();
+		}
 		animation->select(item);
 		autoplay->set_pressed(animation->get_item_text(item) == player->get_autoplay());
 		_animation_selected(item);
@@ -1546,6 +1565,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 	frame->set_max(p_len);
 }
+
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timeline_only, bool p_update_position_only) {
 	timeline_position = p_pos;
 
@@ -1696,7 +1716,7 @@ void AnimationPlayerEditor::_editor_visibility_changed() {
 bool AnimationPlayerEditor::_are_onion_layers_valid() {
 	ERR_FAIL_COND_V(!onion.past && !onion.future, false);
 
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 	return onion.captures.size() == onion.get_capture_count() && onion.capture_size == capture_size;
 }
 
@@ -1704,7 +1724,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 	_free_onion_layers();
 
 	int captures = onion.get_capture_count();
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 
 	onion.captures.resize(captures);
 	onion.captures_valid.resize(captures);
@@ -1716,7 +1736,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 		onion.captures[i] = RS::get_singleton()->viewport_create();
 
 		RS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
-		RS::get_singleton()->viewport_set_update_mode(onion.captures[i], RS::VIEWPORT_UPDATE_ALWAYS);
+		RS::get_singleton()->viewport_set_update_mode(onion.captures[i], RSE::VIEWPORT_UPDATE_ALWAYS);
 		RS::get_singleton()->viewport_set_transparent_background(onion.captures[i], !is_present);
 		RS::get_singleton()->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
 	}
@@ -1815,9 +1835,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID));
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServer::INVALID_WINDOW_ID);
-	RS::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_ALWAYS);
+	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID));
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServerEnums::INVALID_WINDOW_ID);
+	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_ALWAYS);
 
 	RID present_rid;
 	if (onion.differences_only) {
@@ -1902,8 +1922,8 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	// Restore root viewport.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
 	RS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServer::MAIN_WINDOW_ID);
-	RS::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServerEnums::MAIN_WINDOW_ID);
+	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
 	// Restore animation state.
 	// Here we're combine the power of seeking back to the original position and

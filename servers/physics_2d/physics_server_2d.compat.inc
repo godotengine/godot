@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "physics_server_2d.h"
+
+#include "core/object/class_db.h"
+
 void PhysicsServer2D::_body_set_shape_as_one_way_collision_bind_compat_104736(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
 	body_set_shape_as_one_way_collision(p_body, p_shape_idx, p_enable, p_margin, Vector2(0, 1));
 }
@@ -38,4 +42,4 @@ void PhysicsServer2D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &PhysicsServer2D::_body_set_shape_as_one_way_collision_bind_compat_104736);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

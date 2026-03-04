@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_timer)
 
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
+#include "tests/signal_watcher.h"
 
 namespace TestTimer {
 

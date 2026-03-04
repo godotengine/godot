@@ -32,7 +32,7 @@
 
 TEST_FORCE_LINK(test_class_db)
 
-#include "core/core_bind.h"
+#include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/object/class_db.h"
 

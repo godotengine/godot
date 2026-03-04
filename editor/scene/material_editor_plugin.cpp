@@ -46,6 +46,7 @@
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server.h"
 
 // 3D.
 #include "scene/3d/camera_3d.h"
@@ -152,13 +153,6 @@ void MaterialEditor::_update_rotation() {
 	t.basis.rotate(Vector3(0, 1, 0), -rot.y);
 	t.basis.rotate(Vector3(1, 0, 0), -rot.x);
 	rotation->set_transform(t);
-}
-
-void MaterialEditor::_project_settings_changed() {
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
-	viewport_2d->set_use_hdr_2d(use_hdr_2d || hdr_requested);
 }
 
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
@@ -406,8 +400,8 @@ MaterialEditor::MaterialEditor() {
 	Vector2 stored_rot = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_rotation", Vector2());
 	_set_rotation(stored_rot.x, stored_rot.y);
 
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &MaterialEditor::_project_settings_changed));
-	_project_settings_changed();
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
+	EditorNode::get_singleton()->register_hdr_viewport(viewport_2d);
 }
 
 ///////////////////////

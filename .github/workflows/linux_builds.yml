@@ -1,6 +1,11 @@
 name: 🐧 Linux Builds
 on:
   workflow_call:
+    inputs:
+      changed-files:
+        description: A list of changed files.
+        required: true
+        type: string
   workflow_dispatch:
 
 # Global Settings
@@ -30,7 +35,7 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
-            scons-flags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes compiledb=yes
             bin: ./bin/godot.linuxbsd.editor.x86_64.mono
             build-mono: true
             doc-test: true
@@ -40,6 +45,7 @@ jobs:
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
+            clang-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -144,7 +150,7 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.8
+          python-version: 3.9
           scons-version: 4.0
 
       - name: Force remove preinstalled .NET SDKs
@@ -180,6 +186,12 @@ jobs:
           scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: linuxbsd
           target: ${{ matrix.target }}
+
+      - name: Style checks via pre-commit
+        if: matrix.clang-tidy
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ inputs.changed-files }} --hook-stage manual clang-tidy
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build

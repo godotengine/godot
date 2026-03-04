@@ -31,9 +31,12 @@
 #include "control.h"
 #include "control.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "scene/gui/scroll_container.h"
@@ -41,6 +44,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
@@ -514,6 +518,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint_string;
+		return;
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "mouse_force_pass_scroll_events") {
@@ -521,6 +526,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (data.mouse_filter != MOUSE_FILTER_STOP) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
+		return;
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "scale") {
@@ -2190,7 +2196,7 @@ String Control::get_accessibility_description() const {
 	return tr(data.accessibility_description);
 }
 
-void Control::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
+void Control::set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode p_mode) {
 	ERR_THREAD_GUARD
 	if (data.accessibility_live != p_mode) {
 		data.accessibility_live = p_mode;
@@ -2198,7 +2204,7 @@ void Control::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode
 	}
 }
 
-DisplayServer::AccessibilityLiveMode Control::get_accessibility_live() const {
+AccessibilityServerEnums::AccessibilityLiveMode Control::get_accessibility_live() const {
 	return data.accessibility_live;
 }
 
@@ -2876,7 +2882,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
+	ERR_FAIL_INDEX(int(p_shape), DisplayServerEnums::CURSOR_MAX);
 
 	if (data.default_cursor == p_shape) {
 		return;
@@ -3752,31 +3758,31 @@ void Control::_notification(int p_notification) {
 			// Base info.
 			if (get_parent_control()) {
 				String container_info = get_parent_control()->get_accessibility_container_name(this);
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
+				AccessibilityServer::get_singleton()->update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_accessibility_name());
+				AccessibilityServer::get_singleton()->update_set_name(ae, get_accessibility_name());
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
-			DisplayServer::get_singleton()->accessibility_update_set_live(ae, get_accessibility_live());
+			AccessibilityServer::get_singleton()->update_set_description(ae, get_accessibility_description());
+			AccessibilityServer::get_singleton()->update_set_live(ae, get_accessibility_live());
 
-			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
-			DisplayServer::get_singleton()->accessibility_update_set_tooltip(ae, data.tooltip);
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
+			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
+			AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
+			AccessibilityServer::get_singleton()->update_set_tooltip(ae, data.tooltip);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
 
 			if (_is_focusable()) {
-				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
-				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+				AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
+				AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
 			}
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_TOOLTIP, callable_mp(this, &Control::_accessibility_action_show_tooltip));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_TOOLTIP, callable_mp(this, &Control::_accessibility_action_show_tooltip));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));
 			if (is_inside_tree() && get_viewport()->gui_is_dragging()) {
 				if (can_drop_data(Vector2(Math::INF, Math::INF), get_viewport()->gui_get_drag_data())) {
-					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can be dropped here. Use %s to drop, use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
+					AccessibilityServer::get_singleton()->update_set_extra_info(ae, vformat(RTR("%s can be dropped here. Use %s to drop, use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_accessibility_drag_and_drop"), InputMap::get_singleton()->get_action_description("ui_cancel")));
 				} else {
-					DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(RTR("%s can not be dropped here. Use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_cancel")));
+					AccessibilityServer::get_singleton()->update_set_extra_info(ae, vformat(RTR("%s can not be dropped here. Use %s to cancel."), get_viewport()->gui_get_drag_description(), InputMap::get_singleton()->get_action_description("ui_cancel")));
 				}
 			}
 
@@ -3786,7 +3792,7 @@ void Control::_notification(int p_notification) {
 				if (!np.is_empty()) {
 					Node *n = get_node(np);
 					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_controls(ae, n->get_accessibility_element());
+						AccessibilityServer::get_singleton()->update_add_related_controls(ae, n->get_accessibility_element());
 					}
 				}
 			}
@@ -3795,7 +3801,7 @@ void Control::_notification(int p_notification) {
 				if (!np.is_empty()) {
 					Node *n = get_node(np);
 					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_described_by(ae, n->get_accessibility_element());
+						AccessibilityServer::get_singleton()->update_add_related_described_by(ae, n->get_accessibility_element());
 					}
 				}
 			}
@@ -3804,7 +3810,7 @@ void Control::_notification(int p_notification) {
 				if (!np.is_empty()) {
 					Node *n = get_node(np);
 					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(ae, n->get_accessibility_element());
+						AccessibilityServer::get_singleton()->update_add_related_labeled_by(ae, n->get_accessibility_element());
 					}
 				}
 			}
@@ -3813,7 +3819,7 @@ void Control::_notification(int p_notification) {
 				if (!np.is_empty()) {
 					Node *n = get_node(np);
 					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_flow_to(ae, n->get_accessibility_element());
+						AccessibilityServer::get_singleton()->update_add_related_flow_to(ae, n->get_accessibility_element());
 					}
 				}
 			}

@@ -33,12 +33,14 @@
 
 #include "core/math/random_number_generator.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/class_db.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -77,7 +79,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
-	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -219,14 +221,14 @@ void CPUParticles2D::_update_mesh_texture() {
 	Vector<int> indices = { 0, 1, 2, 2, 3, 0 };
 
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	arr[RS::ARRAY_VERTEX] = vertices;
-	arr[RS::ARRAY_TEX_UV] = uvs;
-	arr[RS::ARRAY_COLOR] = colors;
-	arr[RS::ARRAY_INDEX] = indices;
+	arr.resize(RSE::ARRAY_MAX);
+	arr[RSE::ARRAY_VERTEX] = vertices;
+	arr[RSE::ARRAY_TEX_UV] = uvs;
+	arr[RSE::ARRAY_COLOR] = colors;
+	arr[RSE::ARRAY_INDEX] = indices;
 
 	RS::get_singleton()->mesh_clear(mesh);
-	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
+	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
@@ -634,44 +636,46 @@ void CPUParticles2D::request_particles_process(real_t p_requested_process_time) 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_rect_extents" && emission_shape != EMISSION_SHAPE_RECTANGLE) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_points" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_colors" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_ring_inner_radius" && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "emission_ring_radius" && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_rect_extents") {
+		if (emission_shape != EMISSION_SHAPE_RECTANGLE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+		if (emission_shape < EMISSION_SHAPE_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normals") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_points") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_colors") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("scale_curve_")) {
+		if (!split_scale) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_ring_inner_radius") {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_ring_radius") {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 

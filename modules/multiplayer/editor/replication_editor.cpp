@@ -32,11 +32,13 @@
 
 #include "../multiplayer_synchronizer.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -152,6 +154,13 @@ void ReplicationEditor::_pick_node_property_selected(String p_name) {
 
 /// ReplicationEditor
 ReplicationEditor::ReplicationEditor() {
+	set_name(TTRC("Replication"));
+	set_icon_name("ReplicationDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTRC("Toggle Replication Dock")));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 

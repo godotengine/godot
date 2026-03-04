@@ -34,6 +34,7 @@
 #include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
+#include "servers/display/accessibility_server_enums.h"
 
 class Viewport;
 class Label;
@@ -97,6 +98,7 @@ public:
 		MOUSE_BEHAVIOR_ENABLED,
 	};
 
+	// Keep synced with InputClassEnums and DisplayServerEnums enums.
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -256,7 +258,7 @@ private:
 
 		String accessibility_name;
 		String accessibility_description;
-		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		AccessibilityServerEnums::AccessibilityLiveMode accessibility_live = AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF;
 
 		TypedArray<NodePath> accessibility_controls_nodes;
 		TypedArray<NodePath> accessibility_described_by_nodes;
@@ -630,8 +632,8 @@ public:
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 
-	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
-	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+	void set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode p_mode);
+	AccessibilityServerEnums::AccessibilityLiveMode get_accessibility_live() const;
 
 	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_controls_nodes() const;

@@ -30,8 +30,10 @@
 
 #include "rendering_device_driver_vulkan.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "core/templates/fixed_vector.h"
 #include "vulkan_hooks.h"
 
@@ -3627,19 +3629,19 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkPresentModeKHR present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	String present_mode_name = "Enabled";
 	switch (surface->vsync_mode) {
-		case DisplayServer::VSYNC_MAILBOX:
+		case DisplayServerEnums::VSYNC_MAILBOX:
 			present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 			present_mode_name = "Mailbox";
 			break;
-		case DisplayServer::VSYNC_ADAPTIVE:
+		case DisplayServerEnums::VSYNC_ADAPTIVE:
 			present_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 			present_mode_name = "Adaptive";
 			break;
-		case DisplayServer::VSYNC_ENABLED:
+		case DisplayServerEnums::VSYNC_ENABLED:
 			present_mode = VK_PRESENT_MODE_FIFO_KHR;
 			present_mode_name = "Enabled";
 			break;
-		case DisplayServer::VSYNC_DISABLED:
+		case DisplayServerEnums::VSYNC_DISABLED:
 			present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 			present_mode_name = "Disabled";
 			break;
@@ -3649,7 +3651,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	if (!present_mode_available) {
 		// Present mode is not available, fall back to FIFO which is guaranteed to be supported.
 		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_name));
-		surface->vsync_mode = DisplayServer::VSYNC_ENABLED;
+		surface->vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	}
 
@@ -7326,6 +7328,9 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			// When using a Vulkan swapchain on Windows, some configurations
 			// involving integrated GPU hardware do not function correctly
 			// with HDR output.
+			return false;
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+			// HDR support has not yet been thoroughly tested and validated for Apple platforms.
 			return false;
 #else
 			return context_driver->is_colorspace_supported();

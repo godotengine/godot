@@ -36,10 +36,10 @@ TEST_FORCE_LINK(test_navigation_server_2d)
 
 #ifdef MODULE_NAVIGATION_2D_ENABLED
 
-#include "modules/navigation_2d/nav_utils_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/main/window.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "tests/signal_watcher.h"
 
 namespace TestNavigationServer2D {
 

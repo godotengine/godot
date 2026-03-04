@@ -47,6 +47,7 @@
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/display/display_server.h"
 
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
@@ -1258,8 +1259,8 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		(*rot_x) = CLAMP((*rot_x), -Math::PI / 2, Math::PI / 2);
 		_update_camera();
 	}
-	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
-		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
+	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CursorShape::CURSOR_ARROW);
 	}
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
@@ -1995,14 +1996,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneImportSettingsDialog::_project_settings_changed));
-	_project_settings_changed();
-}
-
-void SceneImportSettingsDialog::_project_settings_changed() {
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	const bool hdr_2d_enabled = GLOBAL_GET("rendering/viewport/hdr_2d");
-	base_viewport->set_use_hdr_2d(hdr_2d_enabled || hdr_requested);
+	EditorNode::get_singleton()->register_hdr_viewport(base_viewport);
 }
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {

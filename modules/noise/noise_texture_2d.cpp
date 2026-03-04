@@ -32,6 +32,8 @@
 
 #include "noise.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 NoiseTexture2D::NoiseTexture2D() {
@@ -106,9 +108,7 @@ void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
 		if (!as_normal_map) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
-	}
-
-	if (p_property.name == "seamless_blend_skirt") {
+	} else if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}

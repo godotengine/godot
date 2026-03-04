@@ -30,7 +30,9 @@
 
 #include "collision_polygon_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"

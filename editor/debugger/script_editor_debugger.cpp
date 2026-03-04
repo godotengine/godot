@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/object/class_db.h"
 #include "core/string/ustring.h"
 #include "core/variant/typed_dictionary.h"
 #include "core/version.h"
@@ -1355,6 +1356,8 @@ void ScriptEditorDebugger::stop() {
 
 	visual_profiler->set_enabled(false);
 	visual_profiler->set_profiling(false);
+
+	audio_muted_on_break = false;
 
 	inspector->edit(nullptr);
 	_update_buttons_state();

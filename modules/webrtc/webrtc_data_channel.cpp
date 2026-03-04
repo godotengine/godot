@@ -31,6 +31,7 @@
 #include "webrtc_data_channel.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &WebRTCDataChannel::poll);

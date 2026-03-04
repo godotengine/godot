@@ -32,6 +32,7 @@
 #include "shader.compat.inc"
 
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"

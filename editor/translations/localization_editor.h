@@ -58,7 +58,7 @@ class LocalizationEditor : public VBoxContainer {
 	Button *template_generate_button = nullptr;
 
 	bool updating_translations = false;
-	String localization_changed;
+	StringName localization_changed;
 
 	LocalVector<Tree *> trees;
 	HashMap<Tree *, String> tree_data_types;
@@ -83,6 +83,7 @@ class LocalizationEditor : public VBoxContainer {
 	void _template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _template_source_file_open();
 	void _template_generate_open();
+	void _template_generate_command();
 	void _template_add_builtin_toggled();
 	void _template_generate(const String &p_file);
 	void _update_template_source_file_extensions();

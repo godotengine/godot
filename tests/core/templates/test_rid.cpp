@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_rid)
 
+#include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"

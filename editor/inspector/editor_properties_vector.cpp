@@ -239,6 +239,14 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	}
 }
 
+void EditorPropertyVectorN::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	for (int i = 0; i < component_count; i++) {
+		spin_sliders[i]->set_deferred_drag_mode_enabled(p_enabled);
+	}
+}
+
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) :
 		EditorPropertyVectorN(Variant::VECTOR2, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
 

@@ -220,8 +220,8 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Additional editor colors.
 
-		p_theme->set_color("box_selection_fill_color", EditorStringName(Editor), p_config.mono_color * Color(1, 1, 1, 0.12));
-		p_theme->set_color("box_selection_stroke_color", EditorStringName(Editor), p_config.mono_color * Color(1, 1, 1, 0.4));
+		p_theme->set_color("box_selection_fill_color", EditorStringName(Editor), Color(0.65, 0.65, 0.65, 0.15));
+		p_theme->set_color("box_selection_stroke_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55, 0.55));
 
 		p_theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.96, 0.20, 0.32));
 		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.53, 0.84, 0.01));
@@ -1044,6 +1044,13 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_icon("favorite_up", "FileDialog", p_theme->get_icon("MoveUp", EditorStringName(EditorIcons)));
 		p_theme->set_icon("favorite_down", "FileDialog", p_theme->get_icon("MoveDown", EditorStringName(EditorIcons)));
 		p_theme->set_icon("create_folder", "FileDialog", p_theme->get_icon("FolderCreate", EditorStringName(EditorIcons)));
+
+		p_theme->set_icon("menu_copy_path", "FileDialog", p_theme->get_icon("ActionCopy", EditorStringName(EditorIcons)));
+		p_theme->set_icon("menu_delete", "FileDialog", p_theme->get_icon("Remove", EditorStringName(EditorIcons)));
+		p_theme->set_icon("menu_refresh", "FileDialog", p_theme->get_icon("Reload", EditorStringName(EditorIcons)));
+		p_theme->set_icon("menu_new_folder", "FileDialog", p_theme->get_icon("Folder", EditorStringName(EditorIcons)));
+		p_theme->set_icon("menu_show_in_file_manager", "FileDialog", p_theme->get_icon("Filesystem", EditorStringName(EditorIcons)));
+		p_theme->set_icon("menu_open_bundle", "FileDialog", p_theme->get_icon("FolderBrowse", EditorStringName(EditorIcons)));
 		// Use a different color for folder icons to make them easier to distinguish from files.
 		// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
 		p_theme->set_color("folder_icon_color", "FileDialog", (p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(p_config.accent_color, 0.7));
@@ -2644,6 +2651,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("code_bg_color", "EditorHelp", _get_base_color(p_config, 1.6, 0.8));
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
+		p_theme->set_color("primary_hr_color", "EditorHelp", p_config.base_color.lerp(p_config.mono_color_font, p_config.dark_theme ? 0.14 : 0.24));
+		p_theme->set_color("secondary_hr_color", "EditorHelp", p_config.base_color.lerp(p_config.mono_color_font, p_config.dark_theme ? 0.12 : 0.22));
 		p_theme->set_constant(SceneStringName(line_separation), "EditorHelp", Math::round(6 * EDSCALE));
 		p_theme->set_constant(SceneStringName(paragraph_separation), "EditorHelp", Math::round(10 * EDSCALE));
 		p_theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);

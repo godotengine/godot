@@ -36,8 +36,9 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/typed_array.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_device_enums.h"
@@ -413,6 +414,7 @@ public:
 	void _texture_clear_color(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	void _texture_clear_depth_stencil(RID p_texture_rid, Texture *p_texture, float p_depth, uint8_t p_stencil, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
+	void _texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format);
 
 	struct TextureGetDataRequest {
 		uint32_t frame_local_index = 0;
@@ -1267,20 +1269,20 @@ private:
 	/****************/
 	/**** SCREEN ****/
 	/****************/
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID> screen_swap_chains;
-	HashMap<DisplayServer::WindowID, RDD::FramebufferID> screen_framebuffers;
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID> screen_swap_chains;
+	HashMap<DisplayServerEnums::WindowID, RDD::FramebufferID> screen_framebuffers;
 
 	uint32_t _get_swap_chain_desired_count() const;
 
 public:
-	Error screen_create(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
-	Error screen_prepare_for_drawing(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
-	int screen_get_width(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	int screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	ColorSpace screen_get_color_space(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	Error screen_create(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+	Error screen_prepare_for_drawing(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+	int screen_get_width(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	int screen_get_height(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	int screen_get_pre_rotation_degrees(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	FramebufferFormatID screen_get_framebuffer_format(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	ColorSpace screen_get_color_space(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	Error screen_free(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
 
 private:
 	/********************************/
@@ -1436,7 +1438,7 @@ public:
 	/**
 	 * @param p_clear_color Must use linear encoding when HDR 2D is active.
 	 */
-	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	DrawListID draw_list_begin_for_screen(DisplayServerEnums::WindowID p_screen = 0, const Color &p_clear_color = Color());
 	/**
 	 * @param p_clear_color_values Color values must use linear encoding when HDR 2D is active.
 	 */
@@ -1783,7 +1785,7 @@ public:
 #endif
 
 public:
-	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
+	Error initialize(RenderingContextDriver *p_context, DisplayServerEnums::WindowID p_main_window = DisplayServerEnums::INVALID_WINDOW_ID);
 	void finalize();
 
 	void _set_max_fps(int p_max_fps);

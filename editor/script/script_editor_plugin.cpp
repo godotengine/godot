@@ -36,6 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
@@ -1459,6 +1460,14 @@ void ScriptEditor::_notification(int p_what) {
 
 			members_overview_alphabeta_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 
+			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			if (use_monospace_font) {
+				members_overview->add_theme_font_override(SceneStringName(font), monospace_font);
+			} else {
+				members_overview->remove_theme_font_override(SceneStringName(font));
+			}
+
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
@@ -1472,7 +1481,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				_apply_editor_settings();
@@ -2082,12 +2091,20 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
+	bool has_active_tab = false;
+
 	for (const _ScriptEditorItemData &sedata_i : sedata) {
 		if (tab_container->get_current_tab() == sedata_i.index) {
 			script_name_button->set_text(sedata_i.name);
+			script_name_button->show();
 			_calculate_script_name_button_size();
+			has_active_tab = true;
 			break;
 		}
+	}
+
+	if (!has_active_tab) {
+		script_name_button->hide();
 	}
 
 	if (!waiting_update_names) {
@@ -2620,6 +2637,9 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		// Save the current script so the changes can be picked up by an external editor.
 		if (!scr.ptr()->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
+		} else {
+			ste->apply_code();
+			scr->reload(true);
 		}
 
 		break;
@@ -2984,7 +3004,7 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 	// the shortcut to be used regardless of the click location.
 	// This feature can be disabled to avoid interfering with other uses of the additional
 	// mouse buttons, such as push-to-talk in a VoIP program.
-	if (EDITOR_GET("interface/editor/mouse_extra_buttons_navigate_history")) {
+	if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
 		const Ref<InputEventMouseButton> mb = p_event;
 
 		// Navigate the script history using additional mouse buttons present on some mice.

@@ -33,7 +33,6 @@
 TEST_FORCE_LINK(test_basis)
 
 #include "core/math/basis.h"
-#include "core/math/random_number_generator.h"
 
 namespace TestBasis {
 

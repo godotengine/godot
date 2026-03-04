@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_server_constants.h                                          */
+/*  rasterizer_scene_dummy.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,18 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "rasterizer_scene_dummy.h"
 
-// Use for constants etc. that need not be included as often as rendering_server.h
-// to reduce dependencies and prevent slow compilation.
+#include "core/io/image.h"
+#include "core/variant/typed_array.h"
+#include "servers/rendering/rendering_server_globals.h"
 
-// This is a "cheap" include, and can be used from scene side code as well as servers.
+TypedArray<Image> RasterizerSceneDummy::bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
+	return TypedArray<Image>();
+}
 
-// N.B. ONLY allow these defined in DEV_ENABLED builds, they will slow
-// performance, and are only necessary to use for debugging.
-#ifdef DEV_ENABLED
-
-// Uncomment this define to produce debugging output for physics interpolation.
-//#define RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
-
-#endif // DEV_ENABLED
+bool RasterizerSceneDummy::free(RID p_rid) {
+	if (is_environment(p_rid)) {
+		environment_free(p_rid);
+		return true;
+	} else if (is_compositor(p_rid)) {
+		compositor_free(p_rid);
+		return true;
+	} else if (is_compositor_effect(p_rid)) {
+		compositor_effect_free(p_rid);
+		return true;
+	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
+		RSG::camera_attributes->camera_attributes_free(p_rid);
+		return true;
+	} else {
+		return false;
+	}
+}

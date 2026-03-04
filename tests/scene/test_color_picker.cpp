@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_color_picker)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "scene/gui/color_picker.h"
+#include "tests/display_server_mock.h"
 
 namespace TestColorPicker {
 

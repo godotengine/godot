@@ -30,13 +30,7 @@
 
 #include "editor_dock_manager.h"
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/main/window.h"
-
+#include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
@@ -44,6 +38,13 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/main/window.h"
+#include "servers/display/display_server.h"
 
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
@@ -184,7 +185,7 @@ void EditorDockManager::update_docks_menu() {
 	const Ref<Texture2D> default_icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
 	const Color closed_icon_color_mod = Color(1, 1, 1, 0.5);
 
-	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
+	bool global_menu = !bool(EDITOR_GET("interface/editor/appearance/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
 	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
 	int icon_max_width = EditorNode::get_singleton()->get_editor_theme()->get_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
@@ -325,6 +326,11 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 			DockTabContainer *parent_tabs = Object::cast_to<DockTabContainer>(parent);
 			if (parent_tabs) {
 				p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
+
+				// Swap to previous tab when closing current tab.
+				if (parent_tabs->get_current_tab() == p_dock->previous_tab_index && parent_tabs->get_previous_tab() != -1) {
+					parent_tabs->set_current_tab(parent_tabs->get_previous_tab());
+				}
 			}
 			parent->set_block_signals(true);
 			parent->remove_child(p_dock);
@@ -339,6 +345,9 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 		p_dock->is_open = false;
 		return;
 	}
+
+	// Prevent extra visibility signals from firing.
+	p_dock->hide();
 
 	DockTabContainer *dock_tab_container = Object::cast_to<DockTabContainer>(p_target);
 	if (p_target != closed_dock_parent) {
@@ -521,7 +530,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 					_move_dock(dock, closed_dock_parent);
 				} else {
 					dock->is_open = true;
-					_move_dock(dock, dock_slots[i], 0);
+					_move_dock(dock, dock_slots[i], 0, false);
 				}
 			}
 			dock->load_layout_from_config(p_layout, section_name);
@@ -533,7 +542,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 	// Set the selected tabs.
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", -1);
+		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", 0);
 		dock_slots[i]->load_selected_tab(selected_tab_idx);
 	}
 
@@ -587,8 +596,6 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 		parent_container->dock_closed(p_dock);
 	}
 
-	// Hide before moving to remove inconsistent signals.
-	p_dock->hide();
 	_move_dock(p_dock, closed_dock_parent);
 
 	_update_layout();
@@ -651,8 +658,10 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 		tab_container->get_tab_bar()->grab_focus();
 	}
 
-	int tab_index = tab_container->get_tab_idx_from_control(p_dock);
-	tab_container->set_current_tab(tab_index);
+	if (!p_dock->is_visible_in_tree()) {
+		int tab_index = tab_container->get_tab_idx_from_control(p_dock);
+		tab_container->set_current_tab(tab_index);
+	}
 }
 
 void EditorDockManager::focus_dock(EditorDock *p_dock) {
@@ -918,6 +927,10 @@ DockContextPopup::DockContextPopup() {
 	dock_select_popup_vb->add_child(dock_select);
 	dock_select->connect("slot_clicked", callable_mp(this, &DockContextPopup::_slot_clicked));
 
+	Control *separator = memnew(Control);
+	separator->set_custom_minimum_size(Vector2(0, 8 * EDSCALE));
+	dock_select_popup_vb->add_child(separator);
+
 	make_float_button = memnew(Button);
 	make_float_button->set_text(TTRC("Make Floating"));
 	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
@@ -972,7 +985,7 @@ void DockSlotGrid::_update_rect_cache() {
 
 	// Temporarily hard-coded, until main screen is registered as a slot.
 	{
-		Rect2 rect = Rect2i(2, 0, 2, 4);
+		Rect2 rect = Rect2i(2, 0, 4, 4);
 		if (is_layout_rtl()) {
 			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
 		}
@@ -1006,6 +1019,7 @@ void DockSlotGrid::_notification(int p_what) {
 			unused_dock_color.a = 0.4;
 			Color unusable_dock_color = unused_dock_color;
 			unusable_dock_color.a = 0.1;
+			Color tab_unusable_color = unusable_dock_color;
 
 			TabContainer *context_tab_container = context_dock->get_parent_container();
 			int context_tab_index = -1;
@@ -1019,11 +1033,12 @@ void DockSlotGrid::_notification(int p_what) {
 
 				DockTabContainer *dock_slot = EditorDockManager::get_singleton()->dock_slots[i];
 				bool is_context_slot = context_tab_container == dock_slot;
+				bool is_slot_available = context_dock->available_layouts & dock_slot->layout;
 				int tabs_to_draw = MIN(max_tabs, dock_slot->get_tab_count());
 
 				if (i == context_dock->dock_slot_index) {
 					draw_rect(slot_rect, tab_selected_color);
-				} else if (!(context_dock->available_layouts & dock_slot->layout)) {
+				} else if (!is_slot_available) {
 					draw_rect(slot_rect, unusable_dock_color);
 				} else if (i == hovered_slot) {
 					draw_rect(slot_rect, hovered_dock_color);
@@ -1043,8 +1058,10 @@ void DockSlotGrid::_notification(int p_what) {
 					const Rect2 tab_rect = Rect2(slot_rect.position + Vector2(pos_x, -MARGINS.y + MARGINS.y / 4), Vector2(tab_width, MARGINS.y / 2));
 					if (is_context_slot && context_tab_index == j) {
 						draw_rect(tab_rect, tab_selected_color);
-					} else {
+					} else if (is_slot_available) {
 						draw_rect(tab_rect, tab_unselected_color);
+					} else {
+						draw_rect(tab_rect, tab_unusable_color);
 					}
 				}
 			}

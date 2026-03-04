@@ -31,6 +31,7 @@
 #include "editor_plugin.h"
 #include "editor_plugin.compat.inc"
 
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/docks/editor_dock.h"

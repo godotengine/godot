@@ -55,6 +55,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/rendering/rendering_server.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -2223,16 +2224,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
-				StringName class_name = node->get_class_name();
+				StringName custom_class_name;
 				Ref<Script> node_script = node->get_script();
-				if (node_script.is_valid()) {
-					StringName global_node_script_name = node_script->get_global_name();
-					if (!global_node_script_name.is_empty()) {
-						class_name = global_node_script_name;
-					}
+				while (node_script.is_valid() && custom_class_name.is_empty()) {
+					custom_class_name = node_script->get_global_name();
+					node_script = node_script->get_base_script();
 				}
-
+				const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
 				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
+
 				for (ObjectID obj_id : obj_ids) {
 					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node, class_name });
 				}
@@ -2586,6 +2586,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/move_up", TTRC("Move Up"), KeyModifierMask::ALT | Key::UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTRC("Move Down"), KeyModifierMask::ALT | Key::DOWN);
 	ED_SHORTCUT("script_text_editor/delete_line", TTRC("Delete Line"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K);
+	ED_SHORTCUT("script_text_editor/join_lines", TTRC("Join Lines"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::J);
 
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.

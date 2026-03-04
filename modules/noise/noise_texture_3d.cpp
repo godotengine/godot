@@ -32,6 +32,8 @@
 
 #include "noise.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 NoiseTexture3D::NoiseTexture3D() {

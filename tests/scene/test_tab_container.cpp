@@ -37,6 +37,8 @@ TEST_FORCE_LINK(test_tab_container)
 #include "scene/gui/box_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
+#include "tests/display_server_mock.h"
+#include "tests/signal_watcher.h"
 
 namespace TestTabContainer {
 

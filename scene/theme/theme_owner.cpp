@@ -30,6 +30,7 @@
 
 #include "theme_owner.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"

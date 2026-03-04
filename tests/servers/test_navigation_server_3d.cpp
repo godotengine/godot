@@ -40,6 +40,7 @@ TEST_FORCE_LINK(test_navigation_server_3d)
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "tests/signal_watcher.h"
 
 namespace TestNavigationServer3D {
 
@@ -679,7 +680,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
 
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
+		arr.resize(RSE::ARRAY_MAX);
 		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
 		source_geometry->add_mesh_array(arr, Transform3D());
 		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
@@ -818,7 +819,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
 
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
+		arr.resize(RSE::ARRAY_MAX);
 		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
 		source_geometry->add_mesh_array(arr, Transform3D());
 

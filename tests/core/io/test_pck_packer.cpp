@@ -32,7 +32,7 @@
 
 TEST_FORCE_LINK(test_pck_packer)
 
-#include "core/io/file_access_pack.h"
+#include "core/io/file_access.h"
 #include "core/io/pck_packer.h"
 #include "core/os/os.h"
 #include "tests/test_utils.h"

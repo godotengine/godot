@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/profiling/profiling.h"
 #include "core/templates/fixed_vector.h"
 #include "modules/modules_enabled.gen.h"
@@ -2200,6 +2201,14 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
 		default:
 			return 0;
+	}
+}
+
+void RenderingDevice::_texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(texture);
+	if (!texture->allowed_shared_formats.has(p_shareable_format)) {
+		texture->allowed_shared_formats.push_back(p_shareable_format);
 	}
 }
 
@@ -4723,13 +4732,13 @@ uint32_t RenderingDevice::_get_swap_chain_desired_count() const {
 	return MAX(2U, uint32_t(GLOBAL_GET_CACHED(uint32_t, "rendering/rendering_device/vsync/swapchain_image_count")));
 }
 
-Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
+Error RenderingDevice::screen_create(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
 	ERR_FAIL_COND_V_MSG(surface == 0, ERR_CANT_CREATE, "A surface was not created for the screen.");
 
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it != screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was already created for the screen.");
 
 	RDD::SwapChainID swap_chain = driver->swap_chain_create(surface);
@@ -4740,11 +4749,11 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 	return OK;
 }
 
-Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_screen) {
+Error RenderingDevice::screen_prepare_for_drawing(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
 	// After submitting work, acquire the swapchain image(s).
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
 	// Erase the framebuffer corresponding to this screen from the map in case any of the operations fail.
@@ -4790,7 +4799,7 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	return OK;
 }
 
-int RenderingDevice::screen_get_width(DisplayServer::WindowID p_screen) const {
+int RenderingDevice::screen_get_width(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
@@ -4798,7 +4807,7 @@ int RenderingDevice::screen_get_width(DisplayServer::WindowID p_screen) const {
 	return context->surface_get_width(surface);
 }
 
-int RenderingDevice::screen_get_height(DisplayServer::WindowID p_screen) const {
+int RenderingDevice::screen_get_height(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
@@ -4806,19 +4815,19 @@ int RenderingDevice::screen_get_height(DisplayServer::WindowID p_screen) const {
 	return context->surface_get_height(surface);
 }
 
-int RenderingDevice::screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen) const {
+int RenderingDevice::screen_get_pre_rotation_degrees(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
 	return driver->swap_chain_get_pre_rotation_degrees(it->value);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_format(DisplayServer::WindowID p_screen) const {
+RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_format(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), INVALID_ID, "Screen was never prepared.");
 
 	DataFormat format = driver->swap_chain_get_format(it->value);
@@ -4833,10 +4842,10 @@ RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_for
 	return const_cast<RenderingDevice *>(this)->framebuffer_format_create(screen_attachment);
 }
 
-RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServer::WindowID p_screen) const {
+RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), COLOR_SPACE_MAX, "Screen was never prepared.");
 
 	ColorSpace color_space = driver->swap_chain_get_color_space(it->value);
@@ -4844,16 +4853,16 @@ RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServe
 	return color_space;
 }
 
-Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
+Error RenderingDevice::screen_free(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), FAILED, "Screen was never created.");
 
 	// Flush everything so nothing can be using the swap chain before erasing it.
 	_flush_and_stall_for_all_frames();
 
-	const DisplayServer::WindowID screen = it->key;
+	const DisplayServerEnums::WindowID screen = it->key;
 	const RDD::SwapChainID swap_chain = it->value;
 	driver->swap_chain_free(swap_chain);
 	screen_framebuffers.erase(screen);
@@ -4866,7 +4875,7 @@ Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 /**** DRAW LIST ****/
 /*******************/
 
-RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayServer::WindowID p_screen, const Color &p_clear_color) {
+RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayServerEnums::WindowID p_screen, const Color &p_clear_color) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Only one draw list can be active at the same time.");
@@ -4874,8 +4883,8 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	ERR_FAIL_COND_V_MSG(raytracing_list.active, INVALID_ID, "Only one draw/raytracing list can be active at the same time.");
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator sc_it = screen_swap_chains.find(p_screen);
-	HashMap<DisplayServer::WindowID, RDD::FramebufferID>::ConstIterator fb_it = screen_framebuffers.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator sc_it = screen_swap_chains.find(p_screen);
+	HashMap<DisplayServerEnums::WindowID, RDD::FramebufferID>::ConstIterator fb_it = screen_framebuffers.find(p_screen);
 	ERR_FAIL_COND_V_MSG(surface == 0, 0, "A surface was not created for the screen.");
 	ERR_FAIL_COND_V_MSG(sc_it == screen_swap_chains.end(), INVALID_ID, "Screen was never prepared.");
 	ERR_FAIL_COND_V_MSG(fb_it == screen_framebuffers.end(), INVALID_ID, "Framebuffer was never prepared.");
@@ -7580,13 +7589,13 @@ void RenderingDevice::_flush_and_stall_for_all_frames(bool p_begin_frame) {
 	}
 }
 
-Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window) {
+Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServerEnums::WindowID p_main_window) {
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
 	Error err;
 	RenderingContextDriver::SurfaceID main_surface = 0;
-	is_main_instance = (singleton == this) && (p_main_window != DisplayServer::INVALID_WINDOW_ID);
-	if (p_main_window != DisplayServer::INVALID_WINDOW_ID) {
+	is_main_instance = (singleton == this) && (p_main_window != DisplayServerEnums::INVALID_WINDOW_ID);
+	if (p_main_window != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// Retrieve the surface from the main window if it was specified.
 		main_surface = p_context->surface_get_from_window(p_main_window);
 		ERR_FAIL_COND_V(main_surface == 0, FAILED);
@@ -8233,7 +8242,7 @@ void RenderingDevice::finalize() {
 	framebuffer_formats.clear();
 
 	// Delete the swap chains created for the screens.
-	for (const KeyValue<DisplayServer::WindowID, RDD::SwapChainID> &it : screen_swap_chains) {
+	for (const KeyValue<DisplayServerEnums::WindowID, RDD::SwapChainID> &it : screen_swap_chains) {
 		driver->swap_chain_free(it.value);
 	}
 
@@ -8275,7 +8284,7 @@ void RenderingDevice::finalize() {
 }
 
 void RenderingDevice::_set_max_fps(int p_max_fps) {
-	for (const KeyValue<DisplayServer::WindowID, RDD::SwapChainID> &it : screen_swap_chains) {
+	for (const KeyValue<DisplayServerEnums::WindowID, RDD::SwapChainID> &it : screen_swap_chains) {
 		driver->swap_chain_set_max_fps(it.value, p_max_fps);
 	}
 }
@@ -8390,11 +8399,11 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tlas_create", "instances_buffer"), &RenderingDevice::tlas_create);
 	ClassDB::bind_method(D_METHOD("acceleration_structure_build", "acceleration_structure"), &RenderingDevice::acceleration_structure_build);
 
-	ClassDB::bind_method(D_METHOD("screen_get_width", "screen"), &RenderingDevice::screen_get_width, DEFVAL(DisplayServer::MAIN_WINDOW_ID));
-	ClassDB::bind_method(D_METHOD("screen_get_height", "screen"), &RenderingDevice::screen_get_height, DEFVAL(DisplayServer::MAIN_WINDOW_ID));
-	ClassDB::bind_method(D_METHOD("screen_get_framebuffer_format", "screen"), &RenderingDevice::screen_get_framebuffer_format, DEFVAL(DisplayServer::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("screen_get_width", "screen"), &RenderingDevice::screen_get_width, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("screen_get_height", "screen"), &RenderingDevice::screen_get_height, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("screen_get_framebuffer_format", "screen"), &RenderingDevice::screen_get_framebuffer_format, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID), DEFVAL(Color()));
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "draw_flags", "clear_color_values", "clear_depth_value", "clear_stencil_value", "region", "breadcrumb"), &RenderingDevice::_draw_list_begin_bind, DEFVAL(DRAW_DEFAULT_ALL), DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(0));
 #ifndef DISABLE_DEPRECATED

@@ -52,7 +52,7 @@ DisplayServerAppleEmbedded *DisplayServerAppleEmbedded::get_singleton() {
 	return (DisplayServerAppleEmbedded *)DisplayServer::get_singleton();
 }
 
-DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingAppleEmbedded::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -129,7 +129,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 	}
 
 	if (rendering_context) {
-		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+		if (rendering_context->window_create(DisplayServerEnums::MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
@@ -138,18 +138,18 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
-		rendering_context->window_set_size(MAIN_WINDOW_ID, size.width, size.height);
-		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+		rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, size.width, size.height);
+		rendering_context->window_set_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+		if (rendering_device->initialize(rendering_context, DisplayServerEnums::MAIN_WINDOW_ID) != OK) {
 			rendering_device = nullptr;
 			memdelete(rendering_context);
 			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
-		rendering_device->screen_create(MAIN_WINDOW_ID);
+		rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 		has_made_render_compositor_current = true;
@@ -187,13 +187,13 @@ DisplayServerAppleEmbedded::~DisplayServerAppleEmbedded() {
 
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->screen_free(MAIN_WINDOW_ID);
+		rendering_device->screen_free(DisplayServerEnums::MAIN_WINDOW_ID);
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
 	if (rendering_context) {
-		rendering_context->window_destroy(MAIN_WINDOW_ID);
+		rendering_context->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
 		memdelete(rendering_context);
 		rendering_context = nullptr;
 	}
@@ -220,22 +220,22 @@ Vector<String> DisplayServerAppleEmbedded::get_rendering_drivers_func() {
 
 // MARK: Events
 
-void DisplayServerAppleEmbedded::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	window_resize_callback = p_callable;
 }
 
-void DisplayServerAppleEmbedded::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	window_event_callback = p_callable;
 }
-void DisplayServerAppleEmbedded::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_event_callback = p_callable;
 }
 
-void DisplayServerAppleEmbedded::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_text_callback = p_callable;
 }
 
-void DisplayServerAppleEmbedded::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_drop_files_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
@@ -255,7 +255,7 @@ void DisplayServerAppleEmbedded::send_input_text(const String &p_text) const {
 	_window_callback(input_text_callback, p_text);
 }
 
-void DisplayServerAppleEmbedded::send_window_event(DisplayServer::WindowEvent p_event) const {
+void DisplayServerAppleEmbedded::send_window_event(DisplayServerEnums::WindowEvent p_event) const {
 	_window_callback(window_event_callback, int(p_event));
 }
 
@@ -354,33 +354,34 @@ void DisplayServerAppleEmbedded::update_gyroscope(const Vector3 &p_gyroscope) {
 
 // MARK: -
 
-bool DisplayServerAppleEmbedded::has_feature(Feature p_feature) const {
+bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
-		case FEATURE_GLOBAL_MENU: {
+		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		// case FEATURE_CURSOR_SHAPE:
-		// case FEATURE_CUSTOM_CURSOR_SHAPE:
-		// case FEATURE_HIDPI:
-		// case FEATURE_ICON:
-		// case FEATURE_IME:
-		// case FEATURE_MOUSE:
-		// case FEATURE_MOUSE_WARP:
-		// case FEATURE_NATIVE_DIALOG:
-		// case FEATURE_NATIVE_DIALOG_INPUT:
-		// case FEATURE_NATIVE_DIALOG_FILE:
-		// case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-		// case FEATURE_NATIVE_DIALOG_FILE_MIME:
-		// case FEATURE_NATIVE_ICON:
-		// case FEATURE_WINDOW_TRANSPARENCY:
-		case FEATURE_CLIPBOARD:
-		case FEATURE_KEEP_SCREEN_ON:
-		case FEATURE_ORIENTATION:
-		case FEATURE_TOUCHSCREEN:
-		case FEATURE_VIRTUAL_KEYBOARD:
-		case FEATURE_TEXT_TO_SPEECH:
+		// case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
+		// case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
+		// case DisplayServerEnums::FEATURE_HIDPI:
+		// case DisplayServerEnums::FEATURE_ICON:
+		// case DisplayServerEnums::FEATURE_IME:
+		// case DisplayServerEnums::FEATURE_MOUSE:
+		// case DisplayServerEnums::FEATURE_MOUSE_WARP:
+		// case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+		// case DisplayServerEnums::FEATURE_NATIVE_DIALOG_INPUT:
+		// case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
+		// case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		// case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME:
+		// case DisplayServerEnums::FEATURE_NATIVE_ICON:
+		// case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
+		case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
+		case DisplayServerEnums::FEATURE_ORIENTATION:
+		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
+		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -528,26 +529,26 @@ Rect2i DisplayServerAppleEmbedded::screen_get_usable_rect(int p_screen) const {
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
-Vector<DisplayServer::WindowID> DisplayServerAppleEmbedded::get_window_list() const {
-	Vector<DisplayServer::WindowID> list;
-	list.push_back(MAIN_WINDOW_ID);
+Vector<DisplayServerEnums::WindowID> DisplayServerAppleEmbedded::get_window_list() const {
+	Vector<DisplayServerEnums::WindowID> list;
+	list.push_back(DisplayServerEnums::MAIN_WINDOW_ID);
 	return list;
 }
 
-DisplayServer::WindowID DisplayServerAppleEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
-	return MAIN_WINDOW_ID;
+DisplayServerEnums::WindowID DisplayServerAppleEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
+	return DisplayServerEnums::MAIN_WINDOW_ID;
 }
 
-int64_t DisplayServerAppleEmbedded::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+int64_t DisplayServerAppleEmbedded::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, 0);
 	switch (p_handle_type) {
-		case DISPLAY_HANDLE: {
+		case DisplayServerEnums::DISPLAY_HANDLE: {
 			return 0; // Not supported.
 		}
-		case WINDOW_HANDLE: {
+		case DisplayServerEnums::WINDOW_HANDLE: {
 			return (int64_t)GDTAppDelegateService.viewController;
 		}
-		case WINDOW_VIEW: {
+		case DisplayServerEnums::WINDOW_VIEW: {
 			return (int64_t)GDTAppDelegateService.viewController.godotView;
 		}
 		default: {
@@ -556,109 +557,109 @@ int64_t DisplayServerAppleEmbedded::window_get_native_handle(HandleType p_handle
 	}
 }
 
-void DisplayServerAppleEmbedded::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
 	window_attached_instance_id = p_instance;
 }
 
-ObjectID DisplayServerAppleEmbedded::window_get_attached_instance_id(WindowID p_window) const {
+ObjectID DisplayServerAppleEmbedded::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
 	return window_attached_instance_id;
 }
 
-void DisplayServerAppleEmbedded::window_set_title(const String &p_title, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-int DisplayServerAppleEmbedded::window_get_current_screen(WindowID p_window) const {
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+int DisplayServerAppleEmbedded::window_get_current_screen(DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, DisplayServerEnums::INVALID_SCREEN);
 	return 0;
 }
 
-void DisplayServerAppleEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-Point2i DisplayServerAppleEmbedded::window_get_position(WindowID p_window) const {
+Point2i DisplayServerAppleEmbedded::window_get_position(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-Point2i DisplayServerAppleEmbedded::window_get_position_with_decorations(WindowID p_window) const {
+Point2i DisplayServerAppleEmbedded::window_get_position_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-void DisplayServerAppleEmbedded::window_set_position(const Point2i &p_position, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
 
-void DisplayServerAppleEmbedded::window_set_transient(WindowID p_window, WindowID p_parent) {
+void DisplayServerAppleEmbedded::window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) {
 	// Probably not supported for iOS
 }
 
-void DisplayServerAppleEmbedded::window_set_max_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-Size2i DisplayServerAppleEmbedded::window_get_max_size(WindowID p_window) const {
+Size2i DisplayServerAppleEmbedded::window_get_max_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerAppleEmbedded::window_set_min_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_min_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-Size2i DisplayServerAppleEmbedded::window_get_min_size(WindowID p_window) const {
+Size2i DisplayServerAppleEmbedded::window_get_min_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerAppleEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-Size2i DisplayServerAppleEmbedded::window_get_size(WindowID p_window) const {
+Size2i DisplayServerAppleEmbedded::window_get_size(DisplayServerEnums::WindowID p_window) const {
 	CGRect viewBounds = GDTAppDelegateService.viewController.view.bounds;
 	return Size2i(viewBounds.size.width, viewBounds.size.height) * screen_get_max_scale();
 }
 
-Size2i DisplayServerAppleEmbedded::window_get_size_with_decorations(WindowID p_window) const {
+Size2i DisplayServerAppleEmbedded::window_get_size_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
-void DisplayServerAppleEmbedded::window_set_mode(WindowMode p_mode, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-DisplayServer::WindowMode DisplayServerAppleEmbedded::window_get_mode(WindowID p_window) const {
-	return WindowMode::WINDOW_MODE_FULLSCREEN;
+DisplayServerEnums::WindowMode DisplayServerAppleEmbedded::window_get_mode(DisplayServerEnums::WindowID p_window) const {
+	return DisplayServerEnums::WindowMode::WINDOW_MODE_FULLSCREEN;
 }
 
-bool DisplayServerAppleEmbedded::window_is_maximize_allowed(WindowID p_window) const {
+bool DisplayServerAppleEmbedded::window_is_maximize_allowed(DisplayServerEnums::WindowID p_window) const {
 	return false;
 }
 
-void DisplayServerAppleEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-bool DisplayServerAppleEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+bool DisplayServerAppleEmbedded::window_get_flag(DisplayServerEnums::WindowFlags p_flag, DisplayServerEnums::WindowID p_window) const {
 	return false;
 }
 
-void DisplayServerAppleEmbedded::window_request_attention(WindowID p_window) {
+void DisplayServerAppleEmbedded::window_request_attention(DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-void DisplayServerAppleEmbedded::window_move_to_foreground(WindowID p_window) {
+void DisplayServerAppleEmbedded::window_move_to_foreground(DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for iOS
 }
 
-bool DisplayServerAppleEmbedded::window_is_focused(WindowID p_window) const {
+bool DisplayServerAppleEmbedded::window_is_focused(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
 float DisplayServerAppleEmbedded::screen_get_max_scale() const {
-	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
+	return screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 }
 
-void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServerEnums::ScreenOrientation p_orientation, int p_screen) {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX(p_screen, screen_count);
@@ -674,15 +675,15 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOri
 #endif
 }
 
-DisplayServer::ScreenOrientation DisplayServerAppleEmbedded::screen_get_orientation(int p_screen) const {
+DisplayServerEnums::ScreenOrientation DisplayServerAppleEmbedded::screen_get_orientation(int p_screen) const {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+	ERR_FAIL_INDEX_V(p_screen, screen_count, DisplayServerEnums::SCREEN_LANDSCAPE);
 
 	return screen_orientation;
 }
 
-bool DisplayServerAppleEmbedded::window_can_draw(WindowID p_window) const {
+bool DisplayServerAppleEmbedded::window_can_draw(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
@@ -704,37 +705,37 @@ _FORCE_INLINE_ int _convert_utf32_offset_to_utf16(const String &p_existing_text,
 	return limit;
 }
 
-void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, DisplayServerEnums::VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	NSString *existingString = [[NSString alloc] initWithUTF8String:p_existing_text.utf8().get_data()];
 
 	GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 	GDTAppDelegateService.viewController.keyboardView.textContentType = nil;
 	switch (p_type) {
-		case KEYBOARD_TYPE_DEFAULT: {
+		case DisplayServerEnums::KEYBOARD_TYPE_DEFAULT: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 		} break;
-		case KEYBOARD_TYPE_MULTILINE: {
+		case DisplayServerEnums::KEYBOARD_TYPE_MULTILINE: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 		} break;
-		case KEYBOARD_TYPE_NUMBER: {
+		case DisplayServerEnums::KEYBOARD_TYPE_NUMBER: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeNumberPad;
 		} break;
-		case KEYBOARD_TYPE_NUMBER_DECIMAL: {
+		case DisplayServerEnums::KEYBOARD_TYPE_NUMBER_DECIMAL: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDecimalPad;
 		} break;
-		case KEYBOARD_TYPE_PHONE: {
+		case DisplayServerEnums::KEYBOARD_TYPE_PHONE: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypePhonePad;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypeTelephoneNumber;
 		} break;
-		case KEYBOARD_TYPE_EMAIL_ADDRESS: {
+		case DisplayServerEnums::KEYBOARD_TYPE_EMAIL_ADDRESS: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeEmailAddress;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypeEmailAddress;
 		} break;
-		case KEYBOARD_TYPE_PASSWORD: {
+		case DisplayServerEnums::KEYBOARD_TYPE_PASSWORD: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypePassword;
 		} break;
-		case KEYBOARD_TYPE_URL: {
+		case DisplayServerEnums::KEYBOARD_TYPE_URL: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeWebSearch;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypeURL;
 		} break;
@@ -793,7 +794,7 @@ void DisplayServerAppleEmbedded::resize_window(CGSize viewSize) {
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
-		rendering_context->window_set_size(MAIN_WINDOW_ID, size.x, size.y);
+		rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 
@@ -801,7 +802,7 @@ void DisplayServerAppleEmbedded::resize_window(CGSize viewSize) {
 	_window_callback(window_resize_callback, resize_rect);
 }
 
-void DisplayServerAppleEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+void DisplayServerAppleEmbedded::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -810,14 +811,114 @@ void DisplayServerAppleEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode 
 #endif
 }
 
-DisplayServer::VSyncMode DisplayServerAppleEmbedded::window_get_vsync_mode(WindowID p_window) const {
+DisplayServerEnums::VSyncMode DisplayServerAppleEmbedded::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
-	return DisplayServer::VSYNC_ENABLED;
+	return DisplayServerEnums::VSYNC_ENABLED;
+}
+
+// MARK: - HDR / EDR
+
+void DisplayServerAppleEmbedded::_update_hdr_output() {
+#ifdef RD_ENABLED
+	if (!rendering_context) {
+		return;
+	}
+
+	bool desired = edr_requested && _screen_hdr_is_supported();
+	if (rendering_context->window_get_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID) != desired) {
+		rendering_context->window_set_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID, desired);
+	}
+
+	float reference_luminance = _calculate_current_reference_luminance();
+	rendering_context->window_set_hdr_output_reference_luminance(DisplayServerEnums::MAIN_WINDOW_ID, reference_luminance);
+
+	float max_luminance = _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
+	rendering_context->window_set_hdr_output_max_luminance(DisplayServerEnums::MAIN_WINDOW_ID, max_luminance);
+#endif
+}
+
+void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
+	_update_hdr_output();
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		return false;
+	}
+#endif
+	return _screen_hdr_is_supported();
+}
+
+void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(p_enabled && rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT), "HDR output is not supported by the rendering device.");
+#endif
+
+	edr_requested = p_enabled;
+	_update_hdr_output();
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window) const {
+	return edr_requested;
+}
+
+bool DisplayServerAppleEmbedded::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerAppleEmbedded::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
+	ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Apple devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
+	return -1.0f; // Always auto-adjusted by the OS on Apple platforms.
+}
+
+float DisplayServerAppleEmbedded::_calculate_current_reference_luminance() const {
+	float potential = _screen_potential_edr_headroom();
+	float current = _screen_current_edr_headroom();
+	return potential * hardware_reference_luminance_nits / current;
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+	return 200.0f;
+}
+
+void DisplayServerAppleEmbedded::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
+	ERR_PRINT_ONCE("Manually setting max luminance is not supported on Apple embedded devices as they provide accurate max luminance values for their built-in screens.");
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
+	return -1.0f;
+}
+
+float DisplayServerAppleEmbedded::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window) const {
+	return _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
+}
+
+float DisplayServerAppleEmbedded::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window);
+	}
+#endif
+	return 1.0f;
 }
 
 void DisplayServerAppleEmbedded::set_native_icon(const String &p_filename) {
