@@ -102,8 +102,7 @@ public:
 		return p_size;
 	}
 
-	// TODO: This sucks
-	uint32_t find(const T &t, uint32_t p_offset, uint32_t p_max_size) const {
+	int32_t find(const T &t, uint32_t p_offset, uint32_t p_max_size) const {
 		const uint32_t left = data_left();
 		if ((p_offset + p_max_size) > left) {
 			p_max_size -= left - p_offset;
