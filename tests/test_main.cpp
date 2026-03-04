@@ -172,7 +172,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
 
-		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
+		if (name.contains("[SceneTree]") || name.contains("[Editor]") || name.contains("[ShaderDeprecatedConverter]") || name.contains("[ShaderLanguage]")) {
 			memnew(MessageQueue);
 
 			memnew(Input);
