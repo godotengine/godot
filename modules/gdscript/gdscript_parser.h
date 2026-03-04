@@ -142,6 +142,8 @@ public:
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
 
+		/// [Monarch] Reginleif addition. Holds the class node that declared the generic params.
+		ClassNode* generic_owner_class = nullptr;
 		/// [Monarch] Reginleif addition. A dedicated generic parameter field!
 		StringName generic_param;
 		/// [Monarch] Reginleif addition. Stores concrete type argument bindings for generic classes.
@@ -225,13 +227,26 @@ public:
 					return native_type == p_other.native_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
+				
+				/// [Monarch] Classes are now only equal if they have the same fqcn and the same generic params.
 				case CLASS:
-					return class_type == p_other.class_type || class_type->fqcn == p_other.class_type->fqcn;
+					if (class_type != p_other.class_type && class_type->fqcn != p_other.class_type->fqcn) {
+						return false;
+					}
+					if (generic_type_bindings.size() != p_other.generic_type_bindings.size()) {
+						return false;
+					}
+					for (const KeyValue<StringName, DataType>& E : generic_type_bindings) {
+						const DataType* other_val = p_other.generic_type_bindings.getptr(E.key);
+						if (other_val == nullptr || *other_val != E.value) {
+							return false;
+						}
+    				}
+					return true;
 
-					/// [Monarch] Dumbly declare equatable if both have the same generic param name.
-					/// Probably best to change it up down the line.
+				/// [Monarch] Now scoped to the declaring class so that Shit[T] doesnt equal Ass[T]
 				case GENERIC_TYPE:
-					return generic_param == p_other.generic_param;
+					return generic_owner_class == p_other.generic_owner_class && generic_param == p_other.generic_param;
 				
 				case RESOLVING:
 				case UNRESOLVED:
@@ -262,6 +277,7 @@ public:
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
+			generic_owner_class = p_other.generic_owner_class;
 			generic_param = p_other.generic_param;
 			generic_type_bindings = p_other.generic_type_bindings;
 		}

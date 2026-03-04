@@ -899,6 +899,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	if (parser->current_class && parser->current_class->is_generic_parameter(first_id)) {
 		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
 		result.generic_param = first;
+		result.generic_owner_class = parser->current_class;
 		p_type->set_datatype(result);
 		return result;
 	}
@@ -6626,10 +6627,16 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		return true;
 	}
 
-	/// [Monarch] This is required to make generic params compatible with anything.
-	/// Change down the line with concrete type resolution.
-	if(p_target.kind == GDScriptParser::DataType::GENERIC_TYPE || p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		return true;
+	/// [Monarch] If both sides are generic, do a real equality check
+	/// If only one side is generic, we cant decide without concrete bindings yet
+	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE &&
+			p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		return p_target == p_source;
+	}
+	
+	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE || 
+		p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		return true; /// <-- unresolved and thus needs concrete bindings to decide
 	}
 
 	if (p_target.kind == GDScriptParser::DataType::BUILTIN) {
