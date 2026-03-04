@@ -183,23 +183,23 @@ void Texture3DEditor::_update_gui() {
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, true) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
-				texture->get_width(),
-				texture->get_height(),
-				texture->get_depth(),
-				format_name,
-				mip_count,
-				String::humanize_size(memory)) +
+							   texture->get_width(),
+							   texture->get_height(),
+							   texture->get_depth(),
+							   format_name,
+							   mip_count,
+							   String::humanize_size(memory)) +
 				export_size_text);
 
 	} else {
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, false) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
-				texture->get_width(),
-				texture->get_height(),
-				texture->get_depth(),
-				format_name,
-				String::humanize_size(memory)) +
+							   texture->get_width(),
+							   texture->get_height(),
+							   texture->get_depth(),
+							   format_name,
+							   String::humanize_size(memory)) +
 				export_size_text);
 	}
 
