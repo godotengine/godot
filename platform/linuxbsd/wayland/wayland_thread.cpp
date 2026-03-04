@@ -199,6 +199,21 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 	return Vector<uint8_t>();
 }
 
+void WaylandThread::_wl_display_check_error(struct wl_display *wl_display) {
+	int werror = wl_display_get_error(wl_display);
+	if (werror) {
+		if (werror == EPROTO) {
+			struct wl_interface *wl_interface = nullptr;
+			uint32_t id = 0;
+
+			int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
+			CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
+		} else {
+			CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
+		}
+	}
+}
+
 Ref<InputEventKey> WaylandThread::_seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed) {
 	Ref<InputEventKey> event;
 
@@ -1361,12 +1376,22 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
+	ws->ready = true;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
+
+	if (width == 0) {
+		width = ws->rect.size.width;
+	}
+
+	if (height == 0) {
+		height = ws->rect.size.height;
+	}
 
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
@@ -1423,9 +1448,7 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		}
 	}
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
-	}
+	window_state_update_size(ws, width, height);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
@@ -1476,9 +1499,15 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
+	if (width == 0) {
+		width = ws->rect.size.width;
 	}
+
+	if (height == 0) {
+		height = ws->rect.size.width;
+	}
+
+	window_state_update_size(ws, width, height);
 
 	WindowState *parent = ws->wayland_thread->window_get_state(ws->parent_id);
 	ERR_FAIL_NULL(parent);
@@ -1570,6 +1599,8 @@ void WaylandThread::libdecor_on_error(struct libdecor *context, enum libdecor_er
 void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
 	WindowState *ws = (WindowState *)user_data;
 	ERR_FAIL_NULL(ws);
+
+	ws->ready = true;
 
 	int width = 0;
 	int height = 0;
@@ -3361,19 +3392,7 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			}
 		}
 
-		int werror = wl_display_get_error(data->wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(data->wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
+		_wl_display_check_error(data->wl_display);
 
 		wl_display_flush(data->wl_display);
 
@@ -3544,6 +3563,10 @@ double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 
 void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int p_height) {
 	ERR_FAIL_NULL(p_ws);
+
+	// Failsafe.
+	p_width = MAX(p_width, 1);
+	p_height = MAX(p_height, 1);
 
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
@@ -3858,7 +3881,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size = p_size;
+	ws.rect.size = p_size.maxi(1);
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3932,11 +3955,6 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	}
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
-
-	window_state_update_size(&ws, ws.rect.size.width, ws.rect.size.height);
 }
 
 void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect) {
@@ -3950,7 +3968,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
-
 	// We manually scaled based on the parent. If we don't set the relevant fields,
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
@@ -4021,9 +4038,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
 }
 
 void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
@@ -4142,7 +4156,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
-	return scale_vector2i(new_size, window_scale);
+	return scale_vector2i(new_size, window_scale).maxi(1);
 }
 
 void WaylandThread::beep() const {
@@ -4408,8 +4422,8 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 #endif // LIBDECOR_ENABLED
 		} break;
 	}
-
-	// Wait for a configure event and hope that something changed.
+	// Roundtrip and hope that something changed.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	if (ws.mode != DisplayServerEnums::WINDOW_MODE_WINDOWED) {
@@ -4910,6 +4924,7 @@ Error WaylandThread::init() {
 	wl_registry_add_listener(wl_registry, &wl_registry_listener, &registry);
 
 	// Wait for registry to get notified from the compositor.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
@@ -4946,6 +4961,7 @@ Error WaylandThread::init() {
 	}
 
 	// Wait for seat capabilities.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 #ifdef LIBDECOR_ENABLED
@@ -5368,6 +5384,41 @@ bool WaylandThread::get_reset_frame() {
 	return old_frame;
 }
 
+// Wraps around `wl_display_dispatch_pending`. Judging from the docs, this
+// should work pretty much like `wl_display_dispatch_timeout`, which is only
+// available on somewhat recent versions of libwayland.
+//
+// This implementation is NOT based on libwayland's code.
+int WaylandThread::wait_events(int p_timeout_ms) {
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wl_display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	while (wl_display_prepare_read(wl_display) != 0) {
+		// Event queue got already something.
+		return wl_display_dispatch_pending(wl_display);
+	}
+
+	wl_display_flush(wl_display);
+
+	// Wait for the event file descriptor to have new data.
+	poll(&poll_fd, 1, p_timeout_ms);
+
+	if (poll_fd.revents | POLLIN) {
+		// Load the queues with fresh new data.
+		wl_display_read_events(wl_display);
+	} else {
+		// Oh well... Stop signaling that we want to read.
+		wl_display_cancel_read(wl_display);
+
+		// We've got no new events :(
+		return 0;
+	}
+
+	// Let's try dispatching now...
+	return wl_display_dispatch_pending(wl_display);
+}
+
 // Dispatches events until a frame event is received, a window is reported as
 // suspended or the timeout expires.
 bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
@@ -5376,9 +5427,21 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 	// `wl_display_prepare_read` and `wl_display_read`. This means, that it will
 	// basically be guaranteed to stay stuck in a "prepare read" state, where it
 	// will block any other attempt at reading the display fd, such as ours. The
-	// solution? Let's make sure the mutex is locked (it should) and unblock the
-	// main thread with a roundtrip!
+	// solution? Let's make sure the mutex is locked (it should)...
 	MutexLock mutex_lock(mutex);
+
+	if (is_suspended()) {
+		return false;
+	}
+
+	if (frame) {
+		frame = false;
+		return true;
+	}
+
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), false);
+
+	// ...and unblock the main thread with a roundtrip!
 	wl_display_roundtrip(wl_display);
 
 	if (is_suspended()) {
@@ -5394,65 +5457,12 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 		return true;
 	}
 
-	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	for (int remaining_ms = p_timeout; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
 
-	int begin_ms = OS::get_singleton()->get_ticks_msec();
-	int remaining_ms = p_timeout;
+		wait_events(remaining_ms);
 
-	while (remaining_ms > 0) {
-		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wl_display) != 0) {
-			if (wl_display_dispatch_pending(wl_display) == -1) {
-				// Oh no. We'll check and handle any display error below.
-				break;
-			}
-
-			if (is_suspended()) {
-				return false;
-			}
-
-			if (frame) {
-				// We had a frame event in the queue :D
-				frame = false;
-				return true;
-			}
-		}
-
-		int werror = wl_display_get_error(wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
-
-		wl_display_flush(wl_display);
-
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, remaining_ms);
-
-		if (poll_fd.revents | POLLIN) {
-			// Load the queues with fresh new data.
-			wl_display_read_events(wl_display);
-		} else {
-			// Oh well... Stop signaling that we want to read.
-			wl_display_cancel_read(wl_display);
-
-			// We've got no new events :(
-			// We won't even bother with checking the frame flag.
-			return false;
-		}
-
-		// Let's try dispatching now...
-		wl_display_dispatch_pending(wl_display);
+		_wl_display_check_error(wl_display);
 
 		if (is_suspended()) {
 			return false;
@@ -5492,6 +5502,43 @@ bool WaylandThread::is_suspended() const {
 	}
 
 	return true;
+}
+
+bool WaylandThread::window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms) {
+	MutexLock mutex_lock(mutex);
+
+	WindowState *ws = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(ws, false);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	// See _poll_events_thread.
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), ws->ready);
+
+	// Unlock the thread.
+	wl_display_roundtrip(wl_display);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	for (int remaining_ms = p_timeout_ms; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
+
+		wait_events(remaining_ms);
+
+		_wl_display_check_error(wl_display);
+
+		if (ws->ready) {
+			return true;
+		}
+
+		remaining_ms -= OS::get_singleton()->get_ticks_msec() - begin_ms;
+	}
+
+	return false;
 }
 
 struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
