@@ -5820,6 +5820,8 @@ void AnimationTrackEditor::_add_track(int p_type) {
 		return;
 	}
 	adding_track_type = p_type;
+
+	String title_text = TTRC("Pick a node to animate:");
 	Vector<StringName> valid_types;
 	switch (adding_track_type) {
 		case Animation::TYPE_BLEND_SHAPE: {
@@ -5832,16 +5834,22 @@ void AnimationTrackEditor::_add_track(int p_type) {
 			// 3D Properties come from nodes inheriting Node3D.
 			valid_types.push_back(SNAME("Node3D"));
 		} break;
+		case Animation::TYPE_METHOD: {
+			title_text = TTRC("Pick a node to select method:");
+		} break;
 		case Animation::TYPE_AUDIO: {
 			valid_types.push_back(SNAME("AudioStreamPlayer"));
 			valid_types.push_back(SNAME("AudioStreamPlayer2D"));
 			valid_types.push_back(SNAME("AudioStreamPlayer3D"));
+			title_text = TTRC("Pick a node to play audio:");
 		} break;
 		case Animation::TYPE_ANIMATION: {
 			valid_types.push_back(SNAME("AnimationPlayer"));
+			title_text = TTRC("Pick a node to play animation:");
 		} break;
 	}
 	pick_track->set_valid_types(valid_types);
+	pick_track->set_title(title_text);
 	pick_track->popup_scenetree_dialog(nullptr, root_node);
 	pick_track->get_filter_line_edit()->clear();
 	pick_track->get_filter_line_edit()->grab_focus();
@@ -8449,7 +8457,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
-	pick_track->set_title(TTRC("Pick a node to animate:"));
 	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_node_selected));
 	pick_track->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_text_changed));
 
