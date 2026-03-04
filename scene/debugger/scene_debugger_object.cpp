@@ -159,10 +159,12 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
 			if (E.value.get_type() == Variant::OBJECT) {
 				Variant inst_id = ((Object *)E.value)->get_instance_id();
-				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
+				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
 				properties.push_back(SceneDebuggerProperty(pi, inst_id));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
+				pi.usage |= PROPERTY_USAGE_READ_ONLY;
+
 				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			}
 		}
