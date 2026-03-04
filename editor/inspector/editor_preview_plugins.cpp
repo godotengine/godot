@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
