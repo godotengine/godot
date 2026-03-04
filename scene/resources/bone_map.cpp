@@ -31,6 +31,7 @@
 #include "bone_map.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -165,7 +166,7 @@ void BoneMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("find_profile_bone_name", "skeleton_bone_name"), &BoneMap::find_profile_bone_name);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, SkeletonProfile::get_class_static()), "set_profile", "get_profile");
 	ADD_ARRAY("bonemap", "bonemap");
 
 	ADD_SIGNAL(MethodInfo("bone_map_updated"));

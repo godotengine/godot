@@ -1120,8 +1120,8 @@ png_set_rgb_to_gray(png_structrp png_ptr, int error_action, double red,
 #if defined(PNG_READ_USER_TRANSFORM_SUPPORTED) || \
     defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
 void PNGAPI
-png_set_read_user_transform_fn(png_structrp png_ptr, png_user_transform_ptr
-    read_user_transform_fn)
+png_set_read_user_transform_fn(png_structrp png_ptr,
+    png_user_transform_ptr read_user_transform_fn)
 {
    png_debug(1, "in png_set_read_user_transform_fn");
 
@@ -1843,6 +1843,7 @@ png_init_read_transformations(png_structrp png_ptr)
              * transformations elsewhere.
              */
             png_ptr->transformations &= ~(PNG_COMPOSE | PNG_GAMMA);
+            png_ptr->flags &= ~PNG_FLAG_OPTIMIZE_ALPHA;
          } /* color_type == PNG_COLOR_TYPE_PALETTE */
 
          /* if (png_ptr->background_gamma_type!=PNG_BACKGROUND_GAMMA_UNKNOWN) */

@@ -31,6 +31,7 @@
 #include "resource_preloader_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
@@ -364,7 +365,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	set_name(TTRC("ResourcePreloader"));
 	set_icon_name("ResourcePreloader");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
 	set_global(false);
 	set_transient(true);

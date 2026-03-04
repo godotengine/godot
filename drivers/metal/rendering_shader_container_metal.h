@@ -30,11 +30,11 @@
 
 #pragma once
 
-#import "metal_device_profile.h"
-#import "sha256_digest.h"
+#include "metal_device_profile.h"
+#include "sha256_digest.h"
 
-#import "servers/rendering/rendering_device_driver.h"
-#import "servers/rendering/rendering_shader_container.h"
+#include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_shader_container.h"
 
 constexpr uint32_t R32UI_ALIGNMENT_CONSTANT_ID = 65535;
 /// Metal buffer index for the view mask when rendering multi-view.
@@ -176,6 +176,8 @@ private:
 	Vector<UniformData> mtl_reflection_binding_set_uniforms_data; // compliment to reflection_binding_set_uniforms_data
 
 	Error compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data);
+
+	Error reflect_spirv(const ReflectShader &p_shader);
 
 public:
 	static constexpr uint32_t FORMAT_VERSION = 2;

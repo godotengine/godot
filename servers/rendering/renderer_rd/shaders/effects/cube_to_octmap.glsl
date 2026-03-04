@@ -27,6 +27,9 @@ layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
 layout(push_constant, std430) uniform Params {
 	float border_size;
+	uint pad1;
+	uint pad2;
+	uint pad3;
 }
 params;
 

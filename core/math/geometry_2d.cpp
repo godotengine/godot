@@ -30,6 +30,8 @@
 
 #include "geometry_2d.h"
 
+#include "core/math/math_funcs_binary.h"
+
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 GODOT_GCC_WARNING_POP
@@ -38,7 +40,6 @@ GODOT_GCC_WARNING_POP
 #include "thirdparty/misc/stb_rect_pack.h"
 
 const int clipper_precision = 5; // Based on CMP_EPSILON.
-const double clipper_scale = Math::pow(10.0, clipper_precision);
 
 void Geometry2D::merge_many_polygons(const Vector<Vector<Vector2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes) {
 	using namespace Clipper2Lib;
@@ -228,8 +229,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2((uint32_t)results[i].max_h);
-		real_t w = next_power_of_2((uint32_t)results[i].max_w);
+		real_t h = Math::next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = Math::next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
@@ -351,10 +352,7 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	}
 
 	// Inflate/deflate.
-	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25 * clipper_scale);
-	// Here the points are scaled up internally and
-	// the arc_tolerance is scaled accordingly
-	// to attain the desired precision.
+	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25);
 
 	Vector<Vector<Point2>> polypaths;
 	polypaths.resize(paths.size());

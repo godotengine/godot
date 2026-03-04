@@ -30,6 +30,7 @@
 
 #include "editor_bottom_panel.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -39,6 +40,7 @@
 #include "editor/gui/editor_version_button.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -47,7 +49,7 @@
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			layout_popup = get_popup();
+			set_accessibility_region(true);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -60,22 +62,12 @@ void EditorBottomPanel::_notification(int p_what) {
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
 	_update_center_split_offset();
 	_repaint();
+	if (p_idx >= 0 && p_idx < get_tab_count()) {
+		set_accessibility_name(get_tab_title(p_idx));
+	}
 }
 
 void EditorBottomPanel::_theme_changed() {
-	int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
-	int margin = bottom_hbox->get_minimum_size().x;
-	if (get_popup()) {
-		margin -= icon_width;
-	}
-
-	// Add margin to make space for the right side popup button.
-	icon_spacer->set_custom_minimum_size(Vector2(icon_width, 0));
-
-	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox(SNAME("tabbar_background"), SNAME("BottomPanel"))->duplicate();
-	bottom_tabbar_style->set_content_margin(is_layout_rtl() ? SIDE_LEFT : SIDE_RIGHT, margin + bottom_tabbar_style->get_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT));
-	add_theme_style_override("tabbar_background", bottom_tabbar_style);
-
 	if (get_current_tab() == -1) {
 		// Hide panel when not showing anything.
 		remove_theme_style_override(SceneStringName(panel));
@@ -105,7 +97,7 @@ void EditorBottomPanel::_repaint() {
 	if (panel_collapsed && get_popup()) {
 		set_popup(nullptr);
 	} else if (!panel_collapsed && !get_popup()) {
-		set_popup(layout_popup);
+		set_popup(dock_context_popup);
 	}
 	if (!panel_collapsed && (previous_tab != -1)) {
 		return;
@@ -118,13 +110,42 @@ void EditorBottomPanel::_repaint() {
 	center_split->set_dragger_visibility(panel_collapsed ? SplitContainer::DRAGGER_HIDDEN : SplitContainer::DRAGGER_VISIBLE);
 	center_split->set_collapsed(panel_collapsed);
 
-	pin_button->set_visible(!panel_collapsed);
 	expand_button->set_visible(!panel_collapsed);
 	if (expand_button->is_pressed()) {
 		_expand_button_toggled(!panel_collapsed);
 	} else {
 		_theme_changed();
 	}
+}
+
+void EditorBottomPanel::dock_closed(EditorDock *p_dock) {
+	if (p_dock == get_current_tab_control()) {
+		hide_bottom_panel();
+	}
+}
+
+void EditorBottomPanel::dock_focused(EditorDock *p_dock, bool p_was_visible) {
+	if (p_was_visible && p_dock->is_visible()) {
+		hide_bottom_panel();
+	}
+}
+
+DockTabContainer::TabStyle EditorBottomPanel::get_tab_style() const {
+	return (TabStyle)EDITOR_GET("interface/editor/docks/bottom_dock_tab_style").operator int();
+}
+
+bool EditorBottomPanel::can_switch_dock() const {
+	return !is_locked();
+}
+
+void EditorBottomPanel::load_selected_tab(int p_idx) {
+	EditorDock *selected_dock = get_dock(p_idx);
+	if (!selected_dock) {
+		p_idx = -1;
+	}
+	set_block_signals(true);
+	set_current_tab(p_idx);
+	set_block_signals(false);
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -147,7 +168,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 
 void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
 	// Don't allow changing tabs involuntarily when tabs are locked.
-	if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
+	if (!p_ignore_lock && lock_panel_switching) {
 		return;
 	}
 
@@ -180,7 +201,7 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_singleton()->update_distraction_free_button_theme();
 	if (p_pressed) {
 		distraction_free->reparent(bottom_hbox);
-		bottom_hbox->move_child(distraction_free, -2);
+		bottom_hbox->move_child(distraction_free, -3);
 	} else {
 		distraction_free->get_parent()->remove_child(distraction_free);
 		EditorSceneTabs::get_singleton()->add_extra_button(distraction_free);
@@ -206,7 +227,7 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	dock->set_dock_shortcut(p_shortcut);
 	dock->set_global(false);
 	dock->set_transient(true);
-	dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	dock->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	EditorDockManager::get_singleton()->add_dock(dock);
 	bottom_docks.push_back(dock);
@@ -246,19 +267,19 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDo
 	}
 }
 
-EditorBottomPanel::EditorBottomPanel() {
+EditorBottomPanel::EditorBottomPanel() :
+		DockTabContainer(EditorDock::DOCK_SLOT_BOTTOM) {
+	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;
+	grid_rect = Rect2i(2, 4, 4, 2);
+
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);
+	set_theme_type_variation("BottomPanel");
 
 	bottom_hbox = memnew(HBoxContainer);
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	bottom_hbox->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
-	get_tab_bar()->add_child(bottom_hbox);
-
-	icon_spacer = memnew(Control);
-	icon_spacer->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	bottom_hbox->add_child(icon_spacer);
+	get_internal_container()->add_child(bottom_hbox);
 
 	bottom_hbox->add_child(memnew(VSeparator));
 
@@ -275,14 +296,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	Control *h_spacer = memnew(Control);
 	bottom_hbox->add_child(h_spacer);
 
-	pin_button = memnew(Button);
-	bottom_hbox->add_child(pin_button);
-	pin_button->hide();
-	pin_button->set_theme_type_variation("BottomPanelButton");
-	pin_button->set_toggle_mode(true);
-	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
-	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
-
 	expand_button = memnew(Button);
 	bottom_hbox->add_child(expand_button);
 	expand_button->hide();
@@ -291,6 +304,13 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->set_accessibility_name(TTRC("Expand Bottom Panel"));
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTRC("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
+
+	pin_button = memnew(Button);
+	bottom_hbox->add_child(pin_button);
+	pin_button->set_theme_type_variation("BottomPanelButton");
+	pin_button->set_toggle_mode(true);
+	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
+	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
 
 	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
 }

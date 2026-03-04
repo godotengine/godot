@@ -140,6 +140,7 @@ private:
 	void _update_toolbar();
 	void _update_transform_buttons();
 	void _set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled);
+	void _update_translation();
 
 	///// Tilemap editing. /////
 	bool has_mouse = false;
@@ -238,7 +239,7 @@ private:
 	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
 	///// Bottom panel patterns ////
-	VBoxContainer *patterns_bottom_panel = nullptr;
+	MarginContainer *patterns_mc = nullptr;
 	ItemList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
@@ -326,7 +327,7 @@ private:
 		SELECTED_TYPE_PATH,
 		SELECTED_TYPE_PATTERN,
 	};
-	SelectedType selected_type;
+	SelectedType selected_type = SELECTED_TYPE_CONNECT;
 	int selected_terrain_set = -1;
 	int selected_terrain = -1;
 	TileSet::TerrainsPattern selected_terrains_pattern;
@@ -345,6 +346,7 @@ private:
 	void _update_terrains_tree();
 	void _update_tiles_list();
 	void _update_theme();
+	void _update_translation();
 
 	// Update callback
 	virtual void tile_set_changed() override;
@@ -405,6 +407,7 @@ private:
 	void _clear_all_layers_highlighting();
 	void _update_all_layers_highlighting();
 	void _highlight_selected_layer_button_toggled(bool p_pressed);
+	void _update_layer_selector_layout(bool p_is_vertical);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
@@ -419,6 +422,7 @@ private:
 	// Bottom panel.
 	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
+	PanelContainer *tabs_panel = nullptr;
 	LocalVector<TileMapLayerSubEditorPlugin::TabData> tabs_data;
 	LocalVector<TileMapLayerSubEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();

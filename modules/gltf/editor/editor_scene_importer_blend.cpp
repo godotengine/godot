@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
+#include "servers/display/display_server.h"
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -387,15 +388,6 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
 
 	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
-}
-
-void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
-	if (!p_import_params.has("gltf/naming_version")) {
-		// If a .blend's existing import file is missing the glTF
-		// naming compatibility version, we need to use version 1.
-		// Version 1 is the behavior before this option was added.
-		p_import_params["gltf/naming_version"] = 1;
-	}
 }
 
 ///////////////////////////

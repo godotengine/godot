@@ -34,6 +34,7 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -48,6 +49,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
@@ -289,7 +291,7 @@ void TilesEditorUtils::draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect
 	p_ci->draw_set_transform(p_rect.position, 0, Vector2(1, 1) / scale);
 	RS::get_singleton()->canvas_item_add_nine_patch(
 			p_ci->get_canvas_item(), Rect2(Vector2(), p_rect.size * scale), Rect2(), selection_texture->get_rid(),
-			Vector2(2, 2), Vector2(2, 2), RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, false, p_color);
+			Vector2(2, 2), Vector2(2, 2), RSE::NINE_PATCH_STRETCH, RSE::NINE_PATCH_STRETCH, false, p_color);
 	p_ci->draw_set_transform_matrix(Transform2D());
 }
 
@@ -373,7 +375,7 @@ void TileMapEditorPlugin::_update_tile_map() {
 		Ref<TileSet> tile_set = edited_layer->get_tile_set();
 		if (tile_set.is_valid() && tile_set_id != tile_set->get_instance_id()) {
 			tile_set_plugin_singleton->edit(tile_set.ptr());
-			tile_set_plugin_singleton->make_visible_no_focus();
+			tile_set_plugin_singleton->make_visible(true);
 			tile_set_id = tile_set->get_instance_id();
 		} else if (tile_set.is_null()) {
 			tile_set_plugin_singleton->edit(nullptr);
@@ -410,7 +412,7 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
 	if (tile_set.is_valid()) {
 		tile_set_plugin_singleton->edit(tile_set.ptr());
-		tile_set_plugin_singleton->make_visible_no_focus();
+		tile_set_plugin_singleton->open_editor();
 		tile_set_id = tile_set->get_instance_id();
 	} else {
 		tile_set_plugin_singleton->edit(nullptr);
@@ -539,7 +541,7 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-void TileSetEditorPlugin::make_visible_no_focus() {
+void TileSetEditorPlugin::open_editor() {
 	editor->open();
 }
 

@@ -19,6 +19,12 @@
 #define IN_SHADOW_PASS false
 #endif
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -678,7 +684,7 @@ void vertex_shader(in vec3 vertex,
 				vec2(1, 1));
 
 		vec2 point_coord = point_coords[gl_VertexIndex % 6];
-		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * (point_size / scene_data.viewport_size) * gl_Position.w;
 
 #ifdef POINT_COORD_USED
 		point_coord_interp = point_coord;
@@ -824,6 +830,12 @@ void main() {
 #define IN_SHADOW_PASS true
 #else
 #define IN_SHADOW_PASS false
+#endif
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
 #endif
 
 /* Include half precision types. */
@@ -1143,9 +1155,7 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha_highp = 1.0;
 #endif
-#ifndef FOG_DISABLED
 	vec4 fog_highp = vec4(0.0);
-#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance_highp = vec4(0.0);
 #endif
@@ -1284,9 +1294,7 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	half premul_alpha = half(premul_alpha_highp);
 #endif
-#ifndef FOG_DISABLED
 	hvec4 fog = hvec4(fog_highp);
-#endif
 #ifdef CUSTOM_RADIANCE_USED
 	hvec4 custom_radiance = hvec4(custom_radiance_highp);
 #endif
@@ -1597,7 +1605,7 @@ void main() {
 		float lod;
 		half blend = half(modf(float(sqrt(roughness) * MAX_ROUGHNESS_LOD), lod));
 
-		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		float ref_lod = vec3_to_oct_lod(dFdx(vec3(ref_vec)), dFdy(vec3(ref_vec)), scene_data_block.data.radiance_pixel_size);
 		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		hvec3 indirect_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, float(lod)), ref_lod).rgb);
 		hvec3 indirect_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, float(lod) + 1.0), ref_lod).rgb);
@@ -1644,34 +1652,31 @@ void main() {
 	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
 #endif // CUSTOM_IRRADIANCE_USED
 #ifdef LIGHT_CLEARCOAT_USED
+	hvec3 cc_specular_light = hvec3(0.0);
+	hvec3 cc_ref_vec = hvec3(0.0);
 
 	if (sc_scene_use_reflection_cubemap()) {
-		half NoV = max(dot(geo_normal, view), half(0.0001));
-		hvec3 ref_vec = reflect(-view, geo_normal);
-		ref_vec = mix(ref_vec, geo_normal, clearcoat_roughness * clearcoat_roughness);
-		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
-		half Fc = clearcoat * (half(0.04) + half(0.96) * SchlickFresnel(NoV));
-		half attenuation = half(1.0) - Fc;
-		ambient_light *= attenuation;
-		indirect_specular_light *= attenuation;
+		cc_ref_vec = reflect(-view, geo_normal);
+		cc_ref_vec = mix(cc_ref_vec, geo_normal, mix(half(0.001), half(0.1), clearcoat_roughness));
 
-		half horizon = min(half(1.0) + dot(ref_vec, indirect_normal), half(1.0));
-		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
-		float roughness_lod = mix(0.001, 0.1, sqrt(float(clearcoat_roughness))) * MAX_ROUGHNESS_LOD;
+		hvec3 cc_radiance_ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(cc_ref_vec));
+		float roughness_lod = sqrt(mix(0.001, 0.1, float(clearcoat_roughness))) * MAX_ROUGHNESS_LOD;
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
+
 		float lod;
 		half blend = half(modf(roughness_lod, lod));
 
-		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
-		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		float ref_lod = vec3_to_oct_lod(dFdx(cc_radiance_ref_vec), dFdy(cc_radiance_ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		hvec3 clearcoat_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb);
 		hvec3 clearcoat_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb);
 		hvec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 #else
-		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		hvec3 clearcoat_light = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb);
+
 #endif //USE_RADIANCE_OCTMAP_ARRAY
-		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * half(scene_data.ambient_light_color_energy.a);
+		cc_specular_light += clearcoat_light * half(scene_data.IBL_exposure_normalization) * half(scene_data.ambient_light_color_energy.a);
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED
@@ -1763,6 +1768,9 @@ void main() {
 	if (reflection_probe_count > 0) {
 		hvec4 reflection_accum = hvec4(0.0);
 		hvec4 ambient_accum = hvec4(0.0);
+#ifdef LIGHT_CLEARCOAT_USED
+		hvec3 cc_reflection_accum = hvec3(0.0);
+#endif
 
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
@@ -1788,7 +1796,11 @@ void main() {
 				break;
 			}
 
-			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light, ambient_accum, reflection_accum);
+			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+					cc_specular_light, cc_ref_vec, mix(half(0.001), half(0.1), clearcoat_roughness), cc_reflection_accum,
+#endif
+					ambient_accum, reflection_accum);
 		}
 
 		if (ambient_accum.a < half(1.0)) {
@@ -1801,6 +1813,9 @@ void main() {
 
 		if (reflection_accum.a > half(0.0)) {
 			indirect_specular_light = reflection_accum.rgb;
+#ifdef LIGHT_CLEARCOAT_USED
+			cc_specular_light = cc_reflection_accum.rgb;
+#endif
 		}
 
 #if !defined(USE_LIGHTMAP)
@@ -1840,6 +1855,14 @@ void main() {
 	//this saves some VGPRs
 	hvec3 f0 = F0(metallic, specular, albedo);
 
+#ifdef LIGHT_CLEARCOAT_USED
+	// The base layer's f0 is computed assuming an interface from air to an IOR
+	// of 1.5, but the clear coat layer forms an interface from IOR 1.5 to IOR
+	// 1.5. We recompute f0 by first computing its IOR, then reconverting to f0
+	// by using the correct interface
+	f0 = mix(f0, f0_Clear_Coat_To_Surface(f0), clearcoat);
+#endif
+
 #ifndef AMBIENT_LIGHT_DISABLED
 	{
 #if defined(DIFFUSE_TOON)
@@ -1859,7 +1882,23 @@ void main() {
 		hvec2 env = hvec2(-1.04, 1.04) * a004 + r.zw;
 
 		indirect_specular_light *= env.x * f0 + env.y * clamp(half(50.0) * f0.g, metallic, half(1.0));
+
+#ifdef LIGHT_CLEARCOAT_USED
+		half geo_NdotV = max(dot(geo_normal, view), half(0.0001)); // We want to use geometric normal, not normal_map
+		// The clearcoat layer assumes an IOR of 1.5 (4% reflectance).
+		// Attenuate underlying diffuse/specular by clearcoat fresnel (ONLY fresnel, hence we don't just invert the BRDF below).
+		half NdotV5 = SchlickFresnel(geo_NdotV);
+		half F = mix(half(0.04), half(1.0), NdotV5) * clearcoat;
+		half cc_attenuation = half(1.0) - F;
+
+		ambient_light *= cc_attenuation;
+		indirect_specular_light *= cc_attenuation;
+
+		// We don't need a BRDF approximation for clearcoat, so we can use the fresnel directly.
+		indirect_specular_light += cc_specular_light * F;
 #endif
+
+#endif // DIFFUSE_TOON
 	}
 
 #endif // !AMBIENT_LIGHT_DISABLED

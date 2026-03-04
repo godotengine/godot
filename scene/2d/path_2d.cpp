@@ -31,8 +31,10 @@
 #include "path_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
@@ -121,7 +123,7 @@ void Path2D::_debug_create() {
 	}
 
 	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh_rid);
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RSE::SHADOW_CASTING_SETTING_OFF);
 }
 
 void Path2D::_debug_free() {
@@ -208,7 +210,7 @@ void Path2D::_debug_update() {
 		ribbon_color.fill(debug_color);
 		ribbon_array[Mesh::ARRAY_COLOR] = ribbon_color;
 
-		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINE_STRIP, ribbon_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_LINE_STRIP, ribbon_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 	}
 
 	// Render path fish bones.
@@ -243,7 +245,7 @@ void Path2D::_debug_update() {
 		bones_color.fill(debug_color);
 		bone_array[Mesh::ARRAY_COLOR] = bones_color;
 
-		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, bone_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RSE::PRIMITIVE_LINES, bone_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 	}
 
 	rs->canvas_item_clear(get_canvas_item());
@@ -290,7 +292,7 @@ void Path2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
 }
 
 /////////////////////////////////////////////////////////////////////////////////

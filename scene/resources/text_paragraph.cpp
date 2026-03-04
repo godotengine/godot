@@ -31,6 +31,8 @@
 #include "text_paragraph.h"
 #include "text_paragraph.compat.inc"
 
+#include "core/object/class_db.h"
+
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
 	ClassDB::bind_method(D_METHOD("duplicate"), &TextParagraph::duplicate);
@@ -328,11 +330,13 @@ Ref<TextParagraph> TextParagraph::duplicate() const {
 	Ref<TextParagraph> copy;
 	copy.instantiate();
 	if (dropcap_rid.is_valid()) {
+		TS->free_rid(copy->dropcap_rid);
 		copy->dropcap_rid = TS->shaped_text_duplicate(dropcap_rid);
 	}
 	copy->dropcap_lines = dropcap_lines;
 	copy->dropcap_margins = dropcap_margins;
 	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
 		copy->rid = TS->shaped_text_duplicate(rid);
 	}
 	copy->lines_dirty = true;

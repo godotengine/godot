@@ -12,6 +12,12 @@
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -709,7 +715,7 @@ void vertex_shader(vec3 vertex_input,
 				vec2(1, 1));
 
 		vec2 point_coord = point_coords[gl_VertexIndex % 6];
-		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * (point_size / scene_data.viewport_size) * gl_Position.w;
 
 #ifdef POINT_COORD_USED
 		point_coord_interp = point_coord;
@@ -862,6 +868,12 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
@@ -1079,7 +1091,7 @@ layout(location = 2) out vec2 motion_vector;
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	vec3 fog_pos = vec3(screen_uv, z * implementation_data.volumetric_fog_inv_length);
 	if (fog_pos.z < 0.0) {
-		return vec4(0.0);
+		return vec4(0.0, 0.0, 0.0, 1.0);
 	} else if (fog_pos.z < 1.0) {
 		fog_pos.z = pow(fog_pos.z, implementation_data.volumetric_fog_detail_spread);
 	}
@@ -1225,9 +1237,7 @@ void fragment_shader(in SceneData scene_data) {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
-#ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
-#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -1744,37 +1754,32 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef LIGHT_CLEARCOAT_USED
+	vec3 cc_specular_light = vec3(0.0);
+	vec3 cc_ref_vec = vec3(0.0);
 
 	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
-		float NoV = max(dot(geo_normal, view), 0.0001); // We want to use geometric normal, not normal_map
-		vec3 ref_vec = reflect(-view, geo_normal);
-		ref_vec = mix(ref_vec, geo_normal, clearcoat_roughness * clearcoat_roughness);
-		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
-		float Fc = clearcoat * (0.04 + 0.96 * SchlickFresnel(NoV));
-		float attenuation = 1.0 - Fc;
-		ambient_light *= attenuation;
-		indirect_specular_light *= attenuation;
+		cc_ref_vec = reflect(-view, geo_normal);
+		cc_ref_vec = mix(cc_ref_vec, geo_normal, mix(0.001, 0.1, clearcoat_roughness));
 
-		float horizon = min(1.0 + dot(ref_vec, indirect_normal), 1.0);
-		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
-		float roughness_lod = mix(0.001, 0.1, sqrt(clearcoat_roughness)) * MAX_ROUGHNESS_LOD;
+		vec3 cc_radiance_ref_vec = scene_data.radiance_inverse_xform * cc_ref_vec;
+		float roughness_lod = sqrt(mix(0.001, 0.1, clearcoat_roughness)) * MAX_ROUGHNESS_LOD;
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 
 		float lod, blend;
 		blend = modf(roughness_lod, lod);
 
-		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
-		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		float ref_lod = vec3_to_oct_lod(dFdx(cc_radiance_ref_vec), dFdy(cc_radiance_ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		vec3 clearcoat_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb;
 		vec3 clearcoat_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb;
 		vec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 
 #else
-		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		vec3 clearcoat_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
 
 #endif //USE_RADIANCE_OCTMAP_ARRAY
-		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * scene_data.ambient_light_color_energy.a;
+		cc_specular_light += clearcoat_light * scene_data.IBL_exposure_normalization * scene_data.ambient_light_color_energy.a;
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED
@@ -2026,6 +2031,9 @@ void fragment_shader(in SceneData scene_data) {
 
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+#ifdef LIGHT_CLEARCOAT_USED
+		vec3 cc_reflection_accum = vec3(0.0, 0.0, 0.0);
+#endif
 
 		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 3;
 
@@ -2075,7 +2083,11 @@ void fragment_shader(in SceneData scene_data) {
 					break;
 				}
 
-				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light, ambient_accum, reflection_accum);
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+						cc_specular_light, cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+#endif
+						ambient_accum, reflection_accum);
 			}
 		}
 
@@ -2089,6 +2101,9 @@ void fragment_shader(in SceneData scene_data) {
 
 		if (reflection_accum.a > 0.0) {
 			indirect_specular_light = reflection_accum.rgb;
+#ifdef LIGHT_CLEARCOAT_USED
+			cc_specular_light = cc_reflection_accum.rgb;
+#endif
 		}
 
 #if !defined(USE_LIGHTMAP)
@@ -2096,39 +2111,6 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light = ambient_accum.rgb;
 		}
 #endif
-	}
-
-	//process ssr
-	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
-		bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
-
-		float ssr_mip_level = 0.0;
-		if (resolve_ssr) {
-#ifdef USE_MULTIVIEW
-			ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
-#else
-			ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
-#endif // USE_MULTIVIEW
-
-			ssr_mip_level *= 14.0;
-		}
-
-#ifdef USE_MULTIVIEW
-		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
-#else
-		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
-#endif // USE_MULTIVIEW
-
-		if (resolve_ssr) {
-			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
-			ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
-		}
-
-		// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
-		ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
-
-		// Alpha is premultiplied.
-		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
 	}
 
 	//finalize ambient light here
@@ -2188,6 +2170,39 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
+
+		//process ssr
+		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
+
+			float ssr_mip_level = 0.0;
+			if (resolve_ssr) {
+#ifdef USE_MULTIVIEW
+				ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
+#else
+				ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
+#endif // USE_MULTIVIEW
+
+				ssr_mip_level *= 14.0;
+			}
+
+#ifdef USE_MULTIVIEW
+			vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
+#else
+			vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
+#endif // USE_MULTIVIEW
+
+			if (resolve_ssr) {
+				const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+				ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
+			}
+
+			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
+			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+
+			// Alpha is premultiplied.
+			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
+		}
 	}
 #endif // AMBIENT_LIGHT_DISABLED
 
@@ -2196,6 +2211,15 @@ void fragment_shader(in SceneData scene_data) {
 
 	//this saves some VGPRs
 	vec3 f0 = F0(metallic, specular, albedo);
+
+#ifdef LIGHT_CLEARCOAT_USED
+	// The base layer's f0 is computed assuming an interface from air to an IOR
+	// of 1.5, but the clear coat layer forms an interface from IOR 1.5 to IOR
+	// 1.5. We recompute f0 by first computing its IOR, then reconverting to f0
+	// by using the correct interface
+	f0 = mix(f0, f0_Clear_Coat_To_Surface(f0), clearcoat);
+#endif
+
 #ifndef AMBIENT_LIGHT_DISABLED
 	{
 #if defined(DIFFUSE_TOON)
@@ -2211,7 +2235,24 @@ void fragment_shader(in SceneData scene_data) {
 		// cheap luminance approximation
 		float f90 = clamp(50.0 * f0.g, metallic, 1.0);
 		indirect_specular_light *= energy_compensation * ((f90 - f0) * envBRDF.x + f0 * envBRDF.y);
+
+#ifdef LIGHT_CLEARCOAT_USED
+		float geo_NdotV = max(dot(geo_normal, view), 0.0001); // We want to use geometric normal, not normal_map
+		// The clearcoat layer assumes an IOR of 1.5 (4% reflectance).
+		// Attenuate underlying diffuse/specular by clearcoat fresnel (ONLY fresnel, hence we don't just invert the BRDF below).
+		float NdotV5 = SchlickFresnel(geo_NdotV);
+		float F = mix(0.04, 1.0, NdotV5) * clearcoat;
+		float cc_attenuation = 1.0 - F;
+
+		ambient_light *= cc_attenuation;
+		indirect_specular_light *= cc_attenuation;
+
+		// Clearcoat Layer
+		// We don't need DFG for clearcoat, so we can use the fresnel directly.
+		indirect_specular_light += cc_specular_light * F;
 #endif
+
+#endif // DIFFUSE_TOON
 	}
 
 #endif // !AMBIENT_LIGHT_DISABLED

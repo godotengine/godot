@@ -55,8 +55,8 @@ static void _editor_init() {
 #endif // TOOLS_ENABLED
 
 #define FBX_REGISTER_DOCUMENT_EXTENSION(m_doc_ext_class) \
-	Ref<m_doc_ext_class> extension_##m_doc_ext_class;    \
-	extension_##m_doc_ext_class.instantiate();           \
+	Ref<m_doc_ext_class> extension_##m_doc_ext_class; \
+	extension_##m_doc_ext_class.instantiate(); \
 	FBXDocument::register_gltf_document_extension(extension_##m_doc_ext_class);
 
 void initialize_fbx_module(ModuleInitializationLevel p_level) {

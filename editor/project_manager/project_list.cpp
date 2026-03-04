@@ -31,7 +31,10 @@
 #include "project_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
@@ -49,6 +52,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
@@ -62,10 +67,10 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->begin_bulk_theme_override();
 			project_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
 			project_title->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
-			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
 			project_title->end_bulk_theme_override();
 
-			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -105,21 +110,21 @@ void ProjectListItemControl::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, TTR("Project") + " " + project_title->get_text());
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+			AccessibilityServer::get_singleton()->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_value(ae, project_title->get_text());
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
 
 			ProjectList *pl = get_list();
 			if (pl) {
-				DisplayServer::get_singleton()->accessibility_update_set_list_item_index(ae, pl->get_index(this));
+				AccessibilityServer::get_singleton()->update_set_list_item_index(ae, pl->get_index(this));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_level(ae, 0);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(ae, is_selected);
+			AccessibilityServer::get_singleton()->update_set_list_item_level(ae, 0);
+			AccessibilityServer::get_singleton()->update_set_list_item_selected(ae, is_selected);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -127,8 +132,8 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (pl) {
 				int idx = pl->get_index(this);
 				if (idx >= 0) {
-					pl->ensure_project_visible(idx);
-					pl->select_project(idx);
+					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
+					pl->select_project(idx, !has_focus(true));
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -136,18 +141,19 @@ void ProjectListItemControl::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (is_selected) {
-				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), get_size()));
-			}
-			if (is_hovering) {
-				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			if (is_selected && is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hover_pressed"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_selected) {
+				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
 			// Due to how this control works, we can't rely on the built-in way of checking for focus visibility.
 			if (has_focus() && !is_focus_hidden) {
-				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
 
-			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
+			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("ProjectList")));
 		} break;
 	}
 }
@@ -355,6 +361,9 @@ ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
 	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
+	// Left spacer.
+	add_child(memnew(Control));
+
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	add_child(favorite_box);
@@ -398,10 +407,6 @@ ProjectListItemControl::ProjectListItemControl() {
 
 		tag_container = memnew(HBoxContainer);
 		title_hb->add_child(tag_container);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		title_hb->add_child(spacer);
 	}
 
 	// Bottom half, containing the path and view folder button.
@@ -413,6 +418,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button = memnew(Button);
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		explore_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		explore_button->set_tooltip_text(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
@@ -447,10 +453,6 @@ ProjectListItemControl::ProjectListItemControl() {
 		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));
 		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(last_edited_info);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		path_hb->add_child(spacer);
 	}
 
 	if (DisplayServer::get_singleton()->is_touchscreen_available()) {
@@ -458,8 +460,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		touch_menu_button->set_theme_type_variation(SceneStringName(FlatButton));
 		touch_menu_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 		add_child(touch_menu_button);
+		touch_menu_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		touch_menu_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_request_menu));
 	}
+
+	// Right spacer.
+	add_child(memnew(Control));
 }
 
 struct ProjectListComparator {
@@ -533,9 +539,9 @@ void ProjectList::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, _projects.size());
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, _projects.size());
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
 		}
 	}
 }
@@ -1207,7 +1213,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index);
+	clicked_project.control->grab_focus(true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,

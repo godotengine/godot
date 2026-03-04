@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
@@ -85,6 +86,18 @@ void TranslationServer::init_locale_info() {
 	while (locale_renames[idx][0] != nullptr) {
 		if (!String(locale_renames[idx][1]).is_empty()) {
 			locale_rename_map[locale_renames[idx][0]] = locale_renames[idx][1];
+		}
+		idx++;
+	}
+
+	// Init locale scripts.
+	language_script_map.clear();
+	idx = 0;
+	while (language_script_list[idx][0] != nullptr) {
+		HashSet<String> &set = language_script_map[language_script_list[idx][0]];
+		Vector<String> scripts = String(language_script_list[idx][1]).split(" ");
+		for (const String &s : scripts) {
+			set.insert(s);
 		}
 		idx++;
 	}
@@ -490,6 +503,17 @@ void TranslationServer::set_fallback_locale(const String &p_locale) {
 
 String TranslationServer::get_fallback_locale() const {
 	return fallback;
+}
+
+bool TranslationServer::is_script_suppored_by_locale(const String &p_locale, const String &p_script) const {
+	Locale l = Locale(*this, p_locale, true);
+	if (l.script == p_script) {
+		return true;
+	}
+	if (!language_script_map.has(l.language)) {
+		return false;
+	}
+	return language_script_map[l.language].has(p_script);
 }
 
 PackedStringArray TranslationServer::get_loaded_locales() const {

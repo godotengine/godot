@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -48,10 +49,17 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
-	get_ok_button()->set_disabled(p_type == MESSAGE_ERROR);
+
+	if (p_type == MESSAGE_ERROR) {
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
+	} else {
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
+	}
 
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
@@ -74,6 +82,12 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	} else if (p_input_type == INSTALL_PATH) {
 		install_status_rect->set_texture(new_icon);
 	}
+
+	_update_ok_button();
+}
+
+void ProjectDialog::_update_ok_button() {
+	get_ok_button()->set_disabled(!invalid_state_flags.is_empty());
 }
 
 static bool is_zip_file(Ref<DirAccess> p_d, const String &p_path) {
@@ -305,7 +319,7 @@ void ProjectDialog::_update_target_auto_dir() {
 	}
 	int naming_convention = (int)EDITOR_GET("project_manager/directory_naming_convention");
 	switch (naming_convention) {
-		case 0: // No convention
+		case 0: // No Convention
 			break;
 		case 1: // kebab-case
 			new_auto_dir = new_auto_dir.to_kebab_case();
@@ -510,11 +524,15 @@ void ProjectDialog::_renderer_selected() {
 	}
 
 	rd_not_supported->set_visible(rd_error);
-	get_ok_button()->set_disabled(rd_error);
 	if (rd_error) {
 		// Needs to be set here since theme colors aren't available at startup.
 		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
+	} else {
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
 	}
+
+	_update_ok_button();
 }
 
 void ProjectDialog::_nonempty_confirmation_ok_pressed() {
@@ -832,6 +850,8 @@ void ProjectDialog::ask_for_path_and_show() {
 }
 
 void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+	_update_ok_button();
+
 	if (mode == MODE_IMPORT && !p_is_confirmed) {
 		return;
 	}
@@ -968,7 +988,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_renderer_selected();
+			if (rendering_device_checked) {
+				_renderer_selected();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1074,7 +1096,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	msg->set_accessibility_live(DisplayServer::LIVE_POLITE);
+	msg->set_accessibility_live(AccessibilityServerEnums::LIVE_POLITE);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1159,7 +1181,7 @@ ProjectDialog::ProjectDialog() {
 
 	rd_not_supported = memnew(Label);
 	rd_not_supported->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	rd_not_supported->set_text(vformat(TTRC("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
+	rd_not_supported->set_text(vformat(TTR("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

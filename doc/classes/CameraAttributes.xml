@@ -14,6 +14,7 @@
 	<members>
 		<member name="auto_exposure_enabled" type="bool" setter="set_auto_exposure_enabled" getter="is_auto_exposure_enabled" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
+			[b]Note:[/b] Auto-exposure is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="auto_exposure_scale" type="float" setter="set_auto_exposure_scale" getter="get_auto_exposure_scale" default="0.4">
 			The scale of the auto exposure effect. Affects the intensity of auto exposure.

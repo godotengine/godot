@@ -28,11 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "config.h"
 
-#include "../rasterizer_gles3.h"
+#ifdef GLES3_ENABLED
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
@@ -83,7 +86,7 @@ Config::Config() {
 	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
 		etc2_supported = false;

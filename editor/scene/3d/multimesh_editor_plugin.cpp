@@ -30,6 +30,7 @@
 
 #include "multimesh_editor_plugin.h"
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -274,7 +275,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_text("MultiMesh");
 	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButton");
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MultiMeshEditor::_menu_option));

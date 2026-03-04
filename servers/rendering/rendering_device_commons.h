@@ -317,6 +317,12 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum ColorSpace {
+		COLOR_SPACE_REC709_LINEAR,
+		COLOR_SPACE_REC709_NONLINEAR_SRGB,
+		COLOR_SPACE_MAX,
+	};
+
 	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
 	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
 	// (or at least shouldn't) alter the execution behavior in any way.
@@ -586,12 +592,22 @@ public:
 		SHADER_STAGE_TESSELATION_CONTROL,
 		SHADER_STAGE_TESSELATION_EVALUATION,
 		SHADER_STAGE_COMPUTE,
+		SHADER_STAGE_RAYGEN,
+		SHADER_STAGE_ANY_HIT,
+		SHADER_STAGE_CLOSEST_HIT,
+		SHADER_STAGE_MISS,
+		SHADER_STAGE_INTERSECTION,
 		SHADER_STAGE_MAX,
 		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
 		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
 		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
 		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
 		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+		SHADER_STAGE_RAYGEN_BIT = (1 << SHADER_STAGE_RAYGEN),
+		SHADER_STAGE_ANY_HIT_BIT = (1 << SHADER_STAGE_ANY_HIT),
+		SHADER_STAGE_CLOSEST_HIT_BIT = (1 << SHADER_STAGE_CLOSEST_HIT),
+		SHADER_STAGE_MISS_BIT = (1 << SHADER_STAGE_MISS),
+		SHADER_STAGE_INTERSECTION_BIT = (1 << SHADER_STAGE_INTERSECTION),
 	};
 
 	enum ShaderLanguage {
@@ -644,6 +660,7 @@ public:
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
 		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_ACCELERATION_STRUCTURE, // Bounding Volume Hierarchy (Top + Bottom Level acceleration structures), for raytracing only.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -672,6 +689,13 @@ public:
 	/*******************/
 
 	// ----- PIPELINE -----
+
+	// Rendering Shader Container expects this type to be 4 bytes for proper alignment with the shaders.
+	enum PipelineType : uint32_t {
+		PIPELINE_TYPE_RASTERIZATION,
+		PIPELINE_TYPE_COMPUTE,
+		PIPELINE_TYPE_RAYTRACING,
+	};
 
 	enum RenderPrimitive {
 		RENDER_PRIMITIVE_POINTS,
@@ -869,17 +893,6 @@ public:
 	/**** MISC ****/
 	/**************/
 
-	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
-	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
-		DEVICE_TYPE_OTHER,
-		DEVICE_TYPE_INTEGRATED_GPU,
-		DEVICE_TYPE_DISCRETE_GPU,
-		DEVICE_TYPE_VIRTUAL_GPU,
-		DEVICE_TYPE_CPU,
-		DEVICE_TYPE_MAX
-	};
-
 	// Defined in an API-agnostic way.
 	// Some may not make sense for the underlying API; in that case, 0 is returned.
 	enum DriverResource {
@@ -974,6 +987,9 @@ public:
 		SUPPORTS_VULKAN_MEMORY_MODEL,
 		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
 		SUPPORTS_POINT_SIZE,
+		SUPPORTS_RAY_QUERY,
+		SUPPORTS_RAYTRACING_PIPELINE,
+		SUPPORTS_HDR_OUTPUT,
 	};
 
 	enum SubgroupOperations {
@@ -1012,6 +1028,7 @@ protected:
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
+	static bool format_has_depth(DataFormat p_format);
 	static bool format_has_stencil(DataFormat p_format);
 	static uint32_t format_get_plane_count(DataFormat p_format);
 
@@ -1080,7 +1097,7 @@ public:
 	struct ShaderReflection {
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};

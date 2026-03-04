@@ -31,6 +31,7 @@
 #include "camera_2d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -304,6 +305,8 @@ Camera2DEditor::Camera2DEditor(EditorPlugin *p_plugin) {
 
 	options = memnew(MenuButton);
 	options->set_text(TTRC("Camera2D"));
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 	options->get_popup()->add_item(TTRC("Snap the Limits to the Viewport"), MENU_SNAP_LIMITS_TO_VIEWPORT);
 	options->set_switch_on_hover(true);
 	options->hide();

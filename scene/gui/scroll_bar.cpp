@@ -30,8 +30,11 @@
 
 #include "scroll_bar.h"
 
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -45,6 +48,37 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	Ref<InputEventMouseButton> b = p_event;
+
+	Ref<InputEventPanGesture> pg = p_event;
+
+	if (pg.is_valid()) {
+		accept_event();
+
+		if (orientation == HORIZONTAL) {
+			if (pg->get_delta().x != 0) {
+				if (pg->get_delta().x < 0) {
+					scroll(-MAX(fabsf(pg->get_delta().x), get_step()));
+				}
+				if (pg->get_delta().x > 0) {
+					scroll(MAX(pg->get_delta().x, get_step()));
+				}
+			} else if (pg->get_delta().y != 0) {
+				if (pg->get_delta().y < 0) {
+					scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+				}
+				if (pg->get_delta().y > 0) {
+					scroll(MAX(pg->get_delta().y, get_step()));
+				}
+			}
+		} else {
+			if (pg->get_delta().y < 0) {
+				scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+			}
+			if (pg->get_delta().y > 0) {
+				scroll(MAX(pg->get_delta().y, get_step()));
+			}
+		}
+	}
 
 	if (b.is_valid()) {
 		accept_event();
@@ -228,7 +262,7 @@ void ScrollBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SCROLL_BAR);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SCROLL_BAR);
 		} break;
 
 		case NOTIFICATION_DRAW: {

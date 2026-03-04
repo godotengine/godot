@@ -37,7 +37,7 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 const String GODOT_PROJECT_NAME_XML_STRING = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->
@@ -77,9 +77,9 @@ struct MetadataInfo {
 	String value;
 };
 
-int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
+int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation);
 
-String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
+String _get_android_orientation_label(DisplayServerEnums::ScreenOrientation screen_orientation);
 
 int _get_app_category_value(int category_index);
 

@@ -134,6 +134,7 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
@@ -155,7 +156,6 @@ class TextShaderEditor : public ShaderEditor {
 	mutable Ref<Shader> shader;
 	mutable Ref<ShaderInclude> shader_inc;
 
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _project_settings_changed();
 
@@ -174,8 +174,8 @@ class TextShaderEditor : public ShaderEditor {
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
-	bool trim_trailing_whitespace_on_save;
-	bool trim_final_newlines_on_save;
+	bool trim_trailing_whitespace_on_save = false;
+	bool trim_final_newlines_on_save = false;
 
 protected:
 	void _notification(int p_what);

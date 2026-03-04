@@ -34,58 +34,54 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
+#include "core/object/class_db.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/display/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
-	ClassDB::bind_method(D_METHOD("didClose"), &GDScriptTextDocument::didClose);
-	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
-	ClassDB::bind_method(D_METHOD("willSaveWaitUntil"), &GDScriptTextDocument::willSaveWaitUntil);
-	ClassDB::bind_method(D_METHOD("didSave"), &GDScriptTextDocument::didSave);
-	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
-	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
-	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
-	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
-	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
-	ClassDB::bind_method(D_METHOD("prepareRename"), &GDScriptTextDocument::prepareRename);
-	ClassDB::bind_method(D_METHOD("references"), &GDScriptTextDocument::references);
-	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
-	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
-	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
-	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
-	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
-	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
-	ClassDB::bind_method(D_METHOD("declaration"), &GDScriptTextDocument::declaration);
-	ClassDB::bind_method(D_METHOD("signatureHelp"), &GDScriptTextDocument::signatureHelp);
-	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
+	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor", "symbol_id"), &GDScriptTextDocument::show_native_symbol_in_editor);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("didOpen", "params"), &GDScriptTextDocument::didOpen);
+	ClassDB::bind_method(D_METHOD("didClose", "params"), &GDScriptTextDocument::didClose);
+	ClassDB::bind_method(D_METHOD("didChange", "params"), &GDScriptTextDocument::didChange);
+	ClassDB::bind_method(D_METHOD("willSaveWaitUntil", "params"), &GDScriptTextDocument::willSaveWaitUntil);
+	ClassDB::bind_method(D_METHOD("didSave", "params"), &GDScriptTextDocument::didSave);
+	ClassDB::bind_method(D_METHOD("nativeSymbol", "params"), &GDScriptTextDocument::nativeSymbol);
+	ClassDB::bind_method(D_METHOD("documentSymbol", "params"), &GDScriptTextDocument::documentSymbol);
+	ClassDB::bind_method(D_METHOD("completion", "params"), &GDScriptTextDocument::completion);
+	ClassDB::bind_method(D_METHOD("resolve", "params"), &GDScriptTextDocument::resolve);
+	ClassDB::bind_method(D_METHOD("rename", "params"), &GDScriptTextDocument::rename);
+	ClassDB::bind_method(D_METHOD("prepareRename", "params"), &GDScriptTextDocument::prepareRename);
+	ClassDB::bind_method(D_METHOD("references", "params"), &GDScriptTextDocument::references);
+	ClassDB::bind_method(D_METHOD("foldingRange", "params"), &GDScriptTextDocument::foldingRange);
+	ClassDB::bind_method(D_METHOD("codeLens", "params"), &GDScriptTextDocument::codeLens);
+	ClassDB::bind_method(D_METHOD("documentLink", "params"), &GDScriptTextDocument::documentLink);
+	ClassDB::bind_method(D_METHOD("colorPresentation", "params"), &GDScriptTextDocument::colorPresentation);
+	ClassDB::bind_method(D_METHOD("hover", "params"), &GDScriptTextDocument::hover);
+	ClassDB::bind_method(D_METHOD("definition", "params"), &GDScriptTextDocument::definition);
+	ClassDB::bind_method(D_METHOD("declaration", "params"), &GDScriptTextDocument::declaration);
+	ClassDB::bind_method(D_METHOD("signatureHelp", "params"), &GDScriptTextDocument::signatureHelp);
+#endif // !DISABLE_DEPRECATED
 }
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
-	LSP::TextDocumentItem doc = load_document_item(p_param);
-	sync_script_content(doc.uri, doc.text);
-}
-
-void GDScriptTextDocument::didClose(const Variant &p_param) {
-	// Left empty on purpose. Godot does nothing special on closing a document,
-	// but it satisfies LSP clients that require didClose be implemented.
+	GDScriptLanguageProtocol::get_singleton()->lsp_did_open(p_param);
 }
 
 void GDScriptTextDocument::didChange(const Variant &p_param) {
-	LSP::TextDocumentItem doc = load_document_item(p_param);
-	Dictionary dict = p_param;
-	Array contentChanges = dict["contentChanges"];
-	for (int i = 0; i < contentChanges.size(); ++i) {
-		LSP::TextDocumentContentChangeEvent evt;
-		evt.load(contentChanges[i]);
-		doc.text = evt.text;
-	}
-	sync_script_content(doc.uri, doc.text);
+	GDScriptLanguageProtocol::get_singleton()->lsp_did_change(p_param);
+}
+
+void GDScriptTextDocument::didClose(const Variant &p_param) {
+	GDScriptLanguageProtocol::get_singleton()->lsp_did_close(p_param);
 }
 
 void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
-	LSP::TextDocumentItem doc = load_document_item(p_param);
+	Dictionary dict = p_param;
+	LSP::TextDocumentIdentifier doc;
+	doc.load(dict["textDocument"]);
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<Script> scr = ResourceLoader::load(path);
@@ -95,11 +91,10 @@ void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
 }
 
 void GDScriptTextDocument::didSave(const Variant &p_param) {
-	LSP::TextDocumentItem doc = load_document_item(p_param);
 	Dictionary dict = p_param;
+	LSP::TextDocumentIdentifier doc;
+	doc.load(dict["textDocument"]);
 	String text = dict["text"];
-
-	sync_script_content(doc.uri, text);
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<GDScript> scr = ResourceLoader::load(path);
@@ -126,31 +121,9 @@ void GDScriptTextDocument::reload_script(Ref<GDScript> p_to_reload_script) {
 	ScriptEditor::get_singleton()->trigger_live_script_reload(p_to_reload_script->get_path());
 }
 
-LSP::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_param) {
-	LSP::TextDocumentItem doc;
-	Dictionary params = p_param;
-	doc.load(params["textDocument"]);
-	return doc;
-}
-
 void GDScriptTextDocument::notify_client_show_symbol(const LSP::DocumentSymbol *symbol) {
 	ERR_FAIL_NULL(symbol);
 	GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
-}
-
-void GDScriptTextDocument::initialize() {
-	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
-			const ClassMembers &members = E.value;
-
-			for (const KeyValue<String, const LSP::DocumentSymbol *> &F : members) {
-				const LSP::DocumentSymbol *symbol = members.get(F.key);
-				LSP::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(String(E.key), F.key);
-				native_member_completions.push_back(item.to_json());
-			}
-		}
-	}
 }
 
 Variant GDScriptTextDocument::nativeSymbol(const Dictionary &p_params) {
@@ -172,9 +145,30 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String uri = params["uri"];
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
-	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
-		LSP::DocumentSymbol symbol = parser->value->get_symbols();
+
+	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (parser) {
+		LSP::DocumentSymbol symbol = parser->get_symbols();
 		arr.push_back(symbol.to_json(true));
+	}
+	return arr;
+}
+
+Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
+	Array arr;
+	LSP::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if (symbol) {
+		String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(params.textDocument.uri);
+		Vector<LSP::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_usages_in_file(*symbol, path);
+
+		for (const LSP::Location &usage : usages) {
+			LSP::DocumentHighlight highlight;
+			highlight.range = usage.range;
+			arr.push_back(highlight.to_json());
+		}
 	}
 	return arr;
 }
@@ -303,32 +297,6 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	if (data.get_type() == Variant::DICTIONARY) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == LSP::CompletionItemKind::Method || item.kind == LSP::CompletionItemKind::Function);
-
-	} else if (data.is_string()) {
-		String query = data;
-
-		Vector<String> param_symbols = query.split(SYMBOL_SEPARATOR, false);
-
-		if (param_symbols.size() >= 2) {
-			StringName class_name = param_symbols[0];
-			const String &member_name = param_symbols[param_symbols.size() - 1];
-			String inner_class_name;
-			if (param_symbols.size() >= 3) {
-				inner_class_name = param_symbols[1];
-			}
-
-			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members.getptr(class_name)) {
-				if (const LSP::DocumentSymbol *const *member = members->getptr(member_name)) {
-					symbol = *member;
-				}
-			}
-
-			if (!symbol) {
-				if (HashMap<String, ExtendGDScriptParser *>::ConstIterator E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
-					symbol = E->value->get_member_symbol(member_name, inner_class_name);
-				}
-			}
-		}
 	}
 
 	if (symbol) {
@@ -396,7 +364,7 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		Dictionary ret;
 		Array contents;
 		List<const LSP::DocumentSymbol *> list;
-		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(params, list);
+		GDScriptLanguageProtocol::get_singleton()->resolve_related_symbols(params, list);
 		for (const LSP::DocumentSymbol *&E : list) {
 			if (const LSP::DocumentSymbol *s = E) {
 				contents.push_back(s->render().value);
@@ -473,11 +441,6 @@ GDScriptTextDocument::GDScriptTextDocument() {
 	file_checker = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 }
 
-void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
-	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
-}
-
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
 	callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::goto_help).call_deferred(p_symbol_id);
 
@@ -500,7 +463,7 @@ Array GDScriptTextDocument::find_symbols(const LSP::TextDocumentPositionParams &
 		r_list.push_back(symbol);
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		List<const LSP::DocumentSymbol *> list;
-		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);
+		GDScriptLanguageProtocol::get_singleton()->resolve_related_symbols(p_location, list);
 		for (const LSP::DocumentSymbol *&E : list) {
 			if (const LSP::DocumentSymbol *s = E) {
 				if (!s->uri.is_empty()) {

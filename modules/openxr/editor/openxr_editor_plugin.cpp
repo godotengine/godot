@@ -122,9 +122,22 @@ String OpenXRExportPlugin::get_android_manifest_element_contents(const Ref<Edito
         </intent>
 
     </queries>
-
-    <uses-feature android:name="android.hardware.vr.headtracking" android:required="false" android:version="1" />
 )n";
+
+#ifndef DISABLE_DEPRECATED
+	// This logic addresses the issue from https://github.com/GodotVR/godot_openxr_vendors/issues/429.
+	// The issue is caused by this plugin and the vendors plugin adding the same `uses-feature` tag to the generated
+	// manifest, causing a duplicate error at build time.
+	// In order to maintain backward compatibility, we fix the issue by disabling the addition of the `uses-feature`
+	// tag from this plugin when specific conditions are met.
+	bool meta_plugin_enabled = get_option("xr_features/enable_meta_plugin");
+	int meta_boundary_mode = get_option("meta_xr_features/boundary_mode");
+	if (!meta_plugin_enabled || meta_boundary_mode != 1 /* BOUNDARY_DISABLED_VALUE */) {
+#endif // DISABLE_DEPRECATED
+		contents += "    <uses-feature android:name=\"android.hardware.vr.headtracking\" android:required=\"false\" android:version=\"1\" />\n";
+#ifndef DISABLE_DEPRECATED
+	}
+#endif // DISABLE_DEPRECATED
 
 	return contents;
 }

@@ -40,33 +40,30 @@
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_device_driver.h"
 
-#ifdef __OBJC__
-@protocol MTLFXSpatialScaler;
-@protocol MTLFXTemporalScaler;
-#endif
+namespace MTLFX {
+class SpatialScalerBase;
+class TemporalScalerBase;
+} //namespace MTLFX
 
 namespace RendererRD {
 
 struct MFXSpatialContext {
-#ifdef __OBJC__
-	id<MTLFXSpatialScaler> scaler = nullptr;
-#else
-	void *scaler = nullptr;
-#endif
+	MTLFX::SpatialScalerBase *scaler = nullptr;
 	MFXSpatialContext() = default;
 	~MFXSpatialContext();
 };
 
 class MFXSpatialEffect : public SpatialUpscaler {
 	struct CallbackArgs {
-		MFXSpatialEffect *owner;
+		MFXSpatialEffect *owner = nullptr;
+		MTLFX::SpatialScalerBase *scaler = nullptr;
 		RDD::TextureID src;
 		RDD::TextureID dst;
-		MFXSpatialContext ctx;
 
-		CallbackArgs(MFXSpatialEffect *p_owner, RDD::TextureID p_src, RDD::TextureID p_dst, MFXSpatialContext p_ctx) :
-				owner(p_owner), src(p_src), dst(p_dst), ctx(p_ctx) {}
+		CallbackArgs(MFXSpatialEffect *p_owner, RDD::TextureID p_src, RDD::TextureID p_dst, const MFXSpatialContext &p_ctx) :
+				owner(p_owner), scaler(p_ctx.scaler), src(p_src), dst(p_dst) {}
 
 		static void free(CallbackArgs **p_args) {
 			(*p_args)->owner->args_allocator.free(*p_args);
@@ -85,8 +82,8 @@ public:
 	struct CreateParams {
 		Vector2i input_size;
 		Vector2i output_size;
-		RD::DataFormat input_format;
-		RD::DataFormat output_format;
+		RDD::DataFormat input_format;
+		RDD::DataFormat output_format;
 	};
 
 	MFXSpatialContext *create_context(CreateParams p_params) const;
@@ -98,25 +95,21 @@ public:
 #ifdef METAL_MFXTEMPORAL_ENABLED
 
 struct MFXTemporalContext {
-#ifdef __OBJC__
-	id<MTLFXTemporalScaler> scaler = nullptr;
-#else
-	void *scaler = nullptr;
-#endif
+	MTLFX::TemporalScalerBase *scaler = nullptr;
 	MFXTemporalContext() = default;
 	~MFXTemporalContext();
 };
 
 class MFXTemporalEffect {
 	struct CallbackArgs {
-		MFXTemporalEffect *owner;
+		MFXTemporalEffect *owner = nullptr;
+		MTLFX::TemporalScalerBase *scaler = nullptr;
 		RDD::TextureID src;
 		RDD::TextureID depth;
 		RDD::TextureID motion;
 		RDD::TextureID exposure;
 		Vector2 jitter_offset;
 		RDD::TextureID dst;
-		MFXTemporalContext ctx;
 		bool reset = false;
 
 		CallbackArgs(
@@ -127,16 +120,16 @@ class MFXTemporalEffect {
 				RDD::TextureID p_exposure,
 				Vector2 p_jitter_offset,
 				RDD::TextureID p_dst,
-				MFXTemporalContext p_ctx,
+				const MFXTemporalContext &p_ctx,
 				bool p_reset) :
 				owner(p_owner),
+				scaler(p_ctx.scaler),
 				src(p_src),
 				depth(p_depth),
 				motion(p_motion),
 				exposure(p_exposure),
 				jitter_offset(p_jitter_offset),
 				dst(p_dst),
-				ctx(p_ctx),
 				reset(p_reset) {}
 
 		static void free(CallbackArgs **p_args) {
@@ -156,11 +149,11 @@ public:
 	struct CreateParams {
 		Vector2i input_size;
 		Vector2i output_size;
-		RD::DataFormat input_format;
-		RD::DataFormat depth_format;
-		RD::DataFormat motion_format;
-		RD::DataFormat reactive_format;
-		RD::DataFormat output_format;
+		RDD::DataFormat input_format;
+		RDD::DataFormat depth_format;
+		RDD::DataFormat motion_format;
+		RDD::DataFormat reactive_format;
+		RDD::DataFormat output_format;
 		Vector2 motion_vector_scale;
 	};
 

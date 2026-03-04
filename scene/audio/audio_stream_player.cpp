@@ -31,16 +31,17 @@
 #include "audio_stream_player.h"
 #include "audio_stream_player.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/display/display_server.h"
+#include "servers/display/accessibility_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ACCESSIBILITY_UPDATE) {
 		RID ae = get_accessibility_element();
 		ERR_FAIL_COND(ae.is_null());
 
-		DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_AUDIO);
+		AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_AUDIO);
 	} else {
 		internal->notification(p_what);
 	}
@@ -278,7 +279,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer::set_playback_type);
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer::get_playback_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");

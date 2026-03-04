@@ -41,43 +41,43 @@ using namespace NavigationDefaults3D;
 /// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.
 
-#define COMMAND_1(F_NAME, T_0, D_0)                                   \
-	struct MERGE(F_NAME, _command_3d) : public SetCommand3D {         \
-		T_0 d_0;                                                      \
-		MERGE(F_NAME, _command_3d)                                    \
-		(T_0 p_d_0) :                                                 \
-				d_0(p_d_0) {}                                         \
+#define COMMAND_1(F_NAME, T_0, D_0) \
+	struct MERGE(F_NAME, _command_3d) : public SetCommand3D { \
+		T_0 d_0; \
+		MERGE(F_NAME, _command_3d) \
+		(T_0 p_d_0) : \
+				d_0(p_d_0) {} \
 		virtual void exec(GodotNavigationServer3D *server) override { \
-			server->MERGE(_cmd_, F_NAME)(d_0);                        \
-		}                                                             \
-	};                                                                \
-	void GodotNavigationServer3D::F_NAME(T_0 D_0) {                   \
-		auto cmd = memnew(MERGE(F_NAME, _command_3d)(                 \
-				D_0));                                                \
-		add_command(cmd);                                             \
-	}                                                                 \
+			server->MERGE(_cmd_, F_NAME)(d_0); \
+		} \
+	}; \
+	void GodotNavigationServer3D::F_NAME(T_0 D_0) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_3d)( \
+				D_0)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer3D::MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                         \
-	struct MERGE(F_NAME, _command_3d) : public SetCommand3D {         \
-		T_0 d_0;                                                      \
-		T_1 d_1;                                                      \
-		MERGE(F_NAME, _command_3d)                                    \
-		(                                                             \
-				T_0 p_d_0,                                            \
-				T_1 p_d_1) :                                          \
-				d_0(p_d_0),                                           \
-				d_1(p_d_1) {}                                         \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
+	struct MERGE(F_NAME, _command_3d) : public SetCommand3D { \
+		T_0 d_0; \
+		T_1 d_1; \
+		MERGE(F_NAME, _command_3d) \
+		( \
+				T_0 p_d_0, \
+				T_1 p_d_1) : \
+				d_0(p_d_0), \
+				d_1(p_d_1) {} \
 		virtual void exec(GodotNavigationServer3D *server) override { \
-			server->MERGE(_cmd_, F_NAME)(d_0, d_1);                   \
-		}                                                             \
-	};                                                                \
-	void GodotNavigationServer3D::F_NAME(T_0 D_0, T_1 D_1) {          \
-		auto cmd = memnew(MERGE(F_NAME, _command_3d)(                 \
-				D_0,                                                  \
-				D_1));                                                \
-		add_command(cmd);                                             \
-	}                                                                 \
+			server->MERGE(_cmd_, F_NAME)(d_0, d_1); \
+		} \
+	}; \
+	void GodotNavigationServer3D::F_NAME(T_0 D_0, T_1 D_1) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_3d)( \
+				D_0, \
+				D_1)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer3D::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 GodotNavigationServer3D::GodotNavigationServer3D() {}
@@ -333,7 +333,7 @@ TypedArray<RID> GodotNavigationServer3D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap3D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle3D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle3D *> obstacles(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();

@@ -34,9 +34,12 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
@@ -679,12 +682,12 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *p_message, const String
 	return true;
 }
 
-Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
+Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	if (unsupported) {
 		return FAILED;
 	}
 
-	ERR_FAIL_INDEX_V(int(p_mode), DisplayServer::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 	ERR_FAIL_NULL_V(monitor_connection, FAILED);
 
 	Vector<String> filter_names;
@@ -738,7 +741,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 
 	// Generate FileChooser message.
 	const char *method = nullptr;
-	if (p_mode == DisplayServer::FILE_DIALOG_MODE_SAVE_FILE) {
+	if (p_mode == DisplayServerEnums::FILE_DIALOG_MODE_SAVE_FILE) {
 		method = "SaveFile";
 	} else {
 		method = "OpenFile";
@@ -756,13 +759,13 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
 
 		append_dbus_dict_string(&arr_iter, "handle_token", token);
-		append_dbus_dict_bool(&arr_iter, "multiple", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_FILES);
-		append_dbus_dict_bool(&arr_iter, "directory", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_DIR);
+		append_dbus_dict_bool(&arr_iter, "multiple", p_mode == DisplayServerEnums::FILE_DIALOG_MODE_OPEN_FILES);
+		append_dbus_dict_bool(&arr_iter, "directory", p_mode == DisplayServerEnums::FILE_DIALOG_MODE_OPEN_DIR);
 		append_dbus_dict_filters(&arr_iter, filter_names, filter_exts, filter_mimes);
 
 		append_dbus_dict_options(&arr_iter, p_options, fd.option_ids);
 		append_dbus_dict_string(&arr_iter, "current_folder", p_current_directory, true);
-		if (p_mode == DisplayServer::FILE_DIALOG_MODE_SAVE_FILE) {
+		if (p_mode == DisplayServerEnums::FILE_DIALOG_MODE_SAVE_FILE) {
 			append_dbus_dict_string(&arr_iter, "current_name", p_filename);
 		}
 
@@ -947,7 +950,7 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 										cb.opt_in_cb = fd.opt_in_cb;
 										portal->pending_file_cbs.push_back(cb);
 									}
-									if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
+									if (fd.prev_focus != DisplayServerEnums::INVALID_WINDOW_ID) {
 										callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
 									}
 								}

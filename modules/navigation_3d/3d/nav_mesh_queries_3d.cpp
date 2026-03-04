@@ -34,8 +34,8 @@
 #include "../nav_map_3d.h"
 #include "nav_region_iteration_3d.h"
 
-#include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/templates/rb_map.h"
 
 using namespace Nav3D;
 

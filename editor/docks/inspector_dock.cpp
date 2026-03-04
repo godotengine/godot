@@ -30,6 +30,7 @@
 
 #include "inspector_dock.h"
 
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"
@@ -719,7 +720,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	set_name(TTRC("Inspector"));
 	set_icon_name("AnimationTrackList");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);

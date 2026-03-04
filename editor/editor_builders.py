@@ -85,7 +85,7 @@ def make_translations(target, source, env):
             # msgfmt erases non-translated messages, so avoid using it if exporting the POT.
             if msgfmt and name != category:
                 mo_path = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex + ".mo")
-                cmd = f"{msgfmt} {path} --no-hash -o {mo_path}"
+                cmd = f'{msgfmt} "{path}" --no-hash -o "{mo_path}"'
                 try:
                     subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
                     buffer = methods.get_buffer(mo_path)

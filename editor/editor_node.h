@@ -31,10 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -316,7 +318,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;
@@ -347,8 +349,6 @@ private:
 	Button *export_button = nullptr;
 
 	Timer *screenshot_timer = nullptr;
-
-	uint64_t started_timestamp = 0;
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
@@ -478,6 +478,7 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
+	LocalVector<ObjectID> hdr_viewports;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -499,8 +500,6 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
-
-	bool _should_display_update_spinner() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
@@ -643,7 +642,6 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
-	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -710,6 +708,20 @@ private:
 
 	bool _is_project_data_missing();
 
+	enum MenuType {
+		MENU_TYPE_NONE,
+		MENU_TYPE_GLOBAL,
+		MENU_TYPE_COMPACT,
+		MENU_TYPE_FULL,
+	};
+	MenuType menu_type = MENU_TYPE_NONE;
+	Vector<PopupMenu *> main_menu_items;
+
+	void _build_file_menu();
+	void _build_project_menu();
+	void _build_settings_menu();
+	void _build_help_menu();
+
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
 
@@ -753,6 +765,7 @@ public:
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
 	static void add_io_warning(const String &p_warning);
+	static bool find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found);
 
 	static void progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	static bool progress_task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_refresh = true);
@@ -930,6 +943,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void register_hdr_viewport(Viewport *p_viewport);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -1032,6 +1046,7 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
+	bool is_scene_unsaved(int p_idx);
 };
 
 struct EditorProgressBG {

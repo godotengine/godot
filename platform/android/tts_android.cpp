@@ -34,6 +34,8 @@
 #include "os_android.h"
 #include "thread_jandroid.h"
 
+#include "servers/display/display_server.h"
+
 bool TTS_Android::initialized = false;
 jobject TTS_Android::tts = nullptr;
 jclass TTS_Android::cls = nullptr;
@@ -152,7 +154,7 @@ void TTS_Android::_java_utterance_callback(int p_event, int64_t p_id, int p_pos)
 	ERR_FAIL_COND_MSG(!initialized || tts == nullptr, "Text to Speech not initialized.");
 	if (ids.has(p_id)) {
 		int pos = 0;
-		if ((DisplayServer::TTSUtteranceEvent)p_event == DisplayServer::TTS_UTTERANCE_BOUNDARY) {
+		if ((DisplayServerEnums::TTSUtteranceEvent)p_event == DisplayServerEnums::TTS_UTTERANCE_BOUNDARY) {
 			// Convert position from UTF-16 to UTF-32.
 			const Char16String &string = ids[p_id];
 			for (int i = 0; i < MIN(p_pos, string.length()); i++) {
@@ -162,10 +164,10 @@ void TTS_Android::_java_utterance_callback(int p_event, int64_t p_id, int p_pos)
 				}
 				pos++;
 			}
-		} else if ((DisplayServer::TTSUtteranceEvent)p_event != DisplayServer::TTS_UTTERANCE_STARTED) {
+		} else if ((DisplayServerEnums::TTSUtteranceEvent)p_event != DisplayServerEnums::TTS_UTTERANCE_STARTED) {
 			ids.erase(p_id);
 		}
-		DisplayServer::get_singleton()->tts_post_utterance_event((DisplayServer::TTSUtteranceEvent)p_event, p_id, pos);
+		DisplayServer::get_singleton()->tts_post_utterance_event((DisplayServerEnums::TTSUtteranceEvent)p_event, p_id, pos);
 	}
 }
 
@@ -240,7 +242,7 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 	}
 
 	if (p_text.is_empty()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, p_utterance_id);
 		return;
 	}
 
@@ -290,7 +292,7 @@ void TTS_Android::stop() {
 	}
 	ERR_FAIL_COND_MSG(!initialized || tts == nullptr, "Text to Speech not initialized.");
 	for (const KeyValue<int64_t, Char16String> &E : ids) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	ids.clear();
 

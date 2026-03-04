@@ -30,6 +30,7 @@
 
 #include "openxr_select_action_dialog.h"
 
+#include "core/object/class_db.h"
 #include "editor/themes/editor_scale.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {

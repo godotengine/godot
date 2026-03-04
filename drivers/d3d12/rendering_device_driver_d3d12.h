@@ -93,6 +93,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	};
 
 	static const D3D12Format RD_TO_D3D12_FORMAT[RDD::DATA_FORMAT_MAX];
+	static const DXGI_COLOR_SPACE_TYPE RD_TO_DXGI_COLOR_SPACE_TYPE[RDD::COLOR_SPACE_MAX];
 
 	struct DeviceLimits {
 		uint64_t max_srvs_per_shader_stage = 0;
@@ -126,6 +127,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool depth_bounds_supported = false;
 	};
 
+	struct SamplerCapabilities {
+		bool aniso_filter_with_point_mip_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
@@ -141,6 +146,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
+	SamplerCapabilities sampler_capabilities;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
@@ -389,7 +395,8 @@ public:
 			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<RDD::MemoryAccessBarrier> p_memory_barriers,
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
-			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
+			VectorView<RDD::TextureBarrier> p_texture_barriers,
+			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) override final;
 
 private:
 	/****************/
@@ -483,6 +490,14 @@ private:
 		uint32_t vertex_buffer_count = 0;
 	};
 
+	struct DynParams {
+		D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
+		Color blend_constant;
+		float depth_bounds_min = 0.0f;
+		float depth_bounds_max = 1.0f;
+		uint32_t stencil_reference = 0;
+	};
+
 	// Leveraging knowledge of actual usage and D3D12 specifics (namely, command lists from the same allocator
 	// can't be freely begun and ended), an allocator per list works better.
 	struct CommandBufferInfo {
@@ -491,9 +506,15 @@ private:
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> cmd_list_1;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
+
+		DynParams dyn_params;
+		bool pending_dyn_params = true;
 
 		uint32_t graphics_root_signature_crc = 0;
 		uint32_t compute_root_signature_crc = 0;
@@ -508,6 +529,7 @@ private:
 
 		CPUDescriptorHeapPool::Allocation uav_alloc;
 		CPUDescriptorHeapPool::Allocation rtv_alloc;
+		CPUDescriptorHeapPool::Allocation dsv_alloc;
 	};
 
 public:
@@ -533,10 +555,13 @@ private:
 		TightLocalVector<TextureInfo> render_targets_info;
 		TightLocalVector<FramebufferID> framebuffers;
 		RDD::DataFormat data_format = DATA_FORMAT_MAX;
+		RDD::ColorSpace color_space = COLOR_SPACE_MAX;
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
 	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
+	RenderPassID _swap_chain_create_render_pass(RDD::DataFormat p_format);
+	void _determine_swap_chain_format(SwapChain *p_swap_chain, DataFormat &r_format, ColorSpace &r_color_space);
 
 public:
 	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override;
@@ -544,6 +569,7 @@ public:
 	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override;
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
 
 	/*********************/
@@ -564,7 +590,7 @@ private:
 
 	D3D12_RENDER_TARGET_VIEW_DESC _make_rtv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 	D3D12_UNORDERED_ACCESS_VIEW_DESC _make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
-	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info);
+	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 
 	FramebufferID _framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen);
 
@@ -596,7 +622,7 @@ private:
 	struct ShaderInfo {
 		uint32_t dxil_push_constant_size = 0;
 		uint32_t nir_runtime_data_root_param_idx = UINT32_MAX;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 
 		struct UniformBindingInfo {
 			uint32_t stages = 0; // Actual shader stages using the uniform (0 if totally optimized out).
@@ -697,6 +723,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 public:
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
@@ -708,14 +735,7 @@ public:
 
 	struct RenderPipelineInfo {
 		const VertexFormatInfo *vf_info = nullptr;
-
-		struct {
-			D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
-			Color blend_constant;
-			float depth_bounds_min = 0.0f;
-			float depth_bounds_max = 0.0f;
-			uint32_t stencil_reference = 0;
-		} dyn_params;
+		DynParams dyn_params;
 	};
 
 	struct PipelineInfo {
@@ -830,6 +850,31 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	// ---- ACCELERATION STRUCTURES ----
+
+	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) override final;
+	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
+	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
+	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;
+	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
+	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
+
+	// ----- PIPELINE -----
+
+	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	// ----- COMMANDS -----
+
+	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
+	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;
 
 	/*****************/
 	/**** QUERIES ****/

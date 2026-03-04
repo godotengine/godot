@@ -33,12 +33,14 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/world_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
@@ -164,7 +166,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			if (needs_set_not_interpolated) {
 				rs->canvas_item_set_interpolated(ci, false);
 			}
-			rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
+			rs->canvas_item_set_z_index(ci, RSE::CANVAS_ITEM_Z_MAX - 1);
 			rs->canvas_item_set_parent(ci, get_canvas_item());
 		}
 		const Vector2 quadrant_pos = tile_set->map_to_local(debug_quadrant->quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
@@ -357,8 +359,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 						rs->canvas_item_set_z_index(ci, tile_z_index);
 						rs->canvas_item_set_self_modulate(ci, layer_modulate);
 
-						rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
-						rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
+						rs->canvas_item_set_default_texture_filter(ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+						rs->canvas_item_set_default_texture_repeat(ci, RSE::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 
 						rendering_quadrant->canvas_items.push_back(ci);
 
@@ -444,8 +446,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				Ref<RenderingQuadrant> &rendering_quadrant = kv.value;
 				for (const RID &ci : rendering_quadrant->canvas_items) {
 					rs->canvas_item_set_light_mask(ci, get_light_mask());
-					rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
-					rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
+					rs->canvas_item_set_default_texture_filter(ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+					rs->canvas_item_set_default_texture_repeat(ci, RSE::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 					rs->canvas_item_set_self_modulate(ci, layer_modulate);
 				}
 			}
@@ -1266,18 +1268,18 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 
 			if (face_index_array.size() > 2) {
 				Array face_mesh_array;
-				face_mesh_array.resize(RS::ARRAY_MAX);
-				face_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
-				face_mesh_array[RS::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
-				face_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(face_color_array);
-				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				face_mesh_array.resize(RSE::ARRAY_MAX);
+				face_mesh_array[RSE::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
+				face_mesh_array[RSE::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
+				face_mesh_array[RSE::ARRAY_COLOR] = Vector<Color>(face_color_array);
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RSE::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 
 				Array line_mesh_array;
-				line_mesh_array.resize(RS::ARRAY_MAX);
-				line_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
-				line_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(line_color_array);
+				line_mesh_array.resize(RSE::ARRAY_MAX);
+				line_mesh_array[RSE::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
+				line_mesh_array[RSE::ARRAY_COLOR] = Vector<Color>(line_color_array);
 
-				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RSE::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 			}
 		}
 	}
@@ -2267,7 +2269,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, TileSet::get_class_static()), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
@@ -2308,7 +2310,7 @@ void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
+void TileMapLayer::_update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter) {
 	// Set a default texture filter for the whole tilemap.
 	CanvasItem::_update_self_texture_filter(p_texture_filter);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_FILTER] = true;
@@ -2316,7 +2318,7 @@ void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_tex
 	emit_signal(CoreStringName(changed));
 }
 
-void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
+void TileMapLayer::_update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat) {
 	// Set a default texture repeat for the whole tilemap.
 	CanvasItem::_update_self_texture_repeat(p_texture_repeat);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_REPEAT] = true;
@@ -2382,7 +2384,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 	}
 
 	// Copy the constraints set.
-	RBSet<TerrainConstraint> constraints = p_constraints;
+	RBSet<TerrainConstraint> constraints(p_constraints);
 
 	// Output map.
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
@@ -3565,16 +3567,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 						continue;
 					}
 
-					Vector<Vector2> traversable_outline;
-					traversable_outline.resize(navigation_polygon_outline.size());
-
-					const Vector2 *navigation_polygon_outline_ptr = navigation_polygon_outline.ptr();
-					Vector2 *traversable_outline_ptrw = traversable_outline.ptrw();
-
-					for (int traversable_outline_index = 0; traversable_outline_index < traversable_outline.size(); traversable_outline_index++) {
-						traversable_outline_ptrw[traversable_outline_index] = tile_transform_offset.xform(navigation_polygon_outline_ptr[traversable_outline_index]);
-					}
-
+					Vector<Vector2> traversable_outline = tile_transform_offset.xform(navigation_polygon_outline);
 					p_source_geometry_data->_add_traversable_outline(traversable_outline);
 				}
 			}
@@ -3598,16 +3591,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 						collision_polygon_points = TileData::get_transformed_vertices(collision_polygon_points, flip_h, flip_v, transpose);
 					}
 
-					Vector<Vector2> obstruction_outline;
-					obstruction_outline.resize(collision_polygon_points.size());
-
-					const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
-					Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
-
-					for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {
-						obstruction_outline_ptrw[obstruction_outline_index] = tile_transform_offset.xform(collision_polygon_points_ptr[obstruction_outline_index]);
-					}
-
+					Vector<Vector2> obstruction_outline = tile_transform_offset.xform(collision_polygon_points);
 					p_source_geometry_data->_add_obstruction_outline(obstruction_outline);
 				}
 			}

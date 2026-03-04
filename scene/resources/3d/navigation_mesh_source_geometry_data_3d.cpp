@@ -30,6 +30,8 @@
 
 #include "navigation_mesh_source_geometry_data_3d.h"
 
+#include "core/object/class_db.h"
+
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
 	RWLockWrite write_lock(geometry_rwlock);
 	vertices = p_vertices;

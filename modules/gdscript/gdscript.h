@@ -209,15 +209,11 @@ private:
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
-	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
+	void _save_orphaned_subclasses();
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
-
-	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
-	void _collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
-	void _collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -240,7 +236,7 @@ public:
 
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
-	void clear(GDScript::ClearData *p_clear_data = nullptr);
+	void clear();
 
 	// Cancels all functions of the script that are are waiting to be resumed after using await.
 	void cancel_pending_functions(bool warn);
@@ -269,10 +265,6 @@ public:
 	_FORCE_INLINE_ const GDScriptFunction *get_implicit_initializer() const { return implicit_initializer; }
 	_FORCE_INLINE_ const GDScriptFunction *get_implicit_ready() const { return implicit_ready; }
 	_FORCE_INLINE_ const GDScriptFunction *get_static_initializer() const { return static_initializer; }
-
-	RBSet<GDScript *> get_dependencies();
-	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
-	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
@@ -346,8 +338,6 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
 	virtual const Variant get_rpc_config() const override;
-
-	void unload_static() const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -453,6 +443,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 	void _remove_global(const StringName &p_name);
+
+	String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const;
 
 	friend class GDScriptInstance;
 
@@ -606,7 +598,6 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
-	virtual Script *create_script() const override;
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }

@@ -32,21 +32,24 @@
 
 #include "../grid_map.h"
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 
+class Button;
 class ConfirmationDialog;
+class FilterLineEdit;
+class HSlider;
+class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
 class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
+class SpinBox;
 
-class GridMapEditor : public VBoxContainer {
-	GDCLASS(GridMapEditor, VBoxContainer);
+class GridMapEditor : public EditorDock {
+	GDCLASS(GridMapEditor, EditorDock);
 
 	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
@@ -66,6 +69,7 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	InputAction input_action = INPUT_NONE;
+	bool valid_mb_press = false;
 	Panel *panel = nullptr;
 	MenuButton *options = nullptr;
 	SpinBox *floor = nullptr;
@@ -93,7 +97,7 @@ class GridMapEditor : public VBoxContainer {
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	HSlider *size_slider = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
@@ -228,7 +232,6 @@ class GridMapEditor : public VBoxContainer {
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);
@@ -274,7 +277,6 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
-	Button *panel_button = nullptr;
 
 protected:
 	void _notification(int p_what);

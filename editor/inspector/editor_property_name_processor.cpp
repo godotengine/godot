@@ -50,7 +50,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_sty
 	if (!EditorSettings::get_singleton()) {
 		return STYLE_LOCALIZED;
 	}
-	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	const bool translate = EDITOR_GET("interface/editor/localization/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
 
@@ -255,6 +255,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";
+	capitalize_string_remaps["path3d"] = "Path3D";
 	capitalize_string_remaps["pck"] = "PCK";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.

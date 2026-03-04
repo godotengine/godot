@@ -272,7 +272,7 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 	}
 }
 
-void NavMeshGenerator3D::set_generator_parsers(LocalVector<NavMeshGeometryParser3D *> p_parsers) {
+void NavMeshGenerator3D::set_generator_parsers(const LocalVector<NavMeshGeometryParser3D *> &p_parsers) {
 	RWLockWrite write_lock(generator_parsers_rwlock);
 	generator_parsers = p_parsers;
 }

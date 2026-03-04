@@ -32,6 +32,8 @@
 
 #include "text_server_adv.h"
 
+#include "core/object/class_db.h"
+
 void initialize_text_server_adv_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;

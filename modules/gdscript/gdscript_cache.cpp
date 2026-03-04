@@ -68,6 +68,10 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(clearing, ERR_BUG);
 	ERR_FAIL_COND_V(parser == nullptr && status != EMPTY, ERR_BUG);
 
+	if (p_new_status < status) {
+		return OK;
+	}
+
 	while (result == OK && p_new_status > status) {
 		switch (status) {
 			case EMPTY: {
@@ -255,7 +259,7 @@ void GDScriptCache::remove_parser(const String &p_path) {
 	singleton->parser_map.erase(p_path);
 
 	// Have to copy while iterating, because parser_inverse_dependencies is modified.
-	HashSet<String> ideps = singleton->parser_inverse_dependencies[p_path];
+	HashSet<String> ideps(singleton->parser_inverse_dependencies[p_path]);
 	singleton->parser_inverse_dependencies.erase(p_path);
 	for (String idep_path : ideps) {
 		remove_parser(idep_path);
@@ -369,26 +373,26 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
-				return script;
+				goto finish;
 			}
 			script->set_binary_tokens_source(buffer);
 		} else {
 			r_error = script->load_source_code(remapped_path);
 			if (r_error) {
-				return script;
+				goto finish;
 			}
 		}
 	}
 
 	// Allowing lifting the lock might cause a script to be reloaded multiple times,
 	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
-	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
-	r_error = script->reload(true);
-	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
-	if (r_error) {
-		return script;
+	{
+		uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
+		r_error = script->reload(true);
+		WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	}
 
+finish:
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
 
@@ -423,7 +427,7 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->full_gdscript_cache[p_owner] = script;
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
-	HashSet<String> depends = singleton->dependencies[p_owner];
+	HashSet<String> depends(singleton->dependencies[p_owner]);
 
 	Error err = OK;
 	for (const String &E : depends) {

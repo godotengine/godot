@@ -30,6 +30,7 @@
 
 #include "quick_settings_dialog.h"
 
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
@@ -42,11 +43,13 @@
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {
 #ifndef ANDROID_ENABLED
 	editor_languages.clear();
 #endif
+	editor_styles.clear();
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
@@ -58,13 +61,15 @@ void QuickSettingsDialog::_fetch_setting_values() {
 		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
 
 		for (const PropertyInfo &pi : editor_settings_properties) {
-			if (pi.name == "interface/editor/editor_language") {
+			if (pi.name == "interface/editor/localization/editor_language") {
 #ifndef ANDROID_ENABLED
 				editor_languages = pi.hint_string.split(";", false);
 #endif
+			} else if (pi.name == "interface/theme/style") {
+				editor_styles = pi.hint_string.split(",");
 			} else if (pi.name == "interface/theme/color_preset") {
 				editor_themes = pi.hint_string.split(",");
-			} else if (pi.name == "interface/editor/display_scale") {
+			} else if (pi.name == "interface/editor/appearance/display_scale") {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
@@ -81,7 +86,7 @@ void QuickSettingsDialog::_update_current_values() {
 #ifndef ANDROID_ENABLED
 	// Language options.
 	{
-		const String current_lang = EDITOR_GET("interface/editor/editor_language");
+		const String current_lang = EDITOR_GET("interface/editor/localization/editor_language");
 
 		for (int i = 0; i < editor_languages.size(); i++) {
 			const String &lang_value = editor_languages[i].get_slicec('/', 0);
@@ -93,6 +98,17 @@ void QuickSettingsDialog::_update_current_values() {
 		}
 	}
 #endif
+	// Style options.
+	{
+		const String current_style = EDITOR_GET("interface/theme/style");
+
+		for (int i = 0; i < editor_styles.size(); i++) {
+			const String &style_value = editor_styles[i];
+			if (current_style == style_value) {
+				style_option_button->select(i);
+			}
+		}
+	}
 
 	// Theme options.
 	{
@@ -112,7 +128,7 @@ void QuickSettingsDialog::_update_current_values() {
 
 	// Scale options.
 	{
-		const int current_scale = EDITOR_GET("interface/editor/display_scale");
+		const int current_scale = EDITOR_GET("interface/editor/appearance/display_scale");
 
 		for (int i = 0; i < editor_scales.size(); i++) {
 			const String &scale_value = editor_scales[i];
@@ -175,16 +191,20 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(2.0);
 	container->add_child(p_control);
 }
 
 #ifndef ANDROID_ENABLED
 void QuickSettingsDialog::_language_selected(int p_id) {
 	const String selected_language = language_option_button->get_item_metadata(p_id);
-	_set_setting_value("interface/editor/editor_language", selected_language);
+	_set_setting_value("interface/editor/localization/editor_language", selected_language);
 }
 #endif
+
+void QuickSettingsDialog::_style_selected(int p_id) {
+	const String selected_style = style_option_button->get_item_text(p_id);
+	_set_setting_value("interface/theme/style", selected_style);
+}
 
 void QuickSettingsDialog::_theme_selected(int p_id) {
 	const String selected_theme = theme_option_button->get_item_text(p_id);
@@ -194,7 +214,7 @@ void QuickSettingsDialog::_theme_selected(int p_id) {
 }
 
 void QuickSettingsDialog::_scale_selected(int p_id) {
-	_set_setting_value("interface/editor/display_scale", p_id, true);
+	_set_setting_value("interface/editor/appearance/display_scale", p_id, true);
 }
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
@@ -221,7 +241,7 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 		restart_required_label->show();
 
 		if (!restart_required_button) {
-			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 			if (ed_swap_cancel_ok == 0) {
 				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 			}
@@ -317,6 +337,19 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			_add_setting_control(TTRC("Language"), language_option_button);
 		}
 #endif
+		// Style options.
+		{
+			style_option_button = memnew(OptionButton);
+			style_option_button->set_fit_to_longest_item(false);
+			style_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_style_selected));
+
+			for (int i = 0; i < editor_styles.size(); i++) {
+				const String &style_value = editor_styles[i];
+				style_option_button->add_item(style_value, i);
+			}
+
+			_add_setting_control(TTRC("Style"), style_option_button);
+		}
 
 		// Theme options.
 		{

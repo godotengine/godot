@@ -30,9 +30,12 @@
 
 #include "sprite_frames_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -2121,7 +2124,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	set_name(TTRC("SpriteFrames"));
 	set_icon_name("SpriteFrames");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Open SpriteFrames Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);
@@ -2407,6 +2410,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
+	frame_list->set_theme_type_variation("ItemListSecondary");
 
 	frame_list->set_max_columns(0);
 	frame_list->set_max_text_lines(2);

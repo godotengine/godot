@@ -30,6 +30,10 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifdef TOOLS_ENABLED
 Dictionary VisibleOnScreenNotifier2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();

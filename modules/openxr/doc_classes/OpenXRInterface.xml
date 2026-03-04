@@ -126,6 +126,19 @@
 				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
 			</description>
 		</method>
+		<method name="is_user_presence_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's user presence extension is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="is_user_present" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if system has detected the presence of a user in the XR experience.
+			</description>
+		</method>
 		<method name="set_action_set_active">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
@@ -243,6 +256,13 @@
 		<signal name="session_visible">
 			<description>
 				Informs our OpenXR session is now visible, for example output is sent to the HMD but we don't receive XR input.
+			</description>
+		</signal>
+		<signal name="user_presence_changed">
+			<param index="0" name="is_user_present" type="bool" />
+			<description>
+				Signal emitted when the user presence value changes.
+				[b]Note:[/b] This signal will not be emitted during application startup and application shutdown. Developers should assume user presence is gained on startup and lost on shutdown.
 			</description>
 		</signal>
 	</signals>

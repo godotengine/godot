@@ -34,6 +34,8 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "drivers/png/image_loader_png.h"
 #include "editor/import/3d/resource_importer_scene.h"
@@ -46,7 +48,7 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/packed_scene.h"
-#include "tests/core/config/test_project_settings.h"
+#include "tests/test_utils.h"
 
 #include "modules/gltf/editor/editor_scene_importer_gltf.h"
 #include "modules/gltf/gltf_document.h"

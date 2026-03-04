@@ -1575,43 +1575,43 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	// The class where we put the extensions doesn't matter, so just use "GD".
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
-#define ARRAY_IS_EMPTY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                    \
+#define ARRAY_IS_EMPTY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
 	p_output.append(INDENT1 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
-	p_output.append(INDENT1 "/// </summary>\n");                                                        \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
-	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n");             \
-	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
-	p_output.append(OPEN_BLOCK_L1);                                                                     \
-	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n");                      \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n"); \
+	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_JOIN(m_type)                                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                                \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
-	p_output.append(INDENT1 "/// </summary>\n");                                                                    \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
-	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                            \
-	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
-	p_output.append(OPEN_BLOCK_L1);                                                                                 \
-	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n");                                          \
-	p_output.append(INDENT1 CLOSE_BLOCK);
-
-#define ARRAY_STRINGIFY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                     \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n");         \
-	p_output.append(INDENT1 "/// </summary>\n");                                                         \
+#define ARRAY_JOIN(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
 	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                 \
-	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n");            \
-	p_output.append(OPEN_BLOCK_L1);                                                                      \
-	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n");                                \
+	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_ALL(m_type)  \
+#define ARRAY_STRINGIFY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n"); \
+	p_output.append(INDENT1 CLOSE_BLOCK);
+
+#define ARRAY_ALL(m_type) \
 	ARRAY_IS_EMPTY(m_type) \
-	ARRAY_JOIN(m_type)     \
+	ARRAY_JOIN(m_type) \
 	ARRAY_STRINGIFY(m_type)
 
 	ARRAY_ALL(byte);
@@ -4263,6 +4263,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			const MethodInfo &method_info = E.value;
 
+			if (method_info.name.begins_with("_")) {
+				// Signals starting with an underscore are internal and not meant to be exposed.
+				continue;
+			}
+
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
@@ -4734,12 +4739,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type, m_proxy_name)                                          \
-	{                                                                                     \
+#define INSERT_STRUCT_TYPE(m_type, m_proxy_name) \
+	{ \
 		itype = TypeInterface::create_value_type(String(#m_type), String(#m_proxy_name)); \
-		itype.cs_in_expr = "&%0";                                                         \
-		itype.cs_in_expr_is_unsafe = true;                                                \
-		builtin_types.insert(itype.cname, itype);                                         \
+		itype.cs_in_expr = "&%0"; \
+		itype.cs_in_expr_is_unsafe = true; \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, Vector2)
@@ -4776,21 +4781,21 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	{
 		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
 		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
-#define INSERT_INT_TYPE(m_name, m_int_struct_name)                                             \
-	{                                                                                          \
-		itype = TypeInterface::create_value_type(String(m_name));                              \
-		if (itype.name != "long" && itype.name != "ulong") {                                   \
-			itype.c_in = "%5%0 %1_in = %1;\n";                                                 \
-			itype.c_out = "%5return (%0)(%1);\n";                                              \
-			itype.c_type = "long";                                                             \
-			itype.c_arg_in = "&%s_in";                                                         \
-		} else {                                                                               \
-			itype.c_arg_in = "&%s";                                                            \
-		}                                                                                      \
-		itype.c_type_in = itype.name;                                                          \
-		itype.c_type_out = itype.name;                                                         \
+#define INSERT_INT_TYPE(m_name, m_int_struct_name) \
+	{ \
+		itype = TypeInterface::create_value_type(String(m_name)); \
+		if (itype.name != "long" && itype.name != "ulong") { \
+			itype.c_in = "%5%0 %1_in = %1;\n"; \
+			itype.c_out = "%5return (%0)(%1);\n"; \
+			itype.c_type = "long"; \
+			itype.c_arg_in = "&%s_in"; \
+		} else { \
+			itype.c_arg_in = "&%s"; \
+		} \
+		itype.c_type_in = itype.name; \
+		itype.c_type_out = itype.name; \
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromInt(%1);\n"; \
-		builtin_types.insert(itype.cname, itype);                                              \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
@@ -4962,22 +4967,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.is_span_compatible = true;
 	builtin_types.insert(itype.cname, itype);
 
-#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \
-	{                                                                               \
-		itype = TypeInterface();                                                    \
-		itype.name = #m_name;                                                       \
-		itype.cname = itype.name;                                                   \
-		itype.proxy_name = #m_proxy_t "[]";                                         \
-		itype.cs_type = itype.proxy_name;                                           \
+#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t) \
+	{ \
+		itype = TypeInterface(); \
+		itype.name = #m_name; \
+		itype.cname = itype.name; \
+		itype.proxy_name = #m_proxy_t "[]"; \
+		itype.cs_type = itype.proxy_name; \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
-		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";        \
-		itype.c_arg_in = "&%s_in";                                                  \
-		itype.c_type = #m_managed_type;                                             \
-		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">";                           \
-		itype.c_type_out = itype.proxy_name;                                        \
-		itype.c_type_is_disposable_struct = true;                                   \
-		itype.is_span_compatible = true;                                            \
-		builtin_types.insert(itype.name, itype);                                    \
+		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
+		itype.c_arg_in = "&%s_in"; \
+		itype.c_type = #m_managed_type; \
+		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">"; \
+		itype.c_type_out = itype.proxy_name; \
+		itype.c_type_is_disposable_struct = true; \
+		itype.is_span_compatible = true; \
+		builtin_types.insert(itype.name, itype); \
 	}
 
 #define INSERT_ARRAY(m_type, m_managed_type, m_proxy_t) INSERT_ARRAY_FULL(m_type, m_type, m_managed_type, m_proxy_t)

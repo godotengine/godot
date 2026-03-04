@@ -234,6 +234,10 @@ public:
 	static Array default_array_arg;
 	static bool is_default_array_arg(const Array &p_array);
 
+	// Types added here will be automatically cleaned up on engine shutdown.
+	// Only add types that aren't cleaned up in another way.
+	static LocalVector<GDType **> gdtype_autorelease_pool;
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
@@ -551,13 +555,13 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #ifdef DEBUG_ENABLED
 
@@ -570,24 +574,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)                 \
+#define GDREGISTER_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_class<m_class>();     \
+		::ClassDB::register_class<m_class>(); \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)         \
+#define GDREGISTER_VIRTUAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
-#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_ABSTRACT_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
-#define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_INTERNAL_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-#define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
+#define GDREGISTER_RUNTIME_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 

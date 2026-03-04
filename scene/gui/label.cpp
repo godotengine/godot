@@ -30,8 +30,11 @@
 
 #include "label.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
@@ -705,9 +708,9 @@ void Label::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, xl_text);
-			DisplayServer::get_singleton()->accessibility_update_set_text_align(ae, horizontal_alignment);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
+			AccessibilityServer::get_singleton()->update_set_value(ae, xl_text);
+			AccessibilityServer::get_singleton()->update_set_text_align(ae, horizontal_alignment);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -982,7 +985,13 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_style = theme_cache.normal_style->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
-		return Size2(1, (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? 1 : min_size.height) + min_style;
+		if (!clip && overrun_behavior != TextServer::OVERRUN_NO_TRIMMING && max_lines_visible > 0) {
+			int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
+			min_size.height = MIN(min_size.height, (font->get_height(font_size) + line_spacing) * max_lines_visible);
+		} else if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+			min_size.height = 1;
+		}
+		return Size2(1, min_size.height) + min_style;
 	} else {
 		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			min_size.width = 1;
@@ -1423,7 +1432,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_character_bounds", "pos"), &Label::get_character_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, LabelSettings::get_class_static()), "set_label_settings", "get_label_settings");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");

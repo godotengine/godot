@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -79,7 +80,7 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	return ret;
 }
 
-Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
+Ref<FileAccess> FileAccess::create_temp(ModeFlags p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
 
 	if (!p_prefix.is_empty() && !p_prefix.is_valid_filename()) {
@@ -136,7 +137,7 @@ Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix
 	return ret;
 }
 
-Ref<FileAccess> FileAccess::_create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
+Ref<FileAccess> FileAccess::_create_temp(ModeFlags p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
 	return create_temp(p_mode_flags, p_prefix, p_extension, p_keep, &last_file_open_error);
 }
 
@@ -425,7 +426,7 @@ class CharBuffer {
 	int64_t written = 0;
 
 	bool grow() {
-		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
+		if (vector.resize(Math::next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
 			return false;
 		}
 
@@ -1122,7 +1123,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "file", "attribute_name"), &FileAccess::get_extended_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "file", "attribute_name"), &FileAccess::get_extended_attribute_string);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "_data"), &FileAccess::set_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute_string);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
 

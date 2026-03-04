@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/string/string_name.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"
@@ -123,13 +124,13 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 uint32_t AnimationMixer::_get_libraries_property_usage() const {
-	return PROPERTY_USAGE_DEFAULT;
+	return PROPERTY_USAGE_STORAGE;
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
 		const String path = vformat("libraries/%s", animation_libraries[i].name);
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary", _get_libraries_property_usage()));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, AnimationLibrary::get_class_static(), _get_libraries_property_usage()));
 	}
 }
 
@@ -137,6 +138,7 @@ void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED // `editing` is surrounded by TOOLS_ENABLED so this should also be.
 	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		return;
 	}
 #endif // TOOLS_ENABLED
 	if (root_motion_track.is_empty() && p_property.name == "root_motion_local") {
@@ -280,16 +282,6 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
-}
-
-StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
-	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
-	for (const AnimationLibraryData &lib : animation_libraries) {
-		if (lib.library == p_animation_library) {
-			return lib.name;
-		}
-	}
-	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
@@ -686,6 +678,9 @@ bool AnimationMixer::_update_caches() {
 	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
+			if (!anim->track_is_enabled(i)) {
+				continue;
+			}
 			NodePath path = anim->track_get_path(i);
 			Animation::TypeHash thash = anim->track_get_type_hash(i);
 			Animation::TrackType track_src_type = anim->track_get_type(i);
@@ -750,15 +745,11 @@ bool AnimationMixer::_update_caches() {
 						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								if (is_value) {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
-									}
+									track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 								} else {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
-									}
+									track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
 								}
 							}
 						}
@@ -825,7 +816,7 @@ bool AnimationMixer::_update_caches() {
 						// For non Skeleton3D bone animation.
 						if (has_reset_anim && !has_rest) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								switch (track_src_type) {
 									case Animation::TYPE_POSITION_3D: {
 										track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
@@ -871,7 +862,7 @@ bool AnimationMixer::_update_caches() {
 
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
 							}
 						}
@@ -1005,11 +996,13 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
+		clear_animation_instances();
 		_blend_apply();
 		_blend_post_process();
 		emit_signal(SNAME("mixer_applied"));
-	};
-	clear_animation_instances();
+	} else {
+		clear_animation_instances();
+	}
 }
 
 Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {
@@ -1633,7 +1626,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							}
 						} else {
 							List<int> indices;
-							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
+							a->track_get_key_indices_in_range(i, time, delta, start, end, &indices, looped_flag);
 							for (int &F : indices) {
 								t->use_discrete = true;
 								Variant value = a->track_get_key_value(i, F);
@@ -1666,7 +1659,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 					} else {
 						List<int> indices;
-						a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &indices, looped_flag);
 						for (int &F : indices) {
 							StringName method = a->method_track_get_name(i, F);
 							Vector<Variant> params = a->method_track_get_params(i, F);
@@ -1714,7 +1707,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					} else {
 						List<int> to_play;
-						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &to_play, looped_flag);
 						if (to_play.size()) {
 							idx = to_play.back()->get();
 						}
@@ -1829,7 +1822,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					} else {
 						// Find stuff to play.
 						List<int> to_play;
-						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &to_play, looped_flag);
 						if (to_play.size()) {
 							int idx = to_play.back()->get();
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
@@ -2225,7 +2218,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	make_animation_instance(SceneStringName(RESET), pi);
 	_build_backup_track_cache();
 
-	backup->set_data(track_cache);
+	backup->set_data(AHashMap<Animation::TypeHash, TrackCache *, HashHasher>(track_cache));
 	clear_animation_instances();
 
 	return backup;
