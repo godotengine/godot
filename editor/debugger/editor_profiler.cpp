@@ -257,47 +257,71 @@ void EditorProfiler::_update_plot() {
 			}
 
 			int current = (i * max_profiles_shown / w) + left_border;
+			int current_next = CLAMP(((i+1) * max_profiles_shown / w) + left_border, 0, total_metrics-1);
 
 			for (const StringName &E : plot_sigs) {
-				const Metric &m = _get_frame_metric(current);
+				float peak_value = 0;
+				float min_value = FLT_MAX;
+				int current_inner = current;
 
-				float value = 0;
-
-				HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
-				if (F) {
-					value = F->value->total_time;
-				}
-
-				HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
-				if (G) {
-					if (use_self) {
-						value = G->value->self;
-					} else {
-						value = G->value->total;
+				do {
+					const Metric &m = _get_frame_metric(current_inner);
+					float frame_value = 0;
+					
+					HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
+					if (F) {
+						frame_value = F->value->total_time;
 					}
-				}
 
-				int plot_pos = CLAMP(int(value * h / highest), 0, h - 1);
+					HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
+					if (G) {
+						if (use_self) {
+							frame_value = G->value->self;
+						} else {
+							frame_value = G->value->total;
+						}
+					}
+					
+					peak_value = MAX(peak_value, frame_value);
+					min_value = MIN(min_value, frame_value);
+					current_inner++;
+				} while (current_inner < current_next);
 
-				int prev_plot = plot_pos;
+				int peak_pos = CLAMP(int(peak_value * h / highest), 0, h - 1);
+				int min_pos = CLAMP(int(min_value * h / highest), 0, h - 1);
+
+				int prev_plot = peak_pos;
 				HashMap<StringName, int>::Iterator H = prev_plots.find(E);
 				if (H) {
 					prev_plot = H->value;
-					H->value = plot_pos;
+					H->value = peak_pos;
 				} else {
-					prev_plots[E] = plot_pos;
+					prev_plots[E] = peak_pos;
 				}
 
-				plot_pos = h - plot_pos - 1;
+				// flip Y axis
+				peak_pos = h - peak_pos - 1;
 				prev_plot = h - prev_plot - 1;
-
-				if (prev_plot > plot_pos) {
-					SWAP(prev_plot, plot_pos);
-				}
+				min_pos = h - min_pos - 1;
 
 				Color col = _get_color_from_signature(E);
 
-				for (int j = prev_plot; j <= plot_pos; j++) {
+				// line 1: connect from previous column to the min
+				int line1_start = MIN(prev_plot, min_pos);
+				int line1_end = MAX(prev_plot, min_pos);
+
+				for (int j = line1_start; j <= line1_end; j++) {
+					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
+					column[j * 4 + 1] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
+					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
+					column[j * 4 + 3] += 1;
+				}
+
+				// line 2: connect from min to the peak
+				int line2_start = MIN(min_pos, peak_pos);
+				int line2_end = MAX(min_pos, peak_pos);
+
+				for (int j = line2_start; j <= line2_end; j++) {
 					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
 					column[j * 4 + 1] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
 					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
