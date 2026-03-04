@@ -196,14 +196,14 @@ void TexturePreview::_update_metadata_label_text() {
 
 	const Vector2i resolution = texture->get_size();
 
-	// Determine imported file size on disk. Uses the imported resource path (e.g., .ctex) rather than the source file, as this reflects the size that ends up in the exported PCK.
-	String disk_size_text;
+	// Determine export file size. Uses the imported resource path (e.g., .ctex) rather than the source file, as this reflects the size that ends up in the exported PCK.
+	String export_size_text;
 	const String res_path = texture->get_path();
 	if (!res_path.is_empty() && !texture->is_built_in()) {
 		const String imported_path = ResourceLoader::import_remap(res_path);
 		if (!imported_path.is_empty() && FileAccess::exists(imported_path)) {
-			const uint64_t disk_size = FileAccess::get_size(imported_path);
-			disk_size_text = "\n" + vformat(TTR("Disk Size: %s"), String::humanize_size(disk_size));
+			const uint64_t export_size = FileAccess::get_size(imported_path);
+			export_size_text = "\n" + vformat(TTR("Export Size: %s"), String::humanize_size(export_size));
 		}
 	}
 
@@ -231,7 +231,7 @@ void TexturePreview::_update_metadata_label_text() {
 							format_name,
 							mipmaps,
 							String::humanize_size(memory)) +
-					disk_size_text);
+					export_size_text);
 		} else {
 			// "No Mipmaps" is easier to distinguish than "0 Mipmaps",
 			// especially since 0, 6, and 8 look quite close with the default code font.
@@ -241,7 +241,7 @@ void TexturePreview::_update_metadata_label_text() {
 							texture->get_height(),
 							format_name,
 							String::humanize_size(memory)) +
-					disk_size_text);
+					export_size_text);
 		}
 	} else {
 		metadata_label->set_text(
@@ -249,7 +249,7 @@ void TexturePreview::_update_metadata_label_text() {
 						texture->get_width(),
 						texture->get_height(),
 						format_name) +
-				disk_size_text);
+				export_size_text);
 	}
 }
 
