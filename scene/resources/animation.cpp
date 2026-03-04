@@ -1073,7 +1073,7 @@ void Animation::_track_update_hash(int p_track) {
 	callable_mp(this, &Animation::ensure_hashes).call_deferred();
 }
 
-void Animation::unref_or_erase(Track *p_track, const TypeHash thash) {
+void Animation::unref_or_erase(Track *p_track, const TypeHash p_thash) {
 	if (thash == 0) {
 		return;
 	}
