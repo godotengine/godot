@@ -57,16 +57,16 @@ void RendererCameraAttributes::camera_attributes_free(RID p_rid) {
 	camera_attributes_owner.free(p_rid);
 }
 
-void RendererCameraAttributes::camera_attributes_set_motion_blur_framerate_mode(RenderingServer::MotionBlurFramerateMode p_mode, int p_reference_framerate) {
+void RendererCameraAttributes::camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode p_mode, int p_reference_framerate) {
 	motion_blur_framerate_mode = p_mode;
 	motion_blur_reference_framerate = p_reference_framerate;
 }
 
-void RendererCameraAttributes::camera_attributes_set_motion_blur_quality(RenderingServer::MotionBlurQuality p_quality) {
+void RendererCameraAttributes::camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) {
 	motion_blur_quality = p_quality;
 }
 
-void RendererCameraAttributes::camera_attributes_set_motion_blur_tile_size(RenderingServer::MotionBlurTileSize p_tile_size) {
+void RendererCameraAttributes::camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize p_tile_size) {
 	motion_blur_tile_size = p_tile_size;
 }
 

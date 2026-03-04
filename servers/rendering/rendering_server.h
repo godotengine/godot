@@ -694,38 +694,12 @@ public:
 
 	virtual RID camera_attributes_create() = 0;
 
-	enum MotionBlurQuality {
-		MOTION_BLUR_QUALITY_LOW,
-		MOTION_BLUR_QUALITY_MEDIUM,
-		MOTION_BLUR_QUALITY_HIGH,
-	};
-
-	enum MotionBlurTileSize {
-		MOTION_BLUR_TILE_SIZE_SMALL,
-		MOTION_BLUR_TILE_SIZE_MEDIUM,
-		MOTION_BLUR_TILE_SIZE_LARGE,
-		MOTION_BLUR_TILE_SIZE_EXTRA_LARGE,
-	};
-
-	enum MotionBlurFramerateMode {
-		MOTION_BLUR_FRAMERATE_MODE_NATIVE,
-		MOTION_BLUR_FRAMERATE_MODE_CAPPED,
-		MOTION_BLUR_FRAMERATE_MODE_FIXED,
-	};
-
 	virtual void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, bool p_clamp_velocities_to_tile, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold) = 0;
 
-	virtual void camera_attributes_set_motion_blur_framerate_mode(MotionBlurFramerateMode p_mode, int p_reference_framerate) = 0;
+	virtual void camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode p_mode, int p_reference_framerate) = 0;
 	virtual void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) = 0;
-	virtual void camera_attributes_set_motion_blur_quality(MotionBlurQuality p_quality) = 0;
-	virtual void camera_attributes_set_motion_blur_tile_size(MotionBlurTileSize p_tile_size) = 0;
-
-	enum DOFBlurQuality {
-		DOF_BLUR_QUALITY_VERY_LOW,
-		DOF_BLUR_QUALITY_LOW,
-		DOF_BLUR_QUALITY_MEDIUM,
-		DOF_BLUR_QUALITY_HIGH,
-	};
+	virtual void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) = 0;
+	virtual void camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize p_tile_size) = 0;
 
 	virtual void camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 	virtual void camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape p_shape) = 0;
@@ -1166,6 +1140,9 @@ VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIRayCount, RenderingServer::Environmen
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIFramesToUpdateLight, RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIYScale, RenderingServer::EnvironmentSDFGIYScale);
 VARIANT_ENUM_CAST_EXT(RSE::SubSurfaceScatteringQuality, RenderingServer::SubSurfaceScatteringQuality);
+VARIANT_ENUM_CAST_EXT(RSE::MotionBlurQuality, RenderingServer::MotionBlurQuality);
+VARIANT_ENUM_CAST_EXT(RSE::MotionBlurTileSize, RenderingServer::MotionBlurTileSize);
+VARIANT_ENUM_CAST_EXT(RSE::MotionBlurFramerateMode, RenderingServer::MotionBlurFramerateMode);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBlurQuality, RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBokehShape, RenderingServer::DOFBokehShape);
 VARIANT_ENUM_CAST_EXT(RSE::ShadowQuality, RenderingServer::ShadowQuality);

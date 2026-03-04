@@ -1737,10 +1737,10 @@ void RendererSceneRenderRD::init() {
 		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_octmap_array());
 	}
 
-	RSG::camera_attributes->camera_attributes_set_motion_blur_framerate_mode(RS::MotionBlurFramerateMode(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_framerate_mode"))), int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_reference_framerate")));
+	RSG::camera_attributes->camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_framerate_mode"))), int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_reference_framerate")));
 	RSG::camera_attributes->camera_attributes_set_motion_blur_show_in_editor(bool(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_show_in_editor")));
-	RSG::camera_attributes->camera_attributes_set_motion_blur_quality(RS::MotionBlurQuality(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_quality"))));
-	RSG::camera_attributes->camera_attributes_set_motion_blur_tile_size(RS::MotionBlurTileSize(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_tile_size"))));
+	RSG::camera_attributes->camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_quality"))));
+	RSG::camera_attributes->camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_tile_size"))));
 
 	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
 	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
