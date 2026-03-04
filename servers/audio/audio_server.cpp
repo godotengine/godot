@@ -59,6 +59,16 @@ void AudioDriver::set_singleton() {
 	singleton = this;
 }
 
+#ifdef DEBUG_ENABLED
+void AudioDriver::start_counting_ticks() {
+	prof_ticks.set(OS::get_singleton()->get_ticks_usec());
+}
+
+void AudioDriver::stop_counting_ticks() {
+	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get());
+}
+#endif // DEBUG_ENABLED
+
 void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time) {
 	if (p_update_mix_time) {
 		update_mix_time(p_frames);

@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"

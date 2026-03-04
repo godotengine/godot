@@ -55,9 +55,10 @@
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
@@ -2868,7 +2869,7 @@ void DisplayServerMacOS::update_screen_parameters() {
 	}
 
 #ifdef TOOLS_ENABLED
-	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+	for (KeyValue<ProcessID, EmbeddedProcessData> &E : embedded_processes) {
 		E.value.process->display_state_changed();
 	}
 #endif
@@ -3039,7 +3040,7 @@ bool DisplayServerMacOS::get_swap_cancel_ok() {
 	return false;
 }
 
-void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServerMacOS::enable_for_stealing_focus(ProcessID pid) {
 }
 
 #define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
@@ -3065,7 +3066,7 @@ void DisplayServerMacOS::_window_update_display_id(WindowData *p_wd) {
 
 #ifdef TOOLS_ENABLED
 	// Notify any embedded processes of the new display ID, so that they can potentially update their vsync.
-	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+	for (KeyValue<ProcessID, EmbeddedProcessData> &E : embedded_processes) {
 		if (E.value.wd == p_wd) {
 			E.value.process->display_state_changed();
 		}
@@ -3081,7 +3082,7 @@ Error DisplayServerMacOS::embed_process_update(DisplayServerEnums::WindowID p_wi
 	WindowData *wd;
 	GET_OR_FAIL_V(wd, windows, p_window, FAILED);
 
-	OS::ProcessID p_pid = p_process->get_embedded_pid();
+	ProcessID p_pid = p_process->get_embedded_pid();
 
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
@@ -3118,11 +3119,11 @@ Error DisplayServerMacOS::embed_process_update(DisplayServerEnums::WindowID p_wi
 	return OK;
 }
 
-Error DisplayServerMacOS::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerMacOS::request_close_embedded_process(ProcessID p_pid) {
 	return OK;
 }
 
-Error DisplayServerMacOS::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerMacOS::remove_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	EmbeddedProcessData *ed;

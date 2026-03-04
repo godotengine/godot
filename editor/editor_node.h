@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
@@ -734,9 +734,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
-	void init_plugins();
+	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void init_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
@@ -952,8 +953,8 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
-	void stop_child_process(OS::ProcessID p_pid);
+	ProcessID has_child_process(ProcessID p_pid) const;
+	void stop_child_process(ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	void update_preview_themes(int p_mode);

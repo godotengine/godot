@@ -30,12 +30,15 @@
 
 #include "script_language.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/templates/sort_array.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];

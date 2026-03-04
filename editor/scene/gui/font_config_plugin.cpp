@@ -30,7 +30,9 @@
 
 #include "font_config_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/settings/editor_settings.h"

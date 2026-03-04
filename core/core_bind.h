@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/debugger/engine_profiler.h"
+#include "core/io/logger.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"

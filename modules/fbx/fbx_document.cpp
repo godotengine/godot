@@ -30,6 +30,7 @@
 
 #include "fbx_document.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"

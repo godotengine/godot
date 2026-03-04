@@ -34,6 +34,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 

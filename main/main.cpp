@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/crypto/crypto.h"
@@ -50,6 +51,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/time.h"
 #include "core/profiling/profiling.h"
 #include "core/register_core_types.h"
@@ -216,7 +218,7 @@ static String locale;
 static String log_file;
 static bool show_help = false;
 static uint64_t quit_after = 0;
-static OS::ProcessID editor_pid = 0;
+static ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
 static bool recovery_mode = false;

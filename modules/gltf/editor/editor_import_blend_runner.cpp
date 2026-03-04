@@ -31,7 +31,8 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/io/http_client.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
@@ -178,6 +179,10 @@ Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool
 		err = OS::get_singleton()->create_process(blender_path, args, &blender_pid);
 	}
 	return err;
+}
+
+bool EditorImportBlendRunner::is_running() {
+	return blender_pid != 0 && OS::get_singleton()->is_process_running(blender_pid);
 }
 
 Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {

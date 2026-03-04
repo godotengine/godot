@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/editor_string_names.h"
@@ -190,7 +191,7 @@ int EmbeddedProcess::get_embedded_pid() const {
 	return current_process_id;
 }
 
-void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcess::embed_process(ProcessID p_pid) {
 	if (!window) {
 		return;
 	}
@@ -395,7 +396,7 @@ void EmbeddedProcess::_check_mouse_over() {
 }
 
 void EmbeddedProcess::_check_focused_process_id() {
-	OS::ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
+	ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
 	if (process_id != focused_process_id) {
 		focused_process_id = process_id;
 		if (focused_process_id == current_process_id) {

@@ -30,7 +30,9 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
@@ -1465,11 +1467,10 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	if (selected == p_node) {
 		return;
 	}
+	selected = p_node;
 
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
-
 	if (item) {
-		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1498,11 +1499,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 				tree->ensure_cursor_is_visible();
 			}
 		}
-	} else {
-		if (!p_node) {
-			selected = nullptr;
-		}
-		selected = p_node;
 	}
 
 	if (p_emit_selected) {

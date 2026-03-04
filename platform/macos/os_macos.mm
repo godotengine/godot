@@ -31,17 +31,20 @@
 #import "os_macos.h"
 
 #import "dir_access_macos.h"
-#ifdef TOOLS_ENABLED
-#import "display_server_macos_embedded.h"
-#endif
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 
+#ifdef TOOLS_ENABLED
+#import "display_server_macos_embedded.h"
+#endif
+
+#include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"

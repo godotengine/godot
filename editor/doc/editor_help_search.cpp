@@ -30,7 +30,9 @@
 
 #include "editor_help_search.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

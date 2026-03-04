@@ -32,10 +32,12 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
@@ -919,9 +921,21 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APPLICATION_RESUMED:
-		case NOTIFICATION_APPLICATION_PAUSED:
+		case NOTIFICATION_APPLICATION_PAUSED: {
+			// Pass these to nodes, since they are mirrored.
+			get_root()->propagate_notification(p_notification);
+		} break;
+
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (Input::get_singleton()) {
+				Input::get_singleton()->application_focused = p_notification == NOTIFICATION_APPLICATION_FOCUS_IN;
+
+				if (Input::get_singleton()->_should_ignore_joypad_events()) {
+					Input::get_singleton()->release_pressed_events();
+				}
+			}
+
 			// Pass these to nodes, since they are mirrored.
 			get_root()->propagate_notification(p_notification);
 		} break;

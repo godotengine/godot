@@ -30,6 +30,7 @@
 
 #include "editor_debugger_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/debugger/script_editor_debugger.h"
 

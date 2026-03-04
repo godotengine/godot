@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"

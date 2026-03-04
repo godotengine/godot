@@ -32,6 +32,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 
 #include "audio/audio_effect.h"
 #include "audio/audio_server.h"

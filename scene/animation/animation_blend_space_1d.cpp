@@ -32,6 +32,7 @@
 
 #include "animation_blend_tree.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {

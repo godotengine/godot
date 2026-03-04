@@ -30,6 +30,7 @@
 
 #include "gradle_export_util.h"
 
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "modules/regex/regex.h"
 

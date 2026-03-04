@@ -37,6 +37,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 

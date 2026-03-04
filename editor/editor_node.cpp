@@ -30,6 +30,7 @@
 
 #include "editor_node.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
@@ -38,6 +39,7 @@
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -4478,7 +4480,8 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	// When scene gets closed no node is edited anymore, so make sure the editors are notified before nodes are freed.
 	hide_unused_editors(SceneTreeDock::get_singleton());
-	SceneTreeDock::get_singleton()->clear_previous_node_selection();
+	editor_selection->clear();
+	editor_selection->update(false);
 
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
@@ -5581,11 +5584,11 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
-OS::ProcessID EditorNode::has_child_process(OS::ProcessID p_pid) const {
+ProcessID EditorNode::has_child_process(ProcessID p_pid) const {
 	return project_run_bar->has_child_process(p_pid);
 }
 
-void EditorNode::stop_child_process(OS::ProcessID p_pid) {
+void EditorNode::stop_child_process(ProcessID p_pid) {
 	project_run_bar->stop_child_process(p_pid);
 }
 
@@ -9191,7 +9194,7 @@ EditorNode::EditorNode() {
 	}
 
 	remove_android_build_template = memnew(ConfirmationDialog);
-	remove_android_build_template->set_ok_button_text(TTR("Show in File Manager"));
+	remove_android_build_template->set_ok_button_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
 	remove_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_android_explore_build_templates));
 	gui_base->add_child(remove_android_build_template);
 

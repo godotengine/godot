@@ -38,15 +38,18 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/config/engine.h"
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
 

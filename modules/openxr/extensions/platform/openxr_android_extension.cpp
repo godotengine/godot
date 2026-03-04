@@ -36,6 +36,8 @@
 #include "os_android.h"
 #include "thread_jandroid.h"
 
+#include "core/os/os.h"
+
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
