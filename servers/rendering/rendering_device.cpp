@@ -2199,6 +2199,10 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
+		// Rasterization rate map is not a real texture and it's readonly from shaders.
+		// Its usage is managed by the Metal rendering driver, so it doesn't need any usage bits.
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return 0;
 		default:
 			return 0;
 	}
@@ -3012,6 +3016,8 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 		}
 	}
 
+	// Note: We can ignore the case when the method is VRS_METHOD_RASTERIZATION_RATE_MAP, as
+	// the fragment_density_map_attachment_reference parameter is ignored by the Metal rendering driver
 	RDD::AttachmentReference fragment_density_map_attachment_reference;
 	if (p_vrs_method == VRS_METHOD_FRAGMENT_DENSITY_MAP && p_vrs_attachment >= 0) {
 		fragment_density_map_attachment_reference.attachment = p_vrs_attachment;
@@ -3040,6 +3046,8 @@ RDG::ResourceUsage RenderingDevice::_vrs_usage_from_method(VRSMethod p_method) {
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return RDG::RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ;
 		default:
 			return RDG::RESOURCE_USAGE_NONE;
 	}
@@ -3051,6 +3059,10 @@ RDD::PipelineStageBits RenderingDevice::_vrs_stages_from_method(VRSMethod p_meth
 			return RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT;
+		// Rasterization rate map is not a real texture and it's readonly from shaders.
+		// Its usage is managed by the Metal rendering driver, so it doesn't need any pipeline stage bits.
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return RDD::PipelineStageBits(0);
 		default:
 			return RDD::PipelineStageBits(0);
 	}
@@ -3062,6 +3074,10 @@ RDD::TextureLayout RenderingDevice::_vrs_layout_from_method(VRSMethod p_method) 
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		// Rasterization rate map is not a real texture and it's readonly from shaders.
+		// Its usage is managed by the Metal rendering driver, so it doesn't need a layout.
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		default:
 			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 	}
@@ -3074,6 +3090,8 @@ void RenderingDevice::_vrs_detect_method() {
 		vrs_method = VRS_METHOD_FRAGMENT_SHADING_RATE;
 	} else if (fdm_capabilities.attachment_supported) {
 		vrs_method = VRS_METHOD_FRAGMENT_DENSITY_MAP;
+	} else if (driver->has_feature(SUPPORTS_RASTERIZATION_RATE_MAP)) {
+		vrs_method = VRS_METHOD_RASTERIZATION_RATE_MAP;
 	}
 
 	switch (vrs_method) {
@@ -3084,6 +3102,12 @@ void RenderingDevice::_vrs_detect_method() {
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			vrs_format = DATA_FORMAT_R8G8_UNORM;
 			vrs_texel_size = Vector2i(32, 32).clamp(fdm_capabilities.min_texel_size, fdm_capabilities.max_texel_size);
+			break;
+		// Rasterization rate map is not a real texture. It's a opaque object that contains screen space distortion metadata.
+		// For the sake of consistency with other APIs, we wrap it as a texture.
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			vrs_format = DATA_FORMAT_R8_UINT;
+			vrs_texel_size = Vector2i(16, 16);
 			break;
 		default:
 			break;
@@ -3284,6 +3308,7 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 	attachments.resize(p_texture_attachments.size());
 	Size2i size;
 	bool size_set = false;
+	Size2i vrs_overridden_size;
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		AttachmentFormat af;
 		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
@@ -3298,6 +3323,12 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 			if (i != 0 && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
 				// Detect if the texture is the fragment density map and it's not the first attachment.
 				vrs_attachment = i;
+			}
+
+			// Rasterization map enables a bigger logical viewport than the physical texture.
+			if (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && vrs_method == VRS_METHOD_RASTERIZATION_RATE_MAP) {
+				vrs_overridden_size.width = texture->width;
+				vrs_overridden_size.height = texture->height;
 			}
 
 			if (!size_set) {
@@ -3326,6 +3357,10 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 	}
 
 	ERR_FAIL_COND_V_MSG(!size_set, RID(), "All attachments unused.");
+
+	if (vrs_overridden_size != Size2i()) {
+		size = vrs_overridden_size;
+	}
 
 	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count, vrs_attachment);
 	if (format_id == INVALID_ID) {
@@ -5622,7 +5657,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 	_check_transfer_worker_buffer(buffer);
 }
 
-void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect) {
+void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2i &p_rect) {
 	ERR_FAIL_COND(!draw_list.active);
 
 	if (p_rect.get_area() == 0) {
@@ -8308,6 +8343,8 @@ bool RenderingDevice::has_feature(const Features p_feature) const {
 		case SUPPORTS_ATTACHMENT_VRS: {
 			const RDD::FragmentShadingRateCapabilities &fsr_capabilities = driver->get_fragment_shading_rate_capabilities();
 			const RDD::FragmentDensityMapCapabilities &fdm_capabilities = driver->get_fragment_density_map_capabilities();
+			// The VRS_METHOD_RASTERIZATION_RATE_MAP method is managed by the Metal rendering driver, so it doesn't
+			// report the SUPPORTS_ATTACHMENT_VRS feature, to avoid VRS texture creation logic.
 			return fsr_capabilities.attachment_supported || fdm_capabilities.attachment_supported;
 		}
 		default:
@@ -9019,6 +9056,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_RAY_QUERY);
 	BIND_ENUM_CONSTANT(SUPPORTS_RAYTRACING_PIPELINE);
 	BIND_ENUM_CONSTANT(SUPPORTS_HDR_OUTPUT);
+	BIND_ENUM_CONSTANT(SUPPORTS_RASTERIZATION_RATE_MAP);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);

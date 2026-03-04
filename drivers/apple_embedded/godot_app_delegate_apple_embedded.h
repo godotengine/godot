@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_app_delegate_apple_embedded.h                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,14 @@
 
 #pragma once
 
-#import "godot_renderer.h"
 #import <UIKit/UIKit.h>
 
-@interface GDTViewRenderer : GDTRenderer
+typedef NSObject<UIApplicationDelegate, UIWindowSceneDelegate> GDTAppDelegateServiceProtocol;
 
-- (void)renderOnView:(UIView *)view;
+@interface GDTAppDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+
+@property(class, readonly, strong) NSArray<GDTAppDelegateServiceProtocol *> *services;
+
++ (void)addService:(GDTAppDelegateServiceProtocol *)service;
 
 @end

@@ -2743,6 +2743,9 @@
 		<constant name="SUPPORTS_HDR_OUTPUT" value="13" enum="Features">
 			Support for high dynamic range (HDR) output.
 		</constant>
+		<constant name="SUPPORTS_RASTERIZATION_RATE_MAP" value="14" enum="Features">
+			Support for rasterization rate maps on Apple platforms. This allows for foveated rendering, which is used by the visionOS XR module.
+		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 			Maximum number of uniform sets that can be bound at a given time.
 		</constant>

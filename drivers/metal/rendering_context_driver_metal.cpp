@@ -42,6 +42,11 @@
 
 #include <objc/message.h>
 
+#if defined(VISIONOS_ENABLED)
+#include "modules/visionos_xr/visionos_xr_interface.h"
+#include "platform/visionos/render_mode_visionos.h"
+#endif
+
 #pragma mark - Logging
 
 os_log_t LOG_DRIVER;
@@ -64,7 +69,17 @@ Error RenderingContextDriverMetal::initialize() {
 		capture_available = true;
 	}
 
+#if TARGET_OS_VISION
+	RenderModeVisionOS::Mode render_mode = RenderModeVisionOS::get_mode();
+	if (render_mode == RenderModeVisionOS::COMPOSITOR_SERVICES) {
+		metal_device = (MTL::Device *)RenderModeVisionOS::get_compositor_services_device();
+	} else if (render_mode == RenderModeVisionOS::WINDOWED) {
+		metal_device = MTL::CreateSystemDefaultDevice();
+	}
+#else
 	metal_device = MTL::CreateSystemDefaultDevice();
+#endif
+
 #if TARGET_OS_OSX
 	if (__builtin_available(macOS 13.3, *)) {
 		metal_device->setShouldMaximizeConcurrentCompilation(true);
@@ -364,14 +379,69 @@ public:
 	}
 };
 
+#if TARGET_OS_VISION
+class SurfaceCompositorServices : public RenderingContextDriverMetal::Surface {
+	// Return a dummy framebuffer so present() is called on it, which relays the call to VisionOSXRInterface
+	MDFrameBuffer dummy_framebuffer;
+
+public:
+	SurfaceCompositorServices(MTL::Device *p_device) :
+			Surface(p_device) {
+		dummy_framebuffer.set_texture_count(1);
+	}
+
+	~SurfaceCompositorServices() override {
+	}
+
+	MTL::PixelFormat get_pixel_format() const override final {
+		// Hardcoded because it's configured in platform/visionos/app_visionos.swift
+		return MTL::PixelFormatRGBA16Float;
+	}
+
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
+		// Surface cannot be resized in Compositor Services mode
+		return OK;
+	}
+
+	RDD::FramebufferID acquire_next_frame_buffer() override final {
+		return RDD::FramebufferID(&dummy_framebuffer);
+	}
+
+	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override final {
+		Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
+		ERR_FAIL_COND_MSG(!visionos_xr_interface.is_valid(), "visionOS VR interface not found or invalid");
+		visionos_xr_interface->encode_present(p_cmd_buffer);
+	}
+
+	MTL::Drawable *next_drawable() override final {
+		return nullptr;
+	}
+
+	API_AVAILABLE(macos(26.0), ios(26.0))
+	MTL::ResidencySet *get_residency_set() const override final {
+		return nullptr;
+	}
+};
+#endif
+
 RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-	Surface *surface;
+
+	Surface *surface = nullptr;
+#if TARGET_OS_VISION
+	RenderModeVisionOS::Mode render_mode = RenderModeVisionOS::get_mode();
+	if (render_mode == RenderModeVisionOS::COMPOSITOR_SERVICES) {
+		surface = memnew(SurfaceCompositorServices(metal_device));
+	} else if (render_mode == RenderModeVisionOS::WINDOWED) {
+		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
+	}
+#else
 	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_OFF_SCREEN"); v == U"1") {
 		surface = memnew(SurfaceOffscreen(wpd->layer, metal_device));
 	} else {
 		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
 	}
+#endif
 
 	return SurfaceID(surface);
 }

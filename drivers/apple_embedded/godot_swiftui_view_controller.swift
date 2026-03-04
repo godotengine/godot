@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_swiftui_view_controller.swift                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+import SwiftUI
+import UIKit
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+struct GodotSwiftUIViewController: UIViewControllerRepresentable {
 
-@interface GDTViewRenderer : GDTRenderer
+	func makeUIViewController(context: Context) -> GDTViewController {
+		let viewController = GDTViewController()
+		GDTAppDelegateService.viewController = viewController
+		return viewController
+	}
 
-- (void)renderOnView:(UIView *)view;
+	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
+		// NOOP
+	}
 
-@end
+}
+
+struct GodotWindowScene: Scene {
+	var body: some Scene {
+		WindowGroup {
+			GodotSwiftUIViewController()
+				.ignoresSafeArea()
+		}
+	}
+}

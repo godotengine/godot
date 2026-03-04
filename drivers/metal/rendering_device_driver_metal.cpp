@@ -61,6 +61,9 @@
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"
 
+#include <objc/message.h>
+#include <objc/objc.h>
+#include <objc/runtime.h>
 #include <os/log.h>
 #include <os/signpost.h>
 #include <Metal/Metal.hpp>
@@ -69,6 +72,17 @@
 #ifndef MTLGPUAddress
 typedef uint64_t MTLGPUAddress;
 #endif
+
+static bool class_conforms_to_protocol_recursive(Class p_class, Protocol *p_protocol) {
+	Class current = p_class;
+	while (current != nil) {
+		if (class_conformsToProtocol(current, p_protocol)) {
+			return true;
+		}
+		current = class_getSuperclass(current);
+	}
+	return false;
+}
 
 #pragma mark - Logging
 
@@ -530,6 +544,12 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 }
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
+	// p_texture can contain a wrapped MTLRasterizationRateMap as returned by VisionOSXRInterface
+	// so we must check it responds to the allocatedSize selector first
+	Class cls = object_getClass((id)(void *)p_texture.id);
+	if (!class_respondsToSelector(cls, sel_registerName("allocatedSize"))) {
+		return 0;
+	}
 	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
 	return NS::Object::sendMessageSafe<NS::UInteger>(obj, _MTL_PRIVATE_SEL(allocatedSize));
 }
@@ -1007,17 +1027,28 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 
 	Vector<MTL::Texture *> textures;
 	textures.resize(p_attachments.size());
+	MTL::RasterizationRateMap *rasterization_rate_map = nullptr;
 
 	for (uint32_t i = 0; i < p_attachments.size(); i += 1) {
 		MDAttachment const &a = pass->attachments[i];
-		MTL::Texture *tex = reinterpret_cast<MTL::Texture *>(p_attachments[i].id);
-		if (tex == nullptr) {
+		id native_attachment = (id)(void *)p_attachments[i].id;
+		Class cls = object_getClass(native_attachment);
+
+		MTL::Texture *tex = nullptr;
+		bool attachment_is_rasterization_rate_map = false;
+		if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLRasterizationRateMap"))) {
+			rasterization_rate_map = reinterpret_cast<MTL::RasterizationRateMap *>(p_attachments[i].id);
+			attachment_is_rasterization_rate_map = true;
+		} else if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLTexture"))) {
+			tex = reinterpret_cast<MTL::Texture *>(p_attachments[i].id);
+		}
+		if (tex == nullptr && !attachment_is_rasterization_rate_map) {
 #if DEV_ENABLED
 			WARN_PRINT("Invalid texture for attachment " + itos(i));
 #endif
 		}
 		if (a.samples > 1) {
-			if (tex->sampleCount() != a.samples) {
+			if (tex != nullptr && tex->sampleCount() != a.samples) {
 #if DEV_ENABLED
 				WARN_PRINT("Mismatched sample count for attachment " + itos(i) + "; expected " + itos(a.samples) + ", got " + itos(tex->sampleCount()));
 #endif
@@ -1027,6 +1058,7 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 	}
 
 	MDFrameBuffer *fb = memnew(MDFrameBuffer(textures, Size2i(p_width, p_height)));
+	fb->rasterization_rate_map = rasterization_rate_map;
 	return FramebufferID(fb);
 }
 
@@ -2674,6 +2706,14 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_RASTERIZATION_RATE_MAP: {
+			bool is_supported = device->supportsRasterizationRateMap(1);
+#if defined(VISIONOS_ENABLED)
+			// We need to support 2 layers on visionOS. Using more than 2 layers shouldn't be needed.
+			is_supported &= device->supportsRasterizationRateMap(2);
+#endif
+			return is_supported;
+		}
 		default:
 			return false;
 	}

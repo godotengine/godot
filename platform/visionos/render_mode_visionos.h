@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  render_mode_visionos.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,16 @@
 
 #pragma once
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+class RenderModeVisionOS {
+public:
+	enum Mode {
+		WINDOWED = 0,
+		COMPOSITOR_SERVICES = 1
+	};
 
-@interface GDTViewRenderer : GDTRenderer
+	static Mode get_mode();
+	static void *get_compositor_services_device();
 
-- (void)renderOnView:(UIView *)view;
-
-@end
+private:
+	RenderModeVisionOS() = delete;
+};

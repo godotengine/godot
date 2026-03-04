@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  bridging_header_ios.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,4 @@
 
 #pragma once
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
-
-@interface GDTViewRenderer : GDTRenderer
-
-- (void)renderOnView:(UIView *)view;
-
-@end
+#import "godot_app_delegate_ios.h"

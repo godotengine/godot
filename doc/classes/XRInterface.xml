@@ -284,5 +284,8 @@
 		<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP" value="2" enum="VRSTextureFormat">
 			The texture format is the same as expected by the Vulkan [code]VK_EXT_fragment_density_map[/code] extension.
 		</constant>
+		<constant name="XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP" value="3" enum="VRSTextureFormat">
+			The texture contains a Metal [code]rasterizationRateMap[/code], used for foveated rendering on Apple platforms. It's not a real texture, but instead an opaque wrapper for a [code]MTLRasterizationRateMap[/code] object.
+		</constant>
 	</constants>
 </class>

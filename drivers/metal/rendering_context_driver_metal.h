@@ -105,7 +105,7 @@ public:
 				device(p_device) {}
 		virtual ~Surface() = default;
 
-		MTL::PixelFormat get_pixel_format() const { return pixel_format; }
+		virtual MTL::PixelFormat get_pixel_format() const { return pixel_format; }
 		void set_hdr_output_enabled(bool p_enabled) {
 			if (hdr_output != p_enabled) {
 				hdr_output = p_enabled;

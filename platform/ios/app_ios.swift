@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  app_ios.swift                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+import SwiftUI
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+@main
+struct SwiftUIApp: App {
+	@UIApplicationDelegateAdaptor(GDTAppDelegateIOS.self) var appDelegate
+	@Environment(\.scenePhase) private var scenePhase
 
-@interface GDTViewRenderer : GDTRenderer
-
-- (void)renderOnView:(UIView *)view;
-
-@end
+	var body: some Scene {
+		GodotWindowScene()
+	}
+}

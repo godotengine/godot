@@ -61,6 +61,7 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
+		$application_scene_manifest_default_session_role
 		<key>UIApplicationSupportsMultipleScenes</key><false/>
 		<key>UISceneConfigurations</key>
 		<dict>
@@ -71,6 +72,7 @@
 					<string>Default Configuration</string>
 				</dict>
 			</array>
+			$application_scene_manifest_immersive_configuration
 		</dict>
 	</dict>
 </dict>

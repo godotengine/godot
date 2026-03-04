@@ -480,6 +480,14 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64 x86_64") + "\n";
 
+		// Application Scene Manifest - Default Session Role
+	} else if (p_line.contains("$application_scene_manifest_default_session_role")) {
+		strnew += p_line.replace("$application_scene_manifest_default_session_role", "") + "\n";
+
+		// Application Scene Manifest - Immersive Configuration
+	} else if (p_line.contains("$application_scene_manifest_immersive_configuration")) {
+		strnew += p_line.replace("$application_scene_manifest_immersive_configuration", "") + "\n";
+
 		// Apple Embedded common
 	} else {
 		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);
