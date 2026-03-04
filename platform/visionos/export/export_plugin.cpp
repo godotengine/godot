@@ -106,6 +106,52 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64") + "\n";
 
+		// Application Scene Manifest - Default Session Role
+	} else if (p_line.contains("$application_scene_manifest_default_session_role")) {
+		int app_role_enum = (int)p_preset->get("application/app_role");
+		if (app_role_enum == 0) {
+			// Windowed mode, not needed
+			strnew += p_line.replace("$application_scene_manifest_default_session_role", "") + "\n";
+			return strnew;
+		}
+
+		String value =
+				"<key>UIApplicationPreferredDefaultSceneSessionRole</key>\n"
+				"<string>CPSceneSessionRoleImmersiveSpaceApplication</string>";
+
+		strnew += p_line.replace("$application_scene_manifest_default_session_role", value) + "\n";
+
+		// Application Scene Manifest - Immersive Configuration
+	} else if (p_line.contains("$application_scene_manifest_immersive_configuration")) {
+		int app_role_enum = (int)p_preset->get("application/app_role");
+		if (app_role_enum == 0) {
+			// Windowed mode, not needed
+			strnew += p_line.replace("$application_scene_manifest_immersive_configuration", "") + "\n";
+			return strnew;
+		}
+
+		String initial_immersion_style;
+		switch ((int)p_preset->get("application/immersion_style")) {
+			case 0: // Full
+				initial_immersion_style = "UIImmersionStyleFull";
+				break;
+			case 1: // Mixed
+				initial_immersion_style = "UIImmersionStyleMixed";
+				break;
+		}
+
+		String value =
+				"<key>UISceneSessionRoleImmersiveSpaceApplication</key>\n"
+				"<array>\n"
+				"	<dict>\n"
+				"		<key>UISceneInitialImmersionStyle</key>\n"
+				"		<string>" +
+				initial_immersion_style + "</string>\n"
+										  "	</dict>\n"
+										  "</array>";
+
+		strnew += p_line.replace("$application_scene_manifest_immersive_configuration", value) + "\n";
+
 		// Application Scene Manifest
 	} else if (p_line.contains("$application_scene_manifest")) {
 		int app_role_enum = (int)p_preset->get("application/app_role");
@@ -133,16 +179,16 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 				"	  <key>UIApplicationSupportsMultipleScenes</key>\n"
 				"	  <true/>\n"
 				"	  <key>UISceneConfigurations</key>\n"
-				"	  <dict>"
-				"		  <key>UISceneSessionRoleImmersiveSpaceApplication</key>"
-				"		  <array>"
-				"			  <dict>"
-				"				  <key>UISceneInitialImmersionStyle</key>"
+				"	  <dict>\n"
+				"		  <key>UISceneSessionRoleImmersiveSpaceApplication</key>\n"
+				"		  <array>\n"
+				"			  <dict>\n"
+				"				  <key>UISceneInitialImmersionStyle</key>\n"
 				"				  <string>" +
-				initial_immersion_style + "</string>"
-										  "			  </dict>"
-										  "		  </array>"
-										  "	  </dict>"
+				initial_immersion_style + "</string>\n"
+										  "			  </dict>\n"
+										  "		  </array>\n"
+										  "	  </dict>\n"
 										  "</dict>";
 
 		strnew += p_line.replace("$application_scene_manifest", value) + "\n";
