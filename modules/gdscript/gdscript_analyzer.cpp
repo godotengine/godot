@@ -3885,12 +3885,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 			if (!infer_generic_bindings_from_types(param_type, arg_type, call_generic_bindings)) {
 				push_error(vformat(
-						R"( [Reginleif] Conflicting generic type inference for call '%s()'. )",
+						R"([Reginleif] Conflicting generic type inference for call '%s()'.)",
 						p_call->function_name),
 						p_call->arguments[i]);
 				p_call->set_datatype(call_type);
 				return;
 			}
+		}
+
+		if (!call_generic_bindings.is_empty()) {
+			return_type = resolve_generic_type(return_type, call_generic_bindings);
 		}
 
 		call_type = return_type;
