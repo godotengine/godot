@@ -34,7 +34,7 @@
 #include "core/math/transform_interpolator.h"
 #include "core/object/class_db.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -1350,6 +1350,15 @@ void Node3D::set_visibility_parent(const NodePath &p_path) {
 NodePath Node3D::get_visibility_parent() const {
 	ERR_READ_THREAD_GUARD_V(NodePath());
 	return visibility_parent_path;
+}
+
+PackedStringArray Node3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+	Node *parent = get_parent();
+	if (parent && !Object::cast_to<Node3D>(parent) && parent != get_tree()->get_root() && get_owner()) {
+		warnings.push_back(RTR("This Node3D is a child of a Node that has no Transform. It will not inherit a 3D transform."));
+	}
+	return warnings;
 }
 
 void Node3D::_validate_property(PropertyInfo &p_property) const {

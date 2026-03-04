@@ -353,6 +353,8 @@ public:
 	void set_visibility_parent(const NodePath &p_path);
 	NodePath get_visibility_parent() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	Node3D();
 	~Node3D();
 };
