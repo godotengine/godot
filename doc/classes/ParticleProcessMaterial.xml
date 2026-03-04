@@ -286,7 +286,8 @@
 			Align Y axis of particle with the direction of its velocity.
 		</member>
 		<member name="particle_flag_damping_as_friction" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
-			Changes the behavior of the damping properties from a linear deceleration to a deceleration based on speed percentage.
+			If [code]true[/code], damping is calculated using a realistic, velocity dependent formula.
+			If [code]false[/code], a constant deceleration is applied.
 		</member>
 		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles will not move on the z axis.
@@ -481,6 +482,7 @@
 			Use with [method set_particle_flag] to set [member particle_flag_disable_z].
 		</constant>
 		<constant name="PARTICLE_FLAG_DAMPING_AS_FRICTION" value="3" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_damping_as_friction].
 		</constant>
 		<constant name="PARTICLE_FLAG_MAX" value="4" enum="ParticleFlags">
 			Represents the size of the [enum ParticleFlags] enum.
