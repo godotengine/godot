@@ -31,9 +31,10 @@
 #pragma once
 
 #include "core/math/transform_2d.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
+#include "servers/display/accessibility_server_enums.h"
 
 class Viewport;
 class Label;
@@ -97,6 +98,7 @@ public:
 		MOUSE_BEHAVIOR_ENABLED,
 	};
 
+	// Keep synced with InputClassEnums and DisplayServerEnums enums.
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -256,7 +258,7 @@ private:
 
 		String accessibility_name;
 		String accessibility_description;
-		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		AccessibilityServerEnums::AccessibilityLiveMode accessibility_live = AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF;
 
 		TypedArray<NodePath> accessibility_controls_nodes;
 		TypedArray<NodePath> accessibility_described_by_nodes;
@@ -415,9 +417,9 @@ protected:
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
-	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, RequiredParam<const Node>)
 
-	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_gui_input, RequiredParam<InputEvent>)
 
 public:
 	enum {
@@ -465,7 +467,7 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
 
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
 
@@ -630,8 +632,8 @@ public:
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 
-	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
-	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+	void set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode p_mode);
+	AccessibilityServerEnums::AccessibilityLiveMode get_accessibility_live() const;
 
 	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_controls_nodes() const;
@@ -674,9 +676,9 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
-	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);

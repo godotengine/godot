@@ -16,6 +16,8 @@ func _launch_tests(test_label: String) -> void:
 	match test_label:
 		"javaclasswrapper_tests":
 			test_instance = JavaClassWrapperTests.new()
+		"file_access_tests":
+			test_instance = FileAccessTests.new()
 
 	if test_instance:
 		test_instance.__reset_tests()

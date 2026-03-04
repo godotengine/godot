@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "editor_export_platform.h"
-
 #include "editor_export_platform.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -43,7 +42,9 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/shared_object.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -219,22 +220,154 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	return has_messages;
 }
 
-Error EditorExportPlatform::_load_patches(const Vector<String> &p_patches) {
+Error EditorExportPlatform::_extract_android_assets(const String &p_bundle_path, String &r_pck_path, String &r_temp_dir) {
 	Error err = OK;
+
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	unzFile zip_file = unzOpen2(p_bundle_path.utf8().get_data(), &io);
+	if (!zip_file) {
+		return ERR_FILE_CANT_OPEN;
+	}
+
+	const char *pck_name = "assets.sparsepck";
+	String pck_base_dir;
+
+	int ret = unzGoToFirstFile(zip_file);
+	while (ret == UNZ_OK) {
+		unz_file_info64 file_info = {};
+		char file_name_buf[16384];
+		ret = unzGetCurrentFileInfo64(zip_file, &file_info, file_name_buf, sizeof(file_name_buf), nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		String file_name = String::utf8(file_name_buf);
+		if (file_name.ends_with(pck_name)) {
+			pck_base_dir = file_name.trim_suffix(pck_name);
+			break;
+		}
+
+		ret = unzGoToNextFile(zip_file);
+	}
+
+	if (ret != UNZ_OK || pck_base_dir.is_empty()) {
+		unzClose(zip_file);
+		return ERR_FILE_UNRECOGNIZED;
+	}
+
+	Ref<DirAccess> temp_dir = DirAccess::create_temp("export_patch_base", true, &err);
+	if (err != OK) {
+		unzClose(zip_file);
+		return err;
+	}
+
+	String temp_dir_path = temp_dir->get_current_dir();
+
+	ret = unzGoToFirstFile(zip_file);
+	while (ret == UNZ_OK) {
+		unz_file_info64 zip_file_info = {};
+		char file_name_buf[16384];
+		if (unzGetCurrentFileInfo64(zip_file, &zip_file_info, file_name_buf, sizeof(file_name_buf), nullptr, 0, nullptr, 0) != UNZ_OK) {
+			err = ERR_FILE_CORRUPT;
+			break;
+		}
+
+		String file_name = String::utf8(file_name_buf);
+		if (!file_name.begins_with(pck_base_dir)) {
+			ret = unzGoToNextFile(zip_file);
+			continue;
+		}
+
+		String file_path_relative = file_name.trim_prefix(pck_base_dir).simplify_path();
+		if (file_path_relative.is_empty()) {
+			ret = unzGoToNextFile(zip_file);
+			continue;
+		}
+
+		String file_output_path = temp_dir_path.path_join(file_path_relative);
+		err = DirAccess::make_dir_recursive_absolute(file_output_path.get_base_dir());
+		if (err != OK) {
+			break;
+		}
+
+		if (unzOpenCurrentFile(zip_file) != UNZ_OK) {
+			err = ERR_FILE_CANT_OPEN;
+			break;
+		}
+
+		LocalVector<uint8_t> uncomp_data;
+		uncomp_data.resize(zip_file_info.uncompressed_size);
+		int read_bytes = unzReadCurrentFile(zip_file, uncomp_data.ptr(), uncomp_data.size());
+		unzCloseCurrentFile(zip_file);
+
+		if (read_bytes < 0 || read_bytes != (int)uncomp_data.size()) {
+			err = ERR_FILE_CANT_READ;
+			break;
+		}
+
+		Ref<FileAccess> temp_file = FileAccess::open(file_output_path, FileAccess::WRITE, &err);
+		if (err != OK) {
+			break;
+		}
+
+		if (!temp_file->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
+			err = ERR_FILE_CANT_WRITE;
+			break;
+		}
+
+		ret = unzGoToNextFile(zip_file);
+	}
+
+	unzClose(zip_file);
+
+	r_pck_path = temp_dir_path.path_join(pck_name);
+	r_temp_dir = temp_dir_path;
+
+	return err;
+}
+
+Error EditorExportPlatform::_load_patches(const Ref<EditorExportPreset> &p_preset, const Vector<String> &p_patches) {
 	if (!p_patches.is_empty()) {
 		for (const String &path : p_patches) {
-			err = PackedData::get_singleton()->add_pack(path, true, 0);
+			String pck_path = path;
+
+			if (path.ends_with(".apk") || path.ends_with(".aab")) {
+				String temp_dir;
+				Error err = _extract_android_assets(path, pck_path, temp_dir);
+				if (err != OK) {
+					_unload_patches();
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not extract assets from Android bundle \"%s\", due to error \"%s\"."), path, error_names[err]));
+					return err;
+				}
+
+				patch_temp_dirs.push_back(temp_dir);
+			}
+
+			Error err = PackedData::get_singleton()->add_pack(pck_path, true, 0, _get_script_encryption_key_bytes(p_preset));
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not load patch pack with path \"%s\"."), path));
+				_unload_patches();
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Patch Creation"), vformat(TTR("Could not load patch pack with path \"%s\"."), pck_path));
 				return err;
 			}
 		}
 	}
-	return err;
+
+	return OK;
 }
 
 void EditorExportPlatform::_unload_patches() {
 	PackedData::get_singleton()->clear();
+
+	for (const String &temp_dir : patch_temp_dirs) {
+		Ref<DirAccess> temp_dir_da = DirAccess::open(temp_dir);
+		if (temp_dir_da.is_valid()) {
+			temp_dir_da->erase_contents_recursive();
+			temp_dir_da->remove(temp_dir);
+		}
+	}
+
+	patch_temp_dirs.clear();
 }
 
 Error EditorExportPlatform::_encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt) {
@@ -346,7 +479,7 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 }
 
 Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
-	Ref<FileAccess> old_file = PackedData::get_singleton()->try_open_path(p_path);
+	Ref<FileAccess> old_file = PackedData::get_singleton()->try_open_path(p_path, _get_script_encryption_key_bytes(p_preset));
 	if (old_file.is_null()) {
 		return _save_pack_file(p_preset, p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, false);
 	}
@@ -992,7 +1125,7 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 	return save_path.is_empty() ? p_path : save_path;
 }
 
-String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const {
+String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) {
 	const String from_env = OS::get_singleton()->get_environment(ENV_SCRIPT_ENCRYPTION_KEY);
 	if (!from_env.is_empty()) {
 		return from_env.to_lower();
@@ -1000,49 +1133,98 @@ String EditorExportPlatform::_get_script_encryption_key(const Ref<EditorExportPr
 	return p_preset->get_script_encryption_key().to_lower();
 }
 
+Vector<uint8_t> EditorExportPlatform::_get_script_encryption_key_bytes(const Ref<EditorExportPreset> &p_preset) {
+	Vector<uint8_t> key;
+	String script_key = _get_script_encryption_key(p_preset);
+	if (script_key.length() == 64) {
+		key.resize(32);
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < script_key.length()) {
+				char32_t ct = script_key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
+			}
+
+			if (i * 2 + 1 < script_key.length()) {
+				char32_t ct = script_key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			key.write[i] = v;
+		}
+	}
+
+	return key;
+}
+
 Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExportPreset> &p_preset, bool p_debug) {
 	Dictionary files;
 
 	// Text server support data.
-	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA) && (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data")) {
-		String ts_name = TS->get_support_data_filename();
-		String ts_target = "res://" + ts_name;
-		if (!ts_name.is_empty()) {
-			bool export_ok = false;
-			if (FileAccess::exists(ts_target)) { // Include user supplied data file.
-				const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(ts_target);
-				if (!ts_data.is_empty()) {
-					add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using user provided text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
-					files[ts_target] = ts_data;
-					export_ok = true;
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		bool include_data = (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data");
+		if (!include_data) {
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
+			for (const String &t : translations) {
+				Ref<Translation> tr = ResourceLoader::load(t);
+				if (tr.is_valid() && TS->is_locale_using_support_data(tr->get_locale())) {
+					include_data = true;
+					break;
 				}
-			} else {
-				String current_version = GODOT_VERSION_FULL_CONFIG;
-				String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
-				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
-					template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
-				} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
-					template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
-				}
-				String data_file_name = template_path.path_join(ts_name);
-				if (FileAccess::exists(data_file_name)) {
-					const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(data_file_name);
+			}
+			if (TS->is_locale_using_support_data(get_project_setting(p_preset, "internationalization/locale/fallback"))) {
+				include_data = true;
+			}
+		}
+		if (include_data) {
+			String ts_name = TS->get_support_data_filename();
+			String ts_target = "res://" + ts_name;
+			if (!ts_name.is_empty()) {
+				bool export_ok = false;
+				if (FileAccess::exists(ts_target)) { // Include user supplied data file.
+					const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(ts_target);
 					if (!ts_data.is_empty()) {
-						print_line("Using text server data from export templates.");
+						add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using user provided text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
 						files[ts_target] = ts_data;
 						export_ok = true;
 					}
 				} else {
-					const PackedByteArray &ts_data = TS->get_support_data();
-					if (!ts_data.is_empty()) {
-						add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using editor embedded text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
-						files[ts_target] = ts_data;
-						export_ok = true;
+					String current_version = GODOT_VERSION_FULL_CONFIG;
+					String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
+					if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
+						template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
+					} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
+						template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
+					}
+					String data_file_name = template_path.path_join(ts_name);
+					if (FileAccess::exists(data_file_name)) {
+						const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(data_file_name);
+						if (!ts_data.is_empty()) {
+							print_line("Using text server data from export templates.");
+							files[ts_target] = ts_data;
+							export_ok = true;
+						}
+					} else {
+						const PackedByteArray &ts_data = TS->get_support_data();
+						if (!ts_data.is_empty()) {
+							add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using editor embedded text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
+							files[ts_target] = ts_data;
+							export_ok = true;
+						}
 					}
 				}
-			}
-			if (!export_ok) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Missing text server data, text display in the exported project might be broken!"));
+				if (!export_ok) {
+					add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Missing text server data, text display in the exported project might be broken!"));
+				}
 			}
 		}
 	}
@@ -1212,33 +1394,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		// Get encryption key.
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = _get_script_encryption_key_bytes(p_preset);
 	}
 
 	EditorExportSaveProxy save_proxy(p_save_func, p_remove_func != nullptr);
@@ -1946,7 +2102,7 @@ Dictionary EditorExportPlatform::_save_zip_patch(const Ref<EditorExportPreset> &
 	return ret;
 }
 
-bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs) {
+bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt) {
 	p_fd->store_32(PACK_HEADER_MAGIC);
 	p_fd->store_32(PACK_FORMAT_VERSION);
 	p_fd->store_32(GODOT_VERSION_MAJOR);
@@ -1968,8 +2124,18 @@ bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool 
 	r_dir_base_ofs = p_fd->get_position();
 	p_fd->store_64(0); // Directory offset.
 
-	for (int i = 0; i < 16; i++) {
-		//reserved
+	if (p_enc && p_sparse && p_salt.length() == 32) {
+		CharString cs = p_salt.latin1();
+		p_fd->store_buffer((const uint8_t *)cs.ptr(), 32);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			// Reserved.
+			p_fd->store_32(0);
+		}
+	}
+
+	for (int i = 0; i < 8; i++) {
+		// Reserved.
 		p_fd->store_32(0);
 	}
 	return true;
@@ -2094,7 +2260,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	uint64_t file_base_ofs = 0;
 	uint64_t dir_base_ofs = 0;
 
-	_store_header(f, p_preset->get_enc_pck() && p_preset->get_enc_directory(), false, file_base_ofs, dir_base_ofs);
+	_store_header(f, p_preset->get_enc_pck() && p_preset->get_enc_directory(), false, file_base_ofs, dir_base_ofs, String());
 
 	// Align for first file.
 	int file_padding = _get_pad(PCK_PADDING, f->get_position());
@@ -2141,33 +2307,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	Vector<uint8_t> key;
 	if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = _get_script_encryption_key_bytes(p_preset);
 	}
 
 	if (!_encrypt_and_store_directory(f, pd, key, p_preset->get_seed(), file_base)) {
@@ -2221,6 +2361,8 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	Error err = export_project_files(p_preset, p_debug, p_save_func, nullptr, &zd, _zip_add_shared_object);
 	if (err != OK && err != ERR_SKIP) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Save ZIP"), TTR("Failed to export project files."));
+		zipClose(zip, nullptr);
+		return err;
 	}
 
 	zipClose(zip, nullptr);
@@ -2237,6 +2379,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	if (err != OK) {
 		da->remove(tmppath);
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Save ZIP"), vformat(TTR("Failed to move temporary file \"%s\" to \"%s\"."), tmppath, p_path));
+		return err;
 	}
 
 	return OK;
@@ -2258,7 +2401,7 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 
 Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}
@@ -2269,7 +2412,7 @@ Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_p
 
 Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
 	if (err != OK) {
 		return err;
 	}

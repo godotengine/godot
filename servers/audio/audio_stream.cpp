@@ -31,6 +31,7 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	GDVIRTUAL_CALL(_start, p_from_pos);
@@ -442,14 +443,9 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET_CACHED(bool, "audio/driver/enable_input")) {
-		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
-		return;
-	}
-
 	input_ofs = 0;
 
-	if (AudioDriver::get_singleton()->input_start() == OK) {
+	if (AudioServer::get_singleton()->set_input_device_active(true) == OK) {
 		active = true;
 		begin_resample();
 	}
@@ -457,7 +453,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 
 void AudioStreamPlaybackMicrophone::stop() {
 	if (active) {
-		AudioDriver::get_singleton()->input_stop();
+		AudioServer::get_singleton()->set_input_device_active(false);
 		active = false;
 	}
 }
@@ -784,7 +780,7 @@ void AudioStreamRandomizer::_bind_methods() {
 
 	base_property_helper.set_prefix("stream_");
 	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }

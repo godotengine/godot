@@ -42,7 +42,7 @@ public:
 	virtual void particles_initialize(RID p_rid) override {}
 	virtual void particles_free(RID p_rid) override {}
 
-	virtual void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) override {}
+	virtual void particles_set_mode(RID p_particles, RSE::ParticlesMode p_mode) override {}
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	virtual void particles_set_amount(RID p_particles, int p_amount) override {}
@@ -66,14 +66,14 @@ public:
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override {}
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override {}
 
-	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override {}
+	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) override {}
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override {}
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override {}
 
 	virtual void particles_restart(RID p_particles) override {}
 
-	virtual void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) override {}
+	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override {}
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) override {}
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) override {}
@@ -101,7 +101,7 @@ public:
 	virtual void particles_collision_initialize(RID p_rid) override {}
 	virtual void particles_collision_free(RID p_rid) override {}
 
-	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
+	virtual void particles_collision_set_collision_type(RID p_particles_collision, RSE::ParticlesCollisionType p_type) override {}
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override {}
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override {}
@@ -110,7 +110,7 @@ public:
 	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) override {}
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
 	virtual void particles_collision_height_field_update(RID p_particles_collision) override {}
-	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RSE::ParticlesCollisionHeightfieldResolution p_resolution) override {}
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override { return 0; }

@@ -1,8 +1,8 @@
 diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
-index 2307325d4e..ecb84094b9 100644
+index 8df03649b5..42ba704beb 100644
 --- a/thirdparty/vulkan/vk_mem_alloc.h
 +++ b/thirdparty/vulkan/vk_mem_alloc.h
-@@ -122,12 +122,12 @@ for user-defined purpose without allocating any real GPU memory.
+@@ -123,15 +123,12 @@ for user-defined purpose without allocating any real GPU memory.
  See documentation chapter: \ref statistics.
  */
  
@@ -12,7 +12,10 @@ index 2307325d4e..ecb84094b9 100644
  extern "C" {
  #endif
  
+-#if !defined(VULKAN_H_)
 -#include <vulkan/vulkan.h>
- 
+-#endif
+-
  #if !defined(VMA_VULKAN_VERSION)
-     #if defined(VK_VERSION_1_3)
+     #if defined(VK_VERSION_1_4)
+         #define VMA_VULKAN_VERSION 1004000

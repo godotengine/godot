@@ -30,6 +30,7 @@
 
 #include "margin_container_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 

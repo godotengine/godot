@@ -31,16 +31,20 @@
 #ifdef ANDROID_ENABLED
 #include "android_editor_gradle_runner.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "editor/editor_interface.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/rich_text_label.h"
 
 #include "../java_godot_wrapper.h"
 #include "../os_android.h"
 
-void AndroidEditorGradleRunner::run_gradle(const String &p_project_path, const String &p_build_path, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args) {
+void AndroidEditorGradleRunner::run_gradle(const String &p_project_path, const String &p_build_path, const String &p_output_path, const String &p_export_format, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args) {
 	project_path = p_project_path;
 	build_path = p_build_path;
+	output_path = p_output_path;
+	export_format = p_export_format;
 	gradle_build_args = p_gradle_build_args;
 	gradle_copy_args = p_gradle_copy_args;
 
@@ -151,6 +155,11 @@ void AndroidEditorGradleRunner::_android_gradle_build_clean_project(bool p_was_s
 
 		if (p_was_successful) {
 			output_dialog->hide();
+
+			bool prompt_apk_install = EDITOR_GET("export/android/install_exported_apk");
+			if (prompt_apk_install && export_format == "apk") {
+				OS_Android::get_singleton()->shell_open(output_path);
+			}
 		} else {
 			output_dialog->get_ok_button()->set_disabled(false);
 		}

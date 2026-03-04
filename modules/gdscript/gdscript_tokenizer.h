@@ -165,8 +165,10 @@ public:
 
 		Type type = EMPTY;
 		Variant literal;
-		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
-		int cursor_position = -1;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		CursorPlace cursor_place = CURSOR_NONE;
 		String source;
 
@@ -225,13 +227,16 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
-	int line = -1, column = -1;
-	int cursor_line = -1, cursor_column = -1;
+	int line = 0;
+	int column = 0;
+	int cursor_line = -1;
+	int cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
 	const char32_t *_start = nullptr;
-	int start_line = 0, start_column = 0;
+	int start_line = 0;
+	int start_column = 0;
 
 	// Info cache.
 	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.

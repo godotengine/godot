@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -758,7 +759,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (closest_for_tooltip >= 0) {
 				String from = transition_lines[closest_for_tooltip].from_node;
 				String to = transition_lines[closest_for_tooltip].to_node;
-				String tooltip = from + " -> " + to;
+				String tooltip = from + U" → " + to;
 				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
 				state_machine_draw->set_tooltip_text("");
@@ -970,6 +971,8 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -997,6 +1000,8 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -1010,8 +1015,20 @@ void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
 
 void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action) {
 	if (connecting_from != StringName() && connecting_to_node != StringName()) {
+		if (connecting_to_node == SceneStringName(Start)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition to \"Start\"!"));
+			connecting = false;
+			return;
+		}
+
+		if (connecting_from == SceneStringName(End)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition from \"End\"!"));
+			connecting = false;
+			return;
+		}
+
 		if (state_machine->has_transition(connecting_from, connecting_to_node)) {
-			EditorNode::get_singleton()->show_warning("Transition exists!");
+			EditorNode::get_singleton()->show_warning(TTR("Transition already exists!"));
 			connecting = false;
 			return;
 		}
@@ -1039,11 +1056,13 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 
 		_select_transition(connecting_from, connecting_to_node);
 
-		if (!state_machine->is_transition_across_group(selected_transition_index)) {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-		} else {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-			EditorNode::get_singleton()->push_item(nullptr, "", true);
+		if (selected_transition_index >= 0) {
+			if (!state_machine->is_transition_across_group(selected_transition_index)) {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			} else {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+				EditorNode::get_singleton()->push_item(nullptr, "", true);
+			}
 		}
 		_update_mode();
 	}
@@ -2222,7 +2241,7 @@ bool EditorAnimationMultiTransitionEdit::_get(const StringName &p_name, Variant 
 	StringName prop = String(p_name).get_slicec('/', 1);
 
 	if (prop == "transition_path") {
-		r_property = String(transitions[index].from) + " -> " + transitions[index].to;
+		r_property = String(transitions[index].from) + U" → " + transitions[index].to;
 		return true;
 	}
 

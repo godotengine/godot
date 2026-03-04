@@ -30,7 +30,10 @@
 
 #include "animated_sprite_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
@@ -117,10 +120,12 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 		return;
 	}
 	if (!Engine::get_singleton()->is_editor_hint()) {
-		if (p_property.name == "frame" && playing) {
-			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "frame") {
+			if (playing) {
+				p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+			}
+			return;
 		}
-		return;
 	}
 	if (p_property.name == "animation") {
 		List<StringName> names;
@@ -178,9 +183,9 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 			Rect2 dst_rect = _get_rect();
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
-			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_IMAGE);
+			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
+			AccessibilityServer::get_singleton()->update_set_bounds(ae, dst_rect);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -668,7 +673,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static()), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");

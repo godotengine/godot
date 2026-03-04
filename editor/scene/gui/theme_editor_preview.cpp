@@ -31,6 +31,7 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -293,7 +294,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 		} break;
 	}
 }

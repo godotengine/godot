@@ -122,7 +122,7 @@ namespace meshopt
 
 const unsigned char kVertexHeader = 0xa0;
 
-static int gEncodeVertexVersion = 0;
+static int gEncodeVertexVersion = 1;
 const int kDecodeVertexVersion = 1;
 
 const size_t kVertexBlockSizeBytes = 8192;

@@ -48,11 +48,6 @@ private:
 	Ref<TileSetAtlasSource> tile_set_atlas_source;
 	int source_id = TileSet::INVALID_SOURCE;
 
-	enum DragType {
-		DRAG_TYPE_NONE,
-		DRAG_TYPE_PAN,
-	};
-	DragType drag_type = DRAG_TYPE_NONE;
 	float previous_zoom = 1.0;
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *button_center_view = nullptr;

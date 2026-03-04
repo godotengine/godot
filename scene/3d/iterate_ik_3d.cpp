@@ -30,6 +30,8 @@
 
 #include "iterate_ik_3d.h"
 
+#include "core/object/class_db.h"
+
 bool IterateIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -119,7 +121,7 @@ void IterateIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "rotation_axis_vector"));
-			props.push_back(PropertyInfo(Variant::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, "JointLimitation3D"));
+			props.push_back(PropertyInfo(Variant::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, JointLimitation3D::get_class_static()));
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "limitation/right_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "limitation/right_axis_vector"));
 			props.push_back(PropertyInfo(Variant::QUATERNION, joint_path + "limitation/rotation_offset"));
@@ -521,10 +523,6 @@ void IterateIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 void IterateIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, IterateIK3DSetting *p_setting, const Vector3 &p_destination) {
 	double distance_to_target_sq = INFINITY;
 	int iteration_count = 0;
-
-	if (p_setting->is_penetrated(p_destination)) {
-		return;
-	}
 
 	// To prevent oscillation, if it has been processed at least once and target was reached, abort iterating.
 	if (p_setting->simulated) {

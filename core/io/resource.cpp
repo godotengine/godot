@@ -33,9 +33,18 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/container_type_validate.h"
 #include "scene/main/node.h" //only so casting works
+
+void Resource::register_custom_data_to_otdb() {
+	ClassDB::add_resource_base_extension("res", get_class_static());
+}
+
+void Resource::_add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
 
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
@@ -368,11 +377,14 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 	ERR_FAIL_COND_V_MSG(p_params.local_scene && p_params.subres_mode != RESOURCE_DEEP_DUPLICATE_MAX, Ref<Resource>(), "Duplication for local-to-scene can't specify a deep duplicate mode.");
 
 	DuplicateRemapCacheT *remap_cache_backup = thread_duplicate_remap_cache;
+	bool remap_cache_needs_deallocation_backup = thread_duplicate_remap_cache_needs_deallocation;
 
 // These are for avoiding potential duplicates that can happen in custom code
 // from participating in the same duplication session (remap cache).
 #define BEFORE_USER_CODE thread_duplicate_remap_cache = nullptr;
-#define AFTER_USER_CODE thread_duplicate_remap_cache = remap_cache_backup;
+#define AFTER_USER_CODE \
+	thread_duplicate_remap_cache = remap_cache_backup; \
+	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -434,7 +446,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 #endif
 
 	DuplicateRemapCacheT *remap_cache_backup = thread_duplicate_remap_cache;
+	bool remap_cache_needs_deallocation_backup = thread_duplicate_remap_cache_needs_deallocation;
 	thread_duplicate_remap_cache = &p_remap_cache;
+	thread_duplicate_remap_cache_needs_deallocation = false;
 
 	DuplicateParams params;
 	params.deep = true;
@@ -442,6 +456,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 	const Ref<Resource> &dupe = _duplicate(params);
 
 	thread_duplicate_remap_cache = remap_cache_backup;
+	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 
 	return dupe;
 }
@@ -504,6 +519,7 @@ Ref<Resource> Resource::duplicate(bool p_deep) const {
 	bool started_session = false;
 	if (!thread_duplicate_remap_cache) {
 		thread_duplicate_remap_cache = &remap_cache;
+		thread_duplicate_remap_cache_needs_deallocation = false;
 		started_session = true;
 	}
 
@@ -526,6 +542,7 @@ Ref<Resource> Resource::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresou
 	bool started_session = false;
 	if (!thread_duplicate_remap_cache) {
 		thread_duplicate_remap_cache = &remap_cache;
+		thread_duplicate_remap_cache_needs_deallocation = false;
 		started_session = true;
 	}
 
@@ -571,6 +588,7 @@ Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplica
 		}
 	} else {
 		thread_duplicate_remap_cache = memnew(DuplicateRemapCacheT);
+		thread_duplicate_remap_cache_needs_deallocation = true;
 	}
 
 	DuplicateParams params;
@@ -583,7 +601,7 @@ Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplica
 }
 
 void Resource::_teardown_duplicate_from_variant() {
-	if (thread_duplicate_remap_cache) {
+	if (thread_duplicate_remap_cache && thread_duplicate_remap_cache_needs_deallocation) {
 		memdelete(thread_duplicate_remap_cache);
 		thread_duplicate_remap_cache = nullptr;
 	}

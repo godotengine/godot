@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -54,6 +55,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "servers/display/display_server.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -296,9 +298,14 @@ StringName ConnectDialog::generate_method_callback_name(Object *p_source, const 
 }
 
 void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
 	for (const MethodInfo &mi : p_methods) {
 		TreeItem *method_item = method_tree->create_item(p_parent_item);
 		method_item->set_text(0, get_signature(mi));
+		if (use_monospace_font) {
+			method_item->set_custom_font(0, monospace_font);
+		}
 		method_item->set_metadata(0, mi.name);
 	}
 }
@@ -518,6 +525,18 @@ void ConnectDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_button_icon(get_editor_theme_icon("Edit"));
+
+			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
+			if (use_monospace_font) {
+				from_signal->add_theme_font_override(SceneStringName(font), monospace_font);
+				dst_method->add_theme_font_override(SceneStringName(font), monospace_font);
+			} else {
+				from_signal->remove_theme_font_override(SceneStringName(font));
+				dst_method->remove_theme_font_override(SceneStringName(font));
+			}
+
 		} break;
 	}
 }
@@ -884,6 +903,7 @@ ConnectDialog::ConnectDialog() {
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
+	bind_editor->set_theme_type_variation("ScrollContainerSecondary");
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
@@ -1533,6 +1553,9 @@ void ConnectionsDock::update_tree() {
 	StringName native_base = selected_object->get_class();
 	Ref<Script> script_base = selected_object->get_script();
 
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
 	while (native_base != StringName()) {
 		String class_name;
 		String doc_class_name;
@@ -1630,6 +1653,10 @@ void ConnectionsDock::update_tree() {
 			String signame = connect_dialog->get_signature(mi, &argnames);
 			signal_item->set_text(0, signame);
 
+			if (use_monospace_font) {
+				signal_item->set_custom_font(0, monospace_font);
+			}
+
 			if (signame == prev_selected) {
 				signal_item->select(0);
 				prev_selected = "";
@@ -1667,11 +1694,12 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_ONE_SHOT) {
 					path += " (one-shot)";
 				}
-				if (cd.flags & CONNECT_APPEND_SOURCE_OBJECT) {
-					path += " (source)";
-				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
+				}
+				// CONNECT_APPEND_SOURCE_OBJECT is not affected by unbinds, list it between unbinds/binds to better indicate the final order.
+				if (cd.flags & CONNECT_APPEND_SOURCE_OBJECT) {
+					path += " (source)";
 				}
 				if (!cd.binds.is_empty()) {
 					path += " binds(";
@@ -1688,6 +1716,9 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_editor_theme_icon(SNAME("Slot")));
+				if (use_monospace_font) {
+					connection_item->set_custom_font(0, monospace_font);
+				}
 
 				if (_is_connection_inherited(connection)) {
 					// The scene inherits this connection.
@@ -1719,16 +1750,21 @@ ConnectionsDock::ConnectionsDock() {
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ConnectionsDock::_filter_changed));
 	holder->add_child(search_box);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	holder->add_child(mc);
+
 	tree = memnew(ConnectionsDockTree);
 	tree->set_accessibility_name(TTRC("Connections"));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
-	tree->set_column_clip_content(0, true);
-	holder->add_child(tree);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
+	tree->set_column_clip_content(0, true);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(tree);
 
 	connect_button = memnew(Button);
 	connect_button->set_accessibility_name(TTRC("Connect"));

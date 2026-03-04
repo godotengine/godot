@@ -32,6 +32,9 @@
 
 #include "api/java_class_wrapper.h"
 
+// Maximum recursion depth allowed when converting variants to jobjects or vice-versa.
+#define RECURSION_DEPTH_LIMIT 64
+
 static jobject android_class_loader = nullptr;
 static jmethodID load_class_method = nullptr;
 
@@ -93,12 +96,18 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth) {
 	jobject ret = nullptr;
 
-	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
+	if (p_depth > RECURSION_DEPTH_LIMIT) {
 		ERR_PRINT("Variant is too deep! Bailing.");
 		return ret;
 	}
 
 	env->PushLocalFrame(2);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+		return ret;
+	}
+
 	switch (p_type) {
 		case Variant::BOOL: {
 			jclass bclass = jni_find_class(env, "java/lang/Boolean");
@@ -271,7 +280,7 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 }
 
 Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
-	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep! Bailing.");
+	ERR_FAIL_COND_V_MSG(p_depth > RECURSION_DEPTH_LIMIT, Variant(), "Variant is too deep! Bailing.");
 
 	if (obj == nullptr) {
 		return Variant();

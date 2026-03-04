@@ -13,6 +13,7 @@ apply from: "../scripts/publish-module.gradle"
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation 'androidx.documentfile:documentfile:1.1.0'
 
     testImplementation "junit:junit:4.13.2"
 }
@@ -47,12 +48,6 @@ android {
         buildConfig = true
     }
 
-    buildTypes {
-        dev {
-            initWith debug
-        }
-    }
-
     flavorDimensions = ["products"]
     productFlavors {
         editor {}
@@ -77,14 +72,12 @@ android {
     }
 
     sourceSets {
-        debug.jniLibs.srcDirs += ['libs/debug']
-        dev.jniLibs.srcDirs += ['libs/dev']
-        release.jniLibs.srcDirs += ['libs/release']
+        debug.jniLibs.srcDirs = ['libs/debug']
+        release.jniLibs.srcDirs = ['libs/release']
 
         // Editor jni library
-        editorRelease.jniLibs.srcDirs += ['libs/tools/release']
-        editorDebug.jniLibs.srcDirs += ['libs/tools/debug']
-        editorDev.jniLibs.srcDirs += ['libs/tools/dev']
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
+        editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
     }
 
     libraryVariants.all { variant ->
@@ -98,9 +91,9 @@ android {
             throw new GradleException("Invalid build type: $buildType")
         }
 
-        boolean devBuild = buildType == "dev"
-        boolean debugSymbols = devBuild
-        boolean runTests = devBuild
+        boolean debugBuild = buildType == "debug"
+        boolean debugSymbols = debugBuild
+        boolean runTests = debugBuild
         boolean storeRelease = buildType == "release"
         boolean productionBuild = storeRelease
 
@@ -108,12 +101,13 @@ android {
         if (sconsTarget == "template") {
             // Tests are not supported on template builds
             runTests = false
+
+            //noinspection GroovyFallthrough
             switch (buildType) {
                 case "release":
                     sconsTarget += "_release"
                     break
                 case "debug":
-                case "dev":
                 default:
                     sconsTarget += "_debug"
                     break
@@ -122,9 +116,6 @@ android {
 
         // Update the name of the generated library
         def outputSuffix = "${sconsTarget}"
-        if (devBuild) {
-            outputSuffix = "${outputSuffix}.dev"
-        }
         variant.outputs.all { output ->
             output.outputFileName = "godot-lib.${outputSuffix}.aar"
         }
@@ -167,7 +158,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${debugBuild}", "dev_build=${debugBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

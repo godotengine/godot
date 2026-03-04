@@ -30,14 +30,14 @@
 
 #include "editor_command_palette.h"
 
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/control.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
@@ -166,10 +166,6 @@ void EditorCommandPalette::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED: {
-			command_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-		} break;
-
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("shortcuts")) {
 				break;
@@ -182,17 +178,6 @@ void EditorCommandPalette::_notification(int p_what) {
 				}
 			}
 		} break;
-	}
-}
-
-void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_options->gui_input(key);
-			command_search_box->accept_event();
-		}
 	}
 }
 
@@ -231,16 +216,12 @@ void EditorCommandPalette::remove_command(String p_key_name) {
 	commands.erase(p_key_name);
 }
 
-void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, const Ref<Shortcut> &p_shortcut) {
+void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
 
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * arguments.size());
-	for (int i = 0; i < arguments.size(); i++) {
-		argptrs[i] = &arguments[i];
-	}
 	Command command;
 	command.name = p_command_name;
-	command.callable = p_action.bindp(argptrs, arguments.size());
+	command.callable = p_action;
 	if (p_shortcut.is_null()) {
 		command.shortcut_text = "None";
 	} else {
@@ -290,7 +271,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		Ref<InputEventShortcut> ev;
 		ev.instantiate();
 		ev->set_shortcut(shortcut);
-		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), shortcut);
+		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input).bind(ev, false), shortcut);
 	}
 	unregistered_shortcuts.clear();
 
@@ -309,7 +290,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 		Ref<InputEventShortcut> ev;
 		ev.instantiate();
 		ev->set_shortcut(p_shortcut);
-		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), p_shortcut);
+		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input).bind(ev, false), p_shortcut);
 	} else {
 		const String key_name = String(p_key);
 		const String command_name = String(p_command);
@@ -344,29 +325,33 @@ EditorCommandPalette::EditorCommandPalette() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
-	command_search_box = memnew(LineEdit);
-	command_search_box->set_placeholder(TTR("Filter Commands"));
+	command_search_box = memnew(FilterLineEdit);
+	command_search_box->set_placeholder(TTRC("Filter Commands"));
 	command_search_box->set_accessibility_name(TTRC("Filter Commands"));
-	command_search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorCommandPalette::_sbox_input));
-	command_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorCommandPalette::_update_command_search));
 	command_search_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	command_search_box->set_clear_button_enabled(true);
+	command_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorCommandPalette::_update_command_search));
 	MarginContainer *margin_container_csb = memnew(MarginContainer);
 	margin_container_csb->add_child(command_search_box);
 	vbc->add_child(margin_container_csb);
 	register_text_enter(command_search_box);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(mc);
+
 	search_options = memnew(Tree);
+	command_search_box->set_forward_control(search_options);
 	search_options->connect("item_activated", callable_mp(this, &EditorCommandPalette::_confirmed));
 	search_options->connect(SceneStringName(item_selected), callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
 	search_options->connect("nothing_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(true));
 	search_options->create_item();
 	search_options->set_hide_root(true);
 	search_options->set_columns(2);
-	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	search_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_options->set_column_custom_minimum_width(0, int(8 * EDSCALE));
-	vbc->add_child(search_options, true);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(search_options, true);
 }
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode, String p_command_name) {

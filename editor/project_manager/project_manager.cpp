@@ -31,6 +31,7 @@
 #include "project_manager.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -38,11 +39,13 @@
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -56,6 +59,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_bar.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -72,6 +76,8 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
+
+#include "modules/modules_enabled.gen.h" // For gdscript, mono. (For editor help highlighter).
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -95,7 +101,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
+			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/display/keep_screen_on"));
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			project_list->set_order_option(default_sorting, false);
@@ -294,7 +300,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		migration_guide_button->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
 		// Asset library popup.
-		if (asset_library) {
+		if (asset_library && EDITOR_GET("interface/theme/style") == "Classic") {
 			// Removes extra border margins.
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}
@@ -1068,7 +1074,7 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.is_empty()) {
+	if (p_name.strip_edges().is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
 		return;
 	}
@@ -1094,7 +1100,7 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 
 	for (const String &c : forbidden_tag_characters) {
 		if (p_name.contains(c)) {
-			tag_error->set_text(vformat(TTRC("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
+			tag_error->set_text(vformat(TTR("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
 			return;
 		}
 	}
@@ -1189,7 +1195,7 @@ void ProjectManager::_perform_full_project_conversion() {
 	args.push_back(path);
 	args.push_back("--convert-3to4");
 	args.push_back("--rendering-driver");
-	args.push_back(Main::get_rendering_driver_name());
+	args.push_back(OS::get_singleton()->get_current_rendering_driver_name());
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
@@ -1293,8 +1299,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 }
 
 void ProjectManager::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
-	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServerEnums::MAIN_WINDOW_ID);
+	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
@@ -1337,7 +1343,7 @@ ProjectManager::ProjectManager() {
 			Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
 		}
 
-		int display_scale = EDITOR_GET("interface/editor/display_scale");
+		int display_scale = EDITOR_GET("interface/editor/appearance/display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -1363,16 +1369,16 @@ ProjectManager::ProjectManager() {
 				EditorScale::set_scale(2.0);
 				break;
 			default:
-				EditorScale::set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
+				EditorScale::set_scale(EDITOR_GET("interface/editor/appearance/custom_display_scale"));
 				break;
 		}
-		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
-		EditorFileDialog::get_thumbnail_func = &ProjectManager::_file_dialog_get_thumbnail;
+		FileDialog::set_get_icon_callback(callable_mp_static(ProjectManager::_file_dialog_get_icon));
+		FileDialog::set_get_thumbnail_callback(callable_mp_static(ProjectManager::_file_dialog_get_thumbnail));
 
-		EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-		EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
-		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		int swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
 			// Swap on means OK first.
 			AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
@@ -1381,11 +1387,15 @@ ProjectManager::ProjectManager() {
 		OS::get_singleton()->set_low_processor_usage_mode(true);
 	}
 
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::create_singleton();
+#endif
+
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
 	// Initialize UI.
 	{
-		int pm_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+		int pm_root_dir = EDITOR_GET("interface/editor/localization/ui_layout_direction");
 		Control::set_root_layout_direction(pm_root_dir);
 		Window::set_root_layout_direction(pm_root_dir);
 
@@ -1412,7 +1422,7 @@ ProjectManager::ProjectManager() {
 	root_container->add_child(main_vbox);
 
 	// Title bar.
-	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
+	bool can_expand = bool(EDITOR_GET("interface/editor/appearance/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE);
 
 	{
 		title_bar = memnew(EditorTitleBar);
@@ -1437,6 +1447,26 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
+		bool global_menu = !bool(EDITOR_GET("interface/editor/appearance/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
+		if (global_menu) {
+			MenuBar *main_menu_bar = memnew(MenuBar);
+			main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
+			main_menu_bar->set_prefer_global_menu(true);
+			left_hbox->add_child(main_menu_bar);
+
+			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
+				PopupMenu *window_menu = memnew(PopupMenu);
+				window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
+				window_menu->set_name(TTRC("Window"));
+				main_menu_bar->add_child(window_menu);
+			}
+			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::HELP_MENU_ID)) {
+				PopupMenu *help_menu = memnew(PopupMenu);
+				help_menu->set_system_menu(NativeMenu::HELP_MENU_ID);
+				help_menu->set_name(TTRC("Help"));
+				main_menu_bar->add_child(help_menu);
+			}
+		}
 		if (can_expand) {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
@@ -1515,7 +1545,7 @@ ProjectManager::ProjectManager() {
 			hb->add_child(scan_btn);
 
 			loading_label = memnew(Label(TTRC("Loading, please wait...")));
-			loading_label->set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_ASSERTIVE);
+			loading_label->set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_ASSERTIVE);
 			loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			loading_label->hide();
 			hb->add_child(loading_label);
@@ -1623,9 +1653,16 @@ ProjectManager::ProjectManager() {
 
 			project_list_sidebar->add_child(memnew(HSeparator));
 
+			ScrollContainer *sidebar_scroll_containter = memnew(ScrollContainer);
+			sidebar_scroll_containter->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+			sidebar_scroll_containter->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			project_list_sidebar->add_child(sidebar_scroll_containter);
+			VBoxContainer *sidebar_buttons_containter = memnew(VBoxContainer);
+			sidebar_scroll_containter->add_child(sidebar_buttons_containter);
+
 			open_btn_container = memnew(HBoxContainer);
 			open_btn_container->set_anchors_preset(Control::PRESET_FULL_RECT);
-			project_list_sidebar->add_child(open_btn_container);
+			sidebar_buttons_containter->add_child(open_btn_container);
 
 			open_btn = memnew(Button);
 			open_btn->set_text(TTRC("Edit"));
@@ -1654,39 +1691,35 @@ ProjectManager::ProjectManager() {
 			run_btn->set_text(TTRC("Run"));
 			run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTRC("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 			run_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project));
-			project_list_sidebar->add_child(run_btn);
+			sidebar_buttons_containter->add_child(run_btn);
 
 			rename_btn = memnew(Button);
 			rename_btn->set_text(TTRC("Rename"));
 			// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 			rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTRC("Rename Project"), Key::F2));
 			rename_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_rename_project));
-			project_list_sidebar->add_child(rename_btn);
+			sidebar_buttons_containter->add_child(rename_btn);
 
 			duplicate_btn = memnew(Button);
 			duplicate_btn->set_text(TTRC("Duplicate"));
 			duplicate_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_duplicate_project));
-			project_list_sidebar->add_child(duplicate_btn);
+			sidebar_buttons_containter->add_child(duplicate_btn);
 
 			manage_tags_btn = memnew(Button);
 			manage_tags_btn->set_text(TTRC("Manage Tags"));
 			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTRC("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
-			project_list_sidebar->add_child(manage_tags_btn);
+			sidebar_buttons_containter->add_child(manage_tags_btn);
 
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTRC("Remove"));
 			erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTRC("Remove Project"), Key::KEY_DELETE));
 			erase_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_project));
-			project_list_sidebar->add_child(erase_btn);
+			sidebar_buttons_containter->add_child(erase_btn);
 
 			erase_missing_btn = memnew(Button);
 			erase_missing_btn->set_text(TTRC("Remove Missing"));
 			erase_missing_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects));
-			project_list_sidebar->add_child(erase_missing_btn);
-
-			Control *filler = memnew(Control);
-			filler->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			project_list_sidebar->add_child(filler);
+			sidebar_buttons_containter->add_child(erase_missing_btn);
 
 			donate_btn = memnew(Button);
 			donate_btn->set_text(TTRC("Donate"));
@@ -1735,7 +1768,6 @@ ProjectManager::ProjectManager() {
 		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
 
 		scan_dir = memnew(EditorFileDialog);
-		scan_dir->set_previews_enabled(false);
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTRC("Select a Folder to Scan")); // Must be after mode or it's overridden.
@@ -1799,7 +1831,7 @@ ProjectManager::ProjectManager() {
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
-		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (ed_swap_cancel_ok == 0) {
 			ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 		}
@@ -1935,7 +1967,7 @@ ProjectManager::ProjectManager() {
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->process_events();
-		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
+		DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServerEnums::MAIN_WINDOW_ID);
 		title_bar->set_can_move_window(true);
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
@@ -1945,6 +1977,12 @@ ProjectManager::ProjectManager() {
 
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
+	EditorInspector::cleanup_plugins();
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::free_singleton();
+#endif
+
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}

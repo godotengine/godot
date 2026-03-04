@@ -50,7 +50,9 @@ public:
 class SnapshotSummaryView : public SnapshotView {
 	GDCLASS(SnapshotSummaryView, SnapshotView);
 
-protected:
+	PanelContainer *content_wrapper = nullptr;
+	Label *title = nullptr;
+
 	VBoxContainer *blurb_list = nullptr;
 	CenterContainer *explainer_text = nullptr;
 
@@ -58,6 +60,9 @@ protected:
 	void _push_node_blurb(const String &p_title, GameStateSnapshot *p_snapshot);
 	void _push_refcounted_blurb(const String &p_title, GameStateSnapshot *p_snapshot);
 	void _push_object_blurb(const String &p_title, GameStateSnapshot *p_snapshot);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	SnapshotSummaryView();

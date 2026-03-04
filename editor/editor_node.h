@@ -31,10 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -298,12 +300,9 @@ private:
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	// Split containers.
-	DockSplitContainer *left_l_hsplit = nullptr;
 	DockSplitContainer *left_l_vsplit = nullptr;
-	DockSplitContainer *left_r_hsplit = nullptr;
 	DockSplitContainer *left_r_vsplit = nullptr;
 	DockSplitContainer *main_hsplit = nullptr;
-	DockSplitContainer *right_hsplit = nullptr;
 	DockSplitContainer *right_l_vsplit = nullptr;
 	DockSplitContainer *right_r_vsplit = nullptr;
 	DockSplitContainer *center_split = nullptr;
@@ -319,7 +318,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;
@@ -350,8 +349,6 @@ private:
 	Button *export_button = nullptr;
 
 	Timer *screenshot_timer = nullptr;
-
-	uint64_t started_timestamp = 0;
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
@@ -481,7 +478,7 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
-	HashSet<EditorFileDialog *> editor_file_dialogs;
+	LocalVector<ObjectID> hdr_viewports;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -504,8 +501,6 @@ private:
 
 	String _get_system_info() const;
 
-	bool _should_display_update_spinner() const;
-
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 		if (!singleton->dependency_errors.has(p_path)) {
@@ -521,8 +516,6 @@ private:
 
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
-	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
-	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 	static void _file_access_close_error_notify(const String &p_str);
 	static void _file_access_close_error_notify_impl(const String &p_str);
@@ -649,7 +642,6 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
-	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -698,7 +690,6 @@ private:
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
 	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "", bool p_fallback_script_to_theme = false, bool p_skip_fallback_virtual = false);
-	Ref<Texture2D> _get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -716,6 +707,20 @@ private:
 	void _execute_upgrades();
 
 	bool _is_project_data_missing();
+
+	enum MenuType {
+		MENU_TYPE_NONE,
+		MENU_TYPE_GLOBAL,
+		MENU_TYPE_COMPACT,
+		MENU_TYPE_FULL,
+	};
+	MenuType menu_type = MENU_TYPE_NONE;
+	Vector<PopupMenu *> main_menu_items;
+
+	void _build_file_menu();
+	void _build_project_menu();
+	void _build_settings_menu();
+	void _build_help_menu();
 
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
@@ -760,6 +765,7 @@ public:
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
 	static void add_io_warning(const String &p_warning);
+	static bool find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found);
 
 	static void progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	static bool progress_task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_refresh = true);
@@ -786,6 +792,8 @@ public:
 	static HashMap<String, Variant> get_initial_settings();
 
 	static void cleanup();
+
+	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
@@ -935,6 +943,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void register_hdr_viewport(Viewport *p_viewport);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -1037,6 +1046,7 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
+	bool is_scene_unsaved(int p_idx);
 };
 
 struct EditorProgressBG {

@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/rid.h"
-#include "core/variant/variant.h"
+#include "core/variant/binder_common.h"
 
 /**
 	The camera server is a singleton object that gives access to the various
@@ -110,6 +110,11 @@ public:
 
 	// Intended for use with custom CameraServer implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);
+
+	// Platform lifecycle callbacks (virtual, default empty implementation).
+	virtual void handle_application_pause() {}
+	virtual void handle_application_resume() {}
+	virtual void handle_display_rotation_change(int p_orientation) { (void)p_orientation; }
 
 	CameraServer();
 	~CameraServer();

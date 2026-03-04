@@ -30,6 +30,8 @@
 
 #include "range.h"
 
+#include "core/object/class_db.h"
+#include "servers/display/accessibility_server.h"
 #include "thirdparty/misc/r128.h"
 
 double Range::_snapped_r128(double p_value, double p_step) {
@@ -112,17 +114,17 @@ void Range::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, shared->val);
-			DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, shared->min, shared->max);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SPIN_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_num_value(ae, shared->val);
+			AccessibilityServer::get_singleton()->update_set_num_range(ae, shared->min, shared->max);
 			if (shared->step > 0) {
-				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, shared->step);
+				AccessibilityServer::get_singleton()->update_set_num_step(ae, shared->step);
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, 1);
+				AccessibilityServer::get_singleton()->update_set_num_step(ae, 1);
 			}
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &Range::_accessibility_action_dec));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &Range::_accessibility_action_inc));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &Range::_accessibility_action_set_value));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &Range::_accessibility_action_dec));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &Range::_accessibility_action_inc));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &Range::_accessibility_action_set_value));
 		} break;
 	}
 }

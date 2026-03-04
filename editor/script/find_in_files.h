@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -187,6 +187,8 @@ public:
 	void start_search();
 	void stop_search();
 
+	void update_layout(EditorDock::DockLayout p_layout);
+
 protected:
 	static void _bind_methods();
 
@@ -244,6 +246,9 @@ private:
 	HBoxContainer *_replace_container = nullptr;
 	LineEdit *_replace_line_edit = nullptr;
 	Button *_replace_all_button = nullptr;
+
+	bool _floating = false;
+	MarginContainer *_results_mc = nullptr;
 };
 
 class PopupMenu;
@@ -253,8 +258,8 @@ class TabContainer;
 // `Find in Files` search or a `Replace in Files` search, while a
 // FindInFilesContainer can contain several FindInFilesPanels so that multiple search
 // results can remain at the same time.
-class FindInFilesContainer : public MarginContainer {
-	GDCLASS(FindInFilesContainer, MarginContainer);
+class FindInFilesContainer : public EditorDock {
+	GDCLASS(FindInFilesContainer, EditorDock);
 
 	enum {
 		PANEL_CLOSE,
@@ -268,6 +273,7 @@ class FindInFilesContainer : public MarginContainer {
 	void _update_bar_visibility();
 	void _bar_menu_option(int p_option);
 	void _bar_input(const Ref<InputEvent> &p_input);
+	void _on_dock_closed();
 
 	TabContainer *_tabs = nullptr;
 	bool _update_bar = true;
@@ -283,6 +289,8 @@ protected:
 	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
 	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
 	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 public:
 	FindInFilesContainer();

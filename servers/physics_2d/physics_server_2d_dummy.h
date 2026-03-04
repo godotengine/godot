@@ -103,7 +103,7 @@ public:
 	virtual real_t get_step() const override { return 0; }
 	virtual void integrate_forces() override {}
 
-	virtual PhysicsDirectSpaceState2D *get_space_state() override { return space_state_dummy; }
+	virtual RequiredResult<PhysicsDirectSpaceState2D> get_space_state() override { return space_state_dummy; }
 
 	PhysicsDirectBodyState2DDummy(PhysicsDirectSpaceState2D *p_space_state_dummy) {
 		space_state_dummy = p_space_state_dummy;
@@ -227,7 +227,7 @@ public:
 	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const override { return Transform2D(); }
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) override {}
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) override {}
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0, const Vector2 &p_direction = Vector2(0, 1)) override {}
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override {}
 	virtual void body_clear_shapes(RID p_body) override {}

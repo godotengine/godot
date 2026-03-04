@@ -33,41 +33,41 @@
 #include "core/string/translation_server.h"
 #include "modules/regex/regex.h"
 
-int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
+int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return 1;
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return 8;
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return 9;
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return 11;
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return 12;
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return 13;
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return 0;
 	}
 }
 
-String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation) {
+String _get_android_orientation_label(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return "portrait";
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return "reverseLandscape";
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return "reversePortrait";
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return "userLandscape";
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return "userPortrait";
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return "fullUser";
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return "landscape";
 	}
@@ -182,7 +182,12 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 		return err;
 	}
 
-	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (export_data->pd.salt.length() == 32) {
+		dst_path = export_data->assets_directory + String("/") + (simplified_path + export_data->pd.salt).sha256_text();
+	} else {
+		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
 	err = store_file_at_path(dst_path, enc_data);
 
@@ -291,14 +296,17 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				export_plugins_activity_element_contents += "<!-- Start of manifest activity element contents from " + export_plugin_name + " -->\n";
 				export_plugins_activity_element_contents += contents;
 				export_plugins_activity_element_contents += "\n";
+				export_plugins_activity_element_contents += "<!-- End of manifest activity element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
 
 	// Update the GodotApp activity tag.
-	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
+	String orientation = _get_android_orientation_label(DisplayServerEnums::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\".GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
@@ -387,8 +395,11 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_application_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_application_text += "<!-- Start of manifest application element contents from " + export_plugin_name + " -->\n";
 				manifest_application_text += contents;
 				manifest_application_text += "\n";
+				manifest_application_text += "<!-- End of manifest application element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}

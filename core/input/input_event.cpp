@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
@@ -88,7 +89,7 @@ bool InputEvent::is_echo() const {
 	return false;
 }
 
-Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	return Ref<InputEvent>(const_cast<InputEvent *>(this));
 }
 
@@ -131,6 +132,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
+	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
+	BIND_CONSTANT(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -314,8 +317,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-		}
-		if (p_property.name == "ctrl_pressed") {
+		} else if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -405,7 +407,7 @@ String InputEventKey::as_text_physical_keycode() const {
 	if (physical_keycode != Key::NONE) {
 		kc = keycode_get_string(physical_keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -422,7 +424,7 @@ String InputEventKey::as_text_keycode() const {
 	if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -439,7 +441,7 @@ String InputEventKey::as_text_key_label() const {
 	if (key_label != Key::NONE) {
 		kc = keycode_get_string(key_label);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -471,13 +473,16 @@ String InputEventKey::as_text() const {
 	String kc;
 
 	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
-		kc = keycode_get_string(key_label) + " (Unicode)";
+		kc = keycode_get_string(key_label) + " - Unicode";
 	} else if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else if (physical_keycode != Key::NONE) {
-		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
+		kc = keycode_get_string(physical_keycode);
+		if ((physical_keycode & Key::SPECIAL) != Key::SPECIAL) {
+			kc += " - " + RTR("Physical");
+		}
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -508,7 +513,7 @@ String InputEventKey::_to_string() {
 		kc = itos((int64_t)physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
@@ -659,6 +664,10 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
+InputEventKey::InputEventKey() {
+	set_device(DEVICE_ID_KEYBOARD);
+}
+
 ///////////////////////////////////
 
 void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
@@ -701,6 +710,10 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
 
+InputEventMouse::InputEventMouse() {
+	set_device(DEVICE_ID_MOUSE);
+}
+
 ///////////////////////////////////
 
 void InputEventMouseButton::set_factor(float p_factor) {
@@ -736,7 +749,7 @@ bool InputEventMouseButton::is_double_click() const {
 	return double_click;
 }
 
-Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
@@ -958,7 +971,7 @@ Vector2 InputEventMouseMotion::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
@@ -1364,7 +1377,7 @@ bool InputEventScreenTouch::is_double_tap() const {
 	return double_tap;
 }
 
-Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
 	st->set_device(get_device());
@@ -1487,7 +1500,7 @@ Vector2 InputEventScreenDrag::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenDrag> sd;
 
 	sd.instantiate();
@@ -1706,7 +1719,7 @@ real_t InputEventMagnifyGesture::get_factor() const {
 	return factor;
 }
 
-Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instantiate();
 
@@ -1748,7 +1761,7 @@ Vector2 InputEventPanGesture::get_delta() const {
 	return delta;
 }
 
-Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventPanGesture> ev;
 	ev.instantiate();
 
@@ -1917,7 +1930,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

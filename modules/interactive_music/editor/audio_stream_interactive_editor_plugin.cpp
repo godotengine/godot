@@ -31,6 +31,8 @@
 #include "audio_stream_interactive_editor_plugin.h"
 
 #include "../audio_stream_interactive.h"
+
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -40,6 +42,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/style_box_flat.h"
 
 void AudioStreamInteractiveTransitionEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -183,13 +186,13 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 			if (!exists) {
 				if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, to)) {
 					from = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using Any Clip -> %s."), audio_stream_interactive->get_clip_name(to));
+					tooltip = vformat(TTR(U"Using any clip → %s."), audio_stream_interactive->get_clip_name(to));
 				} else if (audio_stream_interactive->has_transition(from, AudioStreamInteractive::CLIP_ANY)) {
 					to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using %s -> Any Clip."), audio_stream_interactive->get_clip_name(from));
+					tooltip = vformat(TTR(U"Using %s → Any clip."), audio_stream_interactive->get_clip_name(from));
 				} else if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, AudioStreamInteractive::CLIP_ANY)) {
 					from = to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = TTR("Using All Clips -> Any Clip.");
+					tooltip = TTR(U"Using all clips → Any clip.");
 				} else {
 					tooltip = TTR("No transition available.");
 				}
@@ -270,7 +273,8 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	filler_clip->clear();
 	filler_clip->add_item(TTR("Disabled"), -1);
 
-	Color header_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
+	const Ref<StyleBoxFlat> &sb_title = tree->get_theme_stylebox(SNAME("title_button_normal"), SNAME("Tree"));
+	const Color header_color = sb_title.is_valid() ? sb_title->get_bg_color() : Color(0, 0, 0, 0);
 
 	int max_w = 0;
 
@@ -329,9 +333,11 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
+	tree->set_hide_folding(true);
 	tree->add_theme_constant_override("draw_guides", 1);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_custom_minimum_size(Size2(400, 0) * EDSCALE);
+	tree->set_theme_type_variation("TreeSecondary");
 	split->add_child(tree);
 
 	tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);

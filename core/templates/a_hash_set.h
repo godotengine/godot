@@ -294,7 +294,7 @@ public:
 		p_other._size = 0;
 	}
 
-	AHashSet(const AHashSet &p_other) {
+	explicit AHashSet(const AHashSet &p_other) {
 		_init_from(p_other);
 	}
 
@@ -326,7 +326,7 @@ public:
 	AHashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
-		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
+		_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;
 	}
 	AHashSet() {
 		_capacity_mask = (INITIAL_CAPACITY - 1);

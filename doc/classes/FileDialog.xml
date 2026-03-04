@@ -118,12 +118,18 @@
 				Returns [code]true[/code] if the provided [param flag] is enabled.
 			</description>
 		</method>
+		<method name="popup_file_dialog">
+			<return type="void" />
+			<description>
+				Shows the [FileDialog] using the default size and position for file dialogs, and selects the file name if there is a current file.
+			</description>
+		</method>
 		<method name="set_customization_flag_enabled">
 			<return type="void" />
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+				Sets the specified customization [param flag], allowing to customize the features available in this [FileDialog].
 			</description>
 		</method>
 		<method name="set_favorite_list" qualifiers="static">
@@ -270,10 +276,11 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], and if supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
-			[b]Note:[/b] On Android, it is only supported for Android 10+ devices and when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
+			[b]Note:[/b] On Android, it is only supported when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
 			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
 			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
+			[b]Note:[/b] This property is ignored in [EditorFileDialog].
 		</member>
 	</members>
 	<signals>
@@ -415,6 +422,24 @@
 		</theme_item>
 		<theme_item name="list_mode" data_type="icon" type="Texture2D">
 			Icon for the button that enables list mode.
+		</theme_item>
+		<theme_item name="menu_copy_path" data_type="icon" type="Texture2D">
+			Icon for the "Copy Path" context menu option.
+		</theme_item>
+		<theme_item name="menu_delete" data_type="icon" type="Texture2D">
+			Icon for the "Delete" context menu option.
+		</theme_item>
+		<theme_item name="menu_new_folder" data_type="icon" type="Texture2D">
+			Icon for the "New Folder..." context menu option. Usually it should be the same as [theme_item create_folder]; leave it empty if you want the context menu to show no icons.
+		</theme_item>
+		<theme_item name="menu_open_bundle" data_type="icon" type="Texture2D">
+			Icon for the "Show Package Contents" context menu option. The option only appears for macOS bundles.
+		</theme_item>
+		<theme_item name="menu_refresh" data_type="icon" type="Texture2D">
+			Icon for the "Refresh" context menu option. Usually it should be the same as [theme_item reload]; leave it empty if you want the context menu to show no icons.
+		</theme_item>
+		<theme_item name="menu_show_in_file_manager" data_type="icon" type="Texture2D">
+			Icon for the "Show in File Manager" context menu option.
 		</theme_item>
 		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
 			Custom icon for the parent folder arrow.

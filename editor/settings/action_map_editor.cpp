@@ -30,6 +30,7 @@
 
 #include "action_map_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_event_search_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -37,6 +38,7 @@
 #include "editor/settings/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -169,7 +171,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_name = item->get_meta("__name");
 			current_action_event_index = -1;
 
-			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name);
+			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name, current_action);
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -180,7 +182,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 			Ref<InputEvent> ie = item->get_meta("__event");
 			if (ie.is_valid()) {
-				event_config_dialog->popup_and_configure(ie, current_action_name);
+				event_config_dialog->popup_and_configure(ie, current_action_name, current_action);
 			}
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
@@ -600,10 +602,15 @@ ActionMapEditor::ActionMapEditor() {
 
 	main_vbox->add_child(add_hbox);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	main_vbox->add_child(mc);
+
 	// Action Editor Tree
 	action_tree = memnew(Tree);
-	action_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_tree->set_accessibility_name(TTRC("Action Map"));
+	action_tree->set_theme_type_variation("TreeTable");
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);
@@ -617,7 +624,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited), CONNECT_DEFERRED);
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
-	main_vbox->add_child(action_tree);
+	mc->add_child(action_tree);
 
 	SET_DRAG_FORWARDING_GCD(action_tree, ActionMapEditor);
 

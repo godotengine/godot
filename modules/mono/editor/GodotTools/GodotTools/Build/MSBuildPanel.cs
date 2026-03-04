@@ -204,11 +204,10 @@ namespace GodotTools.Build
         {
             Name = "MSBuild".TTR();
             IconName = "BuildCSharp";
-            DefaultSlot = EditorPlugin.DockSlot.Bottom;
+            DefaultSlot = EditorDock.DockSlot.Bottom;
             AvailableLayouts = DockLayout.Horizontal | DockLayout.Floating;
             Global = false;
             Transient = true;
-            ClipContents = false;
         }
 
         public override void _Ready()

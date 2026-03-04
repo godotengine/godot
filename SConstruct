@@ -2,7 +2,7 @@
 from misc.utility.scons_hints import *
 
 EnsureSConsVersion(4, 0)
-EnsurePythonVersion(3, 8)
+EnsurePythonVersion(3, 9)
 
 # System
 import glob
@@ -202,7 +202,12 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
 opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
-opts.Add(("profiler_path", "Path to the Profiler framework. Only tracy and perfetto are supported at the moment.", ""))
+opts.Add(
+    EnumVariable(
+        "profiler", "Specify the profiler to use", "none", ["none", "tracy", "perfetto", "instruments"], ignorecase=2
+    )
+)
+opts.Add(("profiler_path", "Path to the Profiler framework.", ""))
 opts.Add(
     BoolVariable(
         "profiler_sample_callstack",
@@ -210,6 +215,14 @@ opts.Add(
         False,
     )
 )
+opts.Add(
+    BoolVariable(
+        "profiler_track_memory",
+        "Profile memory allocations, if the profiler supports it.",
+        False,
+    )
+)
+
 
 # Advanced options
 opts.Add(
@@ -223,6 +236,7 @@ opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", Fals
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
 opts.Add("ninja_file", "Path to the generated ninja file", "build.ninja")
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
+opts.Add(BoolVariable("compiledb_gen_only", "Exit after building the compilation database", False))
 opts.Add(
     "num_jobs",
     "Use up to N jobs when compiling (equivalent to `-j N`). Defaults to max jobs - 1. Ignored if -j is used.",
@@ -267,6 +281,11 @@ opts.Add(
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
+opts.Add(
+    BoolVariable(
+        "limit_transitive_includes", "Attempt to limit the amount of transitive includes in system headers", True
+    )
+)
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
@@ -630,8 +649,11 @@ if env["build_profile"] != "":
             dbo = ft["disabled_build_options"]
             for c in dbo:
                 env[c] = dbo[c]
-    except json.JSONDecodeError:
-        print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
+    except json.JSONDecodeError as err:
+        print_error(f'Failed to open feature build profile due to JSON decoding error: "{env["build_profile"]}"\n{err}')
+        Exit(255)
+    except FileNotFoundError:
+        print_error(f'Feature build profile not found at: "{env["build_profile"]}"')
         Exit(255)
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
@@ -777,6 +799,13 @@ elif methods.using_clang(env) or methods.using_emcc(env):
     env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
+
+# Attempt to reduce transitive includes.
+if env["limit_transitive_includes"]:
+    if not env.msvc:
+        # FIXME: This define only affects `libcpp`, but lack of guaranteed, granular detection means
+        #  we're better off applying it universally.
+        env.AppendUnique(CPPDEFINES=["_LIBCPP_REMOVE_TRANSITIVE_INCLUDES"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
@@ -1144,7 +1173,6 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 
 if env["compiledb"]:
     env.Tool("compilation_db")
-    env.Alias("compiledb", env.CompilationDatabase())
     env.NoCache(env.CompilationDatabase())
     if not env["verbose"]:
         env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
@@ -1204,6 +1232,12 @@ if env["vsproj"]:
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
+    if env["compiledb"] and env["compiledb_gen_only"]:
+        from SCons.Tool.compilation_db import write_compilation_db
+
+        write_compilation_db([env.File("compile_commands.json")], [], env)
+        env.Exit()
+
     methods.dump(env)
     methods.show_progress(env)
     methods.prepare_purge(env)

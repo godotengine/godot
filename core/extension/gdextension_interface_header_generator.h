@@ -46,7 +46,8 @@ private:
 	static void write_struct_type(const Ref<FileAccess> &p_fa, const Dictionary &p_struct);
 
 	static String format_type_and_name(const String &p_type, const String &p_name);
-	static String make_deprecated_note(const Dictionary &p_type);
+	static String make_deprecated_message(const Dictionary &p_data);
+	static String make_deprecated_comment_for_type(const Dictionary &p_type);
 	static String make_args_text(const Array &p_args);
 
 	static void write_interface(const Ref<FileAccess> &p_fa, const Dictionary &p_interface);

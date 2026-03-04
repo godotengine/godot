@@ -39,6 +39,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
@@ -1701,14 +1702,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
 
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif // DEBUG_ENABLED
+	for (const MethodInfo &method : methods) {
+		ret.push_back(method.operator Dictionary());
 	}
 
 	return ret;

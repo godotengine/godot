@@ -31,23 +31,23 @@
 #pragma once
 
 #include "core/io/resource_uid.h"
-#include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
 class Node;
+class RWLock;
 
-#define RES_BASE_EXTENSION(m_ext)                                        \
-public:                                                                  \
-	static void register_custom_data_to_otdb() {                         \
-		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
-	}                                                                    \
-	virtual String get_base_extension() const override {                 \
-		return m_ext;                                                    \
-	}                                                                    \
-                                                                         \
+#define RES_BASE_EXTENSION(m_ext) \
+public: \
+	static void register_custom_data_to_otdb() { \
+		Resource::_add_resource_base_extension_to_classdb(m_ext, get_class_static()); \
+	} \
+	virtual String get_base_extension() const override { \
+		return m_ext; \
+	} \
+\
 private:
 
 class Resource : public RefCounted {
@@ -56,10 +56,11 @@ class Resource : public RefCounted {
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
 
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
+	static void register_custom_data_to_otdb();
 	virtual String get_base_extension() const { return "res"; }
 
 protected:
+	static void _add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class);
 	struct DuplicateParams {
 		bool deep = false;
 		ResourceDeepDuplicateMode subres_mode = RESOURCE_DEEP_DUPLICATE_MAX;
@@ -94,6 +95,7 @@ private:
 
 	using DuplicateRemapCacheT = HashMap<Ref<Resource>, Ref<Resource>>;
 	static thread_local inline DuplicateRemapCacheT *thread_duplicate_remap_cache = nullptr;
+	static thread_local inline bool thread_duplicate_remap_cache_needs_deallocation = true;
 
 	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);

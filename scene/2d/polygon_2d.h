@@ -56,7 +56,6 @@ class Polygon2D : public Node2D {
 
 	Size2 tex_scale = Vector2(1, 1);
 	Vector2 tex_ofs;
-	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
 	real_t invert_border = 100.0;

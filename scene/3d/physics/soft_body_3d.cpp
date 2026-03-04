@@ -31,7 +31,9 @@
 #include "soft_body_3d.h"
 #include "soft_body_3d.compat.inc"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
@@ -43,9 +45,9 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	mesh = p_mesh;
 	surface = p_surface;
 
-	RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
+	RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
 
-	uint32_t surface_offsets[RS::ARRAY_MAX];
+	uint32_t surface_offsets[RSE::ARRAY_MAX];
 	uint32_t vertex_stride;
 	uint32_t normal_tangent_stride;
 	uint32_t attrib_stride;
@@ -55,8 +57,8 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	buffer = surface_data.vertex_data;
 	stride = vertex_stride;
 	normal_stride = normal_tangent_stride;
-	offset_vertices = surface_offsets[RS::ARRAY_VERTEX];
-	offset_normal = surface_offsets[RS::ARRAY_NORMAL];
+	offset_vertices = surface_offsets[RSE::ARRAY_VERTEX];
+	offset_normal = surface_offsets[RSE::ARRAY_NORMAL];
 }
 
 void SoftBodyRenderingServerHandler::clear() {
@@ -383,7 +385,7 @@ void SoftBody3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,exp,suffix:kg"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
@@ -614,15 +616,15 @@ TypedArray<PhysicsBody3D> SoftBody3D::get_collision_exceptions() {
 	return ret;
 }
 
-void SoftBody3D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void SoftBody3D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
-void SoftBody3D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void SoftBody3D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());

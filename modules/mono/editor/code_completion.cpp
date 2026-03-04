@@ -31,6 +31,7 @@
 #include "code_completion.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
@@ -123,7 +124,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		case CompletionKind::NODE_PATHS: {
 			{
 				// Autoloads.
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
 
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;

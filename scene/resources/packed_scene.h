@@ -139,7 +139,7 @@ public:
 	};
 
 	static void set_disable_placeholders(bool p_disable);
-	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
+	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
 
 	int find_node_by_path(const NodePath &p_node) const;
 	Variant get_property_value(int p_node, const StringName &p_property, bool &r_found, bool &r_node_deferred) const;
@@ -160,9 +160,9 @@ public:
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
 
-	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_sub_scene, Node *node, const StringName sname, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_scene, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
-	Dictionary setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
-	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
+	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *node, const StringName sname, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
+	Dictionary setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
+	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
 	bool has_local_resource(const Array &p_array) const;
 
 	Ref<SceneState> get_base_scene_state() const;

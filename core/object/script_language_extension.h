@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
@@ -361,13 +361,8 @@ public:
 	}
 
 	EXBIND1RC(String, validate_path, const String &)
-	GDVIRTUAL0RC_REQUIRED(Object *, _create_script)
-	Script *create_script() const override {
-		Object *ret = nullptr;
-		GDVIRTUAL_CALL(_create_script, ret);
-		return Object::cast_to<Script>(ret);
-	}
 #ifndef DISABLE_DEPRECATED
+	GDVIRTUAL0RC(Object *, _create_script)
 	GDVIRTUAL0RC(bool, _has_named_classes)
 #endif
 	EXBIND0RC(bool, supports_builtin_mode)

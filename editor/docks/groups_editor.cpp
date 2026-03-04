@@ -30,6 +30,7 @@
 
 #include "groups_editor.h"
 
+#include "core/object/class_db.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -43,6 +44,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 static bool can_edit(Node *p_node, const String &p_group) {
 	Node *n = p_node;
@@ -704,7 +706,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_dialog->register_text_enter(add_group_description);
 
 		add_validation_panel = memnew(EditorValidationPanel);
-		add_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		add_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		add_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_add));
 		add_validation_panel->set_accept_button(add_group_dialog->get_ok_button());
 
@@ -745,7 +747,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_group_dialog->register_text_enter(rename_group);
 
 		rename_validation_panel = memnew(EditorValidationPanel);
-		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
@@ -832,9 +834,9 @@ void GroupsEditor::_check_rename() {
 
 void GroupsEditor::_validate_name(const String &p_name, EditorValidationPanel *p_validation_panel) {
 	if (p_name.is_empty()) {
-		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
+		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
 	} else if (_has_group(p_name)) {
-		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group already exists."), EditorValidationPanel::MSG_ERROR);
+		p_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -911,16 +913,21 @@ GroupsEditor::GroupsEditor() {
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	holder->add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SelectMode::SELECT_SINGLE);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+	mc->add_child(tree);
 	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->connect("item_mouse_selected", callable_mp(this, &GroupsEditor::_item_mouse_selected));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &GroupsEditor::_groups_gui_input));
-	holder->add_child(tree);
 
 	menu = memnew(PopupMenu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));

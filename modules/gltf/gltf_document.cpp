@@ -30,6 +30,7 @@
 
 #include "gltf_document.h"
 
+#include "core/object/class_db.h"
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_state.h"
@@ -99,49 +100,6 @@ static void _attach_meta_to_extras(Ref<Resource> p_node, Dictionary &p_json) {
 	}
 }
 
-static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	if (p_mesh.is_null()) {
-		return importer_mesh;
-	}
-
-	Ref<ArrayMesh> array_mesh = p_mesh;
-	if (p_mesh->get_blend_shape_count()) {
-		ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
-		if (array_mesh.is_valid()) {
-			shape_mode = array_mesh->get_blend_shape_mode();
-		}
-		importer_mesh->set_blend_shape_mode(shape_mode);
-		for (int morph_i = 0; morph_i < p_mesh->get_blend_shape_count(); morph_i++) {
-			importer_mesh->add_blend_shape(p_mesh->get_blend_shape_name(morph_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
-		Array array = p_mesh->surface_get_arrays(surface_i);
-		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
-		const String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
-		String mat_name;
-		if (mat.is_valid()) {
-			mat_name = mat->get_name();
-			if (mat_name.is_empty()) {
-				mat_name = surface_name;
-			}
-		} else {
-			mat_name = surface_name;
-			// Assign default material when no material is assigned.
-			mat.instantiate();
-			mat->set_name(mat_name);
-		}
-		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
-				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
-				mat_name, p_mesh->surface_get_format(surface_i));
-	}
-	importer_mesh->merge_meta_from(*p_mesh);
-	importer_mesh->set_name(p_mesh->get_name());
-	return importer_mesh;
-}
-
 Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -188,12 +146,6 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 		return Error::FAILED;
 	}
 
-	/* STEP SERIALIZE ACCESSORS */
-	err = _encode_accessors(p_state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
 	/* STEP SERIALIZE IMAGES */
 	err = _serialize_images(p_state);
 	if (err != OK) {
@@ -202,12 +154,6 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 
 	/* STEP SERIALIZE TEXTURES */
 	err = _serialize_textures(p_state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP SERIALIZE BUFFER VIEWS */
-	err = _encode_buffer_views(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -238,6 +184,18 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 
 	/* STEP SERIALIZE VERSION */
 	err = _serialize_asset_header(p_state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP SERIALIZE ACCESSORS */
+	err = _encode_accessors(p_state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP SERIALIZE BUFFER VIEWS */
+	err = _encode_buffer_views(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -1479,7 +1437,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		TypedArray<Material> instance_materials;
 
 		for (int j = 0; j < primitives.size(); j++) {
-			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
 			Array array;
@@ -1788,7 +1746,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 
 			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
-				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			Ref<SurfaceTool> mesh_surface_tool;
@@ -1804,19 +1762,19 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 			array = mesh_surface_tool->commit_to_arrays();
 
-			if ((flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
+			if ((flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
 				if (unlikely(tangents.size() < normals.size() * 4)) {
 					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
-					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 				} else {
 					for (int vert = 0; vert < normals.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
-							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+							flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
 					}
 				}
@@ -2096,10 +2054,18 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+static inline Ref<Image> _duplicate_and_decompress_image(const Ref<Image> &p_image) {
+	Ref<Image> img = p_image->duplicate();
+	if (img->is_compressed()) {
+		img->decompress();
+	}
+	return img;
+}
+
 Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension) {
 	Dictionary image_dict;
 	if (p_image->is_compressed()) {
-		p_image->decompress();
+		p_image = _duplicate_and_decompress_image(p_image);
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
@@ -2750,10 +2716,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
-					ao_image = ao_texture->get_image();
-					if (ao_image->is_compressed()) {
-						ao_image->decompress();
-					}
+					ao_image = _duplicate_and_decompress_image(ao_texture->get_image());
 					if (!ao_texture->get_path().is_empty()) {
 						common_paths.insert(ao_texture->get_path());
 					}
@@ -2762,10 +2725,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_roughness) {
 					height = roughness_texture->get_height();
 					width = roughness_texture->get_width();
-					roughness_image = roughness_texture->get_image();
-					if (roughness_image->is_compressed()) {
-						roughness_image->decompress();
-					}
+					roughness_image = _duplicate_and_decompress_image(roughness_texture->get_image());
 					if (!roughness_texture->get_path().is_empty()) {
 						common_paths.insert(roughness_texture->get_path());
 					}
@@ -2774,10 +2734,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_metalness) {
 					height = metallic_texture->get_height();
 					width = metallic_texture->get_width();
-					metallness_image = metallic_texture->get_image();
-					if (metallness_image->is_compressed()) {
-						metallness_image->decompress();
-					}
+					metallness_image = _duplicate_and_decompress_image(metallic_texture->get_image());
 					if (!metallic_texture->get_path().is_empty()) {
 						common_paths.insert(metallic_texture->get_path());
 					}
@@ -2848,9 +2805,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				has_ao = true;
 				has_roughness = true;
 				has_metalness = true;
-				Ref<Image> orm_image = original_orm_tex->get_image();
-				orm_image->decompress();
-				orm_image->convert(Image::FORMAT_RGBA8);
 
 				_set_material_texture_name(original_orm_tex, original_orm_tex->get_path(), mat_name, "_orm");
 				orm_texture_index = _set_texture(p_state, original_orm_tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
@@ -2882,26 +2836,23 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			String path;
 			{
 				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
-				if (normal_texture.is_valid()) {
+				if (normal_texture.is_valid() && normal_texture->get_image().is_valid()) {
 					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
-					Ref<Image> img = normal_texture->get_image();
-					if (img.is_valid()) {
-						img->decompress();
-						img->convert(Image::FORMAT_RGBA8);
-						for (int32_t y = 0; y < img->get_height(); y++) {
-							for (int32_t x = 0; x < img->get_width(); x++) {
-								Color c = img->get_pixel(x, y);
-								Vector2 red_green = Vector2(c.r, c.g);
-								red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
-								float blue = 1.0f - red_green.dot(red_green);
-								blue = MAX(0.0f, blue);
-								c.b = Math::sqrt(blue);
-								img->set_pixel(x, y, c);
-							}
+					Ref<Image> img = _duplicate_and_decompress_image(normal_texture->get_image());
+					img->convert(Image::FORMAT_RGBA8);
+					for (int32_t y = 0; y < img->get_height(); y++) {
+						for (int32_t x = 0; x < img->get_width(); x++) {
+							Color c = img->get_pixel(x, y);
+							Vector2 red_green = Vector2(c.r, c.g);
+							red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
+							float blue = 1.0f - red_green.dot(red_green);
+							blue = MAX(0.0f, blue);
+							c.b = Math::sqrt(blue);
+							img->set_pixel(x, y, c);
 						}
-						tex->set_image(img);
 					}
+					tex->set_image(img);
 				}
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
@@ -3148,7 +3099,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-				material->set_emission(Color(0, 0, 0));
+				material->set_emission_operator(BaseMaterial3D::EMISSION_OP_MULTIPLY);
+				// glTF spec: emissiveFactor × emissiveTexture. Use WHITE if no factor specified.
+				if (!material_dict.has("emissiveFactor")) {
+					material->set_emission(Color(1, 1, 1));
+				}
 			}
 		}
 
@@ -4074,7 +4029,6 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 		Ref<Material> mat = p_mesh_instance->get_active_material(surface_i);
 		instance_materials.append(mat);
 	}
-	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
 	Vector<float> blend_weights;
 	int32_t blend_count = mesh_resource->get_blend_shape_count();
 	blend_weights.resize(blend_count);
@@ -4089,7 +4043,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 		gltf_mesh->set_name(_gen_unique_name(p_state, mesh_resource->get_name()));
 	}
 	gltf_mesh->set_instance_materials(instance_materials);
-	gltf_mesh->set_mesh(current_mesh);
+	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh_resource));
 	gltf_mesh->set_blend_weights(blend_weights);
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
@@ -4354,7 +4308,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();
-		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
+		gltf_mesh->set_mesh(ImporterMesh::from_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		const String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
 		gltf_mesh->set_name(unique_name);
@@ -4385,29 +4339,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 	}
 	gltf_mesh->set_original_name(multi_mesh->get_name());
 	gltf_mesh->set_name(multi_mesh->get_name());
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	Ref<ArrayMesh> array_mesh = multi_mesh->get_mesh();
-	if (array_mesh.is_valid()) {
-		importer_mesh->set_blend_shape_mode(array_mesh->get_blend_shape_mode());
-		for (int32_t blend_i = 0; blend_i < array_mesh->get_blend_shape_count(); blend_i++) {
-			importer_mesh->add_blend_shape(array_mesh->get_blend_shape_name(blend_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < mesh->get_surface_count(); surface_i++) {
-		Ref<Material> mat = mesh->surface_get_material(surface_i);
-		String material_name;
-		if (mat.is_valid()) {
-			material_name = mat->get_name();
-		}
-		Array blend_arrays;
-		if (array_mesh.is_valid()) {
-			blend_arrays = array_mesh->surface_get_blend_shape_arrays(surface_i);
-		}
-		importer_mesh->add_surface(mesh->surface_get_primitive_type(surface_i), mesh->surface_get_arrays(surface_i),
-				blend_arrays, mesh->surface_get_lods(surface_i), mat, material_name, mesh->surface_get_format(surface_i));
-	}
-	gltf_mesh->set_mesh(importer_mesh);
+	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh));
 	GLTFMeshIndex mesh_index = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
@@ -6018,6 +5950,16 @@ GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> 
 	ERR_FAIL_V_MSG(-1, vformat("glTF: A node was animated, but it wasn't found in the GLTFState. Ensure that all nodes referenced by the AnimationPlayer are in the scene you are exporting."));
 }
 
+template <typename T>
+static inline Error _try_interpolate_value_track(const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, double p_time, T &r_value) {
+	Variant val = p_godot_animation->value_track_interpolate(p_godot_anim_track_index, p_time, false);
+	if (val.get_type() != GetTypeInfo<T>::VARIANT_TYPE) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_value = val;
+	return OK;
+}
+
 bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAnimation::NodeTrack &p_gltf_node_track, const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, Vector<double> &p_times) {
 	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(p_godot_animation, p_godot_anim_track_index);
 	const Animation::TrackType track_type = p_godot_animation->track_get_type(p_godot_anim_track_index);
@@ -6157,7 +6099,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 position;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, position);
 						if (err == OK) {
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
@@ -6193,7 +6135,17 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Quaternion rotation;
-						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+						Error err;
+						if (node_prop == "quaternion") {
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation);
+						} else {
+							Vector3 rotation_euler;
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation_euler);
+							if (node_prop == "rotation_degrees") {
+								rotation_euler *= Math::TAU / 360.0;
+							}
+							rotation = Quaternion::from_euler(rotation_euler);
+						}
 						if (err == OK) {
 							p_gltf_node_track.rotation_track.values.push_back(rotation);
 							p_gltf_node_track.rotation_track.times.push_back(time);
@@ -6239,7 +6191,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 scale;
-						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, scale);
 						if (err == OK) {
 							p_gltf_node_track.scale_track.values.push_back(scale);
 							p_gltf_node_track.scale_track.times.push_back(time);
@@ -6284,17 +6236,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					double time = 0.0;
 					bool last = false;
 					while (true) {
-						Vector3 position;
-						Quaternion rotation;
-						Vector3 scale;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Transform3D transform;
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, transform);
 						if (err == OK) {
-							err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-							if (err == OK) {
-								err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-							}
-						}
-						if (err == OK) {
+							Vector3 position = transform.get_origin();
+							Quaternion rotation = transform.basis.get_rotation_quaternion();
+							Vector3 scale = transform.basis.get_scale();
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
 							p_gltf_node_track.rotation_track.values.push_back(rotation);
@@ -6441,7 +6388,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		}
 		// Get the Godot node and the glTF node index for the animation track.
 		const NodePath track_path = animation->track_get_path(track_index);
-		const Node *anim_player_parent = p_animation_player->get_parent();
+		const NodePath root_node = p_animation_player->get_root_node();
+		const Node *anim_player_parent = p_animation_player->get_node_or_null(root_node);
+		ERR_CONTINUE_MSG(!anim_player_parent, "glTF: Cannot get root node for animation player: " + String(root_node));
 		const Node *animated_node = anim_player_parent->get_node_or_null(track_path);
 		ERR_CONTINUE_MSG(!animated_node, "glTF: Cannot get node for animated track using path: " + String(track_path));
 		const GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(animation, track_index);
@@ -6992,6 +6941,18 @@ Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
 Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path) {
 	Error err;
 
+	/* PARSE BUFFERS */
+	err = _parse_buffers(p_state, p_search_path);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+	/* PARSE BUFFER VIEWS */
+	err = _parse_buffer_views(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+	/* PARSE ACCESSORS */
+	err = _parse_accessors(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
 	/* PARSE EXTENSIONS */
 	err = _parse_gltf_extensions(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -7002,21 +6963,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 	/* PARSE NODES */
 	err = _parse_nodes(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE BUFFERS */
-	err = _parse_buffers(p_state, p_search_path);
-
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE BUFFER VIEWS */
-	err = _parse_buffer_views(p_state);
-
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE ACCESSORS */
-	err = _parse_accessors(p_state);
-
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	if (!p_state->discard_meshes_and_materials) {

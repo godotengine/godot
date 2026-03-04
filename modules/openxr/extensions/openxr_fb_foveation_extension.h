@@ -92,13 +92,7 @@ private:
 
 	void _update_profile_rt();
 
-	void update_profile() {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp(this, &OpenXRFBFoveationExtension::_update_profile_rt));
-	}
+	void update_profile();
 
 	// Enable foveation on this swapchain
 	XrSwapchainCreateInfoFoveationFB swapchain_create_info_foveation_fb;
@@ -107,7 +101,9 @@ private:
 	// Enable eye tracked foveation
 	XrSystemFoveationEyeTrackedPropertiesMETA meta_foveation_eye_tracked_properties;
 	XrFoveationEyeTrackedProfileCreateInfoMETA meta_foveation_eye_tracked_create_info;
+#ifdef VULKAN_ENABLED
 	XrVulkanSwapchainCreateInfoMETA meta_vulkan_swapchain_create_info;
+#endif
 
 	// OpenXR API call wrappers
 	EXT_PROTO_XRRESULT_FUNC3(xrCreateFoveationProfileFB, (XrSession), session, (const XrFoveationProfileCreateInfoFB *), create_info, (XrFoveationProfileFB *), profile);

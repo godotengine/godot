@@ -30,6 +30,9 @@
 
 #include "editor_title_bar.h"
 
+#include "core/object/callable_method_pointer.h"
+#include "servers/display/display_server.h"
+
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (!can_move) {
 		return;
@@ -54,7 +57,7 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (w) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_pressed()) {
-					if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_DRAG)) {
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_DRAG)) {
 						DisplayServer::get_singleton()->window_start_drag(w->get_window_id());
 					} else {
 						click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();

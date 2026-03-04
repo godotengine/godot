@@ -31,6 +31,7 @@
 #include "group_settings_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -126,9 +127,9 @@ void GroupSettingsEditor::_check_rename() {
 	}
 
 	if (new_name.is_empty()) {
-		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
+		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group can't be empty."), EditorValidationPanel::MSG_ERROR);
 	} else if (ProjectSettings::get_singleton()->has_global_group(new_name)) {
-		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group already exists."), EditorValidationPanel::MSG_ERROR);
+		rename_validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -189,7 +190,7 @@ void GroupSettingsEditor::_group_name_text_changed(const String &p_name) {
 void GroupSettingsEditor::_modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename) {
 	HashSet<String> scenes;
 
-	HashMap<StringName, HashSet<StringName>> scene_groups_cache = ProjectSettings::get_singleton()->get_scene_groups_cache();
+	HashMap<StringName, HashSet<StringName>> scene_groups_cache(ProjectSettings::get_singleton()->get_scene_groups_cache());
 	for (const KeyValue<StringName, HashSet<StringName>> &E : scene_groups_cache) {
 		if (E.value.has(p_name)) {
 			scenes.insert(E.key);
@@ -449,7 +450,7 @@ void GroupSettingsEditor::_show_rename_dialog() {
 		rename_group_dialog->register_text_enter(rename_group);
 
 		rename_validation_panel = memnew(EditorValidationPanel);
-		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Group name is valid."));
+		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupSettingsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
@@ -523,12 +524,19 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &GroupSettingsEditor::_add_group));
 	hbc->add_child(add_button);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);
 	tree->set_allow_reselect(true);
 
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(3);
 	tree->set_column_titles_visible(true);
 
@@ -539,9 +547,8 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	tree->connect("item_edited", callable_mp(this, &GroupSettingsEditor::_item_edited));
 	tree->connect("item_activated", callable_mp(this, &GroupSettingsEditor::_show_rename_dialog));
 	tree->connect("button_clicked", callable_mp(this, &GroupSettingsEditor::_item_button_pressed));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	add_child(tree, true);
+	mc->add_child(tree, true);
 
 	message = memnew(AcceptDialog);
 	add_child(message);

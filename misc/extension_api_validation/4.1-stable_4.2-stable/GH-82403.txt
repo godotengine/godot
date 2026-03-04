@@ -1,0 +1,5 @@
+GH-82403
+--------
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionRayResult': format changed value in new API, from "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape" to "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape;int face_index".
+
+Added/moved face_index field (introduced in GH-71233) to end of struct. Should still be compatible with 4.1.

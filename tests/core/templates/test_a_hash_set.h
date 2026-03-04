@@ -30,9 +30,11 @@
 
 #pragma once
 
-#include "core/templates/a_hash_set.h"
-
 #include "tests/test_macros.h"
+
+TEST_FORCE_LINK(test_a_hash_set)
+
+#include "core/templates/a_hash_set.h"
 
 namespace TestAHashSet {
 

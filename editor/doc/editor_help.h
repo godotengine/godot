@@ -112,17 +112,13 @@ class EditorHelp : public VBoxContainer {
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
-	HSplitContainer *h_split = nullptr;
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
 
-	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 	Button *toggle_files_button = nullptr;
-
-	String base_path;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;
@@ -136,6 +132,8 @@ class EditorHelp : public VBoxContainer {
 		Color qualifier_color;
 		Color type_color;
 		Color override_color;
+		Color primary_hr_color;
+		Color secondary_hr_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
@@ -344,6 +342,7 @@ class EditorHelpBit : public VBoxContainer {
 	void _add_type_to_title(const DocType &p_doc_type);
 	void _update_labels();
 	void _go_to_help(const String &p_what);
+	void _go_to_url(const String &p_what);
 	void _meta_clicked(const String &p_select);
 
 protected:
@@ -357,7 +356,7 @@ public:
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
-	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true);
+	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false);
 };
 
 // Standard tooltips do not allow you to hover over them.
@@ -370,22 +369,26 @@ class EditorHelpBitTooltip : public PopupPanel {
 	Timer *timer = nullptr;
 	uint64_t _enter_tree_time = 0;
 	bool _is_mouse_inside_tooltip = false;
+	bool _is_shortcut_pressed = false;
 
 	static Control *_make_invisible_control();
 
 	void _start_timer();
 	void _target_gui_input(const Ref<InputEvent> &p_event);
+	void _shortcut_pressed(Control *p_target);
 
 protected:
 	void _notification(int p_what);
 
 public:
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false);
 
-	void popup_under_cursor();
+	void popup_under_position(const Point2 &p_point);
 
-	EditorHelpBitTooltip(Control *p_target);
+	bool is_shortcut_pressed() const { return _is_shortcut_pressed; }
+
+	EditorHelpBitTooltip(Control *p_target, bool p_shortcut = false);
 };
 
 class EditorSyntaxHighlighter;

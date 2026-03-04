@@ -33,23 +33,26 @@
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
+#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
+#include "servers/display/display_server.h"
 
 enum DownloadsAvailability {
 	DOWNLOADS_AVAILABLE,
@@ -1142,12 +1145,18 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_label->set_text(TTR("Other Installed Versions:"));
 	installed_versions_hb->add_child(installed_label);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vb->add_child(mc);
+
 	installed_table = memnew(Tree);
 	installed_table->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	installed_table->set_hide_root(true);
+	installed_table->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	installed_table->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	installed_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_vb->add_child(installed_table);
+	mc->add_child(installed_table);
 	installed_table->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_installed_table_button_cbk));
 
 	// Dialogs.
@@ -1156,7 +1165,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	add_child(uninstall_confirm);
 	uninstall_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_uninstall_template_confirmed));
 
-	install_file_dialog = memnew(FileDialog);
+	install_file_dialog = memnew(EditorFileDialog);
 	install_file_dialog->set_title(TTR("Select Template File"));
 	install_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);

@@ -230,6 +230,25 @@ Object::Connection::operator Variant() const {
 	return d;
 }
 
+void ObjectGDExtension::create_gdtype() {
+	ERR_FAIL_COND(gdtype);
+
+	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
+}
+
+void ObjectGDExtension::destroy_gdtype() {
+	ERR_FAIL_COND(!gdtype);
+
+	memdelete(const_cast<GDType *>(gdtype));
+	gdtype = nullptr;
+}
+
+ObjectGDExtension::~ObjectGDExtension() {
+	if (gdtype) {
+		memdelete(const_cast<GDType *>(gdtype));
+	}
+}
+
 bool Object::Connection::operator<(const Connection &p_conn) const {
 	if (signal == p_conn.signal) {
 		return callable < p_conn.callable;
@@ -279,6 +298,7 @@ bool Object::_predelete() {
 		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
+		// _gdtype_ptr = nullptr; // The pointer already set to nullptr above, no need to do it again.
 	}
 #ifdef TOOLS_ENABLED
 	else if (_instance_bindings != nullptr) {
@@ -596,9 +616,8 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
-	}
+	const uint32_t base_script_usage = is_class(Script::get_class_static()) ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static(), base_script_usage | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_NEVER_DUPLICATE));
 
 	if (script_instance && !p_reversed) {
 		script_instance->get_property_list(p_list);
@@ -610,10 +629,10 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
 			if (Object::cast_to<Script>(obj)) {
-				pi.hint_string = "Script";
+				pi.hint_string = Script::get_class_static();
 				pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
 			} else {
-				pi.hint_string = "Resource";
+				pi.hint_string = Resource::get_class_static();
 			}
 		}
 		p_list->push_back(pi);
@@ -1320,6 +1339,9 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	Error err = OK;
 
+	Vector<const Variant *> append_source_mem;
+	Variant source = this;
+
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		const Callable &callable = slot_callables[i];
 		const uint32_t &flags = slot_flags[i];
@@ -1332,6 +1354,31 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		const Variant **args = p_args;
 		int argc = p_argcount;
 
+		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			// Source is being appended regardless of unbinds.
+			// Implemented by inserting before the first to-be-unbinded arg.
+			int source_index = p_argcount - callable.get_unbound_arguments_count();
+			if (source_index >= 0) {
+				append_source_mem.resize(p_argcount + 1);
+				const Variant **args_mem = append_source_mem.ptrw();
+
+				for (int j = 0; j < source_index; j++) {
+					args_mem[j] = p_args[j];
+				}
+				args_mem[source_index] = &source;
+				for (int j = source_index; j < p_argcount; j++) {
+					args_mem[j + 1] = p_args[j];
+				}
+
+				args = args_mem;
+				argc = p_argcount + 1;
+			} else {
+				// More args unbound than provided, call will fail.
+				// Since appended source is non-unbindable, the error
+				// about too many unbinds should be correct as is.
+			}
+		}
+
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
 		} else {
@@ -1342,14 +1389,18 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			_emitting = false;
 
 			if (ce.error != Callable::CallError::CALL_OK) {
+				Object *target = callable.get_object();
 #ifdef DEBUG_ENABLED
-				if (flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (!script_instance || !script_instance->get_script()->is_tool())) {
-					continue;
+				if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
+					Ref<Script> other_scr = target->get_script();
+					if (other_scr.is_valid() && !other_scr->is_tool()) {
+						// Trying to call not-tool method in editor, just ignore it.
+						continue;
+					}
 				}
 #endif
-				Object *target = callable.get_object();
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
-					//most likely object is not initialized yet, do not throw error.
+					// Most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT(vformat("Error calling from signal '%s' to callable: %s.", String(p_name), Variant::get_callable_error_text(callable, args, argc, ce)));
 					err = ERR_METHOD_NOT_FOUND;
@@ -1377,6 +1428,16 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	}
 
 	return err;
+}
+
+void Object::_reset_gdtype() const {
+	if (_extension) {
+		// Set to extension's type.
+		_gdtype_ptr = _extension->gdtype;
+	} else {
+		// Reset to internal type.
+		_gdtype_ptr = &_get_typev();
+	}
 }
 
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
@@ -1734,7 +1795,7 @@ void Object::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	_add_class_to_classdb(get_class_static(), StringName());
+	_add_class_to_classdb(get_gdtype_static(), nullptr);
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1810,8 +1871,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
-	ClassDB::_add_class(p_class, p_inherits);
+void Object::_add_class_to_classdb(const GDType &p_type, const GDType *p_inherits) {
+	ClassDB::_add_class(p_type, p_inherits);
 }
 
 void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -2018,6 +2079,10 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
+void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	MessageQueue::get_singleton()->push_callp(this, p_method, p_args, p_argcount);
+}
+
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
 	MessageQueue::get_singleton()->push_set(this, p_property, p_value);
 }
@@ -2128,9 +2193,6 @@ const GDType &Object::get_gdtype() const {
 }
 
 bool Object::is_class(const String &p_class) const {
-	if (_extension && _extension->is_class(p_class)) {
-		return true;
-	}
 	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
 		if (name == p_class) {
 			return true;
@@ -2140,11 +2202,6 @@ bool Object::is_class(const String &p_class) const {
 }
 
 const StringName &Object::get_class_name() const {
-	if (_extension) {
-		// Can't put inside the unlikely as constructor can run it.
-		return _extension->class_name;
-	}
-
 	return get_gdtype().get_name();
 }
 
@@ -2205,8 +2262,8 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		}
 	}
 	if (unlikely(!binding && p_callbacks)) {
-		uint32_t current_size = next_power_of_2(_instance_binding_count);
-		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
+		uint32_t current_size = Math::next_power_of_2(_instance_binding_count);
+		uint32_t new_size = Math::next_power_of_2(_instance_binding_count + 1);
 
 		if (current_size == 0 || new_size > current_size) {
 			_instance_bindings = (InstanceBinding *)memrealloc(_instance_bindings, new_size * sizeof(InstanceBinding));
@@ -2277,6 +2334,8 @@ void Object::clear_internal_extension() {
 	}
 	_extension = nullptr;
 	_extension_instance = nullptr;
+	// Reset GDType to internal type.
+	_gdtype_ptr = &_get_typev();
 
 	// Clear the instance bindings.
 	_instance_binding_mutex.lock();
@@ -2305,6 +2364,7 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
 		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
 		_extension = p_extension;
+		_gdtype_ptr = p_extension->gdtype;
 	}
 }
 #endif
@@ -2354,8 +2414,10 @@ void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDT
 		// Assigned while we were waiting.
 		return;
 	}
-	type = memnew(GDType(super_type, StringName(p_name, true)));
+	type = memnew(GDType(super_type, StringName(p_name)));
 	*type_ptr = type;
+
+	ClassDB::gdtype_autorelease_pool.push_back(type_ptr);
 }
 
 Object::~Object() {
@@ -2579,7 +2641,7 @@ void ObjectDB::cleanup() {
 	spin_lock.lock();
 
 	if (slot_count > 0) {
-		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
+		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", slot_count, slot_count == 1 ? "instance was" : "instances were"));
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,

@@ -1,0 +1,21 @@
+GH-84976
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/FinalAction/values/FINAL_ACTION_CONTINUE': value changed value in new API, from 2.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/FinalAction/values/FINAL_ACTION_MAX': value changed value in new API, from 3.0 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CLEAR': value changed value in new API, from 0.0 to 1.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CLEAR_REGION_CONTINUE': value changed value in new API, from 2.0 to 1.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CONTINUE': value changed value in new API, from 5.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_DROP': value changed value in new API, from 4.0 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_KEEP': value changed value in new API, from 3.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_MAX': value changed value in new API, from 6.0 to 3.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments': size changed value in new API, from 4 to 3.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments': size changed value in new API, from 5 to 4.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments': size changed value in new API, from 10 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments': size changed value in new API, from 7 to 6.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments': size changed value in new API, from 10 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_update/arguments': size changed value in new API, from 4 to 3.
+
+Barrier arguments have been removed from all relevant functions as they're no longer required.
+Draw and compute list overlap no longer needs to be specified.
+Initial and final actions have been simplified into fewer options.

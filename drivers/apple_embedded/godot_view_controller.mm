@@ -38,6 +38,7 @@
 #import "os_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
@@ -238,6 +239,35 @@
 
 // MARK: Orientation
 
+#ifdef IOS_ENABLED
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+	[coordinator animateAlongsideTransition:nil
+								 completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+									 // Get the new interface orientation after rotation completes (iOS only)
+									 UIInterfaceOrientation orientation = self.view.window.windowScene.interfaceOrientation;
+
+									 // Notify camera server of orientation change
+									 CameraServer *camera_server = CameraServer::get_singleton();
+									 if (camera_server) {
+										 camera_server->handle_display_rotation_change((int)orientation);
+									 }
+
+									 DisplayServer *display_server = DisplayServer::get_singleton();
+									 if (display_server) {
+										 int out = 0;
+										 if (UIInterfaceOrientationIsPortrait(orientation)) {
+											 out = 1;
+										 } else if (UIInterfaceOrientationIsLandscape(orientation)) {
+											 out = 2;
+										 }
+										 display_server->emit_signal("orientation_changed", out);
+									 }
+								 }];
+}
+#endif
+
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {
 		return UIRectEdgeAll;
@@ -251,10 +281,10 @@
 		return NO;
 	}
 
-	switch (DisplayServerAppleEmbedded::get_singleton()->screen_get_orientation(DisplayServer::SCREEN_OF_MAIN_WINDOW)) {
-		case DisplayServer::SCREEN_SENSOR:
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+	switch (DisplayServerAppleEmbedded::get_singleton()->screen_get_orientation(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW)) {
+		case DisplayServerEnums::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return YES;
 		default:
 			return NO;
@@ -266,24 +296,24 @@
 		return UIInterfaceOrientationMaskAll;
 	}
 
-	switch (DisplayServerAppleEmbedded::get_singleton()->screen_get_orientation(DisplayServer::SCREEN_OF_MAIN_WINDOW)) {
-		case DisplayServer::SCREEN_PORTRAIT:
+	switch (DisplayServerAppleEmbedded::get_singleton()->screen_get_orientation(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW)) {
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait;
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
 				return UIInterfaceOrientationMaskLandscapeLeft;
 			} else {
 				return UIInterfaceOrientationMaskLandscapeRight;
 			}
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return UIInterfaceOrientationMaskPortraitUpsideDown;
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return UIInterfaceOrientationMaskLandscape;
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return UIInterfaceOrientationMaskAll;
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
 				return UIInterfaceOrientationMaskLandscapeRight;
 			} else {

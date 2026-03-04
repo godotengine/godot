@@ -31,7 +31,6 @@
 #include "groups_dock.h"
 
 #include "editor/settings/editor_command_palette.h"
-#include "editor/themes/editor_scale.h"
 
 void GroupsDock::set_selection(const Vector<Node *> &p_nodes) {
 	groups->set_selection(p_nodes);
@@ -42,14 +41,11 @@ GroupsDock::GroupsDock() {
 	set_name(TTRC("Groups"));
 	set_icon_name("Groups");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_groups", TTRC("Open Groups Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
-
-	VBoxContainer *main_vb = memnew(VBoxContainer);
-	add_child(main_vb);
+	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	groups = memnew(GroupsEditor);
-	main_vb->add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(groups);
 }
 
 GroupsDock::~GroupsDock() {

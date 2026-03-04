@@ -656,13 +656,13 @@ void GodotPhysicsServer2D::body_set_shape_disabled(RID p_body, int p_shape_idx, 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void GodotPhysicsServer2D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
+void GodotPhysicsServer2D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin, const Vector2 &p_direction) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin);
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin, p_direction);
 }
 
 void GodotPhysicsServer2D::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {

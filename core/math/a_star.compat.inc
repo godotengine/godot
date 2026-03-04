@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "a_star.h"
+
+#include "core/object/class_db.h"
+
 Vector<int64_t> AStar3D::_get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id) {
 	return get_id_path(p_from_id, p_to_id, false);
 }

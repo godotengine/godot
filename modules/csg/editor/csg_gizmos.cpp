@@ -30,6 +30,7 @@
 
 #include "csg_gizmos.h"
 
+#include "core/math/geometry_3d.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
@@ -416,17 +417,14 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> handles_material = get_material("handles");
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
-	if (cs->is_root_shape()) {
-		Array csg_meshes = cs->get_meshes();
-		if (csg_meshes.size() == 2) {
-			Ref<Mesh> csg_mesh = csg_meshes[1];
-			if (csg_mesh.is_valid()) {
-				p_gizmo->add_collision_triangles(csg_mesh->generate_triangle_mesh());
-			}
-		}
-	}
+	Ref<ArrayMesh> collision_mesh;
+	collision_mesh.instantiate();
+	Array collision_array;
+	collision_array.resize(Mesh::ARRAY_MAX);
+	collision_array[Mesh::ARRAY_VERTEX] = faces;
+	collision_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, collision_array);
+	p_gizmo->add_collision_triangles(collision_mesh->generate_triangle_mesh());
 
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node

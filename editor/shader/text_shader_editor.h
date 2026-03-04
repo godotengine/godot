@@ -134,6 +134,7 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
@@ -143,10 +144,8 @@ class TextShaderEditor : public ShaderEditor {
 	Button *site_search = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle = 0;
 
 	GotoLinePopup *goto_line_popup = nullptr;
-	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *code_editor = nullptr;
@@ -157,7 +156,6 @@ class TextShaderEditor : public ShaderEditor {
 	mutable Ref<Shader> shader;
 	mutable Ref<ShaderInclude> shader_inc;
 
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _project_settings_changed();
 
@@ -176,8 +174,8 @@ class TextShaderEditor : public ShaderEditor {
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
-	bool trim_trailing_whitespace_on_save;
-	bool trim_final_newlines_on_save;
+	bool trim_trailing_whitespace_on_save = false;
+	bool trim_final_newlines_on_save = false;
 
 protected:
 	void _notification(int p_what);
@@ -191,7 +189,7 @@ protected:
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
 	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
-	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;

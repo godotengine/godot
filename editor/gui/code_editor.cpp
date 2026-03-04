@@ -31,11 +31,12 @@
 #include "code_editor.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -95,6 +96,7 @@ void GotoLinePopup::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				text_editor->set_preview_navigation_change(false);
+				text_editor->get_text_editor()->grab_focus();
 			}
 		} break;
 	}
@@ -910,6 +912,11 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
+	if (ED_IS_SHORTCUT("script_text_editor/join_lines", key_event)) {
+		text_editor->join_lines();
+		accept_event();
+		return;
+	}
 	if (ED_IS_SHORTCUT("script_text_editor/duplicate_selection", key_event)) {
 		text_editor->duplicate_selection();
 		accept_event();
@@ -993,7 +1000,7 @@ void CodeTextEditor::_line_col_changed() {
 	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
 
-	line_and_col_txt->set_text(sb.as_string());
+	line_and_col_button->set_text(sb.as_string());
 
 	if (find_replace_bar) {
 		if (!find_replace_bar->line_col_changed_for_result) {
@@ -1604,7 +1611,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 }
 
 void CodeTextEditor::_update_font_ligatures() {
-	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
+	int ot_mode = EDITOR_GET("interface/editor/fonts/code_font_contextual_ligatures");
 
 	Ref<FontVariation> fc = text_editor->get_theme_font(SceneStringName(font));
 	if (fc.is_valid()) {
@@ -1615,7 +1622,7 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 			case 2: { // Custom.
-				Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
+				Vector<String> subtag = String(EDITOR_GET("interface/editor/fonts/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
@@ -1633,6 +1640,17 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 		}
+		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
+		Dictionary variations_mono;
+		for (int i = 0; i < variation_tags.size(); i++) {
+			Vector<String> subtag_a = variation_tags[i].split("=");
+			if (subtag_a.size() == 2) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_float();
+			} else if (subtag_a.size() == 1) {
+				variations_mono[TS->name_to_tag(subtag_a[0])] = 1;
+			}
+		}
+		fc->set_variation_opentype(variations_mono);
 	}
 }
 
@@ -1702,9 +1720,9 @@ void CodeTextEditor::_notification(int p_what) {
 			update_toggle_files_button();
 
 			zoom_button->set_tooltip_text(
-					TTR("Zoom factor") + "\n" +
+					TTR("Zoom Factor") + "\n" +
 					// TRANSLATORS: The placeholders are keyboard shortcuts. The first one is in the form of "Ctrl+"/"Cmd+".
-					vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
+					vformat(TTR("%s+Mouse Wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 
 			[[fallthrough]];
 		}
@@ -1843,7 +1861,7 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	zoom_factor = CLAMP(p_zoom_factor, 0.25f, 3.0f);
-	int neutral_font_size = int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
+	int neutral_font_size = int(EDITOR_GET("interface/editor/fonts/code_font_size")) * EDSCALE;
 	int new_font_size = Math::round(zoom_factor * neutral_font_size);
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
@@ -1855,11 +1873,16 @@ float CodeTextEditor::get_zoom_factor() {
 	return zoom_factor;
 }
 
+void CodeTextEditor::_show_goto_popup_request() {
+	emit_signal("show_goto_popup");
+}
+
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_errors_panel"));
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
+	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
 }
@@ -1982,16 +2005,18 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_child(memnew(VSeparator));
 
-	// Line and column
-	line_and_col_txt = memnew(Label);
-	status_bar->add_child(line_and_col_txt);
-	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	line_and_col_txt->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	line_and_col_txt->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
-	line_and_col_txt->set_tooltip_text(TTRC("Line and column numbers."));
-	line_and_col_txt->set_accessibility_name(TTRC("Line and column numbers."));
-	line_and_col_txt->set_focus_mode(FOCUS_ACCESSIBILITY);
-	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
+	// Line and column.
+	line_and_col_button = memnew(Button);
+	line_and_col_button->set_theme_type_variation("FlatMenuButton");
+	line_and_col_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	line_and_col_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	line_and_col_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	line_and_col_button->set_tooltip_text(TTRC("Line and column numbers."));
+	line_and_col_button->set_accessibility_name(TTRC("Line and column numbers."));
+	line_and_col_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_show_goto_popup_request));
+	line_and_col_button->set_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"));
+	line_and_col_button->set_shortcut_context(this);
+	status_bar->add_child(line_and_col_button);
 
 	status_bar->add_child(memnew(VSeparator));
 
@@ -2015,6 +2040,4 @@ CodeTextEditor::CodeTextEditor() {
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
-
-	add_theme_constant_override("separation", 4 * EDSCALE);
 }

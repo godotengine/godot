@@ -30,17 +30,76 @@
 
 #include "openxr_composition_layer_extension.h"
 
+#include "openxr_fb_update_swapchain_extension.h"
+
+#include "platform/android/api/java_class_wrapper.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/xr/xr_server.h"
+
 #ifdef ANDROID_ENABLED
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 #endif
 
-#include "openxr_fb_update_swapchain_extension.h"
-#include "platform/android/api/java_class_wrapper.h"
-#include "servers/rendering/rendering_server_globals.h"
-
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRCompositionLayerExtension
+
+#define OPENXR_LAYER_FUNC1_IMPL(m_name, m_arg1) \
+	void OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1); \
+	} \
+	void OpenXRCompositionLayerExtension::composition_layer_##m_name(RID p_layer, m_arg1 p1) { \
+		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1)); \
+	}
+
+#define OPENXR_LAYER_FUNC2_IMPL(m_name, m_arg1, m_arg2) \
+	void OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1, p2); \
+	} \
+	void OpenXRCompositionLayerExtension::composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2) { \
+		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1, p2)); \
+	}
+
+OPENXR_LAYER_FUNC2_IMPL(set_viewport, RID, const Size2i &);
+OPENXR_LAYER_FUNC2_IMPL(set_use_android_surface, bool, const Size2i &);
+OPENXR_LAYER_FUNC1_IMPL(set_sort_order, int);
+OPENXR_LAYER_FUNC1_IMPL(set_alpha_blend, bool);
+OPENXR_LAYER_FUNC1_IMPL(set_transform, const Transform3D &);
+OPENXR_LAYER_FUNC1_IMPL(set_protected_content, bool);
+OPENXR_LAYER_FUNC1_IMPL(set_extension_property_values, Dictionary);
+
+OPENXR_LAYER_FUNC1_IMPL(set_min_filter, Filter);
+OPENXR_LAYER_FUNC1_IMPL(set_mag_filter, Filter);
+OPENXR_LAYER_FUNC1_IMPL(set_mipmap_mode, MipmapMode);
+OPENXR_LAYER_FUNC1_IMPL(set_horizontal_wrap, Wrap);
+OPENXR_LAYER_FUNC1_IMPL(set_vertical_wrap, Wrap);
+OPENXR_LAYER_FUNC1_IMPL(set_red_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_blue_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_green_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_alpha_swizzle, Swizzle);
+OPENXR_LAYER_FUNC1_IMPL(set_max_anisotropy, float);
+OPENXR_LAYER_FUNC1_IMPL(set_border_color, const Color &);
+OPENXR_LAYER_FUNC1_IMPL(set_pose_space, PoseSpace);
+OPENXR_LAYER_FUNC1_IMPL(set_eye_visibility, EyeVisibility);
+
+OPENXR_LAYER_FUNC1_IMPL(set_quad_size, const Size2 &);
+
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_radius, float);
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_aspect_ratio, float);
+OPENXR_LAYER_FUNC1_IMPL(set_cylinder_central_angle, float);
+
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_radius, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_central_horizontal_angle, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_upper_vertical_angle, float);
+OPENXR_LAYER_FUNC1_IMPL(set_equirect_lower_vertical_angle, float);
+
+#undef OPENXR_LAYER_FUNC1_IMPL
+#undef OPENXR_LAYER_FUNC2_IMPL
 
 OpenXRCompositionLayerExtension *OpenXRCompositionLayerExtension::singleton = nullptr;
 
@@ -72,7 +131,9 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_instance) {
 #ifdef ANDROID_ENABLED
 	EXT_INIT_XR_FUNC(xrDestroySwapchain);
-	EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	if (android_surface_ext_available) {
+		EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	}
 #endif
 }
 
@@ -280,25 +341,42 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_alpha_blend(bool p_a
 }
 
 void OpenXRCompositionLayerExtension::CompositionLayer::set_transform(const Transform3D &p_transform) {
-	Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
-	Transform3D transform = reference_frame.inverse() * p_transform;
-	Quaternion quat(transform.basis.orthonormalized());
+	Transform3D xf;
+
+	if (pose_space == POSE_HEAD_LOCKED) {
+		// Local transform relative to the head/camera.
+		xf = p_transform;
+	} else {
+		// Relative to the XROrigin3D, so we need to apply the reference frame.
+		Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
+		xf = reference_frame.inverse() * p_transform;
+	}
+
+	Quaternion quat(xf.basis.orthonormalized());
+
+	// Prevent invalid quaternion
+	if (Math::is_zero_approx(quat.length())) {
+		quat = Quaternion(); // identity quaternion
+	}
 
 	XrPosef pose = {
 		{ (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w },
-		{ (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z }
+		{ (float)xf.origin.x, (float)xf.origin.y, (float)xf.origin.z }
 	};
 
 	switch (composition_layer.type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
 			composition_layer_quad.pose = pose;
 		} break;
+
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
 			composition_layer_cylinder.pose = pose;
 		} break;
+
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
 			composition_layer_equirect.pose = pose;
 		} break;
+
 		default: {
 			ERR_PRINT(vformat("Cannot set transform on unsupported composition layer type: %s", composition_layer.type));
 		}
@@ -363,6 +441,50 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_max_anisotropy(float
 void OpenXRCompositionLayerExtension::CompositionLayer::set_border_color(const Color &p_color) {
 	swapchain_state.border_color = p_color;
 	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_pose_space(PoseSpace p_pose_space) {
+	pose_space = p_pose_space;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_eye_visibility(EyeVisibility p_eye_visibility) {
+	XrEyeVisibility eye_visibility;
+
+	switch (p_eye_visibility) {
+		case EYE_VISIBILITY_BOTH: {
+			eye_visibility = XR_EYE_VISIBILITY_BOTH;
+		} break;
+
+		case EYE_VISIBILITY_LEFT: {
+			eye_visibility = XR_EYE_VISIBILITY_LEFT;
+		} break;
+
+		case EYE_VISIBILITY_RIGHT: {
+			eye_visibility = XR_EYE_VISIBILITY_RIGHT;
+		} break;
+
+		default: {
+			eye_visibility = XR_EYE_VISIBILITY_BOTH;
+		}
+	}
+
+	switch (composition_layer.type) {
+		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
+			composition_layer_quad.eyeVisibility = eye_visibility;
+		} break;
+
+		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
+			composition_layer_cylinder.eyeVisibility = eye_visibility;
+		} break;
+
+		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
+			composition_layer_equirect.eyeVisibility = eye_visibility;
+		} break;
+
+		default: {
+			ERR_PRINT(vformat("%s does not support setting eye visibility.", composition_layer.type));
+		}
+	}
 }
 
 void OpenXRCompositionLayerExtension::CompositionLayer::set_quad_size(const Size2 &p_size) {
@@ -433,10 +555,10 @@ void OpenXRCompositionLayerExtension::CompositionLayer::on_pre_render() {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 
 	if (subviewport.viewport.is_valid() && openxr_api && openxr_api->is_running()) {
-		RS::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
-		if (update_mode == RS::VIEWPORT_UPDATE_ONCE || update_mode == RS::VIEWPORT_UPDATE_ALWAYS) {
+		RSE::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
+		if (update_mode == RSE::VIEWPORT_UPDATE_ONCE || update_mode == RSE::VIEWPORT_UPDATE_ALWAYS) {
 			// Update our XR swapchain
-			if (update_and_acquire_swapchain(update_mode == RS::VIEWPORT_UPDATE_ONCE)) {
+			if (update_and_acquire_swapchain(update_mode == RSE::VIEWPORT_UPDATE_ONCE)) {
 				// Render to our XR swapchain image.
 				RID rt = rs->viewport_get_render_target(subviewport.viewport);
 				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID(), RID());
@@ -476,26 +598,42 @@ XrCompositionLayerBaseHeader *OpenXRCompositionLayerExtension::CompositionLayer:
 		return nullptr;
 	}
 
+	// Update the layer's reference space
+	switch (pose_space) {
+		case POSE_WORLD_LOCKED: {
+			layer_reference_space = openxr_api->get_play_space();
+			break;
+		}
+
+		case POSE_HEAD_LOCKED: {
+			layer_reference_space = openxr_api->get_view_space();
+			break;
+		}
+		default: {
+			return nullptr;
+		}
+	}
+
 	// Update the layer struct for the swapchain.
 	switch (composition_layer.type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
-			composition_layer_quad.space = openxr_api->get_play_space();
+			composition_layer_quad.space = layer_reference_space;
 			composition_layer_quad.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
-			composition_layer_cylinder.space = openxr_api->get_play_space();
+			composition_layer_cylinder.space = layer_reference_space;
 			composition_layer_cylinder.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
-			composition_layer_equirect.space = openxr_api->get_play_space();
+			composition_layer_equirect.space = layer_reference_space;
 			composition_layer_equirect.subImage = subimage;
 		} break;
 
 		default: {
 			return nullptr;
-		} break;
+		}
 	}
 
 	if (extension_property_values_changed) {

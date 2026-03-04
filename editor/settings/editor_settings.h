@@ -60,6 +60,7 @@ public:
 		NETWORK_ONLINE,
 	};
 
+	// Keep values synced with DisplayServerEnums constants.
 	enum InitialScreen {
 		INITIAL_SCREEN_AUTO = -5, // Remembers last screen position.
 		INITIAL_SCREEN_WITH_MOUSE_FOCUS = -4,
@@ -124,7 +125,9 @@ private:
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
-	void _remove_deprecated_settings();
+	HashMap<String, String> compat_map;
+	void _handle_setting_compatibility();
+	void _rename_setting(const String &p_old_name, const String &p_new_name);
 #endif
 
 	// Bind helpers.
@@ -177,11 +180,14 @@ public:
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
 	void save_project_metadata();
 
-	void set_favorites(const Vector<String> &p_favorites);
+	void set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog = true);
+	void set_favorites_bind(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
+	Vector<String> get_favorite_folders() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
-	void set_recent_dirs(const Vector<String> &p_recent_dirs);
+	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);
+	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
 

@@ -30,6 +30,8 @@
 
 #include "physics_body_3d.h"
 
+#include "core/object/class_db.h"
+
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
@@ -70,15 +72,15 @@ TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());

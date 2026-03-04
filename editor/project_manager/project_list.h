@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/config_file.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
@@ -64,6 +65,7 @@ class ProjectListItemControl : public HBoxContainer {
 	bool project_is_missing = false;
 	bool icon_needs_reload = true;
 	bool is_selected = false;
+	bool is_focus_hidden = false;
 	bool is_hovering = false;
 	bool is_favorite = false;
 
@@ -93,7 +95,7 @@ public:
 	void set_unsupported_features(PackedStringArray p_features);
 
 	bool should_load_project_icon() const;
-	void set_selected(bool p_selected);
+	void set_selected(bool p_selected, bool p_hide_focus = false);
 
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
@@ -261,7 +263,7 @@ private:
 	// Project list selection.
 
 	void _clear_project_selection();
-	void _select_project_nocheck(int p_index);
+	void _select_project_nocheck(int p_index, bool p_hide_focus = false);
 	void _deselect_project_nocheck(int p_index);
 	void _select_project_range(int p_begin, int p_end);
 
@@ -306,7 +308,7 @@ public:
 
 	// Project list selection.
 
-	void select_project(int p_index);
+	void select_project(int p_index, bool p_hide_focus = false);
 	void deselect_project(int p_index);
 	void select_first_visible_project();
 	void select_all_visible_projects();

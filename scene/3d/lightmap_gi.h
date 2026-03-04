@@ -30,13 +30,15 @@
 
 #pragma once
 
+#include "core/io/resource.h"
 #include "core/templates/local_vector.h"
-#include "scene/3d/light_3d.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/3d/visual_instance_3d.h"
 
-class Sky;
 class CameraAttributes;
+class Light3D;
+class Mesh;
+class Sky;
 
 class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);
@@ -228,12 +230,6 @@ private:
 
 	void _assign_lightmaps();
 	void _clear_lightmaps();
-
-	struct BakeTimeData {
-		String text;
-		int pass = 0;
-		uint64_t last_step = 0;
-	};
 
 	struct BSPSimplex {
 		int vertices[4] = {};

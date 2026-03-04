@@ -30,8 +30,8 @@
 
 #include "progress_dialog.h"
 
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
-#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
@@ -48,6 +48,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	l->set_text(p_label + " ");
 	t.hb->add_child(l);
 	t.progress = memnew(ProgressBar);
+	t.progress->set_theme_type_variation("PopupProgressBar");
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	Control *ec = memnew(Control);
@@ -156,8 +157,11 @@ void ProgressDialog::_popup() {
 	// will discard every key input.
 	EditorNode::get_singleton()->set_process_input(true);
 	// Disable all other windows to prevent interaction with them.
-	for (Window *w : host_windows) {
-		w->set_process_mode(PROCESS_MODE_DISABLED);
+	for (ObjectID wid : host_windows) {
+		Window *w = ObjectDB::get_instance<Window>(wid);
+		if (w) {
+			w->set_process_mode(PROCESS_MODE_DISABLED);
+		}
 	}
 
 	Size2 ms = main->get_combined_minimum_size();
@@ -198,6 +202,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	VBoxContainer *vb2 = memnew(VBoxContainer);
 	t.vb->add_margin_child(p_label, vb2);
 	t.progress = memnew(ProgressBar);
+	t.progress->set_theme_type_variation("PopupProgressBar");
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	vb2->add_child(t.progress);
@@ -254,21 +259,22 @@ void ProgressDialog::end_task(const String &p_task) {
 	if (tasks.is_empty()) {
 		hide();
 		EditorNode::get_singleton()->set_process_input(false);
-		for (Window *w : host_windows) {
-			w->set_process_mode(PROCESS_MODE_INHERIT);
+		for (ObjectID wid : host_windows) {
+			Window *w = ObjectDB::get_instance<Window>(wid);
+			if (w) {
+				w->set_process_mode(PROCESS_MODE_INHERIT);
+			}
 		}
 	} else {
 		_popup();
 	}
 }
 
-void ProgressDialog::add_host_window(Window *p_window) {
-	ERR_FAIL_NULL(p_window);
+void ProgressDialog::add_host_window(ObjectID p_window) {
 	host_windows.push_back(p_window);
 }
 
-void ProgressDialog::remove_host_window(Window *p_window) {
-	ERR_FAIL_NULL(p_window);
+void ProgressDialog::remove_host_window(ObjectID p_window) {
 	host_windows.erase(p_window);
 }
 
@@ -280,7 +286,7 @@ ProgressDialog::ProgressDialog() {
 	// We want to cover the entire screen to prevent the user from interacting with the Editor.
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	// Be sure it's the top most component.
-	set_z_index(RS::CANVAS_ITEM_Z_MAX);
+	set_z_index(RSE::CANVAS_ITEM_Z_MAX);
 	singleton = this;
 	hide();
 
@@ -301,4 +307,8 @@ ProgressDialog::ProgressDialog() {
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
 	cancel->connect(SceneStringName(pressed), callable_mp(this, &ProgressDialog::_cancel_pressed));
+}
+
+ProgressDialog::~ProgressDialog() {
+	singleton = nullptr;
 }

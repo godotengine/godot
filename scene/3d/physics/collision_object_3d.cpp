@@ -30,8 +30,10 @@
 
 #include "collision_object_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -496,7 +498,7 @@ void CollisionObject3D::_bind_methods() {
 	GDVIRTUAL_BIND(_mouse_enter);
 	GDVIRTUAL_BIND(_mouse_exit);
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "event_position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static()), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "event_position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
@@ -608,9 +610,9 @@ Object *CollisionObject3D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape) {
+void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape3D> rp_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	ERR_FAIL_COND(p_shape.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_shape, rp_shape);
 
 	ShapeData &sd = shapes[p_owner];
 	ShapeData::ShapeBase s;

@@ -31,6 +31,7 @@
 #include "gi.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -483,7 +484,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	RD::TextureFormat tf_aniso1 = tf_sdf;
 	tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
 
-	int passes = nearest_shift(cascade_size) - 1;
+	int passes = Math::nearest_shift(cascade_size) - 1;
 
 	//store lightprobe SH
 	RD::TextureFormat tf_probes;
@@ -755,7 +756,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 			RD::Uniform u;
 			u.binding = 2;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
@@ -1038,7 +1039,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 6;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 
@@ -1265,11 +1266,11 @@ void GI::SDFGI::update_light() {
 		push_constant.light_count = cascade_dynamic_light_count[i];
 		push_constant.cascade = i;
 
-		if (cascades[i].all_dynamic_lights_dirty || gi->sdfgi_frames_to_update_light == RS::ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME) {
+		if (cascades[i].all_dynamic_lights_dirty || gi->sdfgi_frames_to_update_light == RSE::ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME) {
 			push_constant.process_offset = 0;
 			push_constant.process_increment = 1;
 		} else {
-			static const uint32_t frames_to_update_table[RS::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
+			static const uint32_t frames_to_update_table[RSE::ENV_SDFGI_UPDATE_LIGHT_MAX] = {
 				1, 2, 4, 8, 16
 			};
 
@@ -1299,12 +1300,16 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	push_constant.probe_axis_size = probe_axis_count;
 	push_constant.history_index = render_pass % history_size;
 	push_constant.history_size = history_size;
-	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
+	static const uint32_t ray_count[RSE::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
 	push_constant.ray_count = ray_count[gi->sdfgi_ray_count];
 	push_constant.ray_bias = probe_bias;
 	push_constant.image_size[0] = probe_axis_count * probe_axis_count;
 	push_constant.image_size[1] = probe_axis_count;
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
+
+	const float sky_irradiance_border_size = p_sky != nullptr ? p_sky->uv_border_size : 0.0f;
+	push_constant.sky_irradiance_border_size[0] = sky_irradiance_border_size;
+	push_constant.sky_irradiance_border_size[1] = 1.0 - sky_irradiance_border_size * 2.0f;
 
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
 	push_constant.sky_flags = 0;
@@ -1313,20 +1318,20 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
-		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
+		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_CLEAR_COLOR) {
 			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color_or_orientation[0] = c.r;
 			push_constant.sky_color_or_orientation[1] = c.g;
 			push_constant.sky_color_or_orientation[2] = c.b;
-		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
+		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_COLOR) {
 			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
 			push_constant.sky_color_or_orientation[0] = c.r;
 			push_constant.sky_color_or_orientation[1] = c.g;
 			push_constant.sky_color_or_orientation[2] = c.b;
 
-		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
+		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
 				if (integrate_sky_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(integrate_sky_uniform_set)) {
 					Vector<RD::Uniform> uniforms;
@@ -1343,7 +1348,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 						RD::Uniform u;
 						u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 						u.binding = 1;
-						u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+						u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 						uniforms.push_back(u);
 					}
 
@@ -1398,7 +1403,7 @@ void GI::SDFGI::store_probes() {
 	push_constant.probe_axis_size = probe_axis_count;
 	push_constant.history_index = render_pass % history_size;
 	push_constant.history_size = history_size;
-	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
+	static const uint32_t ray_count[RSE::ENV_SDFGI_RAY_COUNT_MAX] = { 4, 8, 16, 32, 64, 96, 128 };
 	push_constant.ray_count = ray_count[gi->sdfgi_ray_count];
 	push_constant.ray_bias = probe_bias;
 	push_constant.image_size[0] = probe_axis_count * probe_axis_count;
@@ -1579,7 +1584,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 				RD::Uniform u;
 				u.binding = 8;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
 			{
@@ -1707,7 +1712,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 			RD::Uniform u;
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
@@ -1897,7 +1902,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			RID light = light_storage->light_instance_get_base_light(light_instance);
 			Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 
-			if (RSG::light_storage->light_directional_get_sky_mode(light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+			if (RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 				continue;
 			}
 
@@ -1912,10 +1917,10 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[0] = color.r;
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
-			lights[idx].type = RS::LIGHT_DIRECTIONAL;
-			lights[idx].energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			lights[idx].type = RSE::LIGHT_DIRECTIONAL;
+			lights[idx].energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 			if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-				lights[idx].energy *= RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INTENSITY);
+				lights[idx].energy *= RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INTENSITY);
 			}
 
 			if (p_render_data->camera_attributes.is_valid()) {
@@ -1971,14 +1976,14 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RSG::light_storage->light_get_type(light);
 
-			lights[idx].energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+			lights[idx].energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 			if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-				lights[idx].energy *= RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INTENSITY);
+				lights[idx].energy *= RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INTENSITY);
 
 				// Convert from Luminous Power to Luminous Intensity
-				if (lights[idx].type == RS::LIGHT_OMNI) {
+				if (lights[idx].type == RSE::LIGHT_OMNI) {
 					lights[idx].energy *= 1.0 / (Math::PI * 4.0);
-				} else if (lights[idx].type == RS::LIGHT_SPOT) {
+				} else if (lights[idx].type == RSE::LIGHT_SPOT) {
 					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 					// We make this assumption to keep them easy to control.
 					lights[idx].energy *= 1.0 / Math::PI;
@@ -1990,10 +1995,10 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			}
 
 			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(light);
-			lights[idx].attenuation = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
-			lights[idx].radius = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE);
-			lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+			lights[idx].attenuation = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ATTENUATION);
+			lights[idx].radius = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_RANGE);
+			lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ANGLE)));
+			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
 
 			idx++;
 		}
@@ -2416,7 +2421,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				lights[idx].type = RSG::light_storage->light_get_type(light);
 
 				Vector3 dir = -light_transform.basis.get_column(Vector3::AXIS_Z);
-				if (lights[idx].type == RS::LIGHT_DIRECTIONAL) {
+				if (lights[idx].type == RSE::LIGHT_DIRECTIONAL) {
 					dir.y *= y_mult; //only makes sense for directional
 					dir.normalize();
 				}
@@ -2434,14 +2439,14 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
 
-				lights[idx].energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+				lights[idx].energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-					lights[idx].energy *= RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INTENSITY);
+					lights[idx].energy *= RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INTENSITY);
 
 					// Convert from Luminous Power to Luminous Intensity
-					if (lights[idx].type == RS::LIGHT_OMNI) {
+					if (lights[idx].type == RSE::LIGHT_OMNI) {
 						lights[idx].energy *= 1.0 / (Math::PI * 4.0);
-					} else if (lights[idx].type == RS::LIGHT_SPOT) {
+					} else if (lights[idx].type == RSE::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
 						lights[idx].energy *= 1.0 / Math::PI;
@@ -2453,10 +2458,10 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				}
 
 				lights[idx].has_shadow = RSG::light_storage->light_has_shadow(light);
-				lights[idx].attenuation = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
-				lights[idx].radius = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE);
-				lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-				lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				lights[idx].attenuation = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ATTENUATION);
+				lights[idx].radius = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_RANGE);
+				lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ANGLE)));
+				lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				idx++;
 			}
@@ -2607,7 +2612,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					RD::Uniform u;
 					u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 					u.binding = 10;
-					u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+					u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 					uniforms.push_back(u);
 				}
 
@@ -2654,7 +2659,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			{
 				uint32_t dynamic_map_size = MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
-				uint32_t oversample = nearest_power_of_2_templated(4);
+				uint32_t oversample = Math::nearest_power_of_2_templated(4);
 				int mipmap_index = 0;
 
 				while (mipmap_index < mipmaps.size()) {
@@ -2767,7 +2772,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 								RD::Uniform u;
 								u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 								u.binding = 10;
-								u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+								u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 								uniforms.push_back(u);
 							}
 							{
@@ -2836,7 +2841,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 							RD::Uniform u;
 							u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 							u.binding = 10;
-							u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+							u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 							uniforms.push_back(u);
 						}
 
@@ -2891,37 +2896,37 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RID light = light_storage->light_instance_get_base_light(light_instance);
 
 				l.type = RSG::light_storage->light_get_type(light);
-				if (l.type == RS::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(light) == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (l.type == RSE::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					light_count--;
 					continue;
 				}
 
-				l.attenuation = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
-				l.energy = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
+				l.attenuation = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ATTENUATION);
+				l.energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-					l.energy *= RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_INTENSITY);
+					l.energy *= RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INTENSITY);
 
 					l.energy *= gi->voxel_gi_get_baked_exposure_normalization(probe);
 
 					// Convert from Luminous Power to Luminous Intensity
-					if (l.type == RS::LIGHT_OMNI) {
+					if (l.type == RSE::LIGHT_OMNI) {
 						l.energy *= 1.0 / (Math::PI * 4.0);
-					} else if (l.type == RS::LIGHT_SPOT) {
+					} else if (l.type == RSE::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
 						l.energy *= 1.0 / Math::PI;
 					}
 				}
 
-				l.radius = to_cell.basis.xform(Vector3(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
+				l.radius = to_cell.basis.xform(Vector3(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_RANGE), 0, 0)).length();
 				Color color = RSG::light_storage->light_get_color(light).srgb_to_linear();
 				l.color[0] = color.r;
 				l.color[1] = color.g;
 				l.color[2] = color.b;
 
-				l.cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
-				l.inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+				l.cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ANGLE)));
+				l.inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				Transform3D xform = light_storage->light_instance_get_base_transform(light_instance);
 
@@ -3334,7 +3339,7 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 3;
-		u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+		u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 		uniforms.push_back(u);
 	}
 
@@ -3367,9 +3372,9 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 GI::GI() {
 	singleton = this;
 
-	sdfgi_ray_count = RS::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")), 0, int32_t(RS::ENV_SDFGI_RAY_COUNT_MAX - 1)));
-	sdfgi_frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")), 0, int32_t(RS::ENV_SDFGI_CONVERGE_MAX - 1)));
-	sdfgi_frames_to_update_light = RS::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_update_lights")), 0, int32_t(RS::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
+	sdfgi_ray_count = RSE::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")), 0, int32_t(RSE::ENV_SDFGI_RAY_COUNT_MAX - 1)));
+	sdfgi_frames_to_converge = RSE::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")), 0, int32_t(RSE::ENV_SDFGI_CONVERGE_MAX - 1)));
+	sdfgi_frames_to_update_light = RSE::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_update_lights")), 0, int32_t(RSE::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
 }
 
 GI::~GI() {
@@ -3436,7 +3441,7 @@ void GI::init(SkyRD *p_sky) {
 
 		voxel_gi_lights = memnew_arr(VoxelGILight, voxel_gi_max_lights);
 		voxel_gi_lights_uniform = RD::get_singleton()->uniform_buffer_create(voxel_gi_max_lights * sizeof(VoxelGILight));
-		voxel_gi_quality = RS::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
+		voxel_gi_quality = RSE::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
 
 		String defines = "\n#define MAX_LIGHTS " + itos(voxel_gi_max_lights) + "\n";
 
@@ -3521,8 +3526,8 @@ void GI::init(SkyRD *p_sky) {
 		//calculate tables
 		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
-		if (p_sky->sky_use_cubemap_array) {
-			defines += "\n#define USE_CUBEMAP_ARRAY\n";
+		if (p_sky->sky_use_octmap_array) {
+			defines += "\n#define USE_OCTMAP_ARRAY\n";
 		}
 
 		Vector<String> integrate_modes;
@@ -3544,10 +3549,10 @@ void GI::init(SkyRD *p_sky) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
-				if (p_sky->sky_use_cubemap_array) {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE));
+				if (p_sky->sky_use_octmap_array) {
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
 				} else {
-					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 				}
 				uniforms.push_back(u);
 			}
@@ -3555,7 +3560,7 @@ void GI::init(SkyRD *p_sky) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.binding = 1;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
 
@@ -3895,7 +3900,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	PushConstant push_constant;
 
 	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
-	push_constant.high_quality_vct = voxel_gi_quality == RS::VOXEL_GI_QUALITY_HIGH;
+	push_constant.high_quality_vct = voxel_gi_quality == RSE::VOXEL_GI_QUALITY_HIGH;
 
 	// these should be the same for all views
 	push_constant.orthogonal = p_projections[0].is_orthogonal();
@@ -4011,14 +4016,14 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.binding = 6;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 				u.binding = 7;
-				u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 				uniforms.push_back(u);
 			}
 			{

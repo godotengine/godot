@@ -38,12 +38,13 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -339,7 +340,19 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
+		if (p_name.operator String().begins_with("autoload_prepend/")) {
+			String node_name = p_name.operator String().get_slicec('/', 1);
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1).simplify_path();
+			} else {
+				autoload.path = path.simplify_path();
+			}
+			add_autoload(autoload, true);
+		} else if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
@@ -623,7 +636,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	} else if (p_from_version <= 6) {
 		// Check if we still have legacy boot splash (removed in 4.6), map it to new project setting, then remove legacy setting.
 		if (has_setting("application/boot_splash/fullsize")) {
-			set_setting("application/boot_splash/stretch_mode", RenderingServer::map_scaling_option_to_stretch_mode(get_setting("application/boot_splash/fullsize")));
+			// See RenderingServerEnums::SplashStretchMode.
+			set_setting("application/boot_splash/stretch_mode", get_setting("application/boot_splash/fullsize") ? 1 : 0);
 			set_setting("application/boot_splash/fullsize", Variant());
 		}
 	}
@@ -706,7 +720,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
@@ -765,7 +779,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	// Attempt to load project file from macOS .app bundle resources.
 	resource_path = OS::get_singleton()->get_bundle_resource_dir();
 	if (!resource_path.is_empty()) {
@@ -1468,9 +1482,16 @@ const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_a
 	return autoloads;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert) {
 	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
+	if (p_front_insert) {
+		if (autoloads.has(p_autoload.name)) {
+			autoloads.erase(p_autoload.name);
+		}
+		autoloads.insert(p_autoload.name, p_autoload, true);
+	} else {
+		autoloads[p_autoload.name] = p_autoload;
+	}
 }
 
 void ProjectSettings::remove_autoload(const StringName &p_autoload) {
@@ -1485,6 +1506,12 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];
+}
+
+void ProjectSettings::fix_autoload_paths() {
+	for (KeyValue<StringName, AutoloadInfo> &kv : autoloads) {
+		kv.value.path = ResourceUID::ensure_path(kv.value.path);
+	}
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
@@ -1615,7 +1642,7 @@ void ProjectSettings::_bind_methods() {
 
 void ProjectSettings::_add_builtin_input_map() {
 	if (InputMap::get_singleton()) {
-		HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+		HashMap<String, List<Ref<InputEvent>>> builtins(InputMap::get_singleton()->get_builtins());
 
 		for (KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 			Array events;
@@ -1678,6 +1705,7 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "accessibility/general/accessibility_driver", PROPERTY_HINT_ENUM, "accesskit,dummy"), "accesskit");
 
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
@@ -1707,6 +1735,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
+	GLOBAL_DEF("display/window/hdr/request_hdr_output", false);
+
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
@@ -1726,10 +1756,10 @@ ProjectSettings::ProjectSettings() {
 
 	_add_builtin_input_map();
 
-	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
+	// Keep the enum values in sync with the `DisplayServerEnums::ScreenOrientation` enum.
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
 	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
-	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
+	// Keep the enum values in sync with the `DisplayServerEnums::VSyncMode` enum.
 	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
 
 	GLOBAL_DEF("display/window/frame_pacing/android/enable_frame_pacing", true);
@@ -1794,18 +1824,16 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/rendering_device/pipeline_cache/save_chunk_size_mb", PROPERTY_HINT_RANGE, "0.000001,64.0,0.001,or_greater"), 3.0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vulkan/max_descriptors_per_pool", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
-	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PROPERTY_HINT_RANGE, "512,262144");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", 1024);
-	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PROPERTY_HINT_RANGE, "256,2048");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
-	custom_prop_info["rendering/rendering_device/d3d12/max_misc_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors", 65536);
+	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors", PROPERTY_HINT_RANGE, "512,1000000");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors", 1024);
+	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors", PROPERTY_HINT_RANGE, "256,2048");
 
 	// The default value must match the minor part of the Agility SDK version
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
-	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
+	// For example, if the script installs 1.618.5, the default value must be 618.
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 618);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.2.16
+VERSION=3.2.28
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -52,13 +52,13 @@ rm -f $target/core/windows/version.rc
 rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
 
 mkdir $target/joystick
 cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
-cp -rv loadso/dlopen $target/loadso
+cp -rv loadso/{dlopen,dummy} $target/loadso
 
 mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor

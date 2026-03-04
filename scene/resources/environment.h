@@ -31,8 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
+
+class Sky;
 
 class Environment : public Resource {
 	GDCLASS(Environment, Resource);
@@ -115,6 +116,8 @@ private:
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
 	float tonemap_white = 1.0;
+	float tonemap_agx_white = 16.29; // Default to Blender's AgX white.
+	float tonemap_agx_contrast = 1.25; // Default to approximately Blender's AgX contrast.
 	void _update_tonemap();
 
 	// SSR
@@ -271,6 +274,10 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+	void set_tonemap_agx_white(float p_white);
+	float get_tonemap_agx_white() const;
+	void set_tonemap_agx_contrast(float p_agx_contrast);
+	float get_tonemap_agx_contrast() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);

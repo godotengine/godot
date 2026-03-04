@@ -32,10 +32,9 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 class Font;
-class Shortcut;
 class StyleBox;
 class ThemeOwner;
 class ThemeContext;
@@ -46,28 +45,28 @@ class Window : public Viewport {
 public:
 	// Keep synced with enum hint for `mode` property.
 	enum Mode {
-		MODE_WINDOWED = DisplayServer::WINDOW_MODE_WINDOWED,
-		MODE_MINIMIZED = DisplayServer::WINDOW_MODE_MINIMIZED,
-		MODE_MAXIMIZED = DisplayServer::WINDOW_MODE_MAXIMIZED,
-		MODE_FULLSCREEN = DisplayServer::WINDOW_MODE_FULLSCREEN,
-		MODE_EXCLUSIVE_FULLSCREEN = DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
+		MODE_WINDOWED = DisplayServerEnums::WINDOW_MODE_WINDOWED,
+		MODE_MINIMIZED = DisplayServerEnums::WINDOW_MODE_MINIMIZED,
+		MODE_MAXIMIZED = DisplayServerEnums::WINDOW_MODE_MAXIMIZED,
+		MODE_FULLSCREEN = DisplayServerEnums::WINDOW_MODE_FULLSCREEN,
+		MODE_EXCLUSIVE_FULLSCREEN = DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
 	enum Flags {
-		FLAG_RESIZE_DISABLED = DisplayServer::WINDOW_FLAG_RESIZE_DISABLED,
-		FLAG_BORDERLESS = DisplayServer::WINDOW_FLAG_BORDERLESS,
-		FLAG_ALWAYS_ON_TOP = DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP,
-		FLAG_TRANSPARENT = DisplayServer::WINDOW_FLAG_TRANSPARENT,
-		FLAG_NO_FOCUS = DisplayServer::WINDOW_FLAG_NO_FOCUS,
-		FLAG_POPUP = DisplayServer::WINDOW_FLAG_POPUP,
-		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
-		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
-		FLAG_SHARP_CORNERS = DisplayServer::WINDOW_FLAG_SHARP_CORNERS,
-		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
-		FLAG_POPUP_WM_HINT = DisplayServer::WINDOW_FLAG_POPUP_WM_HINT,
-		FLAG_MINIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED,
-		FLAG_MAXIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED,
-		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
+		FLAG_RESIZE_DISABLED = DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED,
+		FLAG_BORDERLESS = DisplayServerEnums::WINDOW_FLAG_BORDERLESS,
+		FLAG_ALWAYS_ON_TOP = DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP,
+		FLAG_TRANSPARENT = DisplayServerEnums::WINDOW_FLAG_TRANSPARENT,
+		FLAG_NO_FOCUS = DisplayServerEnums::WINDOW_FLAG_NO_FOCUS,
+		FLAG_POPUP = DisplayServerEnums::WINDOW_FLAG_POPUP,
+		FLAG_EXTEND_TO_TITLE = DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE,
+		FLAG_MOUSE_PASSTHROUGH = DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		FLAG_SHARP_CORNERS = DisplayServerEnums::WINDOW_FLAG_SHARP_CORNERS,
+		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServerEnums::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
+		FLAG_POPUP_WM_HINT = DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT,
+		FLAG_MINIMIZE_DISABLED = DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED,
+		FLAG_MAXIMIZE_DISABLED = DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED,
+		FLAG_MAX = DisplayServerEnums::WINDOW_FLAG_MAX,
 	};
 
 	enum ContentScaleMode {
@@ -116,7 +115,7 @@ public:
 	};
 
 private:
-	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	bool initialized = false;
 
 	String title;
@@ -133,6 +132,10 @@ private:
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
+
+	mutable bool hdr_output_requested = false;
+
+	void _update_viewport_for_hdr_output();
 
 	bool transient = false;
 	bool transient_to_focused = false;
@@ -166,6 +169,9 @@ private:
 	void _update_from_window();
 	void _accessibility_notify_enter(Node *p_node);
 	void _accessibility_notify_exit(Node *p_node);
+
+	void _accessibility_activate();
+	void _accessibility_deactivate();
 
 	bool _try_parent_dialog(Node *p_from_node);
 
@@ -244,10 +250,10 @@ private:
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
+	void _window_input_text(const String &p_text, bool p_emit_signal = false);
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
-	void _event_callback(DisplayServer::WindowEvent p_event);
+	void _event_callback(DisplayServerEnums::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
 
 	bool mouse_in_window = false;
@@ -292,7 +298,7 @@ public:
 	};
 
 	static void set_root_layout_direction(int p_root_dir);
-	static Window *get_from_id(DisplayServer::WindowID p_window_id);
+	static Window *get_from_id(DisplayServerEnums::WindowID p_window_id);
 
 	RID get_accessibility_element() const override;
 	virtual RID get_focused_accessibility_element() const override;
@@ -335,9 +341,15 @@ public:
 
 	bool is_popup() const;
 
+	void set_hdr_output_requested(bool p_enabled);
+	bool is_hdr_output_requested() const;
+	float get_output_max_linear_value() const;
+
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+	void set_taskbar_progress_value(float p_value);
+	void set_taskbar_progress_state(DisplayServerEnums::ProgressState p_state);
 #ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
 #endif // DISABLE_DEPRECATED
@@ -403,7 +415,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
-	HashSet<Window *> get_transient_children() const { return transient_children; }
+	const HashSet<Window *> &get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
@@ -429,7 +441,7 @@ public:
 	bool has_focus_or_active_popup() const;
 
 	void start_drag();
-	void start_resize(DisplayServer::WindowResizeEdge p_edge);
+	void start_resize(DisplayServerEnums::WindowResizeEdge p_edge);
 
 	Rect2i get_usable_parent_rect() const;
 
@@ -495,7 +507,6 @@ public:
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 #endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
@@ -524,7 +535,7 @@ public:
 	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
-	virtual DisplayServer::WindowID get_window_id() const override;
+	virtual DisplayServerEnums::WindowID get_window_id() const override;
 	static Window *get_focused_window() { return focused_window; }
 
 	virtual Size2 _get_contents_minimum_size() const;

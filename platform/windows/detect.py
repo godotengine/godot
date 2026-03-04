@@ -24,6 +24,8 @@ def try_cmd(test, prefix, arch, check_clang=False):
     archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
         archs = [arch]
+    if os.name == "nt":
+        archs += [""]
 
     for a in archs:
         try:
@@ -373,7 +375,7 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["use_asan"]:
         env.extra_suffix += ".san"
         prebuilt_lib_extra_suffix = ".san"
-        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
+        env.Append(CPPDEFINES=["ASAN_ENABLED"])
         env.Append(CCFLAGS=["/fsanitize=address"])
         env.Append(LINKFLAGS=["/INFERASANLIBS"])
 
@@ -525,7 +527,8 @@ def get_ar_version(env):
     }
     try:
         output = (
-            subprocess.check_output([env.subst(env["AR"]), "--version"], shell=(os.name == "nt"))
+            subprocess
+            .check_output([env.subst(env["AR"]), "--version"], shell=(os.name == "nt"))
             .strip()
             .decode("utf-8")
         )
@@ -728,11 +731,12 @@ def configure_mingw(env: "SConsEnvironment"):
             sys.exit(255)
 
         env.extra_suffix += ".san"
-        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         san_flags = []
         if env["use_asan"]:
+            env.Append(CPPDEFINES=["ASAN_ENABLED"])
             san_flags.append("-fsanitize=address")
         if env["use_ubsan"]:
+            env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             san_flags.append("-fsanitize=undefined")
             # Disable the vptr check since it gets triggered on any COM interface calls.
             san_flags.append("-fno-sanitize=vptr")

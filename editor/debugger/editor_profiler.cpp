@@ -31,6 +31,7 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"

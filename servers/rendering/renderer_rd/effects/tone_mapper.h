@@ -34,8 +34,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap_mobile.glsl.gen.h"
 
-#include "servers/rendering/rendering_server.h"
-
 namespace RendererRD {
 
 class ToneMapper {
@@ -100,6 +98,7 @@ private:
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT = (1 << 15),
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_REPLACE = (1 << 16),
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_MIX = (1 << 17),
+		TONEMAP_MOBILE_ADRENO_BUG = (1 << 18), // Needs to be last so we force the pipeline cache to specify specializations for all variants.
 	};
 
 	struct TonemapPushConstant {
@@ -108,7 +107,7 @@ private:
 
 		float pixel_size[2]; //  8 - 24
 		uint32_t tonemapper; //  4 - 28
-		uint32_t pad; //  4 - 32
+		float output_max_value; //  4 - 32
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
@@ -121,6 +120,8 @@ private:
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
 		float luminance_multiplier; //  4 - 96
+
+		float tonemapper_params[4]; //  16 - 112
 	};
 
 	struct TonemapPushConstantMobile {
@@ -134,6 +135,10 @@ private:
 		float glow_map_strength; //  4 - 40
 		float exposure; //  4 - 44
 		float white; //  4 - 48
+
+		float tonemapper_params[4]; //  16 - 64
+		float output_max_value; //  4 - 68
+		float pad[3]; //  12 - 80
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -160,7 +165,7 @@ public:
 
 	struct TonemapSettings {
 		bool use_glow = false;
-		RS::EnvironmentGlowBlendMode glow_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
+		RSE::EnvironmentGlowBlendMode glow_mode = RSE::ENV_GLOW_BLEND_MODE_SCREEN;
 		float glow_intensity = 0.3;
 		float glow_map_strength = 0.0f;
 		float glow_levels[7] = { 1.0, 0.8, 0.4, 0.1, 0.0, 0.0, 0.0 };
@@ -169,9 +174,11 @@ public:
 		RID glow_texture;
 		RID glow_map;
 
-		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
+		RSE::EnvironmentToneMapper tonemap_mode = RSE::ENV_TONE_MAPPER_LINEAR;
+		float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 		float exposure = 1.0;
 		float white = 1.0;
+		float max_value = 1.0;
 
 		bool use_auto_exposure = false;
 		float auto_exposure_scale = 0.5;

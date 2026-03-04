@@ -30,11 +30,23 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	// Hide properties that are managed by XRInterface or otherwise not applicable for XRCamera3D.
+	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
 
 void XRCamera3D::_bind_tracker() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -681,9 +693,12 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 				has_camera = true;
 			}
 		}
-
 		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
+		}
+
+		if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
+			warnings.push_back(RTR("Changing the scale on the XROrigin3D node is not supported. Change the World Scale instead."));
 		}
 	}
 

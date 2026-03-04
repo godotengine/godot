@@ -31,6 +31,9 @@
 #include "visual_shader_nodes.h"
 #include "visual_shader_nodes.compat.inc"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 ////////////// Vector Base
 
 VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_input_port_type(int p_port) const {
@@ -1029,7 +1032,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTexture::get_texture_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D,Depth,SamplerPort,Normal3D,Roughness"), "set_source", "get_source");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map"), "set_texture_type", "get_texture_type");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
@@ -1123,7 +1126,7 @@ void VisualShaderNodeCurveTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &VisualShaderNodeCurveTexture::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeCurveTexture::get_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, CurveTexture::get_class_static()), "set_texture", "get_texture");
 }
 
 bool VisualShaderNodeCurveTexture::is_use_prop_slots() const {
@@ -1208,7 +1211,7 @@ void VisualShaderNodeCurveXYZTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &VisualShaderNodeCurveXYZTexture::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeCurveXYZTexture::get_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "CurveXYZTexture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, CurveXYZTexture::get_class_static()), "set_texture", "get_texture");
 }
 
 bool VisualShaderNodeCurveXYZTexture::is_use_prop_slots() const {
@@ -1443,7 +1446,7 @@ void VisualShaderNodeTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "value"), &VisualShaderNodeTexture3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeTexture3D::get_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture3D::get_class_static()), "set_texture", "get_texture");
 }
 
 VisualShaderNodeTexture3D::VisualShaderNodeTexture3D() {
@@ -3260,7 +3263,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		" + p_output_vars[0] + " = max(vec3(1.055) * pow(c, vec3(0.416666667)) - vec3(0.055), vec3(0.0));\n";
 			} else {
-				code += "		vec3 c = clamp(" + p_input_vars[0] + ", vec3(0.0), vec3(1.0));\n";
+				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		const vec3 a = vec3(0.055f);\n";
 				code += "		" + p_output_vars[0] + " = mix((vec3(1.0f) + a) * pow(c.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * c.rgb, lessThan(c.rgb, vec3(0.0031308f)));\n";
 			}
@@ -4625,6 +4628,30 @@ String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
 			return "eta";
 	}
 	return String();
+}
+
+VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input_port_type(int p_port) const {
+	switch (op_type) {
+		case OP_TYPE_VECTOR_2D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_2D;
+		case OP_TYPE_VECTOR_3D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_4D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_4D;
+		default:
+			break;
+	}
+
+	return PORT_TYPE_SCALAR;
 }
 
 int VisualShaderNodeVectorRefract::get_output_port_count() const {

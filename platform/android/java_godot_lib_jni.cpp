@@ -53,12 +53,7 @@
 #include "main/main.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "modules/modules_enabled.gen.h" // For camera.
-
-#ifdef MODULE_CAMERA_ENABLED
-#include "modules/camera/camera_android.h"
 #include "servers/camera/camera_server.h"
-#endif
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"
@@ -129,6 +124,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	NetSocketAndroid::terminate();
 
 	cleanup_android_class_loader();
+	godot_cleanup_profiler();
 
 	if (godot_java) {
 		godot_java->on_godot_terminating(env);
@@ -140,6 +136,21 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 			}
 		}
 		delete godot_java;
+	}
+}
+
+static String rendering_source_to_string(OS::RenderingSource p_source) {
+	switch (p_source) {
+		case OS::RENDERING_SOURCE_DEFAULT:
+			return "Default";
+		case OS::RENDERING_SOURCE_PROJECT_SETTING:
+			return "ProjectSettings";
+		case OS::RENDERING_SOURCE_COMMANDLINE:
+			return "Commandline";
+		case OS::RENDERING_SOURCE_FALLBACK:
+			return "Fallback";
+		default:
+			return "Unknown";
 	}
 }
 
@@ -262,7 +273,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	}
 
 	if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
-		dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST);
 	}
 }
 
@@ -491,13 +502,46 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 	return env->NewStringUTF(setting_value.utf8().get_data());
 }
 
-JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz) {
-	String rendering_driver = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz, jboolean p_vulkan_requirements_met) {
+	String rendering_driver_original = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+	String rendering_driver_chosen = rendering_driver_original;
 	String rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
 
-	jobjectArray result = env->NewObjectArray(2, jni_find_class(env, "java/lang/String"), nullptr);
-	env->SetObjectArrayElement(result, 0, env->NewStringUTF(rendering_driver.utf8().get_data()));
-	env->SetObjectArrayElement(result, 1, env->NewStringUTF(rendering_method.utf8().get_data()));
+#ifdef VULKAN_ENABLED
+	if (rendering_driver_original == "vulkan" && !DisplayServerAndroid::check_vulkan_global_context(p_vulkan_requirements_met)) {
+		// The Android display server only gets created after this step, so a static check must be used to check for Vulkan
+		// availability instead. If the check fails, it'll fall back to OpenGL3 accordingly if the relevant project setting
+		// is enabled. The Vulkan context created by this check will be reused by the DisplayServer afterwards.
+		rendering_driver_chosen = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+		rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
+	}
+#ifndef XR_DISABLED
+	// When running in XR mode, vulkan initialization must be done by the XR module, so we ensure that the vulkan
+	// global context is reset.
+	// Note: This is temporary workaround to address https://github.com/godotengine/godot/issues/115924
+	// A proper fix involves updating the Android init flow so that DisplayServerAndroid can update the Android surface
+	// type (vulkan or opengl) after it's initialized.
+	bool xr_enabled = false;
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+		xr_enabled = GLOBAL_GET_CACHED(bool, "xr/shaders/enabled");
+	} else {
+		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+	}
+	if (xr_enabled) {
+		DisplayServerAndroid::free_vulkan_global_context();
+	}
+#endif // XR_DISABLED
+#endif
+
+	String rendering_driver_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_driver_name_source());
+	String rendering_method_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_method_source());
+
+	jobjectArray result = env->NewObjectArray(5, jni_find_class(env, "java/lang/String"), nullptr);
+	env->SetObjectArrayElement(result, 0, env->NewStringUTF(rendering_driver_chosen.utf8().get_data()));
+	env->SetObjectArrayElement(result, 1, env->NewStringUTF(rendering_driver_original.utf8().get_data()));
+	env->SetObjectArrayElement(result, 2, env->NewStringUTF(rendering_method.utf8().get_data()));
+	env->SetObjectArrayElement(result, 3, env->NewStringUTF(rendering_driver_source.utf8().get_data()));
+	env->SetObjectArrayElement(result, 4, env->NewStringUTF(rendering_method_source.utf8().get_data()));
 
 	return result;
 }
@@ -606,12 +650,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 
 	// We force redraw to ensure we render at least once when resuming the app.
 	Main::force_redraw();
-#ifdef MODULE_CAMERA_ENABLED
-	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
-	if (camera_android) {
-		camera_android->handle_resume();
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_resume();
 	}
-#endif // MODULE_CAMERA_ENABLED
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
@@ -622,29 +664,34 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 		return;
 	}
 
-#ifdef MODULE_CAMERA_ENABLED
-	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
-	if (camera_android) {
-		camera_android->handle_pause();
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_pause();
 	}
-#endif // MODULE_CAMERA_ENABLED
 
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
+
+	if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
+		dsa->notify_application_paused();
+	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChange(JNIEnv *env, jclass clazz) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onOrientationChange(JNIEnv *env, jclass clazz, jint p_orientation) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
 
-#ifdef MODULE_CAMERA_ENABLED
-	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
-	if (camera_android) {
-		camera_android->handle_rotation_change();
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_display_rotation_change(p_orientation);
 	}
-#endif // MODULE_CAMERA_ENABLED
+
+	DisplayServer *display_server = DisplayServer::get_singleton();
+	if (display_server) {
+		display_server->emit_signal("orientation_changed", p_orientation);
+	}
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInputToRenderThread(JNIEnv *env, jclass clazz) {

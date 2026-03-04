@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -378,6 +379,7 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation("TreeSecondary");
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }
