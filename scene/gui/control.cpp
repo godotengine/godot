@@ -33,12 +33,13 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
-#include "container.h"
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
+#include "scene/gui/container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"

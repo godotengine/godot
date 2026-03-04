@@ -30,6 +30,7 @@
 
 #include "audio_stream_player_internal.h"
 
+#include "core/config/engine.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 

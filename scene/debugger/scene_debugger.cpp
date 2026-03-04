@@ -30,6 +30,7 @@
 
 #include "scene_debugger.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/shortcut.h"

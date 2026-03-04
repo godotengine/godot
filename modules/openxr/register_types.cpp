@@ -99,6 +99,7 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "main/main.h"

@@ -31,6 +31,7 @@
 #include "input.h"
 #include "input.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"

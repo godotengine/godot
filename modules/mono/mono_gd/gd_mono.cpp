@@ -47,6 +47,7 @@
 #include "../editor/semver.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"

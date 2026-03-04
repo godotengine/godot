@@ -30,6 +30,7 @@
 
 #include "navigation_link_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"

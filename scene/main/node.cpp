@@ -31,8 +31,6 @@
 #include "node.h"
 #include "node.compat.inc"
 
-#include "core/object/class_db.h"
-
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
@@ -40,9 +38,11 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/string/print_string.h"

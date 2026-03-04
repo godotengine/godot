@@ -35,6 +35,7 @@
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"

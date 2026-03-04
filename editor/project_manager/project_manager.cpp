@@ -30,6 +30,7 @@
 
 #include "project_manager.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"

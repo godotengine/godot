@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/image.h"

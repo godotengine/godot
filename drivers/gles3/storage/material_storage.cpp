@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
