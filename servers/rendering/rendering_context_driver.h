@@ -30,7 +30,11 @@
 
 #pragma once
 
-#include "servers/display/display_server.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "servers/display/display_server_enums.h"
+
+#include <cstdint>
 
 class RenderingDeviceDriver;
 
@@ -39,24 +43,24 @@ public:
 	typedef uint64_t SurfaceID;
 
 private:
-	HashMap<DisplayServer::WindowID, SurfaceID> window_surface_map;
+	HashMap<DisplayServerEnums::WindowID, SurfaceID> window_surface_map;
 
 public:
-	SurfaceID surface_get_from_window(DisplayServer::WindowID p_window) const;
-	Error window_create(DisplayServer::WindowID p_window, const void *p_platform_data);
-	void window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height);
-	void window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode);
-	DisplayServer::VSyncMode window_get_vsync_mode(DisplayServer::WindowID p_window) const;
-	void window_set_hdr_output_enabled(DisplayServer::WindowID p_window, bool p_enabled);
-	bool window_get_hdr_output_enabled(DisplayServer::WindowID p_window) const;
-	void window_set_hdr_output_reference_luminance(DisplayServer::WindowID p_window, float p_reference_luminance);
-	float window_get_hdr_output_reference_luminance(DisplayServer::WindowID p_window) const;
-	void window_set_hdr_output_max_luminance(DisplayServer::WindowID p_window, float p_max_luminance);
-	float window_get_hdr_output_max_luminance(DisplayServer::WindowID p_window) const;
-	void window_set_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window, float p_linear_luminance_scale);
-	float window_get_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window) const;
-	float window_get_output_max_linear_value(DisplayServer::WindowID p_window) const;
-	void window_destroy(DisplayServer::WindowID p_window);
+	SurfaceID surface_get_from_window(DisplayServerEnums::WindowID p_window) const;
+	Error window_create(DisplayServerEnums::WindowID p_window, const void *p_platform_data);
+	void window_set_size(DisplayServerEnums::WindowID p_window, uint32_t p_width, uint32_t p_height);
+	void window_set_vsync_mode(DisplayServerEnums::WindowID p_window, DisplayServerEnums::VSyncMode p_vsync_mode);
+	DisplayServerEnums::VSyncMode window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const;
+	void window_set_hdr_output_enabled(DisplayServerEnums::WindowID p_window, bool p_enabled);
+	bool window_get_hdr_output_enabled(DisplayServerEnums::WindowID p_window) const;
+	void window_set_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window, float p_reference_luminance);
+	float window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const;
+	void window_set_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window, float p_max_luminance);
+	float window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const;
+	void window_set_hdr_output_linear_luminance_scale(DisplayServerEnums::WindowID p_window, float p_linear_luminance_scale);
+	float window_get_hdr_output_linear_luminance_scale(DisplayServerEnums::WindowID p_window) const;
+	float window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window) const;
+	void window_destroy(DisplayServerEnums::WindowID p_window);
 
 public:
 	// Not an enum as these values are matched against values returned by
@@ -104,8 +108,8 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) = 0;
 	virtual SurfaceID surface_create(const void *p_platform_data) = 0;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) = 0;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) = 0;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) = 0;
+	virtual DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) = 0;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const = 0;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) = 0;
