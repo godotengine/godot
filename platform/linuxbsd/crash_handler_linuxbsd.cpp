@@ -104,13 +104,13 @@ static void handle_crash(int sig) {
 #endif //__GLIBC__
 	if (strings) {
 		int ret;
-		String output;
 
 		List<String> args;
 		args.push_back("--version");
 		String exe_name;
 
 		if (exe_name.is_empty()) {
+			String output;
 			// Faster implementation from gimli-rs/addr2line.
 			Error err = OS::get_singleton()->execute(OS::get_singleton()->get_environment("HOME").path_join(String("/.cargo/bin/addr2line")), args, &output, &ret);
 			if (err == OK && ret == 0) {
@@ -118,6 +118,7 @@ static void handle_crash(int sig) {
 			}
 		}
 		if (exe_name.is_empty()) {
+			String output;
 			Error err = OS::get_singleton()->execute(String("llvm-addr2line"), args, &output, &ret);
 			if (err == OK && ret == 0) {
 				exe_name = String("llvm-addr2line");
@@ -137,6 +138,7 @@ static void handle_crash(int sig) {
 		args.push_back(_execpath);
 
 		// Try to get the file/line number using addr2line
+		String output;
 		Error err = OS::get_singleton()->execute(exe_name, args, &output, &ret);
 		Vector<String> addr2line_results;
 		if (err == OK) {
