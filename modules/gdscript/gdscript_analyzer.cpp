@@ -242,24 +242,44 @@ static GDScriptParser::DataType resolve_generic_type(const GDScriptParser::DataT
 	
 	///case 1,the type to resolve IS, by itself, a generic type
 	if (p_type_to_resolve.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		const GDScriptParser::DataType* bound = p_bindings.getptr(p_type_to_resolve.generic_param);
-		if(bound) {return *bound;}
+
+		const GDScriptParser::DataType *bound = p_bindings.getptr(p_type_to_resolve.generic_param);
+		if (bound != nullptr) {
+			/// resolve again! in case the binding itself still contains generics
+			return resolve_generic_type(*bound, p_bindings);
+		}
 
 		///not a declared generic type, error will (probably) be caught downstream, just leave it
 		return p_type_to_resolve;
 	}
 
+	GDScriptParser::DataType result = p_type_to_resolve;
+	/// maintain changed flag in case we actually manage to resolve something
+	bool changed = false;
+
 	///case 2, the type to resolve is not a generic type, BUT, holds generic types inside it
-	if (p_type_to_resolve.has_container_element_types()) {
-		GDScriptParser::DataType result = p_type_to_resolve;
-		for(int i = 0; i < result.container_element_types.size(); i++) {
-			result.container_element_types.write[i] = resolve_generic_type(result.container_element_types[i], p_bindings);
-		}	
-		return result;
+	if (result.has_container_element_types()) {
+		for (int i = 0; i < result.container_element_types.size(); i++) {
+			GDScriptParser::DataType resolved_elem = resolve_generic_type(result.container_element_types[i], p_bindings);
+			if (resolved_elem != result.container_element_types[i]) {
+				result.container_element_types.write[i] = resolved_elem;
+				changed = true;
+			}
+		}
 	}
 
-	return p_type_to_resolve;
+	///case 3, try and recurse into generic class bindings like Option[T], Result[T, E]
+	if (!result.generic_type_bindings.is_empty()) {
+		for (KeyValue<StringName, GDScriptParser::DataType> &E : result.generic_type_bindings) {
+			GDScriptParser::DataType resolved_binding = resolve_generic_type(E.value, p_bindings);
+			if (resolved_binding != E.value) {
+				E.value = resolved_binding;
+				changed = true;
+			}
+		}
+	}
 
+	return changed ? result : p_type_to_resolve;
 }
 
 bool is_script_or_class(const GDScriptParser::DataType p_datatype) {
