@@ -242,9 +242,12 @@ static GDScriptParser::DataType resolve_generic_type(const GDScriptParser::DataT
 	
 	///case 1,the type to resolve IS, by itself, a generic type
 	if (p_type_to_resolve.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-
 		const GDScriptParser::DataType *bound = p_bindings.getptr(p_type_to_resolve.generic_param);
 		if (bound != nullptr) {
+			/// if the same bound is obtained, break infinite recursion on self bindings (T -> T)
+			if (*bound == p_type_to_resolve) {
+				return p_type_to_resolve;
+			}
 			/// resolve again! in case the binding itself still contains generics
 			return resolve_generic_type(*bound, p_bindings);
 		}
