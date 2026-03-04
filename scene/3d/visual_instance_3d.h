@@ -33,6 +33,7 @@
 #include "scene/3d/node_3d.h"
 #include "servers/rendering/rendering_server_enums.h"
 
+class Material;
 class TriangleMesh;
 
 class VisualInstance3D : public Node3D {

@@ -48,6 +48,7 @@
 #include "scene/2d/tile_map_layer.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
 #include "servers/rendering/rendering_server.h"

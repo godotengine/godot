@@ -35,6 +35,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 
 SnapshotRefCountedView::SnapshotRefCountedView() {
 	set_name(TTRC("RefCounted"));
