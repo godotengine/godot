@@ -496,7 +496,7 @@ Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::po
 
 	// We're overriding the color and depth textures, no need for screen blits, return empty BlitToScreen vector
 	// However, we need to acquire the dummy frame buffer
-	RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	RD::get_singleton()->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
 	return Vector<RenderingServerTypes::BlitToScreen>();
 }
 
