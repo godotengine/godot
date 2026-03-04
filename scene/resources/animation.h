@@ -271,7 +271,7 @@ private:
 		}
 	};
 	static inline HashMap<TypeHash, TrackHashRef *> track_hash_map; // common list for thashes among all animations
-	void unref_or_erase(Track *p_track, const TypeHash thash);
+	void unref_or_erase(Track *p_track, const TypeHash p_thash);
 	HashSet<int> dirty_tracks;
 	bool track_hash_is_dirty = false;
 
