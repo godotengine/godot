@@ -59,6 +59,19 @@ if env["builtin_freetype"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+    lzfse_thirdparty_dir = "#thirdparty/lzfse/"
+    lzfse_thirdparty_sources = [
+        "src/lzfse_decode.c",
+        "src/lzfse_decode_base.c",
+        "src/lzfse_encode.c",
+        "src/lzfse_encode_base.c",
+        "src/lzfse_fse.c",
+        "src/lzvn_decode_base.c",
+        "src/lzvn_encode_base.c",
+    ]
+    thirdparty_sources += [lzfse_thirdparty_dir + file for file in lzfse_thirdparty_sources]
+    env_freetype.Prepend(CPPPATH=[lzfse_thirdparty_dir + "/src"])
+
     if env["brotli"]:
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
 
@@ -66,7 +79,14 @@ if env["builtin_freetype"]:
     # Also needed in main env for scene/
     env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
 
-    env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
+    env_freetype.Append(
+        CPPDEFINES=[
+            "FT2_BUILD_LIBRARY",
+            "FT_CONFIG_OPTION_USE_PNG",
+            "FT_CONFIG_OPTION_USE_EMJC",
+            "FT_CONFIG_OPTION_SYSTEM_ZLIB",
+        ]
+    )
 
     # Also requires libpng headers
     if env["builtin_libpng"]:

@@ -271,6 +271,7 @@ if env["freetype_enabled"]:
         CPPDEFINES=[
             "FT2_BUILD_LIBRARY",
             "FT_CONFIG_OPTION_USE_PNG",
+            "FT_CONFIG_OPTION_USE_EMJC",
             "FT_CONFIG_OPTION_SYSTEM_ZLIB",
         ]
     )

@@ -33,6 +33,7 @@
 
 #include "ttmtx.h"
 #include "pngshim.h"
+#include "emj1shim.h"
 
 
   /**************************************************************************
@@ -1581,7 +1582,22 @@
       error = FT_THROW( Unimplemented_Feature );
 #endif
       break;
-
+    case FT_MAKE_TAG( 'e', 'm', 'j', 'c' ):
+#ifdef FT_CONFIG_OPTION_USE_EMJC
+      error = Load_SBit_Emj1( face->root.glyph,
+                             0,
+                             0,
+                             32,
+                             metrics,
+                             stream->memory,
+                             stream->cursor,
+                             glyph_end - glyph_start - 8,
+                             TRUE,
+                             metrics_only );
+#else
+      error = FT_THROW( Unimplemented_Feature );
+#endif
+      break;
     case FT_MAKE_TAG( 'j', 'p', 'g', ' ' ):
     case FT_MAKE_TAG( 't', 'i', 'f', 'f' ):
     case FT_MAKE_TAG( 'r', 'g', 'b', 'l' ): /* used on iOS 7.1 */
