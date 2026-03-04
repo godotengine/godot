@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 
 #include "tvgCommon.h"
 
+const char* svgUtilSkipWhiteSpace(const char* itr, const char* itrEnd);
+const char* svgUtilUnskipWhiteSpace(const char* itr, const char* itrStart);
+const char* svgUtilSkipWhiteSpaceAndComma(const char* content);
 size_t svgUtilURLDecode(const char *src, char** dst);
 
 #endif //_TVG_SVG_UTIL_H_

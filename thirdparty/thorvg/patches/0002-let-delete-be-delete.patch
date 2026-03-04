@@ -1,0 +1,32 @@
+diff --git a/thirdparty/thorvg/src/common/tvgCommon.h b/thirdparty/thorvg/src/common/tvgCommon.h
+index a98d5eb818..386df483b5 100644
+--- a/thirdparty/thorvg/src/common/tvgCommon.h
++++ b/thirdparty/thorvg/src/common/tvgCommon.h
+@@ -67,9 +67,6 @@ using namespace tvg;
+     #define strncpy strncpy_s
+ #endif
+ 
+-void* operator new(std::size_t size);
+-void operator delete(void* ptr) noexcept;
+-
+ namespace tvg {
+ 
+     enum class FileType { Png = 0, Jpg, Webp, Svg, Lot, Ttf, Raw, Gif, Unknown };
+diff --git a/thirdparty/thorvg/src/renderer/tvgInitializer.cpp b/thirdparty/thorvg/src/renderer/tvgInitializer.cpp
+index 6d7fb5191b..6c7777889f 100644
+--- a/thirdparty/thorvg/src/renderer/tvgInitializer.cpp
++++ b/thirdparty/thorvg/src/renderer/tvgInitializer.cpp
+@@ -131,13 +131,3 @@ uint16_t THORVG_VERSION_NUMBER()
+ {
+     return _version;
+ }
+-
+-
+-void* operator new(std::size_t size) {
+-    return tvg::malloc(size);
+-}
+-
+-
+-void operator delete(void* ptr) noexcept {
+-    tvg::free(ptr);
+-}

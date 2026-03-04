@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,10 @@ static inline bool _onlyShifted(const Matrix& m)
 }
 
 
-static bool _genOutline(SwImage* image, const Matrix& transform, SwMpool* mpool, unsigned tid)
+static bool _genOutline(SwImage& image, const Matrix& transform, SwMpool* mpool, unsigned tid)
 {
-    image->outline = mpoolReqOutline(mpool, tid);
-    auto outline = image->outline;
+    image.outline = mpoolReqOutline(mpool, tid);
+    auto outline = image.outline;
 
     outline->pts.reserve(5);
     outline->types.reserve(5);
@@ -45,8 +45,8 @@ static bool _genOutline(SwImage* image, const Matrix& transform, SwMpool* mpool,
     outline->closed.reserve(1);
 
     Point to[4];
-    auto w = static_cast<float>(image->w);
-    auto h = static_cast<float>(image->h);
+    auto w = static_cast<float>(image.w);
+    auto h = static_cast<float>(image.h);
     to[0] = {0, 0};
     to[1] = {w, 0};
     to[2] = {w, h};
@@ -62,7 +62,8 @@ static bool _genOutline(SwImage* image, const Matrix& transform, SwMpool* mpool,
     outline->cntrs.push(outline->pts.count - 1);
     outline->closed.push(true);
 
-    image->outline = outline;
+    image.outline = outline;
+    image.outline->fillRule = FillRule::NonZero;
 
     return true;
 }
@@ -72,51 +73,51 @@ static bool _genOutline(SwImage* image, const Matrix& transform, SwMpool* mpool,
 /* External Class Implementation                                        */
 /************************************************************************/
 
-bool imagePrepare(SwImage* image, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
+bool imagePrepare(SwImage& image, const Matrix& transform, const RenderRegion& clipBox, RenderRegion& renderBox, SwMpool* mpool, unsigned tid)
 {
-    image->direct = _onlyShifted(transform);
+    image.direct = _onlyShifted(transform);
 
     //Fast track: Non-transformed image but just shifted.
-    if (image->direct) {
-        image->ox = -static_cast<int32_t>(nearbyint(transform.e13));
-        image->oy = -static_cast<int32_t>(nearbyint(transform.e23));
+    if (image.direct) {
+        image.ox = -static_cast<int32_t>(nearbyint(transform.e13));
+        image.oy = -static_cast<int32_t>(nearbyint(transform.e23));
     //Figure out the scale factor by transform matrix
     } else {
         auto scaleX = sqrtf((transform.e11 * transform.e11) + (transform.e21 * transform.e21));
         auto scaleY = sqrtf((transform.e22 * transform.e22) + (transform.e12 * transform.e12));
-        image->scale = (fabsf(scaleX - scaleY) > 0.01f) ? 1.0f : scaleX;
+        image.scale = (fabsf(scaleX - scaleY) > 0.01f) ? 1.0f : scaleX;
 
-        if (tvg::zero(transform.e12) && tvg::zero(transform.e21)) image->scaled = true;
-        else image->scaled = false;
+        if (tvg::zero(transform.e12) && tvg::zero(transform.e21)) image.scaled = true;
+        else image.scaled = false;
     }
 
     if (!_genOutline(image, transform, mpool, tid)) return false;
-    return mathUpdateOutlineBBox(image->outline, clipRegion, renderRegion, image->direct);
+    return mathUpdateOutlineBBox(image.outline, clipBox, renderBox, image.direct);
 }
 
 
-bool imageGenRle(SwImage* image, const SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool antiAlias)
+bool imageGenRle(SwImage& image, const RenderRegion& renderBox, SwMpool* mpool, unsigned tid, bool antiAlias)
 {
-    if ((image->rle = rleRender(image->rle, image->outline, renderRegion, mpool, tid, antiAlias))) return true;
+    if ((image.rle = rleRender(image.rle, image.outline, renderBox, mpool, tid, antiAlias))) return true;
 
     return false;
 }
 
 
-void imageDelOutline(SwImage* image, SwMpool* mpool, uint32_t tid)
+void imageDelOutline(SwImage& image, SwMpool* mpool, uint32_t tid)
 {
-    mpoolRetOutline(mpool, tid);
-    image->outline = nullptr;
+    image.outline = nullptr;
 }
 
 
-void imageReset(SwImage* image)
+void imageReset(SwImage& image)
 {
-    rleReset(image->rle);
+    rleReset(image.rle);
 }
 
 
-void imageFree(SwImage* image)
+void imageFree(SwImage& image)
 {
-    rleFree(image->rle);
+    rleFree(image.rle);
+    image.rle = nullptr;
 }

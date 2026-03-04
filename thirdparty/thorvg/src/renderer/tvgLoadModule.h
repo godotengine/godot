@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,29 +29,49 @@
 #include "tvgInlist.h"
 
 
+struct AssetResolver
+{
+    std::function<bool(Paint* paint, const char* src, void* data)> func;
+    void* data;
+};
+
+
+namespace tvg
+{
+
 struct LoadModule
 {
     INLIST_ITEM(LoadModule);
 
     //Use either hashkey(data) or hashpath(path)
-    union {
-        uintptr_t hashkey;
-        char* hashpath = nullptr;
-    };
+    uintptr_t hashkey = 0;
+    char* hashpath = nullptr;
 
     FileType type;                                  //current loader file type
     atomic<uint16_t> sharing{};                     //reference count
     bool readied = false;                           //read done already.
-    bool pathcache = false;                         //cached by path
+    bool cached = false;                            //cached for sharing
 
     LoadModule(FileType type) : type(type) {}
     virtual ~LoadModule()
     {
-        if (pathcache) free(hashpath);
+        tvg::free(hashpath);
     }
 
-    virtual bool open(const string& path) { return false; }
-    virtual bool open(const char* data, uint32_t size, bool copy) { return false; }
+    void cache(uintptr_t data)
+    {
+        hashkey = data;
+        cached = true;
+    }
+
+    void cache(char* data)
+    {
+        hashpath = data;
+        cached = true;
+    }
+
+    virtual bool open(const char* path) { return false; }
+    virtual bool open(const char* data, uint32_t size, const char* rpath, bool copy) { return false; }
     virtual bool resize(Paint* paint, float w, float h) { return false; }
     virtual void sync() {};  //finish immediately if any async update jobs.
 
@@ -62,17 +82,37 @@ struct LoadModule
         return true;
     }
 
-    bool cached()
-    {
-        if (hashkey) return true;
-        return false;
-    }
-
     virtual bool close()
     {
         if (sharing == 0) return true;
         --sharing;
         return false;
+    }
+
+    char* open(const char* path, uint32_t& size, bool text = false)
+    {
+#ifdef THORVG_FILE_IO_SUPPORT
+        auto f = fopen(path, text ? "r" : "rb");
+        if (!f) return nullptr;
+
+        fseek(f, 0, SEEK_END);
+
+        size = ftell(f);
+        if (size == 0) {
+            fclose(f);
+            return nullptr;
+        }
+
+        auto content = tvg::malloc<char>(sizeof(char) * (text ? size + 1 : size));
+        fseek(f, 0, SEEK_SET);
+        size = fread(content, sizeof(char), size, f);
+        if (text) content[size] = '\0';
+
+        fclose(f);
+
+        return content;
+#endif
+        return nullptr;
     }
 };
 
@@ -88,6 +128,7 @@ struct ImageLoader : LoadModule
 
     virtual bool animatable() { return false; }  //true if this loader supports animation.
     virtual Paint* paint() { return nullptr; }
+    virtual void set(const AssetResolver* resolver) {}
 
     virtual RenderSurface* bitmap()
     {
@@ -99,19 +140,38 @@ struct ImageLoader : LoadModule
 
 struct FontMetrics
 {
-    //TODO: add necessary metrics
-    float minw;
+    Point size;  //text width, height
+    float scale;
+    Point align{}, box{}, spacing{1.0f, 1.0f};
+    float fontSize = 0.0f;
+    TextWrap wrap = TextWrap::None;
+
+    void *engine = nullptr;  //engine extension
+
+    ~FontMetrics()
+    {
+        tvg::free(engine);
+    }
 };
 
 
 struct FontLoader : LoadModule
 {
+    static constexpr const float DPI = 96.0f / 72.0f;   //dpi base?
+
+    char* name = nullptr;
+
     FontLoader(FileType type) : LoadModule(type) {}
 
     using LoadModule::read;
 
-    virtual bool read(Shape* shape, char* text, FontMetrics& out) = 0;
-    virtual float transform(Paint* paint, FontMetrics& mertrics, float fontSize, bool italic) = 0;
+    virtual bool get(FontMetrics& fm, char* text, RenderPath& out) = 0;
+    virtual void transform(Paint* paint, FontMetrics& fm, float italicShear) = 0;
+    virtual void release(FontMetrics& fm) = 0;
+    virtual void metrics(const FontMetrics& fm, TextMetrics& out) = 0;
+    virtual void copy(const FontMetrics& in, FontMetrics& out) = 0;
 };
+
+}
 
 #endif //_TVG_LOAD_MODULE_H_

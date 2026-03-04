@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,32 @@
 #include "tvgText.h"
 
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
-
-
-
-/************************************************************************/
-/* External Class Implementation                                        */
-/************************************************************************/
-
-
-Text::Text() : pImpl(new Impl(this))
-{
-}
-
-
-Text::~Text()
-{
-    delete(pImpl);
-}
+Text::Text() = default;
 
 
 Result Text::text(const char* text) noexcept
 {
-    return pImpl->text(text);
+    return to<TextImpl>(this)->text(text);
 }
 
 
-Result Text::font(const char* name, float size, const char* style) noexcept
+Result Text::font(const char* name) noexcept
 {
-    return pImpl->font(name, size, style);
+    return to<TextImpl>(this)->font(name);
 }
 
 
-Result Text::load(const std::string& path) noexcept
+Result Text::size(float size) noexcept
+{
+    return to<TextImpl>(this)->size(size);
+}
+
+
+Result Text::load(const char* filename) noexcept
 {
 #ifdef THORVG_FILE_IO_SUPPORT
     bool invalid; //invalid path
-    auto loader = LoaderMgr::loader(path, &invalid);
+    auto loader = LoaderMgr::loader(filename, &invalid);
     if (loader) {
         if (loader->sharing > 0) --loader->sharing;   //font loading doesn't mean sharing.
         return Result::Success;
@@ -70,7 +57,6 @@ Result Text::load(const std::string& path) noexcept
         if (invalid) return Result::InvalidArguments;
         else return Result::NonSupport;
     }
-    return Result::Success;
 #else
     TVGLOG("RENDERER", "FILE IO is disabled!");
     return Result::NonSupport;
@@ -78,13 +64,13 @@ Result Text::load(const std::string& path) noexcept
 }
 
 
-Result Text::load(const char* name, const char* data, uint32_t size, const string& mimeType, bool copy) noexcept
+Result Text::load(const char* name, const char* data, uint32_t size, const char* mimeType, bool copy) noexcept
 {
     if (!name || (size == 0 && data)) return Result::InvalidArguments;
 
     //unload font
     if (!data) {
-        if (LoaderMgr::retrieve(name)) return Result::Success;
+        if (LoaderMgr::retrieve(LoaderMgr::font(name))) return Result::Success;
         return Result::InsufficientCondition;
     }
 
@@ -93,10 +79,10 @@ Result Text::load(const char* name, const char* data, uint32_t size, const strin
 }
 
 
-Result Text::unload(const std::string& path) noexcept
+Result Text::unload(const char* filename) noexcept
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    if (LoaderMgr::retrieve(path)) return Result::Success;
+    if (LoaderMgr::retrieve(filename)) return Result::Success;
     return Result::InsufficientCondition;
 #else
     TVGLOG("RENDERER", "FILE IO is disabled!");
@@ -105,21 +91,74 @@ Result Text::unload(const std::string& path) noexcept
 }
 
 
+Result Text::align(float x, float y) noexcept
+{
+    to<TextImpl>(this)->fm.align = {x, y};
+    PAINT(this)->mark(RenderUpdateFlag::Transform);
+    return Result::Success;
+}
+
+
+Result Text::layout(float w, float h) noexcept
+{
+    to<TextImpl>(this)->layout(w, h);
+    return Result::Success;
+}
+
+
 Result Text::fill(uint8_t r, uint8_t g, uint8_t b) noexcept
 {
-    return pImpl->shape->fill(r, g, b);
+    return to<TextImpl>(this)->shape->fill(r, g, b);
 }
 
 
-Result Text::fill(unique_ptr<Fill> f) noexcept
+Result Text::outline(float width, uint8_t r, uint8_t g, uint8_t b) noexcept
 {
-    return pImpl->shape->fill(std::move(f));
+    to<TextImpl>(this)->outlineWidth = width;
+    to<TextImpl>(this)->shape->strokeFill(r, g, b);
+    PAINT(this)->mark(RenderUpdateFlag::Stroke);
+    return Result::Success;
 }
 
 
-unique_ptr<Text> Text::gen() noexcept
+Result Text::fill(Fill* f) noexcept
 {
-    return unique_ptr<Text>(new Text);
+    return to<TextImpl>(this)->shape->fill(f);
+}
+
+
+Result Text::italic(float shear) noexcept
+{
+    if (shear < 0.0f) shear = 0.0f;
+    else if (shear > 0.5f) shear = 0.5f;
+    to<TextImpl>(this)->italicShear = shear;
+    to<TextImpl>(this)->updated = true;
+    return Result::Success;
+}
+
+
+Result Text::spacing(float letter, float line) noexcept
+{
+    return to<TextImpl>(this)->spacing(letter, line);
+}
+
+
+Result Text::wrap(TextWrap mode) noexcept
+{
+    to<TextImpl>(this)->wrapping(mode);
+    return Result::Success;
+}
+
+
+Result Text::metrics(TextMetrics& metrics) const noexcept
+{
+    return to<TextImpl>(this)->metrics(metrics);
+}
+
+
+Text* Text::gen() noexcept
+{
+    return new TextImpl;
 }
 
 

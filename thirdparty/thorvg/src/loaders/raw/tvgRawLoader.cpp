@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,9 @@
  */
 
 #include <fstream>
-#include <string.h>
 #include "tvgLoader.h"
 #include "tvgRawLoader.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
-
-
-/************************************************************************/
-/* External Class Implementation                                        */
-/************************************************************************/
 
 RawLoader::RawLoader() : ImageLoader(FileType::Raw)
 {
@@ -41,11 +32,11 @@ RawLoader::RawLoader() : ImageLoader(FileType::Raw)
 
 RawLoader::~RawLoader()
 {
-    if (copy) free(surface.buf32);
+    if (copy) tvg::free(surface.buf32);
 }
 
 
-bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
+bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy)
 {
     if (!LoadModule::read()) return true;
 
@@ -56,7 +47,7 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
     this->copy = copy;
 
     if (copy) {
-        surface.buf32 = (uint32_t*)malloc(sizeof(uint32_t) * w * h);
+        surface.buf32 = tvg::malloc<uint32_t>(sizeof(uint32_t) * w * h);
         if (!surface.buf32) return false;
         memcpy((void*)surface.buf32, data, sizeof(uint32_t) * w * h);
     }
@@ -66,9 +57,9 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
     surface.stride = w;
     surface.w = w;
     surface.h = h;
-    surface.cs = ColorSpace::ARGB8888;
+    surface.cs = cs;
     surface.channelSize = sizeof(uint32_t);
-    surface.premultiplied = true;
+    surface.premultiplied = (cs == ColorSpace::ABGR8888 || cs == ColorSpace::ARGB8888) ? true : false;
 
     return true;
 }

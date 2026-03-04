@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
-VERSION=0.15.16
+VERSION=1.0.1
 # Uncomment and set a git hash to use specific commit instead of tag.
 #GIT_COMMIT=
 
 pushd "$(dirname "$0")"
-rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
+rm -rf CONTRIBUTORS.md LICENSE inc/ src/ *.zip *.tar.gz tmp/
 
 mkdir tmp/ && pushd tmp/
 
@@ -24,7 +24,7 @@ rm *.tar.gz
 # Install from local git checkout "thorvg-git" in the same directory
 # as godot git checkout.
 #d="../../../../thorvg-git"
-#cp -r ${d}/AUTHORS ${d}/inc ${d}/LICENSE ${d}/src .
+#cp -r ${d}/CONTRIBUTORS.md ${d}/inc ${d}/LICENSE ${d}/src .
 
 find . -type f -name 'meson.build' -delete
 
@@ -33,7 +33,7 @@ for source in $(find ./ -type f \( -iname \*.h -o -iname \*.cpp \)); do
     sed -i -e '$a\' $source
 done
 
-cp -v AUTHORS LICENSE ..
+cp -v CONTRIBUTORS.md LICENSE ..
 cp -rv inc ../
 
 cat << EOF > ../inc/config.h

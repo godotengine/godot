@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include "tvgMath.h"
 #include "tvgSwCommon.h"
 #include "tvgFill.h"
 
@@ -65,15 +64,15 @@ static void _calculateCoefficients(const SwFill* fill, uint32_t x, uint32_t y, f
 static uint32_t _estimateAAMargin(const Fill* fdata)
 {
     constexpr float marginScalingFactor = 800.0f;
+
     if (fdata->type() == Type::RadialGradient) {
-        auto radius = P(static_cast<const RadialGradient*>(fdata))->r;
+        auto radius = CONST_RADIAL(fdata)->r;
         return tvg::zero(radius) ? 0 : static_cast<uint32_t>(marginScalingFactor / radius);
+    } else {
+        auto grad = CONST_LINEAR(fdata);
+        auto len = length(grad->p1, grad->p2);
+        return tvg::zero(len) ? 0 : static_cast<uint32_t>(marginScalingFactor / len);
     }
-    auto grad = P(static_cast<const LinearGradient*>(fdata));
-    Point p1 {grad->x1, grad->y1};
-    Point p2 {grad->x2, grad->y2};
-    auto len = length(&p1, &p2);
-    return tvg::zero(len) ? 0 : static_cast<uint32_t>(marginScalingFactor / len);
 }
 
 
@@ -164,8 +163,10 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
 
         auto curr = colors + j;
         auto next = curr + 1;
-        auto delta = 1.0f / (next->offset - curr->offset);
+        auto div = next->offset - curr->offset;
+        auto delta = div != 0.0f ? (1.0f / div) : 0.0f;
         auto a2 = MULTIPLY(next->a, opacity);
+
         if (!fill->translucent && a2 < 255) fill->translucent = true;
 
         auto rgba2 = surface->join(next->r, next->g, next->b, a2);
@@ -174,10 +175,8 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
             auto t = (pos - curr->offset) * delta;
             auto dist = static_cast<int32_t>(255 * t);
             auto dist2 = 255 - dist;
-
             auto color = INTERPOLATE(rgba, rgba2, dist2);
             fill->ctable[i] = ALPHA_BLEND((color | 0xff000000), (color >> 24));
-
             ++i;
             pos += inc;
         }
@@ -188,11 +187,12 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     }
     rgba = ALPHA_BLEND((rgba | 0xff000000), a);
 
-    for (; i < SW_COLOR_TABLE; ++i)
+    for (; i < SW_COLOR_TABLE; ++i) {
         fill->ctable[i] = rgba;
+    }
 
     //For repeat fill spread apply anti-aliasing between the last and first colors,
-    //othewise make sure the last color stop is represented at the end of the table.
+    //otherwise make sure the last color stop is represented at the end of the table.
     if (repeat) _applyAA(fill, iAABegin, iAAEnd);
     else fill->ctable[SW_COLOR_TABLE - 1] = rgba;
 
@@ -200,10 +200,10 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
 }
 
 
-bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& transform)
+bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& pTransform)
 {
     float x1, x2, y1, y2;
-    if (linear->linear(&x1, &y1, &x2, &y2) != Result::Success) return false;
+    linear->linear(&x1, &y1, &x2, &y2);
 
     fill->linear.dx = x2 - x1;
     fill->linear.dy = y2 - y1;
@@ -220,44 +220,26 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& tr
     fill->linear.dy /= len;
     fill->linear.offset = -fill->linear.dx * x1 - fill->linear.dy * y1;
 
-    auto gradTransform = linear->transform();
-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
+    const auto& transform = pTransform * linear->transform();
 
-    if (isTransformation) {
-        gradTransform = transform * gradTransform;
-    } else {
-        gradTransform = transform;
-        isTransformation = true;
-    }
+    Matrix itransform;
+    if (!inverse(&transform, &itransform)) return false;
 
-    if (isTransformation) {
-        Matrix invTransform;
-        if (!inverse(&gradTransform, &invTransform)) return false;
+    fill->linear.offset += fill->linear.dx * itransform.e13 + fill->linear.dy * itransform.e23;
 
-        fill->linear.offset += fill->linear.dx * invTransform.e13 + fill->linear.dy * invTransform.e23;
-
-        auto dx = fill->linear.dx;
-        fill->linear.dx = dx * invTransform.e11 + fill->linear.dy * invTransform.e21;
-        fill->linear.dy = dx * invTransform.e12 + fill->linear.dy * invTransform.e22;
-    }
+    auto dx = fill->linear.dx;
+    fill->linear.dx = dx * itransform.e11 + fill->linear.dy * itransform.e21;
+    fill->linear.dy = dx * itransform.e12 + fill->linear.dy * itransform.e22;
 
     return true;
 }
 
 
-bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& transform)
+bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& pTransform)
 {
-    auto cx = P(radial)->cx;
-    auto cy = P(radial)->cy;
-    auto r = P(radial)->r;
-    auto fx = P(radial)->fx;
-    auto fy = P(radial)->fy;
-    auto fr = P(radial)->fr;
-
-    if (tvg::zero(r)) {
-        fill->solid = true;
-        return true;
-    }
+    float cx, cy, r, fx, fy, fr;
+    radial->radial(&cx, &cy, &r, &fx, &fy, &fr);
+    if ((fill->solid = !CONST_RADIAL(radial)->correct(fx, fy, fr))) return true;
 
     fill->radial.dr = r - fr;
     fill->radial.dx = cx - fx;
@@ -266,52 +248,22 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& tr
     fill->radial.fx = fx;
     fill->radial.fy = fy;
     fill->radial.a = fill->radial.dr * fill->radial.dr - fill->radial.dx * fill->radial.dx - fill->radial.dy * fill->radial.dy;
-
-    //This condition fulfills the SVG 1.1 std:
-    //the focal point, if outside the end circle, is moved to be on the end circle
-    //See: the SVG 2 std requirements: https://www.w3.org/TR/SVG2/pservers.html#RadialGradientNotes
     constexpr float precision = 0.01f;
-    if (fill->radial.a <= precision) {
-        auto dist = sqrtf(fill->radial.dx * fill->radial.dx + fill->radial.dy * fill->radial.dy);
-        //retract focal point slightly from edge to avoid numerical errors:
-        fill->radial.fx = cx + r * (1.0f - precision) * (fx - cx) / dist;
-        fill->radial.fy = cy + r * (1.0f - precision) * (fy - cy) / dist;
-        fill->radial.dx = cx - fill->radial.fx;
-        fill->radial.dy = cy - fill->radial.fy;
-        // Prevent loss of precision on Apple Silicon when dr=dy and dx=0 due to FMA
-        // https://github.com/thorvg/thorvg/issues/2014
-        auto dr2 = fill->radial.dr * fill->radial.dr;
-        auto dx2 = fill->radial.dx * fill->radial.dx;
-        auto dy2 = fill->radial.dy * fill->radial.dy;
+    if (fill->radial.a < precision) fill->radial.a = precision;
+    fill->radial.invA = 1.0f / fill->radial.a;
 
-        fill->radial.a = dr2 - dx2 - dy2;
-    }
+    const auto& transform = pTransform * radial->transform();
 
-    if (fill->radial.a > 0) fill->radial.invA = 1.0f / fill->radial.a;
+    Matrix itransform;
+    if (!inverse(&transform, &itransform)) return false;
 
-    auto gradTransform = radial->transform();
-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
+    fill->radial.a11 = itransform.e11;
+    fill->radial.a12 = itransform.e12;
+    fill->radial.a13 = itransform.e13;
+    fill->radial.a21 = itransform.e21;
+    fill->radial.a22 = itransform.e22;
+    fill->radial.a23 = itransform.e23;
 
-    if (isTransformation) gradTransform = transform * gradTransform;
-    else {
-        gradTransform = transform;
-        isTransformation = true;
-    }
-
-    if (isTransformation) {
-        Matrix invTransform;
-        if (!inverse(&gradTransform, &invTransform)) return false;
-        fill->radial.a11 = invTransform.e11;
-        fill->radial.a12 = invTransform.e12;
-        fill->radial.a13 = invTransform.e13;
-        fill->radial.a21 = invTransform.e21;
-        fill->radial.a22 = invTransform.e22;
-        fill->radial.a23 = invTransform.e23;
-    } else {
-        fill->radial.a11 = fill->radial.a22 = 1.0f;
-        fill->radial.a12 = fill->radial.a13 = 0.0f;
-        fill->radial.a21 = fill->radial.a23 = 0.0f;
-    }
     return true;
 }
 
@@ -406,7 +358,7 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
 }
 
 
-void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, uint8_t a)
+void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, uint8_t a)
 {
     if (fill->radial.a < RADIAL_A_THRESHOLD) {
         auto radial = &fill->radial;
@@ -490,7 +442,7 @@ void fillRadial(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
 }
 
 
-void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a)
+void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
 {
     if (fill->radial.a < RADIAL_A_THRESHOLD) {
         auto radial = &fill->radial;
@@ -501,7 +453,7 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             for (uint32_t i = 0; i < len; ++i, ++dst) {
                 auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
                 auto tmp = op(_pixel(fill, x0), *dst, 255);
-                *dst = op2(tmp, *dst, 255);
+                *dst = op2(tmp, *dst);
                 rx += radial->a11;
                 ry += radial->a21;
             }
@@ -509,7 +461,7 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             for (uint32_t i = 0; i < len; ++i, ++dst) {
                 auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
                 auto tmp = op(_pixel(fill, x0), *dst, 255);
-                auto tmp2 = op2(tmp, *dst, 255);
+                auto tmp2 = op2(tmp, *dst);
                 *dst = INTERPOLATE(tmp2, *dst, a);
                 rx += radial->a11;
                 ry += radial->a21;
@@ -521,7 +473,7 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         if (a == 255) {
             for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
                 auto tmp = op(_pixel(fill, sqrtf(det) - b), *dst, 255);
-                *dst = op2(tmp, *dst, 255);
+                *dst = op2(tmp, *dst);
                 det += deltaDet;
                 deltaDet += deltaDeltaDet;
                 b += deltaB;
@@ -529,7 +481,7 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         } else {
             for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
                 auto tmp = op(_pixel(fill, sqrtf(det) - b), *dst, 255);
-                auto tmp2 = op2(tmp, *dst, 255);
+                auto tmp2 = op2(tmp, *dst);
                 *dst = INTERPOLATE(tmp2, *dst, a);
                 det += deltaDet;
                 deltaDet += deltaDeltaDet;
@@ -703,7 +655,7 @@ void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
 }
 
 
-void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, uint8_t a)
+void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, uint8_t a)
 {
     //Rotation
     float rx = x + 0.5f;
@@ -743,7 +695,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
 }
 
 
-void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a)
+void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
 {
     //Rotation
     float rx = x + 0.5f;
@@ -756,12 +708,12 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         if (a == 255) {
             for (uint32_t i = 0; i < len; ++i, ++dst) {
                 auto tmp = op(color, *dst, a);
-                *dst = op2(tmp, *dst, 255);
+                *dst = op2(tmp, *dst);
             }
         } else {
             for (uint32_t i = 0; i < len; ++i, ++dst) {
                 auto tmp = op(color, *dst, a);
-                auto tmp2 = op2(tmp, *dst, 255);
+                auto tmp2 = op2(tmp, *dst);
                 *dst = INTERPOLATE(tmp2, *dst, a);
             }
         }
@@ -779,7 +731,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             auto inc2 = static_cast<int32_t>(inc * FIXPT_SIZE);
             for (uint32_t j = 0; j < len; ++j, ++dst) {
                 auto tmp = op(_fixedPixel(fill, t2), *dst, 255);
-                *dst = op2(tmp, *dst, 255);
+                *dst = op2(tmp, *dst);
                 t2 += inc2;
             }
         //we have to fallback to float math
@@ -787,7 +739,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             uint32_t counter = 0;
             while (counter++ < len) {
                 auto tmp = op(_pixel(fill, t / SW_COLOR_TABLE), *dst, 255);
-                *dst = op2(tmp, *dst, 255);
+                *dst = op2(tmp, *dst);
                 ++dst;
                 t += inc;
             }
@@ -799,7 +751,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             auto inc2 = static_cast<int32_t>(inc * FIXPT_SIZE);
             for (uint32_t j = 0; j < len; ++j, ++dst) {
                 auto tmp = op(_fixedPixel(fill, t2), *dst, 255);
-                auto tmp2 = op2(tmp, *dst, 255);
+                auto tmp2 = op2(tmp, *dst);
                 *dst = INTERPOLATE(tmp2, *dst, a);
                 t2 += inc2;
             }
@@ -808,7 +760,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
             uint32_t counter = 0;
             while (counter++ < len) {
                 auto tmp = op(_pixel(fill, t / SW_COLOR_TABLE), *dst, 255);
-                auto tmp2 = op2(tmp, *dst, 255);
+                auto tmp2 = op2(tmp, *dst);
                 *dst = INTERPOLATE(tmp2, *dst, a);
                 ++dst;
                 t += inc;
@@ -856,5 +808,5 @@ void fillReset(SwFill* fill)
 
 void fillFree(SwFill* fill)
 {
-    if (fill) free(fill);
+    if (fill) tvg::free(fill);
 }

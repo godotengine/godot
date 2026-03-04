@@ -80,10 +80,11 @@ Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float 
 Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample) {
 	ERR_FAIL_COND_V_MSG(Math::is_zero_approx(p_scale), ERR_INVALID_PARAMETER, "ImageLoaderSVG: Can't load SVG with a scale of 0.");
 
-	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
+	tvg::Picture *picture = tvg::Picture::gen();
 
-	tvg::Result result = picture->load((const char *)p_buffer, p_buffer_size, "svg", true);
+	tvg::Result result = picture->load((const char *)p_buffer, p_buffer_size, "svg", nullptr, true);
 	if (result != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		return ERR_INVALID_DATA;
 	}
 	float fw, fh;
@@ -103,21 +104,22 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 
 	picture->size(width, height);
 
-	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
+	std::unique_ptr<tvg::SwCanvas> sw_canvas(tvg::SwCanvas::gen());
 	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(uint32_t) * width * height);
 
-	tvg::Result res = sw_canvas->target((uint32_t *)buffer.ptrw(), width, width, height, tvg::SwCanvas::ABGR8888S);
+	tvg::Result res = sw_canvas->target((uint32_t *)buffer.ptrw(), width, width, height, tvg::ColorSpace::ABGR8888S);
 	if (res != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't set target on ThorVG canvas, error code %d.", res));
 	}
 
-	res = sw_canvas->push(std::move(picture));
+	res = sw_canvas->add(picture);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't insert ThorVG picture on canvas, error code %d.", res));
 	}
 
-	res = sw_canvas->draw();
+	res = sw_canvas->draw(true);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FAILED, vformat("ImageLoaderSVG: Couldn't draw ThorVG pictures on canvas, error code %d.", res));
 	}
@@ -129,7 +131,7 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 
 	p_image->set_data(width, height, false, Image::FORMAT_RGBA8, buffer);
 
-	res = sw_canvas->clear(true);
+	res = sw_canvas->remove();
 
 	return OK;
 }

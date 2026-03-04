@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@ namespace tvg
 /************************************************************************/
 
 float atan2(float y, float x);
+float length(const PathCommand* cmds, uint32_t cmdsCnt, const Point* pts, uint32_t ptsCnt);
 
 
 static inline float deg2rad(float degree)
@@ -69,10 +70,11 @@ static inline bool equal(float a, float b)
 
 
 template <typename T>
-static inline void clamp(T& v, const T& min, const T& max)
+static inline constexpr const T& clamp(const T& v, const T& min, const T& max)
 {
-    if (v < min) v = min;
-    else if (v > max) v = max;
+    if (v < min) return min;
+    else if (v > max) return max;
+    return v;
 }
 
 /************************************************************************/
@@ -120,38 +122,50 @@ static inline void identity(Matrix* m)
 }
 
 
-static inline void scale(Matrix* m, float sx, float sy)
+static inline constexpr const Matrix identity()
 {
-    m->e11 *= sx;
-    m->e22 *= sy;
+    return {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 }
 
 
-static inline void scaleR(Matrix* m, float x, float y)
+static inline float scaling(const Matrix& m)
 {
-    if (x != 1.0f) {
-        m->e11 *= x;
-        m->e21 *= x;
+    return sqrtf(m.e11 * m.e11 + m.e21 * m.e21);
+}
+
+
+static inline void scale(Matrix* m, const Point& p)
+{
+    m->e11 *= p.x;
+    m->e22 *= p.y;
+}
+
+
+static inline void scaleR(Matrix* m, const Point& p)
+{
+    if (p.x != 1.0f) {
+        m->e11 *= p.x;
+        m->e21 *= p.x;
     }
-    if (y != 1.0f) {
-        m->e22 *= y;
-        m->e12 *= y;
+    if (p.y != 1.0f) {
+        m->e22 *= p.y;
+        m->e12 *= p.y;
     }
 }
 
 
-static inline void translate(Matrix* m, float x, float y)
+static inline void translate(Matrix* m, const Point& p)
 {
-    m->e13 += x;
-    m->e23 += y;
+    m->e13 += p.x;
+    m->e23 += p.y;
 }
 
 
-static inline void translateR(Matrix* m, float x, float y)
+static inline void translateR(Matrix* m, const Point& p)
 {
-    if (x == 0.0f && y == 0.0f) return;
-    m->e13 += (x * m->e11 + y * m->e12);
-    m->e23 += (x * m->e21 + y * m->e22);
+    if (p.x == 0.0f && p.y == 0.0f) return;
+    m->e13 += (p.x * m->e11 + p.y * m->e12);
+    m->e23 += (p.x * m->e21 + p.y * m->e22);
 }
 
 
@@ -164,6 +178,13 @@ static inline bool operator!=(const Matrix& lhs, const Matrix& rhs)
 static inline void operator*=(Matrix& lhs, const Matrix& rhs)
 {
     lhs = lhs * rhs;
+}
+
+
+static inline Matrix operator*(const Matrix* lhs, const Matrix& rhs)
+{
+    if (lhs) return *lhs * rhs;
+    return rhs;
 }
 
 
@@ -180,6 +201,39 @@ static inline void log(const Matrix& m)
 void operator*=(Point& pt, const Matrix& m);
 Point operator*(const Point& pt, const Matrix& m);
 Point normal(const Point& p1, const Point& p2);
+void normalize(Point& pt);
+
+static inline constexpr const Point operator*=(Point& pt, const Matrix* m)
+{
+    if (m) pt *= *m;
+    return pt;
+}
+
+
+static inline Point operator*(const Point& pt, const Matrix* m)
+{
+    if (m) return pt * *m;
+    return pt;
+}
+
+
+static inline Point min(const Point& lhs, const Point& rhs)
+{
+    return {std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y)};
+}
+
+
+static inline Point max(const Point& lhs, const Point& rhs)
+{
+    return {std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y)};
+}
+
+
+static inline float dot(const Point& lhs, const Point& rhs)
+{
+    return lhs.x * rhs.x + lhs.y * rhs.y;
+}
+
 
 static inline float cross(const Point& lhs, const Point& rhs)
 {
@@ -193,10 +247,10 @@ static inline bool zero(const Point& p)
 }
 
 
-static inline float length(const Point* a, const Point* b)
+static inline float length(const Point& a, const Point& b)
 {
-    auto x = b->x - a->x;
-    auto y = b->y - a->y;
+    auto x = b.x - a.x;
+    auto y = b.y - a.y;
 
     if (x < 0) x = -x;
     if (y < 0) y = -y;
@@ -209,6 +263,12 @@ static inline float length(const Point& a)
 {
     return sqrtf(a.x * a.x + a.y * a.y);
 }
+
+
+static inline float length2(const Point& a)
+{
+    return a.x * a.x + a.y * a.y;
+};
 
 
 static inline bool operator==(const Point& lhs, const Point& rhs)
@@ -229,15 +289,54 @@ static inline Point operator-(const Point& lhs, const Point& rhs)
 }
 
 
+static inline Point operator-(const Point& lhs, const float rhs)
+{
+    return {lhs.x - rhs, lhs.y - rhs};
+}
+
+
 static inline Point operator+(const Point& lhs, const Point& rhs)
 {
     return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 
 
-static inline Point operator*(const Point& lhs, float rhs)
+static inline Point operator+(const Point& lhs, const float rhs)
+{
+    return {lhs.x + rhs, lhs.y + rhs};
+}
+
+
+static inline void operator+=(Point& lhs, const Point& rhs)
+{
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
+}
+
+
+static inline Point operator*(const Point& lhs, const Point& rhs)
+{
+    return {lhs.x * rhs.x, lhs.y * rhs.y};
+}
+
+
+static inline void operator*=(Point& lhs, const Point& rhs)
+{
+    lhs.x *= rhs.x;
+    lhs.y *= rhs.y;
+}
+
+
+static inline Point operator*(const Point& lhs, const float rhs)
 {
     return {lhs.x * rhs, lhs.y * rhs};
+}
+
+
+static inline void operator*=(Point& lhs, const float rhs)
+{
+    lhs.x *= rhs;
+    lhs.y *= rhs;
 }
 
 
@@ -247,15 +346,50 @@ static inline Point operator*(const float& lhs, const Point& rhs)
 }
 
 
+static inline Point operator/(const Point& lhs, const Point& rhs)
+{
+    return {lhs.x / rhs.x, lhs.y / rhs.y};
+}
+
+
 static inline Point operator/(const Point& lhs, const float rhs)
 {
     return {lhs.x / rhs, lhs.y / rhs};
 }
 
 
+static inline Point operator-(const Point& a)
+{
+    return {-a.x, -a.y};
+}
+
+enum class Orientation
+{
+    Linear = 0,
+    Clockwise,
+    CounterClockwise,
+};
+
+
+static inline Orientation orientation(const Point& p1, const Point& p2, const Point& p3)
+{
+    auto val = cross(p2 - p1, p3 - p1);
+    if (zero(val)) return Orientation::Linear;
+    else return val > 0 ? Orientation::Clockwise : Orientation::CounterClockwise;
+}
+
+
 static inline void log(const Point& pt)
 {
     TVGLOG("COMMON", "Point: [%f %f]", pt.x, pt.y);
+}
+
+
+static inline bool closed(const Point& lhs, const Point& rhs, float tolerance)
+{
+    float dx = lhs.x - rhs.x;
+    float dy = lhs.y - rhs.y;
+    return (dx * dx + dy * dy) < (tolerance * tolerance);
 }
 
 
@@ -274,6 +408,32 @@ struct Line
 
 
 /************************************************************************/
+/* Geometry functions                                                   */
+/************************************************************************/
+
+struct BBox
+{
+    Point min, max;
+
+    void init()
+    {
+        min = {FLT_MAX, FLT_MAX};
+        max = {-FLT_MAX, -FLT_MAX};
+    }
+};
+
+
+static inline uint32_t arcSegmentsCnt(float arcAngle, float pixelRadius) 
+{
+    if (pixelRadius < FLOAT_EPSILON) return 2;
+    static constexpr auto PX_TOLERANCE = 0.25f;
+    // Sagitta-based formula Approximation: 1 - cos(θ/2) ≈ (θ/2)²/2, so θ ≈ 2 * sqrt(2 * s/r)
+    auto segmentAngle = 2.0f * sqrtf(2.0f * PX_TOLERANCE / pixelRadius);
+    return static_cast<uint32_t>(ceilf(fabsf(arcAngle) / segmentAngle)) + 1;
+}
+
+
+/************************************************************************/
 /* Bezier functions                                                     */
 /************************************************************************/
 
@@ -284,6 +444,13 @@ struct Bezier
     Point ctrl2;
     Point end;
 
+    Bezier() {}
+    Bezier(const Point& p0, const Point& p1, const Point& p2, const Point& p3):
+        start(p0), ctrl1(p1), ctrl2(p2), end(p3) {}
+    // Constructor that approximates a quarter-circle segment of arc between 'start' and 'end' points 
+    // using a cubic Bezier curve with a given 'radius'.
+    Bezier(const Point& start, const Point& end, float radius);
+
     void split(float t, Bezier& left);
     void split(Bezier& left, Bezier& right) const;
     void split(float at, Bezier& left, Bezier& right) const;
@@ -293,6 +460,12 @@ struct Bezier
     float atApprox(float at, float length) const;
     Point at(float t) const;
     float angle(float t) const;
+    bool flatten() const;
+    uint32_t segments() const;
+
+    Bezier operator*(const Matrix& m);
+
+    static void bounds(BBox& box, const Point& start, const Point& ctrl1, const Point& ctrl2, const Point& end);
 };
 
 

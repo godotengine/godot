@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,119 +23,182 @@
 #ifndef _TVG_TEXT_H
 #define _TVG_TEXT_H
 
-#include <cstring>
+#include "tvgStr.h"
 #include "tvgMath.h"
 #include "tvgShape.h"
 #include "tvgFill.h"
 #include "tvgLoader.h"
 
-struct Text::Impl
+namespace tvg
 {
+
+struct TextImpl : Text
+{
+    Paint::Impl impl;
+    Shape* shape;   //text shape
     FontLoader* loader = nullptr;
-    Text* paint;
-    Shape* shape;
-    FontMetrics metrics;
+    FontMetrics fm;
     char* utf8 = nullptr;
-    float fontSize;
-    bool italic = false;
-    bool changed = false;
+    float outlineWidth = 0.0f;
+    float italicShear = 0.0f;
+    bool updated = false;
 
-    Impl(Text* p) : paint(p), shape(Shape::gen().release()) {}
-
-    ~Impl()
+    TextImpl() : impl(Paint::Impl(this)), shape(Shape::gen())
     {
-        free(utf8);
-        LoaderMgr::retrieve(loader);
-        delete(shape);
+        PAINT(shape)->parent = this;
+        shape->strokeJoin(StrokeJoin::Round);
+    }
+
+    ~TextImpl()
+    {
+        tvg::free(utf8);
+        if (loader) {
+            loader->release(fm);
+            LoaderMgr::retrieve(loader);
+        }
+        Paint::rel(shape);
     }
 
     Result text(const char* utf8)
     {
-        free(this->utf8);
-        if (utf8) this->utf8 = strdup(utf8);
+        tvg::free(this->utf8);
+        if (utf8) this->utf8 = tvg::duplicate(utf8);
         else this->utf8 = nullptr;
-        changed = true;
+        updated = true;
+        impl.mark(RenderUpdateFlag::Path);
 
         return Result::Success;
     }
 
-    Result font(const char* name, float size, const char* style)
+    Result font(const char* name)
     {
-        auto loader = LoaderMgr::loader(name);
+        auto loader = static_cast<FontLoader*>(name ? LoaderMgr::font(name) : LoaderMgr::anyfont());
         if (!loader) return Result::InsufficientCondition;
-
-        if (style && strstr(style, "italic")) italic = true;
-        else italic = false;
-
-        fontSize = size;
 
         //Same resource has been loaded.
         if (this->loader == loader) {
             this->loader->sharing--;  //make it sure the reference counting.
             return Result::Success;
         } else if (this->loader) {
+            this->loader->release(fm);
             LoaderMgr::retrieve(this->loader);
         }
-        this->loader = static_cast<FontLoader*>(loader);
+        this->loader = loader;
+        updated = true;
 
-        changed = true;
         return Result::Success;
     }
 
-    RenderRegion bounds(RenderMethod* renderer)
+    Result size(float fontSize)
     {
-        return P(shape)->bounds(renderer);
+        if (fontSize > 0.0f) {
+            if (fm.fontSize != fontSize) {
+                fm.fontSize = fontSize;
+                updated = true;
+            }
+            return Result::Success;
+        }
+        return Result::InvalidArguments;
+    }
+
+    RenderRegion bounds()
+    {
+        if (!load()) return {};
+        return to<ShapeImpl>(shape)->bounds();
     }
 
     bool render(RenderMethod* renderer)
     {
-        if (!loader) return true;
-        renderer->blend(PP(paint)->blendMethod);
-        return PP(shape)->render(renderer);
+        if (!loader || !fm.engine) return true;
+        renderer->blend(impl.blendMethod);
+        return PAINT(shape)->render(renderer);
     }
 
-    float load()
+    bool load()
     {
-        if (!loader) return 0.0f;
-
-        //reload
-        if (changed) {
-            loader->read(shape, utf8, metrics);
-            changed = false;
+        if (!loader) return false;
+        if (updated) {
+            if (loader->get(fm, utf8, to<ShapeImpl>(shape)->rs.path)) {
+                loader->transform(shape, fm, italicShear);
+            }
+            updated = false;
         }
-        return loader->transform(shape, metrics, fontSize, italic);
+        return true;
     }
 
-    RenderData update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, TVG_UNUSED bool clipper)
+    Result metrics(TextMetrics& metrics)
     {
-        auto scale = 1.0f / load();
-        if (tvg::zero(scale)) return nullptr;
+        if (!loader || fm.fontSize <= 0.0f) return Result::InsufficientCondition;
+        loader->metrics(fm, metrics);
+        return Result::Success;
+    }
+
+    bool skip(RenderUpdateFlag flag)
+    {
+        if (flag == RenderUpdateFlag::None) return true;
+        return false;
+    }
+
+    void wrapping(TextWrap mode)
+    {
+        if (fm.wrap == mode) return;
+        fm.wrap = mode;
+        updated = true;
+        impl.mark(RenderUpdateFlag::Path);
+    }
+
+    void layout(float w, float h)
+    {
+        fm.box = {w, h};
+        updated = true;
+    }
+
+    Result spacing(float letter, float line)
+    {
+        if (letter < 0.0f || line < 0.0f) return Result::InvalidArguments;
+
+        fm.spacing = {letter, line};
+        updated = true;
+
+        return Result::Success;
+    }
+
+    bool update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flag, TVG_UNUSED bool clipper)
+    {
+        if (!load()) return true;
+
+        auto scale = fm.scale;
 
         //transform the gradient coordinates based on the final scaled font.
-        auto fill = P(shape)->rs.fill;
-        if (fill && P(shape)->rFlag & RenderUpdateFlag::Gradient) {
+        auto fill = to<ShapeImpl>(shape)->rs.fill;
+        if (fill && to<ShapeImpl>(shape)->impl.marked(RenderUpdateFlag::Gradient)) {
             if (fill->type() == Type::LinearGradient) {
-                P(static_cast<LinearGradient*>(fill))->x1 *= scale;
-                P(static_cast<LinearGradient*>(fill))->y1 *= scale;
-                P(static_cast<LinearGradient*>(fill))->x2 *= scale;
-                P(static_cast<LinearGradient*>(fill))->y2 *= scale;
+                LINEAR(fill)->p1 *= scale;
+                LINEAR(fill)->p2 *= scale;
             } else {
-                P(static_cast<RadialGradient*>(fill))->cx *= scale;
-                P(static_cast<RadialGradient*>(fill))->cy *= scale;
-                P(static_cast<RadialGradient*>(fill))->r *= scale;
-                P(static_cast<RadialGradient*>(fill))->fx *= scale;
-                P(static_cast<RadialGradient*>(fill))->fy *= scale;
-                P(static_cast<RadialGradient*>(fill))->fr *= scale;
+                RADIAL(fill)->center *= scale;
+                RADIAL(fill)->r *= scale;
+                RADIAL(fill)->focal *= scale;
+                RADIAL(fill)->fr *= scale;
             }
         }
-        return PP(shape)->update(renderer, transform, clips, opacity, pFlag, false);
+
+        if (outlineWidth > 0.0f && impl.marked(RenderUpdateFlag::Stroke)) shape->strokeWidth(outlineWidth * scale);
+
+        PAINT(shape)->update(renderer, transform, clips, opacity, flag, false);
+        return true;
     }
 
-    bool bounds(float* x, float* y, float* w, float* h, TVG_UNUSED bool stroking)
+    bool intersects(const RenderRegion& region)
     {
-        if (load() == 0.0f) return false;
-        PP(shape)->bounds(x, y, w, h, true, true, false);
-        return true;
+        if (!load()) return false;
+        return to<ShapeImpl>(shape)->intersects(region);
+    }
+
+    bool bounds(Point* pt4, const Matrix& m, bool obb)
+    {
+        if (!load()) return true;
+        return PAINT(shape)->bounds(pt4, &const_cast<Matrix&>(m), obb);
     }
 
     Paint* duplicate(Paint* ret)
@@ -144,18 +207,21 @@ struct Text::Impl
 
         load();
 
-        auto text = Text::gen().release();
-        auto dup = text->pImpl;
-        P(shape)->duplicate(dup->shape);
+        auto text = Text::gen();
+        auto dup = to<TextImpl>(text);
+
+        to<ShapeImpl>(shape)->duplicate(dup->shape);
 
         if (loader) {
             dup->loader = loader;
             ++dup->loader->sharing;
+            loader->copy(fm, dup->fm);
         }
 
-        dup->utf8 = strdup(utf8);
-        dup->italic = italic;
-        dup->fontSize = fontSize;
+        dup->utf8 = tvg::duplicate(utf8);
+        dup->italicShear = italicShear;
+        dup->outlineWidth = outlineWidth;
+        dup->updated = true;
 
         return text;
     }
@@ -166,6 +232,6 @@ struct Text::Impl
     }
 };
 
-
+}
 
 #endif //_TVG_TEXT_H

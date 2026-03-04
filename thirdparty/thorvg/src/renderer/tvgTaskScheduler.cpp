@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,16 @@
  * SOFTWARE.
  */
 
+
 #include "tvgArray.h"
 #include "tvgInlist.h"
 #include "tvgTaskScheduler.h"
-
-#ifdef THORVG_THREAD_SUPPORT
-    #include <thread>
-    #include <atomic>
-#endif
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
 namespace tvg {
-
-struct TaskSchedulerImpl;
-static TaskSchedulerImpl* inst = nullptr;
 
 #ifdef THORVG_THREAD_SUPPORT
 
@@ -121,15 +114,15 @@ struct TaskSchedulerImpl
 
     ~TaskSchedulerImpl()
     {
-        for (auto tq = taskQueues.begin(); tq < taskQueues.end(); ++tq) {
-            (*tq)->complete();
+        ARRAY_FOREACH(p, taskQueues) {
+            (*p)->complete();
         }
-        for (auto thread = threads.begin(); thread < threads.end(); ++thread) {
-            (*thread)->join();
-            delete(*thread);
+        ARRAY_FOREACH(p, threads) {
+            (*p)->join();
+            delete(*p);
         }
-        for (auto tq = taskQueues.begin(); tq < taskQueues.end(); ++tq) {
-            delete(*tq);
+        ARRAY_FOREACH(p, taskQueues) {
+            delete(*p);
         }
     }
 
@@ -185,34 +178,54 @@ struct TaskSchedulerImpl
 
 #endif //THORVG_THREAD_SUPPORT
 
+
 } //namespace
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
+static TaskSchedulerImpl* _inst = nullptr;
+static ThreadID _tid;   //dominant thread id
+
 void TaskScheduler::init(uint32_t threads)
 {
-    if (inst) return;
-    inst = new TaskSchedulerImpl(threads);
+    if (_inst) return;
+    _inst = new TaskSchedulerImpl(threads);
+    _tid = tid();
 }
 
 
 void TaskScheduler::term()
 {
-    delete(inst);
-    inst = nullptr;
+    delete(_inst);
+    _inst = nullptr;
 }
 
 
 void TaskScheduler::request(Task* task)
 {
-    if (inst) inst->request(task);
+    if (_inst) _inst->request(task);
 }
 
 
 uint32_t TaskScheduler::threads()
 {
-    if (inst) return inst->threadCnt();
+    return _inst ? _inst->threadCnt() : 0;
+}
+
+
+bool TaskScheduler::onthread()
+{
+    return _tid != tid();
+}
+
+
+ThreadID TaskScheduler::tid()
+{
+#ifdef THORVG_THREAD_SUPPORT
+    return std::this_thread::get_id();
+#else
     return 0;
+#endif
 }

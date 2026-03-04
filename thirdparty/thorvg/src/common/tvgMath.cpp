@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 
 #include "tvgMath.h"
+#include "tvgArray.h"
 
 #define BEZIER_EPSILON 1e-2f
 
@@ -99,6 +100,49 @@ float _bezAt(const Bezier& bz, float at, float length, LengthFunc lineLengthFunc
 /************************************************************************/
 
 namespace tvg {
+
+
+uint8_t lerp(const uint8_t &start, const uint8_t &end, float t)
+{
+    return static_cast<uint8_t>(tvg::clamp(static_cast<int>(start + (end - start) * t), 0, 255));
+}
+
+
+float length(const PathCommand* cmds, uint32_t cmdsCnt, const Point* pts, uint32_t ptsCnt)
+{
+    if (ptsCnt < 2) return 0.0f;
+
+    auto start = pts;
+    auto length = 0.0f;
+
+    while (cmdsCnt-- > 0) {
+        switch (*cmds) {
+            case PathCommand::Close: {
+                length += tvg::length(*(pts - 1), *start);
+                break;
+            }
+            case PathCommand::MoveTo: {
+                start = pts;
+                ++pts;
+                break;
+            }
+            case PathCommand::LineTo: {
+                length += tvg::length(*(pts - 1), *pts);
+                ++pts;
+                break;
+            }
+            case PathCommand::CubicTo: {
+                length += Bezier{*(pts - 1), *pts, *(pts + 1), *(pts + 2)}.length();
+                pts += 3;
+                break;
+            }
+        }
+        ++cmds;
+    }
+
+    return length;
+}
+
 
 //https://en.wikipedia.org/wiki/Remez_algorithm
 float atan2(float y, float x)
@@ -222,6 +266,15 @@ Point normal(const Point& p1, const Point& p2)
 }
 
 
+void normalize(Point& pt)
+{
+    if (zero(pt)) return;       //prevent zero division
+    auto ilength = 1.0f / sqrtf((pt.x * pt.x) + (pt.y * pt.y));
+    pt.x *= ilength;
+    pt.y *= ilength;
+}
+
+
 float Line::length() const
 {
     return _lineLength(pt1, pt2);
@@ -238,6 +291,21 @@ void Line::split(float at, Line& left, Line& right) const
     left.pt2.y = left.pt1.y + dy;
     right.pt1 = left.pt2;
     right.pt2 = pt2;
+}
+
+
+Bezier::Bezier(const Point& st, const Point& ed, float radius)
+{
+    // Calculate the angle between the start and end points
+    auto angle = tvg::atan2(ed.y - st.y, ed.x - st.x);
+
+    // Calculate the control points of the cubic bezier curve
+    auto c = radius * PATH_KAPPA;  // c = radius * (4/3) * tan(pi/8)
+ 
+    start = {st.x, st.y};
+    ctrl1 = {st.x + radius * cos(angle), st.y + radius * sin(angle)};
+    ctrl2 = {ed.x - c * cos(angle), ed.y - c * sin(angle)};
+    end = {ed.x, ed.y};
 }
 
 
@@ -363,12 +431,83 @@ float Bezier::angle(float t) const
 }
 
 
-uint8_t lerp(const uint8_t &start, const uint8_t &end, float t)
+void Bezier::bounds(BBox& box, const Point& start, const Point& ctrl1, const Point& ctrl2, const Point& end)
 {
-    auto result = static_cast<int>(start + (end - start) * t);
-    tvg::clamp(result, 0, 255);
-    return static_cast<uint8_t>(result);
+    if (box.min.x > start.x) box.min.x = start.x;
+    if (box.min.y > start.y) box.min.y = start.y;
+    if (box.min.x > end.x) box.min.x = end.x;
+    if (box.min.y > end.y) box.min.y = end.y;
+
+    if (box.max.x < start.x) box.max.x = start.x;
+    if (box.max.y < start.y) box.max.y = start.y;
+    if (box.max.x < end.x) box.max.x = end.x;
+    if (box.max.y < end.y) box.max.y = end.y;
+
+    //find x/y-direction extrema (solving derivative of Bezier curve)
+    auto findMinMax = [&](float start, float ctrl1, float ctrl2, float end, float& min, float& max) -> void {
+        auto a = -1.0f * start + 3.0f * ctrl1 - 3.0f * ctrl2 + end;
+        auto b = start - 2.0f * ctrl1 + ctrl2;
+        auto c = -1.0f * start + ctrl1;
+        auto h = b * b - a * c;
+        if (h <= 0.0f) return;
+        h = sqrtf(h);
+        float t[2] = {(-b - h) / a, (-b + h) / a};
+        for (int i = 0; i < 2; ++i) {
+            if (t[i] <= 0.0f || t[i] >= 1.0f) continue;
+            auto s = 1.0f - t[i];
+            auto q = s * s * s * start + 3.0f * s * s * t[i] * ctrl1 + 3.0f * s * t[i] * t[i] * ctrl2 + t[i] * t[i] * t[i] * end;
+            if (q < min) min = q;
+            if (q > max) max = q;
+        }
+    };
+
+    findMinMax(start.x, ctrl1.x, ctrl2.x, end.x, box.min.x, box.max.x);
+    findMinMax(start.y, ctrl1.y, ctrl2.y, end.y, box.min.y, box.max.y);
+}
+
+
+bool Bezier::flatten() const
+{
+    float diff1_x = fabsf((ctrl1.x * 3.f) - (start.x * 2.f) - end.x);
+    float diff1_y = fabsf((ctrl1.y * 3.f) - (start.y * 2.f) - end.y);
+    float diff2_x = fabsf((ctrl2.x * 3.f) - (end.x * 2.f) - start.x);
+    float diff2_y = fabsf((ctrl2.y * 3.f) - (end.y * 2.f) - start.y);
+    if (diff1_x < diff2_x) diff1_x = diff2_x;
+    if (diff1_y < diff2_y) diff1_y = diff2_y;
+    return (diff1_x + diff1_y <= 0.5f);
+}
+
+
+uint32_t Bezier::segments() const
+{
+    static constexpr uint32_t MaxSegments = 1u << 10; // 2^10 segments cap keeps runtime bounded
+    uint32_t count = 0;
+    Array<Bezier> stack;
+    stack.push(*this);
+    Bezier left, right;
+
+    while (!stack.empty()) {
+        auto current = stack.last();
+        stack.pop();
+        if (current.flatten()) {
+            ++count;
+            continue;
+        }
+        if (count + stack.count + 2 >= MaxSegments) {
+            TVGERR("Common", "Bezier segments count exceeded the maximum limit.");
+            return MaxSegments;
+        }
+        current.split(left, right);
+        stack.push(left);
+        stack.push(right);
+    }
+    return count;
+}
+
+
+Bezier Bezier::operator*(const Matrix& m)
+{
+    return Bezier{start * m, ctrl1* m, ctrl2 * m, end * m};
 }
 
 }
-
