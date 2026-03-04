@@ -574,10 +574,7 @@ bool FindReplaceBar::search_next() {
 }
 
 void FindReplaceBar::_hide_bar() {
-	if (replace_text->has_focus() || search_text->has_focus()) {
-		text_editor->grab_focus();
-	}
-
+	text_editor->grab_focus();
 	text_editor->set_search_text("");
 	result_line = -1;
 	result_col = -1;
