@@ -178,6 +178,21 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		singleton->full_gdscript_cache[p_to] = singleton->full_gdscript_cache[p_from];
 	}
 	singleton->full_gdscript_cache.erase(p_from);
+
+	const String from_base = GDScript::canonicalize_path(p_from);
+	if (!from_base.is_empty()) {
+		const String to_base = GDScript::canonicalize_path(p_to);
+		List<String> to_remap;
+		for (const KeyValue<String, Ref<GDScript>> &kv : singleton->static_gdscript_cache) {
+			if (kv.key.begins_with(from_base)) {
+				to_remap.push_back(kv.key);
+			}
+		}
+		for (const String &E : to_remap) {
+			singleton->static_gdscript_cache[to_base + E.substr(from_base.length())] = singleton->static_gdscript_cache[E];
+			singleton->static_gdscript_cache.erase(E);
+		}
+	}
 }
 
 void GDScriptCache::remove_script(const String &p_path) {
