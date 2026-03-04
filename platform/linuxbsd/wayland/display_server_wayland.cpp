@@ -67,6 +67,7 @@
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
+#define WINDOW_READY_TIMEOUT_MS (10'000)
 
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
 	String app_id;
@@ -142,6 +143,66 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			cb.call(p_event);
 		}
 	}
+}
+
+void DisplayServerWayland::_delete_window(WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+
+	ERR_FAIL_COND(!windows.has(wd.root_id));
+	WindowData &root_wd = windows[wd.root_id];
+
+	// NOTE: By the time the Wayland thread will send a `WINDOW_EVENT_MOUSE_EXIT`
+	// the window will be gone and the message will be discarded, confusing the
+	// engine. We thus have to send it ourselves.
+	if (wayland_thread.pointer_get_pointed_window_id() == p_window_id) {
+		_send_window_event(WINDOW_EVENT_MOUSE_EXIT, p_window_id);
+	}
+
+	// The XDG shell specification requires us to clear all popups in reverse order.
+	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.back()->get() != p_window_id) {
+		_send_window_event(WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.back()->get());
+	}
+
+	if (root_wd.popup_stack.back() && root_wd.popup_stack.back()->get() == p_window_id) {
+		root_wd.popup_stack.pop_back();
+	}
+
+	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
+		popup_menu_list.pop_back();
+	}
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_window_id);
+	}
+#endif
+
+	if (wd.visible) {
+#ifdef VULKAN_ENABLED
+		if (rendering_device) {
+			rendering_device->screen_free(p_window_id);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(p_window_id);
+		}
+#endif
+
+#ifdef GLES3_ENABLED
+		if (egl_manager) {
+			egl_manager->window_destroy(p_window_id);
+		}
+#endif
+	}
+
+	if (wd.created) {
+		wayland_thread.window_destroy(p_window_id);
+	}
+
+	windows.erase(p_window_id);
+
+	DEBUG_LOG_WAYLAND(vformat("Destroyed window %d", p_window_id));
 }
 
 void DisplayServerWayland::_update_window_rect(const Rect2i &p_rect, WindowID p_window_id) {
@@ -765,7 +826,7 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 
 	WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		DEBUG_LOG_WAYLAND(vformat("Showing window %d", p_window_id));
 		// Showing this window will reset its mode with whatever the compositor
 		// reports. We'll save the mode beforehand so that we can reapply it later.
@@ -795,7 +856,7 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 			wayland_thread.window_set_borderless(p_window_id, window_get_flag(WINDOW_FLAG_BORDERLESS, p_window_id));
 
 			// Since it can't have a position. Let's tell the window node the news by
-			// the actual rect to it.
+			// sending the actual rect to it.
 			if (wd.rect_changed_callback.is_valid()) {
 				wd.rect_changed_callback.call(wd.rect);
 			}
@@ -810,6 +871,16 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 			}
 
 			wayland_thread.window_create_popup(p_window_id, wd.parent_id, wd.rect);
+		}
+
+		wd.created = true;
+
+		bool ready = wayland_thread.window_wait_ready(p_window_id, WINDOW_READY_TIMEOUT_MS);
+		if (!ready) {
+			ERR_PRINT(vformat("Could not create window %d: timeout.", p_window_id));
+			_send_window_event(WINDOW_EVENT_FORCE_CLOSE, p_window_id);
+
+			return;
 		}
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
@@ -873,61 +944,9 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowData &wd = windows[p_window_id];
+	ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't be deleted");
 
-	ERR_FAIL_COND(!windows.has(wd.root_id));
-	WindowData &root_wd = windows[wd.root_id];
-
-	// NOTE: By the time the Wayland thread will send a `WINDOW_EVENT_MOUSE_EXIT`
-	// the window will be gone and the message will be discarded, confusing the
-	// engine. We thus have to send it ourselves.
-	if (wayland_thread.pointer_get_pointed_window_id() == p_window_id) {
-		_send_window_event(WINDOW_EVENT_MOUSE_EXIT, p_window_id);
-	}
-
-	// The XDG shell specification requires us to clear all popups in reverse order.
-	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.back()->get() != p_window_id) {
-		_send_window_event(WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.back()->get());
-	}
-
-	if (root_wd.popup_stack.back() && root_wd.popup_stack.back()->get() == p_window_id) {
-		root_wd.popup_stack.pop_back();
-	}
-
-	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
-		popup_menu_list.pop_back();
-	}
-
-#ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		accessibility_driver->window_destroy(p_window_id);
-	}
-#endif
-
-	if (wd.visible) {
-#ifdef VULKAN_ENABLED
-		if (rendering_device) {
-			rendering_device->screen_free(p_window_id);
-		}
-
-		if (rendering_context) {
-			rendering_context->window_destroy(p_window_id);
-		}
-#endif
-
-#ifdef GLES3_ENABLED
-		if (egl_manager) {
-			egl_manager->window_destroy(p_window_id);
-		}
-#endif
-
-		wayland_thread.window_destroy(p_window_id);
-	}
-
-	windows.erase(p_window_id);
-
-	DEBUG_LOG_WAYLAND(vformat("Destroyed window %d", p_window_id));
+	_delete_window(p_window_id);
 }
 
 DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
@@ -1029,7 +1048,7 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 
 	wd.title = p_title;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_title(p_window_id, wd.title);
 	}
 }
@@ -1125,7 +1144,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	wd.max_size = p_size;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_max_size(p_window_id, p_size);
 	}
 }
@@ -1160,7 +1179,7 @@ void DisplayServerWayland::window_set_transient(WindowID p_window_id, WindowID p
 
 		// NOTE: Looks like live unparenting is not really practical unfortunately.
 		// See WaylandThread::window_set_parent for more info.
-		if (wd.visible) {
+		if (wd.created) {
 			wayland_thread.window_set_parent(p_window_id, p_parent);
 		}
 	}
@@ -1186,7 +1205,7 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	wd.min_size = p_size;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_min_size(p_window_id, p_size);
 	}
 }
@@ -1209,7 +1228,9 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	}
 
 	Size2i new_size = p_size;
-	if (wd.visible) {
+	new_size = p_size.maxi(1);
+
+	if (wd.created) {
 		new_size = wayland_thread.window_set_size(p_window_id, p_size);
 	}
 
@@ -1248,7 +1269,7 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		return;
 	}
 
@@ -1261,7 +1282,7 @@ DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::W
 	ERR_FAIL_COND_V(!windows.has(p_window_id), WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		return WINDOW_MODE_WINDOWED;
 	}
 
@@ -1289,12 +1310,12 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't be popup.");
-			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.created && (wd.flags & WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
 		} break;
 
 		case WINDOW_FLAG_POPUP_WM_HINT: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't have popup hint.");
-			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.created && (wd.flags & WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
 		} break;
 
 		default: {
@@ -2028,6 +2049,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
 	swap_cancel_ok = (current_desk.contains("kde") || session_desk.contains("kde") || current_desk.contains("lxqt") || session_desk.contains("lxqt"));
 
+	MutexLock mutex_lock(wayland_thread.mutex);
+
 	Error thread_err = wayland_thread.init();
 
 	if (thread_err != OK) {
@@ -2247,6 +2270,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	show_window(MAIN_WINDOW_ID);
 
+	if (!windows.has(MAIN_WINDOW_ID) || !windows[MAIN_WINDOW_ID].visible) {
+		ERR_PRINT("Could not map the main window.");
+		r_error = ERR_CANT_CREATE;
+		return;
+	}
+
 #ifdef RD_ENABLED
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
@@ -2298,6 +2327,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
+	wayland_thread.mutex.lock();
+
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
@@ -2321,10 +2352,13 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 
 	for (WindowID &id : toplevels) {
-		delete_sub_window(id);
+		_delete_window(id);
 	}
 	windows.clear();
 
+	// The thread needs the mutex to clean up. We're not going to touch Wayland
+	// stuff anymore from now on anyways.
+	wayland_thread.mutex.unlock();
 	wayland_thread.destroy();
 
 	// Destroy all drivers.
