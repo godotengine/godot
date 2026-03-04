@@ -64,6 +64,7 @@
 #include "main/splash.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
+#include "scene/gui/virtual_controller.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/property_list_helper.h"
@@ -4508,6 +4509,12 @@ int Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
+
+				VirtualController *virtual_controller = memnew(VirtualController);
+				sml->get_root()->add_child(virtual_controller, false, Node::INTERNAL_MODE_FRONT);
+				virtual_controller->set_name("_VirtualController");
+				virtual_controller->hide();
+
 				OS::get_singleton()->benchmark_end_measure("Startup", "Load Autoloads");
 			}
 		}
