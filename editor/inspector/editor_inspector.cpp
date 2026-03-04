@@ -5235,7 +5235,7 @@ void EditorInspector::edit(Object *p_object) {
 		}
 		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 
-		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object);
+		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object) || Object::cast_to<MultiNodeEdit>(object);
 		_update_current_favorites();
 
 		update_tree();
@@ -5831,7 +5831,8 @@ void EditorInspector::_update_current_favorites() {
 	}
 
 	// Fetch built-in properties.
-	StringName class_name = object->get_class_name();
+	const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object);
+	StringName class_name = multi_node_edit ? multi_node_edit->get_edited_class_name() : object->get_class_name();
 	for (const KeyValue<String, PackedStringArray> &KV : favorites) {
 		if (ClassDB::is_parent_class(class_name, KV.key)) {
 			current_favorites.append_array(KV.value);
@@ -5844,7 +5845,8 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 		return;
 	}
 
-	StringName validate_name = object->get_class_name();
+	const MultiNodeEdit *mne = Object::cast_to<MultiNodeEdit>(object);
+	StringName validate_name = mne ? mne->get_edited_class_name() : object->get_class_name();
 	StringName class_name;
 
 	String theme_property;
