@@ -543,9 +543,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	int line = _initial_line;
 
 	if (p_state) {
-		//use existing (supplied) state (awaited)
+		// Use existing (supplied) state (awaited).
 		stack = (Variant *)p_state->stack.ptr();
-		instruction_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; //ptr() to avoid bounds check
+		instruction_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; // `ptr()` to avoid bounds check.
 		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
@@ -553,6 +553,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		p_instance = p_state->instance;
 		defarg = p_state->defarg;
 
+		// Responsibility for the stack is moved from `GDScriptFunctionState` to this method. So, we reset `p_state->stack_size`
+		// to prevent `GDScriptFunctionState::_clear_stack()` from clearing the stack again.
+		// NOTE: Strictly speaking, ownership doesn't move. However, we can be sure that `p_state->stack` won't be cleared
+		// before the current call completes, and that `p_state` won't be resumed again.
+		p_state->stack_size = 0;
 	} else {
 		if (p_argcount != _argument_count) {
 			if (p_argcount > _argument_count) {
@@ -4000,15 +4005,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
 	if (!p_state || awaited) {
 		GDScriptLanguage::get_singleton()->exit_function();
-
-		// Free stack, except reserved addresses.
-		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
-			stack[i].~Variant();
-		}
 	}
 
-	// Always free reserved addresses, since they are never copied.
-	for (int i = 0; i < FIXED_ADDRESSES_MAX; i++) {
+	for (int i = 0; i < _stack_size; i++) {
 		stack[i].~Variant();
 	}
 
