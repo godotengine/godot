@@ -32,6 +32,7 @@
 
 #ifdef ALSA_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 

@@ -30,8 +30,10 @@
 
 #include "environment.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/sky.h"
 #include "servers/rendering/rendering_server.h"

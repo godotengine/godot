@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"

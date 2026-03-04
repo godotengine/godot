@@ -38,6 +38,8 @@
 #include "gltf_state.h"
 #include "structures/gltf_object_model_property.h"
 
+#include "core/config/engine.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "extensions/physics/gltf_document_extension_physics.h"
 #endif // PHYSICS_3D_DISABLED

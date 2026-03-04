@@ -31,6 +31,7 @@
 #include "core_bind.h"
 #include "core_bind.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
@@ -42,6 +43,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 

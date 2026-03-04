@@ -38,11 +38,13 @@
 #include "java_godot_wrapper.h"
 #include "net_socket_android.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/xml_parser.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"

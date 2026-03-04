@@ -31,6 +31,7 @@
 #include "particles_2d_editor_plugin.h"
 
 #include "core/io/image_loader.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"

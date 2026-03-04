@@ -30,6 +30,7 @@
 
 #include "editor_help.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/extension/gdextension.h"
@@ -38,6 +39,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"

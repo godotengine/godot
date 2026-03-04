@@ -30,6 +30,7 @@
 
 #include "http_client_web.h"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 
 void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_ref) {

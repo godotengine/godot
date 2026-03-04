@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_event.h"
+#include "core/os/os.h"
 #include "servers/display/native_menu.h"
 
 #if defined(RD_ENABLED)
