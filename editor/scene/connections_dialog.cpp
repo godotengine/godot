@@ -56,6 +56,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {

@@ -31,19 +31,21 @@
 #pragma once
 
 #include "core/input/input_event.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
-#include "core/string/node_path.h"
 #include "core/templates/iterable.h"
-#include "core/variant/typed_array.h"
-#include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
+class MultiplayerAPI;
+class NodePath;
 class Resource;
 class SceneState;
+class SceneTree;
 class Tween;
 class Viewport;
 class Window;
+struct SceneTreeGroup;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
@@ -169,7 +171,7 @@ public:
 private:
 	struct GroupData {
 		bool persistent = false;
-		SceneTree::Group *group = nullptr;
+		SceneTreeGroup *group = nullptr;
 	};
 
 	struct ComparatorByIndex {
@@ -485,16 +487,17 @@ public:
 		NOTIFICATION_VP_MOUSE_EXIT = 1011,
 		NOTIFICATION_WM_POSITION_CHANGED = 1012,
 
-		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
-		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
-		NOTIFICATION_WM_ABOUT = MainLoop::NOTIFICATION_WM_ABOUT,
-		NOTIFICATION_CRASH = MainLoop::NOTIFICATION_CRASH,
-		NOTIFICATION_OS_IME_UPDATE = MainLoop::NOTIFICATION_OS_IME_UPDATE,
-		NOTIFICATION_APPLICATION_RESUMED = MainLoop::NOTIFICATION_APPLICATION_RESUMED,
-		NOTIFICATION_APPLICATION_PAUSED = MainLoop::NOTIFICATION_APPLICATION_PAUSED,
-		NOTIFICATION_APPLICATION_FOCUS_IN = MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT,
-		NOTIFICATION_TEXT_SERVER_CHANGED = MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED,
+		// Keep these in sync with MainLoop.
+		NOTIFICATION_OS_MEMORY_WARNING = 2009,
+		NOTIFICATION_TRANSLATION_CHANGED = 2010,
+		NOTIFICATION_WM_ABOUT = 2011,
+		NOTIFICATION_CRASH = 2012,
+		NOTIFICATION_OS_IME_UPDATE = 2013,
+		NOTIFICATION_APPLICATION_RESUMED = 2014,
+		NOTIFICATION_APPLICATION_PAUSED = 2015,
+		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
+		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
+		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
 
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
@@ -751,7 +754,7 @@ public:
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
 	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
-	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return SceneTree::is_fti_enabled() && is_physics_interpolated(); }
+	bool is_physics_interpolated_and_enabled() const;
 	void reset_physics_interpolation();
 
 	bool is_enabled() const;

@@ -43,6 +43,7 @@
 #include "editor/settings/project_settings_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 

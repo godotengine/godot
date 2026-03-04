@@ -46,6 +46,7 @@
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {

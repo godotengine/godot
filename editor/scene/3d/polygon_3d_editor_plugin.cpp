@@ -42,6 +42,7 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/main/scene_tree.h"
 
 void Polygon3DEditor::_notification(int p_what) {
 	switch (p_what) {

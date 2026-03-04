@@ -39,6 +39,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/shader/editor_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/shader_include.h"
 #include "servers/rendering/shader_types.h"
 

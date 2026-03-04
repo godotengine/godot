@@ -43,6 +43,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 Label *CreditsRoll::_create_label(const String &p_with_text, LabelSize p_size) {

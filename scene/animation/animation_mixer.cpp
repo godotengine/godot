@@ -2489,7 +2489,7 @@ void AnimationMixer::_bind_methods() {
 }
 
 AnimationMixer::AnimationMixer() {
-	root_node = SceneStringName(path_pp);
+	root_node = NodePath("..");
 }
 
 AnimationMixer::~AnimationMixer() {

@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 

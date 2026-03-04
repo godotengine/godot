@@ -50,6 +50,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/style_box.h"
 
 void EditorAbout::_notification(int p_what) {
