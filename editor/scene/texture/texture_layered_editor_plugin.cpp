@@ -37,6 +37,9 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+
 // Shader sources.
 
 constexpr const char *array_2d_shader = R"(
@@ -224,6 +227,17 @@ void TextureLayeredEditor::_update_gui() {
 		}
 	}
 
+	// Determine export file size. Uses the imported resource path (e.g., .ctex) rather than the source file, as this reflects the size that ends up in the exported PCK.
+	String export_size_text;
+	const String res_path = texture->get_path();
+	if (!res_path.is_empty() && !texture->is_built_in()) {
+		const String imported_path = ResourceLoader::import_remap(res_path);
+		if (!imported_path.is_empty() && FileAccess::exists(imported_path)) {
+			const uint64_t export_size = FileAccess::get_size(imported_path);
+			export_size_text = "\n" + vformat(TTR("Export Size: %s"), String::humanize_size(export_size));
+		}
+	}
+
 	if (texture->has_mipmaps()) {
 		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), format);
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, true) * texture->get_layers();
@@ -239,6 +253,7 @@ void TextureLayeredEditor::_update_gui() {
 				String::humanize_size(memory));
 	}
 
+	texture_info += export_size_text;
 	info->set_text(texture_info);
 
 	const uint32_t components_mask = Image::get_format_component_mask(format);
