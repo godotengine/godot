@@ -217,6 +217,9 @@ private:
 		}
 
 		virtual ~Item() { _clear_children(); }
+
+		virtual String to_tag() { return "frame"; }
+		virtual String tag_context() { return ""; }
 	};
 
 	struct ItemFrame : public Item {
@@ -243,11 +246,15 @@ private:
 			first_invalid_font_line.store(0);
 			first_resized_line.store(0);
 		}
+
+		String to_tag() { return "cell"; }
 	};
 
 	struct ItemText : public Item {
 		String text;
 		ItemText() { type = ITEM_TEXT; }
+
+		String to_tag() { return ""; }
 	};
 
 	struct ItemDropcap : public Item {
@@ -266,6 +273,29 @@ private:
 					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
 				}
 			}
+		}
+
+		String to_tag() { return "dropcap"; }
+		String tag_context() {
+			String result = "";
+			if (font.is_valid()) {
+				result += vformat(" name=%s", font->get_path());
+			}
+			if (font_size != 0) {
+				result += vformat(" font_size=%s", font_size);
+			}
+			if (color.to_html() != "FFFFFFFF") {
+				result += vformat(" color=%s", color.to_html());
+			}
+			if (ol_size != 0) {
+				result += vformat(" outline_size=%s", ol_size);
+			}
+			if (ol_color.to_html() != "FFFFFFFF") {
+				result += vformat(" outline_color=%s", ol_color.to_html());
+			}
+			result += vformat(" margins=%s,%s,%s,%s", dropcap_margins.position.x, dropcap_margins.position.y, dropcap_margins.size.x, dropcap_margins.size.y);
+			result += vformat("]%s[/dropcap", text);
+			return result;
 		}
 	};
 
@@ -294,10 +324,41 @@ private:
 				}
 			}
 		}
+
+		String to_tag() { return "img"; }
+		String tag_context() {
+			String width = width_in_percent ? vformat("%s%", size.x) : vformat("%s", size.x);
+			String height = width_in_percent ? vformat("%s%", size.y) : vformat("%s", size.y);
+			String region_str = vformat("%s,%s,%s,%s", region.position.x, region.position.y, region.size.x, region.size.y);
+			String pad_str = pad ? "true" : "false";
+
+			String align_a = "t";
+			String align_b = "t";
+			if ((inline_align & INLINE_ALIGNMENT_BASELINE_TO) == INLINE_ALIGNMENT_BASELINE_TO) {
+				align_a = "l";
+			} else if ((inline_align & INLINE_ALIGNMENT_BOTTOM_TO) == INLINE_ALIGNMENT_BOTTOM_TO) {
+				align_a = "b";
+			} else if ((inline_align & INLINE_ALIGNMENT_CENTER_TO) == INLINE_ALIGNMENT_CENTER_TO) {
+				align_a = "c";
+			}
+
+			if ((inline_align & INLINE_ALIGNMENT_TO_BOTTOM) == INLINE_ALIGNMENT_TO_BOTTOM) {
+				align_b = "b";
+			} else if ((inline_align & INLINE_ALIGNMENT_TO_BASELINE) == INLINE_ALIGNMENT_TO_BASELINE) {
+				align_b = "l";
+			} else if ((inline_align & INLINE_ALIGNMENT_TO_CENTER) == INLINE_ALIGNMENT_TO_CENTER) {
+				align_b = "c";
+			}
+
+			String alignment_str = vformat("%s,%s", align_a, align_b);
+			return vformat(" color=%s height=%s width=%s region=%s pad=%s tooltip=%s valign=%s alt=%s]%s[/img",
+					color.to_html(), height, width, region_str, pad_str, tooltip, alignment_str, alt_text, image->get_path());
+		}
 	};
 
 	struct ItemFont : public Item {
 		DefaultFont def_font = RTL_CUSTOM_FONT;
+		bool is_bold;
 		Ref<Font> font;
 		bool variation = false;
 		bool def_size = false;
@@ -311,36 +372,75 @@ private:
 				}
 			}
 		}
+
+		String to_tag() {
+			switch (def_font) {
+				case RTL_BOLD_FONT:
+					return "b";
+				case RTL_ITALICS_FONT:
+					return "i";
+				case RTL_MONO_FONT:
+					return "code";
+				case RTL_BOLD_ITALICS_FONT:
+					return is_bold ? "b" : "i";
+				default:
+					return "font";
+			}
+		}
+
+		String tag_context() {
+			if (def_font == RTL_CUSTOM_FONT && font.is_valid()) {
+				return vformat(" name=%s size=%s",
+						font->get_path(), font_size);
+			}
+			return "";
+		}
 	};
 
 	struct ItemFontSize : public Item {
 		int font_size = 16;
 		ItemFontSize() { type = ITEM_FONT_SIZE; }
+
+		String to_tag() { return "font_size"; }
+		String tag_context() { return vformat("=%s", font_size); }
 	};
 
 	struct ItemColor : public Item {
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
+
+		String to_tag() { return "color"; }
+		String tag_context() { return vformat("=%s", color.to_html()); }
 	};
 
 	struct ItemOutlineSize : public Item {
 		int outline_size = 0;
 		ItemOutlineSize() { type = ITEM_OUTLINE_SIZE; }
+
+		String to_tag() { return "outline_size"; }
+		String tag_context() { return vformat("=%s", outline_size); }
 	};
 
 	struct ItemOutlineColor : public Item {
 		Color color;
 		ItemOutlineColor() { type = ITEM_OUTLINE_COLOR; }
+
+		String to_tag() { return "outline_color"; }
+		String tag_context() { return vformat("=%s", color.to_html()); }
 	};
 
 	struct ItemUnderline : public Item {
 		Color color;
 		ItemUnderline() { type = ITEM_UNDERLINE; }
+
+		String to_tag() { return "u"; }
 	};
 
 	struct ItemStrikethrough : public Item {
 		Color color;
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
+
+		String to_tag() { return "s"; }
 	};
 
 	struct ItemMeta : public Item {
@@ -348,16 +448,40 @@ private:
 		MetaUnderline underline = META_UNDERLINE_ALWAYS;
 		String tooltip;
 		ItemMeta() { type = ITEM_META; }
+
+		String to_tag() { return "url"; }
+		String tag_context() {
+			String result = vformat("=%s", meta);
+			if (underline != META_UNDERLINE_ALWAYS || !tooltip.is_empty()) {
+				result = " name" + result;
+				if (underline == META_UNDERLINE_NEVER) {
+					result += " underline=never";
+				} else if (underline == META_UNDERLINE_ON_HOVER) {
+					result += " underline=hover";
+				}
+
+				if (!tooltip.is_empty()) {
+					result += vformat(" tooltip=%s", tooltip);
+				}
+			}
+			return result;
+		}
 	};
 
 	struct ItemHint : public Item {
 		String description;
 		ItemHint() { type = ITEM_HINT; }
+
+		String to_tag() { return "hint"; }
+		String tag_context() { return vformat("=\"%s\"", description); }
 	};
 
 	struct ItemLanguage : public Item {
 		String language;
 		ItemLanguage() { type = ITEM_LANGUAGE; }
+
+		String to_tag() { return "lang"; }
+		String tag_context() { return vformat("=%s", language); }
 	};
 
 	struct ItemParagraph : public Item {
@@ -368,11 +492,99 @@ private:
 		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 		PackedFloat32Array tab_stops;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
+
+		String to_tag() { return "p"; }
+		String tag_context() {
+			String result = "";
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					result += " align=l";
+					break;
+				case HORIZONTAL_ALIGNMENT_RIGHT:
+					result += " align=r";
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER:
+					result += " align=c";
+					break;
+				case HORIZONTAL_ALIGNMENT_FILL:
+					result += " align=f";
+					break;
+			}
+			switch (direction) {
+				case Control::TEXT_DIRECTION_RTL:
+					result += " direction=r";
+					break;
+				case Control::TEXT_DIRECTION_LTR:
+					result += " direction=l";
+					break;
+				default:
+					break;
+			}
+			if (!language.is_empty()) {
+				result += vformat(" language=%s", language);
+			}
+			switch (st_parser) {
+				case TextServer::STRUCTURED_TEXT_URI:
+					result += " st=u";
+					break;
+				case TextServer::STRUCTURED_TEXT_FILE:
+					result += " st=f";
+					break;
+				case TextServer::STRUCTURED_TEXT_EMAIL:
+					result += " st=e";
+					break;
+				case TextServer::STRUCTURED_TEXT_LIST:
+					result += " st=l";
+					break;
+				case TextServer::STRUCTURED_TEXT_CUSTOM:
+					result += " st=c";
+					break;
+				default:
+					break;
+			}
+			String flags = " jst=";
+			if ((jst_flags & TextServer::JUSTIFICATION_KASHIDA) != 0) {
+				flags += "k,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_WORD_BOUND) != 0) {
+				flags += "w,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_TRIM_EDGE_SPACES) != 0) {
+				flags += "tr,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_AFTER_LAST_TAB) != 0) {
+				flags += "lt,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_SKIP_LAST_LINE) != 0) {
+				flags += "sl,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS) != 0) {
+				flags += "sv,";
+			}
+			if ((jst_flags & TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE) != 0) {
+				flags += "ns,";
+			}
+			if (flags.unicode_at(flags.size() - 2) == *U",") {
+				flags.remove_at(flags.size() - 2);
+				result += flags;
+			}
+
+			if (!tab_stops.is_empty()) {
+				result += vformat(" tab_stops=%f", tab_stops[0]);
+				for (int tab = 1; tab < tab_stops.size(); tab++) {
+					result += vformat(",%f", tab_stops[tab]);
+				}
+			}
+
+			return result;
+		}
 	};
 
 	struct ItemIndent : public Item {
 		int level = 0;
 		ItemIndent() { type = ITEM_INDENT; }
+
+		String to_tag() { return "indent"; }
 	};
 
 	struct ItemList : public Item {
@@ -382,10 +594,35 @@ private:
 		String bullet = U"•";
 		float max_width = 0;
 		ItemList() { type = ITEM_LIST; }
+
+		String to_tag() {
+			if (list_type == LIST_DOTS) {
+				return "ul";
+			} else {
+				return "ol";
+			}
+		}
+		String tag_context() {
+			if (list_type == LIST_LETTERS) {
+				return " type=a";
+			}
+			if (list_type == LIST_ROMAN) {
+				return " type=i";
+			}
+			if (list_type == LIST_NUMBERS) {
+				return "";
+			}
+			if (bullet != U"•") {
+				return vformat(" bullet=%s", bullet);
+			}
+			return "";
+		}
 	};
 
 	struct ItemNewline : public Item {
 		ItemNewline() { type = ITEM_NEWLINE; }
+
+		String to_tag() { return "br"; }
 	};
 
 	struct ItemTable : public Item {
@@ -410,6 +647,40 @@ private:
 		int total_height = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
+
+		String to_tag() { return "table"; }
+		String tag_context() {
+			String align_a = "t";
+			String align_b = "t";
+			if ((inline_align & INLINE_ALIGNMENT_BASELINE_TO) == INLINE_ALIGNMENT_BASELINE_TO) {
+				align_a = "l";
+			} else if ((inline_align & INLINE_ALIGNMENT_BOTTOM_TO) == INLINE_ALIGNMENT_BOTTOM_TO) {
+				align_a = "b";
+			} else if ((inline_align & INLINE_ALIGNMENT_CENTER_TO) == INLINE_ALIGNMENT_CENTER_TO) {
+				align_a = "c";
+			}
+
+			if ((inline_align & INLINE_ALIGNMENT_TO_BOTTOM) == INLINE_ALIGNMENT_TO_BOTTOM) {
+				align_b = "b";
+			} else if ((inline_align & INLINE_ALIGNMENT_TO_BASELINE) == INLINE_ALIGNMENT_TO_BASELINE) {
+				align_b = "l";
+			} else if ((inline_align & INLINE_ALIGNMENT_TO_CENTER) == INLINE_ALIGNMENT_TO_CENTER) {
+				align_b = "c";
+			}
+
+			String alignment_str = vformat("%s,%s", align_a, align_b);
+
+			String result = vformat("=%s,%s", columns.size(), alignment_str);
+
+			if (align_to_row != -1) {
+				result += vformat(",%s", align_to_row);
+			}
+			if (!name.is_empty()) {
+				result += vformat(" name=%s", name);
+			}
+
+			return result;
+		}
 	};
 
 	struct ItemFade : public Item {
@@ -417,6 +688,11 @@ private:
 		int length = 0;
 
 		ItemFade() { type = ITEM_FADE; }
+
+		String to_tag() { return "fade"; }
+		String tag_context() {
+			return vformat(" start=%s length=%s", starting_index, length);
+		}
 	};
 
 	struct ItemFX : public Item {
@@ -447,6 +723,11 @@ private:
 			return (_previous_rng >> (p_index % 64)) |
 					(_previous_rng << (64 - (p_index % 64)));
 		}
+
+		String to_tag() { return "shake"; }
+		String tag_context() {
+			return vformat(" rate=%f level=%s", strength, rate);
+		}
 	};
 
 	struct ItemWave : public ItemFX {
@@ -455,6 +736,11 @@ private:
 		Vector2 prev_off;
 
 		ItemWave() { type = ITEM_WAVE; }
+
+		String to_tag() { return "wave"; }
+		String tag_context() {
+			return vformat(" amp=%f freq=%f", frequency, amplitude);
+		}
 	};
 
 	struct ItemTornado : public ItemFX {
@@ -463,6 +749,11 @@ private:
 		Vector2 prev_off;
 
 		ItemTornado() { type = ITEM_TORNADO; }
+
+		String to_tag() { return "tornado"; }
+		String tag_context() {
+			return vformat(" radius=%f freq=%f", radius, frequency);
+		}
 	};
 
 	struct ItemRainbow : public ItemFX {
@@ -472,6 +763,11 @@ private:
 		float speed = 1.0f;
 
 		ItemRainbow() { type = ITEM_RAINBOW; }
+
+		String to_tag() { return "rainbow"; }
+		String tag_context() {
+			return vformat(" freq=%f sat=%f val=%f speed=%f", frequency, saturation, value, speed);
+		}
 	};
 
 	struct ItemPulse : public ItemFX {
@@ -480,16 +776,27 @@ private:
 		float ease = -2.0f;
 
 		ItemPulse() { type = ITEM_PULSE; }
+
+		String to_tag() { return "pulse"; }
+		String tag_context() {
+			return vformat(" freq=%f color=%s ease=%f", frequency, color.to_html(), ease);
+		}
 	};
 
 	struct ItemBGColor : public Item {
 		Color color;
 		ItemBGColor() { type = ITEM_BGCOLOR; }
+
+		String to_tag() { return "bgcolor"; }
+		String tag_context() { return vformat("=%s", color.to_html()); }
 	};
 
 	struct ItemFGColor : public Item {
 		Color color;
 		ItemFGColor() { type = ITEM_FGCOLOR; }
+
+		String to_tag() { return "fgcolor"; }
+		String tag_context() { return vformat("=%s", color.to_html()); }
 	};
 
 	struct ItemCustomFX : public ItemFX {
@@ -499,6 +806,8 @@ private:
 		ItemCustomFX();
 
 		virtual ~ItemCustomFX();
+
+		String to_tag() { return "customfx"; }
 	};
 
 	struct ItemContext : public Item {
@@ -749,6 +1058,7 @@ private:
 #endif
 	bool use_bbcode = false;
 	String text;
+	String sync_text;
 	void _apply_translation();
 
 	bool internal_stack_editing = false;

@@ -2598,7 +2598,12 @@ void RichTextLabel::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_stop_thread();
 			if (!text.is_empty()) {
-				set_text(text);
+				//set_text(text);
+				//This step discards any information added to the TagStack/ItemTree before the Node entered the Scene Tree
+				// ^ Issue #100772
+				//If sync_text is kept as an accurate BBCode mirror of the ItemTree, then we can preserve that information
+				//By collapsing all of it down to a single text value for set_text, resolving the error
+				set_text(text + sync_text);
 			}
 
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -4121,6 +4126,7 @@ void RichTextLabel::add_text(const String &p_text) {
 				//append text condition!
 				ItemText *ti = static_cast<ItemText *>(current->subitems.back()->get());
 				ti->text += line;
+				sync_text += line;
 				current_char_ofs += line.length();
 				_invalidate_current_line(main);
 
@@ -4197,6 +4203,14 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	if (fit_content) {
 		update_minimum_size();
 	}
+
+	if (p_item->type == ITEM_TEXT) {
+		ItemText *t = static_cast<ItemText *>(p_item);
+		sync_text += t->text;
+	} else if (p_item->type != ITEM_CONTEXT) {
+		sync_text += "[" + p_item->to_tag() + p_item->tag_context() + "]";
+	}
+
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -4276,6 +4290,9 @@ void RichTextLabel::add_hr(int p_width, int p_height, const Color &p_color, Hori
 
 	if (current->type == ITEM_FRAME) {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
+	}
+	if (current->type != ITEM_TEXT) {
+		sync_text += "[/" + current->to_tag() + "]";
 	}
 	current = current->parent;
 	if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
@@ -4689,6 +4706,7 @@ void RichTextLabel::push_bold() {
 
 	ItemFont *item_font = _find_font(current);
 	_push_def_font((item_font && item_font->def_font == RTL_ITALICS_FONT) ? RTL_BOLD_ITALICS_FONT : RTL_BOLD_FONT);
+	static_cast<ItemFont *>(current)->is_bold = true;
 }
 
 void RichTextLabel::push_bold_italics() {
@@ -5131,6 +5149,10 @@ void RichTextLabel::pop() {
 	if (current->type == ITEM_FRAME) {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
 	}
+	if (current->type != ITEM_TEXT) {
+		sync_text += "[/" + current->to_tag() + "]";
+	}
+
 	current = current->parent;
 	if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
 		tag_stack.pop_back();
@@ -5156,6 +5178,10 @@ void RichTextLabel::pop_context() {
 		if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
 			tag_stack.pop_back();
 		}
+
+		if (current->type != ITEM_TEXT) {
+			sync_text += "[/" + current->to_tag() + "]";
+		}
 		current = current->parent;
 	}
 }
@@ -5164,7 +5190,13 @@ void RichTextLabel::pop_all() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	current = main;
+	while (current->parent && current != main) {
+		if (current->type != ITEM_TEXT) {
+			sync_text += "[/" + current->to_tag() + "]";
+		}
+		current = current->parent;
+	}
+
 	current_frame = main;
 }
 
@@ -5183,6 +5215,11 @@ void RichTextLabel::clear() {
 	main->lines.resize(1);
 	main->first_invalid_line.store(0);
 	_invalidate_accessibility();
+
+	if (!internal_stack_editing) {
+		text.clear();
+		sync_text.clear();
+	}
 
 	keyboard_focus_frame = nullptr;
 	keyboard_focus_line = 0;
@@ -5396,12 +5433,23 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 	int pos = 0;
 
+	ItemFont *prev_font = _find_font(current);
 	bool in_bold = false;
 	bool in_italics = false;
+	// Previously append_text ignored if there was currently an unpopped Bold/Italics Tag
+	if (prev_font) {
+		in_bold = prev_font->def_font == RTL_BOLD_FONT || prev_font->def_font == RTL_BOLD_ITALICS_FONT;
+		in_italics = prev_font->def_font == RTL_ITALICS_FONT || prev_font->def_font == RTL_BOLD_ITALICS_FONT;
+	}
 	bool after_list_open_tag = false;
 	bool after_list_close_tag = false;
 
 	String bbcode = p_bbcode.replace("\r\n", "\n");
+
+	if (!internal_stack_editing) {
+		text += sync_text;
+		text += bbcode;
+	}
 
 	while (pos <= bbcode.length()) {
 		int brk_pos = bbcode.find_char('[', pos);
@@ -6631,6 +6679,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		}
 	}
 
+	sync_text.clear();
+
 	parsing_bbcode.store(false);
 }
 
@@ -7249,7 +7299,7 @@ float RichTextLabel::get_selection_line_offset() const {
 
 void RichTextLabel::set_text(const String &p_bbcode) {
 	// Allow clearing the tag stack.
-	if (!p_bbcode.is_empty() && text == p_bbcode) {
+	if (!p_bbcode.is_empty() && (text + sync_text) == p_bbcode) {
 		return;
 	}
 
@@ -7282,7 +7332,7 @@ void RichTextLabel::_apply_translation() {
 }
 
 String RichTextLabel::get_text() const {
-	return text;
+	return text + sync_text;
 }
 
 void RichTextLabel::set_use_bbcode(bool p_enable) {
