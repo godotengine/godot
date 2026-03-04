@@ -310,6 +310,36 @@ static GDScriptParser::DataType resolve_generic_type(const GDScriptParser::DataT
 	return resolve_generic_type(p_type_to_resolve, p_bindings, chain_resolved_so_far);
 }
 
+static bool has_unbound_generic_parameter(const GDScriptParser::DataType& p_type) {
+	if (p_type.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		return true;
+	}
+
+	for (int i = 0; i < p_type.container_element_types.size(); i++) {
+		if (has_unbound_generic_parameter(p_type.container_element_types[i])) {
+			return true;
+		}
+	}
+
+	if ((p_type.kind == GDScriptParser::DataType::CLASS || p_type.kind == GDScriptParser::DataType::SCRIPT) &&
+			p_type.class_type != nullptr && p_type.class_type->has_generic_parameters()) {
+		for (GDScriptParser::IdentifierNode* parameter : p_type.class_type->generic_parameters) {
+			const GDScriptParser::DataType* bound = p_type.generic_type_bindings.getptr(parameter->name);
+			if (bound == nullptr || has_unbound_generic_parameter(*bound)) {
+				return true;
+			}
+		}
+	}
+
+	for (const KeyValue<StringName, GDScriptParser::DataType>& E : p_type.generic_type_bindings) {
+		if (has_unbound_generic_parameter(E.value)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool is_script_or_class(const GDScriptParser::DataType p_datatype) {
 	return p_datatype.kind == GDScriptParser::DataType::CLASS || p_datatype.kind == GDScriptParser::DataType::SCRIPT;
 }
@@ -2350,7 +2380,9 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		GDScriptParser::DataType initializer_type = p_assignable->initializer->get_datatype();
 
 		if (p_assignable->infer_datatype) {
-			if (!initializer_type.is_set() || initializer_type.has_no_type() || !initializer_type.is_hard_type()) {
+			if (has_unbound_generic_parameter(initializer_type)) {
+				push_error(vformat(R"([Reginleif] Cannot infer the type of "%s" %s because the value contains unresolved generic parameter(s).)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
+			} else if (!initializer_type.is_set() || initializer_type.has_no_type() || !initializer_type.is_hard_type()) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value doesn't have a set type.)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
 			} else if (initializer_type.kind == GDScriptParser::DataType::BUILTIN && initializer_type.builtin_type == Variant::NIL && !is_constant) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value is "null".)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
