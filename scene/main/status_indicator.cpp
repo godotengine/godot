@@ -30,6 +30,7 @@
 
 #include "status_indicator.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/display/display_server.h"

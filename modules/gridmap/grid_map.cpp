@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
 #include "scene/resources/3d/mesh_library.h"

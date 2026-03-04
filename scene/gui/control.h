@@ -30,17 +30,17 @@
 
 #pragma once
 
-#include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
 #include "servers/display/accessibility_server_enums.h"
 
-class Viewport;
 class Label;
 class Panel;
-class ThemeOwner;
 class ThemeContext;
+class ThemeOwner;
+class Viewport;
+struct Transform2D;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);

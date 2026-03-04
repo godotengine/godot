@@ -734,9 +734,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
-	void init_plugins();
+	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void init_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
