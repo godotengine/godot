@@ -4284,6 +4284,14 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				return ERR_CANT_RESOLVE;
 			} break;
+
+			case GDScriptParser::DataType::GENERIC_TYPE: {
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
+				r_result.class_name = "Generic";
+				r_result.class_member = base_type.generic_param;
+				return OK;
+			} break;
+
 			case GDScriptParser::DataType::RESOLVING:
 			case GDScriptParser::DataType::UNRESOLVED: {
 				return ERR_CANT_RESOLVE;
