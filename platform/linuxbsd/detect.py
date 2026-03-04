@@ -100,11 +100,6 @@ def configure(env: "SConsEnvironment"):
 
     ## Build type
 
-    if env.dev_build:
-        # This is needed for our crash handler to work properly.
-        # gdb works fine without it though, so maybe our crash handler could too.
-        env.Append(LINKFLAGS=["-rdynamic"])
-
     # Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.
     host_is_64_bit = sys.maxsize > 2**32
