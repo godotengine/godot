@@ -783,9 +783,16 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 		if (rb->get_use_debanding() && !using_hdr) {
-			if (!can_use_storage && (use_smaa || spatial_upscaler)) {
-				tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_10_BIT;
-			} else if (!(use_smaa || spatial_upscaler)) {
+			if (use_smaa) {
+				// SMAA will apply 8-bit debanding.
+				if (!can_use_storage) {
+					// When can_use_storage is false, the intermediate destination buffer will be 10 bit, so
+					// additional tonemap debanding is needed.
+					// This stage of debanding is especially needed for glow effects.
+					tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_10_BIT;
+				}
+			} else {
+				// The final destination buffer of this viewport will be 8-bit integer, so match that format.
 				tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_8_BIT;
 			}
 		}
@@ -950,7 +957,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.luminance_multiplier = rb->get_luminance_multiplier();
 	tonemap.view_count = rb->get_view_count();
 
-	if (rb->get_use_debanding()) {
+	if (rb->get_use_debanding() && !using_hdr) {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_8_BIT;
 	} else {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;

@@ -258,6 +258,10 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	if (!wd.im_active) {
+		return NSMakeRect(0, 0, 0, 0);
+	}
+
 	const NSRect content_rect = [wd.window_view frame];
 	const float scale = ds->screen_get_max_scale();
 	NSRect point_in_window_rect = NSMakeRect(wd.im_position.x / scale, content_rect.size.height - (wd.im_position.y / scale) - 1, 0, 0);

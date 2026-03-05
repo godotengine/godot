@@ -1343,6 +1343,8 @@ void ScriptEditorDebugger::stop() {
 	visual_profiler->set_enabled(false);
 	visual_profiler->set_profiling(false);
 
+	audio_muted_on_break = false;
+
 	inspector->edit(nullptr);
 	_update_buttons_state();
 }

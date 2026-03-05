@@ -126,6 +126,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool depth_bounds_supported = false;
 	};
 
+	struct SamplerCapabilities {
+		bool aniso_filter_with_point_mip_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
@@ -141,6 +145,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
+	SamplerCapabilities sampler_capabilities;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
