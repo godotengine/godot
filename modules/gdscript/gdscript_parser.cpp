@@ -953,6 +953,10 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 		} else {
 			n_class->fqcn = n_class->identifier->name;
 		}
+
+		/// [Monarch] inner classes have C++ style generic support, completely different from the outer classes' generics,
+		/// and can shadow them.
+		parse_generic_parameters();
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {

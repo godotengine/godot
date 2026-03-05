@@ -606,6 +606,34 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 		seen_generic_params.insert(this_name);
 
+		/// [Monarch] warn if this param shadows a generic param declared in an outer class.
+		/// inner class generics are fully independent, shadows are allowed but warned against
+#ifdef DEBUG_ENABLED
+		{
+			bool found_shadow = false;
+			const GDScriptParser::ClassNode* outer = p_class->outer;
+			while (outer != nullptr && !found_shadow) {
+				for (const GDScriptParser::IdentifierNode* outer_param : outer->generic_parameters) {
+					if (outer_param->name == this_name) {
+						const String outer_name = outer->identifier ? String(outer->identifier->name) : String("<anonymous>");
+						parser->push_warning(
+							param,
+							GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS,
+							"generic parameter",
+							this_name,
+							"generic parameter",
+							itos(outer_param->start_line),
+							outer_name
+						);
+						found_shadow = true;
+						break;
+					}
+				}
+				outer = outer->outer;
+			}
+		}
+#endif // DEBUG_ENABLED
+
 		if (GDScriptParser::get_builtin_type(this_name) < Variant::VARIANT_MAX) {
 			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides a built-in type.)", this_name), param);
 		} else if (class_exists(this_name)) {

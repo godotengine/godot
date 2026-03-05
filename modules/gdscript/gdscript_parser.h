@@ -830,6 +830,7 @@ public:
 
 		/// [Monarch] Reginleif addition. Checks if the given identifier is recognised as a generic
 		/// parameter for this class's scope.
+		/// do NOT access the outer class' generics! we are going with fully independent c++ style generics!
 		bool is_generic_parameter(const IdentifierNode* p_identifier) const {
 			for (IdentifierNode* generic_id : generic_parameters) {
 				if (generic_id->name == p_identifier->name) {
