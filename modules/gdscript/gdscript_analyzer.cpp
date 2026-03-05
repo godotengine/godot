@@ -6602,7 +6602,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		}
 	}
 #endif // DEBUG_ENABLED
-	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node);
+	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node, parser->current_class);
 }
 
 // NOTE:`is_type_compatible()` considers typed arrays/dictionaries compatible with untyped ones (but the operation is unsafe).
@@ -6657,6 +6657,9 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 
 	/// case 3, target is generic, source is concrete, should always be fine
 	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+		if (is_generic_in_open_context(p_target, p_class)) {
+			return false;
+		}
 		return true;
 	}
 
@@ -6785,12 +6788,12 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			while (src_class != nullptr) {
 				if (src_class == p_target.class_type || src_class->fqcn == p_target.class_type->fqcn) {
 
-					/// if assigning to something that has generic parameters...
+					/// [Monarch] if assigning to something that has generic parameters...
 					if(p_target.class_type->has_generic_parameters()) {
 
 						/// if one side is unbound, reject that shit
 						if(p_target.generic_type_bindings.is_empty() || p_source.generic_type_bindings.is_empty()) {
-							return false;
+							return true;
 						}
 
 						/// if both sides are bound, then cool, check binding matches, then have another go
@@ -6801,7 +6804,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 								return false;
 							}
 
-							if(!check_type_compatibility(*target_bound, *source_bound, p_allow_implicit_conversion)) {
+							if(!check_type_compatibility(*target_bound, *source_bound, p_allow_implicit_conversion, p_source_node, p_class)) {
 								return false;
 							}
 						}
