@@ -31,14 +31,13 @@
 #include "texture_layered_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
-
-#include "core/io/file_access.h"
-#include "core/io/resource_loader.h"
 
 // Shader sources.
 
