@@ -552,15 +552,21 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 	if (button_idx == MouseButton::WHEEL_DOWN) {
 		// Zooming.
-		graph_zoom = MAX(-0.05 + graph_zoom, 0);
-		_update_plot();
-	} else if (button_idx == MouseButton::WHEEL_UP) {
-		if (graph_zoom == 0) {
-			zoom_center = me->get_position().x;
-			zoom_center = zoom_center * frame_metrics.size() / graph->get_size().width;
+		float new_zoom = MAX(-0.05 + graph_zoom, 0);
+		if (new_zoom != graph_zoom) {
+			graph_zoom = new_zoom;
+			_update_plot();
 		}
-		graph_zoom = MIN(0.05 + graph_zoom, 2);
-		_update_plot();
+	} else if (button_idx == MouseButton::WHEEL_UP) {
+		float new_zoom = MIN(0.05 + graph_zoom, 2);
+		if (new_zoom != graph_zoom) {
+			if (graph_zoom == 0) {
+				zoom_center = me->get_position().x;
+				zoom_center = zoom_center * frame_metrics.size() / graph->get_size().width;
+			}
+			graph_zoom = new_zoom;
+			_update_plot();
+		}
 	}
 
 	graph->queue_redraw();
