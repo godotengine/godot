@@ -1,0 +1,5 @@
+GH-117080
+---------
+Validate extension JSON: Error: Field 'classes/EditorDock/methods/_update_layout/arguments': size changed value in new API, from 1 to 2.
+
+Add an extra argument for the slot. Compatibility method registered.
