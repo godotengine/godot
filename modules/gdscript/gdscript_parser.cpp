@@ -3930,8 +3930,6 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 				complete_extents(type);
 				type = nullptr;
 				break;
-			} else if (container_type->container_types.size() > 0) {
-				push_error("Nested typed collections are not supported.");
 			} else {
 				type->container_types.append(container_type);
 			}
