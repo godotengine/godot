@@ -9,6 +9,7 @@ env:
     dev_mode=yes
     module_text_server_fb_enabled=yes
     debug_symbols=no
+    module_mono_enabled=yes
     "angle_libs=${{ github.workspace }}/"
     "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
   SCONS_CACHE_MSVC_CONFIG: true
