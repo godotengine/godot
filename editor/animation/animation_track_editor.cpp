@@ -64,6 +64,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_stream.h"
 

@@ -50,6 +50,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/scene_tree.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"

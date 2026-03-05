@@ -39,7 +39,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
@@ -172,12 +171,12 @@ void SceneTree::node_renamed(Node *p_node) {
 	emit_signal(node_renamed_name, p_node);
 }
 
-SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
+SceneTreeGroup *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
-		E = group_map.insert(p_group, Group());
+		E = group_map.insert(p_group, SceneTreeGroup());
 	}
 
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
@@ -189,7 +188,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
 	E->value.nodes.erase(p_node);
@@ -338,7 +337,7 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = false;
 }
 
-void SceneTree::_update_group_order(Group &g) {
+void SceneTree::_update_group_order(SceneTreeGroup &g) {
 	if (!g.changed) {
 		return;
 	}
@@ -361,11 +360,11 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -452,11 +451,11 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	Vector<Node *> nodes_copy;
 	{
 		_THREAD_SAFE_METHOD_
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -515,11 +514,11 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -1426,11 +1425,11 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -1549,7 +1548,7 @@ int64_t SceneTree::get_frame() const {
 TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	TypedArray<Node> ret;
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return ret;
 	}
@@ -1577,7 +1576,7 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 
 int SceneTree::get_node_count_in_group(const StringName &p_group) const {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::ConstIterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::ConstIterator E = group_map.find(p_group);
 	if (!E) {
 		return 0;
 	}
@@ -1587,7 +1586,7 @@ int SceneTree::get_node_count_in_group(const StringName &p_group) const {
 
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return nullptr; // No group.
 	}
@@ -1603,7 +1602,7 @@ Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 
 Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return {};
 	}

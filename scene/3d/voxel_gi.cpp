@@ -36,6 +36,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/voxelizer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/camera_attributes.h"
 #include "servers/rendering/rendering_server.h"
 

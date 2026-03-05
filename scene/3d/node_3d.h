@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/world_3d.h"
 
 class Node3DGizmo : public RefCounted {
@@ -233,7 +232,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
+		NOTIFICATION_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,
 		NOTIFICATION_VISIBILITY_CHANGED = 43,
