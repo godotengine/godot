@@ -30,7 +30,6 @@
 
 #include "editor_title_bar.h"
 
-#include "core/math/math_funcs.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
