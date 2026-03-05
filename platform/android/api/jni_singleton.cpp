@@ -68,6 +68,10 @@ void JNISingleton::add_method(const StringName &p_name, const Vector<Variant::Ty
 }
 
 void JNISingleton::add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
+	if (ClassDB::has_signal(get_class_static(), p_name)) {
+		WARN_PRINT(vformat("JNISingleton already has signal '%s'. Skipping.", p_name));
+		return;
+	}
 	MethodInfo mi;
 	mi.name = p_name;
 	for (int i = 0; i < p_args.size(); i++) {
