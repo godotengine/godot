@@ -3743,6 +3743,14 @@ void TileMapLayerEditor::_notification(int p_what) {
 				toggle_highlight_selected_layer_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/highlight_selected_layer"));
 			}
 		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			// Simulate mouse released event to stop drawing when editor focus exits.
+			Ref<InputEventMouseButton> release;
+			release.instantiate();
+			release->set_button_index(MouseButton::LEFT);
+			forward_canvas_gui_input(release);
+		} break;
 	}
 }
 
