@@ -1347,7 +1347,8 @@ void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const S
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
-	append(GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	append(GDScriptFunction::ADDR_SELF);
+	function->_self_used = true;
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
 	append(p_arguments.size());
@@ -1361,6 +1362,7 @@ void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, c
 		append(p_arguments[i]);
 	}
 	append(GDScriptFunction::ADDR_SELF);
+	function->_self_used = true;
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
 	append(p_arguments.size());

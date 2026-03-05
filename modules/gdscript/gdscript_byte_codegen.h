@@ -392,6 +392,12 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void append(const Address &p_address) {
+		if (p_address.mode == GDScriptCodeGenerator::Address::SELF) {
+			function->_self_used = true;
+		}
+		if (p_address.mode == GDScriptCodeGenerator::Address::CLASS) {
+			function->_class_used = true;
+		}
 		opcodes.push_back(address_of(p_address));
 	}
 
