@@ -1107,7 +1107,7 @@ void CSGPrimitive3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flip_uv_mode", PROPERTY_HINT_ENUM, "FlipX,FlipY"), "set_flip_uv_mode", "get_flip_uv_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flip_uv_mode", PROPERTY_HINT_ENUM, "FlipX,FlipY,FlipXAndY"), "set_flip_uv_mode", "get_flip_uv_mode");
 
 	BIND_ENUM_CONSTANT(UV_MODE_FLIP_X);
 	BIND_ENUM_CONSTANT(UV_MODE_FLIP_Y);
@@ -1701,17 +1701,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[34] = Vector2(1, 0);
 		uvsw[35] = Vector2(0, 0);
 
-		float num_rotations = get_uv_floor_rotation();
-		if (num_rotations > 0.0) {
-			float angle_ninety = Math::deg_to_rad(num_rotations);
-			for (int uv_top_i = 6; uv_top_i < 12; uv_top_i++) {
-				uvsw[uv_top_i] = uvsw[uv_top_i].rotated(angle_ninety);
-			}
-			for (int uv_top_i = 24; uv_top_i < 30; uv_top_i++) {
-				uvsw[uv_top_i] = uvsw[uv_top_i].rotated(angle_ninety);
-			}
-		}
-
 		Vector2 shifts[6] = {
 			Vector2(uv_offset.z, uv_offset.y),
 			Vector2(uv_offset.x, uv_offset.z),
@@ -1720,6 +1709,36 @@ CSGBrush *CSGBox3D::_build_brush() {
 			Vector2(-uv_offset.x, uv_offset.z),
 			Vector2(uv_offset.x, uv_offset.y),
 		};
+
+		// This code needs more work in the future but it should be enough for now. I can't think of a way to make `uv_offset` and scaling work while keeping non-90º rotations.
+		float num_rotations = get_uv_floor_rotation();
+		if (num_rotations > 0.0) {
+			// Using methods of Vector2 is cleaner than the alternative and we are only affecting like 12 vertices anyways.
+			float floor_rotation_rad = Math::deg_to_rad(num_rotations);
+			for (int r_i = 6; r_i < 12; r_i++) {
+				uvsw[r_i] = uvsw[r_i].rotated(floor_rotation_rad);
+			}
+			for (int r_i = 24; r_i < 30; r_i++) {
+				uvsw[r_i] = uvsw[r_i].rotated(floor_rotation_rad);
+			}
+
+			if (num_rotations == 180.0) {
+				// 180º == mirror X and Y
+				shifts[1] *= -1;
+				shifts[4] *= -1;
+			} else if (num_rotations == 90.0) {
+				// Taking a gamble here, if it's in the wrong direction all I have to do is switch them around.
+				shifts[1].x = uv_offset.z;
+				shifts[1].y = uv_offset.x;
+				shifts[4].x = uv_offset.z;
+				shifts[4].y = -uv_offset.x;
+			} else {
+				shifts[1].x = -uv_offset.z;
+				shifts[1].y = -uv_offset.x;
+				shifts[4].x = -uv_offset.z;
+				shifts[4].y = uv_offset.x;
+			}
+		}
 
 		if (scale_uv) {
 			//xy xz zy
@@ -1731,6 +1750,16 @@ CSGBrush *CSGBox3D::_build_brush() {
 				Vector2(size.x * uv_size, size.z * uv_size),
 				Vector2(size.x * uv_size, size.y * uv_size),
 			};
+
+			if (num_rotations == 90.0 || num_rotations > 181.0) {
+				// Switch X and Y.
+				float temp_x = directions[1].x;
+				directions[1].x = directions[1].y;
+				directions[1].y = temp_x;
+				temp_x = directions[4].x;
+				directions[4].x = directions[4].y;
+				directions[4].y = temp_x;
+			}
 
 			int inc_s = 0;
 			int k = 0;
@@ -1894,7 +1923,7 @@ void CSGBox3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_size", PROPERTY_HINT_RANGE, "0.0015625,4096.0,0.0015625,or_greater,exp,suffix:m"), "set_uv_size", "get_uv_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_floor_rotation", PROPERTY_HINT_RANGE, "-180.0,180.0,1.0,degrees"), "set_uv_floor_rotation", "get_uv_floor_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_floor_rotation", PROPERTY_HINT_RANGE, "0.0,270.0,90.0,degrees"), "set_uv_floor_rotation", "get_uv_floor_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_compatibility_mode"), "set_uv_compatibility_mode", "is_uv_compatibility_mode");
 	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");

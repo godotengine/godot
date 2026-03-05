@@ -300,7 +300,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	Vector3 size = Vector3(1, 1, 1);
 	bool scale_uv = true;
 	Vector3 uv_offset;
-	float uv_floor_rotation;
+	float uv_floor_rotation = 0.0;
 	float uv_size = 1.0;
 	bool uv_compatibility_mode = false;
 
