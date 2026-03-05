@@ -550,6 +550,7 @@ private:
 	RID accessibility_scroll_element;
 	RID header_ci; // Separate canvas item for drawing column headers
 	RID content_ci; // Separate canvas item for drawing tree rows
+	RID custom_ci; // Separate canvas item for drawing custom content
 
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
@@ -891,6 +892,8 @@ public:
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;
+
+	RID get_custom_canvas_item() const { return custom_ci; }
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;

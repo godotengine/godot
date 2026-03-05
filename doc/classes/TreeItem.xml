@@ -664,6 +664,7 @@
 			<description>
 				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback. The cell has to be in [constant CELL_MODE_CUSTOM] to use this feature.
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+				To draw custom content over the native style, please use [method Tree.get_custom_canvas_item].
 			</description>
 		</method>
 		<method name="set_custom_font">

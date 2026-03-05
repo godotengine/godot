@@ -50,6 +50,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "servers/rendering/rendering_server.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 
@@ -1039,8 +1040,18 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.33), false, 2.0);
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.17), true);
+	RID ci = item->get_tree()->get_custom_canvas_item();
+
+	Vector<Vector2> points;
+	points.resize(5);
+	points.write[0] = match_rect.position;
+	points.write[1] = match_rect.position + Vector2(match_rect.size.x, 0);
+	points.write[2] = match_rect.position + match_rect.size;
+	points.write[3] = match_rect.position + Vector2(0, match_rect.size.y);
+	points.write[4] = match_rect.position;
+	Vector<Color> colors = { get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.33) };
+	RenderingServer::get_singleton()->canvas_item_add_polyline(ci, points, colors, 2.0);
+	RenderingServer::get_singleton()->canvas_item_add_rect(ci, match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.17));
 
 	// Text is drawn by Tree already.
 }
