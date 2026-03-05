@@ -98,6 +98,7 @@ void EditorProfiler::clear() {
 	frame_metrics.resize(metric_size);
 	total_metrics = 0;
 	last_metric = -1;
+	zoom_center = -1;
 	variables->clear();
 	plot_sigs.clear();
 	plot_sigs.insert("physics_frame_time");
