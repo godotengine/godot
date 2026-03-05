@@ -30,9 +30,11 @@
 
 #include "menu_button.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {

@@ -31,12 +31,14 @@
 #include "scroll_container.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;

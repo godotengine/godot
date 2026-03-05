@@ -58,9 +58,10 @@
 #import "core/input/input_event.h"
 #import "core/io/marshalls.h"
 #import "core/os/main_loop.h"
+#import "core/os/os.h"
 #import "servers/display/native_menu.h"
 
-DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
 
 	r_error = OK; // default to OK
@@ -139,7 +140,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		if (err != OK) {
 			ERR_FAIL_MSG("Could not create OpenGL context.");
 		}
-		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
 #endif
 
@@ -186,8 +187,8 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
-		rendering_device->screen_create(MAIN_WINDOW_ID);
+		rendering_device->initialize(rendering_context, DisplayServerEnums::MAIN_WINDOW_ID);
+		rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -197,7 +198,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	layer.contentsScale = scale;
 	layer.magnificationFilter = kCAFilterNearest;
 	layer.minificationFilter = kCAFilterNearest;
-	transparent = ((p_flags & WINDOW_FLAG_TRANSPARENT_BIT) == WINDOW_FLAG_TRANSPARENT_BIT);
+	transparent = ((p_flags & DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT) == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT);
 	layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
 	// AppKit frames, bounds and positions are always in points.
@@ -243,7 +244,7 @@ DisplayServerMacOSEmbedded::~DisplayServerMacOSEmbedded() {
 #endif
 }
 
-DisplayServer *DisplayServerMacOSEmbedded::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t /* p_parent_window */, Error &r_error) {
+DisplayServer *DisplayServerMacOSEmbedded::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t /* p_parent_window */, Error &r_error) {
 	return memnew(DisplayServerMacOSEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 }
 
@@ -269,7 +270,7 @@ void DisplayServerMacOSEmbedded::register_embedded_driver() {
 
 // MARK: - Mouse
 
-void DisplayServerMacOSEmbedded::_mouse_apply_mode(MouseMode p_prev_mode, MouseMode p_new_mode) {
+void DisplayServerMacOSEmbedded::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) {
 	EngineDebugger::get_singleton()->send_message("game_view:mouse_set_mode", { p_new_mode });
 }
 
@@ -323,22 +324,22 @@ BitField<MouseButtonMask> DisplayServerMacOSEmbedded::mouse_get_button_state() c
 
 // MARK: Events
 
-void DisplayServerMacOSEmbedded::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	window_resize_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerMacOSEmbedded::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	window_event_callbacks[p_window] = p_callable;
 }
-void DisplayServerMacOSEmbedded::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_event_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerMacOSEmbedded::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	input_text_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerMacOSEmbedded::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_drop_files_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
@@ -349,7 +350,7 @@ void DisplayServerMacOSEmbedded::process_events() {
 
 void DisplayServerMacOSEmbedded::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 	Ref<InputEventFromWindow> event_from_window = p_event;
-	WindowID window_id = INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	if (event_from_window.is_valid()) {
 		window_id = event_from_window->get_window_id();
 	}
@@ -357,27 +358,27 @@ void DisplayServerMacOSEmbedded::_dispatch_input_events(const Ref<InputEvent> &p
 	ds->send_input_event(p_event, window_id);
 }
 
-void DisplayServerMacOSEmbedded::send_input_event(const Ref<InputEvent> &p_event, WindowID p_id) const {
-	if (p_id != INVALID_WINDOW_ID) {
+void DisplayServerMacOSEmbedded::send_input_event(const Ref<InputEvent> &p_event, DisplayServerEnums::WindowID p_id) const {
+	if (p_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		const Callable *cb = input_event_callbacks.getptr(p_id);
 		if (cb) {
 			_window_callback(*cb, p_event);
 		}
 	} else {
-		for (const KeyValue<WindowID, Callable> &E : input_event_callbacks) {
+		for (const KeyValue<DisplayServerEnums::WindowID, Callable> &E : input_event_callbacks) {
 			_window_callback(E.value, p_event);
 		}
 	}
 }
 
-void DisplayServerMacOSEmbedded::send_input_text(const String &p_text, WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_input_text(const String &p_text, DisplayServerEnums::WindowID p_id) const {
 	const Callable *cb = input_text_callbacks.getptr(p_id);
 	if (cb) {
 		_window_callback(*cb, p_text);
 	}
 }
 
-void DisplayServerMacOSEmbedded::send_window_event(DisplayServer::WindowEvent p_event, WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_window_event(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id) const {
 	const Callable *cb = window_event_callbacks.getptr(p_id);
 	if (cb) {
 		_window_callback(*cb, int(p_event));
@@ -392,30 +393,30 @@ void DisplayServerMacOSEmbedded::_window_callback(const Callable &p_callable, co
 
 // MARK: -
 
-bool DisplayServerMacOSEmbedded::has_feature(Feature p_feature) const {
+bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
-		case FEATURE_GLOBAL_MENU: {
+		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		case FEATURE_CURSOR_SHAPE:
-		case FEATURE_IME:
-		case FEATURE_CUSTOM_CURSOR_SHAPE:
-			// case FEATURE_HIDPI:
-			// case FEATURE_ICON:
-			// case FEATURE_MOUSE:
-		case FEATURE_HDR_OUTPUT:
-		case FEATURE_MOUSE_WARP:
-			// case FEATURE_NATIVE_DIALOG:
-			// case FEATURE_NATIVE_ICON:
-			// case FEATURE_WINDOW_TRANSPARENCY:
-		case FEATURE_CLIPBOARD:
-			// case FEATURE_KEEP_SCREEN_ON:
-			// case FEATURE_ORIENTATION:
-			// case FEATURE_VIRTUAL_KEYBOARD:
-		case FEATURE_TEXT_TO_SPEECH:
-			// case FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
+		case DisplayServerEnums::FEATURE_IME:
+		case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
+			// case DisplayServerEnums::FEATURE_HIDPI:
+			// case DisplayServerEnums::FEATURE_ICON:
+			// case DisplayServerEnums::FEATURE_MOUSE:
+		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
+		case DisplayServerEnums::FEATURE_MOUSE_WARP:
+			// case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+			// case DisplayServerEnums::FEATURE_NATIVE_ICON:
+			// case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+			// case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
+			// case DisplayServerEnums::FEATURE_ORIENTATION:
+			// case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
+		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
+			// case DisplayServerEnums::FEATURE_TOUCHSCREEN:
 			return true;
 		default:
 			return false;
@@ -447,7 +448,7 @@ Size2i DisplayServerMacOSEmbedded::screen_get_size(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
 
-	return window_get_size(MAIN_WINDOW_ID);
+	return window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 }
 
 Rect2i DisplayServerMacOSEmbedded::screen_get_usable_rect(int p_screen) const {
@@ -474,10 +475,10 @@ float DisplayServerMacOSEmbedded::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	switch (p_screen) {
-		case SCREEN_WITH_MOUSE_FOCUS:
-		case SCREEN_WITH_KEYBOARD_FOCUS:
-		case SCREEN_PRIMARY:
-		case SCREEN_OF_MAIN_WINDOW:
+		case DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS:
+		case DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS:
+		case DisplayServerEnums::SCREEN_PRIMARY:
+		case DisplayServerEnums::SCREEN_OF_MAIN_WINDOW:
 		case 0:
 			return state.screen_window_scale;
 		default:
@@ -485,76 +486,76 @@ float DisplayServerMacOSEmbedded::screen_get_scale(int p_screen) const {
 	}
 }
 
-Vector<DisplayServer::WindowID> DisplayServerMacOSEmbedded::get_window_list() const {
-	Vector<DisplayServer::WindowID> list;
-	list.push_back(MAIN_WINDOW_ID);
+Vector<DisplayServerEnums::WindowID> DisplayServerMacOSEmbedded::get_window_list() const {
+	Vector<DisplayServerEnums::WindowID> list;
+	list.push_back(DisplayServerEnums::MAIN_WINDOW_ID);
 	return list;
 }
 
-DisplayServer::WindowID DisplayServerMacOSEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
-	return MAIN_WINDOW_ID;
+DisplayServerEnums::WindowID DisplayServerMacOSEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
+	return DisplayServerEnums::MAIN_WINDOW_ID;
 }
 
-void DisplayServerMacOSEmbedded::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
 	window_attached_instance_id[p_window] = p_instance;
 }
 
-ObjectID DisplayServerMacOSEmbedded::window_get_attached_instance_id(WindowID p_window) const {
+ObjectID DisplayServerMacOSEmbedded::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
 	return window_attached_instance_id[p_window];
 }
 
-void DisplayServerMacOSEmbedded::window_set_title(const String &p_title, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-int DisplayServerMacOSEmbedded::window_get_current_screen(WindowID p_window) const {
+int DisplayServerMacOSEmbedded::window_get_current_screen(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, DisplayServerEnums::INVALID_SCREEN);
 
 	return 0;
 }
 
-void DisplayServerMacOSEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-Point2i DisplayServerMacOSEmbedded::window_get_position(WindowID p_window) const {
+Point2i DisplayServerMacOSEmbedded::window_get_position(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-Point2i DisplayServerMacOSEmbedded::window_get_position_with_decorations(WindowID p_window) const {
+Point2i DisplayServerMacOSEmbedded::window_get_position_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return Point2i();
 }
 
-void DisplayServerMacOSEmbedded::window_set_position(const Point2i &p_position, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
 
-void DisplayServerMacOSEmbedded::window_set_transient(WindowID p_window, WindowID p_parent) {
+void DisplayServerMacOSEmbedded::window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) {
 	// Not supported
 }
 
-void DisplayServerMacOSEmbedded::window_set_max_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-Size2i DisplayServerMacOSEmbedded::window_get_max_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_max_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerMacOSEmbedded::window_set_min_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_min_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-Size2i DisplayServerMacOSEmbedded::window_get_min_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_min_size(DisplayServerEnums::WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerMacOSEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	print_line("Embedded window can't be resized.");
 }
 
-void DisplayServerMacOSEmbedded::_window_set_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::_window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
@@ -583,7 +584,7 @@ void DisplayServerMacOSEmbedded::_window_set_size(const Size2i p_size, WindowID 
 	}
 }
 
-Size2i DisplayServerMacOSEmbedded::window_get_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_size(DisplayServerEnums::WindowID p_window) const {
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		RenderingContextDriver::SurfaceID surface = rendering_context->surface_get_from_window(p_window);
@@ -601,53 +602,53 @@ Size2i DisplayServerMacOSEmbedded::window_get_size(WindowID p_window) const {
 	return Size2i();
 }
 
-Size2i DisplayServerMacOSEmbedded::window_get_size_with_decorations(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_size_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
-void DisplayServerMacOSEmbedded::window_set_mode(WindowMode p_mode, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-DisplayServer::WindowMode DisplayServerMacOSEmbedded::window_get_mode(WindowID p_window) const {
-	return WindowMode::WINDOW_MODE_WINDOWED;
+DisplayServerEnums::WindowMode DisplayServerMacOSEmbedded::window_get_mode(DisplayServerEnums::WindowID p_window) const {
+	return DisplayServerEnums::WindowMode::WINDOW_MODE_WINDOWED;
 }
 
-bool DisplayServerMacOSEmbedded::window_is_maximize_allowed(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_is_maximize_allowed(DisplayServerEnums::WindowID p_window) const {
 	return false;
 }
 
-void DisplayServerMacOSEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+void DisplayServerMacOSEmbedded::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
+	if (p_flag == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
 		transparent = p_enabled;
 		layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	}
 }
 
-bool DisplayServerMacOSEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
-	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+bool DisplayServerMacOSEmbedded::window_get_flag(DisplayServerEnums::WindowFlags p_flag, DisplayServerEnums::WindowID p_window) const {
+	if (p_flag == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
 		return transparent;
 	}
 	return false;
 }
 
-void DisplayServerMacOSEmbedded::window_request_attention(WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_request_attention(DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-void DisplayServerMacOSEmbedded::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_taskbar_progress_value(float p_value, DisplayServerEnums::WindowID p_window) {
 	// Not supported.
 }
 
-void DisplayServerMacOSEmbedded::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_taskbar_progress_state(DisplayServerEnums::ProgressState p_state, DisplayServerEnums::WindowID p_window) {
 	// Not supported.
 }
 
-void DisplayServerMacOSEmbedded::window_move_to_foreground(WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_move_to_foreground(DisplayServerEnums::WindowID p_window) {
 	// Not supported
 }
 
-bool DisplayServerMacOSEmbedded::window_is_focused(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_is_focused(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
@@ -655,7 +656,7 @@ float DisplayServerMacOSEmbedded::screen_get_max_scale() const {
 	return state.screen_max_scale;
 }
 
-bool DisplayServerMacOSEmbedded::window_can_draw(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_can_draw(DisplayServerEnums::WindowID p_window) const {
 	return true;
 }
 
@@ -663,11 +664,11 @@ bool DisplayServerMacOSEmbedded::can_any_window_draw() const {
 	return true;
 }
 
-void DisplayServerMacOSEmbedded::window_set_ime_active(const bool p_active, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window) {
 	EngineDebugger::get_singleton()->send_message("game_view:window_set_ime_active", { p_active });
 }
 
-void DisplayServerMacOSEmbedded::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window) {
 	if (p_pos == ime_last_position) {
 		return;
 	}
@@ -675,15 +676,15 @@ void DisplayServerMacOSEmbedded::window_set_ime_position(const Point2i &p_pos, W
 	ime_last_position = p_pos;
 }
 
-DisplayServerMacOSBase::HDROutput &DisplayServerMacOSEmbedded::_get_hdr_output(WindowID p_window) {
+DisplayServerMacOSBase::HDROutput &DisplayServerMacOSEmbedded::_get_hdr_output(DisplayServerEnums::WindowID p_window) {
 	return hdr_output;
 }
 
-const DisplayServerMacOSBase::HDROutput &DisplayServerMacOSEmbedded::_get_hdr_output(WindowID p_window) const {
+const DisplayServerMacOSBase::HDROutput &DisplayServerMacOSEmbedded::_get_hdr_output(DisplayServerEnums::WindowID p_window) const {
 	return hdr_output;
 }
 
-void DisplayServerMacOSEmbedded::window_get_edr_values(WindowID p_window, CGFloat *r_max_potential_edr_value, CGFloat *r_max_edr_value) const {
+void DisplayServerMacOSEmbedded::window_get_edr_values(DisplayServerEnums::WindowID p_window, CGFloat *r_max_potential_edr_value, CGFloat *r_max_edr_value) const {
 	_THREAD_SAFE_METHOD_
 
 #define SET_VAL(v, val) \
@@ -704,7 +705,7 @@ void DisplayServerMacOSEmbedded::window_get_edr_values(WindowID p_window, CGFloa
 
 void DisplayServerMacOSEmbedded::update_screen_parameters() {
 	if (hdr_output.requested) {
-		_update_hdr_output(MAIN_WINDOW_ID, hdr_output);
+		_update_hdr_output(DisplayServerEnums::MAIN_WINDOW_ID, hdr_output);
 	}
 }
 
@@ -725,14 +726,14 @@ void DisplayServerMacOSEmbedded::set_state(const DisplayServerMacOSEmbeddedState
 #endif
 	}
 	if (hdr_output.requested) {
-		_update_hdr_output(MAIN_WINDOW_ID, hdr_output);
+		_update_hdr_output(DisplayServerEnums::MAIN_WINDOW_ID, hdr_output);
 	}
 }
 
-void DisplayServerMacOSEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
 #endif
 
@@ -743,11 +744,11 @@ void DisplayServerMacOSEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode 
 #endif
 }
 
-DisplayServer::VSyncMode DisplayServerMacOSEmbedded::window_get_vsync_mode(WindowID p_window) const {
+DisplayServerEnums::VSyncMode DisplayServerMacOSEmbedded::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		return (gl_manager->is_vsync_enabled() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+		return (gl_manager->is_vsync_enabled() ? DisplayServerEnums::VSyncMode::VSYNC_ENABLED : DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
 #if defined(RD_ENABLED)
@@ -755,15 +756,15 @@ DisplayServer::VSyncMode DisplayServerMacOSEmbedded::window_get_vsync_mode(Windo
 		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
-	return DisplayServer::VSYNC_ENABLED;
+	return DisplayServerEnums::VSYNC_ENABLED;
 }
 
-void DisplayServerMacOSEmbedded::cursor_set_shape(CursorShape p_shape) {
+void DisplayServerMacOSEmbedded::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
 	cursor_shape = p_shape;
 	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_shape", { p_shape });
 }
 
-void DisplayServerMacOSEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerMacOSEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
 	PackedByteArray data;
 	if (p_cursor.is_valid()) {
 		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);

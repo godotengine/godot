@@ -30,6 +30,7 @@
 
 #include "container.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/display/accessibility_server.h"
 
@@ -93,6 +94,7 @@ void Container::_sort_children() {
 	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringName(sort_children));
 	pending_sort = false;
+	layout_pending_finish();
 }
 
 void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
@@ -139,6 +141,7 @@ void Container::queue_sort() {
 		return;
 	}
 
+	layout_pending_start();
 	callable_mp(this, &Container::_sort_children).call_deferred();
 	pending_sort = true;
 }

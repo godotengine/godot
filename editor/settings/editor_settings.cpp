@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/input/input_map.h"
@@ -40,6 +41,7 @@
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -60,6 +62,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
+#include "servers/display/display_server.h"
 
 // PRIVATE METHODS
 
@@ -562,7 +565,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
-	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
@@ -978,6 +980,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
+	_initial_set("editors/3d/freelook/freelook_invert_y_axis", false);
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
 	// 3D: Manipulator
@@ -1255,6 +1258,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
+	erase("interface/editors/show_scene_tree_root_selection");
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
@@ -1947,12 +1951,12 @@ String EditorSettings::get_editor_layouts_config() const {
 float EditorSettings::get_auto_display_scale() {
 #ifdef LINUXBSD_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServer::SCREEN_OF_MAIN_WINDOW);
+		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 
 		if (DisplayServer::get_singleton()->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
 			// If we have a single screen or the screen of the window is fractional, all
 			// bets are off. At this point, let's just return the current's window scale,
-			// which is special-cased to the scale of `SCREEN_OF_MAIN_WINDOW`.
+			// which is special-cased to the scale of `DisplayServerEnums::SCREEN_OF_MAIN_WINDOW`.
 			return main_window_scale;
 		}
 

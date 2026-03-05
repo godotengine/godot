@@ -37,10 +37,12 @@
 #import "godot_view_apple_embedded.h"
 #import "godot_view_controller.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
 #ifdef SDL_ENABLED
@@ -761,7 +763,7 @@ void OS_AppleEmbedded::on_focus_out() {
 		is_focused = false;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -779,7 +781,7 @@ void OS_AppleEmbedded::on_focus_in() {
 		is_focused = true;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {

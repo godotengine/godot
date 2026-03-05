@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/voxelizer.h"

@@ -30,7 +30,9 @@
 
 #include "editor_run_bar.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -479,11 +481,11 @@ Error EditorRunBar::start_native_device(int p_device_id) const {
 	return run_native->start_run_native(p_device_id);
 }
 
-OS::ProcessID EditorRunBar::has_child_process(OS::ProcessID p_pid) const {
+ProcessID EditorRunBar::has_child_process(ProcessID p_pid) const {
 	return editor_run.has_child_process(p_pid);
 }
 
-void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
+void EditorRunBar::stop_child_process(ProcessID p_pid) {
 	if (!has_child_process(p_pid)) {
 		return;
 	}
@@ -494,7 +496,7 @@ void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
 	}
 }
 
-OS::ProcessID EditorRunBar::get_current_process() const {
+ProcessID EditorRunBar::get_current_process() const {
 	return editor_run.get_current_process();
 }
 

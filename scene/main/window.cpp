@@ -32,14 +32,18 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 
@@ -299,8 +303,8 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 //
 
-Window *Window::get_from_id(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == DisplayServer::INVALID_WINDOW_ID) {
+Window *Window::get_from_id(DisplayServerEnums::WindowID p_window_id) {
+	if (p_window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return nullptr;
 	}
 	return ObjectDB::get_instance<Window>(DisplayServer::get_singleton()->window_get_attached_instance_id(p_window_id));
@@ -352,7 +356,7 @@ void Window::set_current_screen(int p_screen) {
 	ERR_MAIN_THREAD_GUARD;
 
 	current_screen = p_screen;
-	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_current_screen(p_screen, window_id);
@@ -361,7 +365,7 @@ void Window::set_current_screen(int p_screen) {
 int Window::get_current_screen() const {
 	ERR_READ_THREAD_GUARD_V(0);
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		current_screen = DisplayServer::get_singleton()->window_get_current_screen(window_id);
 	}
 	return current_screen;
@@ -375,7 +379,7 @@ void Window::set_position(const Point2i &p_position) {
 	if (embedder) {
 		embedder->_sub_window_update(this);
 
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_position(p_position, window_id);
 	}
 }
@@ -431,7 +435,7 @@ void Window::reset_size() {
 
 Point2i Window::get_position_with_decorations() const {
 	ERR_READ_THREAD_GUARD_V(Point2i());
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 	}
 	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
@@ -449,7 +453,7 @@ Point2i Window::get_position_with_decorations() const {
 
 Size2i Window::get_size_with_decorations() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 	}
 	if (visible && is_embedded() && !get_flag(Window::FLAG_BORDERLESS)) {
@@ -534,14 +538,14 @@ void Window::set_mode(Mode p_mode) {
 	if (embedder) {
 		embedder->_sub_window_update(this);
 
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_mode(DisplayServer::WindowMode(p_mode), window_id);
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WindowMode(p_mode), window_id);
 	}
 }
 
 Window::Mode Window::get_mode() const {
 	ERR_READ_THREAD_GUARD_V(MODE_WINDOWED);
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
 	}
 	return mode;
@@ -558,9 +562,9 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
-			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
+			DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WindowFlags(p_flag), p_enabled, window_id);
 		}
 	}
 }
@@ -568,9 +572,9 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 bool Window::get_flag(Flags p_flag) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
-			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
+			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServerEnums::WindowFlags(p_flag), window_id);
 		}
 	}
 	return flags[p_flag];
@@ -585,7 +589,7 @@ void Window::set_hdr_output_requested(bool p_requested) {
 
 	hdr_output_requested = p_requested;
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
 	}
 
@@ -595,7 +599,7 @@ void Window::set_hdr_output_requested(bool p_requested) {
 bool Window::is_hdr_output_requested() const {
 	ERR_READ_THREAD_GUARD_V(false);
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		hdr_output_requested = DisplayServer::get_singleton()->window_is_hdr_output_requested(window_id);
 	}
 
@@ -605,7 +609,7 @@ bool Window::is_hdr_output_requested() const {
 float Window::get_output_max_linear_value() const {
 	ERR_READ_THREAD_GUARD_V(1.0f);
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_output_max_linear_value(window_id);
 	}
 
@@ -614,7 +618,7 @@ float Window::get_output_max_linear_value() const {
 
 bool Window::is_maximize_allowed() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_is_maximize_allowed(window_id);
 	}
 	return true;
@@ -622,21 +626,21 @@ bool Window::is_maximize_allowed() const {
 
 void Window::request_attention() {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_request_attention(window_id);
 	}
 }
 
 void Window::set_taskbar_progress_value(float p_value) {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_taskbar_progress_value(p_value, window_id);
 	}
 }
 
-void Window::set_taskbar_progress_state(DisplayServer::ProgressState p_state) {
+void Window::set_taskbar_progress_state(DisplayServerEnums::ProgressState p_state) {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_taskbar_progress_state(p_state);
 	}
 }
@@ -653,7 +657,7 @@ bool Window::can_draw() const {
 	if (!is_inside_tree()) {
 		return false;
 	}
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_can_draw(window_id);
 	}
 
@@ -662,14 +666,14 @@ bool Window::can_draw() const {
 
 void Window::set_ime_active(bool p_active) {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_ime_active(p_active, window_id);
 	}
 }
 
 void Window::set_ime_position(const Point2i &p_pos) {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_ime_position(p_pos, window_id);
 	}
 }
@@ -689,7 +693,7 @@ bool Window::is_in_edited_scene_root() const {
 }
 
 void Window::_make_window() {
-	ERR_FAIL_COND(window_id != DisplayServer::INVALID_WINDOW_ID);
+	ERR_FAIL_COND(window_id != DisplayServerEnums::INVALID_WINDOW_ID);
 
 	if (transient && transient_to_focused) {
 		_make_transient();
@@ -702,24 +706,24 @@ void Window::_make_window() {
 		}
 	}
 
-	DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	DisplayServerEnums::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
 	Rect2i window_rect;
 	if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
 		window_rect = Rect2i(position, size);
 	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_PRIMARY) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_PRIMARY) - size) / 2, size);
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_PRIMARY) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_PRIMARY) - size) / 2, size);
 	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_OF_MAIN_WINDOW) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_OF_MAIN_WINDOW) - size) / 2, size);
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) - size) / 2, size);
 	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
 		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(current_screen) + (DisplayServer::get_singleton()->screen_get_size(current_screen) - size) / 2, size);
 	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_WITH_MOUSE_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_WITH_MOUSE_FOCUS) - size) / 2, size);
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) - size) / 2, size);
 	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
+		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
 	}
 
-	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServer::INVALID_WINDOW_ID);
-	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServerEnums::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServerEnums::INVALID_WINDOW_ID);
+	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
@@ -732,7 +736,7 @@ void Window::_make_window() {
 
 	if (transient_parent) {
 		for (const Window *E : transient_children) {
-			if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			if (E->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_transient(E->window_id, transient_parent->window_id);
 			}
 		}
@@ -745,19 +749,19 @@ void Window::_make_window() {
 }
 
 void Window::_update_from_window() {
-	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
 	mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
 	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(i), window_id);
+		flags[i] = DisplayServer::get_singleton()->window_get_flag(DisplayServerEnums::WindowFlags(i), window_id);
 	}
 }
 
 void Window::_clear_window() {
-	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
 
 	bool had_focus = has_focus();
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
 
 		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
@@ -766,20 +770,20 @@ void Window::_clear_window() {
 		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
 	}
 
-	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
+	if (transient_parent && transient_parent->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	for (const Window *E : transient_children) {
-		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->window_id, DisplayServer::INVALID_WINDOW_ID);
+		if (E->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->window_id, DisplayServerEnums::INVALID_WINDOW_ID);
 		}
 	}
 
 	_update_from_window();
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
-	window_id = DisplayServer::INVALID_WINDOW_ID;
+	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	// If closing window was focused and has a parent, return focus.
 	if (had_focus && transient_parent) {
@@ -809,7 +813,7 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 		size = p_callback.size;
 		_update_viewport_size();
 	}
-	if (window_id != DisplayServer::INVALID_WINDOW_ID && !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID && !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 		Vector2 sz_out = DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 		Vector2 pos_out = DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 		Vector2 sz_in = DisplayServer::get_singleton()->window_get_size(window_id);
@@ -831,9 +835,9 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 	}
 }
 
-void Window::_event_callback(DisplayServer::WindowEvent p_event) {
+void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 	switch (p_event) {
-		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+		case DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER: {
 			if (!is_inside_tree()) {
 				return;
 			}
@@ -845,16 +849,16 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 #ifdef DEV_ENABLED
 				WARN_PRINT_ONCE("Entering a window while a window is hovered should never happen in DisplayServer.");
 #endif // DEV_ENABLED
-				root->gui.windowmanager_window_over->_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_EXIT);
+				root->gui.windowmanager_window_over->_event_callback(DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			root->gui.windowmanager_window_over = this;
 			mouse_in_window = true;
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
-				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+				DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CURSOR_ARROW); //restore cursor shape
 			}
 		} break;
-		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+		case DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT: {
 			if (!is_inside_tree()) {
 				return;
 			}
@@ -873,7 +877,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			root->gui.windowmanager_window_over = nullptr;
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 		} break;
-		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
+		case DisplayServerEnums::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			focused_window = this;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
@@ -890,7 +894,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 				}
 			}
 		} break;
-		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
+		case DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			if (focused_window == this) {
 				focused_window = nullptr;
@@ -898,26 +902,26 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
 			emit_signal(SceneStringName(focus_exited));
 		} break;
-		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
+		case DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {
 				break; //has an exclusive child, can't get events until child is closed
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
 			emit_signal(SNAME("close_requested"));
 		} break;
-		case DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST: {
+		case DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST: {
 			_propagate_window_notification(this, NOTIFICATION_WM_GO_BACK_REQUEST);
 			emit_signal(SNAME("go_back_requested"));
 		} break;
-		case DisplayServer::WINDOW_EVENT_DPI_CHANGE: {
+		case DisplayServerEnums::WINDOW_EVENT_DPI_CHANGE: {
 			_update_viewport_size();
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
 			emit_signal(SNAME("dpi_changed"));
 		} break;
-		case DisplayServer::WINDOW_EVENT_TITLEBAR_CHANGE: {
+		case DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE: {
 			emit_signal(SNAME("titlebar_changed"));
 		} break;
-		case DisplayServer::WINDOW_EVENT_FORCE_CLOSE: {
+		case DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE: {
 			hide();
 		} break;
 	}
@@ -1011,10 +1015,10 @@ void Window::set_visible(bool p_visible) {
 	Viewport *embedder_vp = get_embedder();
 
 	if (!embedder_vp) {
-		if (!p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
+		if (!p_visible && window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 			_clear_window();
 		}
-		if (p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
+		if (p_visible && window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 			_make_window();
 		}
 	} else {
@@ -1081,8 +1085,8 @@ void Window::set_visible(bool p_visible) {
 
 void Window::_clear_transient() {
 	if (transient_parent) {
-		if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
+		if (transient_parent->window_id != DisplayServerEnums::INVALID_WINDOW_ID && window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServerEnums::INVALID_WINDOW_ID);
 		}
 		transient_parent->transient_children.erase(this);
 		if (transient_parent->exclusive_child == this) {
@@ -1102,8 +1106,8 @@ void Window::_make_transient() {
 	Window *window = nullptr;
 
 	if (!is_embedded() && transient_to_focused) {
-		DisplayServer::WindowID focused_window_id = DisplayServer::get_singleton()->get_focused_window();
-		if (focused_window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServerEnums::WindowID focused_window_id = DisplayServer::get_singleton()->get_focused_window();
+		if (focused_window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 			window = Window::get_from_id(focused_window_id);
 		}
 	}
@@ -1130,7 +1134,7 @@ void Window::_make_transient() {
 	}
 
 	//see if we can make transient
-	if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (transient_parent->window_id != DisplayServerEnums::INVALID_WINDOW_ID && window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
 	}
 }
@@ -1198,7 +1202,7 @@ void Window::set_exclusive(bool p_exclusive) {
 
 	exclusive = p_exclusive;
 
-	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (!embedder && window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		if (is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
 		} else {
@@ -1235,7 +1239,7 @@ Size2i Window::_clamp_window_size(const Size2i &p_size) {
 
 void Window::_update_window_size() {
 	Size2i size_limit = get_clamped_minimum_size();
-	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID && keep_title_visible) {
+	if (!embedder && window_id != DisplayServerEnums::INVALID_WINDOW_ID && keep_title_visible) {
 		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
 		size_limit = size_limit.max(title_size);
 	}
@@ -1262,9 +1266,9 @@ void Window::_update_window_size() {
 		size = size.maxi(1);
 
 		embedder->_sub_window_update(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// When main window embedded in the editor, we can't resize the main window.
-		if (window_id != DisplayServer::MAIN_WINDOW_ID || !Engine::get_singleton()->is_embedded_in_editor()) {
+		if (window_id != DisplayServerEnums::MAIN_WINDOW_ID || !Engine::get_singleton()->is_embedded_in_editor()) {
 			if (reset_min_first && wrap_controls) {
 				// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
 				DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
@@ -1408,13 +1412,13 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
+	bool allocate = is_inside_tree() && visible && (window_id != DisplayServerEnums::INVALID_WINDOW_ID || embedder != nullptr);
 	_set_size(final_size, 1, final_size_override, allocate);
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
 	} else if (!is_embedded()) {
-		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
+		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
@@ -1444,7 +1448,7 @@ void Window::set_force_native(bool p_force_native) {
 	if (is_visible() && !is_in_edited_scene_root()) {
 		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+	if (window_id == DisplayServerEnums::MAIN_WINDOW_ID) {
 		return;
 	}
 	force_native = p_force_native;
@@ -1459,7 +1463,7 @@ bool Window::get_force_native() const {
 
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
+	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
 		return nullptr;
 	}
 
@@ -1485,7 +1489,7 @@ RID Window::get_accessibility_element() const {
 	}
 	if (get_embedder() || is_popup()) {
 		return Node::get_accessibility_element();
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return AccessibilityServer::get_singleton()->get_window_root(window_id);
 	} else {
 		return RID();
@@ -1493,7 +1497,7 @@ RID Window::get_accessibility_element() const {
 }
 
 RID Window::get_focused_accessibility_element() const {
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+	if (window_id == DisplayServerEnums::MAIN_WINDOW_ID) {
 		if (get_child_count() > 0) {
 			return get_child(0)->get_focused_accessibility_element(); // Try scene tree root node.
 		}
@@ -1534,7 +1538,7 @@ void Window::_notification(int p_what) {
 				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
 				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
 				Transform2D tr;
-				if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+				if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 					tr.set_origin(position);
 				} else {
 					Window *np = get_non_popup_window();
@@ -1629,7 +1633,7 @@ void Window::_notification(int p_what) {
 				if (!get_parent()) {
 					// It's the root window!
 					visible = true; // Always visible.
-					window_id = DisplayServer::MAIN_WINDOW_ID;
+					window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
@@ -1650,10 +1654,10 @@ void Window::_notification(int p_what) {
 					_update_window_callbacks();
 					// Simulate mouse-enter event when mouse is over the window, since OS event might arrive before setting callbacks.
 					if (!mouse_in_window && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
-						_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_ENTER);
+						_event_callback(DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER);
 					}
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
-					if (DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(FLAG_TRANSPARENT), window_id)) {
+					if (DisplayServer::get_singleton()->window_get_flag(DisplayServerEnums::WindowFlags(FLAG_TRANSPARENT), window_id)) {
 						set_transparent_background(true);
 					}
 				} else {
@@ -1668,7 +1672,7 @@ void Window::_notification(int p_what) {
 				_make_transient();
 			}
 			if (visible) {
-				if (window_id != DisplayServer::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
+				if (window_id != DisplayServerEnums::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
 					get_tree()->_accessibility_force_update();
 					_accessibility_notify_enter(this);
 					AccessibilityServer::get_singleton()->window_activation_completed(get_window_id());
@@ -1723,7 +1727,7 @@ void Window::_notification(int p_what) {
 
 			set_theme_context(nullptr, false);
 
-			if (visible && window_id != DisplayServer::MAIN_WINDOW_ID) {
+			if (visible && window_id != DisplayServerEnums::MAIN_WINDOW_ID) {
 				if (get_tree() && get_tree()->is_accessibility_supported()) {
 					_accessibility_notify_exit(this);
 					AccessibilityServer::get_singleton()->window_deactivation_completed(get_window_id());
@@ -1743,8 +1747,8 @@ void Window::_notification(int p_what) {
 				_clear_transient();
 			}
 
-			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+			if (!is_embedded() && window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+				if (window_id == DisplayServerEnums::MAIN_WINDOW_ID) {
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 					_update_window_callbacks();
 				} else {
@@ -1821,7 +1825,7 @@ void Window::set_keep_title_visible(bool p_title_visible) {
 		return;
 	}
 	keep_title_visible = p_title_visible;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		_update_window_size();
 	}
 }
@@ -1851,12 +1855,12 @@ Rect2i Window::get_nonclient_area() const {
 	return nonclient_area;
 }
 
-DisplayServer::WindowID Window::get_window_id() const {
-	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
+DisplayServerEnums::WindowID Window::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServerEnums::INVALID_WINDOW_ID);
 	if (get_embedder()) {
 #ifdef TOOLS_ENABLED
 		if (is_part_of_edited_scene()) {
-			return DisplayServer::MAIN_WINDOW_ID;
+			return DisplayServerEnums::MAIN_WINDOW_ID;
 		}
 #endif
 		return parent->get_window_id();
@@ -1867,7 +1871,7 @@ DisplayServer::WindowID Window::get_window_id() const {
 void Window::set_mouse_passthrough_polygon(const Vector<Vector2> &p_region) {
 	ERR_MAIN_THREAD_GUARD;
 	mpath = p_region;
-	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
@@ -2022,7 +2026,7 @@ Window *Window::get_parent_visible_window() const {
 void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	if (!is_embedded()) {
 		Window *window = get_parent_visible_window();
@@ -2040,7 +2044,7 @@ void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	// Consider the current size when calling with the default value.
 	Size2i expected_size = p_size == Size2i() ? size : p_size;
@@ -2050,7 +2054,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		DisplayServerEnums::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
@@ -2082,7 +2086,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	// Consider the current size when calling with the default value.
 	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
@@ -2092,7 +2096,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		DisplayServerEnums::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
@@ -2121,7 +2125,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Can't popup the main window.");
 	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
 	Rect2 parent_rect;
@@ -2129,7 +2133,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		DisplayServerEnums::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
@@ -2184,7 +2188,7 @@ void Window::_popup_base(const Rect2i &p_screen_rect) {
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
-	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS);
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
@@ -2325,14 +2329,14 @@ void Window::grab_focus() {
 	ERR_MAIN_THREAD_GUARD;
 	if (embedder) {
 		embedder->_sub_window_grab_focus(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_move_to_foreground(window_id);
 	}
 }
 
 bool Window::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_is_focused(window_id);
 	}
 	return focused;
@@ -2340,7 +2344,7 @@ bool Window::has_focus() const {
 
 bool Window::has_focus_or_active_popup() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_is_focused(window_id) || (DisplayServer::get_singleton()->window_get_active_popup() == window_id);
 	}
 	return focused;
@@ -2348,44 +2352,44 @@ bool Window::has_focus_or_active_popup() const {
 
 void Window::start_drag() {
 	ERR_MAIN_THREAD_GUARD;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_start_drag(window_id);
 	} else if (embedder) {
 		embedder->_window_start_drag(this);
 	}
 }
 
-void Window::start_resize(DisplayServer::WindowResizeEdge p_edge) {
+void Window::start_resize(DisplayServerEnums::WindowResizeEdge p_edge) {
 	ERR_MAIN_THREAD_GUARD;
 	if (get_flag(FLAG_RESIZE_DISABLED)) {
 		return;
 	}
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_start_resize(p_edge, window_id);
 	} else if (embedder) {
 		switch (p_edge) {
-			case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+			case DisplayServerEnums::WINDOW_EDGE_TOP_LEFT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP_LEFT, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_TOP: {
+			case DisplayServerEnums::WINDOW_EDGE_TOP: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+			case DisplayServerEnums::WINDOW_EDGE_TOP_RIGHT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP_RIGHT, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_LEFT: {
+			case DisplayServerEnums::WINDOW_EDGE_LEFT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_LEFT, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_RIGHT: {
+			case DisplayServerEnums::WINDOW_EDGE_RIGHT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_RIGHT, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+			case DisplayServerEnums::WINDOW_EDGE_BOTTOM_LEFT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM_LEFT, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_BOTTOM: {
+			case DisplayServerEnums::WINDOW_EDGE_BOTTOM: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM, this);
 			} break;
-			case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+			case DisplayServerEnums::WINDOW_EDGE_BOTTOM_RIGHT: {
 				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM_RIGHT, this);
 			} break;
 			default:
@@ -3195,7 +3199,7 @@ Transform2D Window::get_screen_transform_internal(bool p_absolute_position) cons
 
 Transform2D Window::get_popup_base_transform_native() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
 		return Transform2D();
 	}
 	Transform2D popup_base_transform;
@@ -3273,7 +3277,7 @@ void Window::_update_displayed_title() {
 	displayed_title = atr(title);
 
 #ifdef DEBUG_ENABLED
-	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+	if (window_id == DisplayServerEnums::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
 		// Append a suffix to the window title to denote that the project is running
 		// from a debug build (including the editor, excluding the project manager).
 		// Since this results in lower performance, this should be clearly presented
@@ -3284,7 +3288,7 @@ void Window::_update_displayed_title() {
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 		if (keep_title_visible) {
 			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
@@ -3296,7 +3300,7 @@ void Window::_update_displayed_title() {
 	}
 
 #ifdef DEBUG_ENABLED
-	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+	if (EngineDebugger::get_singleton() && window_id == DisplayServerEnums::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
 		Array arr = { displayed_title };
 		EngineDebugger::get_singleton()->send_message("window:title", arr);
 	}

@@ -30,7 +30,9 @@
 
 #include "skeleton_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 

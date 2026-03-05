@@ -33,6 +33,8 @@
 #include "unicode_ranges.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

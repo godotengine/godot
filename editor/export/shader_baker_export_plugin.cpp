@@ -30,6 +30,7 @@
 
 #include "shader_baker_export_plugin.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/string/string_builder.h"

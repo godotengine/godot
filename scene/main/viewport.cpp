@@ -33,9 +33,11 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
@@ -50,6 +52,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -419,14 +422,14 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	if (p_window == nullptr) {
 		// Release current focus.
 		if (gui.subwindow_focused) {
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 			gui.subwindow_focused = nullptr;
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		}
 
 		Window *this_window = Object::cast_to<Window>(this);
 		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			this_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		return;
@@ -439,7 +442,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
 		// Release current focus.
 		if (gui.subwindow_focused) {
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 			gui.subwindow_focused = nullptr;
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		}
@@ -457,12 +460,12 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		if (gui.subwindow_focused == p_window) {
 			return; // Nothing to do.
 		}
-		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+		gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 	} else {
 		Window *this_window = Object::cast_to<Window>(this);
 		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			this_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 	}
 
@@ -470,7 +473,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 
 	gui.subwindow_focused = p_window;
 
-	gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 
 	{ // Move to foreground.
 		index = _sub_window_find(p_window);
@@ -517,7 +520,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 		Window *new_focused_window;
 		Window *parent_visible = p_window->get_parent_visible_window();
 
-		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+		gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 
 		if (parent_visible) {
 			new_focused_window = parent_visible;
@@ -533,7 +536,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 				gui.subwindow_focused = nullptr;
 			}
 
-			new_focused_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			new_focused_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		} else {
 			gui.subwindow_focused = nullptr;
 		}
@@ -1478,7 +1481,7 @@ Vector2 Viewport::get_mouse_position() const {
 		// Rely on the most recent mouse coordinate from an InputEventMouse in push_input.
 		// In this case get_screen_transform is not applicable, because it is ambiguous.
 		return gui.last_mouse_pos;
-	} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
+	} else if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_MOUSE)) {
 		Transform2D xform = get_screen_transform_internal(true);
 		if (xform.determinant() == 0) {
 			// Screen transform can be non-invertible when the Window is minimized.
@@ -1709,7 +1712,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	r.size = r.size.ceil();
 	r.size = r.size.min(panel->get_max_size());
 
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
 			r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
@@ -1733,8 +1736,8 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		}
 	}
 
-	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
-	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
+	DisplayServerEnums::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
+	if (active_popup == DisplayServerEnums::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
 		gui.tooltip_popup->popup(r);
 	}
 	gui.tooltip_popup->child_controls_changed();
@@ -2102,7 +2105,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = gui_find_control(mpos);
 		}
 
-		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
+		DisplayServerEnums::CursorShape ds_cursor_shape = (DisplayServerEnums::CursorShape)Input::get_singleton()->get_default_cursor_shape();
 
 		if (over) {
 			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
@@ -2177,7 +2180,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
+			ds_cursor_shape = (DisplayServerEnums::CursorShape)cursor_shape;
 
 			if (over->can_process()) {
 				_gui_call_input(over, mm);
@@ -2199,14 +2202,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					gui.drag_mouse_over = nullptr;
 				}
 				if (gui.drag_mouse_over) {
-					ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
+					ds_cursor_shape = DisplayServerEnums::CURSOR_CAN_DROP;
 				} else {
-					ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
+					ds_cursor_shape = DisplayServerEnums::CURSOR_FORBIDDEN;
 				}
 			}
 		}
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !Object::cast_to<SubViewportContainer>(over)))) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !Object::cast_to<SubViewportContainer>(over)))) {
 			// If dragging is active, then set the cursor shape only from the Viewport where dragging started.
 			// If dragging is inactive, then set the cursor shape only when not over a SubViewportContainer.
 			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
@@ -2947,7 +2950,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
 				if (gui.subwindow_drag_close_rect.has_point(mb->get_position())) {
 					// Close window.
-					gui.currently_dragged_subwindow->_event_callback(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
+					gui.currently_dragged_subwindow->_event_callback(DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 				}
 			}
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
@@ -2969,8 +2972,8 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 				gui.currently_dragged_subwindow->_rect_changed_callback(new_rect);
 
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
-					DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_MOVE);
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CURSOR_MOVE);
 				}
 			}
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
@@ -3153,19 +3156,19 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 		if (mm.is_valid()) {
 			SubWindowResize resize = _sub_window_get_resize_margin(gui.subwindow_focused, mm->get_position());
 			if (resize != SUB_WINDOW_RESIZE_DISABLED) {
-				DisplayServer::CursorShape shapes[SUB_WINDOW_RESIZE_MAX] = {
-					DisplayServer::CURSOR_ARROW,
-					DisplayServer::CURSOR_FDIAGSIZE,
-					DisplayServer::CURSOR_VSIZE,
-					DisplayServer::CURSOR_BDIAGSIZE,
-					DisplayServer::CURSOR_HSIZE,
-					DisplayServer::CURSOR_HSIZE,
-					DisplayServer::CURSOR_BDIAGSIZE,
-					DisplayServer::CURSOR_VSIZE,
-					DisplayServer::CURSOR_FDIAGSIZE
+				DisplayServerEnums::CursorShape shapes[SUB_WINDOW_RESIZE_MAX] = {
+					DisplayServerEnums::CURSOR_ARROW,
+					DisplayServerEnums::CURSOR_FDIAGSIZE,
+					DisplayServerEnums::CURSOR_VSIZE,
+					DisplayServerEnums::CURSOR_BDIAGSIZE,
+					DisplayServerEnums::CURSOR_HSIZE,
+					DisplayServerEnums::CURSOR_HSIZE,
+					DisplayServerEnums::CURSOR_BDIAGSIZE,
+					DisplayServerEnums::CURSOR_VSIZE,
+					DisplayServerEnums::CURSOR_FDIAGSIZE
 				};
 
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
 					DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
 				}
 
@@ -4113,9 +4116,9 @@ Ref<Texture2D> Viewport::get_vrs_texture() const {
 	return vrs_texture;
 }
 
-DisplayServer::WindowID Viewport::get_window_id() const {
-	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
-	return DisplayServer::MAIN_WINDOW_ID;
+DisplayServerEnums::WindowID Viewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServerEnums::INVALID_WINDOW_ID);
+	return DisplayServerEnums::MAIN_WINDOW_ID;
 }
 
 Viewport *Viewport::get_parent_viewport() const {
@@ -4163,8 +4166,8 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-			for (const DisplayServer::WindowID &window_id : wl) {
+			Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServerEnums::WindowID &window_id : wl) {
 				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
@@ -5543,9 +5546,9 @@ SubViewport::ClearMode SubViewport::get_clear_mode() const {
 	return clear_mode;
 }
 
-DisplayServer::WindowID SubViewport::get_window_id() const {
-	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
-	return DisplayServer::INVALID_WINDOW_ID;
+DisplayServerEnums::WindowID SubViewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServerEnums::INVALID_WINDOW_ID);
+	return DisplayServerEnums::INVALID_WINDOW_ID;
 }
 
 Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position) const {

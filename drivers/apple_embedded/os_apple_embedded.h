@@ -144,6 +144,17 @@ public:
 
 	virtual bool request_permission(const String &p_name) override;
 	virtual Vector<String> get_granted_permissions() const override;
+
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Files");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Files");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
 };
 
 #endif // APPLE_EMBEDDED_ENABLED

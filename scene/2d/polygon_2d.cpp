@@ -30,7 +30,9 @@
 
 #include "polygon_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 #include "servers/rendering/rendering_server.h"

@@ -8303,13 +8303,13 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 
 		// Defaults to none.
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Hover over gutter.
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_POINTING_HAND);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_POINTING_HAND);
 
 		// Click on gutter.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -8325,19 +8325,19 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(15, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Unclickable gutter can be clicked.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(15, line_height * 2 + line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 2));
 		SIGNAL_CHECK("gutter_clicked", Array({ { 2, 1 } }));
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Hover past last line.
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height * 5), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Click on gutter past last line.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height * 5), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);

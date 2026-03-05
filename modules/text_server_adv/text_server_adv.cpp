@@ -30,8 +30,6 @@
 
 #include "text_server_adv.h"
 
-#include "core/object/callable_method_pointer.h"
-
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -51,7 +49,9 @@ using namespace godot;
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "scene/resources/image_texture.h"
 

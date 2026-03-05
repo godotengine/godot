@@ -30,10 +30,13 @@
 
 #include "editor_spin_slider.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"

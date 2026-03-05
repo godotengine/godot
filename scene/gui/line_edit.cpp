@@ -31,9 +31,11 @@
 #include "line_edit.h"
 #include "line_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -43,6 +45,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
@@ -97,7 +100,7 @@ void LineEdit::unedit() {
 	apply_ime();
 	set_caret_column(caret_column); // Update scroll_offset.
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 		DisplayServer::get_singleton()->virtual_keyboard_hide();
 	}
 
@@ -119,8 +122,8 @@ bool LineEdit::is_editing_kept_on_text_submit() const {
 }
 
 void LineEdit::_close_ime_window() {
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServerEnums::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
+	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
@@ -128,8 +131,8 @@ void LineEdit::_close_ime_window() {
 }
 
 void LineEdit::_update_ime_window_position() {
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServerEnums::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
+	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
@@ -462,7 +465,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (editable && is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		if (editable && is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 			apply_ime();
 
 			String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary().strip_escapes();
@@ -532,7 +535,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						selection.double_click = true;
 						last_dblclk = 0;
 						set_caret_column(selection.begin);
-						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text);
 						}
 						queue_accessibility_update();
@@ -554,7 +557,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								break;
 							}
 						}
-						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 						}
 					}
@@ -580,7 +583,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 		} else {
-			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 			}
 			if (editable && !text.is_empty() && clear_button_enabled) {
@@ -925,7 +928,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (editing && !keep_editing_on_text_submit) {
 			unedit();
 			emit_signal(SNAME("editing_toggled"), false);
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
 		}
@@ -2244,11 +2247,11 @@ void LineEdit::clear() {
 void LineEdit::show_virtual_keyboard() {
 	_update_ime_window_position();
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 		if (selection.enabled) {
-			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, selection.begin, selection.end);
+			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServerEnums::VirtualKeyboardType(virtual_keyboard_type), max_length, selection.begin, selection.end);
 		} else {
-			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, caret_column);
+			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServerEnums::VirtualKeyboardType(virtual_keyboard_type), max_length, caret_column);
 		}
 	}
 }
@@ -3230,7 +3233,7 @@ void LineEdit::_generate_context_menu() {
 	menu_ctl->add_item(ETR("Word Joiner (WJ)"), MENU_INSERT_WJ);
 	menu_ctl->add_item(ETR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		menu->add_item(ETR("Emoji & Symbols"), MENU_EMOJI_AND_SYMBOL);
 		menu->add_separator();
 	}
@@ -3290,7 +3293,7 @@ void LineEdit::_update_context_menu() {
 		m_menu->set_item_checked(idx, m_checked); \
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		MENU_ITEM_DISABLED(menu, MENU_EMOJI_AND_SYMBOL, !editable || !emoji_menu_enabled)
 	}
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
@@ -3470,14 +3473,14 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER_DECIMAL);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PHONE);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_EMAIL_ADDRESS);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_DEFAULT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_MULTILINE);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_NUMBER);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_NUMBER_DECIMAL);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_PHONE);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_EMAIL_ADDRESS);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_PASSWORD);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_URL);
 
 	BIND_ENUM_CONSTANT(EXPAND_MODE_ORIGINAL_SIZE);
 	BIND_ENUM_CONSTANT(EXPAND_MODE_FIT_TO_TEXT);

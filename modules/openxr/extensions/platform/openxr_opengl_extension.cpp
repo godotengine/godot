@@ -35,6 +35,7 @@
 #include "../../openxr_util.h"
 
 #include "drivers/gles3/storage/texture_storage.h"
+#include "servers/display/display_server.h"
 
 // OpenXR requires us to submit sRGB textures so that it recognizes the content
 // as being in sRGB color space. We do fall back on "normal" textures but this
@@ -156,15 +157,15 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
 	graphics_binding_gl.next = p_next_pointer;
 
-	graphics_binding_gl.hDC = (HDC)display_server->window_get_native_handle(DisplayServer::WINDOW_VIEW);
-	graphics_binding_gl.hGLRC = (HGLRC)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
+	graphics_binding_gl.hDC = (HDC)display_server->window_get_native_handle(DisplayServerEnums::WINDOW_VIEW);
+	graphics_binding_gl.hGLRC = (HGLRC)display_server->window_get_native_handle(DisplayServerEnums::OPENGL_CONTEXT);
 #elif defined(ANDROID_ENABLED)
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR;
 	graphics_binding_gl.next = p_next_pointer;
 
-	graphics_binding_gl.display = (void *)display_server->window_get_native_handle(DisplayServer::DISPLAY_HANDLE);
+	graphics_binding_gl.display = (void *)display_server->window_get_native_handle(DisplayServerEnums::DISPLAY_HANDLE);
 	graphics_binding_gl.config = (EGLConfig)0; // https://github.com/KhronosGroup/OpenXR-SDK-Source/blob/master/src/tests/hello_xr/graphicsplugin_opengles.cpp#L122
-	graphics_binding_gl.context = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
+	graphics_binding_gl.context = (void *)display_server->window_get_native_handle(DisplayServerEnums::OPENGL_CONTEXT);
 #else
 #if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 	if (display_server->get_name() == "Wayland") {
@@ -174,9 +175,9 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 		graphics_binding_egl.next = p_next_pointer;
 
 		graphics_binding_egl.getProcAddress = eglGetProcAddress;
-		graphics_binding_egl.display = (void *)display_server->window_get_native_handle(DisplayServer::EGL_DISPLAY);
-		graphics_binding_egl.config = (void *)display_server->window_get_native_handle(DisplayServer::EGL_CONFIG);
-		graphics_binding_egl.context = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
+		graphics_binding_egl.display = (void *)display_server->window_get_native_handle(DisplayServerEnums::EGL_DISPLAY);
+		graphics_binding_egl.config = (void *)display_server->window_get_native_handle(DisplayServerEnums::EGL_CONFIG);
+		graphics_binding_egl.context = (void *)display_server->window_get_native_handle(DisplayServerEnums::OPENGL_CONTEXT);
 
 		return &graphics_binding_egl;
 	}
@@ -185,11 +186,11 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
 	graphics_binding_gl.next = p_next_pointer;
 
-	void *display_handle = (void *)display_server->window_get_native_handle(DisplayServer::DISPLAY_HANDLE);
-	void *glxcontext_handle = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
-	void *glxdrawable_handle = (void *)display_server->window_get_native_handle(DisplayServer::WINDOW_HANDLE);
-	void *glx_fbconfig_handle = (void *)display_server->window_get_native_handle(DisplayServer::GLX_FBCONFIG);
-	VisualID glx_visualid = (VisualID)display_server->window_get_native_handle(DisplayServer::GLX_VISUALID);
+	void *display_handle = (void *)display_server->window_get_native_handle(DisplayServerEnums::DISPLAY_HANDLE);
+	void *glxcontext_handle = (void *)display_server->window_get_native_handle(DisplayServerEnums::OPENGL_CONTEXT);
+	void *glxdrawable_handle = (void *)display_server->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE);
+	void *glx_fbconfig_handle = (void *)display_server->window_get_native_handle(DisplayServerEnums::GLX_FBCONFIG);
+	VisualID glx_visualid = (VisualID)display_server->window_get_native_handle(DisplayServerEnums::GLX_VISUALID);
 
 	graphics_binding_gl.xDisplay = (Display *)display_handle;
 	graphics_binding_gl.glxContext = (GLXContext)glxcontext_handle;

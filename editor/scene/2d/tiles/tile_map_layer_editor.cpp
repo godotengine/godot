@@ -30,9 +30,15 @@
 
 #include "tile_map_layer_editor.h"
 
-#include "core/object/class_db.h"
 #include "tiles_editor_plugin.h"
 
+#include "core/input/input.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -45,11 +51,6 @@
 #include "scene/2d/tile_map_layer.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/split_container.h"
-
-#include "core/input/input.h"
-#include "core/math/geometry_2d.h"
-#include "core/math/random_pcg.h"
-#include "core/os/keyboard.h"
 
 void SwitchSeparator::set_vertical(bool p_vertical) {
 	h_separator->set_visible(p_vertical);

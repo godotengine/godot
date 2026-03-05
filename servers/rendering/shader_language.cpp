@@ -30,6 +30,7 @@
 
 #include "shader_language.h"
 
+#include "core/config/engine.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"

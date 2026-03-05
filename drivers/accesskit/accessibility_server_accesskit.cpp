@@ -33,7 +33,9 @@
 #include "accessibility_server_accesskit.h"
 
 #ifdef ACCESSKIT_DYNAMIC
+#include "core/config/engine.h"
 #include "core/io/file_access.h"
+#include "core/os/os.h"
 #endif
 
 #include "servers/text/text_server.h"
@@ -52,7 +54,7 @@ _FORCE_INLINE_ accesskit_action AccessibilityServerAccessKit::_accessibility_act
 	return ACCESSKIT_ACTION_CLICK;
 }
 
-bool AccessibilityServerAccessKit::window_create(DisplayServer::WindowID p_window_id, void *p_handle) {
+bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), false);
 
 	WindowData &wd = windows[p_window_id];
@@ -84,7 +86,7 @@ bool AccessibilityServerAccessKit::window_create(DisplayServer::WindowID p_windo
 	}
 }
 
-void AccessibilityServerAccessKit::window_destroy(DisplayServer::WindowID p_window_id) {
+void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
@@ -105,7 +107,7 @@ void AccessibilityServerAccessKit::window_destroy(DisplayServer::WindowID p_wind
 }
 
 void AccessibilityServerAccessKit::_accessibility_deactivation_callback(void *p_user_data) {
-	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
+	DisplayServerEnums::WindowID window_id = (DisplayServerEnums::WindowID)(size_t)p_user_data;
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(window_id);
 	ERR_FAIL_NULL(wd);
 
@@ -126,7 +128,7 @@ void AccessibilityServerAccessKit::_accessibility_deactivation_callback(void *p_
 }
 
 void AccessibilityServerAccessKit::_accessibility_action_callback(struct accesskit_action_request *p_request, void *p_user_data) {
-	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
+	DisplayServerEnums::WindowID window_id = (DisplayServerEnums::WindowID)(size_t)p_user_data;
 	ERR_FAIL_COND(!static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.has(window_id));
 
 	RID rid = RID::from_uint64(p_request->target);
@@ -218,7 +220,7 @@ void AccessibilityServerAccessKit::_accessibility_action_callback(struct accessk
 }
 
 accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_initial_tree_update_callback(void *p_user_data) {
-	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
+	DisplayServerEnums::WindowID window_id = (DisplayServerEnums::WindowID)(size_t)p_user_data;
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(window_id);
 	ERR_FAIL_NULL_V(wd, nullptr);
 
@@ -243,7 +245,7 @@ accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_initial_tree
 	return tree_update;
 }
 
-void AccessibilityServerAccessKit::set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
+void AccessibilityServerAccessKit::set_window_callbacks(DisplayServerEnums::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) {
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
@@ -251,7 +253,7 @@ void AccessibilityServerAccessKit::set_window_callbacks(DisplayServer::WindowID 
 	wd->deactivate = p_deativate_callable;
 }
 
-void AccessibilityServerAccessKit::window_activation_completed(DisplayServer::WindowID p_window_id) {
+void AccessibilityServerAccessKit::window_activation_completed(DisplayServerEnums::WindowID p_window_id) {
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(p_window_id);
 	if (!wd) {
 		return;
@@ -262,7 +264,7 @@ void AccessibilityServerAccessKit::window_activation_completed(DisplayServer::Wi
 	wd->initial_update_completed = true;
 }
 
-void AccessibilityServerAccessKit::window_deactivation_completed(DisplayServer::WindowID p_window_id) {
+void AccessibilityServerAccessKit::window_deactivation_completed(DisplayServerEnums::WindowID p_window_id) {
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(p_window_id);
 	if (!wd) {
 		return;
@@ -286,7 +288,7 @@ void AccessibilityServerAccessKit::window_deactivation_completed(DisplayServer::
 	wd->initial_update_completed = false;
 }
 
-RID AccessibilityServerAccessKit::create_element(DisplayServer::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) {
+RID AccessibilityServerAccessKit::create_element(DisplayServerEnums::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) {
 	AccessibilityElement *ae = memnew(AccessibilityElement);
 	ae->role = _accessibility_role(p_role);
 	ae->window_id = p_window_id;
@@ -609,7 +611,7 @@ void AccessibilityServerAccessKit::update_set_focus(const RID &p_id) {
 	}
 }
 
-RID AccessibilityServerAccessKit::get_window_root(DisplayServer::WindowID p_window_id) const {
+RID AccessibilityServerAccessKit::get_window_root(DisplayServerEnums::WindowID p_window_id) const {
 	const WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL_V(wd, RID());
 
@@ -617,7 +619,7 @@ RID AccessibilityServerAccessKit::get_window_root(DisplayServer::WindowID p_wind
 }
 
 accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_build_tree_update(void *p_user_data) {
-	DisplayServer::WindowID window_id = (DisplayServer::WindowID)(size_t)p_user_data;
+	DisplayServerEnums::WindowID window_id = (DisplayServerEnums::WindowID)(size_t)p_user_data;
 
 	ERR_FAIL_COND_V(!static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.has(window_id), nullptr);
 	WindowData &wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows[window_id];
@@ -654,7 +656,7 @@ accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_build_tree_u
 void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) {
 	ERR_FAIL_COND(!p_callable.is_valid());
 	update_cb = p_callable;
-	for (KeyValue<DisplayServer::WindowID, WindowData> &window : windows) {
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &window : windows) {
 #ifdef WINDOWS_ENABLED
 		accesskit_windows_queued_events *events = accesskit_windows_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
@@ -691,7 +693,7 @@ _FORCE_INLINE_ void AccessibilityServerAccessKit::_ensure_node(const RID &p_id, 
 	}
 }
 
-void AccessibilityServerAccessKit::set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) {
+void AccessibilityServerAccessKit::set_window_rect(DisplayServerEnums::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) {
 #ifdef LINUXBSD_ENABLED
 	const WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
@@ -702,7 +704,7 @@ void AccessibilityServerAccessKit::set_window_rect(DisplayServer::WindowID p_win
 #endif
 }
 
-void AccessibilityServerAccessKit::set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) {
+void AccessibilityServerAccessKit::set_window_focused(DisplayServerEnums::WindowID p_window_id, bool p_focused) {
 	const WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
