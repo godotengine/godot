@@ -67,6 +67,7 @@
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"

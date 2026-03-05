@@ -34,6 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/world_2d.h"

@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 #include "core/object/callable_mp.h"
 #include "editor_caption_buttons.h"
+#include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 
 void EditorTitleBar::_ensure_window_buttons() {

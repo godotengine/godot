@@ -43,6 +43,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/text_paragraph.h"

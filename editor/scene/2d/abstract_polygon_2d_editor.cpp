@@ -41,6 +41,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/main/scene_tree.h"
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
 	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;

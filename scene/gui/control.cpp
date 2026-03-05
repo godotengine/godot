@@ -44,6 +44,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/gui/container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"

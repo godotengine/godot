@@ -37,6 +37,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
 
 namespace gdmono {

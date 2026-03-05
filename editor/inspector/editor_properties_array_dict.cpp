@@ -46,6 +46,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/main/scene_tree.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;

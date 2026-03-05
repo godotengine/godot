@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/main/scene_tree.h"
 
 void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 	if (occluder_instance) {

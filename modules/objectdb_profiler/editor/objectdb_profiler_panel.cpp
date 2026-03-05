@@ -52,6 +52,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/scene_tree.h"
 
 // ObjectDB snapshots are very large. In remote_debugger_peer.cpp, the max in_buf and out_buf size is 8mb.
 // Snapshots are typically larger than that, so we send them 6mb at a time. Leaving 2mb for other data.

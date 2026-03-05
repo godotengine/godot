@@ -49,6 +49,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 #include "scene/animation/tween.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -969,6 +970,10 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 	if (is_physics_interpolated() && is_inside_tree()) {
 		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 	}
+}
+
+bool Node::is_physics_interpolated_and_enabled() const {
+	return SceneTree::is_fti_enabled() && is_physics_interpolated();
 }
 
 void Node::reset_physics_interpolation() {

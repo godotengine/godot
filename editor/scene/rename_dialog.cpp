@@ -45,6 +45,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/scene_tree.h"
 
 #include "modules/regex/regex.h"
 
