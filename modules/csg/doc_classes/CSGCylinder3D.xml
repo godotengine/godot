@@ -17,9 +17,6 @@
 		<member name="cone" type="bool" setter="set_cone" getter="is_cone" default="false">
 			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
 		</member>
-		<member name="flip_uvs" type="bool" setter="set_flip_uvs" getter="is_flip_uvs" default="false">
-			Mirrors the UVs.
-		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The height of the cylinder.
 		</member>

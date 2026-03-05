@@ -14,5 +14,22 @@
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
 		</member>
+		<member name="flip_uv_mode" type="int" setter="set_flip_uv_mode" getter="get_flip_uv_mode" enum="CSGPrimitive3D.FlipUVMode" default="0">
+			Determines on which axis the UVs are mirrored.
+		</member>
+		<member name="flip_uvs" type="bool" setter="set_flip_uvs" getter="is_flip_uvs" default="false">
+			Mirrors the UVs.
+		</member>
 	</members>
+	<constants>
+		<constant name="UV_MODE_FLIP_X" value="0" enum="FlipUVMode">
+			Flip on the X axis.
+		</constant>
+		<constant name="UV_MODE_FLIP_Y" value="1" enum="FlipUVMode">
+			Flip on the Y axis.
+		</constant>
+		<constant name="UV_MODE_FLIP_X_AND_Y" value="2" enum="FlipUVMode">
+			Flip on the X and Y axis at the same time.
+		</constant>
+	</constants>
 </class>

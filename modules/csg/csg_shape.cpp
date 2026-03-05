@@ -1099,7 +1099,19 @@ void CSGPrimitive3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGPrimitive3D::set_flip_uvs);
+	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGPrimitive3D::is_flip_uvs);
+
+	ClassDB::bind_method(D_METHOD("set_flip_uv_mode", "flip_uv_mode"), &CSGPrimitive3D::set_flip_uv_mode);
+	ClassDB::bind_method(D_METHOD("get_flip_uv_mode"), &CSGPrimitive3D::get_flip_uv_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flip_uv_mode", PROPERTY_HINT_ENUM, "FlipX,FlipY"), "set_flip_uv_mode", "get_flip_uv_mode");
+
+	BIND_ENUM_CONSTANT(UV_MODE_FLIP_X);
+	BIND_ENUM_CONSTANT(UV_MODE_FLIP_Y);
+	BIND_ENUM_CONSTANT(UV_MODE_FLIP_X_AND_Y);
 }
 
 void CSGPrimitive3D::set_flip_faces(bool p_invert) {
@@ -1114,6 +1126,25 @@ void CSGPrimitive3D::set_flip_faces(bool p_invert) {
 
 bool CSGPrimitive3D::get_flip_faces() {
 	return flip_faces;
+}
+
+void CSGPrimitive3D::set_flip_uvs(const bool p_flip) {
+	flip_uvs = p_flip;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGPrimitive3D::is_flip_uvs() const {
+	return flip_uvs;
+}
+
+void CSGPrimitive3D::set_flip_uv_mode(FlipUVMode p_flip) {
+	flip_uv_mode = p_flip;
+	_make_dirty();
+}
+
+CSGPrimitive3D::FlipUVMode CSGPrimitive3D::get_flip_uv_mode() const {
+	return flip_uv_mode;
 }
 
 CSGPrimitive3D::CSGPrimitive3D() {
@@ -1269,6 +1300,16 @@ CSGBrush *CSGMesh3D::_build_brush() {
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
 }
 
+void CSGMesh3D::_validate_property(PropertyInfo &p_property) const {
+	// TODO Flip uvs does nothing for now, it can be implemented later.
+	if (p_property.name == "flip_uvs") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "flip_uv_mode") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void CSGMesh3D::_mesh_changed() {
 	_make_dirty();
 
@@ -1405,6 +1446,29 @@ CSGBrush *CSGSphere3D::_build_brush() {
 					Vector2(u1, v1),
 					Vector2(u0, v1),
 				};
+
+				if (is_flip_uvs()) {
+					if (get_flip_uv_mode() == UV_MODE_FLIP_X) {
+						u[0].x *= -1;
+						u[1].x *= -1;
+						u[2].x *= -1;
+						u[3].x *= -1;
+					} else if (get_flip_uv_mode() == UV_MODE_FLIP_Y) {
+						u[0].y *= -1;
+						u[1].y *= -1;
+						u[2].y *= -1;
+						u[3].y *= -1;
+					} else {
+						u[0].x *= -1;
+						u[0].y *= -1;
+						u[1].x *= -1;
+						u[1].y *= -1;
+						u[2].x *= -1;
+						u[2].y *= -1;
+						u[3].x *= -1;
+						u[3].y *= -1;
+					}
+				}
 
 				// Draw the first face, but skip this at the north pole (i == 0).
 				if (i > 0) {
@@ -1637,6 +1701,17 @@ CSGBrush *CSGBox3D::_build_brush() {
 		uvsw[34] = Vector2(1, 0);
 		uvsw[35] = Vector2(0, 0);
 
+		float num_rotations = get_uv_floor_rotation();
+		if (num_rotations > 0.0) {
+			float angle_ninety = Math::deg_to_rad(num_rotations);
+			for (int uv_top_i = 6; uv_top_i < 12; uv_top_i++) {
+				uvsw[uv_top_i] = uvsw[uv_top_i].rotated(angle_ninety);
+			}
+			for (int uv_top_i = 24; uv_top_i < 30; uv_top_i++) {
+				uvsw[uv_top_i] = uvsw[uv_top_i].rotated(angle_ninety);
+			}
+		}
+
 		Vector2 shifts[6] = {
 			Vector2(uv_offset.z, uv_offset.y),
 			Vector2(uv_offset.x, uv_offset.z),
@@ -1707,8 +1782,15 @@ CSGBrush *CSGBox3D::_build_brush() {
 			facesw[i] *= size;
 
 			//For subtracting CSGs
-			if (flip_uvs) {
-				uvsw[i].x *= -1;
+			if (is_flip_uvs()) {
+				if (get_flip_uv_mode() == UV_MODE_FLIP_X) {
+					uvsw[i].x *= -1;
+				} else if (get_flip_uv_mode() == UV_MODE_FLIP_Y) {
+					uvsw[i].y *= -1;
+				} else {
+					uvsw[i].x *= -1;
+					uvsw[i].y *= -1;
+				}
 			}
 
 			t_1++;
@@ -1795,11 +1877,11 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGBox3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGBox3D::is_scale_uv);
 
-	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGBox3D::set_flip_uvs);
-	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGBox3D::is_flip_uvs);
-
 	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGBox3D::set_uv_offset);
 	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGBox3D::get_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_uv_floor_rotation", "uv_floor_rotation"), &CSGBox3D::set_uv_floor_rotation);
+	ClassDB::bind_method(D_METHOD("get_uv_floor_rotation"), &CSGBox3D::get_uv_floor_rotation);
 
 	ClassDB::bind_method(D_METHOD("set_uv_size", "uv_size"), &CSGBox3D::set_uv_size);
 	ClassDB::bind_method(D_METHOD("get_uv_size"), &CSGBox3D::get_uv_size);
@@ -1812,9 +1894,9 @@ void CSGBox3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scale_uv"), "set_scale_uv", "is_scale_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_size", PROPERTY_HINT_RANGE, "0.0015625,4096.0,0.0015625,or_greater,exp,suffix:m"), "set_uv_size", "get_uv_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv_floor_rotation", PROPERTY_HINT_RANGE, "-180.0,180.0,1.0,degrees"), "set_uv_floor_rotation", "get_uv_floor_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_compatibility_mode"), "set_uv_compatibility_mode", "is_uv_compatibility_mode");
-	ADD_GROUP("Material", "material_");
+	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "top_material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_top_material", "get_top_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bottom_material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_bottom_material", "get_bottom_material");
@@ -1840,16 +1922,6 @@ bool CSGBox3D::is_scale_uv() const {
 	return scale_uv;
 }
 
-void CSGBox3D::set_flip_uvs(const bool p_flip) {
-	flip_uvs = p_flip;
-	_make_dirty();
-	update_gizmos();
-}
-
-bool CSGBox3D::is_flip_uvs() const {
-	return flip_uvs;
-}
-
 void CSGBox3D::set_uv_offset(const Vector3 &p_size) {
 	uv_offset = p_size;
 	_make_dirty();
@@ -1858,6 +1930,14 @@ void CSGBox3D::set_uv_offset(const Vector3 &p_size) {
 
 Vector3 CSGBox3D::get_uv_offset() const {
 	return uv_offset;
+}
+
+void CSGBox3D::set_uv_floor_rotation(const float p_rotation) {
+	uv_floor_rotation = p_rotation;
+	_make_dirty();
+}
+float CSGBox3D::get_uv_floor_rotation() const {
+	return uv_floor_rotation;
 }
 
 void CSGBox3D::set_uv_size(const float p_size) {
@@ -2107,9 +2187,20 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 			}
 		}
 
-		if (!flip_uvs) { //Invert uvs by default because it's easier.
-			for (int i = 0; i < face_count * 3; i++) {
-				uvsw[i].x *= -1;
+		if (!is_flip_uvs()) { //Invert uvs by default because it's easier.
+			if (get_flip_uv_mode() == UV_MODE_FLIP_X) {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].x *= -1;
+				}
+			} else if (get_flip_uv_mode() == UV_MODE_FLIP_Y) {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].y *= -1;
+				}
+			} else {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].x *= -1;
+					uvsw[i].y *= -1;
+				}
 			}
 		}
 
@@ -2141,9 +2232,6 @@ void CSGCylinder3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_scale_uv", "scale_uv"), &CSGCylinder3D::set_scale_uv);
 	ClassDB::bind_method(D_METHOD("is_scale_uv"), &CSGCylinder3D::is_scale_uv);
-
-	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGCylinder3D::set_flip_uvs);
-	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGCylinder3D::is_flip_uvs);
 
 	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGCylinder3D::set_uv_offset);
 	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGCylinder3D::get_uv_offset);
@@ -2177,8 +2265,7 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "uv_horizontal_divisions", PROPERTY_HINT_RANGE, "1,64,1"), "set_uv_horizontal_divisions", "get_uv_horizontal_divisions");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "top_uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_top_uv_offset", "get_top_uv_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
-	ADD_GROUP("Material", "material_");
+	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "top_material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_top_material", "get_top_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bottom_material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_bottom_material", "get_bottom_material");
@@ -2233,16 +2320,6 @@ void CSGCylinder3D::set_scale_uv(const bool p_scale_uv) {
 
 bool CSGCylinder3D::is_scale_uv() const {
 	return scale_uv;
-}
-
-void CSGCylinder3D::set_flip_uvs(const bool p_flip) {
-	flip_uvs = p_flip;
-	_make_dirty();
-	update_gizmos();
-}
-
-bool CSGCylinder3D::is_flip_uvs() const {
-	return flip_uvs;
 }
 
 void CSGCylinder3D::set_uv_horizontal_divisions(const int p_sides) {
@@ -2475,9 +2552,20 @@ CSGBrush *CSGTorus3D::_build_brush() {
 			}
 		}
 
-		if (flip_uvs) {
-			for (int i = 0; i < face_count * 3; i++) {
-				uvsw[i].x *= -1;
+		if (is_flip_uvs()) {
+			if (get_flip_uv_mode() == UV_MODE_FLIP_X) {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].x *= -1;
+				}
+			} else if (get_flip_uv_mode() == UV_MODE_FLIP_Y) {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].y *= -1;
+				}
+			} else {
+				for (int i = 0; i < face_count * 3; i++) {
+					uvsw[i].x *= -1;
+					uvsw[i].y *= -1;
+				}
 			}
 		}
 
@@ -2517,9 +2605,6 @@ void CSGTorus3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv_size", "uv_size"), &CSGTorus3D::set_uv_size);
 	ClassDB::bind_method(D_METHOD("get_uv_size"), &CSGTorus3D::get_uv_size);
 
-	ClassDB::bind_method(D_METHOD("set_flip_uvs", "flip_uvs"), &CSGTorus3D::set_flip_uvs);
-	ClassDB::bind_method(D_METHOD("is_flip_uvs"), &CSGTorus3D::is_flip_uvs);
-
 	ClassDB::bind_method(D_METHOD("set_uv_horizontal_divisions", "uv_horizontal_divisions"), &CSGTorus3D::set_uv_horizontal_divisions);
 	ClassDB::bind_method(D_METHOD("get_uv_horizontal_divisions"), &CSGTorus3D::get_uv_horizontal_divisions);
 
@@ -2540,8 +2625,7 @@ void CSGTorus3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "uv_horizontal_divisions", PROPERTY_HINT_RANGE, "1,64,1"), "set_uv_horizontal_divisions", "get_uv_horizontal_divisions");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "uv_vertical_divisions", PROPERTY_HINT_RANGE, "1,64,1"), "set_uv_vertical_divisions", "get_uv_vertical_divisions");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_uv_offset", "get_uv_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_uvs"), "set_flip_uvs", "is_flip_uvs");
-	ADD_GROUP("Material", "material_");
+	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
@@ -2614,16 +2698,6 @@ void CSGTorus3D::set_uv_size(const float p_size) {
 
 float CSGTorus3D::get_uv_size() const {
 	return uv_size;
-}
-
-void CSGTorus3D::set_flip_uvs(bool p_flip) {
-	flip_uvs = p_flip;
-	_make_dirty();
-	update_gizmos();
-}
-
-bool CSGTorus3D::is_flip_uvs() const {
-	return flip_uvs;
 }
 
 void CSGTorus3D::set_uv_horizontal_divisions(const int p_sides) {
@@ -3058,6 +3132,14 @@ void CSGPolygon3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (p_property.name == "depth" && mode != MODE_DEPTH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	// TODO Flip uvs does nothing for now, it can be implemented later.
+	if (p_property.name == "flip_uvs") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "flip_uv_mode") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }

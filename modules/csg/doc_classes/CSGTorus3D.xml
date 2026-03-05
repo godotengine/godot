@@ -11,9 +11,6 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="flip_uvs" type="bool" setter="set_flip_uvs" getter="is_flip_uvs" default="false">
-			Mirrors the UVs.
-		</member>
 		<member name="inner_radius" type="float" setter="set_inner_radius" getter="get_inner_radius" default="0.5">
 			The inner radius of the torus.
 		</member>
