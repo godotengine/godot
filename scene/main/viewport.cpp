@@ -3413,7 +3413,14 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 		}
 		Vector2 pos = c->get_global_transform_with_canvas().affine_inverse().xform(p_pos);
 		if (c->is_stretch_enabled()) {
-			pos /= c->get_stretch_shrink();
+			switch (c->get_mode()) {
+				case SubViewportContainer::RESOLUTION_MODE_SHRINK: {
+					pos /= c->get_stretch_shrink();
+				} break;
+				case SubViewportContainer::RESOLUTION_MODE_FIXED: {
+					pos /= c->get_size() / c->get_fixed_resolution();
+				} break;
+			}
 		}
 
 		for (int i = 0; i < c->get_child_count(); i++) {
