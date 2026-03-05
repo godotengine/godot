@@ -4558,6 +4558,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTRC("Create Script"));
+	make_script_dialog->set_transient_to_focused(true);
 	add_child(make_script_dialog);
 	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
 
