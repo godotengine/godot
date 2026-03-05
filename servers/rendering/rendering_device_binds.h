@@ -775,3 +775,25 @@ protected:
 		RD_BIND(Variant::INT, RDAccelerationStructureGeometry, index_count);
 	}
 };
+
+class RDAccelerationStructureInstance : public RefCounted {
+	GDCLASS(RDAccelerationStructureInstance, RefCounted)
+	friend class RenderingDevice;
+	RD::AccelerationStructureInstance base;
+
+public:
+	RD_SETGET(Transform3D, transform)
+	RD_SETGET(uint32_t, id)
+	RD_SETGET(uint8_t, mask)
+	RD_SETGET(BitField<RD::AccelerationStructureInstanceFlagBits>, flags)
+	RD_SETGET(RID, blas)
+
+protected:
+	static void _bind_methods() {
+		RD_BIND(Variant::TRANSFORM3D, RDAccelerationStructureInstance, transform);
+		RD_BIND(Variant::INT, RDAccelerationStructureInstance, id);
+		RD_BIND(Variant::INT, RDAccelerationStructureInstance, mask);
+		RD_BIND(Variant::INT, RDAccelerationStructureInstance, flags);
+		RD_BIND(Variant::RID, RDAccelerationStructureInstance, blas);
+	}
+};

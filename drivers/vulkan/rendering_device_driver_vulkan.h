@@ -714,20 +714,15 @@ public:
 		// Size of the scratch buffer for building the structure
 		uint32_t scratch_size;
 
-		// Buffer used for instances in a TLAS
-		RDD::BufferID instances_buffer;
-
 		// Required for building
 		TightLocalVector<VkAccelerationStructureGeometryKHR> geometries;
-		LocalVector<VkAccelerationStructureInstanceKHR> instances;
 		VkAccelerationStructureBuildGeometryInfoKHR build_info;
 		TightLocalVector<VkAccelerationStructureBuildRangeInfoKHR> range_infos;
 	};
 
-	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries) override final;
-	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
-	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
-	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) override final;
 	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
 	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
 
@@ -737,7 +732,8 @@ private:
 public:
 	// ----- COMMANDS -----
 
-	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) override final;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
 	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;

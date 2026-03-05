@@ -105,7 +105,6 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
-		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT:
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
 			return false;
 		case RESOURCE_USAGE_COPY_TO:
@@ -176,10 +175,6 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_UNIFORM_READ_BIT;
 		case RESOURCE_USAGE_INDIRECT_BUFFER_READ:
 			return RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT;
-		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT:
-			// Acceleration structure build inputs can be either storage buffers with vertices, indices, transforms, or
-			// other acceleration structures (BLAS)
-			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_COPY_READ_BIT | RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT);
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
 			return RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT;
 		case RESOURCE_USAGE_STORAGE_BUFFER_READ:
@@ -1086,9 +1081,13 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 		_run_label_command_change(r_command_buffer, command->label_index, p_level, false, true, &p_sorted_commands[i], p_sorted_commands_count - i, r_current_label_index, r_current_label_level);
 
 		switch (command->type) {
-			case RecordedCommand::TYPE_ACCELERATION_STRUCTURE_BUILD: {
-				const RecordedAccelerationStructureBuildCommand *as_build_command = reinterpret_cast<const RecordedAccelerationStructureBuildCommand *>(command);
-				driver->command_build_acceleration_structure(r_command_buffer, as_build_command->acceleration_structure, as_build_command->scratch_buffer);
+			case RecordedCommand::TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD: {
+				const RecordedBottomLevelAccelerationStructureBuildCommand *blas_build_command = reinterpret_cast<const RecordedBottomLevelAccelerationStructureBuildCommand *>(command);
+				driver->command_build_blas(r_command_buffer, blas_build_command->acceleration_structure, blas_build_command->scratch_buffer);
+			} break;
+			case RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD: {
+				const RecordedTopLevelAccelerationStructureBuildCommand *tlas_build_command = reinterpret_cast<const RecordedTopLevelAccelerationStructureBuildCommand *>(command);
+				driver->command_build_tlas(r_command_buffer, tlas_build_command->acceleration_structure, tlas_build_command->scratch_buffer, tlas_build_command->instance_buffer, tlas_build_command->instance_offset, tlas_build_command->instance_count);
 			} break;
 			case RecordedCommand::TYPE_BUFFER_CLEAR: {
 				const RecordedBufferClearCommand *buffer_clear_command = reinterpret_cast<const RecordedBufferClearCommand *>(command);
@@ -1784,10 +1783,10 @@ void RenderingDeviceGraph::begin() {
 #endif
 }
 
-void RenderingDeviceGraph::add_acceleration_structure_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+void RenderingDeviceGraph::add_blas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
 	int32_t command_index;
-	RecordedAccelerationStructureBuildCommand *command = static_cast<RecordedAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedAccelerationStructureBuildCommand), command_index));
-	command->type = RecordedCommand::TYPE_ACCELERATION_STRUCTURE_BUILD;
+	RecordedBottomLevelAccelerationStructureBuildCommand *command = static_cast<RecordedBottomLevelAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedBottomLevelAccelerationStructureBuildCommand), command_index));
+	command->type = RecordedCommand::TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD;
 	command->self_stages = RDD::PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT;
 	command->acceleration_structure = p_acceleration_structure;
 	command->scratch_buffer = p_scratch_buffer;
@@ -1802,7 +1801,37 @@ void RenderingDeviceGraph::add_acceleration_structure_build(RDD::AccelerationStr
 
 	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
 		trackers[i] = p_src_trackers[i];
-		usages[i] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT;
+		usages[i] = RESOURCE_USAGE_STORAGE_BUFFER_READ;
+	}
+
+	trackers[resource_count - 1] = p_dst_tracker;
+	usages[resource_count - 1] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE;
+
+	_add_command_to_graph(trackers.ptr(), usages.ptr(), usages.size(), command_index, command);
+}
+
+void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+	int32_t command_index;
+	RecordedTopLevelAccelerationStructureBuildCommand *command = static_cast<RecordedTopLevelAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedTopLevelAccelerationStructureBuildCommand), command_index));
+	command->type = RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD;
+	command->self_stages = RDD::PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT;
+	command->acceleration_structure = p_acceleration_structure;
+	command->scratch_buffer = p_scratch_buffer;
+	command->instance_buffer = p_instance_buffer;
+	command->instance_offset = p_instance_offset;
+	command->instance_count = p_instance_count;
+
+	thread_local LocalVector<ResourceTracker *> trackers;
+	thread_local LocalVector<ResourceUsage> usages;
+
+	// Sources and destination.
+	uint32_t resource_count = p_src_trackers.size() + 1;
+	trackers.resize(resource_count);
+	usages.resize(resource_count);
+
+	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
+		trackers[i] = p_src_trackers[i];
+		usages[i] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ;
 	}
 
 	trackers[resource_count - 1] = p_dst_tracker;
