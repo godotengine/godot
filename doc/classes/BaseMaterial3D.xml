@@ -289,7 +289,7 @@
 		</member>
 		<member name="heightmap_write_depth" type="bool" setter="set_heightmap_deep_parallax_write_depth" getter="is_heightmap_deep_parallax_writing_depth">
 			If [code]true[/code], makes the material's silhouette able to correctly interact with other meshes in the scene according to the deep parallax effect. This allows the material to better blend in with other materials in the scene, regardless of whether the other material has deep parallax enabled. This internally makes the deep parallax effect write to [code]DEPTH[/code] in the shader. See also [member heightmap_trim_edges].
-			[b]Note:[/b] Enabling this enables depth writing and prevents the depth prepass from working, which has a significant performance impact
+			[b]Note:[/b] Enabling this enables depth writing and prevents the depth prepass from working, which has a significant performance impact.
 		</member>
 		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
 			A high value makes the material appear more like a metal. Non-metals use their albedo as the diffuse color and add diffuse to the specular reflection. With non-metals, the reflection appears on top of the albedo color. Metals use their albedo as a multiplier to the specular reflection and set the diffuse color to black resulting in a tinted reflection. Materials work better when fully metal or fully non-metal, values between [code]0[/code] and [code]1[/code] should only be used for blending between metal and non-metal sections. To alter the amount of reflection use [member roughness].

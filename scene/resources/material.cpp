@@ -1630,11 +1630,7 @@ void fragment() {)";
 			}
 
 			code += R"(
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-		vec4 view_position = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, FRAGCOORD.z * 2.0 - 1.0, 1.0);
-#else
 		vec4 view_position = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, FRAGCOORD.z, 1.0);
-#endif
 		view_position.xyz /= view_position.w;
 		view_position.xyz -= offset * view_direction;
 
@@ -1664,11 +1660,7 @@ void fragment() {)";
 				}
 
 				code += R"(
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-		DEPTH = ndc_position.z * 0.5 + 0.5;
-#else
 		DEPTH = ndc_position.z;
-#endif
 )";
 			}
 		} else {
