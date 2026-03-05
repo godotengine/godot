@@ -41,7 +41,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint32_t TypeHash;
+	typedef uint32_t TypeTrackId;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -105,13 +105,14 @@ public:
 	};
 #endif // TOOLS_ENABLED
 
+	typedef Pair<TrackType, NodePath> TrackCacheId;
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
-		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
-		TypeHash probe = 0; // Probe value that will be added later to the hash on hash collisions
+		TypeTrackId unique_id = 0; // Unique id for each Path + SubPath + TrackType combo.
+		TrackCacheId track_cache_id; // Path + SubPath + TrackType combination instead of hash
 		bool imported = false;
 		bool enabled = true;
 		virtual ~Track() {}
@@ -253,27 +254,28 @@ private:
 
 	LocalVector<Track *> tracks;
 
-	struct TrackHashRef {
+	/* For unique track cache ids */
+	struct TypeTrackRef {
 		LocalVector<Track *> references;
-		NodePath nodepath;
-		TrackHashRef *next_probe = nullptr;
-		TrackHashRef *prev_probe = nullptr;
+		TypeTrackId id;
 
-		TrackHashRef() = default;
-		TrackHashRef(Track *p_track) {
-			references.push_back(p_track);
-			nodepath = p_track->path;
+		void set_id(TypeTrackId p_id) {
+			id = p_id;
+			for (Track *track : references) {
+				track->unique_id = id;
+			}
 		}
-		TrackHashRef(const TrackHashRef *p_t) {
-			references = p_t->references;
-			nodepath = p_t->nodepath;
-			next_probe = p_t->next_probe;
+
+		TypeTrackRef() = default;
+		TypeTrackRef(Track *p_track) {
+			references.push_back(p_track);
+			id = p_track->unique_id;
 		}
 	};
-	static inline HashMap<TypeHash, TrackHashRef *> track_hash_map; // common list for thashes among all animations
-	void unref_or_erase(Track *p_track, const TypeHash p_thash);
+	static inline AHashMap<TrackCacheId, TypeTrackRef *> track_cache_id_map; // common list for track cache ids among all animations
+	void _track_cache_unref_or_erase(Track *p_track, const TrackCacheId p_track_cache_id);
 	HashSet<int> dirty_tracks;
-	bool track_hash_is_dirty = false;
+	bool update_track_cache_ids = false;
 
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
@@ -312,7 +314,7 @@ private:
 	bool capture_included = false;
 	void _check_capture_included();
 
-	void _track_update_hash(int p_track);
+	void _track_update_unique_ids(int p_track);
 
 	/* Animation compression page format (version 1):
 	 *
@@ -448,8 +450,8 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
-	TypeHash track_get_type_hash(int p_track) const;
-	void ensure_hashes();
+	TypeTrackId track_get_unique_id(int p_track) const;
+	void ensure_unique_ids();
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);

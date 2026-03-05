@@ -999,7 +999,7 @@ void Animation::remove_track(int p_track) {
 		} break;
 	}
 
-	unref_or_erase(tracks[p_track], tracks[p_track]->thash);
+	_track_cache_unref_or_erase(tracks[p_track], tracks[p_track]->track_cache_id);
 
 	memdelete(t);
 	tracks.remove_at(p_track);
@@ -1036,7 +1036,7 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 	tracks[p_track]->path = p_path;
-	_track_update_hash(p_track);
+	_track_update_unique_ids(p_track);
 	emit_changed();
 }
 
@@ -1064,109 +1064,78 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-void Animation::_track_update_hash(int p_track) {
+void Animation::_track_update_unique_ids(int p_track) {
 	dirty_tracks.insert(p_track);
-	if (track_hash_is_dirty) {
+	if (update_track_cache_ids) {
 		return;
 	}
-	track_hash_is_dirty = true;
-	callable_mp(this, &Animation::ensure_hashes).call_deferred();
+	update_track_cache_ids = true;
+	callable_mp(this, &Animation::ensure_unique_ids).call_deferred();
 }
 
-void Animation::unref_or_erase(Track *p_track, const TypeHash p_thash) {
-	if (p_thash == 0) {
+void Animation::_track_cache_unref_or_erase(Track *p_track, const TrackCacheId p_track_cache_id) {
+	if (p_track_cache_id == TrackCacheId()) {
 		return;
 	}
-	// Remove the element from the references vector of the related TrackHashRef.
-	// If necessary, remove and the deprobe the hashes in the probe chain.
-	TrackHashRef *ref = track_hash_map.get(p_thash);
+
+	TypeTrackRef *ref = track_cache_id_map.get(p_track_cache_id);
 	if (ref->references.size() == 1) {
-		if (ref->next_probe != nullptr) {
-			ref->next_probe->prev_probe = ref->prev_probe;
-		}
-		if (ref->prev_probe != nullptr) {
-			ref->prev_probe->next_probe = ref->next_probe;
-		}
-
-		TypeHash old_hash = p_thash;
-		TrackHashRef *next = ref->next_probe;
-		// De-probe the hashes in the chain.
-		while (next != nullptr) {
-			// Should be safe to call index 0 since all TrackHashRef needs at least 1 reference to be kept
-			TypeHash temp_hash = next->references[0]->thash;
-			for (Track *deprobe_track : next->references) {
-				deprobe_track->probe--;
-				deprobe_track->thash = old_hash;
-			}
-			track_hash_map[p_thash] = next;
-
-			old_hash = temp_hash;
-			next = next->next_probe;
-		}
-		track_hash_map.erase(old_hash);
+		TypeTrackId freed_id = ref->id;
 		memdelete(ref);
+		// When erased, AHashMap moves the last item to the erased location.
+		// We will use this property to reassign the id in order to keep id range minimum
+		int removed_index = track_cache_id_map.get_index(p_track_cache_id);
+		track_cache_id_map.erase(p_track_cache_id);
+
+		if (freed_id == track_cache_id_map.size() + 1) {
+			// Removed the last item, no need to re-assign item id
+			return;
+		}
+
+		TypeTrackRef *last_item_val = track_cache_id_map.get_by_index(removed_index).value;
+		last_item_val->set_id(freed_id);
 	} else {
 		ref->references.erase(p_track);
 	}
 }
 
-void Animation::ensure_hashes() {
-	if (!track_hash_is_dirty) {
+void Animation::ensure_unique_ids() {
+	if (!update_track_cache_ids) {
 		return;
 	}
 
+	// From NodePath and TrackCacheId, derive a unique ID
 	for (int track : dirty_tracks) {
 		const NodePath &track_path = tracks[track]->path;
-		const TrackType track_cache_type = get_cache_type(tracks[track]->type);
-		TypeHash &thash = tracks[track]->thash;
-		TypeHash old_hash = thash;
-		thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
+		const TrackType &track_cache_type = get_cache_type(tracks[track]->type);
+		const TrackCacheId clean_track_cache_id = TrackCacheId(track_cache_type, track_path);
+		const TrackCacheId &dirty_track_cache_id = tracks[track]->track_cache_id;
 
-		// Remove the reference from the TrackHashRef in case of path updates.
-		// old_hash == 0 means this is the first time hash is generated: no need to check the hashmap
-		if (old_hash != 0 && track_hash_map.has(old_hash)) {
-			unref_or_erase(tracks[track], old_hash);
+		TypeTrackId &unique_id = tracks[track]->unique_id;
+		if (unique_id != 0 && track_cache_id_map.has(dirty_track_cache_id)) {
+			// Updating because of a path or type change.
+			_track_cache_unref_or_erase(tracks[track], dirty_track_cache_id);
 		}
 
-		TrackHashRef *link = nullptr;
-		while (true) {
-			// Ensure there is one and only one hash for each unique path.
-			// In case of a duplicate hash, first check the nodepath to see if it is the same track.
-			// If it is not the same, probe the hash until it is unique. During probe, put the collided hashes in a linked list.
-			// Forbid hashes that are equal to 0, it is reserved for first time hashing checks.
-			if (thash == 0 || track_hash_map.has(thash)) {
-				// Hash collision, or the same track
-				TrackHashRef *ref = track_hash_map.get(thash);
-				if (ref->nodepath != track_path) {
-					// Not the same track. Check the next probe
-					thash = hash_murmur3_one_32(thash, tracks[track]->probe++);
-					link = ref;
-					continue;
-				} else {
-					// Same track. Add the track to the references and break
-					ref->references.push_back(tracks[track]);
-					break;
-				}
-			}
-			// Unique hash
-			track_hash_map.insert(thash, memnew(TrackHashRef(tracks[track])));
-			// Put the probed hashes into a linked list structure to de-probe when a collided hash is removed.
-			// De-probing will always guarantee lowest possible probe value for collided hashes after track removals (necessary for edge case scenarios).
-			if (link != nullptr) {
-				link->next_probe = track_hash_map.get(thash);
-				link->next_probe->prev_probe = link;
-			}
-			break;
+		// New entry for this animation. Check if there was a duplicate added from other animations.
+		if (track_cache_id_map.has(clean_track_cache_id)) {
+			TypeTrackRef *ref = track_cache_id_map.get(clean_track_cache_id);
+			unique_id = ref->id;
+			ref->references.push_back(tracks[track]);
+		} else {
+			unique_id = track_cache_id_map.size() + 1;
+			track_cache_id_map.insert(clean_track_cache_id, memnew(TypeTrackRef(tracks[track])));
 		}
+		tracks[track]->track_cache_id = clean_track_cache_id;
 	}
 
 	dirty_tracks.clear();
-	track_hash_is_dirty = false;
+	update_track_cache_ids = false;
 }
 
-Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
+Animation::TypeTrackId Animation::track_get_unique_id(int p_track) const {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
-	return tracks[p_track]->thash;
+	return tracks[p_track]->unique_id;
 }
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
@@ -6644,7 +6613,7 @@ Animation::Animation() {
 
 Animation::~Animation() {
 	for (uint32_t i = 0; i < tracks.size(); i++) {
-		unref_or_erase(tracks[i], tracks[i]->thash);
+		_track_cache_unref_or_erase(tracks[i], tracks[i]->track_cache_id);
 		memdelete(tracks[i]);
 	}
 }
