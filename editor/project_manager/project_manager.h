@@ -80,6 +80,9 @@ class ProjectManager : public Control {
 	void _update_size_limits();
 	void _update_theme(bool p_skip_creation = false);
 	void _titlebar_resized();
+	void _titlebar_minimize_requested();
+	void _titlebar_toggle_maximize_requested();
+	void _titlebar_close_requested();
 
 	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;

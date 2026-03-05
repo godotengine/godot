@@ -1316,6 +1316,31 @@ void ProjectManager::_titlebar_resized() {
 	}
 }
 
+void ProjectManager::_titlebar_minimize_requested() {
+	Window *win = get_window();
+	if (win) {
+		win->set_mode(Window::MODE_MINIMIZED);
+	}
+}
+
+void ProjectManager::_titlebar_toggle_maximize_requested() {
+	Window *win = get_window();
+	if (!win) {
+		return;
+	}
+
+	if (win->get_mode() == Window::MODE_MAXIMIZED) {
+		win->set_mode(Window::MODE_WINDOWED);
+	} else {
+		win->set_mode(Window::MODE_MAXIMIZED);
+	}
+}
+
+void ProjectManager::_titlebar_close_requested() {
+	_dim_window();
+	get_tree()->quit();
+}
+
 void ProjectManager::_open_donate_page() {
 	OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=project_manager");
 }
@@ -1971,6 +1996,9 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->process_events();
 		DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServerEnums::MAIN_WINDOW_ID);
 		title_bar->set_can_move_window(true);
+		title_bar->connect("minimize_requested", callable_mp(this, &ProjectManager::_titlebar_minimize_requested));
+		title_bar->connect("toggle_maximize_requested", callable_mp(this, &ProjectManager::_titlebar_toggle_maximize_requested));
+		title_bar->connect("close_requested", callable_mp(this, &ProjectManager::_titlebar_close_requested));
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 

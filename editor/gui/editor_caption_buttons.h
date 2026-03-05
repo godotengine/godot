@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_title_bar.h                                                    */
+/*  editor_caption_buttons.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -33,33 +33,23 @@
 #include "scene/gui/box_container.h"
 #include "scene/main/window.h"
 
-class EditorCaptionButtons;
+class Button;
 
-class EditorTitleBar : public HBoxContainer {
-	GDCLASS(EditorTitleBar, HBoxContainer);
+class EditorCaptionButtons : public HBoxContainer {
+	GDCLASS(EditorCaptionButtons, HBoxContainer);
 
-	Point2i click_pos;
-	bool moving = false;
-	bool can_move = false;
-	Control *center_control = nullptr;
-	EditorCaptionButtons *window_buttons = nullptr;
+	Button *minimize_button = nullptr;
+	Button *maximize_button = nullptr;
 
-	void _ensure_window_buttons();
-	void _update_window_buttons();
 	void _minimize_pressed();
-	void _maximize_pressed();
+	void _toggle_maximize_pressed();
 	void _close_pressed();
 
 protected:
-	void _notification(int p_what);
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
-	void set_center_control(Control *p_center_control);
-	Control *get_center_control() const;
+	void update_for_window(Window *p_window);
 
-	void set_can_move_window(bool p_enabled);
-	bool get_can_move_window() const;
+	EditorCaptionButtons();
 };

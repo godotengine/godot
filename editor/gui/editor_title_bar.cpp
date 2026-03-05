@@ -30,96 +30,10 @@
 
 #include "editor_title_bar.h"
 
+#include "core/object/class_db.h"
 #include "core/object/callable_mp.h"
-#include "editor/editor_node.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/button.h"
+#include "editor_caption_buttons.h"
 #include "servers/display/display_server.h"
-
-#ifdef WINDOWS_ENABLED
-#include <windows.h>
-
-constexpr float CAPTION_BUTTON_WIDTH = 24.0f;
-constexpr float CAPTION_BUTTON_HEIGHT = 20.0f;
-constexpr float CAPTION_BUTTON_SIDE_PADDING = 8.0f;
-
-constexpr float CAPTION_GLYPH_WIDTH = 9.0f;
-constexpr float CAPTION_GLYPH_HEIGHT = 8.0f;
-constexpr float CAPTION_RESTORE_OFFSET = 2.0f;
-constexpr float CAPTION_CLOSE_DIAGONAL = 4.0f;
-
-class EditorCaptionButton : public Button {
-	GDCLASS(EditorCaptionButton, Button);
-
-public:
-	enum CaptionGlyph {
-		GLYPH_MINIMIZE,
-		GLYPH_MAXIMIZE,
-		GLYPH_RESTORE,
-		GLYPH_CLOSE,
-	};
-
-private:
-	CaptionGlyph glyph = GLYPH_CLOSE;
-
-protected:
-	void _notification(int p_what) {
-		if (p_what != NOTIFICATION_DRAW) {
-			return;
-		}
-
-		const StringName type = get_theme_type_variation().is_empty() ? SNAME("Button") : get_theme_type_variation();
-		Color color;
-		if (is_disabled()) {
-			color = get_theme_color(SNAME("font_disabled_color"), type);
-		} else if (is_pressed()) {
-			color = get_theme_color(SNAME("font_pressed_color"), type);
-		} else if (is_hovered()) {
-			color = get_theme_color(SNAME("font_hover_color"), type);
-		} else {
-			color = get_theme_color(SNAME("font_color"), type);
-		}
-
-		const Size2 size = get_size();
-		const Vector2 center = size * 0.5f;
-		const float stroke = MAX(1.0f, Math::round(EDSCALE));
-		const float w = CAPTION_GLYPH_WIDTH * EDSCALE;
-		const float h = CAPTION_GLYPH_HEIGHT * EDSCALE;
-
-		switch (glyph) {
-			case GLYPH_MINIMIZE: {
-				const float y = center.y;
-				draw_line(Vector2(center.x - w * 0.5f, y), Vector2(center.x + w * 0.5f, y), color, stroke, true);
-			} break;
-			case GLYPH_MAXIMIZE: {
-				draw_rect(Rect2(center.x - w * 0.5f, center.y - h * 0.5f, w, h), color, false, stroke);
-			} break;
-			case GLYPH_RESTORE: {
-				const float dx = CAPTION_RESTORE_OFFSET * EDSCALE;
-				const float dy = CAPTION_RESTORE_OFFSET * EDSCALE;
-				draw_rect(Rect2(center.x - w * 0.5f + dx, center.y - h * 0.5f - dy, w, h), color, false, stroke);
-				draw_rect(Rect2(center.x - w * 0.5f - dx, center.y - h * 0.5f + dy, w, h), color, false, stroke);
-			} break;
-			case GLYPH_CLOSE: {
-				const float d = CAPTION_CLOSE_DIAGONAL * EDSCALE;
-				draw_line(Vector2(center.x - d, center.y - d), Vector2(center.x + d, center.y + d), color, stroke, true);
-				draw_line(Vector2(center.x + d, center.y - d), Vector2(center.x - d, center.y + d), color, stroke, true);
-			} break;
-		}
-	}
-
-	static void _bind_methods() {}
-
-public:
-	void set_caption_glyph(CaptionGlyph p_glyph) {
-		if (glyph == p_glyph) {
-			return;
-		}
-		glyph = p_glyph;
-		queue_redraw();
-	}
-};
-#endif
 
 void EditorTitleBar::_ensure_window_buttons() {
 #ifdef WINDOWS_ENABLED
@@ -132,53 +46,10 @@ void EditorTitleBar::_ensure_window_buttons() {
 		return;
 	}
 
-	window_buttons = memnew(HBoxContainer);
-	window_buttons->set_name("WindowButtons");
-	window_buttons->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	window_buttons->set_alignment(BoxContainer::ALIGNMENT_END);
-
-	Control *caption_left_padding = memnew(Control);
-	caption_left_padding->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	caption_left_padding->set_custom_minimum_size(Size2(CAPTION_BUTTON_SIDE_PADDING, 0) * EDSCALE);
-	window_buttons->add_child(caption_left_padding);
-
-	EditorCaptionButton *min_btn = memnew(EditorCaptionButton);
-	min_btn->set_caption_glyph(EditorCaptionButton::GLYPH_MINIMIZE);
-	minimize_button = min_btn;
-	minimize_button->set_theme_type_variation("FlatButton");
-	minimize_button->set_flat(true);
-	minimize_button->set_focus_mode(Control::FOCUS_NONE);
-	minimize_button->set_tooltip_text(TTR("Minimize"));
-	minimize_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	minimize_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTitleBar::_minimize_pressed));
-	window_buttons->add_child(minimize_button);
-
-	EditorCaptionButton *max_btn = memnew(EditorCaptionButton);
-	max_btn->set_caption_glyph(EditorCaptionButton::GLYPH_MAXIMIZE);
-	maximize_button = max_btn;
-	maximize_button->set_theme_type_variation("FlatButton");
-	maximize_button->set_flat(true);
-	maximize_button->set_focus_mode(Control::FOCUS_NONE);
-	maximize_button->set_tooltip_text(TTR("Maximize"));
-	maximize_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	maximize_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTitleBar::_maximize_pressed));
-	window_buttons->add_child(maximize_button);
-
-	EditorCaptionButton *cls_btn = memnew(EditorCaptionButton);
-	cls_btn->set_caption_glyph(EditorCaptionButton::GLYPH_CLOSE);
-	close_button = cls_btn;
-	close_button->set_theme_type_variation("FlatButton");
-	close_button->set_flat(true);
-	close_button->set_focus_mode(Control::FOCUS_NONE);
-	close_button->set_tooltip_text(TTR("Close"));
-	close_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTitleBar::_close_pressed));
-	window_buttons->add_child(close_button);
-
-	Control *caption_right_padding = memnew(Control);
-	caption_right_padding->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	caption_right_padding->set_custom_minimum_size(Size2(CAPTION_BUTTON_SIDE_PADDING, 0) * EDSCALE);
-	window_buttons->add_child(caption_right_padding);
+	window_buttons = memnew(EditorCaptionButtons);
+	window_buttons->connect("minimize_requested", callable_mp(this, &EditorTitleBar::_minimize_pressed));
+	window_buttons->connect("toggle_maximize_requested", callable_mp(this, &EditorTitleBar::_maximize_pressed));
+	window_buttons->connect("close_requested", callable_mp(this, &EditorTitleBar::_close_pressed));
 
 	add_child(window_buttons);
 	move_child(window_buttons, get_child_count() - 1);
@@ -187,7 +58,6 @@ void EditorTitleBar::_ensure_window_buttons() {
 }
 
 void EditorTitleBar::_update_window_buttons() {
-#ifdef WINDOWS_ENABLED
 	if (!window_buttons) {
 		return;
 	}
@@ -197,62 +67,19 @@ void EditorTitleBar::_update_window_buttons() {
 		return;
 	}
 
-	if (minimize_button) {
-		minimize_button->set_disabled(win->get_flag(Window::FLAG_MINIMIZE_DISABLED));
-	}
-	if (maximize_button) {
-		const bool maximized = win->get_mode() == Window::MODE_MAXIMIZED;
-		if (EditorCaptionButton *max_btn = Object::cast_to<EditorCaptionButton>(maximize_button)) {
-			max_btn->set_caption_glyph(maximized ? EditorCaptionButton::GLYPH_RESTORE : EditorCaptionButton::GLYPH_MAXIMIZE);
-		}
-		maximize_button->set_tooltip_text(maximized ? TTR("Restore") : TTR("Maximize"));
-		maximize_button->set_disabled(win->get_flag(Window::FLAG_MAXIMIZE_DISABLED));
-	}
-#endif
+	window_buttons->update_for_window(win);
 }
 
 void EditorTitleBar::_minimize_pressed() {
-#ifdef WINDOWS_ENABLED
-	Window *win = get_window();
-	if (win) {
-		win->set_mode(Window::MODE_MINIMIZED);
-	}
-#endif
+	emit_signal(SNAME("minimize_requested"));
 }
 
 void EditorTitleBar::_maximize_pressed() {
-#ifdef WINDOWS_ENABLED
-	Window *win = get_window();
-	if (!win) {
-		return;
-	}
-
-	if (win->get_mode() == Window::MODE_MAXIMIZED) {
-		win->set_mode(Window::MODE_WINDOWED);
-	} else {
-		win->set_mode(Window::MODE_MAXIMIZED);
-	}
-	_update_window_buttons();
-#endif
+	emit_signal(SNAME("toggle_maximize_requested"));
 }
 
 void EditorTitleBar::_close_pressed() {
-#ifdef WINDOWS_ENABLED
-	if (EditorNode::get_singleton()) {
-		callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).call_deferred((int)EditorNode::SCENE_QUIT, false);
-		return;
-	}
-
-	Window *win = get_window();
-	if (!win) {
-		return;
-	}
-
-	const int64_t native_handle = DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, win->get_window_id());
-	if (native_handle != 0) {
-		PostMessageW(reinterpret_cast<HWND>(native_handle), WM_CLOSE, 0, 0);
-	}
-#endif
+	emit_signal(SNAME("close_requested"));
 }
 
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
@@ -328,14 +155,6 @@ void EditorTitleBar::_notification(int p_what) {
 		}
 		case NOTIFICATION_RESIZED: {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
-			Window *win = get_window();
-			if (win) {
-				const Size2i min_size = win->get_min_size();
-				const int titlebar_min_width = get_combined_minimum_size().x;
-				if (min_size.x < titlebar_min_width) {
-					win->set_min_size(Size2i(titlebar_min_width, min_size.y));
-				}
-			}
 			_update_window_buttons();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
@@ -406,4 +225,10 @@ void EditorTitleBar::set_can_move_window(bool p_enabled) {
 
 bool EditorTitleBar::get_can_move_window() const {
 	return can_move;
+}
+
+void EditorTitleBar::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("minimize_requested"));
+	ADD_SIGNAL(MethodInfo("toggle_maximize_requested"));
+	ADD_SIGNAL(MethodInfo("close_requested"));
 }

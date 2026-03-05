@@ -1647,6 +1647,41 @@ void EditorNode::_titlebar_resized() {
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
+
+	Window *window = get_window();
+	if (window && title_bar) {
+		const Size2i min_size = window->get_min_size();
+		const int titlebar_min_width = title_bar->get_combined_minimum_size().x;
+		if (min_size.x < titlebar_min_width) {
+			const Size2i adjusted_min_size = Size2i(titlebar_min_width, min_size.y);
+			window->set_min_size(adjusted_min_size);
+			DisplayServer::get_singleton()->window_set_min_size(adjusted_min_size, DisplayServerEnums::MAIN_WINDOW_ID);
+		}
+	}
+}
+
+void EditorNode::_titlebar_minimize_requested() {
+	Window *window = get_window();
+	if (window) {
+		window->set_mode(Window::MODE_MINIMIZED);
+	}
+}
+
+void EditorNode::_titlebar_toggle_maximize_requested() {
+	Window *window = get_window();
+	if (!window) {
+		return;
+	}
+
+	if (window->get_mode() == Window::MODE_MAXIMIZED) {
+		window->set_mode(Window::MODE_WINDOWED);
+	} else {
+		window->set_mode(Window::MODE_MAXIMIZED);
+	}
+}
+
+void EditorNode::_titlebar_close_requested() {
+	callable_mp(this, &EditorNode::trigger_menu_option).call_deferred((int)EditorNode::SCENE_QUIT, false);
 }
 
 void EditorNode::_update_undo_redo_allowed() {
@@ -8968,6 +9003,9 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
 	title_bar->set_center_control(main_editor_button_hb);
+	title_bar->connect("minimize_requested", callable_mp(this, &EditorNode::_titlebar_minimize_requested));
+	title_bar->connect("toggle_maximize_requested", callable_mp(this, &EditorNode::_titlebar_toggle_maximize_requested));
+	title_bar->connect("close_requested", callable_mp(this, &EditorNode::_titlebar_close_requested));
 
 	// Spacer to center 2D / 3D / Script buttons.
 	right_spacer = memnew(Control);
