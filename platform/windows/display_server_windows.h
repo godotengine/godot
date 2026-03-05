@@ -38,6 +38,7 @@
 #include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/os/process_id.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/rb_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"

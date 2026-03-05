@@ -34,6 +34,7 @@
 #include "fbx_document.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scene_importer_fbx2gltf.h"
