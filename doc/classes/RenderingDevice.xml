@@ -14,13 +14,6 @@
 		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
-		<method name="acceleration_structure_build">
-			<return type="int" enum="Error" />
-			<param index="0" name="acceleration_structure" type="RID" />
-			<description>
-				Builds the [param acceleration_structure].
-			</description>
-		</method>
 		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
@@ -29,11 +22,19 @@
 				This method does nothing.
 			</description>
 		</method>
+		<method name="blas_build">
+			<return type="int" enum="Error" />
+			<param index="0" name="blas" type="RID" />
+			<description>
+				Builds the [param blas].
+			</description>
+		</method>
 		<method name="blas_create">
 			<return type="RID" />
 			<param index="0" name="geometries" type="RDAccelerationStructureGeometry[]" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
 			<description>
-				Creates a new Bottom Level Acceleration Structure. It can be accessed with the RID that is returned.
+				Creates a new Bottom-Level Acceleration Structure (BLAS). It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -759,15 +760,27 @@
 				assert(rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE))
 
 				# Create a BLAS for a mesh.
-				blas = rd.blas_create(geometries)
-				# Create TLAS with BLASs.
-				instances_buffer = rd.tlas_instances_buffer_create(1)
-				rd.tlas_instances_buffer_fill(instances_buffer, [blas], [Transform3D()])
-				tlas = rd.tlas_create(instances_buffer)
+				var geometry = RDAccelerationStructureGeometry.new()
+				geometry.flags = RenderingDevice.ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT
+				geometry.vertex_buffer = vertex_buffer
+				geometry.vertex_stride = 12
+				geometry.vertex_format = RenderingDevice.DATA_FORMAT_R32G32B32_SFLOAT
+				geometry.vertex_count = 3
+				geometry.index_buffer = index_buffer
+				geometry.index_count = 3
+				geometries.push_back(geometry)
+
+				blas = rd.blas_create([geometry], 0)
+
+				# Create TLAS.
+				tlas = rd.tlas_create(1, 0)
 
 				# Build acceleration structures.
-				rd.acceleration_structure_build(blas)
-				rd.acceleration_structure_build(tlas)
+				rd.blas_build(blas)
+
+				var instance = RDAccelerationStructureInstance.new()
+				instance.blas = blas
+				rd.tlas_build(tlas, [instance])
 
 				var raylist = rd.raytracing_list_begin()
 
@@ -1200,31 +1213,24 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
+		<method name="tlas_build">
+			<return type="int" enum="Error" />
+			<param index="0" name="tlas" type="RID" />
+			<param index="1" name="instances" type="RDAccelerationStructureInstance[]" />
+			<description>
+				Builds the [param tlas]. The contents of previous builds are discarded.
+				Any BLAS provided through the [member RDAccelerationStructureInstance.blas] member must already have been built using the [method blas_build] method.
+				The number of instances can be equal to or smaller than the maximum instance count provided in the [method tlas_create] method.
+				[b]Note:[/b] Freeing or rebuilding any of the provided BLASes after this method invalidates the TLAS and requires it to be rebuilt.
+			</description>
+		</method>
 		<method name="tlas_create">
 			<return type="RID" />
-			<param index="0" name="instances_buffer" type="RID" />
+			<param index="0" name="max_instance_count" type="int" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
 			<description>
-				Creates a new Top Level Acceleration Structure. It can be accessed with the RID that is returned.
-				The instances buffer passed as input is expected to be filled before building the TLAS.
+				Creates a new Top-Level Acceleration Structure (TLAS). It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-			</description>
-		</method>
-		<method name="tlas_instances_buffer_create">
-			<return type="RID" />
-			<param index="0" name="instance_count" type="int" />
-			<param index="1" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
-			<description>
-				Creates a new instances buffer which can be used to create a TLAS. It can be accessed with the RID that is returned.
-				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-			</description>
-		</method>
-		<method name="tlas_instances_buffer_fill">
-			<return type="void" />
-			<param index="0" name="instances_buffer" type="RID" />
-			<param index="1" name="blases" type="RID[]" />
-			<param index="2" name="transforms" type="Transform3D[]" />
-			<description>
-				Fills the content of an instances buffer. The number of BLASes and transforms passed as input should be the same and should equal the instance count used at instance buffer creation time.
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
@@ -2294,11 +2300,38 @@
 			[/gdscript]
 			[/codeblocks]
 		</constant>
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Allows the acceleration structure to be updated after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT" value="2" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Allows the acceleration structure to be compacted to reduce memory usage after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT" value="4" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Prioritizes ray traversal performance over build performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT" value="8" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Prioritizes build performance over ray traversal performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_LOW_MEMORY_BIT" value="16" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Reduces the memory usage of the acceleration structure, potentially at the cost of reduced ray traversal performance.
+		</constant>
 		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
 			An opaque geometry does not invoke the any hit shaders.
 		</constant>
 		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
 			This geometry only calls the any hit shader a single time for each primitive.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Disables triangle face culling for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT" value="2" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Flips the triangle facing direction for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT" value="4" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Forces all geometries in this instance to be treated as opaque, preventing any hit shaders from being invoked.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT" value="8" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Forces all geometries in this instance to be treated as non-opaque, allowing any hit shaders to be invoked.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.

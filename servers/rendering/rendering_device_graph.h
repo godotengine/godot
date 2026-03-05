@@ -103,7 +103,8 @@ public:
 	struct RecordedCommand {
 		enum Type {
 			TYPE_NONE,
-			TYPE_ACCELERATION_STRUCTURE_BUILD,
+			TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD,
+			TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD,
 			TYPE_BUFFER_CLEAR,
 			TYPE_BUFFER_COPY,
 			TYPE_BUFFER_GET_DATA,
@@ -173,7 +174,6 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
 		RESOURCE_USAGE_GENERAL,
-		RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
 		RESOURCE_USAGE_MAX
@@ -342,9 +342,17 @@ private:
 		bool partial_coverage = false;
 	};
 
-	struct RecordedAccelerationStructureBuildCommand : RecordedCommand {
+	struct RecordedBottomLevelAccelerationStructureBuildCommand : RecordedCommand {
 		RDD::AccelerationStructureID acceleration_structure;
 		RDD::BufferID scratch_buffer;
+	};
+
+	struct RecordedTopLevelAccelerationStructureBuildCommand : RecordedCommand {
+		RDD::AccelerationStructureID acceleration_structure;
+		RDD::BufferID scratch_buffer;
+		RDD::BufferID instance_buffer;
+		uint32_t instance_offset = 0;
+		uint32_t instance_count = 0;
 	};
 
 	struct RecordedBufferClearCommand : RecordedCommand {
@@ -878,7 +886,8 @@ public:
 	void initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
 	void finalize();
 	void begin();
-	void add_acceleration_structure_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers);
+	void add_blas_build(RDD::AccelerationStructureID p_blas, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers);
+	void add_tlas_build(RDD::AccelerationStructureID p_tlas, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers);
 	void add_buffer_clear(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_offset, uint32_t p_size);
 	void add_buffer_copy(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, RDD::BufferCopyRegion p_region);
 	void add_buffer_get_data(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, RDD::BufferCopyRegion p_region);
