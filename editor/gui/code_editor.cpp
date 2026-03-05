@@ -1044,7 +1044,10 @@ void CodeTextEditor::_complete_request() {
 	for (const String &completion : completions) {
 		entries.push_back(ScriptLanguage::CodeCompletionOption{
 				completion,
-				ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
+				ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
+				ScriptLanguage::CodeCompletionLocation::LOCATION_OTHER,
+				"",
+				true });
 	}
 
 	for (const ScriptLanguage::CodeCompletionOption &e : entries) {

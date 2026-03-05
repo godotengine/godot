@@ -2388,6 +2388,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
 		const String &display_text = code_completion_options[code_completion_current_selected].display;
+		const int caret_position_before_text_insertion = get_caret_column(i);
 
 		if (p_replace) {
 			// Find end of current section.
@@ -2452,17 +2453,34 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		int pre_brace_pair = get_caret_column(i) > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column(i)) : -1;
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
 
-		String to_find = "\\1";
-		if (insert_text.contains(to_find)) {
-			// move the cursor backward to the desired spot in the snippet
+		String to_find = "$0";
+		// If this was a user made snippet, check if they wanted their caret to be moved to a certain position
+		if (code_completion_options[code_completion_current_selected].is_user_snippet && insert_text.contains(to_find)) {
+			// Move the cursor backward to the desired spot in the snippet
 			int current_position = get_caret_column(i);
 			String line_content = get_line(caret_line);
-			while (current_position >= 0) {
+			while (current_position >= caret_position_before_text_insertion) {
 				String found = line_content.substr(current_position, to_find.length());
 				if (found == to_find) {
-					set_caret_column(current_position, i == 0, i);
-					remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + to_find.length());
-					break;
+					// Check the case when the user is trying to escape '$' with an odd number of '\'
+					int backslash_count = 0;
+					// Align the current position with the '\'
+					current_position -= 1;
+					while (current_position >= caret_position_before_text_insertion && line_content.substr(current_position, 1) == "\\") {
+						backslash_count++;
+						current_position--;
+					}
+					// There was no '\', so line back up with the '$' in "$0"
+					if (backslash_count == 0) {
+						current_position++;
+					}
+					// Only move the user caret if the amount of backslash was even like $0 or \\$0.
+					// Otherwise, keep the literal $0 that was already inserted above.
+					if (backslash_count % 2 == 0) {
+						set_caret_column(current_position, i == 0, i);
+						remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + to_find.length());
+						break;
+					}
 				}
 				current_position--;
 			}
