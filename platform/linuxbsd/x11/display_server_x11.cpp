@@ -38,8 +38,9 @@
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"
@@ -6071,7 +6072,7 @@ void DisplayServerX11::_set_window_taskbar_pager_enabled(Window p_window, bool p
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 }
 
-Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), FAILED);
@@ -6207,7 +6208,7 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, OS:
 	return OK;
 }
 
-Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::request_close_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -6240,7 +6241,7 @@ Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::remove_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -6257,7 +6258,7 @@ Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-OS::ProcessID DisplayServerX11::get_focused_process_id() {
+ProcessID DisplayServerX11::get_focused_process_id() {
 	Window focused_window = 0;
 	int revert_to = 0;
 

@@ -392,6 +392,9 @@
 		<member name="editors/3d/freelook/freelook_inertia" type="float" setter="" getter="">
 			The inertia of the 3D freelook camera. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
+		<member name="editors/3d/freelook/freelook_invert_y_axis" type="bool" setter="" getter="">
+			If [code]true[/code], invert the vertical mouse axis when using freelook mode in the 3D editor.
+		</member>
 		<member name="editors/3d/freelook/freelook_navigation_scheme" type="int" setter="" getter="">
 			The navigation scheme to use when freelook is enabled in the 3D editor. Some of the navigation schemes below may be more convenient when designing specific levels in the 3D editor.
 			- [b]Default:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move relative to the camera, taking its pitch angle into account for the movement.
@@ -443,7 +446,7 @@
 			If [code]true[/code], invert the horizontal mouse axis when panning or orbiting in the 3D editor. This setting does [i]not[/i] apply to freelook mode.
 		</member>
 		<member name="editors/3d/navigation/invert_y_axis" type="bool" setter="" getter="">
-			If [code]true[/code], invert the vertical mouse axis when panning, orbiting, or using freelook mode in the 3D editor.
+			If [code]true[/code], invert the vertical mouse axis when panning or orbiting in the 3D editor.
 		</member>
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
 			The navigation scheme preset to use in the 3D editor. Changing this setting will affect the mouse button and modifier keys used to navigate the 3D editor viewport.
@@ -1087,9 +1090,6 @@
 		</member>
 		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
 			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
-		</member>
-		<member name="interface/editors/show_scene_tree_root_selection" type="bool" setter="" getter="">
-			If [code]true[/code], the Scene dock will display buttons to quickly add a root node to a newly created scene.
 		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.

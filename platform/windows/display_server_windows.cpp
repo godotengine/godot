@@ -35,13 +35,15 @@
 #include "os_windows.h"
 #include "wgl_detect_version.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -3320,7 +3322,7 @@ bool DisplayServerWindows::get_swap_cancel_ok() {
 	return true;
 }
 
-void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServerWindows::enable_for_stealing_focus(ProcessID pid) {
 	_THREAD_SAFE_METHOD_
 
 	AllowSetForegroundWindow(pid);
@@ -3351,7 +3353,7 @@ static BOOL CALLBACK _enum_proc_find_window_from_process_id_callback(HWND hWnd, 
 	return TRUE;
 }
 
-HWND DisplayServerWindows::_find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd) {
+HWND DisplayServerWindows::_find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd) {
 	DWORD pid = p_pid;
 	WindowEnumData ed = { pid, p_current_hwnd, NULL };
 
@@ -3460,7 +3462,7 @@ void DisplayServerWindows::_update_hdr_output_for_tracked_windows() {
 	}
 }
 
-Error DisplayServerWindows::embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServerWindows::embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), FAILED);
@@ -3516,7 +3518,7 @@ Error DisplayServerWindows::embed_process(DisplayServerEnums::WindowID p_window,
 	return OK;
 }
 
-Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerWindows::request_close_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -3531,7 +3533,7 @@ Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) 
 	return OK;
 }
 
-Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerWindows::remove_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -3581,7 +3583,7 @@ Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-OS::ProcessID DisplayServerWindows::get_focused_process_id() {
+ProcessID DisplayServerWindows::get_focused_process_id() {
 	HWND hwnd = GetForegroundWindow();
 	if (!hwnd) {
 		return 0;

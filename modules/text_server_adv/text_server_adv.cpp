@@ -30,34 +30,16 @@
 
 #include "text_server_adv.h"
 
-#include "core/object/callable_method_pointer.h"
-
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/translation_server.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-
-using namespace godot;
-
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Built-in ICU data.
 
@@ -380,11 +362,7 @@ bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 }
 
 String TextServerAdvanced::_get_name() const {
-#ifdef GDEXTENSION
-	return "ICU / HarfBuzz / Graphite (GDExtension)";
-#elif defined(GODOT_MODULE)
 	return "ICU / HarfBuzz / Graphite (Built-in)";
-#endif
 }
 
 int64_t TextServerAdvanced::_get_features() const {
@@ -5756,12 +5734,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 
 	String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
-#ifdef GDEXTENSION
-	for (int fb = 0; fb < fallback_font_name.size(); fb++) {
-		const String &E = fallback_font_name[fb];
-#elif defined(GODOT_MODULE)
 	for (const String &E : fallback_font_name) {
-#endif
 		SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
 		if (system_fonts.has(key)) {
 			const SystemFontCache &sysf_cache = system_fonts[key];
@@ -7680,11 +7653,7 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 	String result;
 	for (int i = 0; i < normalized_string.length(); i++) {
 		if (u_getCombiningClass(normalized_string[i]) == 0) {
-#ifdef GDEXTENSION
-			result = result + String::chr(normalized_string[i]);
-#elif defined(GODOT_MODULE)
 			result = result + normalized_string[i];
-#endif
 		}
 	}
 	return result;

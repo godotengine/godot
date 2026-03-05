@@ -31,8 +31,10 @@
 #include "animation_tree.h"
 #include "animation_tree.compat.inc"
 
-#include "animation_blend_tree.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {

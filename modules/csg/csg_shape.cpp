@@ -30,7 +30,9 @@
 
 #include "csg_shape.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -199,6 +201,26 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
+
+void CSGShape3D::set_autosmooth(bool p_smooth) {
+	autosmooth = p_smooth;
+	_make_dirty();
+	notify_property_list_changed();
+}
+
+bool CSGShape3D::is_autosmooth() const {
+	return autosmooth;
+}
+
+void CSGShape3D::set_smoothing_angle(const float p_angle) {
+	smoothing_angle = p_angle;
+	_make_dirty();
+}
+
+float CSGShape3D::get_smoothing_angle() const {
+	return smoothing_angle;
+}
+
 #endif // PHYSICS_3D_DISABLED
 
 bool CSGShape3D::is_root_shape() const {
@@ -580,10 +602,14 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	AHashMap<Vector3, Vector3> vec_map;
-
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
+
+	Vector<Vector3> smooth_faces;
+	LocalVector<Vector3> smooth_vertex;
+	smooth_faces.resize(n->faces.size());
+	smooth_vertex.resize(n->faces.size() * 3);
+
 	for (int i = 0; i < face_count.size(); i++) {
 		face_count.write[i] = 0;
 	}
@@ -593,21 +619,70 @@ void CSGShape3D::update_shape() {
 		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
 		int idx = mat == -1 ? face_count.size() - 1 : mat;
 
-		if (n->faces[i].smooth) {
-			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
+		Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
 
-			for (int j = 0; j < 3; j++) {
-				Vector3 v = n->faces[i].vertices[j];
-				Vector3 *vec = vec_map.getptr(v);
-				if (vec) {
-					*vec += p.normal;
-				} else {
-					vec_map.insert(v, p.normal);
+		smooth_faces.write[i] = p.normal;
+		// Not sure if resize populates the LocalVector.
+		smooth_vertex[i * 3 + 0] = Vector3(p.normal);
+		smooth_vertex[i * 3 + 1] = Vector3(p.normal);
+		smooth_vertex[i * 3 + 2] = Vector3(p.normal);
+		// We could use a AHashMap Vector3, int to store the number of connections of each vertex position and end the loop earlier. But I'm not sure if the performance gains outweigh the cost.
+		face_count.write[idx]++;
+	}
+
+	if (autosmooth) {
+		// We could add a `use_groups` property later to only apply autosmooth on smooth faces or respect smoothing groups in some way.
+		if (smoothing_angle > 0.1) {
+			float smooth_angle_rad = Math::cos(Math::deg_to_rad(smoothing_angle));
+			for (int i = 0; i < smooth_faces.size(); i++) {
+				for (int k = 0; k < 3; k++) {
+					int curr_vert = i * 3 + k;
+					Vector3 vert_a = n->faces[i].vertices[k];
+					for (int j = i + 1; j < smooth_faces.size(); j++) {
+						// Compare the angles of faces instead of vertices.
+						if (smooth_faces[i].dot(smooth_faces[j]) > smooth_angle_rad) {
+							for (int h = 0; h < 3; h++) {
+								Vector3 vert_b = n->faces[j].vertices[h];
+								if (vert_a == vert_b) {
+									int curr_j = j * 3 + h;
+									smooth_vertex[curr_vert] += smooth_faces[j];
+									smooth_vertex[curr_j] += smooth_faces[i];
+									break;
+								}
+							}
+						}
+					}
+					smooth_vertex[curr_vert].normalize();
 				}
 			}
 		}
-
-		face_count.write[idx]++;
+	} else {
+		for (int i = 0; i < smooth_faces.size(); i++) {
+			bool face_is_smooth = n->faces[i].smooth;
+			if (face_is_smooth) {
+				for (int k = 0; k < 3; k++) {
+					Vector3 vert_a = n->faces[i].vertices[k];
+					int curr_vert = i * 3 + k;
+					// Skip the other vertices of the face as they will never occupy the same position.
+					for (int j = i + 1; j < smooth_faces.size(); j++) {
+						// Preparing for when and if we replace Vector of bool for Vector of int smoothing groups. for now, face_is_smooth is always true.
+						if (face_is_smooth == n->faces[j].smooth) {
+							for (int h = 0; h < 3; h++) {
+								Vector3 vert_b = n->faces[j].vertices[h];
+								if (vert_a == vert_b) {
+									int curr_j = j * 3 + h;
+									smooth_vertex[curr_vert] += smooth_faces[j];
+									smooth_vertex[curr_j] += smooth_faces[i];
+									// Skip the other 2 vertices as only one vertex of each face can connect with one vertex of other face.
+									break;
+								}
+							}
+						}
+					}
+					smooth_vertex[curr_vert].normalize();
+				}
+			}
+		}
 	}
 
 	Vector<ShapeUpdateSurface> surfaces;
@@ -651,19 +726,12 @@ void CSGShape3D::update_shape() {
 
 			int last = surfaces[idx].last_added;
 
-			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
+			int face_pos_i = i * 3;
 
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
 
-				Vector3 normal = p.normal;
-
-				if (n->faces[i].smooth) {
-					Vector3 *ptr = vec_map.getptr(v);
-					if (ptr) {
-						normal = ptr->normalized();
-					}
-				}
+				Vector3 normal = smooth_vertex[face_pos_i + j];
 
 				if (n->faces[i].invert) {
 					normal = -normal;
@@ -957,6 +1025,19 @@ void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
+
+	if (p_property.name == "smoothing_angle") {
+		if (!autosmooth || (is_inside_tree() && !is_root_shape())) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "autosmooth") {
+		if (is_inside_tree() && !is_root_shape()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	bool is_collision_prefixed = p_property.name.begins_with("collision_");
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
@@ -1040,6 +1121,15 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
 
 	ClassDB::bind_method(D_METHOD("bake_static_mesh"), &CSGShape3D::bake_static_mesh);
+
+	ClassDB::bind_method(D_METHOD("set_autosmooth", "autosmooth"), &CSGShape3D::set_autosmooth);
+	ClassDB::bind_method(D_METHOD("is_autosmooth"), &CSGShape3D::is_autosmooth);
+
+	ClassDB::bind_method(D_METHOD("set_smoothing_angle", "smoothing_angle"), &CSGShape3D::set_smoothing_angle);
+	ClassDB::bind_method(D_METHOD("get_smoothing_angle"), &CSGShape3D::get_smoothing_angle);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autosmooth"), "set_autosmooth", "is_autosmooth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_smoothing_angle", "get_smoothing_angle");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 #ifndef DISABLE_DEPRECATED

@@ -30,6 +30,8 @@
 
 #include "physics_server_2d_wrap_mt.h"
 
+#include "core/object/callable_mp.h"
+
 void PhysicsServer2DWrapMT::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;

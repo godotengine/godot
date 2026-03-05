@@ -5,6 +5,9 @@ on:
       changed-files:
         description: A list of changed files.
         value: ${{ jobs.static-checks.outputs.changed-files }}
+      sources-changed:
+        description: Determines if any source files were changed.
+        value: ${{ jobs.static-checks.outputs.sources-changed }}
   workflow_dispatch:
 
 jobs:
@@ -13,7 +16,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
-      changed-files: '"${{ steps.changed-files.outputs.all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
+      changed-files: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
+      sources-changed: ${{ steps.changed-files.outputs.sources_any_changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -33,10 +37,11 @@ jobs:
           safe_output: false # Output passed to environment variable to avoid command injection.
           separator: '" "' # To account for paths with spaces, ensure our items are split by quotes internally.
           skip_initial_fetch: true
+          files_yaml_from_source_file: .github/changed_files.yml
 
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
         env:
-          CHANGED_FILES: '"${{ steps.changed-files.outputs.all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
+          CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
         with:
           extra_args: --files ${{ env.CHANGED_FILES }}

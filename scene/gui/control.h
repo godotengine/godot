@@ -30,17 +30,17 @@
 
 #pragma once
 
-#include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
 #include "servers/display/accessibility_server_enums.h"
 
-class Viewport;
 class Label;
 class Panel;
-class ThemeOwner;
 class ThemeContext;
+class ThemeOwner;
+class Viewport;
+struct Transform2D;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -224,6 +224,8 @@ private:
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
 		bool block_minimum_size_adjust = false;
+
+		bool layout_pending = false;
 
 		bool size_warning = true;
 
@@ -553,6 +555,13 @@ public:
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
+
+	bool is_layout_pending() const;
+	bool is_layout_pending_in_tree() const;
+	void layout_pending_start();
+	void layout_pending_finish();
+	Control *get_layout_pending_control_in_tree() const;
+	void call_on_all_layout_pending_finished(const Callable &p_callable);
 
 	// Container sizing.
 

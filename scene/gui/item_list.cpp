@@ -31,6 +31,7 @@
 #include "item_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/theme/theme_db.h"

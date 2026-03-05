@@ -31,9 +31,11 @@
 #include "text_edit.h"
 #include "text_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
@@ -837,7 +839,9 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_caches();
 			if (caret_pos_dirty) {
-				callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
+				// No need to emit "caret_changed" signal (otherwise will save an unnecessary state to history),
+				// so we use `_set_caret_pos_dirty()` instead of `_emit_caret_changed()`.
+				callable_mp(this, &TextEdit::_set_caret_pos_dirty).call_deferred(false);
 			}
 			if (text_changed_dirty) {
 				callable_mp(this, &TextEdit::_emit_text_changed).call_deferred();
@@ -6649,6 +6653,26 @@ int TextEdit::get_total_visible_line_count() const {
 }
 
 // Auto adjust.
+bool TextEdit::is_line_in_viewport(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	int line_wrap = get_line_wrap_index_at_column(p_line, 0);
+
+	int first_vis_line = get_first_visible_line();
+	int first_vis_wrap = first_visible_line_wrap_ofs;
+	int last_vis_line = get_last_full_visible_line();
+	int last_vis_wrap = get_last_full_visible_line_wrap_index();
+
+	if (p_line < first_vis_line || (p_line == first_vis_line && p_line < first_vis_wrap)) {
+		// Caret is above screen.
+		return false;
+	} else if (p_line > last_vis_line || (p_line == last_vis_line && line_wrap > last_vis_wrap)) {
+		// Caret is below screen.
+		return false;
+	}
+	return true;
+}
+
 void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 
@@ -7458,6 +7482,7 @@ void TextEdit::_bind_methods() {
 	// Visible lines.
 	ClassDB::bind_method(D_METHOD("set_line_as_first_visible", "line", "wrap_index"), &TextEdit::set_line_as_first_visible, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_first_visible_line"), &TextEdit::get_first_visible_line);
+	ClassDB::bind_method(D_METHOD("is_line_in_viewport", "line"), &TextEdit::is_line_in_viewport);
 
 	ClassDB::bind_method(D_METHOD("set_line_as_center_visible", "line", "wrap_index"), &TextEdit::set_line_as_center_visible, DEFVAL(0));
 
@@ -8241,6 +8266,10 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 }
 
 /* Caret */
+void TextEdit::_set_caret_pos_dirty(bool p_dirty) {
+	caret_pos_dirty = p_dirty;
+}
+
 void TextEdit::_caret_changed(int p_caret) {
 	queue_redraw();
 

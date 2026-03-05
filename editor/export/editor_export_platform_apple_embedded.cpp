@@ -32,6 +32,9 @@
 
 #include "core/io/json.h"
 #include "core/io/plist.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -2566,7 +2569,7 @@ int EditorExportPlatformAppleEmbedded::_execute(const String &p_path, const List
 
 	Ref<FileAccess> fa_stdout = pipe_info["stdio"];
 	Ref<FileAccess> fa_stderr = pipe_info["stderr"];
-	OS::ProcessID pid = pipe_info["pid"];
+	ProcessID pid = pipe_info["pid"];
 
 	FileReader stdout_r(fa_stdout);
 	FileReader stderr_r(fa_stderr);

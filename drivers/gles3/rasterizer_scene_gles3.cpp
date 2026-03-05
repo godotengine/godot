@@ -861,7 +861,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	}
 
 	Projection correction;
-	correction.set_depth_correction(false, true, false);
+	correction.set_depth_correction(p_flip_y, true, false);
 	camera = correction * camera;
 
 	Basis sky_transform = environment_get_sky_orientation(p_env);
@@ -986,7 +986,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		Projection cm;
 		cm.set_perspective(90, 1, 0.01, 10.0);
 		Projection correction;
-		correction.set_depth_correction(true, true, false);
+		correction.set_depth_correction(false, true, false);
 		cm = correction * cm;
 
 		bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
@@ -2322,7 +2322,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
-		render_data.cam_frustum = p_camera_data->is_frustum;
 		render_data.camera_visible_layers = p_camera_data->visible_layers;
 		render_data.main_cam_transform = p_camera_data->main_transform;
 
@@ -2525,11 +2524,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		if (draw_sky || draw_sky_fog_only || sky_reflections || sky_ambient) {
 			RENDER_TIMESTAMP("Setup Sky");
 			Projection projection = render_data.cam_projection;
-			if (is_reflection_probe) {
-				Projection correction;
-				correction.set_depth_correction(true, true, false);
-				projection = correction * render_data.cam_projection;
-			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
@@ -2762,14 +2756,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		Transform3D transform = render_data.cam_transform;
 		Projection projection = render_data.cam_projection;
-		if (is_reflection_probe) {
-			Projection correction;
-			correction.columns[1][1] = -1.0;
-			projection = correction * render_data.cam_projection;
-		} else if (render_data.cam_frustum) {
-			// Sky is drawn upside down, the frustum offset doesn't know the image is upside down so needs a flip.
-			projection[2].y = -projection[2].y;
-		}
 
 		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
 	}

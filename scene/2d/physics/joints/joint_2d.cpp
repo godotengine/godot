@@ -31,6 +31,7 @@
 #include "joint_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
 

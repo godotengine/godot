@@ -30,6 +30,7 @@
 
 #include "option_button.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
@@ -389,6 +390,18 @@ bool OptionButton::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+bool OptionButton::is_search_bar_enabled() const {
+	return popup->is_search_bar_enabled();
+}
+
+void OptionButton::set_search_bar_enabled_on_item_count(int p_count) {
+	popup->set_search_bar_enabled_on_item_count(p_count);
+}
+
+int OptionButton::get_search_bar_enabled_on_item_count() const {
+	return popup->get_search_bar_enabled_on_item_count();
+}
+
 void OptionButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
@@ -569,6 +582,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled_on_item_count", "counts"), &OptionButton::set_search_bar_enabled_on_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
@@ -578,6 +592,8 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &OptionButton::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
+	ClassDB::bind_method(D_METHOD("is_search_bar_enabled"), &OptionButton::is_search_bar_enabled);
+	ClassDB::bind_method(D_METHOD("get_search_bar_enabled_on_item_count"), &OptionButton::get_search_bar_enabled_on_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
@@ -603,6 +619,7 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_search_bar_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));

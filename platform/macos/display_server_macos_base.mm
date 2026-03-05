@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "drivers/png/png_driver_common.h"
 
 #if defined(RD_ENABLED)
@@ -163,11 +164,15 @@ bool DisplayServerMacOSBase::clipboard_has_image() const {
 }
 
 CGDirectDisplayID DisplayServerMacOSBase::_get_display_id_for_screen(NSScreen *p_screen) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
 	if (@available(macOS 26.0, *)) {
 		return [p_screen CGDirectDisplayID];
 	} else {
 		return [[p_screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
 	}
+#else
+	return [[p_screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+#endif
 }
 
 void DisplayServerMacOSBase::initialize_tts() const {

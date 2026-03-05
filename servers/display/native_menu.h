@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 
 class Texture2D;

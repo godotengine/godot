@@ -37,6 +37,8 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
+#include "core/os/process_id.h"
+
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
@@ -244,7 +246,7 @@ private:
 		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
-	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+	HashMap<ProcessID, EmbeddedProcessData> embedded_processes;
 #endif
 	void _window_update_display_id(WindowData *p_wd);
 
@@ -411,11 +413,11 @@ public:
 
 	virtual bool get_swap_cancel_ok() override;
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+	virtual void enable_for_stealing_focus(ProcessID pid) override;
 #ifdef TOOLS_ENABLED
 	Error embed_process_update(DisplayServerEnums::WindowID p_window, EmbeddedProcessMacOS *p_process);
-	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
-	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error request_close_embedded_process(ProcessID p_pid) override;
+	virtual Error remove_embedded_process(ProcessID p_pid) override;
 #endif
 
 	void _process_events(bool p_pump);

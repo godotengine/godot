@@ -30,35 +30,15 @@
 
 #include "text_server_fb.h"
 
-#include "core/object/callable_method_pointer.h"
-
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/translation_server.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-
-#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
-
-using namespace godot;
-
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Thirdparty headers.
 
@@ -104,11 +84,7 @@ bool TextServerFallback::_has_feature(Feature p_feature) const {
 }
 
 String TextServerFallback::_get_name() const {
-#ifdef GDEXTENSION
-	return "Fallback (GDExtension)";
-#elif defined(GODOT_MODULE)
 	return "Fallback (Built-in)";
-#endif
 }
 
 int64_t TextServerFallback::_get_features() const {
@@ -4442,12 +4418,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 
 		String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 		PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
-#ifdef GDEXTENSION
-		for (int fb = 0; fb < fallback_font_name.size(); fb++) {
-			const String &E = fallback_font_name[fb];
-#elif defined(GODOT_MODULE)
 		for (const String &E : fallback_font_name) {
-#endif
 			SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
 			if (system_fonts.has(key)) {
 				const SystemFontCache &sysf_cache = system_fonts[key];
@@ -5203,11 +5174,7 @@ PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID
 	if (size > 0) {
 		ret.resize(size);
 		for (int i = 0; i < size; i++) {
-#ifdef GDEXTENSION
-			ret[i] = i + 1 + sd->start;
-#else
 			ret.write[i] = i + 1 + sd->start;
-#endif
 		}
 	}
 	return ret;

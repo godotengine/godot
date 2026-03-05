@@ -30,14 +30,17 @@
 
 #include "editor_help.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
@@ -50,6 +53,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
@@ -2790,8 +2794,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			// Compensate for `\n` removed before the loop.
 			if (pos < bbcode.length()) {
-				// `\n` starts a new paragraph, `\r` just adds a break to existing one.
-				p_rt->add_text("\r");
+				if (bbcode.substr(pos, 10) == "[codeblock") {
+					// `\n` starts a new paragraph, `\r` just adds a break to existing one.
+					p_rt->add_text("\r");
+				} else {
+					p_rt->add_newline();
+				}
 			}
 		} else if (tag == "kbd") {
 			int end_pos = bbcode.find("[/kbd]", brk_end + 1);

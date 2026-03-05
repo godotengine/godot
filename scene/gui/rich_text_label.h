@@ -32,14 +32,17 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/resources/image_texture.h"
+#include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
 #endif
+
+class PopupMenu;
+class Texture2D;
+class Timer;
+class VScrollBar;
 
 class CharFXTransform;
 class RichTextEffect;
@@ -259,14 +262,7 @@ private:
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
-		~ItemDropcap() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemDropcap();
 	};
 
 	struct ItemImage : public Item {
@@ -283,17 +279,7 @@ private:
 		Variant key;
 		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
-		~ItemImage() {
-			if (image.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					if (owner_rtl->hr_list.has(rid)) {
-						owner_rtl->hr_list.erase((rid));
-					}
-					image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
-				}
-			}
-		}
+		~ItemImage();
 	};
 
 	struct ItemFont : public Item {
@@ -303,14 +289,7 @@ private:
 		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
-		~ItemFont() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemFont();
 	};
 
 	struct ItemFontSize : public Item {
@@ -408,6 +387,7 @@ private:
 		int align_to_row = -1;
 		int total_width = 0;
 		int total_height = 0;
+		int char_count = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};

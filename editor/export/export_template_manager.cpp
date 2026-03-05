@@ -33,6 +33,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"

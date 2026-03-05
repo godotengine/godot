@@ -43,6 +43,7 @@
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
@@ -1532,7 +1533,7 @@ bool DisplayServerWayland::get_swap_cancel_ok() {
 	return swap_cancel_ok;
 }
 
-Error DisplayServerWayland::embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServerWayland::embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
@@ -1584,7 +1585,7 @@ Error DisplayServerWayland::embed_process(DisplayServerEnums::WindowID p_window,
 	return OK;
 }
 
-Error DisplayServerWayland::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerWayland::request_close_embedded_process(ProcessID p_pid) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
@@ -1605,14 +1606,14 @@ Error DisplayServerWayland::request_close_embedded_process(OS::ProcessID p_pid) 
 	return OK;
 }
 
-Error DisplayServerWayland::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerWayland::remove_embedded_process(ProcessID p_pid) {
 	return request_close_embedded_process(p_pid);
 }
 
-OS::ProcessID DisplayServerWayland::get_focused_process_id() {
+ProcessID DisplayServerWayland::get_focused_process_id() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	OS::ProcessID embedded_pid = wayland_thread.embedded_compositor_get_focused_pid();
+	ProcessID embedded_pid = wayland_thread.embedded_compositor_get_focused_pid();
 
 	if (embedded_pid < 0) {
 		return OS::get_singleton()->get_process_id();

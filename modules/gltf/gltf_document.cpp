@@ -30,13 +30,13 @@
 
 #include "gltf_document.h"
 
-#include "core/object/class_db.h"
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_state.h"
 #include "gltf_template_convert.h"
 #include "skin_tool.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
@@ -45,6 +45,7 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer.h"
+#include "core/object/class_db.h"
 #include "core/object/object_id.h"
 #include "core/version.h"
 #include "scene/2d/node_2d.h"
