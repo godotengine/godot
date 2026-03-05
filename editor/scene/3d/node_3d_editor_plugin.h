@@ -40,6 +40,8 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
 class AcceptDialog;
 class CheckBox;
 class ColorPickerButton;
@@ -533,6 +535,9 @@ private:
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+#ifdef MODULE_GDSCRIPT_ENABLED
+	bool _create_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+#endif
 	void _perform_drop_data();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);

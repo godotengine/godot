@@ -105,11 +105,16 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/property_utils.h"
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif
 
 constexpr real_t DISTANCE_DEFAULT = 4;
 
@@ -5241,6 +5246,21 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 			preview_node->add_child(sprite);
 			add_preview = true;
 		}
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+		Ref<GDScript> script = res;
+		if (script.is_valid()) {
+			String class_name = script->get_global_name();
+			String base_type = script->get_instance_base_type();
+			Sprite3D *sprite = memnew(Sprite3D);
+			sprite->set_texture(EditorNode::get_singleton()->get_class_icon(
+					class_name.is_empty() ? base_type : class_name));
+			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			sprite->set_pixel_size(0.005);
+			preview_node->add_child(sprite);
+			add_preview = true;
+		}
+#endif
 	}
 	if (add_preview) {
 		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
@@ -5493,6 +5513,61 @@ bool Node3DEditorViewport::_create_audio_node(Node *p_parent, const String &p_pa
 	return true;
 }
 
+#ifdef MODULE_GDSCRIPT_ENABLED
+bool Node3DEditorViewport::_create_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<GDScript> script = ResourceLoader::load(p_path);
+	if (script.is_null()) { // invalid script
+		return false;
+	}
+
+	String class_name = script->get_global_name();
+	String base_type = script->get_instance_base_type();
+	Object *ob = ClassDB::instantiate(base_type);
+	Node *instantiated_node = Object::cast_to<Node>(ob);
+	if (!instantiated_node) { // Error on instantiation.
+		return false;
+	}
+	if (class_name.is_empty()) {
+		const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			instantiated_node->set_name(node_name);
+		}
+	} else {
+		instantiated_node->set_name(class_name);
+		PropertyUtils::assign_custom_type_script(ob, script);
+	}
+	instantiated_node->set_script(script);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(p_parent, "add_child", instantiated_node, true);
+	undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(instantiated_node);
+	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_node);
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_node);
+
+	const String new_name = p_parent->validate_child_name(instantiated_node);
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), instantiated_node->get_class(), new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+
+	Transform3D parent_tf;
+	Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
+	if (parent_node3d) {
+		parent_tf = parent_node3d->get_global_gizmo_transform();
+	}
+
+	if (ClassDB::has_property(instantiated_node->get_class(), "transform")) {
+		Transform3D new_tf = instantiated_node->get("transform");
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + instantiated_node->get("position"));
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+
+		undo_redo->add_do_method(instantiated_node, "set_transform", new_tf);
+	}
+
+	return true;
+}
+#endif
+
 void Node3DEditorViewport::_perform_drop_data() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (spatial_editor->get_preview_material_target().is_valid()) {
@@ -5542,6 +5617,15 @@ void Node3DEditorViewport::_perform_drop_data() {
 				error_files.push_back(path.get_file());
 			}
 		}
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+		Ref<GDScript> script = res;
+		if (script.is_valid()) {
+			if (!_create_node(target_node, path, drop_pos)) {
+				error_files.push_back(path.get_file());
+			}
+		}
+#endif
 	}
 
 	undo_redo->commit_action();
@@ -5631,6 +5715,23 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 					}
 					can_instantiate = true;
 				}
+#ifdef MODULE_GDSCRIPT_ENABLED
+				bool is_script = ClassDB::is_parent_class(res_type, "GDScript");
+				if (is_script) {
+					Ref<Resource> res = ResourceLoader::load(files[i]);
+					if (res.is_null()) {
+						continue;
+					}
+					Ref<GDScript> script = res;
+					if (!is_other_valid && script.is_valid()) {
+						String base_type = script->get_instance_base_type();
+						if (ClassDB::is_parent_class(base_type, "CanvasItem") || ClassDB::is_parent_class(base_type, "Viewport")) {
+							continue;
+						}
+						is_other_valid = true;
+					}
+				}
+#endif
 			}
 			if (can_instantiate) {
 				_create_preview_node(files);
