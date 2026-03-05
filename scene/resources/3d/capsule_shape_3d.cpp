@@ -146,9 +146,9 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mid_height", "mid_height"), &CapsuleShape3D::set_mid_height);
 	ClassDB::bind_method(D_METHOD("get_mid_height"), &CapsuleShape3D::get_mid_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_mid_height", "get_mid_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_mid_height", "get_mid_height");
 	ADD_LINKED_PROPERTY("radius", "height");
 	ADD_LINKED_PROPERTY("height", "radius");
 }

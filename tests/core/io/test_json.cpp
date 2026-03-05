@@ -86,7 +86,7 @@ TEST_CASE("[JSON] Stringify arrays") {
 	Array non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_array));
 	CHECK(non_finite_round_trip[0] == Variant(Math::INF));
 	CHECK(non_finite_round_trip[1] == Variant(-Math::INF));
-	CHECK(non_finite_round_trip[2].get_type() == Variant::NIL);
+	CHECK(non_finite_round_trip[2].get_type() == VariantType::NIL);
 
 	Array self_array;
 	self_array.push_back(self_array);
@@ -135,7 +135,7 @@ TEST_CASE("[JSON] Stringify dictionaries") {
 	Dictionary non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_dictionary));
 	CHECK(non_finite_round_trip["-inf"] == Variant(-Math::INF));
 	CHECK(non_finite_round_trip["inf"] == Variant(Math::INF));
-	CHECK(non_finite_round_trip["nan"].get_type() == Variant::NIL);
+	CHECK(non_finite_round_trip["nan"].get_type() == VariantType::NIL);
 
 	Dictionary self_dictionary;
 	self_dictionary["key"] = self_dictionary;

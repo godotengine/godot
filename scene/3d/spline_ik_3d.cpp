@@ -82,10 +82,10 @@ void SplineIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	LocalVector<PropertyInfo> props;
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::NODE_PATH, path + "path_3d", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "tilt_enabled"));
-		props.push_back(PropertyInfo(Variant::INT, path + "tilt_fade_in", PROPERTY_HINT_RANGE, "-1,100,1,or_greater"));
-		props.push_back(PropertyInfo(Variant::INT, path + "tilt_fade_out", PROPERTY_HINT_RANGE, "-1,100,1,or_greater"));
+		props.push_back(PropertyInfo(VariantType::NODE_PATH, path + "path_3d", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path3D"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "tilt_enabled"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "tilt_fade_in", PROPERTY_HINT_RANGE, "-1,100,1,or_greater"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "tilt_fade_out", PROPERTY_HINT_RANGE, "-1,100,1,or_greater"));
 	}
 
 	for (PropertyInfo &p : props) {

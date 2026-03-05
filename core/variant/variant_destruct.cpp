@@ -30,7 +30,7 @@
 
 #include "variant_destruct.h"
 
-static Variant::PTRDestructor destruct_pointers[Variant::VARIANT_MAX] = { nullptr };
+static Variant::PTRDestructor destruct_pointers[VariantType::VARIANT_MAX] = { nullptr };
 
 template <typename T>
 static void add_destructor() {
@@ -61,12 +61,12 @@ void Variant::_unregister_variant_destructors() {
 	// Nothing to be done.
 }
 
-Variant::PTRDestructor Variant::get_ptr_destructor(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
+Variant::PTRDestructor Variant::get_ptr_destructor(VariantType::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, VariantType::VARIANT_MAX, nullptr);
 	return destruct_pointers[p_type];
 }
 
-bool Variant::has_destructor(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
+bool Variant::has_destructor(VariantType::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, VariantType::VARIANT_MAX, false);
 	return destruct_pointers[p_type] != nullptr;
 }

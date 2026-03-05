@@ -499,7 +499,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 	String js = jstring_to_string(path, env);
 
 	Variant setting_with_override = GLOBAL_GET(js);
-	String setting_value = (setting_with_override.get_type() == Variant::NIL) ? "" : setting_with_override;
+	String setting_value = (setting_with_override.get_type() == VariantType::NIL) ? "" : setting_with_override;
 	return env->NewStringUTF(setting_value.utf8().get_data());
 }
 
@@ -552,7 +552,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(J
 #ifdef TOOLS_ENABLED
 	String godot_setting_key = jstring_to_string(p_setting_key, env);
 	Variant editor_setting = EDITOR_GET(godot_setting_key);
-	editor_setting_value = (editor_setting.get_type() == Variant::NIL) ? "" : editor_setting;
+	editor_setting_value = (editor_setting.get_type() == VariantType::NIL) ? "" : editor_setting;
 #else
 	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
 #endif

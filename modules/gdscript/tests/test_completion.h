@@ -73,7 +73,7 @@ static void to_dict_list(Variant p_variant, List<Dictionary> &p_list) {
 
 	Array arr = p_variant;
 	for (int i = 0; i < arr.size(); i++) {
-		if (arr[i].get_type() == Variant::DICTIONARY) {
+		if (arr[i].get_type() == VariantType::DICTIONARY) {
 			p_list.push_back(arr[i]);
 		}
 	}

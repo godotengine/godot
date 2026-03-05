@@ -55,7 +55,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 	}
 
 	Node *node_path_target = nullptr;
-	if (p_value.get_type() == Variant::NODE_PATH && p_value != NodePath()) {
+	if (p_value.get_type() == VariantType::NODE_PATH && p_value != NodePath()) {
 		node_path_target = es->get_node(p_value);
 	}
 
@@ -72,7 +72,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		}
 
 		Variant new_value;
-		if (p_value.get_type() == Variant::NODE_PATH) {
+		if (p_value.get_type() == VariantType::NODE_PATH) {
 			NodePath path;
 			if (node_path_target) {
 				path = n->get_path_to(node_path_target);
@@ -102,8 +102,8 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		if (p_undo_redo) {
 			ur->add_undo_property(n, name, n->get(name));
 			Variant old_value = n->get(p_name);
-			Variant::Type type = old_value.get_type();
-			if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && old_value != new_value) {
+			VariantType::Type type = old_value.get_type();
+			if ((type == VariantType::OBJECT || type == VariantType::ARRAY || type == VariantType::DICTIONARY) && old_value != new_value) {
 				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, true);
 				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, false);
 				// Perhaps an inefficient way of updating the resource count.
@@ -203,7 +203,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()));
+	p_list->push_back(PropertyInfo(VariantType::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()));
 }
 
 String MultiNodeEdit::_get_editor_name() const {
@@ -340,8 +340,8 @@ StringName MultiNodeEdit::get_edited_class_name() const {
 
 void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
-	Variant::Type type = p_value.get_type();
-	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
+	VariantType::Type type = p_value.get_type();
+	if (type == VariantType::ARRAY || type == VariantType::DICTIONARY) {
 		_set_impl(p_property, p_value, "");
 	} else {
 		_set_impl(p_property, p_value, p_field);

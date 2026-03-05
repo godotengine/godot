@@ -602,7 +602,7 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 	p_object->get_property_list(&pinfo);
 
 	for (const PropertyInfo &pi : pinfo) {
-		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+		if (pi.type == VariantType::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instantiate(pi.class_name);
 			p_object->set(pi.name, prop);
 		}

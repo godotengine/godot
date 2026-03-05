@@ -54,7 +54,7 @@ void EditorLocaleDialog::_notification(int p_what) {
 }
 
 void EditorLocaleDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(Variant::STRING, "locale")));
+	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(VariantType::STRING, "locale")));
 }
 
 void EditorLocaleDialog::ok_pressed() {

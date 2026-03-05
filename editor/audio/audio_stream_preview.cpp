@@ -222,7 +222,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 void AudioStreamPreviewGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_preview", "stream"), &AudioStreamPreviewGenerator::generate_preview);
 
-	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
+	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(VariantType::INT, "obj_id")));
 }
 
 AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;

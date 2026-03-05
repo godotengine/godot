@@ -1115,7 +1115,7 @@ struct CompletionItem {
 			Variant doc = p_dict["documentation"];
 			if (doc.is_string()) {
 				documentation.value = doc;
-			} else if (doc.get_type() == Variant::DICTIONARY) {
+			} else if (doc.get_type() == VariantType::DICTIONARY) {
 				Dictionary v = doc;
 				documentation.value = v["value"];
 			}

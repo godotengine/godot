@@ -96,7 +96,7 @@ class EditorPropertyArray : public EditorProperty {
 		Ref<EditorPropertyArrayObject> object;
 		HBoxContainer *container = nullptr;
 		int index = -1;
-		Variant::Type type = Variant::VARIANT_MAX;
+		VariantType::Type type = VariantType::VARIANT_MAX;
 		bool as_id = false;
 		EditorProperty *prop = nullptr;
 		Button *reorder_button = nullptr;
@@ -123,8 +123,8 @@ class EditorPropertyArray : public EditorProperty {
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
-	Variant::Type array_type;
-	Variant::Type subtype;
+	VariantType::Type array_type;
+	VariantType::Type subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
 	LocalVector<Slot> slots;
@@ -170,7 +170,7 @@ protected:
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void setup(VariantType::Type p_array_type, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
@@ -184,8 +184,8 @@ class EditorPropertyDictionary : public EditorProperty {
 		Ref<EditorPropertyDictionaryObject> object;
 		HBoxContainer *container = nullptr;
 		int index = -1;
-		Variant::Type type = Variant::VARIANT_MAX;
-		Variant::Type key_type = Variant::VARIANT_MAX;
+		VariantType::Type type = VariantType::VARIANT_MAX;
+		VariantType::Type key_type = VariantType::VARIANT_MAX;
 		bool as_id = false;
 		bool key_as_id = false;
 		EditorProperty *prop = nullptr;
@@ -256,10 +256,10 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 	void _remove_pressed(int p_slot_index);
 
-	Variant::Type key_subtype;
+	VariantType::Type key_subtype;
 	PropertyHint key_subtype_hint;
 	String key_subtype_hint_string;
-	Variant::Type value_subtype;
+	VariantType::Type value_subtype;
 	PropertyHint value_subtype_hint;
 	String value_subtype_hint_string;
 	void initialize_dictionary(Variant &p_dictionary);

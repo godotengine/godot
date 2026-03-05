@@ -829,7 +829,7 @@ bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalV
 	for (const Variant &K : dict.get_key_list()) {
 		Variant v = dict[K];
 		switch (v.get_type()) {
-			case Variant::OBJECT: {
+			case VariantType::OBJECT: {
 				Ref<Resource> res = v;
 				if (res.is_valid()) {
 					for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
@@ -851,13 +851,13 @@ bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalV
 				}
 
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = v;
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
 					changed = true;
 				}
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array a = v;
 				if (_export_customize_array(a, customize_resources_plugins)) {
 					changed = true;
@@ -876,7 +876,7 @@ bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<E
 	for (int i = 0; i < arr.size(); i++) {
 		Variant v = arr.get(i);
 		switch (v.get_type()) {
-			case Variant::OBJECT: {
+			case VariantType::OBJECT: {
 				Ref<Resource> res = v;
 				if (res.is_valid()) {
 					for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
@@ -897,13 +897,13 @@ bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<E
 					}
 				}
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = v;
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
 					changed = true;
 				}
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array a = v;
 				if (_export_customize_array(a, customize_resources_plugins)) {
 					changed = true;
@@ -923,7 +923,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 	p_object->get_property_list(&props);
 	for (const PropertyInfo &E : props) {
 		switch (E.type) {
-			case Variant::OBJECT: {
+			case VariantType::OBJECT: {
 				Ref<Resource> res = p_object->get(E.name);
 				if (res.is_valid()) {
 					for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
@@ -945,7 +945,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 				}
 
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
 					if (p_object->get(E.name) != d) {
@@ -955,7 +955,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 					changed = true;
 				}
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array a = p_object->get(E.name);
 				if (_export_customize_array(a, customize_resources_plugins)) {
 					if (p_object->get(E.name) != a) {

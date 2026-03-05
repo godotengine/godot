@@ -129,7 +129,7 @@ VARIANT_ENUM_CAST(VerticalAlignment);
 VARIANT_ENUM_CAST(InlineAlignment);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_BITFIELD_CAST(PropertyUsageFlags);
-VARIANT_ENUM_CAST(Variant::Type);
+VARIANT_ENUM_CAST(VariantType::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
 
 // Key
@@ -186,8 +186,8 @@ struct VariantObjectClassChecker<const Ref<T> &> {
 template <typename T>
 struct VariantCasterAndValidate {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
+		VariantType::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		if (!VariantType::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
@@ -201,8 +201,8 @@ struct VariantCasterAndValidate {
 template <typename T>
 struct VariantCasterAndValidate<T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
+		VariantType::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		if (!VariantType::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
@@ -216,8 +216,8 @@ struct VariantCasterAndValidate<T &> {
 template <typename T>
 struct VariantCasterAndValidate<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
+		VariantType::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
+		if (!VariantType::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
@@ -616,7 +616,7 @@ void call_with_validated_object_instance_args_static_retc(T *base, R (*p_method)
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wunused-but-set-parameter")
 
 template <typename Q>
-void call_get_argument_type_helper(int p_arg, int &index, Variant::Type &type) {
+void call_get_argument_type_helper(int p_arg, int &index, VariantType::Type &type) {
 	if (p_arg == index) {
 		type = GetTypeInfo<Q>::VARIANT_TYPE;
 	}
@@ -624,8 +624,8 @@ void call_get_argument_type_helper(int p_arg, int &index, Variant::Type &type) {
 }
 
 template <typename... P>
-Variant::Type call_get_argument_type(int p_arg) {
-	Variant::Type type = Variant::NIL;
+VariantType::Type call_get_argument_type(int p_arg) {
+	VariantType::Type type = VariantType::NIL;
 	int index = 0;
 	// I think rocket science is simpler than modern C++.
 	using expand_type = int[];

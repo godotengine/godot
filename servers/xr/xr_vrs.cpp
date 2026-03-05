@@ -45,9 +45,9 @@ void XRVRS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_render_region"), &XRVRS::get_vrs_render_region);
 	ClassDB::bind_method(D_METHOD("set_vrs_render_region", "render_region"), &XRVRS::set_vrs_render_region);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "vrs_render_region"), "set_vrs_render_region", "get_vrs_render_region");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+	ADD_PROPERTY(PropertyInfo(VariantType::RECT2I, "vrs_render_region"), "set_vrs_render_region", "get_vrs_render_region");
 
 	ClassDB::bind_method(D_METHOD("make_vrs_texture", "target_size", "eye_foci"), &XRVRS::make_vrs_texture);
 }

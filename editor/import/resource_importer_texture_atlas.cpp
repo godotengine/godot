@@ -81,10 +81,10 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "crop_to_region"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "trim_alpha_border_from_region"), true));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {

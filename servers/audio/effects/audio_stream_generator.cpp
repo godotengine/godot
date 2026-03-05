@@ -100,9 +100,9 @@ void AudioStreamGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffer_length", "seconds"), &AudioStreamGenerator::set_buffer_length);
 	ClassDB::bind_method(D_METHOD("get_buffer_length"), &AudioStreamGenerator::get_buffer_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate_mode", PROPERTY_HINT_ENUM, "System Output Rate,System Input Rate,Custom Rate"), "set_mix_rate_mode", "get_mix_rate_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1,suffix:Hz"), "set_mix_rate", "get_mix_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "mix_rate_mode", PROPERTY_HINT_ENUM, "System Output Rate,System Input Rate,Custom Rate"), "set_mix_rate_mode", "get_mix_rate_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1,suffix:Hz"), "set_mix_rate", "get_mix_rate");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_buffer_length", "get_buffer_length");
 
 	BIND_ENUM_CONSTANT(MIX_RATE_OUTPUT);
 	BIND_ENUM_CONSTANT(MIX_RATE_INPUT);

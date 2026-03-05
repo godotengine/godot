@@ -854,9 +854,9 @@ void DependencyRemoveDialog::ok_pressed() {
 }
 
 void DependencyRemoveDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "obj")));
-	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
-	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
+	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(VariantType::OBJECT, "obj")));
+	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(VariantType::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(VariantType::STRING, "folder")));
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
@@ -913,7 +913,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	List<PropertyInfo> property_list;
 	ProjectSettings::get_singleton()->get_property_list(&property_list);
 	for (const PropertyInfo &pi : property_list) {
-		if (pi.type == Variant::STRING && pi.hint == PROPERTY_HINT_FILE) {
+		if (pi.type == VariantType::STRING && pi.hint == PROPERTY_HINT_FILE) {
 			path_project_settings.push_back(pi.name);
 		}
 	}

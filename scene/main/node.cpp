@@ -803,14 +803,14 @@ bool Node::is_multiplayer_authority() const {
 
 void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	ERR_THREAD_GUARD
-	if (data.rpc_config.get_type() != Variant::DICTIONARY) {
+	if (data.rpc_config.get_type() != VariantType::DICTIONARY) {
 		data.rpc_config = Dictionary();
 	}
 	Dictionary node_config = data.rpc_config;
-	if (p_config.get_type() == Variant::NIL) {
+	if (p_config.get_type() == VariantType::NIL) {
 		node_config.erase(p_method);
 	} else {
-		ERR_FAIL_COND(p_config.get_type() != Variant::DICTIONARY);
+		ERR_FAIL_COND(p_config.get_type() != VariantType::DICTIONARY);
 		node_config[p_method] = p_config;
 	}
 }
@@ -831,7 +831,7 @@ Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallErro
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -849,17 +849,17 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 		return ERR_INVALID_PARAMETER;
 	}
 
-	if (p_args[0]->get_type() != Variant::INT) {
+	if (p_args[0]->get_type() != VariantType::INT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::INT;
+		r_error.expected = VariantType::INT;
 		return ERR_INVALID_PARAMETER;
 	}
 
 	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -3066,7 +3066,7 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 
 		Variant value = p_original->get(name);
 		// To keep classic behavior, because, in contrast, nowadays a resource would be duplicated.
-		if (value.get_type() != Variant::OBJECT) {
+		if (value.get_type() != VariantType::OBJECT) {
 			value = value.duplicate(true);
 		}
 
@@ -3076,16 +3076,16 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 				p_copy->set(name, res->duplicate());
 			}
 		} else {
-			if (value.get_type() == Variant::OBJECT) {
+			if (value.get_type() == VariantType::OBJECT) {
 				Node *property_node = Object::cast_to<Node>(value);
 				Variant out_value = value;
 				if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
 					out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
 				}
 				p_copy->set(name, out_value);
-			} else if (value.get_type() == Variant::ARRAY) {
+			} else if (value.get_type() == VariantType::ARRAY) {
 				Array arr = value;
-				if (arr.get_typed_builtin() == Variant::OBJECT) {
+				if (arr.get_typed_builtin() == VariantType::OBJECT) {
 					for (int i = 0; i < arr.size(); i++) {
 						Node *property_node = Object::cast_to<Node>(arr[i]);
 						if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
@@ -3618,7 +3618,7 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return Variant();
 	}
 
@@ -3641,7 +3641,7 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return Variant();
 	}
 
@@ -3729,8 +3729,8 @@ RID Node::get_accessibility_element() const {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "editor/naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
@@ -3875,7 +3875,7 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
@@ -3884,8 +3884,8 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 
-		mi.arguments.push_back(PropertyInfo(Variant::INT, "peer_id"));
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::INT, "peer_id"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
@@ -3896,7 +3896,7 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call_deferred_thread_group";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred_thread_group", &Node::_call_deferred_thread_group_bind, mi, varray(), false);
 	}
@@ -3906,7 +3906,7 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call_thread_safe";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_thread_safe", &Node::_call_thread_safe_bind, mi, varray(), false);
 	}
@@ -4001,38 +4001,38 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
-	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
-	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("editor_state_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_owner", "get_owner");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerAPI::get_class_static(), PROPERTY_USAGE_NONE), "", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_owner", "get_owner");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerAPI::get_class_static(), PROPERTY_USAGE_NONE), "", "get_multiplayer");
 
 	ADD_GROUP("Process", "process_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_priority"), "set_process_priority", "get_process_priority");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
 
 	ADD_SUBGROUP("Thread Group", "process_thread");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
 
 	ADD_GROUP("Physics Interpolation", "physics_interpolation_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");

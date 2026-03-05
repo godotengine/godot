@@ -554,18 +554,18 @@ void FoldableContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_title_bar_control", "control"), &FoldableContainer::add_title_bar_control);
 	ClassDB::bind_method(D_METHOD("remove_title_bar_control", "control"), &FoldableContainer::remove_title_bar_control);
 
-	ADD_SIGNAL(MethodInfo("folding_changed", PropertyInfo(Variant::BOOL, "is_folded")));
+	ADD_SIGNAL(MethodInfo("folding_changed", PropertyInfo(VariantType::BOOL, "is_folded")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "folded"), "set_folded", "is_folded");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_title_alignment", "get_title_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_title_position", "get_title_position");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_title_text_overrun_behavior", "get_title_text_overrun_behavior");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, FoldableGroup::get_class_static()), "set_foldable_group", "get_foldable_group");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "folded"), "set_folded", "is_folded");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_title_alignment", "get_title_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "title_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_title_position", "get_title_position");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "title_text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_title_text_overrun_behavior", "get_title_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, FoldableGroup::get_class_static()), "set_foldable_group", "get_foldable_group");
 
 	ADD_GROUP("BiDi", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_title_text_direction", "get_title_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID), "set_language", "get_language");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "title_text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_title_text_direction", "get_title_text_direction");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "language", PROPERTY_HINT_LOCALE_ID), "set_language", "get_language");
 
 	BIND_ENUM_CONSTANT(POSITION_TOP);
 	BIND_ENUM_CONSTANT(POSITION_BOTTOM);
@@ -651,9 +651,9 @@ void FoldableGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_folding_all", "enabled"), &FoldableGroup::set_allow_folding_all);
 	ClassDB::bind_method(D_METHOD("is_allow_folding_all"), &FoldableGroup::is_allow_folding_all);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_folding_all"), "set_allow_folding_all", "is_allow_folding_all");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_folding_all"), "set_allow_folding_all", "is_allow_folding_all");
 
-	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(Variant::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, FoldableContainer::get_class_static())));
+	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(VariantType::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, FoldableContainer::get_class_static())));
 }
 
 FoldableGroup::FoldableGroup() {

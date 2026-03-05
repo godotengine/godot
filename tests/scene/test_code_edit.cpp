@@ -4414,7 +4414,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), VariantType::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test_bis");
@@ -4424,7 +4424,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test", Color(1, 1, 1), Ref<Resource>(), VariantType::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
@@ -4444,7 +4444,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest", "stest");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest", Color(1, 1, 1), Ref<Resource>(), VariantType::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "sstest");

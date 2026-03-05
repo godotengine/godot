@@ -51,15 +51,15 @@ Variant JoltSeparationRayShape3D::get_data() const {
 }
 
 void JoltSeparationRayShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::DICTIONARY);
 
 	const Dictionary data = p_data;
 
 	const Variant maybe_length = data.get("length", Variant());
-	ERR_FAIL_COND(maybe_length.get_type() != Variant::FLOAT);
+	ERR_FAIL_COND(maybe_length.get_type() != VariantType::FLOAT);
 
 	const Variant maybe_slide_on_slope = data.get("slide_on_slope", Variant());
-	ERR_FAIL_COND(maybe_slide_on_slope.get_type() != Variant::BOOL);
+	ERR_FAIL_COND(maybe_slide_on_slope.get_type() != VariantType::BOOL);
 
 	const float new_length = maybe_length;
 	const bool new_slide_on_slope = maybe_slide_on_slope;

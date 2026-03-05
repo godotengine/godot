@@ -855,9 +855,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
 	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
@@ -1715,17 +1715,17 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 Variant ClassDB::class_call_static(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) {
 	if (p_argcount < 2) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 	if (!p_arguments[0]->is_string() || !p_arguments[1]->is_string()) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 	StringName class_ = *p_arguments[0];
 	StringName method = *p_arguments[1];
 	const MethodBind *bind = ::ClassDB::get_method(class_, method);
-	ERR_FAIL_NULL_V_MSG(bind, Variant::NIL, "Cannot find static method.");
-	ERR_FAIL_COND_V_MSG(!bind->is_static(), Variant::NIL, "Method is not static.");
+	ERR_FAIL_NULL_V_MSG(bind, VariantType::NIL, "Cannot find static method.");
+	ERR_FAIL_COND_V_MSG(!bind->is_static(), VariantType::NIL, "Method is not static.");
 	return bind->call(nullptr, p_arguments + 2, p_argcount - 2, r_call_error);
 }
 
@@ -1857,7 +1857,7 @@ void ClassDB::_bind_methods() {
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
-	::ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "class_call_static", &ClassDB::class_call_static, MethodInfo("class_call_static", PropertyInfo(Variant::STRING_NAME, "class"), PropertyInfo(Variant::STRING_NAME, "method")));
+	::ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "class_call_static", &ClassDB::class_call_static, MethodInfo("class_call_static", PropertyInfo(VariantType::STRING_NAME, "class"), PropertyInfo(VariantType::STRING_NAME, "method")));
 
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &ClassDB::class_get_integer_constant_list, DEFVAL(false));
 
@@ -2142,13 +2142,13 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_to_stdout"), "set_print_to_stdout", "is_printing_to_stdout");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "print_to_stdout"), "set_print_to_stdout", "is_printing_to_stdout");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_fps"), "set_max_fps", "get_max_fps");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
 
 ////// EngineDebugger //////
@@ -2234,7 +2234,7 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	Callable::CallError err;
 	capture.callp(args, 2, retval, err);
 	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, vformat("Error calling 'capture' to callable: %s.", Variant::get_callable_error_text(capture, args, 2, err)));
-	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, vformat("Error calling 'capture' to callable: '%s'. Return type is not bool.", String(capture)));
+	ERR_FAIL_COND_V_MSG(retval.get_type() != VariantType::BOOL, FAILED, vformat("Error calling 'capture' to callable: '%s'. Return type is not bool.", String(capture)));
 	r_captured = retval;
 	return OK;
 }

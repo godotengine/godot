@@ -60,8 +60,8 @@ void SpringBoneCollisionSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inside", "enabled"), &SpringBoneCollisionSphere3D::set_inside);
 	ClassDB::bind_method(D_METHOD("is_inside"), &SpringBoneCollisionSphere3D::is_inside);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inside"), "set_inside", "is_inside");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "inside"), "set_inside", "is_inside");
 }
 
 Vector3 SpringBoneCollisionSphere3D::_collide_sphere(const Vector3 &p_origin, float p_radius, bool p_inside, float p_bone_radius, float p_bone_length, const Vector3 &p_current) {

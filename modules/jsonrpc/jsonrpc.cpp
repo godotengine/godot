@@ -98,14 +98,14 @@ Dictionary JSONRPC::make_request(const String &p_method, const Variant &p_params
 
 Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elements) {
 	Variant ret;
-	if (p_action.get_type() == Variant::DICTIONARY) {
+	if (p_action.get_type() == VariantType::DICTIONARY) {
 		Dictionary dict = p_action;
 		String method = dict.get("method", "");
 
 		Array args;
 		if (dict.has("params")) {
 			Variant params = dict.get("params", Variant());
-			if (params.get_type() == Variant::ARRAY) {
+			if (params.get_type() == VariantType::ARRAY) {
 				args = params;
 			} else {
 				args.push_back(params);
@@ -120,7 +120,7 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			id = dict["id"];
 
 			// Account for implementations that discern between int and float on the json serialization level, by using an int if there is a .0 fraction. See #100914
-			if (id.get_type() == Variant::FLOAT && id.operator float() == (float)(id.operator int())) {
+			if (id.get_type() == VariantType::FLOAT && id.operator float() == (float)(id.operator int())) {
 				id = id.operator int();
 			}
 		}
@@ -136,14 +136,14 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 		if (is_notification) {
 			ret = Variant();
 		}
-	} else if (p_action.get_type() == Variant::ARRAY && p_process_arr_elements) {
+	} else if (p_action.get_type() == VariantType::ARRAY && p_process_arr_elements) {
 		Array arr = p_action;
 		if (!arr.is_empty()) {
 			Array arr_ret;
 			for (const Variant &var : arr) {
 				Variant res = process_action(var);
 
-				if (res.get_type() != Variant::NIL) {
+				if (res.get_type() != VariantType::NIL) {
 					arr_ret.push_back(res);
 				}
 			}
@@ -175,7 +175,7 @@ String JSONRPC::process_string(const String &p_input) {
 		ret = make_response_error(JSONRPC::PARSE_ERROR, "Parse error");
 	}
 
-	if (ret.get_type() == Variant::NIL) {
+	if (ret.get_type() == VariantType::NIL) {
 		return "";
 	}
 	return ret.to_json_string();

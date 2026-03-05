@@ -240,12 +240,12 @@ void CodeEdit::_notification(int p_what) {
 
 						tl->set_width(code_completion_rect.size.width - (icon_area_size.x + theme_cache.code_completion_icon_separation));
 						if (rtl) {
-							if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+							if (code_completion_options[l].default_value.get_type() == VariantType::COLOR) {
 								RS::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
 							}
 							tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 						} else {
-							if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+							if (code_completion_options[l].default_value.get_type() == VariantType::COLOR) {
 								const Color color = code_completion_options[l].default_value;
 								const Rect2 rect = Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size);
 								if (color.a < 1.0) {
@@ -3019,57 +3019,57 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
 
 	/* Inspector */
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_tooltip_on_hover"), "set_symbol_tooltip_on_hover_enabled", "is_symbol_tooltip_on_hover_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "symbol_tooltip_on_hover"), "set_symbol_tooltip_on_hover_enabled", "is_symbol_tooltip_on_hover_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
 
 	ADD_GROUP("Gutters", "gutters_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_executing_lines"), "set_draw_executing_lines_gutter", "is_drawing_executing_lines_gutter");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_draw_executing_lines"), "set_draw_executing_lines_gutter", "is_drawing_executing_lines_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gutters_line_numbers_min_digits", PROPERTY_HINT_RANGE, "1,5,1"), "set_line_numbers_min_digits", "get_line_numbers_min_digits");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "gutters_line_numbers_min_digits", PROPERTY_HINT_RANGE, "1,5,1"), "set_line_numbers_min_digits", "get_line_numbers_min_digits");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
 	ADD_GROUP("Delimiters", "delimiter_");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_GROUP("Code Completion", "code_completion_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_code_completion_enabled", "is_code_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "code_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_code_completion_enabled", "is_code_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "indent_size"), "set_indent_size", "get_indent_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs", PROPERTY_HINT_TYPE_STRING, "String;String"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_brace_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "auto_brace_completion_pairs", PROPERTY_HINT_TYPE_STRING, "String;String"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
 
 	/* Signals */
 	/* Gutters */
-	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(VariantType::INT, "line")));
 
 	/* Code Completion */
 	ADD_SIGNAL(MethodInfo("code_completion_requested"));
 
 	/* Symbol lookup */
-	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
-	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(VariantType::STRING, "symbol"), PropertyInfo(VariantType::INT, "line"), PropertyInfo(VariantType::INT, "column")));
+	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(VariantType::STRING, "symbol")));
 
 	/* Symbol tooltip */
-	ADD_SIGNAL(MethodInfo("symbol_hovered", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("symbol_hovered", PropertyInfo(VariantType::STRING, "symbol"), PropertyInfo(VariantType::INT, "line"), PropertyInfo(VariantType::INT, "column")));
 
 	/* Theme items */
 	/* Gutters */
@@ -3635,7 +3635,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			option.default_value = completion_options[i].get("default_value");
 
 			int offset = 0;
-			if (option.default_value.get_type() == Variant::COLOR) {
+			if (option.default_value.get_type() == VariantType::COLOR) {
 				offset = line_height;
 			}
 
@@ -3745,7 +3745,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			option.display = option.display.unquote().quote("'");
 		}
 
-		int offset = option.default_value.get_type() == Variant::COLOR ? line_height : 0;
+		int offset = option.default_value.get_type() == VariantType::COLOR ? line_height : 0;
 
 		if (in_string != -1) {
 			// The completion string may have a literal behind it, which should be removed before re-quoting.

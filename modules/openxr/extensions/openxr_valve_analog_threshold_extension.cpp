@@ -76,19 +76,19 @@ bool OpenXRValveAnalogThresholdExtension::is_available() {
 void OpenXRAnalogThresholdModifier::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_on_threshold", "on_threshold"), &OpenXRAnalogThresholdModifier::set_on_threshold);
 	ClassDB::bind_method(D_METHOD("get_on_threshold"), &OpenXRAnalogThresholdModifier::get_on_threshold);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "on_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_on_threshold", "get_on_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "on_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_on_threshold", "get_on_threshold");
 
 	ClassDB::bind_method(D_METHOD("set_off_threshold", "off_threshold"), &OpenXRAnalogThresholdModifier::set_off_threshold);
 	ClassDB::bind_method(D_METHOD("get_off_threshold"), &OpenXRAnalogThresholdModifier::get_off_threshold);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "off_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_off_threshold", "get_off_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "off_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_off_threshold", "get_off_threshold");
 
 	ClassDB::bind_method(D_METHOD("set_on_haptic", "haptic"), &OpenXRAnalogThresholdModifier::set_on_haptic);
 	ClassDB::bind_method(D_METHOD("get_on_haptic"), &OpenXRAnalogThresholdModifier::get_on_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
 
 	ClassDB::bind_method(D_METHOD("set_off_haptic", "haptic"), &OpenXRAnalogThresholdModifier::set_off_haptic);
 	ClassDB::bind_method(D_METHOD("get_off_haptic"), &OpenXRAnalogThresholdModifier::get_off_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
 }
 
 OpenXRAnalogThresholdModifier::OpenXRAnalogThresholdModifier() {

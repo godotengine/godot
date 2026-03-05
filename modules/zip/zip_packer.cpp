@@ -198,7 +198,7 @@ void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZIPPacker::open, DEFVAL(Variant(APPEND_CREATE)));
 	ClassDB::bind_method(D_METHOD("set_compression_level", "compression_level"), &ZIPPacker::set_compression_level);
 	ClassDB::bind_method(D_METHOD("get_compression_level"), &ZIPPacker::get_compression_level);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_level"), "set_compression_level", "get_compression_level");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "compression_level"), "set_compression_level", "get_compression_level");
 	ClassDB::bind_method(D_METHOD("add_directory", "path", "permissions", "modified_time"), &ZIPPacker::add_directory, DEFVAL(0755), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("start_file", "path", "permissions", "modified_time"), &ZIPPacker::start_file, DEFVAL(0644), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);

@@ -96,8 +96,8 @@ void ModifierBoneTarget3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone", "bone"), &ModifierBoneTarget3D::set_bone);
 	ClassDB::bind_method(D_METHOD("get_bone"), &ModifierBoneTarget3D::get_bone);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
 }
 
 void ModifierBoneTarget3D::_process_modification(double p_delta) {

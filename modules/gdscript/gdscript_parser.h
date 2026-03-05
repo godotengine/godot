@@ -128,7 +128,7 @@ public:
 		bool is_pseudo_type = false; // For global names that can't be used standalone.
 		bool is_coroutine = false; // For function calls.
 
-		Variant::Type builtin_type = Variant::NIL;
+		VariantType::Type builtin_type = VariantType::NIL;
 		StringName native_type;
 		StringName enum_type; // Enum name or the value name in an enum.
 		Ref<Script> script_type;
@@ -1330,7 +1330,7 @@ public:
 			int current_argument = -1;
 			int type_chain_index;
 		};
-		Variant::Type builtin_type = Variant::VARIANT_MAX;
+		VariantType::Type builtin_type = VariantType::VARIANT_MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
@@ -1513,7 +1513,7 @@ private:
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = true);
-	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = true);
+	void make_completion_context(CompletionType p_type, VariantType::Type p_builtin_type, bool p_force = true);
 	// In some cases it might become necessary to alter the completion context after parsing a subexpression.
 	// For example to not override COMPLETE_CALL_ARGUMENTS with COMPLETION_NONE from string literals.
 	void override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument = -1);
@@ -1557,7 +1557,7 @@ private:
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	template <PropertyHint t_hint, Variant::Type t_type>
+	template <PropertyHint t_hint, VariantType::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1631,7 +1631,7 @@ public:
 	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
-	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
+	static VariantType::Type get_builtin_type(const StringName &p_type); // Excluding `VariantType::NIL` and `VariantType::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;

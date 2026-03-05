@@ -55,7 +55,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_spatial_context", "spatial_context"), &OpenXRSpatialEntityExtension::free_spatial_context);
 	ClassDB::bind_method(D_METHOD("get_spatial_context_handle", "spatial_context"), &OpenXRSpatialEntityExtension::_get_spatial_context_handle);
 
-	ADD_SIGNAL(MethodInfo("spatial_discovery_recommended", PropertyInfo(Variant::RID, "spatial_context")));
+	ADD_SIGNAL(MethodInfo("spatial_discovery_recommended", PropertyInfo(VariantType::RID, "spatial_context")));
 
 	// Component_types should be an int array typed to ComponentType(XrSpatialComponentTypeEXT), but we currently don't support that.
 	ClassDB::bind_method(D_METHOD("discover_spatial_entities", "spatial_context", "component_types", "next", "user_callback"), &OpenXRSpatialEntityExtension::_discover_spatial_entities, DEFVAL(Variant()), DEFVAL(Callable()));

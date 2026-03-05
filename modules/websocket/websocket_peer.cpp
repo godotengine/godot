@@ -75,15 +75,15 @@ void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_heartbeat_interval", "interval"), &WebSocketPeer::set_heartbeat_interval);
 	ClassDB::bind_method(D_METHOD("get_heartbeat_interval"), &WebSocketPeer::get_heartbeat_interval);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "supported_protocols"), "set_supported_protocols", "get_supported_protocols");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "handshake_headers"), "set_handshake_headers", "get_handshake_headers");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "supported_protocols"), "set_supported_protocols", "get_supported_protocols");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "handshake_headers"), "set_handshake_headers", "get_handshake_headers");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "inbound_buffer_size"), "set_inbound_buffer_size", "get_inbound_buffer_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outbound_buffer_size"), "set_outbound_buffer_size", "get_outbound_buffer_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "inbound_buffer_size"), "set_inbound_buffer_size", "get_inbound_buffer_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "outbound_buffer_size"), "set_outbound_buffer_size", "get_outbound_buffer_size");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);

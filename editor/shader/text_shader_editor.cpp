@@ -688,7 +688,7 @@ void ShaderTextEditor::_update_warning_panel() {
 }
 
 void ShaderTextEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("script_validated", PropertyInfo(Variant::BOOL, "valid")));
+	ADD_SIGNAL(MethodInfo("script_validated", PropertyInfo(VariantType::BOOL, "valid")));
 }
 
 ShaderTextEditor::ShaderTextEditor() {
@@ -841,7 +841,7 @@ void TextShaderEditor::_show_warnings_panel(bool p_show) {
 }
 
 void TextShaderEditor::_warning_clicked(const Variant &p_line) {
-	if (p_line.get_type() == Variant::INT) {
+	if (p_line.get_type() == VariantType::INT) {
 		code_editor->goto_line_centered(p_line.operator int64_t());
 	}
 }

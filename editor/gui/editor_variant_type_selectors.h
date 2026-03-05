@@ -43,9 +43,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	Variant::Type get_selected_type() const;
+	VariantType::Type get_selected_type() const;
 
-	void populate(const LocalVector<Variant::Type> &p_disabled_types, const HashMap<Variant::Type, String> &p_renames = {});
+	void populate(const LocalVector<VariantType::Type> &p_disabled_types, const HashMap<VariantType::Type, String> &p_renames = {});
 };
 
 class EditorVariantTypePopupMenu : public PopupMenu {

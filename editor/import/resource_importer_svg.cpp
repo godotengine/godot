@@ -66,10 +66,10 @@ String ResourceImporterSVG::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterSVG::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 1.0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "color_map"), Dictionary()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::DICTIONARY, "color_map"), Dictionary()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "compress"), true));
 }
 
 Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

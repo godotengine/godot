@@ -119,7 +119,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		return false;
 	}
 
-	if (Variant::get_type_by_name(p_name) < Variant::VARIANT_MAX) {
+	if (VariantType::get_type_by_name(p_name) < VariantType::VARIANT_MAX) {
 		if (r_error) {
 			*r_error = TTR("Must not collide with an existing built-in type name.");
 		}

@@ -72,14 +72,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		bool valid = true;
 
 		for (int i = 0; i < pc; i++) {
-			Variant::Type arg_expected = Variant::NIL;
+			VariantType::Type arg_expected = VariantType::NIL;
 			switch (ptypes[i]) {
 				case ARG_TYPE_VOID: {
 					//bug?
 				} break;
 				case ARG_TYPE_BOOLEAN: {
-					if (p_args[i]->get_type() != Variant::BOOL) {
-						arg_expected = Variant::BOOL;
+					if (p_args[i]->get_type() != VariantType::BOOL) {
+						arg_expected = VariantType::BOOL;
 					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BYTE:
@@ -93,7 +93,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_INT:
 				case ARG_TYPE_LONG: {
 					if (!p_args[i]->is_num()) {
-						arg_expected = Variant::INT;
+						arg_expected = VariantType::INT;
 					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_FLOAT:
@@ -101,18 +101,18 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_FLOAT:
 				case ARG_TYPE_DOUBLE: {
 					if (!p_args[i]->is_num()) {
-						arg_expected = Variant::FLOAT;
+						arg_expected = VariantType::FLOAT;
 					}
 				} break;
 				case ARG_TYPE_STRING:
 				case ARG_TYPE_CHARSEQUENCE: {
 					if (!p_args[i]->is_string()) {
-						arg_expected = Variant::STRING;
+						arg_expected = VariantType::STRING;
 					}
 				} break;
 				case ARG_TYPE_CALLABLE: {
-					if (p_args[i]->get_type() != Variant::CALLABLE) {
-						arg_expected = Variant::CALLABLE;
+					if (p_args[i]->get_type() != VariantType::CALLABLE) {
+						arg_expected = VariantType::CALLABLE;
 					}
 				} break;
 				case ARG_TYPE_CLASS: {
@@ -121,11 +121,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						cn = cn.substr(1, cn.length() - 2);
 					}
 					if (cn == "org/godotengine/godot/Dictionary") {
-						if (p_args[i]->get_type() != Variant::DICTIONARY) {
-							arg_expected = Variant::DICTIONARY;
+						if (p_args[i]->get_type() != VariantType::DICTIONARY) {
+							arg_expected = VariantType::DICTIONARY;
 						}
-					} else if (p_args[i]->get_type() != Variant::OBJECT && p_args[i]->get_type() != Variant::NIL) {
-						arg_expected = Variant::OBJECT;
+					} else if (p_args[i]->get_type() != VariantType::OBJECT && p_args[i]->get_type() != VariantType::NIL) {
+						arg_expected = VariantType::OBJECT;
 					} else {
 						Ref<RefCounted> ref = *p_args[i];
 						if (ref.is_valid()) {
@@ -133,99 +133,99 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 								Ref<JavaObject> jo = ref;
 								jclass c = jni_find_class(env, cn.utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
-									arg_expected = Variant::OBJECT;
+									arg_expected = VariantType::OBJECT;
 								} else {
 									//ok
 								}
 							} else {
-								arg_expected = Variant::OBJECT;
+								arg_expected = VariantType::OBJECT;
 							}
 						}
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::BOOL) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::BOOL) {
+							arg_expected = VariantType::ARRAY;
 						}
 					} else {
-						arg_expected = Variant::ARRAY;
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_BYTE:
 				case ARG_ARRAY_BIT | ARG_TYPE_CHAR: {
-					if (p_args[i]->get_type() != Variant::PACKED_BYTE_ARRAY) {
-						arg_expected = Variant::PACKED_BYTE_ARRAY;
+					if (p_args[i]->get_type() != VariantType::PACKED_BYTE_ARRAY) {
+						arg_expected = VariantType::PACKED_BYTE_ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_SHORT:
 				case ARG_ARRAY_BIT | ARG_TYPE_INT: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::INT) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::INT) {
+							arg_expected = VariantType::ARRAY;
 						}
-					} else if (p_args[i]->get_type() != Variant::PACKED_INT32_ARRAY) {
-						arg_expected = Variant::ARRAY;
+					} else if (p_args[i]->get_type() != VariantType::PACKED_INT32_ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_LONG: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::INT) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::INT) {
+							arg_expected = VariantType::ARRAY;
 						}
-					} else if (p_args[i]->get_type() != Variant::PACKED_INT64_ARRAY) {
-						arg_expected = Variant::ARRAY;
+					} else if (p_args[i]->get_type() != VariantType::PACKED_INT64_ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_FLOAT: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::FLOAT) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::FLOAT) {
+							arg_expected = VariantType::ARRAY;
 						}
-					} else if (p_args[i]->get_type() != Variant::PACKED_FLOAT32_ARRAY) {
-						arg_expected = Variant::ARRAY;
+					} else if (p_args[i]->get_type() != VariantType::PACKED_FLOAT32_ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_DOUBLE: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::FLOAT) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::FLOAT) {
+							arg_expected = VariantType::ARRAY;
 						}
-					} else if (p_args[i]->get_type() != Variant::PACKED_FLOAT64_ARRAY) {
-						arg_expected = Variant::ARRAY;
+					} else if (p_args[i]->get_type() != VariantType::PACKED_FLOAT64_ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_STRING:
 				case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && (arr.get_typed_builtin() != Variant::STRING && arr.get_typed_builtin() != Variant::STRING_NAME)) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && (arr.get_typed_builtin() != VariantType::STRING && arr.get_typed_builtin() != VariantType::STRING_NAME)) {
+							arg_expected = VariantType::ARRAY;
 						}
-					} else if (p_args[i]->get_type() != Variant::PACKED_STRING_ARRAY) {
-						arg_expected = Variant::ARRAY;
+					} else if (p_args[i]->get_type() != VariantType::PACKED_STRING_ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_CALLABLE: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::CALLABLE) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::CALLABLE) {
+							arg_expected = VariantType::ARRAY;
 						}
 					} else {
-						arg_expected = Variant::ARRAY;
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
-					if (p_args[i]->get_type() == Variant::ARRAY) {
+					if (p_args[i]->get_type() == VariantType::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::OBJECT) {
-							arg_expected = Variant::ARRAY;
+						if (arr.is_typed() && arr.get_typed_builtin() != VariantType::OBJECT) {
+							arg_expected = VariantType::ARRAY;
 						} else {
 							String cn = E.param_sigs[i].operator String();
 							if (cn.begins_with("[L") && cn.ends_with(";")) {
@@ -237,30 +237,30 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 									Ref<JavaObject> jo = arr[j];
 									if (jo.is_valid()) {
 										if (!env->IsInstanceOf(jo->instance, c)) {
-											arg_expected = Variant::ARRAY;
+											arg_expected = VariantType::ARRAY;
 											break;
 										}
 									} else {
-										arg_expected = Variant::ARRAY;
+										arg_expected = VariantType::ARRAY;
 										break;
 									}
 								}
 							} else {
-								arg_expected = Variant::ARRAY;
+								arg_expected = VariantType::ARRAY;
 							}
 						}
 					} else {
-						arg_expected = Variant::ARRAY;
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 				default: {
-					if (p_args[i]->get_type() != Variant::ARRAY) {
-						arg_expected = Variant::ARRAY;
+					if (p_args[i]->get_type() != VariantType::ARRAY) {
+						arg_expected = VariantType::ARRAY;
 					}
 				} break;
 			}
 
-			if (arg_expected != Variant::NIL) {
+			if (arg_expected != VariantType::NIL) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = i;
 				r_error.expected = arg_expected;
@@ -397,8 +397,8 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].l = jcallable;
 			} break;
 			case ARG_TYPE_CLASS: {
-				if (p_args[i]->get_type() == Variant::DICTIONARY) {
-					argv[i].l = _variant_to_jobject(env, Variant::DICTIONARY, p_args[i]);
+				if (p_args[i]->get_type() == VariantType::DICTIONARY) {
+					argv[i].l = _variant_to_jobject(env, VariantType::DICTIONARY, p_args[i]);
 				} else {
 					Ref<JavaObject> jo = *p_args[i];
 					if (jo.is_valid()) {
@@ -420,14 +420,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_BYTE: {
 				jbyteArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewByteArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jbyte val = arr[j];
 						env->SetByteArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_BYTE_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_BYTE_ARRAY) {
 					PackedByteArray arr = *p_args[i];
 					a = env->NewByteArray(arr.size());
 					env->SetByteArrayRegion(a, 0, arr.size(), (const jbyte *)arr.ptr());
@@ -438,14 +438,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_CHAR: {
 				jcharArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewCharArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jchar val = arr[j];
 						env->SetCharArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_BYTE_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_BYTE_ARRAY) {
 					PackedByteArray arr = *p_args[i];
 					// The data is expected to be UTF-16 encoded, so the length is half the size of the byte array.
 					int size = arr.size() / 2;
@@ -459,14 +459,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_SHORT: {
 				jshortArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewShortArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jshort val = arr[j];
 						env->SetShortArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_INT32_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_INT32_ARRAY) {
 					PackedInt32Array arr = *p_args[i];
 					a = env->NewShortArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
@@ -481,14 +481,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_INT: {
 				jintArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewIntArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jint val = arr[j];
 						env->SetIntArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_INT32_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_INT32_ARRAY) {
 					PackedInt32Array arr = *p_args[i];
 					a = env->NewIntArray(arr.size());
 					env->SetIntArrayRegion(a, 0, arr.size(), arr.ptr());
@@ -499,14 +499,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_LONG: {
 				jlongArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewLongArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jlong val = (int64_t)arr[j];
 						env->SetLongArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_INT64_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_INT64_ARRAY) {
 					PackedInt64Array arr = *p_args[i];
 					a = env->NewLongArray(arr.size());
 					env->SetLongArrayRegion(a, 0, arr.size(), arr.ptr());
@@ -517,14 +517,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_FLOAT: {
 				jfloatArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewFloatArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jfloat val = arr[j];
 						env->SetFloatArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_FLOAT32_ARRAY) {
 					PackedFloat32Array arr = *p_args[i];
 					a = env->NewFloatArray(arr.size());
 					env->SetFloatArrayRegion(a, 0, arr.size(), arr.ptr());
@@ -535,14 +535,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_DOUBLE: {
 				jdoubleArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewDoubleArray(arr.size());
 					for (int j = 0; j < arr.size(); j++) {
 						jdouble val = arr[j];
 						env->SetDoubleArrayRegion(a, j, 1, &val);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_FLOAT64_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_FLOAT64_ARRAY) {
 					PackedFloat64Array arr = *p_args[i];
 					a = env->NewDoubleArray(arr.size());
 					env->SetDoubleArrayRegion(a, 0, arr.size(), arr.ptr());
@@ -554,7 +554,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
 				jobjectArray a = nullptr;
 
-				if (p_args[i]->get_type() == Variant::ARRAY) {
+				if (p_args[i]->get_type() == VariantType::ARRAY) {
 					Array arr = *p_args[i];
 					a = env->NewObjectArray(arr.size(), jni_find_class(env, "java/lang/String"), nullptr);
 					for (int j = 0; j < arr.size(); j++) {
@@ -562,7 +562,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						jstring jStr = env->NewStringUTF(s.utf8().get_data());
 						env->SetObjectArrayElement(a, j, jStr);
 					}
-				} else if (p_args[i]->get_type() == Variant::PACKED_STRING_ARRAY) {
+				} else if (p_args[i]->get_type() == VariantType::PACKED_STRING_ARRAY) {
 					PackedStringArray arr = *p_args[i];
 					a = env->NewObjectArray(arr.size(), jni_find_class(env, "java/lang/String"), nullptr);
 					for (int j = 0; j < arr.size(); j++) {
@@ -766,11 +766,11 @@ TypedArray<Dictionary> JavaClass::get_java_method_list() const {
 				for (uint32_t argtype : mi.param_types) {
 					Dictionary d;
 
-					Variant::Type t = Variant::NIL;
+					VariantType::Type t = VariantType::NIL;
 					float likelihood = 0.0;
 					_convert_to_variant_type(argtype, t, likelihood);
 					d["type"] = t;
-					if (t == Variant::OBJECT) {
+					if (t == VariantType::OBJECT) {
 						d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
 						d["hint_string"] = "JavaObject";
 					} else {
@@ -788,15 +788,15 @@ TypedArray<Dictionary> JavaClass::get_java_method_list() const {
 				Dictionary d;
 
 				if (mi._constructor) {
-					d["type"] = Variant::OBJECT;
+					d["type"] = VariantType::OBJECT;
 					d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
 					d["hint_string"] = "JavaObject";
 				} else {
-					Variant::Type t = Variant::NIL;
+					VariantType::Type t = VariantType::NIL;
 					float likelihood = 0.0;
 					_convert_to_variant_type(mi.return_type, t, likelihood);
 					d["type"] = t;
-					if (t == Variant::OBJECT) {
+					if (t == VariantType::OBJECT) {
 						d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
 						d["hint_string"] = "JavaObject";
 					} else {
@@ -1595,16 +1595,16 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 			}
 			bool this_valid = true;
 			for (int j = 0; j < E->get().param_types.size(); j++) {
-				Variant::Type _new;
+				VariantType::Type _new;
 				float new_l;
-				Variant::Type existing;
+				VariantType::Type existing;
 				float existing_l;
 				JavaClass::_convert_to_variant_type(E->get().param_types[j], existing, existing_l);
 				JavaClass::_convert_to_variant_type(mi.param_types[j], _new, new_l);
 				if (_new != existing) {
 					this_valid = false;
 					break;
-				} else if ((_new == Variant::OBJECT || _new == Variant::ARRAY) && E->get().param_sigs[j] != mi.param_sigs[j]) {
+				} else if ((_new == VariantType::OBJECT || _new == VariantType::ARRAY) && E->get().param_sigs[j] != mi.param_sigs[j]) {
 					this_valid = false;
 					break;
 				}

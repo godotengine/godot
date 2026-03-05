@@ -47,7 +47,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 	/* clang-format off */
 
 	switch (p_source.get_type()) {
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			SETUP_TYPE(Vector2)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -56,7 +56,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2I: {
 			SETUP_TYPE(Vector2i)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -65,7 +65,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::RECT2: {
+		case VariantType::RECT2: {
 			SETUP_TYPE(Rect2)
 
 			/**/ TRY_TRANSFER_FIELD("x", position.x)
@@ -76,7 +76,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::RECT2I: {
+		case VariantType::RECT2I: {
 			SETUP_TYPE(Rect2i)
 
 			/**/ TRY_TRANSFER_FIELD("x", position.x)
@@ -87,7 +87,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			SETUP_TYPE(Vector3)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -97,7 +97,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3I: {
 			SETUP_TYPE(Vector3i)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -107,7 +107,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			SETUP_TYPE(Vector4)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -118,7 +118,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::VECTOR4I: {
+		case VariantType::VECTOR4I: {
 			SETUP_TYPE(Vector4i)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -129,7 +129,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			SETUP_TYPE(Plane)
 
 			/**/ TRY_TRANSFER_FIELD("x", normal.x)
@@ -140,7 +140,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			SETUP_TYPE(Quaternion)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -151,7 +151,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			SETUP_TYPE(AABB)
 
 			/**/ TRY_TRANSFER_FIELD("px", position.x)
@@ -164,7 +164,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			SETUP_TYPE(Transform2D)
 
 			/**/ TRY_TRANSFER_FIELD("xx", columns[0][0])
@@ -177,7 +177,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			SETUP_TYPE(Basis)
 
 			/**/ TRY_TRANSFER_FIELD("xx", rows[0][0])
@@ -193,7 +193,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			SETUP_TYPE(Transform3D)
 
 			/**/ TRY_TRANSFER_FIELD("xx", basis.rows[0][0])
@@ -212,7 +212,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::PROJECTION: {
+		case VariantType::PROJECTION: {
 			SETUP_TYPE(Projection)
 
 			/**/ TRY_TRANSFER_FIELD("xx", columns[0].x)

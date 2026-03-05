@@ -505,7 +505,7 @@ void MessageQueue::set_thread_singleton_override(CallQueue *p_thread_singleton) 
 
 MessageQueue::MessageQueue() :
 		CallQueue(nullptr,
-				int(GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_mb", PROPERTY_HINT_RANGE, "1,512,1,or_greater"), 32)) * 1024 * 1024 / PAGE_SIZE_BYTES,
+				int(GLOBAL_DEF_RST(PropertyInfo(VariantType::INT, "memory/limits/message_queue/max_size_mb", PROPERTY_HINT_RANGE, "1,512,1,or_greater"), 32)) * 1024 * 1024 / PAGE_SIZE_BYTES,
 				"Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_mb' in project settings.") {
 	ERR_FAIL_COND_MSG(main_singleton != nullptr, "A MessageQueue singleton already exists.");
 	main_singleton = this;

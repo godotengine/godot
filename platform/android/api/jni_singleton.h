@@ -39,8 +39,8 @@ class JNISingleton : public Object {
 	GDCLASS(JNISingleton, Object);
 
 	struct MethodData {
-		Variant::Type ret_type;
-		Vector<Variant::Type> argtypes;
+		VariantType::Type ret_type;
+		Vector<VariantType::Type> argtypes;
 	};
 
 	RBMap<StringName, MethodData> method_map;
@@ -60,9 +60,9 @@ public:
 		return method_map.has(p_method);
 	}
 
-	void add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type);
+	void add_method(const StringName &p_name, const Vector<VariantType::Type> &p_args, VariantType::Type p_ret_type);
 
-	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args);
+	void add_signal(const StringName &p_name, const Vector<VariantType::Type> &p_args);
 
 	JNISingleton() {}
 

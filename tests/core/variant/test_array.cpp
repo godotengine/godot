@@ -769,9 +769,9 @@ TEST_CASE("[Array] Test typed arrays") {
 	Array arr1;
 	CHECK_FALSE(arr1.is_typed());
 
-	arr1.set_typed(Variant::FLOAT, StringName(), Variant());
+	arr1.set_typed(VariantType::FLOAT, StringName(), Variant());
 	CHECK(arr1.is_typed());
-	CHECK_EQ(arr1.get_typed_builtin(), Variant::FLOAT);
+	CHECK_EQ(arr1.get_typed_builtin(), VariantType::FLOAT);
 
 	arr1.push_back(1);
 	CHECK_EQ(arr1.size(), 1);
@@ -782,11 +782,11 @@ TEST_CASE("[Array] Test typed arrays") {
 	ERR_PRINT_ON;
 
 	Array arr2;
-	arr2.set_typed(Variant::INT, StringName(), Variant());
+	arr2.set_typed(VariantType::INT, StringName(), Variant());
 	CHECK_FALSE(arr1.is_same_typed(arr2));
 
 	Array arr3;
-	arr3.set_typed(Variant::OBJECT, "Node", Variant());
+	arr3.set_typed(VariantType::OBJECT, "Node", Variant());
 	CHECK_EQ(arr3.get_typed_class_name(), "Node");
 }
 

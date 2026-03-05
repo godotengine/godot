@@ -49,7 +49,7 @@ void EditorPropertyActionSet::_option_selected(int p_which) {
 
 void EditorPropertyActionSet::update_property() {
 	Variant current = get_edited_property_value();
-	if (current.get_type() == Variant::NIL) {
+	if (current.get_type() == VariantType::NIL) {
 		options->select(-1);
 		return;
 	}
@@ -104,7 +104,7 @@ void EditorPropertyBindingPath::_option_selected(int p_which) {
 
 void EditorPropertyBindingPath::update_property() {
 	Variant current = get_edited_property_value();
-	if (current.get_type() == Variant::NIL) {
+	if (current.get_type() == VariantType::NIL) {
 		options->select(-1);
 		return;
 	}
@@ -168,10 +168,10 @@ bool EditorInspectorPluginBindingModifier::can_handle(Object *p_object) {
 	return binding_modifier.is_valid();
 }
 
-bool EditorInspectorPluginBindingModifier::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorInspectorPluginBindingModifier::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Ref<OpenXRActionBindingModifier> action_binding_modifier(Object::cast_to<OpenXRActionBindingModifier>(p_object));
 	if (action_binding_modifier.is_valid()) {
-		if (p_type == Variant::OBJECT && p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text == OpenXRActionSet::get_class_static()) {
+		if (p_type == VariantType::OBJECT && p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text == OpenXRActionSet::get_class_static()) {
 			OpenXRIPBinding *ip_binding = action_binding_modifier->get_ip_binding();
 			ERR_FAIL_NULL_V(ip_binding, false);
 
@@ -189,7 +189,7 @@ bool EditorInspectorPluginBindingModifier::parse_property(Object *p_object, cons
 
 	Ref<OpenXRIPBindingModifier> ip_binding_modifier(Object::cast_to<OpenXRIPBindingModifier>(p_object));
 	if (ip_binding_modifier.is_valid()) {
-		if (p_type == Variant::OBJECT && p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text == OpenXRActionSet::get_class_static()) {
+		if (p_type == VariantType::OBJECT && p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text == OpenXRActionSet::get_class_static()) {
 			OpenXRInteractionProfile *interaction_profile = ip_binding_modifier->get_interaction_profile();
 			ERR_FAIL_NULL_V(interaction_profile, false);
 
@@ -202,7 +202,7 @@ bool EditorInspectorPluginBindingModifier::parse_property(Object *p_object, cons
 			return true;
 		}
 
-		if (p_type == Variant::STRING && p_hint == PROPERTY_HINT_TYPE_STRING && p_hint_text == "binding_path") {
+		if (p_type == VariantType::STRING && p_hint == PROPERTY_HINT_TYPE_STRING && p_hint_text == "binding_path") {
 			EditorPropertyBindingPath *binding_path_property = memnew(EditorPropertyBindingPath);
 
 			OpenXRInteractionProfile *interaction_profile = ip_binding_modifier->get_interaction_profile();
@@ -229,7 +229,7 @@ void OpenXRBindingModifierEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding_modifier"), &OpenXRBindingModifierEditor::get_binding_modifier);
 	ClassDB::bind_method(D_METHOD("setup", "action_map", "binding_modifier"), &OpenXRBindingModifierEditor::setup);
 
-	ADD_SIGNAL(MethodInfo("binding_modifier_removed", PropertyInfo(Variant::OBJECT, "binding_modifier_editor")));
+	ADD_SIGNAL(MethodInfo("binding_modifier_removed", PropertyInfo(VariantType::OBJECT, "binding_modifier_editor")));
 }
 
 void OpenXRBindingModifierEditor::_notification(int p_what) {

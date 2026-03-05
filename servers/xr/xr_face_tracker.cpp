@@ -185,7 +185,7 @@ void XRFaceTracker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_blend_shapes"), &XRFaceTracker::get_blend_shapes);
 	ClassDB::bind_method(D_METHOD("set_blend_shapes", "weights"), &XRFaceTracker::set_blend_shapes);
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_shapes"), "set_blend_shapes", "get_blend_shapes");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_FLOAT32_ARRAY, "blend_shapes"), "set_blend_shapes", "get_blend_shapes");
 	ADD_PROPERTY_DEFAULT("blend_shapes", PackedFloat32Array()); // To prevent ludicrously large default values.
 }
 

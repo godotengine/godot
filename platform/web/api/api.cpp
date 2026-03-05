@@ -70,7 +70,7 @@ void JavaScriptBridge::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "create_object";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING, "object"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING, "object"));
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "create_object", &JavaScriptBridge::_create_object_bind, mi);
 	}
 	ClassDB::bind_method(D_METHOD("download_buffer", "buffer", "name", "mime"), &JavaScriptBridge::download_buffer, DEFVAL("application/octet-stream"));
@@ -111,7 +111,7 @@ Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argc
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING;
+		r_error.expected = VariantType::STRING;
 		return Ref<JavaScriptObject>();
 	}
 	return Ref<JavaScriptObject>();

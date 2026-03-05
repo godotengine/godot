@@ -2283,7 +2283,7 @@ void ThemeTypeDialog::_notification(int p_what) {
 }
 
 void ThemeTypeDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(Variant::STRING, "type_name")));
+	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(VariantType::STRING, "type_name")));
 }
 
 void ThemeTypeDialog::set_edited_theme(const Ref<Theme> &p_theme) {

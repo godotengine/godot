@@ -93,8 +93,8 @@ void EditorDebuggerRemoteObjects::_get_property_list(List<PropertyInfo> *p_list)
 
 void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
-	Variant::Type type = p_value.get_type();
-	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
+	VariantType::Type type = p_value.get_type();
+	if (type == VariantType::ARRAY || type == VariantType::DICTIONARY) {
 		_set_impl(p_property, p_value, "");
 	} else {
 		_set_impl(p_property, p_value, p_field);
@@ -126,7 +126,7 @@ void EditorDebuggerRemoteObjects::_bind_methods() {
 	ClassDB::bind_method("_hide_script_from_inspector", &EditorDebuggerRemoteObjects::_hide_script_from_inspector);
 	ClassDB::bind_method("_hide_metadata_from_inspector", &EditorDebuggerRemoteObjects::_hide_metadata_from_inspector);
 
-	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t;Variant"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(VariantType::STRING, "property"), PropertyInfo(VariantType::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t;Variant"), PropertyInfo(VariantType::STRING, "field")));
 }
 
 /// EditorDebuggerInspector
@@ -141,9 +141,9 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 }
 
 void EditorDebuggerInspector::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::ARRAY, "ids"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value"), PropertyInfo(Variant::STRING, "field")));
-	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(VariantType::ARRAY, "ids"), PropertyInfo(VariantType::STRING, "property"), PropertyInfo("value"), PropertyInfo(VariantType::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(VariantType::INT, "id"), PropertyInfo(VariantType::STRING, "property")));
 }
 
 void EditorDebuggerInspector::_notification(int p_what) {
@@ -258,7 +258,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		const PropertyInfo &pinfo = KV.value.prop.first;
 		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
 
-		if (pinfo.type == Variant::OBJECT && var.is_string()) {
+		if (pinfo.type == VariantType::OBJECT && var.is_string()) {
 			String path = var;
 			if (path.contains("::")) {
 				// Built-in resource.
@@ -408,7 +408,7 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 	PropertyHint h = PROPERTY_HINT_NONE;
 	String hs;
 
-	if (var.var_type == Variant::OBJECT && v) {
+	if (var.var_type == VariantType::OBJECT && v) {
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = "Object";

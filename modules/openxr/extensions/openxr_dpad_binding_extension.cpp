@@ -75,39 +75,39 @@ bool OpenXRDPadBindingExtension::is_available() {
 void OpenXRDpadBindingModifier::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action_set", "action_set"), &OpenXRDpadBindingModifier::set_action_set);
 	ClassDB::bind_method(D_METHOD("get_action_set"), &OpenXRDpadBindingModifier::get_action_set);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action_set", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionSet::get_class_static()), "set_action_set", "get_action_set");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "action_set", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionSet::get_class_static()), "set_action_set", "get_action_set");
 
 	ClassDB::bind_method(D_METHOD("set_input_path", "input_path"), &OpenXRDpadBindingModifier::set_input_path);
 	ClassDB::bind_method(D_METHOD("get_input_path"), &OpenXRDpadBindingModifier::get_input_path);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "input_path", PROPERTY_HINT_TYPE_STRING, "binding_path"), "set_input_path", "get_input_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "input_path", PROPERTY_HINT_TYPE_STRING, "binding_path"), "set_input_path", "get_input_path");
 
 	ClassDB::bind_method(D_METHOD("set_threshold", "threshold"), &OpenXRDpadBindingModifier::set_threshold);
 	ClassDB::bind_method(D_METHOD("get_threshold"), &OpenXRDpadBindingModifier::get_threshold);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_threshold", "get_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_threshold", "get_threshold");
 
 	ClassDB::bind_method(D_METHOD("set_threshold_released", "threshold_released"), &OpenXRDpadBindingModifier::set_threshold_released);
 	ClassDB::bind_method(D_METHOD("get_threshold_released"), &OpenXRDpadBindingModifier::get_threshold_released);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold_released", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_threshold_released", "get_threshold_released");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "threshold_released", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_threshold_released", "get_threshold_released");
 
 	ClassDB::bind_method(D_METHOD("set_center_region", "center_region"), &OpenXRDpadBindingModifier::set_center_region);
 	ClassDB::bind_method(D_METHOD("get_center_region"), &OpenXRDpadBindingModifier::get_center_region);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "center_region", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_center_region", "get_center_region");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "center_region", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_center_region", "get_center_region");
 
 	ClassDB::bind_method(D_METHOD("set_wedge_angle", "wedge_angle"), &OpenXRDpadBindingModifier::set_wedge_angle);
 	ClassDB::bind_method(D_METHOD("get_wedge_angle"), &OpenXRDpadBindingModifier::get_wedge_angle);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wedge_angle", PROPERTY_HINT_RANGE, "1.0,180.0,0.1,radians_as_degrees"), "set_wedge_angle", "get_wedge_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "wedge_angle", PROPERTY_HINT_RANGE, "1.0,180.0,0.1,radians_as_degrees"), "set_wedge_angle", "get_wedge_angle");
 
 	ClassDB::bind_method(D_METHOD("set_is_sticky", "is_sticky"), &OpenXRDpadBindingModifier::set_is_sticky);
 	ClassDB::bind_method(D_METHOD("get_is_sticky"), &OpenXRDpadBindingModifier::get_is_sticky);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_sticky"), "set_is_sticky", "get_is_sticky");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "is_sticky"), "set_is_sticky", "get_is_sticky");
 
 	ClassDB::bind_method(D_METHOD("set_on_haptic", "haptic"), &OpenXRDpadBindingModifier::set_on_haptic);
 	ClassDB::bind_method(D_METHOD("get_on_haptic"), &OpenXRDpadBindingModifier::get_on_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
 
 	ClassDB::bind_method(D_METHOD("set_off_haptic", "haptic"), &OpenXRDpadBindingModifier::set_off_haptic);
 	ClassDB::bind_method(D_METHOD("get_off_haptic"), &OpenXRDpadBindingModifier::get_off_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
 }
 
 OpenXRDpadBindingModifier::OpenXRDpadBindingModifier() {

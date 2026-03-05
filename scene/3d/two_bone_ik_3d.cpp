@@ -139,20 +139,20 @@ void TwoBoneIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::NODE_PATH, path + "target_node"));
-		props.push_back(PropertyInfo(Variant::NODE_PATH, path + "pole_node"));
-		props.push_back(PropertyInfo(Variant::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::STRING, path + "middle_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "middle_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::INT, path + "pole_direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
-		props.push_back(PropertyInfo(Variant::VECTOR3, path + "pole_direction_vector"));
-		props.push_back(PropertyInfo(Variant::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "use_virtual_end"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "extend_end_bone"));
-		props.push_back(PropertyInfo(Variant::INT, path + "end_bone/direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_direction()));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "end_bone/length", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
+		props.push_back(PropertyInfo(VariantType::NODE_PATH, path + "target_node"));
+		props.push_back(PropertyInfo(VariantType::NODE_PATH, path + "pole_node"));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "middle_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "middle_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::INT, path + "pole_direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
+		props.push_back(PropertyInfo(VariantType::VECTOR3, path + "pole_direction_vector"));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "use_virtual_end"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "extend_end_bone"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "end_bone/direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_direction()));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "end_bone/length", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
 	}
 
 	for (PropertyInfo &p : props) {

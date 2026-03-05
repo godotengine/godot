@@ -143,7 +143,7 @@ public:
 
 void SectionedInspector::_bind_methods() {
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
-	ADD_SIGNAL(MethodInfo("category_changed", PropertyInfo(Variant::STRING, "new_category")));
+	ADD_SIGNAL(MethodInfo("category_changed", PropertyInfo(VariantType::STRING, "new_category")));
 }
 
 void SectionedInspector::_section_selected() {

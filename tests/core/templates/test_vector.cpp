@@ -225,7 +225,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -240,7 +240,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -255,7 +255,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -269,7 +269,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -284,7 +284,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -303,7 +303,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -322,7 +322,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -337,7 +337,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}
@@ -356,7 +356,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 			Variant v_ret;
 			Variant v_vector = vector[i];
 			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
-			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.get_type() == VariantType::PACKED_BYTE_ARRAY);
 			CHECK(v_ret.operator PackedByteArray() == out[i]);
 		}
 	}

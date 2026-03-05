@@ -42,7 +42,7 @@ CameraServer::CreateFunc CameraServer::create_func = nullptr;
 void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_monitoring_feeds", "is_monitoring_feeds"), &CameraServer::set_monitoring_feeds);
 	ClassDB::bind_method(D_METHOD("is_monitoring_feeds"), &CameraServer::is_monitoring_feeds);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitoring_feeds"), "set_monitoring_feeds", "is_monitoring_feeds");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "monitoring_feeds"), "set_monitoring_feeds", "is_monitoring_feeds");
 	ADD_PROPERTY_DEFAULT("monitoring_feeds", false);
 
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
@@ -52,8 +52,8 @@ void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_feed", "feed"), &CameraServer::add_feed);
 	ClassDB::bind_method(D_METHOD("remove_feed", "feed"), &CameraServer::remove_feed);
 
-	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(VariantType::INT, "id")));
 	ADD_SIGNAL(MethodInfo(feeds_updated_signal_name));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);

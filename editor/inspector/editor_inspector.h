@@ -354,7 +354,7 @@ protected:
 	GDVIRTUAL1(_parse_begin, Object *)
 	GDVIRTUAL2(_parse_category, Object *, String)
 	GDVIRTUAL2(_parse_group, Object *, String)
-	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
+	GDVIRTUAL7R(bool, _parse_property, Object *, VariantType::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
 	GDVIRTUAL1(_parse_end, Object *)
 
 #ifndef DISABLE_DEPRECATED
@@ -370,7 +370,7 @@ public:
 	virtual void parse_begin(Object *p_object);
 	virtual void parse_category(Object *p_object, const String &p_category);
 	virtual void parse_group(Object *p_object, const String &p_group);
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
+	virtual bool parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
 	virtual void parse_end(Object *p_object);
 };
 
@@ -863,7 +863,7 @@ public:
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
 
-	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
+	static EditorProperty *instantiate_property_editor(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
 	static void initialize_section_theme(EditorInspectorSection::ThemeCache &p_cache, Control *p_control);
 	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);

@@ -60,19 +60,19 @@ bool ResourceImporterImageFont::get_option_visibility(const String &p_path, cons
 }
 
 void ResourceImporterImageFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "kerning_pairs"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "image_margin"), Rect2i()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "character_margin"), Rect2i()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "ascent"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "descent"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::PACKED_STRING_ARRAY, "kerning_pairs"), Vector<String>()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "rows", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::RECT2I, "image_margin"), Rect2i()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::RECT2I, "character_margin"), Rect2i()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "ascent"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "descent"), 0));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
 Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

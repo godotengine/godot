@@ -474,8 +474,8 @@ Error Expression::_get_token(Token &r_token) {
 						r_token.type = TK_SELF;
 					} else {
 						{
-							const Variant::Type type = Variant::get_type_by_name(id);
-							if (type < Variant::VARIANT_MAX) {
+							const VariantType::Type type = VariantType::get_type_by_name(id);
+							if (type < VariantType::VARIANT_MAX) {
 								r_token.type = TK_BASIC_TYPE;
 								r_token.value = type;
 								return OK;
@@ -741,7 +741,7 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_BASIC_TYPE: {
 				//constructor..
 
-				Variant::Type bt = Variant::Type(int(tk.value));
+				VariantType::Type bt = VariantType::Type(int(tk.value));
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
@@ -1279,7 +1279,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			bool valid = true;
 			Variant::evaluate(op->op, a, b, r_ret, valid);
 			if (!valid) {
-				r_error_str = vformat(RTR("Invalid operands to operator %s, %s and %s."), Variant::get_operator_name(op->op), Variant::get_type_name(a.get_type()), Variant::get_type_name(b.get_type()));
+				r_error_str = vformat(RTR("Invalid operands to operator %s, %s and %s."), Variant::get_operator_name(op->op), VariantType::get_type_name(a.get_type()), VariantType::get_type_name(b.get_type()));
 				return true;
 			}
 
@@ -1303,7 +1303,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			bool valid;
 			r_ret = base.get(idx, &valid);
 			if (!valid) {
-				r_error_str = vformat(RTR("Invalid index of type %s for base type %s"), Variant::get_type_name(idx.get_type()), Variant::get_type_name(base.get_type()));
+				r_error_str = vformat(RTR("Invalid index of type %s for base type %s"), VariantType::get_type_name(idx.get_type()), VariantType::get_type_name(base.get_type()));
 				return true;
 			}
 
@@ -1320,7 +1320,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			bool valid;
 			r_ret = base.get_named(index->name, valid);
 			if (!valid) {
-				r_error_str = vformat(RTR("Invalid named index '%s' for base type %s"), String(index->name), Variant::get_type_name(base.get_type()));
+				r_error_str = vformat(RTR("Invalid named index '%s' for base type %s"), String(index->name), VariantType::get_type_name(base.get_type()));
 				return true;
 			}
 
@@ -1389,7 +1389,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant::construct(constructor->data_type, r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
-				r_error_str = vformat(RTR("Invalid arguments to construct '%s'"), Variant::get_type_name(constructor->data_type));
+				r_error_str = vformat(RTR("Invalid arguments to construct '%s'"), VariantType::get_type_name(constructor->data_type));
 				return true;
 			}
 

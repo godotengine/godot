@@ -520,11 +520,11 @@ void EditorInterface::popup_property_selector(Object *p_object, const Callable &
 		get_base_control()->add_child(property_selector);
 	}
 
-	Vector<Variant::Type> type_filter;
+	Vector<VariantType::Type> type_filter;
 	int length = p_type_filter.size();
 	type_filter.resize(length);
 	for (int i = 0; i < length; i++) {
-		type_filter.write[i] = (Variant::Type)p_type_filter[i];
+		type_filter.write[i] = (VariantType::Type)p_type_filter[i];
 	}
 	property_selector->set_type_filter(type_filter);
 	property_selector->select_property_from_instance(p_object, p_current_value);
@@ -890,7 +890,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_feature_profile"), &EditorInterface::get_current_feature_profile);
 	ClassDB::bind_method(D_METHOD("set_current_feature_profile", "profile_name"), &EditorInterface::set_current_feature_profile);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 
 	// Editor dialogs.
 
@@ -949,7 +949,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
 	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_maker_enabled"), "set_movie_maker_enabled", "is_movie_maker_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "movie_maker_enabled"), "set_movie_maker_enabled", "is_movie_maker_enabled");
 }
 
 void EditorInterface::create() {

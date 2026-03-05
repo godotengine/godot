@@ -99,16 +99,16 @@ void LimitAngularVelocityModifier3D::_get_property_list(List<PropertyInfo> *p_li
 
 	for (uint32_t i = 0; i < chains.size(); i++) {
 		String path = "chains/" + itos(i) + "/";
-		p_list->push_back(PropertyInfo(Variant::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		p_list->push_back(PropertyInfo(Variant::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		p_list->push_back(PropertyInfo(Variant::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		p_list->push_back(PropertyInfo(VariantType::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(VariantType::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		p_list->push_back(PropertyInfo(VariantType::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	for (uint32_t i = 0; i < joints.size(); i++) {
 		String path = "joints/" + itos(i) + "/";
-		p_list->push_back(PropertyInfo(Variant::STRING, path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-		p_list->push_back(PropertyInfo(Variant::INT, path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+		p_list->push_back(PropertyInfo(VariantType::STRING, path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
+		p_list->push_back(PropertyInfo(VariantType::INT, path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 	}
 }
 
@@ -272,8 +272,8 @@ void LimitAngularVelocityModifier3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_get_joint_count"), &LimitAngularVelocityModifier3D::_get_joint_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_angular_velocity", PROPERTY_HINT_RANGE, "0,720,or_greater,radians_as_degrees,suffix:" + String(U"°") + "/s"), "set_max_angular_velocity", "get_max_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude"), "set_exclude", "is_exclude");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_angular_velocity", PROPERTY_HINT_RANGE, "0,720,or_greater,radians_as_degrees,suffix:" + String(U"°") + "/s"), "set_max_angular_velocity", "get_max_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "exclude"), "set_exclude", "is_exclude");
 	ADD_ARRAY_COUNT("Chains", "chain_count", "set_chain_count", "get_chain_count", "chains/");
 	ADD_ARRAY_COUNT("Joints", "joint_count", "", "_get_joint_count", "joints/");
 }

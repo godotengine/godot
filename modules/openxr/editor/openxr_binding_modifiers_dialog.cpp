@@ -127,7 +127,7 @@ void OpenXRBindingModifiersDialog::_on_remove_binding_modifier(Object *p_binding
 void OpenXRBindingModifiersDialog::_on_dialog_created() {
 	// Instance new binding modifier object
 	Variant obj = create_dialog->instantiate_selected();
-	ERR_FAIL_COND(obj.get_type() != Variant::OBJECT);
+	ERR_FAIL_COND(obj.get_type() != VariantType::OBJECT);
 
 	Ref<OpenXRBindingModifier> new_binding_modifier = obj;
 	ERR_FAIL_COND(new_binding_modifier.is_null());

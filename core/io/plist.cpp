@@ -94,27 +94,27 @@ Ref<PListNode> PListNode::new_node(const Variant &p_value) {
 	node.instantiate();
 
 	switch (p_value.get_type()) {
-		case Variant::NIL: {
+		case VariantType::NIL: {
 			node->data_type = PList::PL_NODE_TYPE_NIL;
 		} break;
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			node->data_type = PList::PL_NODE_TYPE_BOOLEAN;
 			node->data_bool = p_value;
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			node->data_type = PList::PL_NODE_TYPE_INTEGER;
 			node->data_int = p_value;
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			node->data_type = PList::PL_NODE_TYPE_REAL;
 			node->data_real = p_value;
 		} break;
-		case Variant::STRING_NAME:
-		case Variant::STRING: {
+		case VariantType::STRING_NAME:
+		case VariantType::STRING: {
 			node->data_type = PList::PL_NODE_TYPE_STRING;
 			node->data_string = p_value.operator String().utf8();
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			node->data_type = PList::PL_NODE_TYPE_DICT;
 			Dictionary dict = p_value;
 			const Variant *next = dict.next(nullptr);
@@ -125,7 +125,7 @@ Ref<PListNode> PListNode::new_node(const Variant &p_value) {
 				next = dict.next(next);
 			}
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			node->data_type = PList::PL_NODE_TYPE_ARRAY;
 			Array ar = p_value;
 			for (int i = 0; i < ar.size(); i++) {
@@ -134,7 +134,7 @@ Ref<PListNode> PListNode::new_node(const Variant &p_value) {
 				node->data_array.push_back(sub_node);
 			}
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			node->data_type = PList::PL_NODE_TYPE_DATA;
 			PackedByteArray buf = p_value;
 			node->data_string = CryptoCore::b64_encode_str(buf.ptr(), buf.size()).utf8();

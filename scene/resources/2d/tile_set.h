@@ -368,7 +368,7 @@ private:
 	// CustomData
 	struct CustomDataLayer {
 		String name;
-		Variant::Type type = Variant::NIL;
+		VariantType::Type type = VariantType::NIL;
 	};
 	Vector<CustomDataLayer> custom_data_layers;
 	HashMap<String, int> custom_data_layers_by_name;
@@ -502,8 +502,8 @@ public:
 	void set_custom_data_layer_name(int p_layer_id, String p_value);
 	bool has_custom_data_layer_by_name(const String &p_value) const;
 	String get_custom_data_layer_name(int p_layer_id) const;
-	void set_custom_data_layer_type(int p_layer_id, Variant::Type p_value);
-	Variant::Type get_custom_data_layer_type(int p_layer_id) const;
+	void set_custom_data_layer_type(int p_layer_id, VariantType::Type p_value);
+	VariantType::Type get_custom_data_layer_type(int p_layer_id) const;
 
 	// Tiles proxies.
 	void set_source_level_tile_proxy(int p_source_from, int p_source_to);

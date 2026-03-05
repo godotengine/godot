@@ -61,7 +61,7 @@ private:
 	TypedArray<NodePath> node_paths;
 	GLTFObjectModelType object_model_type = GLTF_OBJECT_MODEL_TYPE_UNKNOWN;
 	Vector<PackedStringArray> json_pointers;
-	Variant::Type variant_type = Variant::NIL;
+	VariantType::Type variant_type = VariantType::NIL;
 
 protected:
 	static void _bind_methods();
@@ -93,10 +93,10 @@ public:
 	TypedArray<PackedStringArray> get_json_pointers_bind() const;
 	void set_json_pointers_bind(const TypedArray<PackedStringArray> &p_json_pointers);
 
-	Variant::Type get_variant_type() const;
-	void set_variant_type(Variant::Type p_variant_type);
+	VariantType::Type get_variant_type() const;
+	void set_variant_type(VariantType::Type p_variant_type);
 
-	void set_types(Variant::Type p_variant_type, GLTFObjectModelType p_obj_model_type);
+	void set_types(VariantType::Type p_variant_type, GLTFObjectModelType p_obj_model_type);
 };
 
 VARIANT_ENUM_CAST(GLTFObjectModelProperty::GLTFObjectModelType);

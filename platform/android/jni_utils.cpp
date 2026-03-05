@@ -40,7 +40,7 @@ static jmethodID load_class_method = nullptr;
 
 jobject callable_to_jcallable(JNIEnv *p_env, const Variant &p_callable) {
 	ERR_FAIL_NULL_V(p_env, nullptr);
-	if (p_callable.get_type() != Variant::CALLABLE) {
+	if (p_callable.get_type() != VariantType::CALLABLE) {
 		return nullptr;
 	}
 
@@ -93,7 +93,7 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 	return result;
 }
 
-jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth) {
+jobject _variant_to_jobject(JNIEnv *env, VariantType::Type p_type, const Variant *p_arg, int p_depth) {
 	jobject ret = nullptr;
 
 	if (p_depth > RECURSION_DEPTH_LIMIT) {
@@ -109,7 +109,7 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 	}
 
 	switch (p_type) {
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			jclass bclass = jni_find_class(env, "java/lang/Boolean");
 			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
 			jvalue val;
@@ -117,7 +117,7 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = env->NewObjectA(bclass, ctor, &val);
 			env->DeleteLocalRef(bclass);
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			jclass bclass = jni_find_class(env, "java/lang/Long");
 			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(J)V");
 			jvalue val;
@@ -125,7 +125,7 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = env->NewObjectA(bclass, ctor, &val);
 			env->DeleteLocalRef(bclass);
 		} break;
-		case Variant::FLOAT: {
+		case VariantType::FLOAT: {
 			jclass bclass = jni_find_class(env, "java/lang/Double");
 			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
 			jvalue val;
@@ -133,12 +133,12 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = env->NewObjectA(bclass, ctor, &val);
 			env->DeleteLocalRef(bclass);
 		} break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String s = *p_arg;
 			jstring jStr = env->NewStringUTF(s.utf8().get_data());
 			ret = jStr;
 		} break;
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			Vector<String> sarray = *p_arg;
 			jobjectArray arr = env->NewObjectArray(sarray.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 
@@ -150,12 +150,12 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = arr;
 		} break;
 
-		case Variant::CALLABLE: {
+		case VariantType::CALLABLE: {
 			jobject jcallable = callable_to_jcallable(env, *p_arg);
 			ret = jcallable;
 		} break;
 
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary dict = *p_arg;
 			jclass dclass = jni_find_class(env, "org/godotengine/godot/Dictionary");
 			jmethodID ctor = env->GetMethodID(dclass, "<init>", "()V");
@@ -196,7 +196,7 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = jdict;
 		} break;
 
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array array = *p_arg;
 			jobjectArray arr = env->NewObjectArray(array.size(), jni_find_class(env, "java/lang/Object"), nullptr);
 
@@ -211,42 +211,42 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			ret = arr;
 		} break;
 
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			Vector<int> array = *p_arg;
 			jintArray arr = env->NewIntArray(array.size());
 			const int *r = array.ptr();
 			env->SetIntArrayRegion(arr, 0, array.size(), r);
 			ret = arr;
 		} break;
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			Vector<int64_t> array = *p_arg;
 			jlongArray arr = env->NewLongArray(array.size());
 			const int64_t *r = array.ptr();
 			env->SetLongArrayRegion(arr, 0, array.size(), r);
 			ret = arr;
 		} break;
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			Vector<uint8_t> array = *p_arg;
 			jbyteArray arr = env->NewByteArray(array.size());
 			const uint8_t *r = array.ptr();
 			env->SetByteArrayRegion(arr, 0, array.size(), reinterpret_cast<const signed char *>(r));
 			ret = arr;
 		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			Vector<float> array = *p_arg;
 			jfloatArray arr = env->NewFloatArray(array.size());
 			const float *r = array.ptr();
 			env->SetFloatArrayRegion(arr, 0, array.size(), r);
 			ret = arr;
 		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			Vector<double> array = *p_arg;
 			jdoubleArray arr = env->NewDoubleArray(array.size());
 			const double *r = array.ptr();
 			env->SetDoubleArrayRegion(arr, 0, array.size(), r);
 			ret = arr;
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Ref<JavaObject> generic_object = *p_arg;
 			if (generic_object.is_valid()) {
 				jobject obj = env->NewLocalRef(generic_object->get_instance());
@@ -461,29 +461,29 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 	return generic_object;
 }
 
-Variant::Type get_jni_type(const String &p_type) {
+VariantType::Type get_jni_type(const String &p_type) {
 	static struct {
 		const char *name;
-		Variant::Type type;
+		VariantType::Type type;
 	} _type_to_vtype[] = {
-		{ "void", Variant::NIL },
-		{ "boolean", Variant::BOOL },
-		{ "int", Variant::INT },
-		{ "long", Variant::INT },
-		{ "float", Variant::FLOAT },
-		{ "double", Variant::FLOAT },
-		{ "java.lang.String", Variant::STRING },
-		{ "java.lang.CharSequence", Variant::STRING },
-		{ "[I", Variant::PACKED_INT32_ARRAY },
-		{ "[J", Variant::PACKED_INT64_ARRAY },
-		{ "[B", Variant::PACKED_BYTE_ARRAY },
-		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
-		{ "[D", Variant::PACKED_FLOAT64_ARRAY },
-		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
-		{ "[Ljava.lang.CharSequence;", Variant::PACKED_STRING_ARRAY },
-		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
-		{ "org.godotengine.godot.variant.Callable", Variant::CALLABLE },
-		{ nullptr, Variant::NIL }
+		{ "void", VariantType::NIL },
+		{ "boolean", VariantType::BOOL },
+		{ "int", VariantType::INT },
+		{ "long", VariantType::INT },
+		{ "float", VariantType::FLOAT },
+		{ "double", VariantType::FLOAT },
+		{ "java.lang.String", VariantType::STRING },
+		{ "java.lang.CharSequence", VariantType::STRING },
+		{ "[I", VariantType::PACKED_INT32_ARRAY },
+		{ "[J", VariantType::PACKED_INT64_ARRAY },
+		{ "[B", VariantType::PACKED_BYTE_ARRAY },
+		{ "[F", VariantType::PACKED_FLOAT32_ARRAY },
+		{ "[D", VariantType::PACKED_FLOAT64_ARRAY },
+		{ "[Ljava.lang.String;", VariantType::PACKED_STRING_ARRAY },
+		{ "[Ljava.lang.CharSequence;", VariantType::PACKED_STRING_ARRAY },
+		{ "org.godotengine.godot.Dictionary", VariantType::DICTIONARY },
+		{ "org.godotengine.godot.variant.Callable", VariantType::CALLABLE },
+		{ nullptr, VariantType::NIL }
 	};
 
 	int idx = 0;
@@ -496,7 +496,7 @@ Variant::Type get_jni_type(const String &p_type) {
 		idx++;
 	}
 
-	return Variant::OBJECT;
+	return VariantType::OBJECT;
 }
 
 void setup_android_class_loader() {

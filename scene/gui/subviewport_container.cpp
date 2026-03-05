@@ -298,9 +298,9 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_target", "amount"), &SubViewportContainer::set_mouse_target);
 	ClassDB::bind_method(D_METHOD("is_mouse_target_enabled"), &SubViewportContainer::is_mouse_target_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_target"), "set_mouse_target", "is_mouse_target_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "mouse_target"), "set_mouse_target", "is_mouse_target_enabled");
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }

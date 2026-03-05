@@ -253,7 +253,7 @@ void OpenXRAnchorTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uuid", "uuid"), &OpenXRAnchorTracker::_set_uuid);
 	ClassDB::bind_method(D_METHOD("get_uuid"), &OpenXRAnchorTracker::_get_uuid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uuid"), "set_uuid", "get_uuid");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "uuid"), "set_uuid", "get_uuid");
 
 	ADD_SIGNAL(MethodInfo("uuid_changed"));
 }

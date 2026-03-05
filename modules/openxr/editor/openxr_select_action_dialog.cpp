@@ -35,7 +35,7 @@
 #include "editor/themes/editor_scale.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));
+	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(VariantType::STRING, "action")));
 }
 
 void OpenXRSelectActionDialog::_notification(int p_what) {

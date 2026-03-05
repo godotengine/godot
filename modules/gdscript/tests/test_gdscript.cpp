@@ -106,7 +106,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 
 		if (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::LITERAL || current.type == GDScriptTokenizer::Token::IDENTIFIER || current.type == GDScriptTokenizer::Token::ANNOTATION) {
 			token += "(";
-			token += Variant::get_type_name(current.literal.get_type());
+			token += VariantType::get_type_name(current.literal.get_type());
 			token += ") ";
 			token += current.literal;
 		}
@@ -153,7 +153,7 @@ static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<
 
 		if (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::LITERAL || current.type == GDScriptTokenizer::Token::IDENTIFIER || current.type == GDScriptTokenizer::Token::ANNOTATION) {
 			token += "(";
-			token += Variant::get_type_name(current.literal.get_type());
+			token += VariantType::get_type_name(current.literal.get_type());
 			token += ") ";
 			token += current.literal;
 		}

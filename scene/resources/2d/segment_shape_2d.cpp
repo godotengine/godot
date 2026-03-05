@@ -94,8 +94,8 @@ void SegmentShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_b", "b"), &SegmentShape2D::set_b);
 	ClassDB::bind_method(D_METHOD("get_b"), &SegmentShape2D::get_b);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "a", PROPERTY_HINT_NONE, "suffix:px"), "set_a", "get_a");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "b", PROPERTY_HINT_NONE, "suffix:px"), "set_b", "get_b");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "a", PROPERTY_HINT_NONE, "suffix:px"), "set_a", "get_a");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "b", PROPERTY_HINT_NONE, "suffix:px"), "set_b", "get_b");
 }
 
 SegmentShape2D::SegmentShape2D() :

@@ -366,32 +366,32 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 }
 
 void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) const {
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // GDExtension support.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false, true)); // Thread support (i.e. run with or without COEP/COOP headers).
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "variant/extensions_support"), false)); // GDExtension support.
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "variant/thread_support"), false, true)); // Thread support (i.e. run with or without COEP/COOP headers).
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/export_icon"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_144x144", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "html/export_icon"), true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "html/focus_canvas_on_start"), true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "html/experimental_virtual_keyboard"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "progressive_web_app/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "progressive_web_app/icon_144x144", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/emscripten_pool_size"), 8));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/godot_pool_size"), 4));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "threads/emscripten_pool_size"), 8));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "threads/godot_pool_size"), 4));
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {

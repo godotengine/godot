@@ -44,7 +44,7 @@ void CodeEdit::_add_code_completion_option_compat_84906(CodeCompletionKind p_typ
 
 void CodeEdit::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_text_for_symbol_lookup"), &CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196);
-	ClassDB::bind_compatibility_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::_add_code_completion_option_compat_84906, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
+	ClassDB::bind_compatibility_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::_add_code_completion_option_compat_84906, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(VariantType::NIL), DEFVAL(LOCATION_OTHER));
 }
 
 #endif // DISABLE_DEPRECATED

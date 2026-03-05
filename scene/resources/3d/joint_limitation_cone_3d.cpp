@@ -57,7 +57,7 @@ void JointLimitationCone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_angle", "angle"), &JointLimitationCone3D::set_angle);
 	ClassDB::bind_method(D_METHOD("get_angle"), &JointLimitationCone3D::get_angle);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_angle", "get_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_angle", "get_angle");
 }
 
 Vector3 JointLimitationCone3D::_solve(const Vector3 &p_direction) const {

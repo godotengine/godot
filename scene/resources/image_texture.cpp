@@ -236,7 +236,7 @@ void ImageTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_image", "image"), &ImageTexture::set_image);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, Image::get_class_static(), PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_image", "get_image");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, Image::get_class_static(), PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_image", "get_image");
 }
 
 ImageTexture::~ImageTexture() {
@@ -374,7 +374,7 @@ void ImageTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_images"), &ImageTextureLayered::_get_images);
 	ClassDB::bind_method(D_METHOD("_set_images", "images"), &ImageTextureLayered::_set_images);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
 }
 
 ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {
@@ -523,7 +523,7 @@ void ImageTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update", "data"), &ImageTexture3D::_update);
 	ClassDB::bind_method(D_METHOD("_get_images"), &ImageTexture3D::_get_images);
 	ClassDB::bind_method(D_METHOD("_set_images", "images"), &ImageTexture3D::_set_images);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
 }
 
 ImageTexture3D::ImageTexture3D() {

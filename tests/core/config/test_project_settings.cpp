@@ -45,7 +45,7 @@ TEST_CASE("[ProjectSettings] Get existing setting") {
 	CHECK(ProjectSettings::get_singleton()->has_setting("application/run/main_scene"));
 
 	Variant variant = ProjectSettings::get_singleton()->get_setting("application/run/main_scene");
-	CHECK_EQ(variant.get_type(), Variant::STRING);
+	CHECK_EQ(variant.get_type(), VariantType::STRING);
 
 	String name = variant;
 	CHECK_EQ(name, String());
@@ -55,7 +55,7 @@ TEST_CASE("[ProjectSettings] Default value is ignored if setting exists") {
 	CHECK(ProjectSettings::get_singleton()->has_setting("application/run/main_scene"));
 
 	Variant variant = ProjectSettings::get_singleton()->get_setting("application/run/main_scene", "SomeDefaultValue");
-	CHECK_EQ(variant.get_type(), Variant::STRING);
+	CHECK_EQ(variant.get_type(), VariantType::STRING);
 
 	String name = variant;
 	CHECK_EQ(name, String());
@@ -65,17 +65,17 @@ TEST_CASE("[ProjectSettings] Non existing setting is null") {
 	CHECK_FALSE(ProjectSettings::get_singleton()->has_setting("not_existing_setting"));
 
 	Variant variant = ProjectSettings::get_singleton()->get_setting("not_existing_setting");
-	CHECK_EQ(variant.get_type(), Variant::NIL);
+	CHECK_EQ(variant.get_type(), VariantType::NIL);
 }
 
 TEST_CASE("[ProjectSettings] Non existing setting should return default value") {
 	CHECK_FALSE(ProjectSettings::get_singleton()->has_setting("not_existing_setting"));
 
 	Variant variant = ProjectSettings::get_singleton()->get_setting("not_existing_setting");
-	CHECK_EQ(variant.get_type(), Variant::NIL);
+	CHECK_EQ(variant.get_type(), VariantType::NIL);
 
 	variant = ProjectSettings::get_singleton()->get_setting("not_existing_setting", "my_nice_default_value");
-	CHECK_EQ(variant.get_type(), Variant::STRING);
+	CHECK_EQ(variant.get_type(), VariantType::STRING);
 
 	String name = variant;
 	CHECK_EQ(name, "my_nice_default_value");
@@ -87,13 +87,13 @@ TEST_CASE("[ProjectSettings] Set value should be returned when retrieved") {
 	CHECK_FALSE(ProjectSettings::get_singleton()->has_setting("my_custom_setting"));
 
 	Variant variant = ProjectSettings::get_singleton()->get_setting("my_custom_setting");
-	CHECK_EQ(variant.get_type(), Variant::NIL);
+	CHECK_EQ(variant.get_type(), VariantType::NIL);
 
 	ProjectSettings::get_singleton()->set_setting("my_custom_setting", true);
 	CHECK(ProjectSettings::get_singleton()->has_setting("my_custom_setting"));
 
 	variant = ProjectSettings::get_singleton()->get_setting("my_custom_setting");
-	CHECK_EQ(variant.get_type(), Variant::BOOL);
+	CHECK_EQ(variant.get_type(), VariantType::BOOL);
 
 	bool value = variant;
 	CHECK_EQ(true, value);

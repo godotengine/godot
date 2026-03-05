@@ -78,15 +78,15 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 	for (const KeyValue<Variant, Variant> &kv : p_messages) {
 		switch (kv.key.get_type()) {
 			// Old version, no context or plural support.
-			case Variant::STRING:
-			case Variant::STRING_NAME: {
+			case VariantType::STRING:
+			case VariantType::STRING_NAME: {
 				const MessageKey msg_key = { StringName(), kv.key };
 				_check_for_incompatibility(msg_key.msgctxt, msg_key.msgid);
 				translation_map[msg_key] = { kv.value };
 			} break;
 
 			// Current version.
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				const Array &storage_key = kv.key;
 				const MessageKey msg_key = { storage_key[0], storage_key[1] };
 
@@ -104,7 +104,7 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 			} break;
 
 			default: {
-				WARN_PRINT(vformat("Invalid key type in messages dictionary: %s.", Variant::get_type_name(kv.key.get_type())));
+				WARN_PRINT(vformat("Invalid key type in messages dictionary: %s.", VariantType::get_type_name(kv.key.get_type())));
 				continue;
 			}
 		}
@@ -274,9 +274,9 @@ void Translation::_bind_methods() {
 	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
 	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale", PROPERTY_HINT_LOCALE_ID), "set_locale", "get_locale");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plural_rules_override"), "set_plural_rules_override", "get_plural_rules_override");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "locale", PROPERTY_HINT_LOCALE_ID), "set_locale", "get_locale");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "plural_rules_override"), "set_plural_rules_override", "get_plural_rules_override");
 }
 
 Translation::~Translation() {

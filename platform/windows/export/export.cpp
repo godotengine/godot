@@ -43,10 +43,10 @@ void register_windows_exporter() {
 	// TODO: Move to editor_settings.cpp
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF_BASIC("export/windows/signtool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #else
 	EDITOR_DEF_BASIC("export/windows/osslsigncode", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 
 	Ref<EditorExportPlatformWindows> platform;

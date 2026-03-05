@@ -124,7 +124,7 @@ String OpenXRSelectRuntime::_try_and_get_runtime_name(const String &p_config_fil
 		return "";
 	}
 	Dictionary api_layer = root_node["runtime"];
-	if (!api_layer.has("name") || api_layer["name"].get_type() != Variant::STRING) {
+	if (!api_layer.has("name") || api_layer["name"].get_type() != VariantType::STRING) {
 		return "";
 	}
 	return api_layer["name"];

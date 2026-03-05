@@ -156,7 +156,7 @@ void AudioEffectHardLimiter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_release", "p_release"), &AudioEffectHardLimiter::set_release);
 	ClassDB::bind_method(D_METHOD("get_release"), &AudioEffectHardLimiter::get_release);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain_db", PROPERTY_HINT_RANGE, "-24,24,0.01,suffix:dB"), "set_pre_gain_db", "get_pre_gain_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-24,0.0,0.01,suffix:dB"), "set_ceiling_db", "get_ceiling_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release", PROPERTY_HINT_RANGE, "0.01,3,0.01"), "set_release", "get_release");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "pre_gain_db", PROPERTY_HINT_RANGE, "-24,24,0.01,suffix:dB"), "set_pre_gain_db", "get_pre_gain_db");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-24,0.0,0.01,suffix:dB"), "set_ceiling_db", "get_ceiling_db");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "release", PROPERTY_HINT_RANGE, "0.01,3,0.01"), "set_release", "get_release");
 }

@@ -1140,7 +1140,7 @@ void QuickOpenResultContainer::_notification(int p_what) {
 
 void QuickOpenResultContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selection_changed"));
-	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(Variant::BOOL, "double_click")));
+	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(VariantType::BOOL, "double_click")));
 }
 
 //------------------------- Result Item

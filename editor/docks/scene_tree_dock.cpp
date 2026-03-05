@@ -2073,7 +2073,7 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 
 _ALWAYS_INLINE_ static bool _recurse_into_property(const PropertyInfo &p_property) {
 	// Only check these types for NodePaths.
-	static const Variant::Type property_type_check[] = { Variant::OBJECT, Variant::NODE_PATH, Variant::ARRAY, Variant::DICTIONARY };
+	static const VariantType::Type property_type_check[] = { VariantType::OBJECT, VariantType::NODE_PATH, VariantType::ARRAY, VariantType::DICTIONARY };
 
 	if (!(p_property.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
 		return false;
@@ -2084,7 +2084,7 @@ _ALWAYS_INLINE_ static bool _recurse_into_property(const PropertyInfo &p_propert
 		return false;
 	}
 
-	for (Variant::Type type : property_type_check) {
+	for (VariantType::Type type : property_type_check) {
 		if (p_property.type == type) {
 			return true;
 		}
@@ -2116,7 +2116,7 @@ void SceneTreeDock::_check_object_properties_recursive(Node *p_root_node, Object
 
 bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource) const {
 	switch (r_variant.get_type()) {
-		case Variant::NODE_PATH: {
+		case VariantType::NODE_PATH: {
 			NodePath node_path = r_variant;
 			if (p_inside_resource && !p_root_node->has_node(node_path)) {
 				// Resources may have NodePaths to nodes that aren't on the scene, so skip them.
@@ -2129,7 +2129,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array a = r_variant;
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
@@ -2148,7 +2148,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = r_variant;
 			bool updated = false;
 			for (int i = 0; i < d.size(); i++) {
@@ -2167,7 +2167,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Resource *resource = Object::cast_to<Resource>(r_variant);
 			if (!resource) {
 				break;
@@ -3377,7 +3377,7 @@ void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_
 
 bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message) {
 	switch (r_variant.get_type()) {
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			if (p_node == r_variant) {
 				if (p_by_node->is_class(type_hint) || EditorNode::get_singleton()->is_object_of_custom_type(p_by_node, type_hint)) {
 					r_variant = p_by_node;
@@ -3389,7 +3389,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 			}
 		} break;
 
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array a = r_variant;
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
@@ -3822,7 +3822,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		}
 
 		Variant value = p_obj->get(E.name);
-		if (value.get_type() != Variant::OBJECT) {
+		if (value.get_type() != VariantType::OBJECT) {
 			continue;
 		}
 		Object *obj = value;
@@ -4859,7 +4859,7 @@ void SceneTreeDock::_gather_resources(Node *p_node, List<Pair<Ref<Resource>, Nod
 		}
 
 		Variant value = p_node->get(E.name);
-		if (value.get_type() != Variant::OBJECT) {
+		if (value.get_type() != VariantType::OBJECT) {
 			continue;
 		}
 		Ref<Resource> res = value;
@@ -4904,7 +4904,7 @@ void SceneTreeDock::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
 	ADD_SIGNAL(MethodInfo("add_node_used"));
-	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(VariantType::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 }
 
 SceneTreeDock *SceneTreeDock::singleton = nullptr;

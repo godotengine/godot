@@ -100,22 +100,22 @@ String dict_to_python(const Dictionary &p_dict) {
 		const Variant &raw_value = kv.value;
 
 		switch (raw_value.get_type()) {
-			case Variant::Type::BOOL: {
+			case VariantType::Type::BOOL: {
 				value = raw_value ? "True" : "False";
 				break;
 			}
-			case Variant::Type::STRING:
-			case Variant::Type::STRING_NAME: {
+			case VariantType::Type::STRING:
+			case VariantType::Type::STRING_NAME: {
 				value = raw_value;
 				value = vformat("'%s'", value.c_escape());
 				break;
 			}
-			case Variant::Type::DICTIONARY: {
+			case VariantType::Type::DICTIONARY: {
 				value = dict_to_python(raw_value);
 				break;
 			}
 			default: {
-				ERR_FAIL_V_MSG("", vformat("Unhandled Variant type %s for python dictionary", Variant::get_type_name(raw_value.get_type())));
+				ERR_FAIL_V_MSG("", vformat("Unhandled Variant type %s for python dictionary", VariantType::get_type_name(raw_value.get_type())));
 			}
 		}
 
@@ -132,22 +132,22 @@ String dict_to_xmlrpc(const Dictionary &p_dict) {
 		const Variant &raw_value = kv.value;
 
 		switch (raw_value.get_type()) {
-			case Variant::Type::BOOL: {
+			case VariantType::Type::BOOL: {
 				value = vformat("<boolean>%d</boolean>", raw_value ? 1 : 0);
 				break;
 			}
-			case Variant::Type::STRING:
-			case Variant::Type::STRING_NAME: {
+			case VariantType::Type::STRING:
+			case VariantType::Type::STRING_NAME: {
 				value = raw_value;
 				value = vformat("<string>%s</string>", value.xml_escape());
 				break;
 			}
-			case Variant::Type::DICTIONARY: {
+			case VariantType::Type::DICTIONARY: {
 				value = dict_to_xmlrpc(raw_value);
 				break;
 			}
 			default: {
-				ERR_FAIL_V_MSG("", vformat("Unhandled Variant type %s for XMLRPC", Variant::get_type_name(raw_value.get_type())));
+				ERR_FAIL_V_MSG("", vformat("Unhandled Variant type %s for XMLRPC", VariantType::get_type_name(raw_value.get_type())));
 			}
 		}
 

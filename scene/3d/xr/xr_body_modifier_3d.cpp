@@ -45,9 +45,9 @@ void XRBodyModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &XRBodyModifier3D::set_bone_update);
 	ClassDB::bind_method(D_METHOD("get_bone_update"), &XRBodyModifier3D::get_bone_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/body_tracker"), "set_body_tracker", "get_body_tracker");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_update", PROPERTY_HINT_FLAGS, "Upper Body,Lower Body,Hands"), "set_body_update", "get_body_update");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "body_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/body_tracker"), "set_body_tracker", "get_body_tracker");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "body_update", PROPERTY_HINT_FLAGS, "Upper Body,Lower Body,Hands"), "set_body_update", "get_body_update");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_BITFIELD_FLAG(BODY_UPDATE_UPPER_BODY);
 	BIND_BITFIELD_FLAG(BODY_UPDATE_LOWER_BODY);

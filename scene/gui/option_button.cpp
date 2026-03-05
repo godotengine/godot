@@ -616,14 +616,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_search_bar_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "selected"), "_select_int", "get_selected");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "enable_search_bar_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(VariantType::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(VariantType::INT, "index")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, OptionButton, normal);
 
@@ -644,11 +644,11 @@ void OptionButton::_bind_methods() {
 
 	base_property_helper.set_prefix("popup/item_");
 	base_property_helper.set_array_length_getter(&OptionButton::get_item_count);
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
+	base_property_helper.register_property(PropertyInfo(VariantType::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
+	base_property_helper.register_property(PropertyInfo(VariantType::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");

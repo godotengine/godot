@@ -176,12 +176,12 @@ void SpringBoneCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_offset", "offset"), &SpringBoneCollision3D::set_rotation_offset);
 	ClassDB::bind_method(D_METHOD("get_rotation_offset"), &SpringBoneCollision3D::get_rotation_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
 
 	ADD_GROUP("Offset", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position_offset"), "set_position_offset", "get_position_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation_offset"), "set_rotation_offset", "get_rotation_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "position_offset"), "set_position_offset", "get_position_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::QUATERNION, "rotation_offset"), "set_rotation_offset", "get_rotation_offset");
 }
 
 void SpringBoneCollision3D::_notification(int p_what) {

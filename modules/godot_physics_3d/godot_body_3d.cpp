@@ -769,7 +769,7 @@ void GodotBody3D::call_queries() {
 			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
 
 			Callable::CallError ce;
-			int argc = (fi_callback_data->udata.get_type() == Variant::NIL) ? 1 : 2;
+			int argc = (fi_callback_data->udata.get_type() == VariantType::NIL) ? 1 : 2;
 			Variant rv;
 			fi_callback_data->callable.callp(vp, argc, rv, ce);
 		}

@@ -765,12 +765,12 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_mode", "mode"), &AudioStreamRandomizer::set_playback_mode);
 	ClassDB::bind_method(D_METHOD("get_playback_mode"), &AudioStreamRandomizer::get_playback_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_random_pitch", "get_random_pitch");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch_semitones", PROPERTY_HINT_RANGE, "0,24,0.001,or_greater,suffix:Semitones", PROPERTY_USAGE_EDITOR), "set_random_pitch_semitones", "get_random_pitch_semitones");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "random_pitch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "random_pitch_semitones", PROPERTY_HINT_RANGE, "0,24,0.001,or_greater,suffix:Semitones", PROPERTY_USAGE_EDITOR), "set_random_pitch_semitones", "get_random_pitch_semitones");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
 	ADD_ARRAY("streams", "stream_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
 
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM_NO_REPEATS);
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM);
@@ -780,8 +780,8 @@ void AudioStreamRandomizer::_bind_methods() {
 
 	base_property_helper.set_prefix("stream_");
 	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
-	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
+	base_property_helper.register_property(PropertyInfo(VariantType::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
+	base_property_helper.register_property(PropertyInfo(VariantType::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 

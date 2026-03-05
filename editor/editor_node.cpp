@@ -1887,16 +1887,16 @@ bool EditorNode::is_resource_internal_to_scene(Ref<Resource> p_resource) {
 }
 
 void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, bool p_subresources, bool p_allow_external) {
-	Variant::Type type = p_variant.get_type();
-	if (type == Variant::OBJECT && p_variant.get_validated_object() == nullptr) {
+	VariantType::Type type = p_variant.get_type();
+	if (type == VariantType::OBJECT && p_variant.get_validated_object() == nullptr) {
 		return;
 	}
 
-	if (type != Variant::OBJECT && type != Variant::ARRAY && type != Variant::DICTIONARY) {
+	if (type != VariantType::OBJECT && type != VariantType::ARRAY && type != VariantType::DICTIONARY) {
 		return;
 	}
 
-	if (type == Variant::ARRAY) {
+	if (type == VariantType::ARRAY) {
 		Array arr = p_variant;
 		for (const Variant &v : arr) {
 			Ref<Resource> res = v;
@@ -1914,7 +1914,7 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 		return;
 	}
 
-	if (type == Variant::DICTIONARY) {
+	if (type == VariantType::DICTIONARY) {
 		Dictionary dict = p_variant;
 		for (const KeyValue<Variant, Variant> &kv : dict) {
 			Ref<Resource> res_key = kv.key;
@@ -1952,8 +1952,8 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 		}
 
 		Variant property_value = p_variant.get(E.name);
-		Variant::Type property_type = property_value.get_type();
-		if (property_type == Variant::ARRAY || property_type == Variant::DICTIONARY) {
+		VariantType::Type property_type = property_value.get_type();
+		if (property_type == VariantType::ARRAY || property_type == VariantType::DICTIONARY) {
 			gather_resources(property_value, r_list, p_subresources, p_allow_external);
 			continue;
 		}
@@ -2105,7 +2105,7 @@ void EditorNode::_load_editor_plugin_states_from_config(const Ref<ConfigFile> &p
 	Dictionary md;
 	for (const String &E : esl) {
 		Variant st = p_config_file->get_value("editor_states", E);
-		if (st.get_type() != Variant::NIL) {
+		if (st.get_type() != VariantType::NIL) {
 			md[E] = st;
 		}
 	}
@@ -2185,7 +2185,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 		}
 
 		switch (E.type) {
-			case Variant::OBJECT: {
+			case VariantType::OBJECT: {
 				Ref<Resource> res = obj->get(E.name);
 
 				if (_find_and_save_resource(res, processed, flags)) {
@@ -2193,7 +2193,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 				}
 
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array varray = obj->get(E.name);
 				int len = varray.size();
 				for (int i = 0; i < len; i++) {
@@ -2205,7 +2205,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 				}
 
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = obj->get(E.name);
 				for (const KeyValue<Variant, Variant> &kv : d) {
 					Ref<Resource> res = kv.value;
@@ -4216,7 +4216,7 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 		}
 
 		switch (E.type) {
-			case Variant::OBJECT: {
+			case VariantType::OBJECT: {
 				if (E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					const Variant &v = p_object->get(E.name);
 					Ref<Resource> res = v;
@@ -4231,7 +4231,7 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 					}
 				}
 			} break;
-			case Variant::ARRAY: {
+			case VariantType::ARRAY: {
 				Array varray = p_object->get(E.name);
 				int len = varray.size();
 				bool array_requires_updating = false;
@@ -4253,7 +4253,7 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 					p_object->set(E.name, varray);
 				}
 			} break;
-			case Variant::DICTIONARY: {
+			case VariantType::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
 				bool dictionary_requires_updating = false;
 				for (const Variant &F : d.get_key_list()) {
@@ -4950,7 +4950,7 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 	p_node->get_property_list(&pinfo);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			bool node_reference = (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE);
+			bool node_reference = (E.type == VariantType::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE);
 			if (p_node_references_only && !node_reference) {
 				continue;
 			}
@@ -4983,7 +4983,7 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_reference_to_no
 	p_node->get_property_list(&pinfo);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			if (E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_NODE_TYPE) {
+			if (E.type != VariantType::OBJECT || E.hint != PROPERTY_HINT_NODE_TYPE) {
 				continue;
 			}
 			Variant current_value = p_node->get(E.name);
@@ -5013,7 +5013,7 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 		HashMap<StringName, bool> property_node_reference_table;
 		for (const PropertyInfo &E : pinfo) {
 			if (E.usage & PROPERTY_USAGE_STORAGE) {
-				if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+				if (E.type == VariantType::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
 					property_node_reference_table[E.name] = true;
 				} else {
 					property_node_reference_table[E.name] = false;
@@ -5028,7 +5028,7 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 				// If the property is a node reference, attempt to restore from the node path instead.
 				bool is_node_reference = *property_node_reference_table_entry;
 				if (is_node_reference) {
-					if (E.value.get_type() == Variant::NODE_PATH) {
+					if (E.value.get_type() == VariantType::NODE_PATH) {
 						p_node->set(E.key, p_node->get_node_or_null(E.value));
 					}
 				} else {
@@ -5484,11 +5484,11 @@ void EditorNode::add_io_warning(const String &p_warning) {
 
 bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found) {
 	switch (p_variant.get_type()) {
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array a = p_variant;
 			for (int i = 0; i < a.size(); i++) {
 				Variant v2 = a[i];
-				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
+				if (v2.get_type() != VariantType::ARRAY && v2.get_type() != VariantType::DICTIONARY && v2.get_type() != VariantType::OBJECT) {
 					continue;
 				}
 				if (find_recursive_resources(v2, r_resources_found)) {
@@ -5496,24 +5496,24 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 				}
 			}
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_variant;
 			for (const KeyValue<Variant, Variant> &kv : d) {
 				const Variant &k = kv.key;
 				const Variant &v2 = kv.value;
-				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
+				if (k.get_type() == VariantType::ARRAY || k.get_type() == VariantType::DICTIONARY || k.get_type() == VariantType::OBJECT) {
 					if (find_recursive_resources(k, r_resources_found)) {
 						return true;
 					}
 				}
-				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
+				if (v2.get_type() == VariantType::ARRAY || v2.get_type() == VariantType::DICTIONARY || v2.get_type() == VariantType::OBJECT) {
 					if (find_recursive_resources(v2, r_resources_found)) {
 						return true;
 					}
 				}
 			}
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Ref<Resource> r = p_variant;
 
 			if (r.is_null()) {
@@ -5533,7 +5533,7 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 					continue;
 				}
 
-				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
+				if (pinfo.type != VariantType::ARRAY && pinfo.type != VariantType::DICTIONARY && pinfo.type != VariantType::OBJECT) {
 					continue;
 				}
 				if (find_recursive_resources(r->get(pinfo.name), r_resources_found)) {
@@ -7793,11 +7793,11 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_node_reference", "value", "node", "remove"), &EditorNode::update_node_reference, DEFVAL(false));
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
-	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
-	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
-	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(VariantType::OBJECT, "obj"), PropertyInfo(VariantType::STRING, "function"), PropertyInfo(VariantType::PACKED_STRING_ARRAY, "args")));
+	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(VariantType::OBJECT, "obj")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(VariantType::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
-	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(VariantType::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
 	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
 }

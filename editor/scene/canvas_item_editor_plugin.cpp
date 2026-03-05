@@ -5262,10 +5262,10 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
 
 	ADD_SIGNAL(MethodInfo("snap_changed"));
-	ADD_SIGNAL(MethodInfo("grid_visibility_changed", PropertyInfo(Variant::BOOL, "visible")));
+	ADD_SIGNAL(MethodInfo("grid_visibility_changed", PropertyInfo(VariantType::BOOL, "visible")));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
-	ADD_SIGNAL(MethodInfo("canvas_item_tool_changed", PropertyInfo(Variant::INT, "tool")));
+	ADD_SIGNAL(MethodInfo("canvas_item_tool_changed", PropertyInfo(VariantType::INT, "tool")));
 }
 
 Dictionary CanvasItemEditor::get_state() const {

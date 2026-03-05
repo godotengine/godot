@@ -117,15 +117,15 @@ void IterateIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	LocalVector<PropertyInfo> props;
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, path + "target_node"));
+		p_list->push_back(PropertyInfo(VariantType::NODE_PATH, path + "target_node"));
 		for (uint32_t j = 0; j < iterate_settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
-			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "rotation_axis_vector"));
-			props.push_back(PropertyInfo(Variant::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, JointLimitation3D::get_class_static()));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "limitation/right_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
-			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "limitation/right_axis_vector"));
-			props.push_back(PropertyInfo(Variant::QUATERNION, joint_path + "limitation/rotation_offset"));
+			props.push_back(PropertyInfo(VariantType::INT, joint_path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
+			props.push_back(PropertyInfo(VariantType::VECTOR3, joint_path + "rotation_axis_vector"));
+			props.push_back(PropertyInfo(VariantType::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, JointLimitation3D::get_class_static()));
+			props.push_back(PropertyInfo(VariantType::INT, joint_path + "limitation/right_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
+			props.push_back(PropertyInfo(VariantType::VECTOR3, joint_path + "limitation/right_axis_vector"));
+			props.push_back(PropertyInfo(VariantType::QUATERNION, joint_path + "limitation/rotation_offset"));
 		}
 	}
 
@@ -394,10 +394,10 @@ void IterateIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joint_limitation_rotation_offset", "index", "joint", "offset"), &IterateIK3D::set_joint_limitation_rotation_offset);
 	ClassDB::bind_method(D_METHOD("get_joint_limitation_rotation_offset", "index", "joint"), &IterateIK3D::get_joint_limitation_rotation_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_iterations", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_max_iterations", "get_max_iterations");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_distance", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), "set_min_distance", "get_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_delta_limit", PROPERTY_HINT_RANGE, "0,180,0.001,radians_as_degrees"), "set_angular_delta_limit", "get_angular_delta_limit");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_iterations", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_max_iterations", "get_max_iterations");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_distance", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), "set_min_distance", "get_min_distance");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "angular_delta_limit", PROPERTY_HINT_RANGE, "0,180,0.001,radians_as_degrees"), "set_angular_delta_limit", "get_angular_delta_limit");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 }
 

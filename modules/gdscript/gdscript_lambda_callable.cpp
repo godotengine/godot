@@ -103,7 +103,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
 			args[i] = &captures[i];
-			if (captures[i].get_type() == Variant::OBJECT) {
+			if (captures[i].get_type() == VariantType::OBJECT) {
 				bool was_freed = false;
 				captures[i].get_validated_object_with_check(was_freed);
 				if (was_freed) {
@@ -235,7 +235,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
 			args[i] = &captures[i];
-			if (captures[i].get_type() == Variant::OBJECT) {
+			if (captures[i].get_type() == VariantType::OBJECT) {
 				bool was_freed = false;
 				captures[i].get_validated_object_with_check(was_freed);
 				if (was_freed) {

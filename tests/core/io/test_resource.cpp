@@ -136,10 +136,10 @@ public:
 	}
 
 	void verify_empty() const {
-		CHECK(obj.get_type() == Variant::NIL);
+		CHECK(obj.get_type() == VariantType::NIL);
 		CHECK(arr.size() == 0);
 		CHECK(dict.size() == 0);
-		CHECK(packed.get_type() == Variant::NIL);
+		CHECK(packed.get_type() == VariantType::NIL);
 		CHECK(subres.is_null());
 	}
 
@@ -196,7 +196,7 @@ public:
 			const Ref<Resource> &res_b = p_b;
 			if (res_a.is_valid()) {
 				_verify_resource(res_a, res_b);
-			} else if (p_a.get_type() == Variant::ARRAY) {
+			} else if (p_a.get_type() == VariantType::ARRAY) {
 				const Array &arr_a = p_a;
 				const Array &arr_b = p_b;
 				CHECK(!arr_a.is_same_instance(arr_b));
@@ -204,7 +204,7 @@ public:
 				for (int i = 0; i < arr_a.size(); i++) {
 					_verify_deep_copied_variants(arr_a[i], arr_b[i]);
 				}
-			} else if (p_a.get_type() == Variant::DICTIONARY) {
+			} else if (p_a.get_type() == VariantType::DICTIONARY) {
 				const Dictionary &dict_a = p_a;
 				const Dictionary &dict_b = p_b;
 				CHECK(!dict_a.is_same_instance(dict_b));
@@ -337,12 +337,12 @@ public:
 			ClassDB::bind_method(D_METHOD("set_subres_sl", "subres"), &m_class_name::set_subres_sl); \
 			ClassDB::bind_method(D_METHOD("get_subres_sl"), &m_class_name::get_subres_sl); \
 \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "obj", PROPERTY_HINT_NONE, "", m_property_usage), "set_obj", "get_obj"); \
-			ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "arr", PROPERTY_HINT_NONE, "", m_property_usage), "set_arr", "get_arr"); \
-			ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "dict", PROPERTY_HINT_NONE, "", m_property_usage), "set_dict", "get_dict"); \
-			ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packed", PROPERTY_HINT_NONE, "", m_property_usage), "set_packed", "get_packed"); \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres", "get_subres"); \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres_sl", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres_sl", "get_subres_sl"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "obj", PROPERTY_HINT_NONE, "", m_property_usage), "set_obj", "get_obj"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "arr", PROPERTY_HINT_NONE, "", m_property_usage), "set_arr", "get_arr"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "dict", PROPERTY_HINT_NONE, "", m_property_usage), "set_dict", "get_dict"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::PACKED_BYTE_ARRAY, "packed", PROPERTY_HINT_NONE, "", m_property_usage), "set_packed", "get_packed"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "subres", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres", "get_subres"); \
+			ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "subres_sl", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres_sl", "get_subres_sl"); \
 \
 			ClassDB::bind_method(D_METHOD("set_defaults"), &m_class_name::set_defaults); \
 			ClassDB::bind_method(D_METHOD("get_data"), &m_class_name::get_data); \

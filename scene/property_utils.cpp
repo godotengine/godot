@@ -42,10 +42,10 @@
 #endif // TOOLS_ENABLED
 
 bool PropertyUtils::is_property_value_different(const Object *p_object, const Variant &p_a, const Variant &p_b) {
-	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
+	if (p_a.get_type() == VariantType::FLOAT && p_b.get_type() == VariantType::FLOAT) {
 		// This must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error.
 		return !Math::is_equal_approx((float)p_a, (float)p_b);
-	} else if (p_a.get_type() == Variant::NODE_PATH && p_b.get_type() == Variant::OBJECT) {
+	} else if (p_a.get_type() == VariantType::NODE_PATH && p_b.get_type() == VariantType::OBJECT) {
 		// With properties of type Node, left side is NodePath, while right side is Node.
 		const Node *base_node = Object::cast_to<Node>(p_object);
 		const Node *target_node = Object::cast_to<Node>(p_b);
@@ -54,12 +54,12 @@ bool PropertyUtils::is_property_value_different(const Object *p_object, const Va
 		}
 	}
 
-	if (p_a.get_type() == Variant::ARRAY && p_b.get_type() == Variant::ARRAY) {
+	if (p_a.get_type() == VariantType::ARRAY && p_b.get_type() == VariantType::ARRAY) {
 		const Node *base_node = Object::cast_to<Node>(p_object);
 		Array array1 = p_a;
 		Array array2 = p_b;
 
-		if (base_node && !array1.is_empty() && array2.size() == array1.size() && array1[0].get_type() == Variant::NODE_PATH && array2[0].get_type() == Variant::OBJECT) {
+		if (base_node && !array1.is_empty() && array2.size() == array1.size() && array1[0].get_type() == VariantType::NODE_PATH && array2[0].get_type() == VariantType::OBJECT) {
 			// Like above, but NodePaths/Nodes are inside arrays.
 			for (int i = 0; i < array1.size(); i++) {
 				const Node *target_node = Object::cast_to<Node>(array2[i]);
@@ -72,8 +72,8 @@ bool PropertyUtils::is_property_value_different(const Object *p_object, const Va
 	}
 
 	// For our purposes, treating null object as NIL is the right thing to do
-	const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
-	const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
+	const Variant &a = p_a.get_type() == VariantType::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
+	const Variant &b = p_b.get_type() == VariantType::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
 	return a != b;
 }
 
@@ -118,7 +118,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 				// Replace properties stored as NodePaths with actual Nodes.
 				// Otherwise, the property value would be considered as overridden.
 				if (node_deferred) {
-					if (value_in_ancestor.get_type() == Variant::ARRAY) {
+					if (value_in_ancestor.get_type() == VariantType::ARRAY) {
 						Array paths = value_in_ancestor;
 
 						bool valid = false;
@@ -301,7 +301,7 @@ void PropertyUtils::assign_custom_type_script(Object *p_object, const Ref<Script
 Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 	Variant custom_script = p_object->get_meta(SceneStringName(_custom_type_script));
 #ifndef DISABLE_DEPRECATED
-	if (custom_script.get_type() == Variant::OBJECT) {
+	if (custom_script.get_type() == VariantType::OBJECT) {
 		// Convert old script meta.
 		Ref<Script> script_object(custom_script);
 		assign_custom_type_script(const_cast<Object *>(p_object), script_object);

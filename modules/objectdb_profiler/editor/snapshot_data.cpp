@@ -49,7 +49,7 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 		PropertyInfo pinfo = prop.first;
 		Variant pvalue = prop.second;
 
-		if (pinfo.type == Variant::OBJECT && pvalue.is_string()) {
+		if (pinfo.type == VariantType::OBJECT && pvalue.is_string()) {
 			String path = pvalue;
 			// If a resource is followed by a ::, it is a nested resource (like a sub_resource in a .tscn file).
 			// To get a reference to it, first we load the parent resource (the .tscn, for example), then,
@@ -217,8 +217,8 @@ HashSet<ObjectID> SnapshotDataObject::get_unique_inbound_references() {
 void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String, ObjectID> &r_ret_val, const String &p_current_path) {
 	String path_divider = p_current_path.size() > 0 ? "/" : ""; // Make sure we don't start with a /.
 	switch (p_var.get_type()) {
-		case Variant::Type::INT:
-		case Variant::Type::OBJECT: { // Means ObjectID.
+		case VariantType::Type::INT:
+		case VariantType::Type::OBJECT: { // Means ObjectID.
 			ObjectID as_id = ObjectID((uint64_t)p_var);
 			if (!objects.has(as_id)) {
 				return;
@@ -226,7 +226,7 @@ void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String,
 			r_ret_val[p_current_path] = as_id;
 			break;
 		}
-		case Variant::Type::DICTIONARY: {
+		case VariantType::Type::DICTIONARY: {
 			Dictionary dict = (Dictionary)p_var;
 			LocalVector<Variant> keys = dict.get_key_list();
 			for (Variant &k : keys) {
@@ -237,7 +237,7 @@ void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String,
 			}
 			break;
 		}
-		case Variant::Type::ARRAY: {
+		case VariantType::Type::ARRAY: {
 			Array arr = (Array)p_var;
 			int i = 0;
 			for (Variant &v : arr) {
@@ -336,14 +336,14 @@ Ref<GameStateSnapshot> GameStateSnapshot::create_ref(const String &p_snapshot_na
 	Array snapshot_data = m->base64_to_variant(m->raw_to_base64(snapshot_buffer_decompressed));
 	ERR_FAIL_COND_V_MSG(snapshot_data.is_empty(), nullptr, "ObjectDB Snapshot could not be parsed. Variant array is empty.");
 	const Variant &first_item = snapshot_data[0];
-	ERR_FAIL_COND_V_MSG(first_item.get_type() != Variant::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. First item is not a Dictionary.");
+	ERR_FAIL_COND_V_MSG(first_item.get_type() != VariantType::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. First item is not a Dictionary.");
 	snapshot->snapshot_context = first_item;
 
 	SnapshotDataObject::ResourceCache resource_cache;
 	for (int i = 1; i < snapshot_data.size(); i += 4) {
 		SceneDebuggerObject obj;
 		obj.deserialize(uint64_t(snapshot_data[i + 0]), snapshot_data[i + 1], snapshot_data[i + 2]);
-		ERR_FAIL_COND_V_MSG(snapshot_data[i + 3].get_type() != Variant::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. Extra debug data is not a Dictionary.");
+		ERR_FAIL_COND_V_MSG(snapshot_data[i + 3].get_type() != VariantType::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. Extra debug data is not a Dictionary.");
 
 		if (obj.id.is_null()) {
 			continue;

@@ -554,7 +554,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_steps", PROPERTY_HINT_RANGE, "0,50,1,or_greater"), "set_max_steps", "get_max_steps");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "max_steps", PROPERTY_HINT_RANGE, "0,50,1,or_greater"), "set_max_steps", "get_max_steps");
 
 	ADD_SIGNAL(MethodInfo("version_changed"));
 

@@ -83,7 +83,7 @@ Variant JoltConvexPolygonShape3D::get_data() const {
 }
 
 void JoltConvexPolygonShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR3_ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PACKED_VECTOR3_ARRAY);
 
 	vertices = p_data;
 

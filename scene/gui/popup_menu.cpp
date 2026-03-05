@@ -3398,23 +3398,23 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shrink_width", "shrink"), &PopupMenu::set_shrink_width);
 	ClassDB::bind_method(D_METHOD("get_shrink_width"), &PopupMenu::get_shrink_width);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_enabled_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "search_bar_enabled_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
-	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(VariantType::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, panel_style, "panel");
@@ -3465,13 +3465,13 @@ void PopupMenu::_bind_methods() {
 
 	base_property_helper.set_prefix("item_");
 	base_property_helper.set_array_length_getter(&PopupMenu::get_item_count);
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &PopupMenu::set_item_text, &PopupMenu::get_item_text);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
+	base_property_helper.register_property(PropertyInfo(VariantType::STRING, "text"), defaults.text, &PopupMenu::set_item_text, &PopupMenu::get_item_text);
+	base_property_helper.register_property(PropertyInfo(VariantType::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 

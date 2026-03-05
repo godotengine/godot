@@ -74,7 +74,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			_set_message(TTR("Failed to parse version JSON."), theme_cache.error_color);
 			return;
 		}
-		if (result.get_type() != Variant::ARRAY) {
+		if (result.get_type() != VariantType::ARRAY) {
 			_set_status(UpdateStatus::ERROR);
 			_set_message(TTR("Received JSON data is not a valid version array."), theme_cache.error_color);
 			return;

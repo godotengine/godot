@@ -155,10 +155,10 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (baked_meshes.size()) {
-		p_list->push_back(PropertyInfo(Variant::ARRAY, "baked_meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(VariantType::ARRAY, "baked_meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+	p_list->push_back(PropertyInfo(VariantType::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 }
 
 #ifndef PHYSICS_3D_DISABLED
@@ -1273,30 +1273,30 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material", "get_physics_material");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material", "get_physics_material");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Cell", "cell_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_center_x"), "set_center_x", "get_center_x");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_center_y"), "set_center_y", "get_center_y");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_center_z"), "set_center_z", "get_center_z");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_scale"), "set_cell_scale", "get_cell_scale");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "cell_center_x"), "set_center_x", "get_center_x");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "cell_center_y"), "set_center_y", "get_center_y");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "cell_center_z"), "set_center_z", "get_center_z");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "cell_scale"), "set_cell_scale", "get_cell_scale");
 #ifndef PHYSICS_3D_DISABLED
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
-	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(VariantType::VECTOR3, "cell_size")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);

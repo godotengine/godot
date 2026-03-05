@@ -59,7 +59,7 @@ void OpenXRCompositionLayerQuad::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quad_size", "size"), &OpenXRCompositionLayerQuad::set_quad_size);
 	ClassDB::bind_method(D_METHOD("get_quad_size"), &OpenXRCompositionLayerQuad::get_quad_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "quad_size", PROPERTY_HINT_NONE, ""), "set_quad_size", "get_quad_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "quad_size", PROPERTY_HINT_NONE, ""), "set_quad_size", "get_quad_size");
 }
 
 Ref<Mesh> OpenXRCompositionLayerQuad::_create_fallback_mesh() {

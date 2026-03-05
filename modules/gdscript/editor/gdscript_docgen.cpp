@@ -68,11 +68,11 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 	}
 	switch (p_gdtype.kind) {
 		case GDType::BUILTIN:
-			if (p_gdtype.builtin_type == Variant::NIL) {
+			if (p_gdtype.builtin_type == VariantType::NIL) {
 				r_type = p_is_return ? "void" : "null";
 				return;
 			}
-			if (p_gdtype.builtin_type == Variant::ARRAY && p_gdtype.has_container_element_type(0)) {
+			if (p_gdtype.builtin_type == VariantType::ARRAY && p_gdtype.has_container_element_type(0)) {
 				_doctype_from_gdtype(p_gdtype.get_container_element_type(0), r_type, r_enum);
 				if (!r_enum.is_empty()) {
 					r_type = "int[]";
@@ -84,7 +84,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 			}
-			if (p_gdtype.builtin_type == Variant::DICTIONARY && p_gdtype.has_container_element_types()) {
+			if (p_gdtype.builtin_type == VariantType::DICTIONARY && p_gdtype.has_container_element_types()) {
 				String key, value;
 				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(0), key, r_enum);
 				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(1), value, r_enum);
@@ -93,7 +93,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 			}
-			r_type = Variant::get_type_name(p_gdtype.builtin_type);
+			r_type = VariantType::get_type_name(p_gdtype.builtin_type);
 			return;
 		case GDType::NATIVE:
 			if (p_gdtype.is_meta_type) {
@@ -159,11 +159,11 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	constexpr int MAX_RECURSION_LEVEL = 2;
 
 	switch (p_variant.get_type()) {
-		case Variant::STRING:
+		case VariantType::STRING:
 			return String(p_variant).c_escape().quote();
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			return "<Object>";
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			const Dictionary dict = p_variant;
 			String result;
 
@@ -182,7 +182,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				} else if (dict.get_typed_key_class_name() != StringName()) {
 					result += dict.get_typed_key_class_name();
 				} else if (dict.is_typed_key()) {
-					result += Variant::get_type_name((Variant::Type)dict.get_typed_key_builtin());
+					result += VariantType::get_type_name((VariantType::Type)dict.get_typed_key_builtin());
 				} else {
 					result += "Variant";
 				}
@@ -201,7 +201,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				} else if (dict.get_typed_value_class_name() != StringName()) {
 					result += dict.get_typed_value_class_name();
 				} else if (dict.is_typed_value()) {
-					result += Variant::get_type_name((Variant::Type)dict.get_typed_value_builtin());
+					result += VariantType::get_type_name((VariantType::Type)dict.get_typed_value_builtin());
 				} else {
 					result += "Variant";
 				}
@@ -236,7 +236,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 
 			return result;
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			const Array array = p_variant;
 			String result;
 
@@ -255,7 +255,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				} else if (array.get_typed_class_name() != StringName()) {
 					result += array.get_typed_class_name();
 				} else {
-					result += Variant::get_type_name((Variant::Type)array.get_typed_builtin());
+					result += VariantType::get_type_name((VariantType::Type)array.get_typed_builtin());
 				}
 
 				result += "](";

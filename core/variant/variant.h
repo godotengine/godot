@@ -62,6 +62,7 @@
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant_deep_duplicate.h"
+#include "core/variant/variant_type.h"
 
 class Object;
 class RefCounted;
@@ -92,59 +93,6 @@ typedef Vector<Vector4> PackedVector4Array;
 
 class Variant {
 public:
-	// If this changes the table in variant_op must be updated
-	enum Type {
-		NIL,
-
-		// atomic types
-		BOOL,
-		INT,
-		FLOAT,
-		STRING,
-
-		// math types
-		VECTOR2,
-		VECTOR2I,
-		RECT2,
-		RECT2I,
-		VECTOR3,
-		VECTOR3I,
-		TRANSFORM2D,
-		VECTOR4,
-		VECTOR4I,
-		PLANE,
-		QUATERNION,
-		AABB,
-		BASIS,
-		TRANSFORM3D,
-		PROJECTION,
-
-		// misc types
-		COLOR,
-		STRING_NAME,
-		NODE_PATH,
-		RID,
-		OBJECT,
-		CALLABLE,
-		SIGNAL,
-		DICTIONARY,
-		ARRAY,
-
-		// typed arrays
-		PACKED_BYTE_ARRAY,
-		PACKED_INT32_ARRAY,
-		PACKED_INT64_ARRAY,
-		PACKED_FLOAT32_ARRAY,
-		PACKED_FLOAT64_ARRAY,
-		PACKED_STRING_ARRAY,
-		PACKED_VECTOR2_ARRAY,
-		PACKED_VECTOR3_ARRAY,
-		PACKED_COLOR_ARRAY,
-		PACKED_VECTOR4_ARRAY,
-
-		VARIANT_MAX
-	};
-
 	enum {
 		// Maximum recursion depth allowed when serializing variants.
 		MAX_RECURSION_DEPTH = 1024,
@@ -164,7 +112,7 @@ private:
 	// Basis/Transform3D (48, 96 if double), Projection (64, 128 if double),
 	// and PackedArray/Array/Dictionary (platform-dependent).
 
-	Type type = NIL;
+	VariantType::Type type = VariantType::NIL;
 
 	struct ObjData {
 		ObjectID id;
@@ -265,57 +213,11 @@ private:
 
 	void _clear_internal();
 
-	static constexpr bool needs_deinit[Variant::VARIANT_MAX] = {
-		false, //NIL,
-		false, //BOOL,
-		false, //INT,
-		false, //FLOAT,
-		true, //STRING,
-		false, //VECTOR2,
-		false, //VECTOR2I,
-		false, //RECT2,
-		false, //RECT2I,
-		false, //VECTOR3,
-		false, //VECTOR3I,
-		true, //TRANSFORM2D,
-		false, //VECTOR4,
-		false, //VECTOR4I,
-		false, //PLANE,
-		false, //QUATERNION,
-		true, //AABB,
-		true, //BASIS,
-		true, //TRANSFORM,
-		true, //PROJECTION,
-
-		// misc types
-		false, //COLOR,
-		true, //STRING_NAME,
-		true, //NODE_PATH,
-		false, //RID,
-		true, //OBJECT,
-		true, //CALLABLE,
-		true, //SIGNAL,
-		true, //DICTIONARY,
-		true, //ARRAY,
-
-		// typed arrays
-		true, //PACKED_BYTE_ARRAY,
-		true, //PACKED_INT32_ARRAY,
-		true, //PACKED_INT64_ARRAY,
-		true, //PACKED_FLOAT32_ARRAY,
-		true, //PACKED_FLOAT64_ARRAY,
-		true, //PACKED_STRING_ARRAY,
-		true, //PACKED_VECTOR2_ARRAY,
-		true, //PACKED_VECTOR3_ARRAY,
-		true, //PACKED_COLOR_ARRAY,
-		true, //PACKED_VECTOR4_ARRAY,
-	};
-
 	_FORCE_INLINE_ void clear() {
-		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
+		if (unlikely(VariantType::needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
-		type = NIL;
+		type = VariantType::NIL;
 	}
 
 	static void _register_variant_operators();
@@ -336,15 +238,15 @@ private:
 	template <typename T>
 	_ALWAYS_INLINE_ T _to_int() const {
 		switch (get_type()) {
-			case NIL:
+			case VariantType::NIL:
 				return 0;
-			case BOOL:
+			case VariantType::BOOL:
 				return _data._bool ? 1 : 0;
-			case INT:
+			case VariantType::INT:
 				return T(_data._int);
-			case FLOAT:
+			case VariantType::FLOAT:
 				return T(_data._float);
-			case STRING:
+			case VariantType::STRING:
 				return reinterpret_cast<const String *>(_data._mem)->to_int();
 			default: {
 				return 0;
@@ -355,15 +257,15 @@ private:
 	template <typename T>
 	_ALWAYS_INLINE_ T _to_float() const {
 		switch (type) {
-			case NIL:
+			case VariantType::NIL:
 				return 0;
-			case BOOL:
+			case VariantType::BOOL:
 				return _data._bool ? 1 : 0;
-			case INT:
+			case VariantType::INT:
 				return T(_data._int);
-			case FLOAT:
+			case VariantType::FLOAT:
 				return T(_data._float);
-			case STRING:
+			case VariantType::STRING:
 				return reinterpret_cast<const String *>(_data._mem)->to_float();
 			default: {
 				return 0;
@@ -378,24 +280,19 @@ private:
 	Variant(const Variant **) {}
 
 public:
-	_FORCE_INLINE_ Type get_type() const {
+	_FORCE_INLINE_ VariantType::Type get_type() const {
 		return type;
 	}
-	static String get_type_name(Variant::Type p_type);
-	static Variant::Type get_type_by_name(const String &p_type_name);
-	static bool can_convert(Type p_type_from, Type p_type_to);
-	static bool can_convert_strict(Type p_type_from, Type p_type_to);
-	static bool is_type_shared(Variant::Type p_type);
 
 	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
-		return type == INT || type == FLOAT;
+		return type == VariantType::INT || type == VariantType::FLOAT;
 	}
 	_FORCE_INLINE_ bool is_string() const {
-		return type == STRING || type == STRING_NAME;
+		return type == VariantType::STRING || type == VariantType::STRING_NAME;
 	}
 	_FORCE_INLINE_ bool is_array() const {
-		return type >= ARRAY;
+		return type >= VariantType::ARRAY;
 	}
 	bool is_shared() const;
 	bool is_zero() const;
@@ -605,11 +502,11 @@ public:
 		return res;
 	}
 
-	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
+	static VariantType::Type get_operator_return_type(Operator p_operator, VariantType::Type p_type_a, VariantType::Type p_type_b);
 	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
-	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
+	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, VariantType::Type p_type_a, VariantType::Type p_type_b);
 	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
-	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
+	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, VariantType::Type p_type_a, VariantType::Type p_type_b);
 
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
@@ -621,26 +518,26 @@ public:
 	typedef void (*ValidatedBuiltInMethod)(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret);
 	typedef void (*PTRBuiltInMethod)(void *p_base, const void **p_args, void *r_ret, int p_argcount);
 
-	static bool has_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static bool has_builtin_method(VariantType::Type p_type, const StringName &p_method);
 
-	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
-	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
-	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash);
+	static ValidatedBuiltInMethod get_validated_builtin_method(VariantType::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method(VariantType::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(VariantType::Type p_type, const StringName &p_method, uint32_t p_hash);
 
-	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
-	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
-	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
-	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
-	static Vector<Variant> get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method);
-	static bool has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method);
-	static Variant::Type get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method);
-	static bool is_builtin_method_const(Variant::Type p_type, const StringName &p_method);
-	static bool is_builtin_method_static(Variant::Type p_type, const StringName &p_method);
-	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
-	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
-	static int get_builtin_method_count(Variant::Type p_type);
-	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
-	static Vector<uint32_t> get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method);
+	static MethodInfo get_builtin_method_info(VariantType::Type p_type, const StringName &p_method);
+	static int get_builtin_method_argument_count(VariantType::Type p_type, const StringName &p_method);
+	static VariantType::Type get_builtin_method_argument_type(VariantType::Type p_type, const StringName &p_method, int p_argument);
+	static String get_builtin_method_argument_name(VariantType::Type p_type, const StringName &p_method, int p_argument);
+	static Vector<Variant> get_builtin_method_default_arguments(VariantType::Type p_type, const StringName &p_method);
+	static bool has_builtin_method_return_value(VariantType::Type p_type, const StringName &p_method);
+	static VariantType::Type get_builtin_method_return_type(VariantType::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_const(VariantType::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_static(VariantType::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_vararg(VariantType::Type p_type, const StringName &p_method);
+	static void get_builtin_method_list(VariantType::Type p_type, List<StringName> *p_list);
+	static int get_builtin_method_count(VariantType::Type p_type);
+	static uint32_t get_builtin_method_hash(VariantType::Type p_type, const StringName &p_method);
+	static Vector<uint32_t> get_builtin_method_compatibility_hashes(VariantType::Type p_type, const StringName &p_method);
 
 	void callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
@@ -661,7 +558,7 @@ public:
 	}
 
 	void call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
-	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
+	static void call_static(VariantType::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
@@ -676,23 +573,23 @@ public:
 	typedef void (*ValidatedConstructor)(Variant *r_base, const Variant **p_args);
 	typedef void (*PTRConstructor)(void *base, const void **p_args);
 
-	static int get_constructor_count(Variant::Type p_type);
-	static ValidatedConstructor get_validated_constructor(Variant::Type p_type, int p_constructor);
-	static PTRConstructor get_ptr_constructor(Variant::Type p_type, int p_constructor);
-	static int get_constructor_argument_count(Variant::Type p_type, int p_constructor);
-	static Variant::Type get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument);
-	static String get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument);
-	static void construct(Variant::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	static int get_constructor_count(VariantType::Type p_type);
+	static ValidatedConstructor get_validated_constructor(VariantType::Type p_type, int p_constructor);
+	static PTRConstructor get_ptr_constructor(VariantType::Type p_type, int p_constructor);
+	static int get_constructor_argument_count(VariantType::Type p_type, int p_constructor);
+	static VariantType::Type get_constructor_argument_type(VariantType::Type p_type, int p_constructor, int p_argument);
+	static String get_constructor_argument_name(VariantType::Type p_type, int p_constructor, int p_argument);
+	static void construct(VariantType::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	static void get_constructor_list(Type p_type, List<MethodInfo> *r_list); //convenience
+	static void get_constructor_list(VariantType::Type p_type, List<MethodInfo> *r_list); //convenience
 
 	/* Destructors */
 
 	// Only ptrcall is available.
 	typedef void (*PTRDestructor)(void *base);
 
-	static PTRDestructor get_ptr_destructor(Variant::Type p_type);
-	static bool has_destructor(Variant::Type p_type);
+	static PTRDestructor get_ptr_destructor(VariantType::Type p_type);
+	static bool has_destructor(VariantType::Type p_type);
 
 	/* Properties */
 
@@ -702,37 +599,37 @@ public:
 	typedef void (*ValidatedSetter)(Variant *base, const Variant *value);
 	typedef void (*ValidatedGetter)(const Variant *base, Variant *value);
 
-	static bool has_member(Variant::Type p_type, const StringName &p_member);
-	static Variant::Type get_member_type(Variant::Type p_type, const StringName &p_member);
-	static void get_member_list(Type p_type, List<StringName> *r_members);
-	static int get_member_count(Type p_type);
+	static bool has_member(VariantType::Type p_type, const StringName &p_member);
+	static VariantType::Type get_member_type(VariantType::Type p_type, const StringName &p_member);
+	static void get_member_list(VariantType::Type p_type, List<StringName> *r_members);
+	static int get_member_count(VariantType::Type p_type);
 
-	static ValidatedSetter get_member_validated_setter(Variant::Type p_type, const StringName &p_member);
-	static ValidatedGetter get_member_validated_getter(Variant::Type p_type, const StringName &p_member);
+	static ValidatedSetter get_member_validated_setter(VariantType::Type p_type, const StringName &p_member);
+	static ValidatedGetter get_member_validated_getter(VariantType::Type p_type, const StringName &p_member);
 
 	typedef void (*PTRSetter)(void *base, const void *value);
 	typedef void (*PTRGetter)(const void *base, void *value);
 
-	static PTRSetter get_member_ptr_setter(Variant::Type p_type, const StringName &p_member);
-	static PTRGetter get_member_ptr_getter(Variant::Type p_type, const StringName &p_member);
+	static PTRSetter get_member_ptr_setter(VariantType::Type p_type, const StringName &p_member);
+	static PTRGetter get_member_ptr_getter(VariantType::Type p_type, const StringName &p_member);
 
 	/* Indexing */
 
-	static bool has_indexing(Variant::Type p_type);
-	static Variant::Type get_indexed_element_type(Variant::Type p_type);
-	static uint32_t get_indexed_element_usage(Variant::Type p_type);
+	static bool has_indexing(VariantType::Type p_type);
+	static VariantType::Type get_indexed_element_type(VariantType::Type p_type);
+	static uint32_t get_indexed_element_usage(VariantType::Type p_type);
 
 	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool *oob);
 	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool *oob);
 
-	static ValidatedIndexedSetter get_member_validated_indexed_setter(Variant::Type p_type);
-	static ValidatedIndexedGetter get_member_validated_indexed_getter(Variant::Type p_type);
+	static ValidatedIndexedSetter get_member_validated_indexed_setter(VariantType::Type p_type);
+	static ValidatedIndexedGetter get_member_validated_indexed_getter(VariantType::Type p_type);
 
 	typedef void (*PTRIndexedSetter)(void *base, int64_t index, const void *value);
 	typedef void (*PTRIndexedGetter)(const void *base, int64_t index, void *value);
 
-	static PTRIndexedSetter get_member_ptr_indexed_setter(Variant::Type p_type);
-	static PTRIndexedGetter get_member_ptr_indexed_getter(Variant::Type p_type);
+	static PTRIndexedSetter get_member_ptr_indexed_setter(VariantType::Type p_type);
+	static PTRIndexedGetter get_member_ptr_indexed_getter(VariantType::Type p_type);
 
 	void set_indexed(int64_t p_index, const Variant &p_value, bool &r_valid, bool &r_oob);
 	Variant get_indexed(int64_t p_index, bool &r_valid, bool &r_oob) const;
@@ -741,23 +638,23 @@ public:
 
 	/* Keying */
 
-	static bool is_keyed(Variant::Type p_type);
+	static bool is_keyed(VariantType::Type p_type);
 
 	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool *valid);
 	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool *valid);
 	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool *valid);
 
-	static ValidatedKeyedSetter get_member_validated_keyed_setter(Variant::Type p_type);
-	static ValidatedKeyedGetter get_member_validated_keyed_getter(Variant::Type p_type);
-	static ValidatedKeyedChecker get_member_validated_keyed_checker(Variant::Type p_type);
+	static ValidatedKeyedSetter get_member_validated_keyed_setter(VariantType::Type p_type);
+	static ValidatedKeyedGetter get_member_validated_keyed_getter(VariantType::Type p_type);
+	static ValidatedKeyedChecker get_member_validated_keyed_checker(VariantType::Type p_type);
 
 	typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
 	typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
 	typedef uint32_t (*PTRKeyedChecker)(const void *base, const void *key);
 
-	static PTRKeyedSetter get_member_ptr_keyed_setter(Variant::Type p_type);
-	static PTRKeyedGetter get_member_ptr_keyed_getter(Variant::Type p_type);
-	static PTRKeyedChecker get_member_ptr_keyed_checker(Variant::Type p_type);
+	static PTRKeyedSetter get_member_ptr_keyed_setter(VariantType::Type p_type);
+	static PTRKeyedGetter get_member_ptr_keyed_getter(VariantType::Type p_type);
+	static PTRKeyedChecker get_member_ptr_keyed_checker(VariantType::Type p_type);
 
 	void set_keyed(const Variant &p_key, const Variant &p_value, bool &r_valid);
 	Variant get_keyed(const Variant &p_key, bool &r_valid) const;
@@ -805,10 +702,10 @@ public:
 
 	static MethodInfo get_utility_function_info(const StringName &p_name);
 	static int get_utility_function_argument_count(const StringName &p_name);
-	static Variant::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
+	static VariantType::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
 	static String get_utility_function_argument_name(const StringName &p_name, int p_arg);
 	static bool has_utility_function_return_value(const StringName &p_name);
-	static Variant::Type get_utility_function_return_type(const StringName &p_name);
+	static VariantType::Type get_utility_function_return_type(const StringName &p_name);
 	static bool is_utility_function_vararg(const StringName &p_name);
 	static uint32_t get_utility_function_hash(const StringName &p_name);
 
@@ -832,16 +729,16 @@ public:
 	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
-	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
-	static int get_constants_count_for_type(Variant::Type p_type);
-	static bool has_constant(Variant::Type p_type, const StringName &p_value);
-	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
+	static void get_constants_for_type(VariantType::Type p_type, List<StringName> *p_constants);
+	static int get_constants_count_for_type(VariantType::Type p_type);
+	static bool has_constant(VariantType::Type p_type, const StringName &p_value);
+	static Variant get_constant_value(VariantType::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
-	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
-	static bool has_enum(Variant::Type p_type, const StringName &p_enum_name);
-	static StringName get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration);
+	static void get_enums_for_type(VariantType::Type p_type, List<StringName> *p_enums);
+	static void get_enumerations_for_enum(VariantType::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(VariantType::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
+	static bool has_enum(VariantType::Type p_type, const StringName &p_enum_name);
+	static StringName get_enum_for_enumeration(VariantType::Type p_type, const StringName &p_enumeration);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -857,7 +754,7 @@ public:
 		clear();
 		type = p_variant.type;
 		_data = p_variant._data;
-		p_variant.type = NIL;
+		p_variant.type = VariantType::NIL;
 	}
 
 	static void register_types();
@@ -867,11 +764,11 @@ public:
 	Variant(Variant &&p_variant) {
 		type = p_variant.type;
 		_data = p_variant._data;
-		p_variant.type = NIL;
+		p_variant.type = VariantType::NIL;
 	}
 	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
+		if (unlikely(VariantType::needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
 	}

@@ -231,43 +231,43 @@ String ResourceImporterTexture::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterTexture::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,VRAM Compressed,VRAM Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/high_quality"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,VRAM Compressed,VRAM Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "compress/high_quality"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 
 	Image::BasisUniversalPackerParams basisu_params;
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/uastc_level", PROPERTY_HINT_ENUM, "Fastest,Faster,Medium,Slower,Slowest"), basisu_params.uastc_level));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/rdo_quality_loss", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), basisu_params.rdo_quality_loss));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/uastc_level", PROPERTY_HINT_ENUM, "Fastest,Faster,Medium,Slower,Slowest"), basisu_params.uastc_level));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "compress/rdo_quality_loss", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), basisu_params.rdo_quality_loss));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (p_preset == PRESET_3D ? true : false)));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/red", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/green", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/blue", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 2));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/alpha", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 3));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_clamp_exposure"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "mipmaps/generate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (p_preset == PRESET_3D ? true : false)));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "process/channel_remap/red", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "process/channel_remap/green", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "process/channel_remap/blue", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 2));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "process/channel_remap/alpha", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 3));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "process/premult_alpha"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "process/normal_map_invert_y"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "process/hdr_as_srgb"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "process/hdr_clamp_exposure"), false));
 
 	// Maximum bound is the highest allowed value for lossy compression (the lowest common denominator).
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,16383,1"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,16383,1"), 0));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
 	// Do path based customization only if a path was passed.
 	if (p_path.is_empty() || p_path.get_extension() == "svg") {
-		r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
+		r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 
 		// Editor use only, applies to SVG.
-		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/scale_with_editor_scale"), false));
-		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/convert_colors_with_editor_theme"), false));
+		r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "editor/scale_with_editor_scale"), false));
+		r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "editor/convert_colors_with_editor_theme"), false));
 	}
 }
 

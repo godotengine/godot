@@ -198,7 +198,7 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 		return 0;
 	}
 
-	uint32_t h = hash_murmur3_one_32(Variant::ARRAY);
+	uint32_t h = hash_murmur3_one_32(VariantType::ARRAY);
 
 	recursion_count++;
 	for (int i = 0; i < _p->array.size(); i++) {
@@ -218,7 +218,7 @@ void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
-	if (typed == source_typed || typed.type == Variant::NIL || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+	if (typed == source_typed || typed.type == VariantType::NIL || (source_typed.type == VariantType::OBJECT && typed.can_reference(source_typed))) {
 		// from same to same or
 		// from anything to variants or
 		// from subclasses to base classes
@@ -229,27 +229,27 @@ void Array::assign(const Array &p_array) {
 	const Variant *source = p_array._p->array.ptr();
 	int size = p_array._p->array.size();
 
-	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
+	if ((source_typed.type == VariantType::NIL && typed.type == VariantType::OBJECT) || (source_typed.type == VariantType::OBJECT && source_typed.can_reference(typed))) {
 		// from variants to objects or
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
-			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
+			if (element.get_type() != VariantType::NIL && (element.get_type() != VariantType::OBJECT || !typed.validate_object(element, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, VariantType::get_type_name(element.get_type()), VariantType::get_type_name(typed.type)));
 			}
 		}
 		_p->array = p_array._p->array;
 		return;
 	}
-	if (typed.type == Variant::OBJECT || source_typed.type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+	if (typed.type == VariantType::OBJECT || source_typed.type == VariantType::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", VariantType::get_type_name(source_typed.type), VariantType::get_type_name(typed.type)));
 	}
 
 	Vector<Variant> array;
 	array.resize(size);
 	Variant *data = array.ptrw();
 
-	if (source_typed.type == Variant::NIL && typed.type != Variant::OBJECT) {
+	if (source_typed.type == VariantType::NIL && typed.type != VariantType::OBJECT) {
 		// from variants to primitives
 		for (int i = 0; i < size; i++) {
 			const Variant *value = source + i;
@@ -257,23 +257,23 @@ void Array::assign(const Array &p_array) {
 				data[i] = *value;
 				continue;
 			}
-			if (!Variant::can_convert_strict(value->get_type(), typed.type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			if (!VariantType::can_convert_strict(value->get_type(), typed.type)) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed.type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed.type)));
 		}
-	} else if (Variant::can_convert_strict(source_typed.type, typed.type)) {
+	} else if (VariantType::can_convert_strict(source_typed.type, typed.type)) {
 		// from primitives to different convertible primitives
 		for (int i = 0; i < size; i++) {
 			const Variant *value = source + i;
 			Callable::CallError ce;
 			Variant::construct(typed.type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed.type)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", VariantType::get_type_name(source_typed.type), VariantType::get_type_name(typed.type)));
 	}
 
 	_p->array = array;
@@ -305,10 +305,10 @@ void Array::append_array(const Array &p_array) {
 
 Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	Variant::Type &variant_type = _p->typed.type;
+	VariantType::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
 	Error err = _p->array.resize_initialized(p_new_size);
-	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
+	if (!err && variant_type != VariantType::NIL && variant_type != VariantType::OBJECT) {
 		Variant *write = _p->array.ptrw();
 		for (int i = old_size; i < p_new_size; i++) {
 			VariantInternal::initialize(&write[i], variant_type);
@@ -408,7 +408,7 @@ int Array::find_custom(const Callable &p_callable, int p_from) const {
 			ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'find_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
-		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, ret, "Error on method from 'find_custom': Return type of callable must be boolean.");
+		ERR_FAIL_COND_V_MSG(res.get_type() != VariantType::Type::BOOL, ret, "Error on method from 'find_custom': Return type of callable must be boolean.");
 		if (res.operator bool()) {
 			return i;
 		}
@@ -468,7 +468,7 @@ int Array::rfind_custom(const Callable &p_callable, int p_from) const {
 			ERR_FAIL_V_MSG(-1, vformat("Error calling method from 'rfind_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
-		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, -1, "Error on method from 'rfind_custom': Return type of callable must be boolean.");
+		ERR_FAIL_COND_V_MSG(res.get_type() != VariantType::Type::BOOL, -1, "Error on method from 'rfind_custom': Return type of callable must be boolean.");
 		if (res.operator bool()) {
 			return i;
 		}
@@ -886,19 +886,19 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
-	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	ERR_FAIL_COND_MSG(_p->typed.type != VariantType::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != VariantType::OBJECT, "Class names can only be set for type OBJECT");
 	Ref<Script> script = p_script;
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
 
-	_p->typed.type = Variant::Type(p_type);
+	_p->typed.type = VariantType::Type(p_type);
 	_p->typed.class_name = p_class_name;
 	_p->typed.script = script;
 	_p->typed.where = "TypedArray";
 }
 
 bool Array::is_typed() const {
-	return _p->typed.type != Variant::NIL;
+	return _p->typed.type != VariantType::NIL;
 }
 
 bool Array::is_same_typed(const Array &p_other) const {

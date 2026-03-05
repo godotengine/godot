@@ -69,9 +69,9 @@ void CameraFeed::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("format_changed"));
 
 	ADD_GROUP("Feed", "feed_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "feed_transform"), "set_transform", "get_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "formats"), "", "get_formats");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "feed_is_active"), "set_active", "is_active");
+	ADD_PROPERTY(PropertyInfo(VariantType::TRANSFORM2D, "feed_transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "formats"), "", "get_formats");
 
 	BIND_ENUM_CONSTANT(FEED_NOIMAGE);
 	BIND_ENUM_CONSTANT(FEED_RGB);

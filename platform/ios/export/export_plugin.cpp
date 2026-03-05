@@ -55,14 +55,14 @@ EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), get_minimum_deployment_target()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "application/min_ios_version"), get_minimum_deployment_target()));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::BOOL, "storyboard/use_custom_bg_color"), false));
+	r_options->push_back(ExportOption(PropertyInfo(VariantType::COLOR, "storyboard/custom_bg_color"), Color()));
 }
 
 bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {

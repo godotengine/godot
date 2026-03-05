@@ -470,7 +470,7 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 	add_custom_control(pos_warning);
 }
 
-bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorInspectorPluginControl::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Control *control = Object::cast_to<Control>(p_object);
 	if (!control) {
 		return false;
@@ -662,7 +662,7 @@ void AnchorPresetPicker::set_selected_preset(int p_preset) {
 }
 
 void AnchorPresetPicker::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("anchors_preset_selected", PropertyInfo(Variant::INT, "preset")));
+	ADD_SIGNAL(MethodInfo("anchors_preset_selected", PropertyInfo(VariantType::INT, "preset")));
 }
 
 AnchorPresetPicker::AnchorPresetPicker() {
@@ -775,8 +775,8 @@ void SizeFlagPresetPicker::_notification(int p_notification) {
 }
 
 void SizeFlagPresetPicker::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("size_flags_selected", PropertyInfo(Variant::INT, "size_flags")));
-	ADD_SIGNAL(MethodInfo("expand_flag_toggled", PropertyInfo(Variant::BOOL, "expand_flag")));
+	ADD_SIGNAL(MethodInfo("size_flags_selected", PropertyInfo(VariantType::INT, "size_flags")));
+	ADD_SIGNAL(MethodInfo("expand_flag_toggled", PropertyInfo(VariantType::BOOL, "expand_flag")));
 }
 
 SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {

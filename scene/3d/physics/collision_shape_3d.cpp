@@ -172,8 +172,8 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
 	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape3D::get_debug_color);
@@ -181,11 +181,11 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_debug_fill", "enable"), &CollisionShape3D::set_debug_fill_enabled);
 	ClassDB::bind_method(D_METHOD("get_enable_debug_fill"), &CollisionShape3D::get_debug_fill_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 	// Default value depends on a project setting, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_fill"), "set_enable_debug_fill", "get_enable_debug_fill");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "debug_fill"), "set_enable_debug_fill", "get_enable_debug_fill");
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {

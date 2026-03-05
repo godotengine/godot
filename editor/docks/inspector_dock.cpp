@@ -664,13 +664,13 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 		Variant current_prop;
 		if (si->get(E.first, current_prop) && current_prop.get_type() == E.second.get_type()) {
 			si->set(E.first, E.second);
-		} else if (E.second.get_type() == Variant::OBJECT) {
+		} else if (E.second.get_type() == VariantType::OBJECT) {
 			for (const PropertyInfo &pi : properties) {
 				if (E.first != pi.name) {
 					continue;
 				}
 
-				if (pi.type != Variant::OBJECT) {
+				if (pi.type != VariantType::OBJECT) {
 					break;
 				}
 

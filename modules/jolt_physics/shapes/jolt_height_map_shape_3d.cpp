@@ -201,23 +201,23 @@ Variant JoltHeightMapShape3D::get_data() const {
 }
 
 void JoltHeightMapShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::DICTIONARY);
 
 	const Dictionary data = p_data;
 
 	const Variant maybe_heights = data.get("heights", Variant());
 
 #ifdef REAL_T_IS_DOUBLE
-	ERR_FAIL_COND(maybe_heights.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+	ERR_FAIL_COND(maybe_heights.get_type() != VariantType::PACKED_FLOAT64_ARRAY);
 #else
-	ERR_FAIL_COND(maybe_heights.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+	ERR_FAIL_COND(maybe_heights.get_type() != VariantType::PACKED_FLOAT32_ARRAY);
 #endif
 
 	const Variant maybe_width = data.get("width", Variant());
-	ERR_FAIL_COND(maybe_width.get_type() != Variant::INT);
+	ERR_FAIL_COND(maybe_width.get_type() != VariantType::INT);
 
 	const Variant maybe_depth = data.get("depth", Variant());
-	ERR_FAIL_COND(maybe_depth.get_type() != Variant::INT);
+	ERR_FAIL_COND(maybe_depth.get_type() != VariantType::INT);
 
 	heights = maybe_heights;
 	width = maybe_width;

@@ -154,27 +154,27 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("intersects_ray", "origin", "direction"), &OpenXRCompositionLayer::intersects_ray);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_hole_punch", PROPERTY_HINT_NONE, ""), "set_enable_hole_punch", "get_enable_hole_punch");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "eye_visibility", PROPERTY_HINT_ENUM, "Both,Left,Right"), "set_eye_visibility", "get_eye_visibility");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enable_hole_punch", PROPERTY_HINT_NONE, ""), "set_enable_hole_punch", "get_enable_hole_punch");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "eye_visibility", PROPERTY_HINT_ENUM, "Both,Left,Right"), "set_eye_visibility", "get_eye_visibility");
 
 	ADD_GROUP("Swapchain State", "swapchain_state_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_min_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_min_filter", "get_min_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_mag_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_mag_filter", "get_mag_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_mipmap_mode", PROPERTY_HINT_ENUM, "Disabled,Nearest,Linear"), "set_mipmap_mode", "get_mipmap_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_horizontal_wrap", PROPERTY_HINT_ENUM, "Clamp to Border,Clamp to Edge,Repeat,Mirrored Repeat,Mirror Clamp to Edge"), "set_horizontal_wrap", "get_horizontal_wrap");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_vertical_wrap", PROPERTY_HINT_ENUM, "Clamp to Border,Clamp to Edge,Repeat,Mirrored Repeat,Mirror Clamp to Edge"), "set_vertical_wrap", "get_vertical_wrap");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_red_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_red_swizzle", "get_red_swizzle");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_green_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_green_swizzle", "get_green_swizzle");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_blue_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_blue_swizzle", "get_blue_swizzle");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_alpha_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_alpha_swizzle", "get_alpha_swizzle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "swapchain_state_max_anisotropy", PROPERTY_HINT_RANGE, "1.0,16.0,0.001"), "set_max_anisotropy", "get_max_anisotropy");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "swapchain_state_border_color"), "set_border_color", "get_border_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_min_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_min_filter", "get_min_filter");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_mag_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_mag_filter", "get_mag_filter");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_mipmap_mode", PROPERTY_HINT_ENUM, "Disabled,Nearest,Linear"), "set_mipmap_mode", "get_mipmap_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_horizontal_wrap", PROPERTY_HINT_ENUM, "Clamp to Border,Clamp to Edge,Repeat,Mirrored Repeat,Mirror Clamp to Edge"), "set_horizontal_wrap", "get_horizontal_wrap");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_vertical_wrap", PROPERTY_HINT_ENUM, "Clamp to Border,Clamp to Edge,Repeat,Mirrored Repeat,Mirror Clamp to Edge"), "set_vertical_wrap", "get_vertical_wrap");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_red_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_red_swizzle", "get_red_swizzle");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_green_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_green_swizzle", "get_green_swizzle");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_blue_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_blue_swizzle", "get_blue_swizzle");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "swapchain_state_alpha_swizzle", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Zero,One"), "set_alpha_swizzle", "get_alpha_swizzle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "swapchain_state_max_anisotropy", PROPERTY_HINT_RANGE, "1.0,16.0,0.001"), "set_max_anisotropy", "get_max_anisotropy");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "swapchain_state_border_color"), "set_border_color", "get_border_color");
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FILTER_NEAREST);

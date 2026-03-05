@@ -422,8 +422,8 @@ int EditorSceneTabs::get_current_tab() const {
 }
 
 void EditorSceneTabs::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab_index")));
-	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab_index")));
+	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(VariantType::INT, "tab_index")));
+	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(VariantType::INT, "tab_index")));
 }
 
 EditorSceneTabs::EditorSceneTabs() {

@@ -193,11 +193,11 @@ void DebugAdapterProtocol::reset_stack_info() {
 
 int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 	switch (p_var.get_type()) {
-		case Variant::VECTOR2:
-		case Variant::VECTOR2I: {
+		case VariantType::VECTOR2:
+		case VariantType::VECTOR2I: {
 			int id = variable_id++;
 			Vector2 vec = p_var;
-			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::VECTOR2 ? Variant::FLOAT : Variant::INT);
+			const String type_scalar = VariantType::get_type_name(p_var.get_type() == VariantType::VECTOR2 ? VariantType::FLOAT : VariantType::INT);
 			DAP::Variable x, y;
 			x.name = "x";
 			y.name = "y";
@@ -210,11 +210,11 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::RECT2:
-		case Variant::RECT2I: {
+		case VariantType::RECT2:
+		case VariantType::RECT2I: {
 			int id = variable_id++;
 			Rect2 rect = p_var;
-			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::RECT2 ? Variant::FLOAT : Variant::INT);
+			const String type_scalar = VariantType::get_type_name(p_var.get_type() == VariantType::RECT2 ? VariantType::FLOAT : VariantType::INT);
 			DAP::Variable x, y, w, h;
 			x.name = "x";
 			y.name = "y";
@@ -233,11 +233,11 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::VECTOR3:
-		case Variant::VECTOR3I: {
+		case VariantType::VECTOR3:
+		case VariantType::VECTOR3I: {
 			int id = variable_id++;
 			Vector3 vec = p_var;
-			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::VECTOR3 ? Variant::FLOAT : Variant::INT);
+			const String type_scalar = VariantType::get_type_name(p_var.get_type() == VariantType::VECTOR3 ? VariantType::FLOAT : VariantType::INT);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
@@ -253,10 +253,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::TRANSFORM2D: {
+		case VariantType::TRANSFORM2D: {
 			int id = variable_id++;
 			Transform2D transform = p_var;
-			const String type_vec2 = Variant::get_type_name(Variant::VECTOR2);
+			const String type_vec2 = VariantType::get_type_name(VariantType::VECTOR2);
 			DAP::Variable x, y, origin;
 			x.name = "x";
 			y.name = "y";
@@ -275,14 +275,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PLANE: {
+		case VariantType::PLANE: {
 			int id = variable_id++;
 			Plane plane = p_var;
 			DAP::Variable d, normal;
 			d.name = "d";
 			normal.name = "normal";
-			d.type = Variant::get_type_name(Variant::FLOAT);
-			normal.type = Variant::get_type_name(Variant::VECTOR3);
+			d.type = VariantType::get_type_name(VariantType::FLOAT);
+			normal.type = VariantType::get_type_name(VariantType::VECTOR3);
 			d.value = rtos(plane.d);
 			normal.value = String(plane.normal);
 			normal.variablesReference = parse_variant(plane.normal);
@@ -291,10 +291,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::QUATERNION: {
+		case VariantType::QUATERNION: {
 			int id = variable_id++;
 			Quaternion quat = p_var;
-			const String type_float = Variant::get_type_name(Variant::FLOAT);
+			const String type_float = VariantType::get_type_name(VariantType::FLOAT);
 			DAP::Variable x, y, z, w;
 			x.name = "x";
 			y.name = "y";
@@ -313,10 +313,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::AABB: {
+		case VariantType::AABB: {
 			int id = variable_id++;
 			AABB aabb = p_var;
-			const String type_vec3 = Variant::get_type_name(Variant::VECTOR3);
+			const String type_vec3 = VariantType::get_type_name(VariantType::VECTOR3);
 			DAP::Variable position, size;
 			position.name = "position";
 			size.name = "size";
@@ -331,10 +331,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::BASIS: {
+		case VariantType::BASIS: {
 			int id = variable_id++;
 			Basis basis = p_var;
-			const String type_vec3 = Variant::get_type_name(Variant::VECTOR3);
+			const String type_vec3 = VariantType::get_type_name(VariantType::VECTOR3);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
@@ -353,14 +353,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::TRANSFORM3D: {
+		case VariantType::TRANSFORM3D: {
 			int id = variable_id++;
 			Transform3D transform = p_var;
 			DAP::Variable basis, origin;
 			basis.name = "basis";
 			origin.name = "origin";
-			basis.type = Variant::get_type_name(Variant::BASIS);
-			origin.type = Variant::get_type_name(Variant::VECTOR3);
+			basis.type = VariantType::get_type_name(VariantType::BASIS);
+			origin.type = VariantType::get_type_name(VariantType::VECTOR3);
 			basis.value = String(transform.basis);
 			origin.value = String(transform.origin);
 			basis.variablesReference = parse_variant(transform.basis);
@@ -370,10 +370,10 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			int id = variable_id++;
 			Color color = p_var;
-			const String type_float = Variant::get_type_name(Variant::FLOAT);
+			const String type_float = VariantType::get_type_name(VariantType::FLOAT);
 			DAP::Variable r, g, b, a;
 			r.name = "r";
 			g.name = "g";
@@ -392,12 +392,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			int id = variable_id++;
 			Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -405,7 +405,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(array[i].get_type());
+				var.type = VariantType::get_type_name(array[i].get_type());
 				var.value = array[i];
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
@@ -413,7 +413,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			int id = variable_id++;
 			Dictionary dictionary = p_var;
 			Array arr;
@@ -422,7 +422,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = kv.key;
 				Variant value = kv.value;
-				var.type = Variant::get_type_name(value.get_type());
+				var.type = VariantType::get_type_name(value.get_type());
 				var.value = value;
 				var.variablesReference = parse_variant(value);
 				arr.push_back(var.to_json());
@@ -430,12 +430,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_BYTE_ARRAY: {
+		case VariantType::PACKED_BYTE_ARRAY: {
 			int id = variable_id++;
 			PackedByteArray array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -450,12 +450,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_INT32_ARRAY: {
+		case VariantType::PACKED_INT32_ARRAY: {
 			int id = variable_id++;
 			PackedInt32Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -470,12 +470,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_INT64_ARRAY: {
+		case VariantType::PACKED_INT64_ARRAY: {
 			int id = variable_id++;
 			PackedInt64Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -490,12 +490,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_FLOAT32_ARRAY: {
+		case VariantType::PACKED_FLOAT32_ARRAY: {
 			int id = variable_id++;
 			PackedFloat32Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -510,12 +510,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_FLOAT64_ARRAY: {
+		case VariantType::PACKED_FLOAT64_ARRAY: {
 			int id = variable_id++;
 			PackedFloat64Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -530,12 +530,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_STRING_ARRAY: {
+		case VariantType::PACKED_STRING_ARRAY: {
 			int id = variable_id++;
 			PackedStringArray array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -543,19 +543,19 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(Variant::STRING);
+				var.type = VariantType::get_type_name(VariantType::STRING);
 				var.value = array[i];
 				arr.push_back(var.to_json());
 			}
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_VECTOR2_ARRAY: {
+		case VariantType::PACKED_VECTOR2_ARRAY: {
 			int id = variable_id++;
 			PackedVector2Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -563,7 +563,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(Variant::VECTOR2);
+				var.type = VariantType::get_type_name(VariantType::VECTOR2);
 				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
@@ -571,12 +571,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_VECTOR3_ARRAY: {
+		case VariantType::PACKED_VECTOR3_ARRAY: {
 			int id = variable_id++;
 			PackedVector3Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -584,7 +584,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(Variant::VECTOR3);
+				var.type = VariantType::get_type_name(VariantType::VECTOR3);
 				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
@@ -592,12 +592,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_COLOR_ARRAY: {
+		case VariantType::PACKED_COLOR_ARRAY: {
 			int id = variable_id++;
 			PackedColorArray array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr = { size.to_json() };
@@ -605,7 +605,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(Variant::COLOR);
+				var.type = VariantType::get_type_name(VariantType::COLOR);
 				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
@@ -613,12 +613,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::PACKED_VECTOR4_ARRAY: {
+		case VariantType::PACKED_VECTOR4_ARRAY: {
 			int id = variable_id++;
 			PackedVector4Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
-			size.type = Variant::get_type_name(Variant::INT);
+			size.type = VariantType::get_type_name(VariantType::INT);
 			size.value = itos(array.size());
 
 			Array arr;
@@ -627,7 +627,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
 				var.name = itos(i);
-				var.type = Variant::get_type_name(Variant::VECTOR4);
+				var.type = VariantType::get_type_name(VariantType::VECTOR4);
 				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
@@ -635,7 +635,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			// Objects have to be requested from the debuggee. This has do be done
 			// in a lazy way, as retrieving object properties takes time.
 			EncodedObjectAsID *encoded_obj = Object::cast_to<EncodedObjectAsID>(p_var);
@@ -698,8 +698,8 @@ void DebugAdapterProtocol::parse_object(SceneDebuggerObject &p_obj) {
 			script_node.push_back(parse_object_variable(property));
 		}
 
-		// Regular categories (with type Variant::NIL)
-		else if (info.type == Variant::NIL) {
+		// Regular categories (with type VariantType::NIL)
+		else if (info.type == VariantType::NIL) {
 			if (!node_properties.is_empty()) {
 				node_type.value = itos(node_properties.size());
 				variable_list.insert(node_type.variablesReference, node_properties.duplicate());
@@ -771,7 +771,7 @@ void DebugAdapterProtocol::parse_evaluation(DebuggerMarshalls::ScriptStackVariab
 	DAP::Variable variable;
 	variable.name = p_var.name;
 	variable.value = p_var.value;
-	variable.type = Variant::get_type_name(p_var.value.get_type());
+	variable.type = VariantType::get_type_name(p_var.value.get_type());
 	variable.variablesReference = parse_variant(p_var.value);
 
 	eval_list.insert(variable.name, variable);
@@ -783,7 +783,7 @@ const Variant DebugAdapterProtocol::parse_object_variable(const SceneDebuggerObj
 
 	DAP::Variable var;
 	var.name = info.name;
-	var.type = Variant::get_type_name(info.type);
+	var.type = VariantType::get_type_name(info.type);
 	var.value = value;
 	var.variablesReference = parse_variant(value);
 
@@ -1159,7 +1159,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 
 	variable.name = stack_var.name;
 	variable.value = stack_var.value;
-	variable.type = Variant::get_type_name(stack_var.value.get_type());
+	variable.type = VariantType::get_type_name(stack_var.value.get_type());
 	variable.variablesReference = parse_variant(stack_var.value);
 
 	variable_list.find(var_id)->value.push_back(variable.to_json());

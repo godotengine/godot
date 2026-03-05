@@ -467,47 +467,47 @@ void LookAtModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_interpolating"), &LookAtModifier3D::is_interpolating);
 	ClassDB::bind_method(D_METHOD("is_target_within_limitation"), &LookAtModifier3D::is_target_within_limitation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_node", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_target_node", "get_target_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "target_node", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_target_node", "get_target_node");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()), "set_forward_axis", "get_forward_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"), "set_primary_rotation_axis", "get_primary_rotation_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_secondary_rotation"), "set_use_secondary_rotation", "is_using_secondary_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "relative"), "set_relative", "is_relative");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()), "set_forward_axis", "get_forward_axis");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"), "set_primary_rotation_axis", "get_primary_rotation_axis");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_secondary_rotation"), "set_use_secondary_rotation", "is_using_secondary_rotation");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "relative"), "set_relative", "is_relative");
 
 	ADD_GROUP("Origin Settings", "origin_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "origin_from", PROPERTY_HINT_ENUM, "Self,SpecificBone,ExternalNode"), "set_origin_from", "get_origin_from");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "origin_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_origin_bone_name", "get_origin_bone_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "origin_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_origin_bone", "get_origin_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "origin_external_node", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_origin_external_node", "get_origin_external_node");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset"), "set_origin_offset", "get_origin_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "origin_safe_margin", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_origin_safe_margin", "get_origin_safe_margin");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "origin_from", PROPERTY_HINT_ENUM, "Self,SpecificBone,ExternalNode"), "set_origin_from", "get_origin_from");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "origin_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_origin_bone_name", "get_origin_bone_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "origin_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_origin_bone", "get_origin_bone");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "origin_external_node", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_origin_external_node", "get_origin_external_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR3, "origin_offset"), "set_origin_offset", "get_origin_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "origin_safe_margin", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_origin_safe_margin", "get_origin_safe_margin");
 
 	ADD_GROUP("Time Based Interpolation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "duration", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:s"), "set_duration", "get_duration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transition_type", PROPERTY_HINT_ENUM, "Linear,Sine,Quint,Quart,Quad,Expo,Elastic,Cubic,Circ,Bounce,Back,Spring"), "set_transition_type", "get_transition_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ease_type", PROPERTY_HINT_ENUM, "In,Out,InOut,OutIn"), "set_ease_type", "get_ease_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "duration", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:s"), "set_duration", "get_duration");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "transition_type", PROPERTY_HINT_ENUM, "Linear,Sine,Quint,Quart,Quad,Expo,Elastic,Cubic,Circ,Bounce,Back,Spring"), "set_transition_type", "get_transition_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "ease_type", PROPERTY_HINT_ENUM, "In,Out,InOut,OutIn"), "set_ease_type", "get_ease_type");
 
 	ADD_GROUP("Angle Limitation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_angle_limitation"), "set_use_angle_limitation", "is_using_angle_limitation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symmetry_limitation"), "set_symmetry_limitation", "is_limitation_symmetry");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_angle_limitation"), "set_use_angle_limitation", "is_using_angle_limitation");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "symmetry_limitation"), "set_symmetry_limitation", "is_limitation_symmetry");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_limit_angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_primary_limit_angle", "get_primary_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_damp_threshold", "get_primary_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_limit_angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_primary_limit_angle", "get_primary_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_damp_threshold", "get_primary_damp_threshold");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_positive_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_primary_positive_limit_angle", "get_primary_positive_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_positive_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_positive_damp_threshold", "get_primary_positive_damp_threshold");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_negative_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_primary_negative_limit_angle", "get_primary_negative_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_negative_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_negative_damp_threshold", "get_primary_negative_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_positive_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_primary_positive_limit_angle", "get_primary_positive_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_positive_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_positive_damp_threshold", "get_primary_positive_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_negative_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_primary_negative_limit_angle", "get_primary_negative_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "primary_negative_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_primary_negative_damp_threshold", "get_primary_negative_damp_threshold");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_limit_angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_secondary_limit_angle", "get_secondary_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_damp_threshold", "get_secondary_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_limit_angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_secondary_limit_angle", "get_secondary_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_damp_threshold", "get_secondary_damp_threshold");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_positive_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_secondary_positive_limit_angle", "get_secondary_positive_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_positive_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_positive_damp_threshold", "get_secondary_positive_damp_threshold");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_negative_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_secondary_negative_limit_angle", "get_secondary_negative_limit_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_negative_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_negative_damp_threshold", "get_secondary_negative_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_positive_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_secondary_positive_limit_angle", "get_secondary_positive_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_positive_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_positive_damp_threshold", "get_secondary_positive_damp_threshold");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_negative_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_secondary_negative_limit_angle", "get_secondary_negative_limit_angle");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "secondary_negative_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_negative_damp_threshold", "get_secondary_negative_damp_threshold");
 
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_SELF);
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_SPECIFIC_BONE);

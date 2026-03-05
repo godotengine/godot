@@ -159,8 +159,8 @@ void SkeletonModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_influence", "influence"), &SkeletonModifier3D::set_influence);
 	ClassDB::bind_method(D_METHOD("get_influence"), &SkeletonModifier3D::get_influence);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "active"), "set_active", "is_active");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
 	GDVIRTUAL_BIND(_process_modification_with_delta, "delta");

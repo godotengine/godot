@@ -35,29 +35,29 @@
 #include "core/variant/variant.h"
 
 struct ContainerType {
-	Variant::Type builtin_type = Variant::NIL;
+	VariantType::Type builtin_type = VariantType::NIL;
 	StringName class_name;
 	Ref<Script> script;
 };
 
 struct ContainerTypeValidate {
-	Variant::Type type = Variant::NIL;
+	VariantType::Type type = VariantType::NIL;
 	StringName class_name;
 	Ref<Script> script;
 	const char *where = "container";
 
 private:
 	_FORCE_INLINE_ bool _internal_validate(Variant &inout_variant, const char *p_operation, bool p_output_errors) const {
-		if (type == Variant::NIL) {
+		if (type == VariantType::NIL) {
 			return true;
 		}
 
 		if (type != inout_variant.get_type()) {
-			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+			if (inout_variant.get_type() == VariantType::NIL && type == VariantType::OBJECT) {
 				return true;
 			}
 
-			if (Variant::can_convert_strict(inout_variant.get_type(), type)) {
+			if (VariantType::can_convert_strict(inout_variant.get_type(), type)) {
 				Variant converted_to;
 				const Variant *converted_from = &inout_variant;
 				Callable::CallError call_error;
@@ -70,13 +70,13 @@ private:
 			}
 
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), VariantType::get_type_name(inout_variant.get_type()), where, VariantType::get_type_name(type)));
 			} else {
 				return false;
 			}
 		}
 
-		if (type != Variant::OBJECT) {
+		if (type != VariantType::OBJECT) {
 			return true;
 		}
 
@@ -84,7 +84,7 @@ private:
 	}
 
 	_FORCE_INLINE_ bool _internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const {
-		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
+		ERR_FAIL_COND_V(p_variant.get_type() != VariantType::OBJECT, false);
 
 #ifdef DEBUG_ENABLED
 		ObjectID object_id = p_variant;
@@ -160,7 +160,7 @@ public:
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
-		} else if (type != Variant::OBJECT) {
+		} else if (type != VariantType::OBJECT) {
 			return true;
 		}
 

@@ -39,7 +39,7 @@ void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, cons
 	ERR_FAIL_NULL_MSG(object, vformat(R"(Failed to get property "%s" on a previously freed instance.)", p_property));
 
 	const Variant value = object->get(p_property);
-	ERR_FAIL_COND_MSG(value.get_type() != Variant::CALLABLE, vformat(R"(The value of property "%s" is %s, but Callable was expected.)", p_property, Variant::get_type_name(value.get_type())));
+	ERR_FAIL_COND_MSG(value.get_type() != VariantType::CALLABLE, vformat(R"(The value of property "%s" is %s, but Callable was expected.)", p_property, VariantType::get_type_name(value.get_type())));
 
 	const Callable callable = value;
 	ERR_FAIL_COND_MSG(!callable.is_valid(), vformat(R"(Tool button action "%s" is an invalid callable.)", callable));
@@ -70,8 +70,8 @@ bool EditorInspectorToolButtonPlugin::can_handle(Object *p_object) {
 	return true;
 }
 
-bool EditorInspectorToolButtonPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	if (p_type != Variant::CALLABLE || p_hint != PROPERTY_HINT_TOOL_BUTTON || !p_usage.has_flag(PROPERTY_USAGE_EDITOR)) {
+bool EditorInspectorToolButtonPlugin::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (p_type != VariantType::CALLABLE || p_hint != PROPERTY_HINT_TOOL_BUTTON || !p_usage.has_flag(PROPERTY_USAGE_EDITOR)) {
 		return false;
 	}
 

@@ -585,27 +585,27 @@ void NavigationPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationPolygon::clear);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 
 	ADD_GROUP("Sampling", "sample_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Convex Partition,Triangulate"), "set_sample_partition_type", "get_sample_partition_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Convex Partition,Triangulate"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_GROUP("Geometry", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
 	ADD_PROPERTY_DEFAULT("parsed_collision_mask", 0xFFFFFFFF);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_geometry_group_name"), "set_source_geometry_group_name", "get_source_geometry_group_name");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "source_geometry_group_name"), "set_source_geometry_group_name", "get_source_geometry_group_name");
 	ADD_PROPERTY_DEFAULT("source_geometry_group_name", StringName("navigation_polygon_source_geometry_group"));
 	ADD_GROUP("Cells", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "1.0,50.0,1.0,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,1.0,or_greater,suffix:px"), "set_border_size", "get_border_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "1.0,50.0,1.0,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,1.0,or_greater,suffix:px"), "set_border_size", "get_border_size");
 	ADD_GROUP("Agents", "agent_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:px"), "set_agent_radius", "get_agent_radius");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:px"), "set_agent_radius", "get_agent_radius");
 	ADD_GROUP("Filters", "");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "baking_rect"), "set_baking_rect", "get_baking_rect");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "baking_rect_offset"), "set_baking_rect_offset", "get_baking_rect_offset");
+	ADD_PROPERTY(PropertyInfo(VariantType::RECT2, "baking_rect"), "set_baking_rect", "get_baking_rect");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "baking_rect_offset"), "set_baking_rect_offset", "get_baking_rect_offset");
 
 	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_CONVEX_PARTITION);
 	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_TRIANGULATE);

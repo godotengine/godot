@@ -896,7 +896,7 @@ PropertyInfo EditorSettingsDialog::_create_mouse_shortcut_property_info(const St
 	hint_string += _get_shortcut_button_string(p_shortcut_1_name) + _get_shortcut_button_string(p_shortcut_2_name);
 	hint_string += "Mouse Button 5";
 
-	return PropertyInfo(Variant::INT, p_property_name, PROPERTY_HINT_ENUM, hint_string);
+	return PropertyInfo(VariantType::INT, p_property_name, PROPERTY_HINT_ENUM, hint_string);
 }
 
 String EditorSettingsDialog::_get_shortcut_button_string(const String &p_shortcut_name) {
@@ -1087,7 +1087,7 @@ void EditorSettingsPropertyWrapper::_setup_override_info() {
 	override_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	override_container->add_child(override_icon);
 
-	Variant::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
+	VariantType::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
 	override_editor_property = get_parent_inspector()->instantiate_property_editor(ProjectSettings::get_singleton(), type, ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property, hint, hint_text, usage);
 	override_editor_property->set_object_and_property(ProjectSettings::get_singleton(), ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property);
 	override_editor_property->set_read_only(true);
@@ -1187,7 +1187,7 @@ bool EditorSettingsInspectorPlugin::can_handle(Object *p_object) {
 	return p_object && p_object->is_class("SectionedInspectorFilter") && p_object != current_object;
 }
 
-bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (!p_object->is_class("SectionedInspectorFilter")) {
 		return false;
 	}

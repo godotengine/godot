@@ -603,14 +603,14 @@ void CodeHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_member_variable_color", "color"), &CodeHighlighter::set_member_variable_color);
 	ClassDB::bind_method(D_METHOD("get_member_variable_color"), &CodeHighlighter::get_member_variable_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "number_color"), "set_number_color", "get_number_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "symbol_color"), "set_symbol_color", "get_symbol_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "function_color"), "set_function_color", "get_function_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "member_variable_color"), "set_member_variable_color", "get_member_variable_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "number_color"), "set_number_color", "get_number_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "symbol_color"), "set_symbol_color", "get_symbol_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "function_color"), "set_function_color", "get_function_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "member_variable_color"), "set_member_variable_color", "get_member_variable_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_keyword_colors", "get_keyword_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "member_keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_member_keyword_colors", "get_member_keyword_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_regions", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_color_regions", "get_color_regions");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_keyword_colors", "get_keyword_colors");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "member_keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_member_keyword_colors", "get_member_keyword_colors");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "color_regions", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_color_regions", "get_color_regions");
 }
 
 void CodeHighlighter::set_uint_suffix_enabled(bool p_enabled) {

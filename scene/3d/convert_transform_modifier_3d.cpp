@@ -140,10 +140,10 @@ void ConvertTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) 
 		} else {
 			hint_apply_range = HINT_SCALE;
 		}
-		props.push_back(PropertyInfo(Variant::INT, path + "apply/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
-		props.push_back(PropertyInfo(Variant::INT, path + "apply/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_min", PROPERTY_HINT_RANGE, hint_apply_range));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_max", PROPERTY_HINT_RANGE, hint_apply_range));
+		props.push_back(PropertyInfo(VariantType::INT, path + "apply/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "apply/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "apply/range_min", PROPERTY_HINT_RANGE, hint_apply_range));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "apply/range_max", PROPERTY_HINT_RANGE, hint_apply_range));
 
 		String hint_reference_range;
 		if (get_reference_transform_mode(i) == TRANSFORM_MODE_POSITION) {
@@ -153,13 +153,13 @@ void ConvertTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) 
 		} else {
 			hint_reference_range = HINT_SCALE;
 		}
-		props.push_back(PropertyInfo(Variant::INT, path + "reference/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
-		props.push_back(PropertyInfo(Variant::INT, path + "reference/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_min", PROPERTY_HINT_RANGE, hint_reference_range));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_max", PROPERTY_HINT_RANGE, hint_reference_range));
+		props.push_back(PropertyInfo(VariantType::INT, path + "reference/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "reference/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "reference/range_min", PROPERTY_HINT_RANGE, hint_reference_range));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "reference/range_max", PROPERTY_HINT_RANGE, hint_reference_range));
 
-		props.push_back(PropertyInfo(Variant::BOOL, path + "relative"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "additive"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "relative"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "additive"));
 	}
 
 	for (PropertyInfo &p : props) {

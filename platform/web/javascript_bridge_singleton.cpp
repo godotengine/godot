@@ -173,9 +173,9 @@ void JavaScriptObjectImpl::_get_property_list(List<PropertyInfo> *p_list) const 
 
 void JavaScriptObjectImpl::_free_lock(void **p_lock, int p_type) {
 	ERR_FAIL_NULL_MSG(*p_lock, "No lock to free!");
-	const Variant::Type type = (Variant::Type)p_type;
+	const VariantType::Type type = (VariantType::Type)p_type;
 	switch (type) {
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			CharString *cs = (CharString *)(*p_lock);
 			memdelete(cs);
 			*p_lock = nullptr;
@@ -186,20 +186,20 @@ void JavaScriptObjectImpl::_free_lock(void **p_lock, int p_type) {
 }
 
 Variant JavaScriptObjectImpl::_js2variant(int p_type, godot_js_wrapper_ex *p_val) {
-	Variant::Type type = (Variant::Type)p_type;
+	VariantType::Type type = (VariantType::Type)p_type;
 	switch (type) {
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			return Variant((bool)p_val->i);
-		case Variant::INT:
+		case VariantType::INT:
 			return p_val->i;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			return p_val->r;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String out = String::utf8((const char *)p_val->p);
 			free(p_val->p);
 			return out;
 		}
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			return memnew(JavaScriptObjectImpl(p_val->i));
 		}
 		default:
@@ -210,28 +210,28 @@ Variant JavaScriptObjectImpl::_js2variant(int p_type, godot_js_wrapper_ex *p_val
 int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_wrapper_ex *r_val, void **p_lock) {
 	const Variant **args = (const Variant **)p_args;
 	const Variant *v = args[p_pos];
-	Variant::Type type = v->get_type();
+	VariantType::Type type = v->get_type();
 	switch (type) {
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			r_val->i = v->operator bool() ? 1 : 0;
 			break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			const int64_t tmp = v->operator int64_t();
 			if (tmp >= 1LL << 31) {
 				r_val->r = (double)tmp;
-				return Variant::FLOAT;
+				return VariantType::FLOAT;
 			}
 			r_val->i = v->operator int64_t();
 		} break;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			r_val->r = v->operator real_t();
 			break;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			CharString *cs = memnew(CharString(v->operator String().utf8()));
 			r_val->p = (void *)cs->get_data();
 			*p_lock = (void *)cs;
 		} break;
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			JavaScriptObject *js_obj = Object::cast_to<JavaScriptObject>(v->operator Object *());
 			r_val->i = js_obj != nullptr ? ((JavaScriptObjectImpl *)js_obj)->_js_id : 0;
 		} break;
@@ -263,7 +263,7 @@ void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	for (int i = 0; i < p_argc; i++) {
 		godot_js_wrapper_ex exchange;
 		exchange.i = i;
-		int type = godot_js_wrapper_object_getvar(p_args_id, Variant::INT, &exchange);
+		int type = godot_js_wrapper_object_getvar(p_args_id, VariantType::INT, &exchange);
 		arg_arr.push_back(_js2variant(type, &exchange));
 	}
 	Variant arg = arg_arr;
@@ -315,7 +315,7 @@ Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argc
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING;
+		r_error.expected = VariantType::STRING;
 		return Ref<JavaScriptObject>();
 	}
 	godot_js_wrapper_ex exchange;
@@ -354,19 +354,19 @@ Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_cont
 	PackedByteArray arr;
 	VectorWriteProxy<uint8_t> arr_write;
 
-	Variant::Type return_type = static_cast<Variant::Type>(godot_js_eval(p_code.utf8().get_data(), p_use_global_exec_context, &js_data, &arr, &arr_write, resize_PackedByteArray_and_open_write));
+	VariantType::Type return_type = static_cast<VariantType::Type>(godot_js_eval(p_code.utf8().get_data(), p_use_global_exec_context, &js_data, &arr, &arr_write, resize_PackedByteArray_and_open_write));
 
 	switch (return_type) {
-		case Variant::BOOL:
+		case VariantType::BOOL:
 			return js_data.b;
-		case Variant::FLOAT:
+		case VariantType::FLOAT:
 			return js_data.d;
-		case Variant::STRING: {
+		case VariantType::STRING: {
 			String str = String::utf8(js_data.s);
 			free(js_data.s); // Must free the string allocated in JS.
 			return str;
 		}
-		case Variant::PACKED_BYTE_ARRAY:
+		case VariantType::PACKED_BYTE_ARRAY:
 			arr_write = VectorWriteProxy<uint8_t>();
 			return arr;
 		default:

@@ -320,11 +320,11 @@ bool FindInFiles::_is_file_matched(const HashSet<String> &p_wildcards, const Str
 
 void FindInFiles::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_FOUND,
-			PropertyInfo(Variant::STRING, "path"),
-			PropertyInfo(Variant::INT, "line_number"),
-			PropertyInfo(Variant::INT, "begin"),
-			PropertyInfo(Variant::INT, "end"),
-			PropertyInfo(Variant::STRING, "text")));
+			PropertyInfo(VariantType::STRING, "path"),
+			PropertyInfo(VariantType::INT, "line_number"),
+			PropertyInfo(VariantType::INT, "begin"),
+			PropertyInfo(VariantType::INT, "end"),
+			PropertyInfo(VariantType::STRING, "text")));
 
 	ADD_SIGNAL(MethodInfo("finished"));
 }
@@ -1308,12 +1308,12 @@ void FindInFilesPanel::_bind_methods() {
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,
-			PropertyInfo(Variant::STRING, "path"),
-			PropertyInfo(Variant::INT, "line_number"),
-			PropertyInfo(Variant::INT, "begin"),
-			PropertyInfo(Variant::INT, "end")));
+			PropertyInfo(VariantType::STRING, "path"),
+			PropertyInfo(VariantType::INT, "line_number"),
+			PropertyInfo(VariantType::INT, "begin"),
+			PropertyInfo(VariantType::INT, "end")));
 
-	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(Variant::STRING, "paths")));
+	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(VariantType::STRING, "paths")));
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_CLOSE_BUTTON_CLICKED));
 }
@@ -1396,12 +1396,12 @@ FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_la
 
 void FindInFilesContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("result_selected",
-			PropertyInfo(Variant::STRING, "path"),
-			PropertyInfo(Variant::INT, "line_number"),
-			PropertyInfo(Variant::INT, "begin"),
-			PropertyInfo(Variant::INT, "end")));
+			PropertyInfo(VariantType::STRING, "path"),
+			PropertyInfo(VariantType::INT, "line_number"),
+			PropertyInfo(VariantType::INT, "begin"),
+			PropertyInfo(VariantType::INT, "end")));
 
-	ADD_SIGNAL(MethodInfo("files_modified", PropertyInfo(Variant::STRING, "paths")));
+	ADD_SIGNAL(MethodInfo("files_modified", PropertyInfo(VariantType::STRING, "paths")));
 }
 
 void FindInFilesContainer::_notification(int p_what) {
