@@ -505,9 +505,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 	MouseButton button_idx = mb.is_valid() ? mb->get_button_index() : MouseButton();
 
-	if (
-			(mb.is_valid() && button_idx == MouseButton::LEFT && mb->is_pressed()) ||
-			(mm.is_valid())) {
+	if ((mb.is_valid() && button_idx == MouseButton::LEFT && mb->is_pressed() && !mb->is_alt_pressed()) || (mm.is_valid() && !mm->is_alt_pressed())) {
 		int x = me->get_position().x - 1;
 		hover_metric = x * frame_metrics.size() / graph->get_size().width;
 
@@ -538,7 +536,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (graph_zoom > 0 && mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE) || mm->get_button_mask().has_flag(MouseButtonMask::RIGHT))) {
+	if (graph_zoom > 0 && mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE) || mm->get_button_mask().has_flag(MouseButtonMask::RIGHT) || (mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && mm->is_alt_pressed()))) {
 		// Panning.
 		const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
 		pan_accumulator += (float)mm->get_relative().x * max_profiles_shown / graph->get_size().width;
