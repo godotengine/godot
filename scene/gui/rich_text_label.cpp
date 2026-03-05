@@ -262,11 +262,11 @@ String RichTextLabel::_roman(int p_num, bool p_capitalize) const {
 }
 
 String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
-	int64_t n = p_num;
+	uint64_t n = p_num;
 
 	int chars = 0;
 	do {
-		n /= 24;
+		n = (n - 1) / 26;
 		chars++;
 	} while (n);
 
@@ -276,11 +276,10 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = Math::abs(n % 24);
-		char a = (p_capitalize ? 'A' : 'a');
-		c[--chars] = a + mod - 1;
-
-		n /= 24;
+		const char a = (p_capitalize ? 'A' : 'a');
+		n = n - 1;
+		c[--chars] = a + n % 26;
+		n /= 26;
 	} while (n);
 
 	return s;
