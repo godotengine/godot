@@ -47,6 +47,12 @@ void EditorTitleBar::_ensure_window_buttons() {
 		return;
 	}
 
+	window_buttons_spacer = memnew(Control);
+	window_buttons_spacer->set_name("WindowButtonsSpacer");
+	window_buttons_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	add_child(window_buttons_spacer);
+	move_child(window_buttons_spacer, get_child_count() - 1);
+
 	window_buttons = memnew(EditorCaptionButtons);
 	window_buttons->connect("minimize_requested", callable_mp(this, &EditorTitleBar::_minimize_pressed));
 	window_buttons->connect("toggle_maximize_requested", callable_mp(this, &EditorTitleBar::_maximize_pressed));
@@ -54,21 +60,19 @@ void EditorTitleBar::_ensure_window_buttons() {
 
 	add_child(window_buttons);
 	move_child(window_buttons, get_child_count() - 1);
-	_update_window_buttons();
+	_sync_window_buttons();
 #endif
 }
 
-void EditorTitleBar::_update_window_buttons() {
+void EditorTitleBar::_sync_window_buttons() {
 	if (!window_buttons) {
 		return;
 	}
 
-	Window *win = get_window();
-	if (!win) {
-		return;
+	if (window_buttons_spacer) {
+		window_buttons_spacer->set_custom_minimum_size(Size2(window_buttons->get_combined_minimum_size().x, 0));
 	}
-
-	window_buttons->update_for_window(win);
+	window_buttons->sync_for_titlebar(get_window(), this);
 }
 
 void EditorTitleBar::_minimize_pressed() {
@@ -156,10 +160,10 @@ void EditorTitleBar::_notification(int p_what) {
 		}
 		case NOTIFICATION_RESIZED: {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
-			_update_window_buttons();
+			_sync_window_buttons();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_window_buttons();
+			_sync_window_buttons();
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!center_control) {
@@ -213,6 +217,7 @@ void EditorTitleBar::_notification(int p_what) {
 				fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
 			}
+			_sync_window_buttons();
 		} break;
 	}
 }
@@ -221,7 +226,7 @@ void EditorTitleBar::set_can_move_window(bool p_enabled) {
 	can_move = p_enabled;
 	set_process_input(can_move);
 	_ensure_window_buttons();
-	_update_window_buttons();
+	_sync_window_buttons();
 }
 
 bool EditorTitleBar::get_can_move_window() const {

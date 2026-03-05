@@ -33,12 +33,13 @@
 #include "core/math/math_funcs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 
 constexpr float CAPTION_BUTTON_WIDTH = 24.0f;
 constexpr float CAPTION_BUTTON_HEIGHT = 20.0f;
-constexpr float CAPTION_BUTTON_SIDE_PADDING = 8.0f;
+constexpr float CAPTION_BUTTON_SIDE_PADDING = 2.0f;
 
 constexpr float CAPTION_GLYPH_WIDTH = 9.0f;
 constexpr float CAPTION_GLYPH_HEIGHT = 8.0f;
@@ -117,6 +118,18 @@ public:
 	}
 };
 
+static Button *_create_caption_button(EditorCaptionButton::CaptionGlyph p_glyph, const String &p_tooltip, const Callable &p_pressed_callback) {
+	EditorCaptionButton *btn = memnew(EditorCaptionButton);
+	btn->set_caption_glyph(p_glyph);
+	btn->set_theme_type_variation(SceneStringName(FlatButton));
+	btn->set_flat(true);
+	btn->set_focus_mode(Control::FOCUS_NONE);
+	btn->set_tooltip_text(p_tooltip);
+	btn->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
+	btn->connect(SceneStringName(pressed), p_pressed_callback);
+	return btn;
+}
+
 void EditorCaptionButtons::_minimize_pressed() {
 	emit_signal(SNAME("minimize_requested"));
 }
@@ -127,6 +140,35 @@ void EditorCaptionButtons::_toggle_maximize_pressed() {
 
 void EditorCaptionButtons::_close_pressed() {
 	emit_signal(SNAME("close_requested"));
+}
+
+void EditorCaptionButtons::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			draw_rect(Rect2(Point2(), get_size()), get_theme_color(SNAME("background"), EditorStringName(Editor)));
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			queue_redraw();
+		} break;
+	}
+}
+
+void EditorCaptionButtons::sync_for_titlebar(Window *p_window, const Control *p_title_bar) {
+	position_over_titlebar(p_title_bar);
+	update_for_window(p_window);
+}
+
+void EditorCaptionButtons::position_over_titlebar(const Control *p_title_bar) {
+	if (!p_title_bar) {
+		return;
+	}
+
+	const Size2i button_size(get_combined_minimum_size().x, p_title_bar->get_size().y);
+	const Point2i titlebar_global_position = p_title_bar->get_global_position();
+	const int x = p_title_bar->is_layout_rtl() ? titlebar_global_position.x : titlebar_global_position.x + p_title_bar->get_size().x - button_size.x;
+
+	set_global_position(Point2(x, titlebar_global_position.y));
+	set_size(button_size);
 }
 
 void EditorCaptionButtons::update_for_window(Window *p_window) {
@@ -149,6 +191,7 @@ void EditorCaptionButtons::update_for_window(Window *p_window) {
 
 EditorCaptionButtons::EditorCaptionButtons() {
 	set_name("WindowButtons");
+	set_as_top_level(true);
 	set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	set_alignment(BoxContainer::ALIGNMENT_END);
 
@@ -157,37 +200,22 @@ EditorCaptionButtons::EditorCaptionButtons() {
 	caption_left_padding->set_custom_minimum_size(Size2(CAPTION_BUTTON_SIDE_PADDING, 0) * EDSCALE);
 	add_child(caption_left_padding);
 
-	EditorCaptionButton *min_btn = memnew(EditorCaptionButton);
-	min_btn->set_caption_glyph(EditorCaptionButton::GLYPH_MINIMIZE);
-	minimize_button = min_btn;
-	minimize_button->set_theme_type_variation(SceneStringName(FlatButton));
-	minimize_button->set_flat(true);
-	minimize_button->set_focus_mode(Control::FOCUS_NONE);
-	minimize_button->set_tooltip_text(TTR("Minimize"));
-	minimize_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	minimize_button->connect(SceneStringName(pressed), callable_mp(this, &EditorCaptionButtons::_minimize_pressed));
+	minimize_button = _create_caption_button(
+			EditorCaptionButton::GLYPH_MINIMIZE,
+			TTR("Minimize"),
+			callable_mp(this, &EditorCaptionButtons::_minimize_pressed));
 	add_child(minimize_button);
 
-	EditorCaptionButton *max_btn = memnew(EditorCaptionButton);
-	max_btn->set_caption_glyph(EditorCaptionButton::GLYPH_MAXIMIZE);
-	maximize_button = max_btn;
-	maximize_button->set_theme_type_variation(SceneStringName(FlatButton));
-	maximize_button->set_flat(true);
-	maximize_button->set_focus_mode(Control::FOCUS_NONE);
-	maximize_button->set_tooltip_text(TTR("Maximize"));
-	maximize_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	maximize_button->connect(SceneStringName(pressed), callable_mp(this, &EditorCaptionButtons::_toggle_maximize_pressed));
+	maximize_button = _create_caption_button(
+			EditorCaptionButton::GLYPH_MAXIMIZE,
+			TTR("Maximize"),
+			callable_mp(this, &EditorCaptionButtons::_toggle_maximize_pressed));
 	add_child(maximize_button);
 
-	EditorCaptionButton *cls_btn = memnew(EditorCaptionButton);
-	cls_btn->set_caption_glyph(EditorCaptionButton::GLYPH_CLOSE);
-	Button *close_button = cls_btn;
-	close_button->set_theme_type_variation(SceneStringName(FlatButton));
-	close_button->set_flat(true);
-	close_button->set_focus_mode(Control::FOCUS_NONE);
-	close_button->set_tooltip_text(TTR("Close"));
-	close_button->set_custom_minimum_size(Size2(CAPTION_BUTTON_WIDTH, CAPTION_BUTTON_HEIGHT) * EDSCALE);
-	close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorCaptionButtons::_close_pressed));
+	Button *close_button = _create_caption_button(
+			EditorCaptionButton::GLYPH_CLOSE,
+			TTR("Close"),
+			callable_mp(this, &EditorCaptionButtons::_close_pressed));
 	add_child(close_button);
 
 	Control *caption_right_padding = memnew(Control);
@@ -201,4 +229,3 @@ void EditorCaptionButtons::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("toggle_maximize_requested"));
 	ADD_SIGNAL(MethodInfo("close_requested"));
 }
-

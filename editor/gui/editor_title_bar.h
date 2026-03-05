@@ -42,10 +42,11 @@ class EditorTitleBar : public HBoxContainer {
 	bool moving = false;
 	bool can_move = false;
 	Control *center_control = nullptr;
+	Control *window_buttons_spacer = nullptr;
 	EditorCaptionButtons *window_buttons = nullptr;
 
 	void _ensure_window_buttons();
-	void _update_window_buttons();
+	void _sync_window_buttons();
 	void _minimize_pressed();
 	void _maximize_pressed();
 	void _close_pressed();
