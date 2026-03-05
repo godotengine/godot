@@ -5872,7 +5872,7 @@ void RenderingDevice::raytracing_list_set_push_constant(RaytracingListID p_list,
 #endif
 }
 
-void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32_t p_width, uint32_t p_height) {
+void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	ERR_RENDER_THREAD_GUARD();
 
 	ERR_FAIL_COND(p_list != ID_TYPE_RAYTRACING_LIST);
@@ -5945,7 +5945,7 @@ void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32
 		}
 	}
 
-	draw_graph.add_raytracing_list_trace_rays(p_width, p_height);
+	draw_graph.add_raytracing_list_trace_rays(p_width, p_height, p_depth);
 	raytracing_list.state.trace_count++;
 }
 
@@ -8446,7 +8446,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("raytracing_list_bind_raytracing_pipeline", "raytracing_list", "raytracing_pipeline"), &RenderingDevice::raytracing_list_bind_raytracing_pipeline);
 	ClassDB::bind_method(D_METHOD("raytracing_list_set_push_constant", "raytracing_list", "buffer", "size_bytes"), &RenderingDevice::_raytracing_list_set_push_constant);
 	ClassDB::bind_method(D_METHOD("raytracing_list_bind_uniform_set", "raytracing_list", "uniform_set", "set_index"), &RenderingDevice::raytracing_list_bind_uniform_set);
-	ClassDB::bind_method(D_METHOD("raytracing_list_trace_rays", "raytracing_list", "width", "height"), &RenderingDevice::raytracing_list_trace_rays);
+	ClassDB::bind_method(D_METHOD("raytracing_list_trace_rays", "raytracing_list", "width", "height", "depth"), &RenderingDevice::raytracing_list_trace_rays, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("raytracing_list_end"), &RenderingDevice::raytracing_list_end);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free_rid);

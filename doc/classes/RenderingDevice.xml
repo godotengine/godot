@@ -826,6 +826,7 @@
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
+			<param index="3" name="depth" type="int" default="1" />
 			<description>
 				Initializes a ray tracing dispatch for the specified [param raytracing_list] assembling a group of [param width] x [param height] rays.
 			</description>

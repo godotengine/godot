@@ -6417,12 +6417,12 @@ void RenderingDeviceDriverVulkan::command_bind_raytracing_uniform_set(CommandBuf
 	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
 
-void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 #if VULKAN_RAYTRACING_ENABLED
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	ERR_FAIL_COND_MSG(bound_raytracing_pipeline_id == RaytracingPipelineID(), "A raytracing pipeline must have been bound with `command_bind_raytracing_pipeline()`.");
 	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)bound_raytracing_pipeline_id.id;
-	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &rpi->regions.raygen, &rpi->regions.miss, &rpi->regions.hit, &rpi->regions.call, p_width, p_height, 1);
+	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &rpi->regions.raygen, &rpi->regions.miss, &rpi->regions.hit, &rpi->regions.call, p_width, p_height, p_depth);
 #endif
 }
 

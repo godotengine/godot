@@ -2310,7 +2310,7 @@ void RenderingDeviceDriverMetal::command_bind_raytracing_uniform_set(CommandBuff
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
-void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
