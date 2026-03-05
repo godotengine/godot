@@ -2455,6 +2455,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
+	bool apply_canvas_bg_exposure = false;
 
 	if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2494,6 +2495,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			} break;
 			case RSE::ENV_BG_CANVAS: {
 				draw_canvas = true;
+				apply_canvas_bg_exposure = !Math::is_equal_approx(tonemap_ubo.exposure, 1.0f);
 			} break;
 			case RSE::ENV_BG_KEEP: {
 				keep_color = true;
@@ -2573,6 +2575,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		fbo = GLES3::LightStorage::get_singleton()->reflection_probe_instance_get_framebuffer(render_data.reflection_probe, render_data.reflection_probe_pass);
 	} else {
 		rb->set_apply_environment_effects_in_post(apply_environment_effects_in_post);
+		rb->set_apply_canvas_bg_exposure(apply_canvas_bg_exposure);
 		fbo = rb->get_render_fbo();
 	}
 
@@ -2676,7 +2679,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, rt->color);
 
-		copy_effects->copy_screen(render_data.luminance_multiplier);
+		if (apply_canvas_bg_exposure) {
+			copy_effects->copy_with_exposure(tonemap_ubo.exposure, render_data.luminance_multiplier);
+		} else {
+			copy_effects->copy_screen(render_data.luminance_multiplier);
+		}
 
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
