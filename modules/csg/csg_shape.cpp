@@ -1727,15 +1727,14 @@ CSGBrush *CSGBox3D::_build_brush() {
 				shifts[1] *= -1;
 				shifts[4] *= -1;
 			} else if (num_rotations == 90.0) {
-				// Taking a gamble here, if it's in the wrong direction all I have to do is switch them around.
-				shifts[1].x = uv_offset.z;
+				shifts[1].x = -uv_offset.z;
 				shifts[1].y = uv_offset.x;
-				shifts[4].x = uv_offset.z;
+				shifts[4].x = -uv_offset.z;
 				shifts[4].y = -uv_offset.x;
 			} else {
-				shifts[1].x = -uv_offset.z;
+				shifts[1].x = uv_offset.z;
 				shifts[1].y = -uv_offset.x;
-				shifts[4].x = -uv_offset.z;
+				shifts[4].x = uv_offset.z;
 				shifts[4].y = uv_offset.x;
 			}
 		}
