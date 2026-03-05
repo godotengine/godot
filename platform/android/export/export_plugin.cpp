@@ -40,6 +40,8 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
@@ -67,7 +69,6 @@
 #endif
 
 #ifndef ANDROID_ENABLED
-#include "core/object/callable_method_pointer.h"
 #endif
 
 static const char *ANDROID_PERMS[] = {
@@ -1220,7 +1221,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	String package_name = p_preset->get("package/unique_name");
 
 	const int screen_orientation =
-			_get_android_orientation_value(DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
+			_get_android_orientation_value(DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
 
 	bool screen_support_small = p_preset->get("screen/support_small");
 	bool screen_support_normal = p_preset->get("screen/support_normal");

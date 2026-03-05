@@ -30,6 +30,7 @@
 
 #include "quick_settings_dialog.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/doc/editor_help.h"
@@ -43,6 +44,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {
 #ifndef ANDROID_ENABLED

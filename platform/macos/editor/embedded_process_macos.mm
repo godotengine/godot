@@ -35,6 +35,7 @@
 
 #include "core/input/input_event_codec.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -79,7 +80,7 @@ void EmbeddedProcessMacOS::set_script_debugger(ScriptEditorDebugger *p_debugger)
 	_try_embed_process();
 }
 
-void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcessMacOS::embed_process(ProcessID p_pid) {
 	if (!window) {
 		return;
 	}
@@ -106,11 +107,11 @@ void EmbeddedProcessMacOS::reset() {
 		ds->remove_embedded_process(current_process_id);
 	}
 	DisplayServer *ds = DisplayServer::get_singleton();
-	for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
-		ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServer::CursorShape)i, Vector2());
+	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
+		ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServerEnums::CursorShape)i, Vector2());
 	}
-	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
-		ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+	if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
+		ds->mouse_set_mode(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 	}
 	current_process_id = 0;
 	embedding_state = EmbeddingState::IDLE;
@@ -121,7 +122,7 @@ void EmbeddedProcessMacOS::reset() {
 
 void EmbeddedProcessMacOS::request_close() {
 	if (current_process_id != 0 && is_embedding_completed()) {
-		script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_CLOSE_REQUEST });
+		script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST });
 	}
 	reset();
 }
@@ -130,7 +131,7 @@ void EmbeddedProcessMacOS::display_state_changed() {
 	DisplayServerMacOSEmbeddedState state;
 	state.screen_max_scale = ds->screen_get_max_scale();
 	state.screen_dpi = ds->screen_get_dpi();
-	DisplayServer::WindowID wid = window->get_window_id();
+	DisplayServerEnums::WindowID wid = window->get_window_id();
 	state.screen_window_scale = ds->screen_get_scale(ds->window_get_current_screen(wid));
 	state.display_id = ds->window_get_display_id(wid);
 
@@ -149,7 +150,7 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 		return;
 	}
 
-	DisplayServer::WindowID wid = window->get_window_id();
+	DisplayServerEnums::WindowID wid = window->get_window_id();
 	Error err = ds->embed_process_update(wid, this);
 	if (err == OK) {
 		layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
@@ -190,10 +191,10 @@ Rect2i EmbeddedProcessMacOS::get_adjusted_embedded_window_rect(const Rect2i &p_r
 	}
 }
 
-void EmbeddedProcessMacOS::mouse_set_mode(DisplayServer::MouseMode p_mode) {
+void EmbeddedProcessMacOS::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
 	mouse_mode = p_mode;
 	// If the mouse is anything other than visible, we must ensure the Game view is active and the layer focused.
-	if (mouse_mode != DisplayServer::MOUSE_MODE_VISIBLE) {
+	if (mouse_mode != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
 		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
 		layer_host->grab_focus();
 	}
@@ -226,11 +227,11 @@ void LayerHost::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_MOUSE_ENTER: {
 			DisplayServer *ds = DisplayServer::get_singleton();
-			for (const KeyValue<DisplayServer::CursorShape, CustomCursor> &E : custom_cursors) {
+			for (const KeyValue<DisplayServerEnums::CursorShape, CustomCursor> &E : custom_cursors) {
 				ds->cursor_set_custom_image(E.value.image, E.key, E.value.hotspot);
 			}
 			if (script_debugger) {
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER });
 			}
 			if (get_window()->has_focus()) {
 				grab_focus();
@@ -245,28 +246,28 @@ void LayerHost::_notification(int p_what) {
 					ds->mouse_set_mode(process->get_mouse_mode());
 				}
 				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_FOCUS_IN });
 				window_focused = true;
 			}
 			process->queue_redraw();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			DisplayServer *ds = DisplayServer::get_singleton();
-			for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
-				ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServer::CursorShape)i, Vector2());
+			for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
+				ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServerEnums::CursorShape)i, Vector2());
 			}
 			if (script_debugger) {
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_EXIT });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT });
 			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			// Temporarily set mouse state back to visible, so the user can interact with the editor.
 			if (window_focused && script_debugger) {
 				DisplayServer *ds = DisplayServer::get_singleton();
-				if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
-					ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+				if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
+					ds->mouse_set_mode(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 				}
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT });
 				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_OUT });
 				window_focused = false;
 			}
@@ -283,11 +284,11 @@ void LayerHost::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				DisplayServer *ds = DisplayServer::get_singleton();
-				for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
-					ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServer::CursorShape)i, Vector2());
+				for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
+					ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServerEnums::CursorShape)i, Vector2());
 				}
-				if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
-					ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+				if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
+					ds->mouse_set_mode(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 				}
 			}
 		} break;
@@ -298,12 +299,12 @@ void LayerHost::_notification(int p_what) {
 				if (process->get_mouse_mode() != ds->mouse_get_mode()) {
 					// Restore embedded process mouse mode.
 					ds->mouse_set_mode(process->get_mouse_mode());
-					if (process->get_mouse_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
+					if (process->get_mouse_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
 						get_window()->grab_focus();
 					}
 				}
 				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_FOCUS_IN });
 				window_focused = true;
 			}
 		} break;
@@ -311,10 +312,10 @@ void LayerHost::_notification(int p_what) {
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			if (has_focus() && window_focused && script_debugger) {
 				DisplayServer *ds = DisplayServer::get_singleton();
-				if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
-					ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+				if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
+					ds->mouse_set_mode(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 				}
-				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
+				script_debugger->send_message("embed:win_event", { DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT });
 				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_OUT });
 				window_focused = false;
 			}
@@ -322,7 +323,7 @@ void LayerHost::_notification(int p_what) {
 	}
 }
 
-void LayerHost::cursor_set_custom_image(const Ref<Image> &p_image, DisplayServer::CursorShape p_shape, const Vector2 &p_hotspot) {
+void LayerHost::cursor_set_custom_image(const Ref<Image> &p_image, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
 	custom_cursors[p_shape] = CustomCursor(p_image, p_hotspot);
 }
 
@@ -334,10 +335,10 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_pressed()) {
 		if (ED_IS_SHORTCUT("game_view/release_mouse", p_event)) {
 			DisplayServer *ds = DisplayServer::get_singleton();
-			if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
-				ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+			if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
+				ds->mouse_set_mode(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 				if (script_debugger != nullptr) {
-					script_debugger->send_message("embed:mouse_set_mode", { DisplayServer::MOUSE_MODE_VISIBLE });
+					script_debugger->send_message("embed:mouse_set_mode", { DisplayServerEnums::MOUSE_MODE_VISIBLE });
 				}
 			}
 			accept_event();

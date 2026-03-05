@@ -30,7 +30,10 @@
 
 #include "register_editor_types.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_randomizer_editor_plugin.h"

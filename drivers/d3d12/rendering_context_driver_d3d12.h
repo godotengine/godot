@@ -34,7 +34,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "rendering_device_driver_d3d12.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_context_driver.h"
 
 #if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
@@ -92,8 +92,8 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) override;
 	virtual SurfaceID surface_create(const void *p_platform_data) override;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) override;
+	virtual DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
@@ -120,7 +120,7 @@ public:
 		HWND hwnd = nullptr;
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
+		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		bool needs_resize = false;
 
 		bool hdr_output = false;

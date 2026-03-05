@@ -33,6 +33,7 @@
 #include "jni_utils.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/run/editor_run_bar.h"

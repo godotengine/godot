@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
 

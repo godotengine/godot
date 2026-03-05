@@ -31,9 +31,11 @@
 #include "text_edit.h"
 #include "text_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
@@ -44,6 +46,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 
@@ -836,7 +839,9 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_caches();
 			if (caret_pos_dirty) {
-				callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
+				// No need to emit "caret_changed" signal (otherwise will save an unnecessary state to history),
+				// so we use `_set_caret_pos_dirty()` instead of `_emit_caret_changed()`.
+				callable_mp(this, &TextEdit::_set_caret_pos_dirty).call_deferred(false);
 			}
 			if (text_changed_dirty) {
 				callable_mp(this, &TextEdit::_emit_text_changed).call_deferred();
@@ -1963,7 +1968,7 @@ void TextEdit::_notification(int p_what) {
 
 			apply_ime();
 
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
 
@@ -2429,7 +2434,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				queue_redraw();
 			}
 
-			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 				apply_ime();
 				paste_primary_clipboard();
 			}
@@ -2485,7 +2490,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				can_drag_minimap = false;
 				set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 				click_select_held->stop();
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
 			}
@@ -3422,8 +3427,8 @@ void TextEdit::_update_caches(bool p_invalidate_all) {
 }
 
 void TextEdit::_close_ime_window() {
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServerEnums::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
+	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
@@ -3431,8 +3436,8 @@ void TextEdit::_close_ime_window() {
 }
 
 void TextEdit::_update_ime_window_position() {
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	DisplayServerEnums::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
+	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
@@ -3471,7 +3476,7 @@ void TextEdit::_update_ime_text() {
 void TextEdit::_show_virtual_keyboard() {
 	_update_ime_window_position();
 
-	if (virtual_keyboard_enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)) {
+	if (virtual_keyboard_enabled && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD)) {
 		int caret_start = -1;
 		int caret_end = -1;
 
@@ -3487,7 +3492,7 @@ void TextEdit::_show_virtual_keyboard() {
 			caret_end = caret_start + post_text.length();
 		}
 
-		DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), DisplayServer::KEYBOARD_TYPE_MULTILINE, -1, caret_start, caret_end);
+		DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), DisplayServerEnums::KEYBOARD_TYPE_MULTILINE, -1, caret_start, caret_end);
 	}
 }
 
@@ -6648,6 +6653,26 @@ int TextEdit::get_total_visible_line_count() const {
 }
 
 // Auto adjust.
+bool TextEdit::is_line_in_viewport(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	int line_wrap = get_line_wrap_index_at_column(p_line, 0);
+
+	int first_vis_line = get_first_visible_line();
+	int first_vis_wrap = first_visible_line_wrap_ofs;
+	int last_vis_line = get_last_full_visible_line();
+	int last_vis_wrap = get_last_full_visible_line_wrap_index();
+
+	if (p_line < first_vis_line || (p_line == first_vis_line && p_line < first_vis_wrap)) {
+		// Caret is above screen.
+		return false;
+	} else if (p_line > last_vis_line || (p_line == last_vis_line && line_wrap > last_vis_wrap)) {
+		// Caret is below screen.
+		return false;
+	}
+	return true;
+}
+
 void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 
@@ -7457,6 +7482,7 @@ void TextEdit::_bind_methods() {
 	// Visible lines.
 	ClassDB::bind_method(D_METHOD("set_line_as_first_visible", "line", "wrap_index"), &TextEdit::set_line_as_first_visible, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_first_visible_line"), &TextEdit::get_first_visible_line);
+	ClassDB::bind_method(D_METHOD("is_line_in_viewport", "line"), &TextEdit::is_line_in_viewport);
 
 	ClassDB::bind_method(D_METHOD("set_line_as_center_visible", "line", "wrap_index"), &TextEdit::set_line_as_center_visible, DEFVAL(0));
 
@@ -7960,7 +7986,7 @@ void TextEdit::_paste_internal(int p_caret) {
 
 void TextEdit::_paste_primary_clipboard_internal(int p_caret) {
 	ERR_FAIL_COND(p_caret >= get_caret_count() || p_caret < -1);
-	if (!is_editable() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+	if (!is_editable() || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 		return;
 	}
 
@@ -8037,7 +8063,7 @@ void TextEdit::_generate_context_menu() {
 	menu_ctl->add_item(ETR("Word Joiner (WJ)"), MENU_INSERT_WJ);
 	menu_ctl->add_item(ETR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		menu->add_item(ETR("Emoji & Symbols"), MENU_EMOJI_AND_SYMBOL);
 		menu->add_separator();
 	}
@@ -8094,7 +8120,7 @@ void TextEdit::_update_context_menu() {
 		m_menu->set_item_checked(idx, m_checked); \
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		MENU_ITEM_DISABLED(menu, MENU_EMOJI_AND_SYMBOL, !editable || !emoji_menu_enabled)
 	}
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
@@ -8240,6 +8266,10 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 }
 
 /* Caret */
+void TextEdit::_set_caret_pos_dirty(bool p_dirty) {
+	caret_pos_dirty = p_dirty;
+}
+
 void TextEdit::_caret_changed(int p_caret) {
 	queue_redraw();
 
@@ -8484,7 +8514,7 @@ void TextEdit::_update_selection_mode_word(bool p_initial) {
 	}
 	adjust_viewport_to_caret(caret_index);
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 	}
 
@@ -8514,7 +8544,7 @@ void TextEdit::_update_selection_mode_line(bool p_initial) {
 		carets.write[caret_index].selection.word_end_column = get_line(origin_line).length();
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 		DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 	}
 

@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/stream_peer.h"
-#include "core/object/class_db.h"
 #include "core/templates/ring_buffer.h"
 
 #include "core/extension/ext_wrappers.gen.h"

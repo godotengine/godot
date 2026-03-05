@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_player_editor_plugin.h"
@@ -1749,6 +1750,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
 			_update_create_root_dialog(true);
+			_update_create_root_dialog_visibility();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1801,22 +1803,6 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
-		} break;
-
-		case NOTIFICATION_PROCESS: {
-			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == nullptr;
-
-			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
-				if (show_create_root) {
-					main_mc->set_theme_type_variation("");
-					create_root_dialog->show();
-					scene_tree->hide();
-				} else {
-					main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-					create_root_dialog->hide();
-					scene_tree->show();
-				}
-			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -3430,6 +3416,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 
 void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
+	_update_create_root_dialog_visibility();
 }
 
 static bool _is_same_selection(const Vector<Node *> &p_first, const HashMap<ObjectID, Object *> &p_second) {
@@ -4640,14 +4627,27 @@ void SceneTreeDock::_remote_tree_selected() {
 }
 
 void SceneTreeDock::_local_tree_selected() {
-	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
-		scene_tree->show();
-	}
 	if (remote_tree) {
 		remote_tree->hide();
 	}
+	_update_create_root_dialog_visibility();
 	edit_remote->set_pressed(false);
 	edit_local->set_pressed(true);
+}
+
+void SceneTreeDock::_update_create_root_dialog_visibility() {
+	if (remote_tree && remote_tree->is_visible()) {
+		return;
+	}
+	if (edited_scene == nullptr) {
+		main_mc->set_theme_type_variation("");
+		create_root_dialog->show();
+		scene_tree->hide();
+	} else {
+		main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		create_root_dialog->hide();
+		scene_tree->show();
+	}
 }
 
 void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
@@ -5164,7 +5164,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);
-	set_process(true);
 
 	EDITOR_DEF("_use_favorites_root_selection", false);
 

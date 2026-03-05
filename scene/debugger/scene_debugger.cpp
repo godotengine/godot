@@ -30,13 +30,18 @@
 
 #include "scene_debugger.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/array.h"
@@ -503,6 +508,17 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+
+	bool focused = p_args[0];
+	Input::get_singleton()->embedder_focused = focused;
+	if (Input::get_singleton()->_should_ignore_joypad_events()) {
+		Input::get_singleton()->release_pressed_events();
+	}
+	return OK;
+}
+
 // endregion
 
 HashMap<String, SceneDebugger::ParseMessageFunc> SceneDebugger::message_handlers;
@@ -579,6 +595,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
 #endif
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
+	message_handlers["report_window_focused"] = _msg_report_window_focused;
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {

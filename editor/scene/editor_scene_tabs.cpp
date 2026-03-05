@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"

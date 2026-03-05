@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"
@@ -55,6 +56,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "servers/display/display_server.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {

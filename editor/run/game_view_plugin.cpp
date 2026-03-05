@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -54,6 +56,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
+#include "servers/display/display_server.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	if (!is_feature_enabled) {
@@ -242,6 +245,17 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 
 	if (EditorDebuggerNode::get_singleton()->get_camera_override() != EditorDebuggerNode::OVERRIDE_NONE) {
 		set_camera_override(true);
+	}
+}
+
+void GameViewDebugger::report_window_focused(bool p_focused) {
+	Array message;
+	message.append(p_focused);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:report_window_focused", message);
+		}
 	}
 }
 
@@ -460,7 +474,7 @@ void GameView::_play_pressed() {
 		return;
 	}
 
-	OS::ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
+	ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
 	if (current_process_id == 0) {
 		return;
 	}
@@ -723,7 +737,7 @@ void GameView::_update_speed_state_size() {
 }
 
 GameView::EmbedAvailability GameView::_get_embed_available() {
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 		return EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED;
 	}
 	if (get_tree()->get_root()->is_embedding_subwindows()) {
@@ -750,14 +764,14 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
 
-	DisplayServer::WindowMode window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED) {
+	DisplayServerEnums::WindowMode window_mode = (DisplayServerEnums::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MINIMIZED) {
 		return EMBED_NOT_AVAILABLE_MINIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MAXIMIZED) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MAXIMIZED) {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServer::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		return EMBED_NOT_AVAILABLE_FULLSCREEN;
 	}
 
@@ -945,7 +959,7 @@ void GameView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 				// Embedding available.
 				int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 				switch (game_mode) {
@@ -984,6 +998,14 @@ void GameView::_notification(int p_what) {
 
 			_update_ui();
 		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (embed_on_play) {
+				debugger->report_window_focused(p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN);
+			}
+		} break;
+
 		case NOTIFICATION_WM_POSITION_CHANGED: {
 			if (window_wrapper->get_window_enabled()) {
 				_update_floating_window_settings();
@@ -1099,7 +1121,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Add the editor window's native ID so the started game can directly set it as its parent.
 	List<String>::Element *N = r_arguments.insert_before(user_args_element, "--wid");
-	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, get_window()->get_window_id())));
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");

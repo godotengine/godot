@@ -38,6 +38,8 @@
 #include "data_viewers/summary_view.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -270,7 +272,7 @@ void ObjectDBProfilerPanel::_snapshot_rmb(const Vector2 &p_pos, MouseButton p_bu
 	rmb_menu->clear(false);
 
 	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Rename")), TTRC("Rename"), OdbProfilerMenuOptions::ODB_MENU_RENAME);
-	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Show in File Manager"), OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER);
+	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN), OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER);
 	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTRC("Delete"), OdbProfilerMenuOptions::ODB_MENU_DELETE);
 
 	rmb_menu->set_position(snapshot_list->get_screen_position() + p_pos);

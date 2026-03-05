@@ -34,8 +34,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -48,6 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Vector2(1050, 700) * get_theme_default_base_scale(), 0.8f);
@@ -80,20 +83,20 @@ void FileDialog::_native_popup() {
 	while (w && w->get_flag(FLAG_POPUP) && w->get_parent_visible_window()) {
 		w = w->get_parent_visible_window();
 	}
-	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID wid = w ? w->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
 	}
 }
 
 bool FileDialog::_can_use_native_popup() const {
 	if (access == ACCESS_RESOURCES || access == ACCESS_USERDATA || options.size() > 0) {
-		return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
+		return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
 	}
-	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
+	return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE);
 }
 
 Vector2i FileDialog::_get_list_mode_icon_size() const {
@@ -800,7 +803,7 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 		meta = file_list->get_item_metadata(p_for_item);
 	}
 
-	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? ETR("Open in File Manager") : ETR("Show in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), ITEM_MENU_SHOW_IN_EXPLORER);
 	item_menu->set_item_icon(-1, theme_cache.menu_show_in_file_manager);
 	if (meta["bundle"]) {
 		item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
@@ -1165,7 +1168,7 @@ void FileDialog::update_filters() {
 
 		String native_all_name;
 		native_all_name += all_filters;
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
 			if (!native_all_name.is_empty()) {
 				native_all_name += ", ";
 			}
@@ -1187,7 +1190,7 @@ void FileDialog::update_filters() {
 		String native_name;
 
 		native_name += flt;
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
 			if (!native_name.is_empty() && !mime.is_empty()) {
 				native_name += ", ";
 			}
@@ -1560,6 +1563,10 @@ void FileDialog::_invalidate() {
 
 	update_file_list();
 
+	if (ensure_visible_after_invalidating) {
+		file_list->ensure_current_is_visible();
+		ensure_visible_after_invalidating = false;
+	}
 	is_invalidating = false;
 }
 
@@ -1673,6 +1680,7 @@ void FileDialog::_sort_option_selected(int p_option) {
 		file_sort_button->get_popup()->set_item_checked(i, (i == p_option));
 	}
 	file_sort = FileSortOption(p_option);
+	ensure_visible_after_invalidating = true;
 	invalidate();
 }
 

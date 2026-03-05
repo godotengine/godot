@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
@@ -53,6 +55,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 ///////////////////////////////////
@@ -1715,7 +1718,7 @@ void AnimationPlayerEditor::_editor_visibility_changed() {
 bool AnimationPlayerEditor::_are_onion_layers_valid() {
 	ERR_FAIL_COND_V(!onion.past && !onion.future, false);
 
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 	return onion.captures.size() == onion.get_capture_count() && onion.capture_size == capture_size;
 }
 
@@ -1723,7 +1726,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 	_free_onion_layers();
 
 	int captures = onion.get_capture_count();
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 
 	onion.captures.resize(captures);
 	onion.captures_valid.resize(captures);
@@ -1834,8 +1837,8 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID));
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServer::INVALID_WINDOW_ID);
+	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID));
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServerEnums::INVALID_WINDOW_ID);
 	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_ALWAYS);
 
 	RID present_rid;
@@ -1921,7 +1924,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	// Restore root viewport.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
 	RS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServer::MAIN_WINDOW_ID);
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServerEnums::MAIN_WINDOW_ID);
 	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
 	// Restore animation state.
@@ -2256,7 +2259,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->set_column_clip_content(0, true);
 	blend_editor.tree->set_column_expand_ratio(1, 3);
 	blend_editor.tree->set_column_clip_content(1, true);
-	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true);
+	blend_editor.tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true)->set_theme_type_variation("NoBorderHorizontalWindow");
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);

@@ -30,10 +30,13 @@
 
 #include "touch_screen_button.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {

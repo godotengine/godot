@@ -30,6 +30,7 @@
 
 #include "slider.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"

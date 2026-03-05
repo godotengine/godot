@@ -30,10 +30,12 @@
 
 #include "scroll_bar.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 

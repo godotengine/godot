@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/time.h"
 #include "editor/editor_node.h"
@@ -1330,16 +1331,20 @@ void EditorSelection::_update_node_list() {
 	node_list_changed = false;
 }
 
-void EditorSelection::update() {
+void EditorSelection::update(bool p_deferred) {
 	_update_node_list();
 
 	if (!changed) {
 		return;
 	}
 	changed = false;
-	if (!emitted) {
-		emitted = true;
-		callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+	if (p_deferred) {
+		if (!emitted) {
+			emitted = true;
+			callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+		}
+	} else {
+		_emit_change();
 	}
 }
 

@@ -34,22 +34,58 @@
 #include "core/input/input_map.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "scene/gui/label.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_effect.h"
+#include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/text_paragraph.h"
+#include "scene/resources/texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif
+
+RichTextLabel::ItemDropcap::~ItemDropcap() {
+	if (font.is_valid()) {
+		RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+		if (owner_rtl) {
+			font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+		}
+	}
+}
+
+RichTextLabel::ItemImage::~ItemImage() {
+	if (image.is_valid()) {
+		RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+		if (owner_rtl) {
+			if (owner_rtl->hr_list.has(rid)) {
+				owner_rtl->hr_list.erase((rid));
+			}
+			image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
+		}
+	}
+}
+
+RichTextLabel::ItemFont::~ItemFont() {
+	if (font.is_valid()) {
+		RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+		if (owner_rtl) {
+			font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+		}
+	}
+}
 
 RichTextLabel::ItemCustomFX::ItemCustomFX() {
 	type = ITEM_CUSTOMFX;
@@ -193,7 +229,8 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 				}
 			} break;
 			case ITEM_TABLE: {
-				offset += 1;
+				ItemTable *table = static_cast<ItemTable *>(it);
+				offset += table->char_count;
 			} break;
 			default:
 				break;
@@ -781,6 +818,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					}
 					idx++;
 				}
+				table->char_count = t_char_count;
 
 				// Compute width for each column.
 				const int available_width = p_width - l.offset.x - theme_cache.table_h_separation * col_count;
@@ -2889,7 +2927,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 							selection.to_char = words[i + 1];
 
 							selection.active = true;
-							if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+							if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 								DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 							}
 							queue_accessibility_update();
@@ -2906,7 +2944,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					selection.double_click = true;
 				}
 			} else if (!b->is_pressed()) {
-				if (selection.enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+				if (selection.enabled && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
 				selection.click_item = nullptr;

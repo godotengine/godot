@@ -31,6 +31,7 @@
 #include "animation_library_editor.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
@@ -44,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
@@ -991,9 +993,13 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	load_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_load_library));
 	hb->add_child(load_library_button);
 	vb->add_child(hb);
-	tree = memnew(Tree);
-	vb->add_child(tree);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	vb->add_child(mc);
+
+	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_theme_type_variation("TreeTable");
 	tree->set_columns(2);
@@ -1003,8 +1009,8 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_column_expand(1, false);
 	tree->set_hide_root(true);
 	tree->set_hide_folding(false);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	mc->add_child(tree);
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
 	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
 	tree->connect("item_collapsed", callable_mp(this, &AnimationLibraryEditor::_save_mixer_lib_folding));

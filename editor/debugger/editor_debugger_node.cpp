@@ -30,7 +30,9 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
@@ -51,6 +53,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {

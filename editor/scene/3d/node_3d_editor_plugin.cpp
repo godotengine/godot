@@ -36,8 +36,10 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -2989,7 +2991,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
 	const real_t degrees_per_pixel = real_t(EDITOR_GET("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, cursor.fov_scale);
 	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
-	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
+	const bool invert_y_axis = EDITOR_GET("editors/3d/freelook/freelook_invert_y_axis");
 
 	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
 	const Transform3D prev_camera_transform = to_camera_transform(cursor);
