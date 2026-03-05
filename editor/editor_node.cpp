@@ -3631,7 +3631,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case PROJECT_FIND_IN_FILES: {
-			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
+			ScriptEditor::get_singleton()->open_find_in_files("");
 		} break;
 
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
