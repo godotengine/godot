@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "drivers/png/image_loader_png.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
