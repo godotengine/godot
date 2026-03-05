@@ -196,6 +196,9 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusSTE::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusSTE::_breakpoint_item_pressed));
+
+	// Update immediately for shortcuts.
+	_update_breakpoint_list();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

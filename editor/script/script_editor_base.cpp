@@ -272,6 +272,9 @@ TextEditorBase::EditMenus::EditMenus() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &EditMenus::_bookmark_item_pressed));
 
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
+
+	// Update immediately for shortcuts.
+	_update_bookmark_list();
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
