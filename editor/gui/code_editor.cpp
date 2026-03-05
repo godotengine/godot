@@ -591,6 +591,11 @@ void FindReplaceBar::_update_toggle_replace_button(bool p_replace_visible) {
 
 void FindReplaceBar::_show_search(bool p_with_replace, bool p_show_only) {
 	show();
+
+	if (base_text_editor) {
+		base_text_editor->adjust_viewport_to_caret();
+	}
+
 	if (p_show_only) {
 		return;
 	}
