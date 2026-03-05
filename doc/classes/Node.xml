@@ -1037,6 +1037,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_settings" type="AccessibilitySettings" setter="set_accessibility_settings" getter="get_accessibility_settings">
+			If sets, provides settings to override and customize [Node] accessibility properties. It will take priority over the properties and built-in accessibility notification handlers defined in [Control].
+		</member>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
 			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for translation template generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].

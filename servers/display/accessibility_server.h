@@ -115,6 +115,7 @@ public:
 	virtual void update_set_error_message(const RID &p_id, const RID &p_other_id) = 0;
 	virtual void update_set_live(const RID &p_id, AccessibilityServerEnums::AccessibilityLiveMode p_live) = 0;
 	virtual void update_add_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action, const Callable &p_callable) = 0;
+	virtual void update_remove_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action) = 0;
 	virtual void update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) = 0;
 	virtual void update_set_table_row_count(const RID &p_id, int p_count) = 0;
 	virtual void update_set_table_column_count(const RID &p_id, int p_count) = 0;
@@ -170,3 +171,5 @@ VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityPopupType, Accessib
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityRole, AccessibilityServer::AccessibilityRole)
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityScrollUnit, AccessibilityServer::AccessibilityScrollUnit)
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityScrollHint, AccessibilityServer::AccessibilityScrollHint)
+VARIANT_BITFIELD_CAST_EXT(AccessibilityServerEnums::AccessibilityFlagsBit, AccessibilityServer::AccessibilityFlagsBit);
+VARIANT_BITFIELD_CAST_EXT(AccessibilityServerEnums::AccessibilityActionBit, AccessibilityServer::AccessibilityActionBit);

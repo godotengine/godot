@@ -51,6 +51,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/accessibility_settings.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/accessibility_server.h"
 
@@ -67,6 +68,9 @@ thread_local Node *Node::current_process_thread_group = nullptr;
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			if (data.accessibility_settings.is_valid()) {
+				data.accessibility_settings->_invalidate_elements();
+			}
 			if (data.accessibility_element.is_valid()) {
 				AccessibilityServer::get_singleton()->free_element(data.accessibility_element);
 				data.accessibility_element = RID();
@@ -316,6 +320,9 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (data.tree) {
 				data.is_auto_translate_dirty = true;
+				if (data.accessibility_settings.is_valid() && can_auto_translate()) {
+					queue_accessibility_update();
+				}
 			}
 		} break;
 	}
@@ -3701,12 +3708,44 @@ void Node::notify_thread_safe(int p_notification) {
 }
 
 RID Node::get_focused_accessibility_element() const {
+	if (data.accessibility_settings.is_valid()) {
+		AccessibilitySettings *settings = ObjectDB::get_instance<AccessibilitySettings>(data.accessibility_settings->get_focused_subelement());
+		if (settings && settings->_get_subelement_rid().is_valid()) {
+			return settings->_get_subelement_rid();
+		}
+	}
+
 	RID id;
 	if (GDVIRTUAL_CALL(_get_focused_accessibility_element, id)) {
 		return id;
 	} else {
 		return get_accessibility_element();
 	}
+}
+
+bool Node::has_accessibility_settings() const {
+	return data.accessibility_settings.is_valid();
+}
+
+Ref<AccessibilitySettings> Node::get_accessibility_settings() const {
+	return data.accessibility_settings;
+}
+
+void Node::set_accessibility_settings(const Ref<AccessibilitySettings> &p_settings) {
+	if (data.accessibility_settings == p_settings) {
+		return;
+	}
+	ERR_FAIL_COND(p_settings.is_valid() && p_settings->_get_owner().is_valid());
+
+	if (data.accessibility_settings.is_valid()) {
+		data.accessibility_settings->_invalidate_elements();
+		data.accessibility_settings->_set_owner(ObjectID());
+	}
+	data.accessibility_settings = p_settings;
+	if (data.accessibility_settings.is_valid()) {
+		data.accessibility_settings->_set_owner(get_instance_id());
+	}
+	queue_accessibility_update();
 }
 
 void Node::queue_accessibility_update() {
@@ -3809,6 +3848,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("queue_accessibility_update"), &Node::queue_accessibility_update);
 	ClassDB::bind_method(D_METHOD("get_accessibility_element"), &Node::get_accessibility_element);
+
+	ClassDB::bind_method(D_METHOD("get_accessibility_settings"), &Node::get_accessibility_settings);
+	ClassDB::bind_method(D_METHOD("set_accessibility_settings", "settings"), &Node::set_accessibility_settings);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
@@ -4014,6 +4056,9 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerAPI::get_class_static(), PROPERTY_USAGE_NONE), "", "get_multiplayer");
+
+	ADD_GROUP("Accessibility", "accessibility_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "accessibility_settings", PROPERTY_HINT_RESOURCE_TYPE, AccessibilitySettings::get_class_static()), "set_accessibility_settings", "get_accessibility_settings");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
