@@ -105,7 +105,7 @@ public:
 	};
 #endif // TOOLS_ENABLED
 
-	typedef Pair<TrackType, NodePath> TrackCacheId;
+	typedef Pair<NodePath, TrackType> TrackCacheId;
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
@@ -254,25 +254,7 @@ private:
 
 	LocalVector<Track *> tracks;
 
-	/* For unique track cache ids */
-	struct TypeTrackRef {
-		LocalVector<Track *> references;
-		TypeTrackId id;
-
-		void set_id(TypeTrackId p_id) {
-			id = p_id;
-			for (Track *track : references) {
-				track->unique_id = id;
-			}
-		}
-
-		TypeTrackRef() = default;
-		TypeTrackRef(Track *p_track) {
-			references.push_back(p_track);
-			id = p_track->unique_id;
-		}
-	};
-	static inline AHashMap<TrackCacheId, TypeTrackRef *> track_cache_id_map; // common list for track cache ids among all animations
+	static inline AHashMap<TrackCacheId, LocalVector<Track *> *> track_cache_id_map; // common list for track cache ids among all animations
 	void _track_cache_unref_or_erase(Track *p_track, const TrackCacheId p_track_cache_id);
 	HashSet<int> dirty_tracks;
 	bool update_track_cache_ids = false;

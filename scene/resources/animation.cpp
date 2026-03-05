@@ -1078,24 +1078,27 @@ void Animation::_track_cache_unref_or_erase(Track *p_track, const TrackCacheId p
 		return;
 	}
 
-	TypeTrackRef *ref = track_cache_id_map.get(p_track_cache_id);
-	if (ref->references.size() == 1) {
-		TypeTrackId freed_id = ref->id;
-		memdelete(ref);
+	LocalVector<Track *> *references = track_cache_id_map.get(p_track_cache_id);
+	if (references->size() == 1) {
+		memdelete(references);
 		// When erased, AHashMap moves the last item to the erased location.
 		// We will use this property to reassign the id in order to keep id range minimum
 		int removed_index = track_cache_id_map.get_index(p_track_cache_id);
+		ERR_FAIL_UNSIGNED_INDEX((uint32_t)removed_index, track_cache_id_map.size());
+		TypeTrackId removed_id = removed_index + 1;
 		track_cache_id_map.erase(p_track_cache_id);
 
-		if (freed_id == track_cache_id_map.size() + 1) {
+		if ((uint32_t)removed_index == track_cache_id_map.size()) {
 			// Removed the last item, no need to re-assign item id
 			return;
 		}
 
-		TypeTrackRef *last_item_val = track_cache_id_map.get_by_index(removed_index).value;
-		last_item_val->set_id(freed_id);
+		references = track_cache_id_map.get_by_index(removed_index).value;
+		for (Track *track : *references) {
+			track->unique_id = removed_id;
+		}
 	} else {
-		ref->references.erase(p_track);
+		references->erase(p_track);
 	}
 }
 
@@ -1108,7 +1111,7 @@ void Animation::ensure_unique_ids() {
 	for (int track : dirty_tracks) {
 		const NodePath &track_path = tracks[track]->path;
 		const TrackType &track_cache_type = get_cache_type(tracks[track]->type);
-		const TrackCacheId clean_track_cache_id = TrackCacheId(track_cache_type, track_path);
+		const TrackCacheId clean_track_cache_id = TrackCacheId(track_path, track_cache_type);
 		const TrackCacheId &dirty_track_cache_id = tracks[track]->track_cache_id;
 
 		TypeTrackId &unique_id = tracks[track]->unique_id;
@@ -1117,14 +1120,17 @@ void Animation::ensure_unique_ids() {
 			_track_cache_unref_or_erase(tracks[track], dirty_track_cache_id);
 		}
 
+		LocalVector<Track *> *references;
 		// New entry for this animation. Check if there was a duplicate added from other animations.
 		if (track_cache_id_map.has(clean_track_cache_id)) {
-			TypeTrackRef *ref = track_cache_id_map.get(clean_track_cache_id);
-			unique_id = ref->id;
-			ref->references.push_back(tracks[track]);
+			references = track_cache_id_map.get(clean_track_cache_id);
+			unique_id = track_cache_id_map.get_index(clean_track_cache_id) + 1;
+			references->push_back(tracks[track]);
 		} else {
 			unique_id = track_cache_id_map.size() + 1;
-			track_cache_id_map.insert(clean_track_cache_id, memnew(TypeTrackRef(tracks[track])));
+			references = memnew(LocalVector<Track *>());
+			references->push_back(tracks[track]);
+			track_cache_id_map.insert(clean_track_cache_id, references);
 		}
 		tracks[track]->track_cache_id = clean_track_cache_id;
 	}
