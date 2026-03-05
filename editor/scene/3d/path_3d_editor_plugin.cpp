@@ -42,6 +42,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
 
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {

@@ -32,6 +32,7 @@
 
 #include "../csg.h"
 #include "../csg_shape.h"
+#include "scene/main/scene_tree.h"
 
 #include "tests/test_macros.h"
 

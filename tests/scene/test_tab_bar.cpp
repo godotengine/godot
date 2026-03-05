@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_tab_bar)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "scene/gui/tab_bar.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"

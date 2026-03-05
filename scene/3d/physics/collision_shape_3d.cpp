@@ -35,6 +35,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/vehicle_body_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"

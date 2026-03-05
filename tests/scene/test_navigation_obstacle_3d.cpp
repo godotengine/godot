@@ -37,6 +37,7 @@ TEST_FORCE_LINK(test_navigation_obstacle_3d)
 #ifdef MODULE_NAVIGATION_3D_ENABLED
 
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestNavigationObstacle3D {

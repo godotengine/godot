@@ -66,6 +66,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"

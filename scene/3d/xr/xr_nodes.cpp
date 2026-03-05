@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 

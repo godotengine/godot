@@ -40,6 +40,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/gui/control.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/display/accessibility_server.h"

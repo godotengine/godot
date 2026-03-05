@@ -44,6 +44,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
