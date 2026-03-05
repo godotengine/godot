@@ -33,6 +33,8 @@
 #include "scene/gui/box_container.h"
 #include "scene/main/window.h"
 
+class Button;
+
 class EditorTitleBar : public HBoxContainer {
 	GDCLASS(EditorTitleBar, HBoxContainer);
 
@@ -40,6 +42,16 @@ class EditorTitleBar : public HBoxContainer {
 	bool moving = false;
 	bool can_move = false;
 	Control *center_control = nullptr;
+	HBoxContainer *window_buttons = nullptr;
+	Button *minimize_button = nullptr;
+	Button *maximize_button = nullptr;
+	Button *close_button = nullptr;
+
+	void _ensure_window_buttons();
+	void _update_window_buttons();
+	void _minimize_pressed();
+	void _maximize_pressed();
+	void _close_pressed();
 
 protected:
 	void _notification(int p_what);

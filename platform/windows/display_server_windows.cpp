@@ -120,6 +120,10 @@ static void track_mouse_leave_event(HWND hWnd) {
 	TrackMouseEvent(&tme);
 }
 
+static int _get_titlebar_extend_height_px() {
+	return GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+}
+
 bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
@@ -151,6 +155,7 @@ bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_STATUS_INDICATOR:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
+		case DisplayServerEnums::FEATURE_EXTEND_TO_TITLE:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 			return true;
 		case DisplayServerEnums::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
@@ -2285,7 +2290,9 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Displa
 	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
 	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
 
-	AdjustWindowRectEx(&rc, style, false, exStyle);
+	if (!wd.extend_to_title) {
+		AdjustWindowRectEx(&rc, style, false, exStyle);
+	}
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 	wd.last_pos = p_position;
@@ -2420,7 +2427,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, DisplayServerEnu
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
 
-	if (!wd.borderless) {
+	if (!wd.borderless && !wd.extend_to_title) {
 		RECT crect;
 		GetClientRect(wd.hWnd, &crect);
 
@@ -2766,6 +2773,14 @@ bool DisplayServerWindows::window_is_maximize_allowed(DisplayServerEnums::Window
 	return (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX;
 }
 
+bool DisplayServerWindows::window_maximize_on_title_dbl_click() const {
+	return true;
+}
+
+bool DisplayServerWindows::window_minimize_on_title_dbl_click() const {
+	return false;
+}
+
 void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2796,6 +2811,34 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 			_update_window_mouse_passthrough(p_window);
 			_update_window_style(p_window);
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
+			if (wd.parent_hwnd) {
+				print_line("Embedded windows can't extend to title.");
+				return;
+			}
+			if (wd.extend_to_title == p_enabled) {
+				return;
+			}
+
+			RECT old_rect = {};
+			GetWindowRect(wd.hWnd, &old_rect);
+
+			wd.extend_to_title = p_enabled;
+			const MARGINS margins = p_enabled ? MARGINS{ 0, 0, _get_titlebar_extend_height_px(), 0 } : MARGINS{ 0, 0, 0, 0 };
+			DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
+
+			SetWindowPos(wd.hWnd, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+			RECT new_rect = {};
+			GetWindowRect(wd.hWnd, &new_rect);
+			const int dx = old_rect.left - new_rect.left;
+			const int dy = old_rect.top - new_rect.top;
+			if (dx != 0 || dy != 0) {
+				SetWindowPos(wd.hWnd, nullptr, new_rect.left + dx, new_rect.top + dy, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+			}
+
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top.");
@@ -2890,6 +2933,9 @@ bool DisplayServerWindows::window_get_flag(DisplayServerEnums::WindowFlags p_fla
 		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
 			return wd.borderless;
 		} break;
+		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
+			return wd.extend_to_title;
+		} break;
 		case DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.always_on_top;
 		} break;
@@ -2916,6 +2962,25 @@ bool DisplayServerWindows::window_get_flag(DisplayServerEnums::WindowFlags p_fla
 	}
 
 	return false;
+}
+
+void DisplayServerWindows::window_set_window_buttons_offset(const Vector2i &p_offset, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	(void)p_offset;
+	// Native Windows caption buttons can't be repositioned.
+}
+
+Vector3i DisplayServerWindows::window_get_safe_title_margins(DisplayServerEnums::WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Vector3i());
+	const WindowData &wd = windows[p_window];
+	if (wd.extend_to_title) {
+		return Vector3i(0, 0, _get_titlebar_extend_height_px());
+	}
+	return Vector3i();
 }
 
 void DisplayServerWindows::window_request_attention(DisplayServerEnums::WindowID p_window) {
@@ -5228,9 +5293,89 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				SendMessageW(windows[window_id].hWnd, WM_PAINT, 0, 0);
 			}
 		} break;
+		case WM_NCCALCSIZE: {
+			if (windows[window_id].extend_to_title) {
+				if (wParam) {
+					NCCALCSIZE_PARAMS *params = reinterpret_cast<NCCALCSIZE_PARAMS *>(lParam);
+					if (IsZoomed(hWnd)) {
+						const int frame_x = GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+						const int frame_y = GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+						params->rgrc[0].left += frame_x;
+						params->rgrc[0].right -= frame_x;
+						params->rgrc[0].bottom -= frame_y;
+					}
+				}
+				return 0;
+			}
+		} break;
+		case WM_NCACTIVATE:
+		case WM_NCPAINT:
+		case WM_NCMOUSEMOVE:
+		case WM_NCLBUTTONDOWN:
+		case WM_NCLBUTTONUP:
+		case WM_NCLBUTTONDBLCLK:
+		case WM_NCRBUTTONDOWN:
+		case WM_NCRBUTTONUP:
+		case WM_NCRBUTTONDBLCLK:
+		case WM_NCMBUTTONDOWN:
+		case WM_NCMBUTTONUP:
+		case WM_NCMBUTTONDBLCLK: {
+			if (windows[window_id].extend_to_title) {
+				LRESULT result = 0;
+				if (DwmDefWindowProc(hWnd, uMsg, wParam, lParam, &result)) {
+					return result;
+				}
+			}
+		} break;
 		case WM_NCHITTEST: {
-			if (windows[window_id].mpass) {
+			WindowData &wd = windows[window_id];
+			if (wd.mpass) {
 				return HTTRANSPARENT;
+			}
+
+			if (wd.extend_to_title) {
+				RECT window_rect;
+				GetWindowRect(hWnd, &window_rect);
+
+				const int frame_x = GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+				const int frame_y = GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+				const LONG x = GET_X_LPARAM(lParam);
+				const LONG y = GET_Y_LPARAM(lParam);
+
+				if (!IsZoomed(hWnd) && wd.resizable) {
+					const bool left = x < window_rect.left + frame_x;
+					const bool right = x >= window_rect.right - frame_x;
+					const bool top = y < window_rect.top + frame_y;
+					const bool bottom = y >= window_rect.bottom - frame_y;
+
+					if (top && left) {
+						return HTTOPLEFT;
+					}
+					if (top && right) {
+						return HTTOPRIGHT;
+					}
+					if (bottom && left) {
+						return HTBOTTOMLEFT;
+					}
+					if (bottom && right) {
+						return HTBOTTOMRIGHT;
+					}
+					if (left) {
+						return HTLEFT;
+					}
+					if (right) {
+						return HTRIGHT;
+					}
+					if (top) {
+						return HTTOP;
+					}
+					if (bottom) {
+						return HTBOTTOM;
+					}
+				}
+
+				// Route extend-to-title area input through Godot controls consistently.
+				return HTCLIENT;
 			}
 		} break;
 		case WM_MOUSEACTIVATE: {
@@ -6865,7 +7010,7 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 	WindowRect.top += offset.y;
 	WindowRect.bottom += offset.y;
 
-	if (p_mode != DisplayServerEnums::WINDOW_MODE_FULLSCREEN && p_mode != DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (p_mode != DisplayServerEnums::WINDOW_MODE_FULLSCREEN && p_mode != DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN && !(p_flags & DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT)) {
 		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
@@ -6959,6 +7104,12 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
 			::DwmSetWindowAttribute(wd.hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+		}
+
+		wd.extend_to_title = (p_flags & DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT);
+		if (wd.extend_to_title) {
+			const MARGINS margins = { 0, 0, _get_titlebar_extend_height_px(), 0 };
+			DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
 		}
 
 		RegisterTouchWindow(wd.hWnd, 0);
