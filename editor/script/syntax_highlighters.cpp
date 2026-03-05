@@ -34,6 +34,9 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/resources/shader.h"
+#include "servers/rendering/shader_preprocessor.h"
+#include "servers/rendering/shader_types.h"
 
 String EditorSyntaxHighlighter::_get_name() const {
 	String ret = "Unnamed";
@@ -267,7 +270,7 @@ Ref<EditorSyntaxHighlighter> EditorMarkdownSyntaxHighlighter::_create() const {
 	return syntax_highlighter;
 }
 
-///
+////
 
 void EditorConfigFileSyntaxHighlighter::_update_cache() {
 	highlighter->set_text_edit(text_edit);
@@ -303,6 +306,160 @@ void EditorConfigFileSyntaxHighlighter::_update_cache() {
 
 Ref<EditorSyntaxHighlighter> EditorConfigFileSyntaxHighlighter::_create() const {
 	Ref<EditorConfigFileSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instantiate();
+	return syntax_highlighter;
+}
+
+////
+
+void GDShaderSyntaxHighlighter::_update_cache() {
+	highlighter->set_text_edit(text_edit);
+	highlighter->clear_keyword_colors();
+	highlighter->clear_member_keyword_colors();
+	highlighter->clear_color_regions();
+
+	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
+
+	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+
+	List<String> keywords;
+	ShaderLanguage::get_keyword_list(&keywords);
+
+	for (const String &E : keywords) {
+		if (ShaderLanguage::is_control_flow_keyword(E)) {
+			highlighter->add_keyword_color(E, control_flow_keyword_color);
+		} else {
+			highlighter->add_keyword_color(E, keyword_color);
+		}
+	}
+
+	List<String> pp_keywords;
+	ShaderPreprocessor::get_keyword_list(&pp_keywords, false);
+
+	for (const String &E : pp_keywords) {
+		highlighter->add_keyword_color(E, control_flow_keyword_color);
+	}
+
+	// Colorize comments.
+	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	highlighter->add_color_region("/*", "*/", comment_color, false);
+	highlighter->add_color_region("//", "", comment_color, true);
+
+	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	highlighter->add_color_region("/**", "*/", doc_comment_color, false);
+	// "/**/" will be treated as the start of the "/**" region, this line is guaranteed to end the color_region.
+	highlighter->add_color_region("/**/", "", comment_color, true);
+
+	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
+	set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
+
+	// Colorize preprocessor include strings.
+	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	highlighter->add_color_region("\"", "\"", string_color, false);
+	highlighter->set_uint_suffix_enabled(true);
+
+	// Colorize built-ins like `COLOR` differently to make them easier
+	// to distinguish from keywords at a quick glance.
+
+	Ref<ShaderInclude> shader_inc = _get_edited_resource();
+	Ref<Shader> shader = _get_edited_resource();
+
+	List<HashMap<StringName, ShaderLanguage::FunctionInfo>> functions_list;
+	List<Vector<ShaderLanguage::ModeInfo>> modes_list;
+
+	ShaderTypes *st = ShaderTypes::get_singleton();
+	if (shader_inc.is_valid() || shader.is_valid()) {
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			if (shader_inc.is_null() && shader->get_mode() != i) {
+				continue;
+			}
+			functions_list.push_back(st->get_functions(RSE::ShaderMode(i)));
+			modes_list.push_back(st->get_modes(RSE::ShaderMode(i)));
+			modes_list.push_back(st->get_stencil_modes(RSE::ShaderMode(i)));
+		}
+	}
+
+	List<String> built_ins;
+	for (const HashMap<StringName, ShaderLanguage::FunctionInfo> &functions_map : functions_list) {
+		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : functions_map) {
+			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
+				built_ins.push_back(F.key);
+			}
+		}
+	}
+
+	for (const Vector<ShaderLanguage::ModeInfo> &modes : modes_list) {
+		for (const ShaderLanguage::ModeInfo &mode_info : modes) {
+			if (!mode_info.options.is_empty()) {
+				for (const StringName &option : mode_info.options) {
+					built_ins.push_back(String(mode_info.name) + "_" + String(option));
+				}
+			} else {
+				built_ins.push_back(String(mode_info.name));
+			}
+		}
+	}
+
+	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+
+	for (const String &E : built_ins) {
+		highlighter->add_keyword_color(E, user_type_color);
+	}
+}
+
+Dictionary GDShaderSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
+	Dictionary color_map;
+
+	for (const Point2i &region : disabled_branch_regions) {
+		if (p_line >= region.x && p_line <= region.y) {
+			// When "color_regions[0].p_start_key.length() > 2",
+			// disabled_branch_region causes color_region to break.
+			// This should be seen as a temporary solution.
+			highlighter->get_line_syntax_highlighting(p_line);
+
+			Dictionary highlighter_info;
+			highlighter_info["color"] = disabled_branch_color;
+
+			color_map[0] = highlighter_info;
+			return color_map;
+		}
+	}
+
+	return highlighter->get_line_syntax_highlighting(p_line);
+}
+
+void GDShaderSyntaxHighlighter::add_disabled_branch_region(const Point2i &p_region) {
+	ERR_FAIL_COND(p_region.x < 0);
+	ERR_FAIL_COND(p_region.y < 0);
+
+	for (const Point2i &disabled_branch_region : disabled_branch_regions) {
+		ERR_FAIL_COND_MSG(disabled_branch_region.x == p_region.x, "Branch region with a start line '" + itos(p_region.x) + "' already exists.");
+	}
+
+	Point2i disabled_branch_region;
+	disabled_branch_region.x = p_region.x;
+	disabled_branch_region.y = p_region.y;
+	disabled_branch_regions.push_back(disabled_branch_region);
+
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::clear_disabled_branch_regions() {
+	disabled_branch_regions.clear();
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::set_disabled_branch_color(const Color &p_color) {
+	disabled_branch_color = p_color;
+	clear_highlighting_cache();
+}
+
+Ref<EditorSyntaxHighlighter> GDShaderSyntaxHighlighter::_create() const {
+	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
 	syntax_highlighter.instantiate();
 	return syntax_highlighter;
 }

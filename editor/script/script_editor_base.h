@@ -36,6 +36,7 @@
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
+class ScriptEditor;
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -46,6 +47,17 @@ protected:
 	static void _bind_methods();
 
 public:
+	class EditMenusBase : public HBoxContainer {
+		GDCLASS(EditMenusBase, HBoxContainer);
+
+	protected:
+		ScriptEditor *se = nullptr;
+
+	public:
+		void set_script_editor(ScriptEditor *p_se) { se = p_se; }
+		virtual bool handles(ScriptEditorBase *p_seb) = 0;
+	};
+
 	struct EditedFileData {
 		String path;
 		uint64_t last_modified_time = -1;
@@ -58,6 +70,8 @@ public:
 	virtual void update_toggle_files_button() = 0;
 
 	virtual bool show_members_overview() { return false; }
+
+	virtual void ensure_focus() = 0;
 
 	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
 	virtual Ref<Resource> get_edited_resource() const { return edited_res; }
@@ -75,8 +89,6 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resou
 
 class TextEditorBase : public ScriptEditorBase {
 	GDCLASS(TextEditorBase, ScriptEditorBase);
-
-	void _post_init();
 
 protected:
 	enum {
@@ -125,8 +137,8 @@ protected:
 		BASE_ENUM_COUNT,
 	};
 
-	class EditMenus : public HBoxContainer {
-		GDCLASS(EditMenus, HBoxContainer);
+	class EditMenus : public EditMenusBase {
+		GDCLASS(EditMenus, EditMenusBase);
 
 	protected:
 		MenuButton *edit_menu = nullptr;
@@ -159,8 +171,6 @@ protected:
 		}
 	}
 
-	static inline EditMenus *edit_menus = nullptr;
-
 	bool editor_enabled = false;
 	CodeTextEditor *code_editor = nullptr;
 
@@ -169,7 +179,6 @@ protected:
 	LocalVector<Ref<EditorSyntaxHighlighter>> highlighters;
 
 	PopupMenu *context_menu = nullptr;
-	MenuButton *search_menu = nullptr;
 
 	void _make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position = Vector2(0, 0), bool p_show = true);
 	void _show_context_menu(const Vector2 &p_position);
@@ -194,14 +203,14 @@ public:
 	virtual void reload_text();
 	virtual void enable_editor();
 
-	virtual Control *get_edit_menu() = 0;
+	virtual EditMenusBase *create_edit_menu() = 0;
 
 	virtual Control *get_base_editor() const override { return code_editor->get_text_editor(); }
 	virtual CodeTextEditor *get_code_editor() const { return code_editor; }
 
 	virtual void set_tooltip_request_func(const Callable &p_toolip_callback);
 
-	virtual void ensure_focus() { code_editor->get_text_editor()->grab_focus(); }
+	virtual void ensure_focus() override { code_editor->get_text_editor()->grab_focus(); }
 	virtual void convert_indent() { code_editor->get_text_editor()->convert_indent(); }
 
 	virtual void trim_trailing_whitespace() { code_editor->trim_trailing_whitespace(); }
@@ -253,8 +262,11 @@ protected:
 	VSplitContainer *editor_box = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
 
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) = 0;
 	virtual bool _warning_clicked(const Variant &p_line);
+
+	void _make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position = Vector2(0, 0), bool p_show = true);
 
 public:
 	virtual bool show_members_overview() override { return true; }
