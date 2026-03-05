@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/text/text_server.h"
