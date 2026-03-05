@@ -1074,6 +1074,19 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 	update_palette();
 }
 
+void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (categories->is_visible()) {
+		item_palette_mc->set_theme_type_variation("");
+		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
+		mesh_library_palette->set_theme_type_variation("ItemListSecondary");
+	} else {
+		bool is_bottom = p_slot == EditorDock::DOCK_SLOT_BOTTOM;
+		item_palette_mc->set_theme_type_variation(is_bottom ? "NoBorderHorizontal" : "NoBorderHorizontalBottom");
+		mesh_library_palette->set_scroll_hint_mode(is_bottom ? ItemList::SCROLL_HINT_MODE_BOTH : ItemList::SCROLL_HINT_MODE_TOP);
+		mesh_library_palette->set_theme_type_variation("");
+	}
+}
+
 void GridMapEditor::update_palette() {
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
@@ -1183,9 +1196,7 @@ void GridMapEditor::_rebuild_categories() {
 
 	if (mesh_library.is_null()) {
 		categories->hide();
-		item_palette_mc->set_theme_type_variation("NoBorderBottomPanel");
-		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-		mesh_library_palette->set_theme_type_variation("");
+		update_layout(get_current_layout(), get_current_slot());
 
 		return;
 	}
@@ -1254,12 +1265,10 @@ void GridMapEditor::_rebuild_categories() {
 				item_mapping);
 	}
 
-	bool has_categories = !root_categories.is_empty();
-	categories->set_visible(has_categories); // Only show the category tree if there are categories present.
-	item_palette_mc->set_theme_type_variation(has_categories ? "" : "NoBorderBottomPanel");
-	mesh_library_palette->set_scroll_hint_mode(has_categories ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_BOTH);
-	mesh_library_palette->set_theme_type_variation(has_categories ? "ItemListSecondary" : "");
+	// Only show the category tree if there are categories present.
+	categories->set_visible(!root_categories.is_empty());
 
+	update_layout(get_current_layout(), get_current_slot());
 	update_palette();
 }
 
