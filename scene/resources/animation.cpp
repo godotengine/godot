@@ -999,7 +999,7 @@ void Animation::remove_track(int p_track) {
 		} break;
 	}
 
-	_track_cache_unref_or_erase(tracks[p_track], tracks[p_track]->track_cache_id);
+	_track_cache_unref_or_erase(tracks[p_track], track_cache_id_map.get_index(tracks[p_track]->track_cache_id));
 
 	memdelete(t);
 	tracks.remove_at(p_track);
@@ -1073,27 +1073,27 @@ void Animation::_track_update_unique_ids(int p_track) {
 	callable_mp(this, &Animation::ensure_unique_ids).call_deferred();
 }
 
-void Animation::_track_cache_unref_or_erase(Track *p_track, const TrackCacheId p_track_cache_id) {
-	if (p_track_cache_id == TrackCacheId()) {
+void Animation::_track_cache_unref_or_erase(Track *p_track, const int &p_track_cache_index) {
+	if (p_track_cache_index == -1) {
 		return;
 	}
 
-	LocalVector<Track *> *references = track_cache_id_map.get(p_track_cache_id);
+	LocalVector<Track *> *references = track_cache_id_map.get_by_index(p_track_cache_index).value;
+	TrackCacheId key = track_cache_id_map.get_by_index(p_track_cache_index).key;
 	if (references->size() == 1) {
 		memdelete(references);
 		// When erased, AHashMap moves the last item to the erased location.
 		// We will use this property to reassign the id in order to keep id range minimum
-		int removed_index = track_cache_id_map.get_index(p_track_cache_id);
-		ERR_FAIL_UNSIGNED_INDEX((uint32_t)removed_index, track_cache_id_map.size());
-		TypeTrackId removed_id = removed_index + 1;
-		track_cache_id_map.erase(p_track_cache_id);
+		TypeTrackId removed_id = p_track_cache_index + 1;
+		track_cache_id_map.erase(key);
 
-		if ((uint32_t)removed_index == track_cache_id_map.size()) {
+		if ((uint32_t)p_track_cache_index == track_cache_id_map.size()) {
 			// Removed the last item, no need to re-assign item id
 			return;
 		}
 
-		references = track_cache_id_map.get_by_index(removed_index).value;
+		// Update the moved tracks' ids
+		references = track_cache_id_map.get_by_index(p_track_cache_index).value;
 		for (Track *track : *references) {
 			track->unique_id = removed_id;
 		}
@@ -1111,28 +1111,30 @@ void Animation::ensure_unique_ids() {
 	for (int track : dirty_tracks) {
 		const NodePath &track_path = tracks[track]->path;
 		const TrackType &track_cache_type = get_cache_type(tracks[track]->type);
-		const TrackCacheId clean_track_cache_id = TrackCacheId(track_path, track_cache_type);
-		const TrackCacheId &dirty_track_cache_id = tracks[track]->track_cache_id;
+		const TrackCacheId new_track_cache_id = TrackCacheId(track_path, track_cache_type);
+		const TrackCacheId &old_track_cache_id = tracks[track]->track_cache_id;
 
 		TypeTrackId &unique_id = tracks[track]->unique_id;
-		if (unique_id != 0 && track_cache_id_map.has(dirty_track_cache_id)) {
+		if (unique_id != 0) {
 			// Updating because of a path or type change.
-			_track_cache_unref_or_erase(tracks[track], dirty_track_cache_id);
+			const int &index = track_cache_id_map.get_index(old_track_cache_id);
+			_track_cache_unref_or_erase(tracks[track], index);
 		}
 
-		LocalVector<Track *> *references;
 		// New entry for this animation. Check if there was a duplicate added from other animations.
-		if (track_cache_id_map.has(clean_track_cache_id)) {
-			references = track_cache_id_map.get(clean_track_cache_id);
-			unique_id = track_cache_id_map.get_index(clean_track_cache_id) + 1;
-			references->push_back(tracks[track]);
-		} else {
-			unique_id = track_cache_id_map.size() + 1;
+		LocalVector<Track *> *references;
+		const int &index = track_cache_id_map.get_index(new_track_cache_id);
+		if (index == -1) {
+			unique_id = track_cache_id_map.size() + 1; // +1 to prevent id = 0.
 			references = memnew(LocalVector<Track *>());
 			references->push_back(tracks[track]);
-			track_cache_id_map.insert(clean_track_cache_id, references);
+			track_cache_id_map.insert(new_track_cache_id, references);
+		} else {
+			unique_id = index + 1; // +1 to prevent id = 0.
+			references = track_cache_id_map.get_by_index(index).value;
+			references->push_back(tracks[track]);
 		}
-		tracks[track]->track_cache_id = clean_track_cache_id;
+		tracks[track]->track_cache_id = new_track_cache_id;
 	}
 
 	dirty_tracks.clear();
@@ -6619,7 +6621,7 @@ Animation::Animation() {
 
 Animation::~Animation() {
 	for (uint32_t i = 0; i < tracks.size(); i++) {
-		_track_cache_unref_or_erase(tracks[i], tracks[i]->track_cache_id);
+		_track_cache_unref_or_erase(tracks[i], track_cache_id_map.get_index(tracks[i]->track_cache_id));
 		memdelete(tracks[i]);
 	}
 }

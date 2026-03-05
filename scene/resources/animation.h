@@ -255,7 +255,7 @@ private:
 	LocalVector<Track *> tracks;
 
 	static inline AHashMap<TrackCacheId, LocalVector<Track *> *> track_cache_id_map; // common list for track cache ids among all animations
-	void _track_cache_unref_or_erase(Track *p_track, const TrackCacheId p_track_cache_id);
+	void _track_cache_unref_or_erase(Track *p_track, const int &p_track_cache_index);
 	HashSet<int> dirty_tracks;
 	bool update_track_cache_ids = false;
 
