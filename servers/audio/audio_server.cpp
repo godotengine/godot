@@ -1205,6 +1205,13 @@ bool AudioServer::is_bus_effect_enabled(int p_bus, int p_effect) const {
 	return buses[p_bus]->effects[p_effect].enabled;
 }
 
+void AudioServer::refresh_bus_effects(int p_bus) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+	lock();
+	_update_bus_effects(p_bus);
+	unlock();
+}
+
 float AudioServer::get_bus_peak_volume_left_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
@@ -2073,6 +2080,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_effect_enabled", "bus_idx", "effect_idx", "enabled"), &AudioServer::set_bus_effect_enabled);
 	ClassDB::bind_method(D_METHOD("is_bus_effect_enabled", "bus_idx", "effect_idx"), &AudioServer::is_bus_effect_enabled);
+	ClassDB::bind_method(D_METHOD("refresh_bus_effects", "bus_idx"), &AudioServer::refresh_bus_effects);
 
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_left_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_left_db);
 	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_right_db", "bus_idx", "channel"), &AudioServer::get_bus_peak_volume_right_db);

@@ -247,6 +247,13 @@
 				Moves the bus from index [param index] to index [param to_index].
 			</description>
 		</method>
+		<method name="refresh_bus_effects">
+			<return type="void" />
+			<param index="0" name="bus_idx" type="int" />
+			<description>
+				Recreates effect instances for the bus at [param bus_idx]. Call this after changing effect parameters so that the updated values take effect immediately (e.g. when syncing bus state from the editor to a running project).
+			</description>
+		</method>
 		<method name="register_stream_as_sample" experimental="">
 			<return type="void" />
 			<param index="0" name="stream" type="AudioStream" />

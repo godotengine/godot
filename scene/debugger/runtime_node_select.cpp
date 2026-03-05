@@ -41,6 +41,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_mp.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
@@ -310,6 +311,10 @@ void RuntimeNodeSelect::_update_input_state() {
 }
 
 void RuntimeNodeSelect::_process_frame() {
+#ifdef DEBUG_ENABLED
+	// Stream audio peaks to the editor UI at low frequency.
+	SceneDebugger::send_audio_peaks();
+#endif
 #ifndef _3D_DISABLED
 	if (camera_freelook) {
 		Transform3D transform = _get_cursor_transform();
