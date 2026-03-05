@@ -1761,6 +1761,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
+		style_bottom_panel->set_content_margin_all(p_config.tab_container_style->get_content_margin(SIDE_LEFT));
 		style_bottom_panel->set_border_width(SIDE_BOTTOM, 0);
 		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
@@ -2034,25 +2035,22 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			margin = -panel_margin - p_config.base_margin;
 
 			// Same as above, but with the margins adapted for the project manager.
-			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "NoBorderHorizontal");
+			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
 			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
 			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
 
-			int bottom_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
-			margin = -bottom_margin;
-
-			// Used in editors residing in the bottom panel.
-			p_theme->set_type_variation("NoBorderBottomPanel", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderBottomPanel", margin);
-			p_theme->set_constant("margin_right", "NoBorderBottomPanel", margin);
-
-			margin = -panel_margin - bottom_margin;
+			int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			margin = -panel_margin - bottom_panel_margin;
 
 			// Used in the animation track editor.
 			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
 			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
+
+			// Used in the OpenXR action map editor.
+			p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
+			p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
 
 			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
 

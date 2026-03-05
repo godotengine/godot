@@ -414,6 +414,16 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
+void TileSetEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	} else {
+		patterns_mc->set_theme_type_variation("NoBorderHorizontal");
+		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	}
+}
+
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(tile_set.is_null());
 
@@ -958,7 +968,7 @@ TileSetEditor::TileSetEditor() {
 
 	patterns_mc = memnew(MarginContainer);
 	patterns_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_mc->set_theme_type_variation("NoBorderBottomPanel");
+	patterns_mc->set_theme_type_variation("NoBorderHorizontal");
 	main_vb->add_child(patterns_mc);
 	patterns_mc->hide();
 

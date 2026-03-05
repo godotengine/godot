@@ -263,6 +263,11 @@ ReplicationEditor::ReplicationEditor() {
 	pin->set_tooltip_text(TTRC("Pin replication editor"));
 	hb->add_child(pin);
 
+	tree_mc = memnew(MarginContainer);
+	tree_mc->set_theme_type_variation("NoBorderHorizontal");
+	tree_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_child(tree_mc);
+
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_columns(4);
@@ -279,8 +284,8 @@ ReplicationEditor::ReplicationEditor() {
 	tree->create_item();
 	tree->connect("button_clicked", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
 	tree->connect("item_edited", callable_mp(this, &ReplicationEditor::_tree_item_edited));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_child(tree);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	tree_mc->add_child(tree);
 
 	drop_label = memnew(Label(TTRC("Add properties using the options above, or\ndrag them from the inspector and drop them here.")));
 	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -523,6 +528,16 @@ void ReplicationEditor::_update_config() {
 	for (int i = 0; i < props.size(); i++) {
 		const NodePath path = props[i];
 		_add_property(path, config->property_get_spawn(path), config->property_get_replication_mode(path));
+	}
+}
+
+void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
+	} else {
+		tree_mc->set_theme_type_variation("NoBorderHorizontal");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 	}
 }
 

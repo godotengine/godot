@@ -870,19 +870,13 @@ void FindInFilesPanel::stop_search() {
 	_cancel_button->hide();
 }
 
-void FindInFilesPanel::update_layout(EditorDock::DockLayout p_layout) {
-	bool new_floating = (p_layout == EditorDock::DOCK_LAYOUT_FLOATING);
-	if (_floating == new_floating) {
-		return;
-	}
-	_floating = new_floating;
-
-	if (_floating) {
-		_results_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-		_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-	} else {
+void FindInFilesPanel::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		_results_mc->set_theme_type_variation("NoBorderHorizontal");
 		_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	} else {
+		_results_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	}
 }
 
@@ -1443,11 +1437,11 @@ void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPan
 	}
 }
 
-void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout) {
+void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
 	for (Node *node : _tabs->iterate_children()) {
 		FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(node);
 		if (panel) {
-			panel->update_layout(p_layout);
+			panel->update_layout(p_layout, p_slot);
 		}
 	}
 }

@@ -53,7 +53,6 @@ class ResourcePreloaderEditor : public EditorDock {
 	MarginContainer *mc = nullptr;
 	Tree *tree = nullptr;
 
-	bool horizontal = false;
 	bool loading_scene = false;
 
 	EditorFileDialog *file = nullptr;
@@ -78,7 +77,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 
 public:
 	void edit(ResourcePreloader *p_preloader);

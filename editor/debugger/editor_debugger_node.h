@@ -164,6 +164,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
+
 public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
 	void register_undo_redo(UndoRedo *p_undo_redo);

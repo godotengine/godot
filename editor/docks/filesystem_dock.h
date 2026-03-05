@@ -187,6 +187,7 @@ private:
 	DisplayMode old_display_mode;
 
 	bool horizontal = false;
+	bool touches_bottom = false;
 
 	PopupMenu *file_list_popup = nullptr;
 	PopupMenu *tree_popup = nullptr;
@@ -396,7 +397,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 

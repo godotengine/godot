@@ -37,7 +37,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -64,21 +63,24 @@ void OpenXRActionMapEditor::_bind_methods() {
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			const String theme_style = EDITOR_GET("interface/theme/style");
-			tabs->set_theme_type_variation(theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner");
-
-			for (int i = 0; i < tabs->get_child_count(); i++) {
-				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
-				if (tab) {
-					tab->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-				}
-			}
+			const bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+			tabs->set_theme_type_variation(is_theme_classic ? "TabContainerOdd" : "TabContainerInner");
 		} break;
 
 		case NOTIFICATION_READY: {
 			_create_action_sets();
 			_create_interaction_profiles();
 		} break;
+	}
+}
+
+void OpenXRActionMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		actionsets_mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	} else {
+		actionsets_mc->set_theme_type_variation("NoBorderOpenXR");
+		actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	}
 }
 
@@ -493,12 +495,17 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
 	main_vb->add_child(tabs);
 
+	actionsets_mc = memnew(MarginContainer);
+	actionsets_mc->set_theme_type_variation("NoBorderOpenXR");
+	tabs->add_child(actionsets_mc);
+	actionsets_mc->set_name(TTRC("Action Sets"));
+
 	actionsets_scroll = memnew(ScrollContainer);
 	actionsets_scroll->set_h_size_flags(SIZE_EXPAND_FILL);
 	actionsets_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	actionsets_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	tabs->add_child(actionsets_scroll);
-	actionsets_scroll->set_name(TTR("Action Sets"));
+	actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	actionsets_mc->add_child(actionsets_scroll);
 
 	actionsets_vb = memnew(VBoxContainer);
 	actionsets_vb->set_h_size_flags(SIZE_EXPAND_FILL);

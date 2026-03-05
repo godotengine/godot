@@ -59,6 +59,8 @@ private:
 
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
+
+	MarginContainer *tree_mc = nullptr;
 	Tree *tree = nullptr;
 
 	PropertySelector *prop_selector = nullptr;
@@ -91,9 +93,10 @@ private:
 	void _add_sync_property(String p_path);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _notification(int p_what);
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 
 public:
 	void edit(MultiplayerSynchronizer *p_object);

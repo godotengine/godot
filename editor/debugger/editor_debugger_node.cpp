@@ -238,6 +238,12 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
 }
 
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->update_layout(p_layout, p_slot);
+	});
+}
+
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
 	p_undo_redo->set_method_notify_callback(_methods_changed, this);
 	p_undo_redo->set_property_notify_callback(_properties_changed, this);

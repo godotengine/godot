@@ -187,7 +187,7 @@ public:
 	void start_search();
 	void stop_search();
 
-	void update_layout(EditorDock::DockLayout p_layout);
+	void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot);
 
 protected:
 	static void _bind_methods();
@@ -247,7 +247,6 @@ private:
 	LineEdit *_replace_line_edit = nullptr;
 	Button *_replace_all_button = nullptr;
 
-	bool _floating = false;
 	MarginContainer *_results_mc = nullptr;
 };
 
@@ -290,7 +289,7 @@ protected:
 	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
 	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 
 public:
 	FindInFilesContainer();

@@ -2155,8 +2155,8 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 	edited_tile_map_layer_id = p_tile_map_layer_id;
 }
 
-void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout) {
-	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
+void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	bool is_vertical = (p_layout == EditorDock::DOCK_LAYOUT_VERTICAL);
 	atlas_sources_split_container->set_vertical(is_vertical);
 	atlas_sources_split_container->move_child(split_container_left_side, is_vertical ? -1 : 0);
 	split_container_left_side->set_vertical(!is_vertical);
@@ -2171,11 +2171,11 @@ void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layou
 	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
 	scatter_controls_container->reparent(is_vertical ? wide_toolbar : tools_settings);
 
-	if (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_FLOATING) {
+	if (p_layout == EditorDock::DOCK_LAYOUT_FLOATING || (!is_vertical && p_slot != EditorDock::DOCK_SLOT_BOTTOM)) {
 		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
 	} else {
-		patterns_mc->set_theme_type_variation(is_vertical ? "" : "NoBorderBottomPanel");
+		patterns_mc->set_theme_type_variation(is_vertical ? "" : "NoBorderHorizontal");
 		patterns_item_list->set_scroll_hint_mode(is_vertical ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_BOTH);
 	}
 	patterns_item_list->set_theme_type_variation(is_vertical ? "ItemListSecondary" : "");
@@ -3497,7 +3497,7 @@ void TileMapLayerEditorTerrainsPlugin::edit(ObjectID p_edited_tile_map_layer_id)
 	}
 }
 
-void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout) {
+void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	// Main Panel.
 	main_box_container->set_vertical(is_vertical);
@@ -4477,7 +4477,7 @@ void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
 	}
 }
 
-void TileMapLayerEditor::update_layout(DockLayout p_layout) {
+void TileMapLayerEditor::update_layout(DockLayout p_layout, DockSlot p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);
@@ -4503,7 +4503,7 @@ void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 
 	// Propagate layout change to sub plugins
 	for (TileMapLayerSubEditorPlugin *tab_plugin : tabs_plugins) {
-		tab_plugin->update_layout(p_layout);
+		tab_plugin->update_layout(p_layout, p_slot);
 	}
 }
 
