@@ -1200,9 +1200,11 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
-		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
-		</member>
 		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
+			The name of the Godot plugin used to provide VCS from within the editor.
+		</member>
+		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the VCS plugin set in [member editor/version_control/plugin_name] is automatically loaded when the project is opened.
 		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
@@ -3400,16 +3402,8 @@
 		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
 			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa_3d] for multi-sample antialiasing, which is significantly cheaper but only smooths the edges of polygons.
 		</member>
-		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
 			Enable the shader cache, which stores compiled shaders to disk to prevent stuttering from shader compilation the next time the shader is needed.
-		</member>
-		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.

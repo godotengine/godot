@@ -1140,18 +1140,6 @@ const String &ShaderRD::get_shader_cache_res_dir() {
 	return shader_cache_res_dir;
 }
 
-void ShaderRD::set_shader_cache_save_compressed(bool p_enable) {
-	shader_cache_save_compressed = p_enable;
-}
-
-void ShaderRD::set_shader_cache_save_compressed_zstd(bool p_enable) {
-	shader_cache_save_compressed_zstd = p_enable;
-}
-
-void ShaderRD::set_shader_cache_save_debug(bool p_enable) {
-	shader_cache_save_debug = p_enable;
-}
-
 Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &p_stage_sources, const Vector<uint64_t> &p_dynamic_buffers) {
 	RD::ShaderStageSPIRVData stage;
 	Vector<RD::ShaderStageSPIRVData> stages;
@@ -1225,9 +1213,6 @@ PackedByteArray ShaderRD::save_shader_cache_bytes(const LocalVector<int> &p_vari
 
 String ShaderRD::shader_cache_user_dir;
 String ShaderRD::shader_cache_res_dir;
-bool ShaderRD::shader_cache_save_compressed = true;
-bool ShaderRD::shader_cache_save_compressed_zstd = true;
-bool ShaderRD::shader_cache_save_debug = true;
 
 ShaderRD::~ShaderRD() {
 	LocalVector<RID> remaining = version_owner.get_owned_list();
