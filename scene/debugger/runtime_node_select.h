@@ -155,6 +155,7 @@ private:
 	bool invert_y_axis = false;
 	bool warped_mouse_panning_3d = false;
 
+	bool freelook_invert_y_axis = false;
 	real_t freelook_base_speed = 0;
 	real_t freelook_sensitivity = 0;
 	real_t orbit_sensitivity = 0;

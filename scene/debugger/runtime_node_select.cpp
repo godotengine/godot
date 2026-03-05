@@ -129,6 +129,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	invert_y_axis = p_settings.get("editors/3d/navigation/invert_y_axis", false);
 	warped_mouse_panning_3d = p_settings.get("editors/3d/navigation/warped_mouse_panning", true);
 
+	freelook_invert_y_axis = p_settings.get("editors/3d/freelook/freelook_invert_y_axis", false);
 	freelook_base_speed = p_settings.get("editors/3d/freelook/freelook_base_speed", 5);
 	freelook_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/freelook/freelook_sensitivity", 0.25));
 	orbit_sensitivity = Math::deg_to_rad((real_t)p_settings.get("editors/3d/navigation_feel/orbit_sensitivity", 0.004));
@@ -1526,7 +1527,7 @@ void RuntimeNodeSelect::_cursor_look(Ref<InputEventWithModifiers> p_event) {
 	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(), root->get_size()));
 	const Transform3D prev_camera_transform = _get_cursor_transform();
 
-	if (invert_y_axis) {
+	if (freelook_invert_y_axis) {
 		cursor.x_rot -= relative.y * freelook_sensitivity;
 	} else {
 		cursor.x_rot += relative.y * freelook_sensitivity;
