@@ -3501,9 +3501,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 			}
 
-			bool show_info = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION));
-			if (show_info != info_panel->is_visible()) {
-				info_panel->set_visible(show_info);
+			if (show_information != info_panel->is_visible()) {
+				info_panel->set_visible(show_information);
 			}
 
 			Camera3D *current_camera;
@@ -3514,7 +3513,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				current_camera = camera;
 			}
 
-			if (show_info) {
+			if (show_information) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x * viewport->get_scaling_3d_scale(), viewport->get_size().y * viewport->get_scaling_3d_scale());
 				String text;
 				text += vformat(TTR("X: %s"), rtos(current_camera->get_position().x).pad_decimals(1)) + "\n";
@@ -3535,11 +3534,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			// FPS Counter.
-			bool show_fps = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
-
-			if (show_fps != frame_time_panel->is_visible()) {
-				frame_time_panel->set_visible(show_fps);
-				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
+			if (show_frame_time != frame_time_panel->is_visible()) {
+				frame_time_panel->set_visible(show_frame_time);
+				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_frame_time);
 				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 					// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
 					cpu_time_history[i] = 8.333333;
@@ -3548,7 +3545,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				cpu_time_history_index = 0;
 				gpu_time_history_index = 0;
 			}
-			if (show_fps) {
+			if (show_frame_time) {
 				cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());
 				cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;
 				double cpu_time = 0.0;
@@ -4315,12 +4312,13 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			view_display_menu->get_popup()->set_item_checked(idx, !current);
-
+			show_information = !current;
 		} break;
 		case VIEW_FRAME_TIME: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_FRAME_TIME);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			view_display_menu->get_popup()->set_item_checked(idx, !current);
+			show_frame_time = !current;
 		} break;
 		case VIEW_GRID: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_GRID);
