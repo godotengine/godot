@@ -336,6 +336,19 @@ void FileDialog::_notification(int p_what) {
 	}
 }
 
+void FileDialog::_input_from_window(const Ref<InputEvent> &p_event) {
+	if (p_event.is_valid() && p_event->is_pressed() && !p_event->is_echo()) {
+		// Previous/next shortcuts need to be implemented here instead of using Button's shortcut property.
+		if (action_shortcuts[ITEM_MENU_PREVIOUS]->matches_event(p_event)) {
+			_go_back();
+			set_input_as_handled();
+		} else if (action_shortcuts[ITEM_MENU_NEXT]->matches_event(p_event)) {
+			_go_forward();
+			set_input_as_handled();
+		}
+	}
+}
+
 void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (p_event.is_null() || p_event->is_released() || p_event->is_echo()) {
 		return;
@@ -2318,6 +2331,8 @@ FileDialog::FileDialog() {
 	}
 
 	action_shortcuts[ITEM_MENU_DELETE] = Shortcut::make_from_action("ui_filedialog_delete");
+	action_shortcuts[ITEM_MENU_PREVIOUS] = Shortcut::make_from_action("ui_filedialog_previous");
+	action_shortcuts[ITEM_MENU_NEXT] = Shortcut::make_from_action("ui_filedialog_next");
 	action_shortcuts[ITEM_MENU_GO_UP] = Shortcut::make_from_action("ui_filedialog_up_one_level");
 	action_shortcuts[ITEM_MENU_REFRESH] = Shortcut::make_from_action("ui_filedialog_refresh");
 	action_shortcuts[ITEM_MENU_TOGGLE_HIDDEN] = Shortcut::make_from_action("ui_filedialog_show_hidden");
@@ -2337,12 +2352,14 @@ FileDialog::FileDialog() {
 	dir_prev = memnew(Button);
 	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_prev->set_tooltip_text(ETR("Go to previous folder."));
+	dir_prev->set_shortcut(action_shortcuts[ITEM_MENU_PREVIOUS]);
 	top_toolbar->add_child(dir_prev);
 	dir_prev->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_back));
 
 	dir_next = memnew(Button);
 	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(ETR("Go to next folder."));
+	dir_next->set_shortcut(action_shortcuts[ITEM_MENU_NEXT]);
 	top_toolbar->add_child(dir_next);
 	dir_next->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_forward));
 
