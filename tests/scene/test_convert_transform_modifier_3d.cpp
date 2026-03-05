@@ -37,6 +37,7 @@ TEST_FORCE_LINK(test_convert_transform_modifier_3d)
 #include "core/math/random_number_generator.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/convert_transform_modifier_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestConvertTransformModifier3D {

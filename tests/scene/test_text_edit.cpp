@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_text_edit)
 
 #include "core/input/input_map.h"
 #include "scene/gui/text_edit.h"
+#include "scene/main/scene_tree.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
 

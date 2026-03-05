@@ -44,6 +44,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"

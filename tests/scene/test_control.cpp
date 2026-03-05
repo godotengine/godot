@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_control)
 #include "core/input/input_map.h" // IWYU pragma: keep // Used by `SEND_GUI_ACTION` macro.
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"

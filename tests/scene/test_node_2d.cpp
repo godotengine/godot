@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_node_2d)
 
 #include "scene/2d/node_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestNode2D {
