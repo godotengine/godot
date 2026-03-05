@@ -31,6 +31,7 @@
 #include "editor_title_bar.h"
 
 #include "core/object/callable_mp.h"
+#include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
