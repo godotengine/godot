@@ -59,6 +59,7 @@ class RDPipelineColorBlendState;
 class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
 class RDAccelerationStructureGeometry;
+class RDAccelerationStructureInstance;
 
 class RenderingDevice : public RenderingDeviceCommons {
 	GDCLASS(RenderingDevice, Object)
@@ -297,7 +298,6 @@ public:
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
 		CALLBACK_RESOURCE_USAGE_GENERAL,
-		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT,
 		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
 		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
 		CALLBACK_RESOURCE_USAGE_MAX
@@ -1158,6 +1158,7 @@ private:
 		HashMap<RID, RDG::ResourceUsage> untracked_usage;
 		LocalVector<SharedTexture> shared_textures_to_update;
 		LocalVector<RID> pending_clear_textures;
+		Vector<RID> acceleration_structures; // Used for validation.
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
@@ -1291,24 +1292,40 @@ private:
 	/**** ACCELERATION STRUCTURE ****/
 	/********************************/
 
-	struct InstancesBuffer {
-		Buffer buffer;
-		uint32_t instance_count;
-		Vector<RID> blases;
-	};
-
 	struct AccelerationStructure {
+		// --- Shared ---
 		RDD::AccelerationStructureID driver_id;
-		RDD::AccelerationStructureType type = RDD::ACCELERATION_STRUCTURE_TYPE_BLAS;
+		RDD::AccelerationStructureType type = {};
 		RDG::ResourceTracker *draw_tracker = nullptr;
-		Vector<RDG::ResourceTracker *> draw_trackers;
-		HashSet<RID> untracked_buffers;
+
+		// BLAS/TLAS are weakly linked, as opposed to RD dependencies.
+		HashSet<RID> acceleration_structure_dependencies;
+		bool invalidated = true;
 
 		// Scratch buffer used during build, owned by the AS.
 		RDD::BufferID scratch_buffer;
+
+		// --- Bottom Level ---
+		Vector<RDG::ResourceTracker *> draw_trackers;
+		HashSet<RID> untracked_buffers;
+
+		// --- Top Level ---
+		uint32_t max_instance_count = 0;
+
+		struct InstanceBuffer {
+			RDD::BufferID driver_id;
+			uint64_t frame_used = 0;
+			uint32_t used_size = 0;
+			uint8_t *data_ptr = nullptr;
+		};
+
+		LocalVector<InstanceBuffer> instance_buffers;
 	};
 
-	RID_Owner<InstancesBuffer, true> instances_buffer_owner;
+	Error _acceleration_structure_scratch_buffer_create(AccelerationStructure *p_acceleration_structure);
+	void _blas_remove_tlas_dependencies(AccelerationStructure *p_blas, RID p_blas_id);
+	void _tlas_remove_blas_dependencies(AccelerationStructure *p_tlas, RID p_tlas_id);
+
 	RID_Owner<AccelerationStructure, true> acceleration_structure_owner;
 
 public:
@@ -1324,11 +1341,19 @@ public:
 		uint32_t index_count = 0;
 	};
 
-	RID blas_create(Span<AccelerationStructureGeometry> p_geometries);
-	RID tlas_instances_buffer_create(uint32_t p_instance_count, BitField<BufferCreationBits> p_creation_bits = 0);
-	void tlas_instances_buffer_fill(RID p_buffer, const Vector<RID> &p_blases, VectorView<Transform3D> p_transforms);
-	RID tlas_create(RID p_instances_buffer);
-	Error acceleration_structure_build(RID p_acceleration_structure);
+	RID blas_create(Span<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags);
+	RID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags);
+
+	struct AccelerationStructureInstance {
+		Transform3D transform;
+		uint32_t id = 0;
+		uint8_t mask = 0xFF;
+		BitField<AccelerationStructureInstanceFlagBits> flags = {};
+		RID blas;
+	};
+
+	Error blas_build(RID p_blas);
+	Error tlas_build(RID p_tlas, Span<AccelerationStructureInstance> p_instances);
 
 	/*************************/
 	/**** DRAW LISTS (II) ****/
@@ -1908,8 +1933,8 @@ private:
 
 	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data);
 
-	RID _blas_create(const TypedArray<RDAccelerationStructureGeometry> &p_geometries);
-	void _tlas_instances_buffer_fill(RID p_buffer, const TypedArray<RID> &p_blases, const TypedArray<Transform3D> &p_transforms);
+	RID _blas_create(const TypedArray<RDAccelerationStructureGeometry> &p_geometries, BitField<AccelerationStructureFlagBits> p_flags);
+	Error _tlas_build(RID p_tlas, const TypedArray<RDAccelerationStructureInstance> &p_instances);
 
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
@@ -1938,7 +1963,9 @@ VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency)
 VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat)
 VARIANT_BITFIELD_CAST(RenderingDevice::StorageBufferUsage)
 VARIANT_BITFIELD_CAST(RenderingDevice::BufferCreationBits)
+VARIANT_BITFIELD_CAST(RenderingDevice::AccelerationStructureFlagBits)
 VARIANT_BITFIELD_CAST(RenderingDevice::AccelerationStructureGeometryFlagBits)
+VARIANT_BITFIELD_CAST(RenderingDevice::AccelerationStructureInstanceFlagBits)
 VARIANT_ENUM_CAST(RenderingDevice::UniformType)
 VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive)
 VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode)
