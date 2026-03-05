@@ -153,24 +153,6 @@ void EditorCaptionButtons::_notification(int p_what) {
 	}
 }
 
-void EditorCaptionButtons::sync_for_titlebar(Window *p_window, const Control *p_title_bar) {
-	position_over_titlebar(p_title_bar);
-	update_for_window(p_window);
-}
-
-void EditorCaptionButtons::position_over_titlebar(const Control *p_title_bar) {
-	if (!p_title_bar) {
-		return;
-	}
-
-	const Size2i button_size(get_combined_minimum_size().x, p_title_bar->get_size().y);
-	const Point2i titlebar_global_position = p_title_bar->get_global_position();
-	const int x = p_title_bar->is_layout_rtl() ? titlebar_global_position.x : titlebar_global_position.x + p_title_bar->get_size().x - button_size.x;
-
-	set_global_position(Point2(x, titlebar_global_position.y));
-	set_size(button_size);
-}
-
 void EditorCaptionButtons::update_for_window(Window *p_window) {
 	if (!p_window) {
 		return;
@@ -191,7 +173,6 @@ void EditorCaptionButtons::update_for_window(Window *p_window) {
 
 EditorCaptionButtons::EditorCaptionButtons() {
 	set_name("WindowButtons");
-	set_as_top_level(true);
 	set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	set_alignment(BoxContainer::ALIGNMENT_END);
 

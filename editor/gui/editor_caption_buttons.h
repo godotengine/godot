@@ -50,8 +50,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void sync_for_titlebar(Window *p_window, const Control *p_title_bar);
-	void position_over_titlebar(const Control *p_title_bar);
 	void update_for_window(Window *p_window);
 
 	EditorCaptionButtons();
