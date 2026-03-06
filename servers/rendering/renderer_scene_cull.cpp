@@ -2607,19 +2607,18 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 	Vector2 jitter;
 	float taa_frame_count = 0.0f;
+
 	if (p_jitter_phase_count > 0) {
 		uint32_t current_jitter_count = camera_jitter_array.size();
 		if (p_jitter_phase_count != current_jitter_count) {
-			// Resize the jitter array and fill it with the pre-computed Halton sequence.
 			camera_jitter_array.resize(p_jitter_phase_count);
-
-			for (uint32_t i = current_jitter_count; i < p_jitter_phase_count; i++) {
-				camera_jitter_array[i].x = get_halton_value(i, 2);
-				camera_jitter_array[i].y = get_halton_value(i, 3);
-			}
 		}
+		static const Vector2 flip2[2] = {
+			Vector2( 0.03f, -0.03f),
+			Vector2(-0.03f,  0.03f),
+		};
 
-		jitter = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;
+		jitter = flip2[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;
 		taa_frame_count = float(RSG::rasterizer->get_frame_number() % p_jitter_phase_count);
 	}
 
