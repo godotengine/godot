@@ -1012,9 +1012,11 @@
 		</constant>
 		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
 			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_linear].
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5" enum="SpaceParameter">
 			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given. The default value of this parameter is [member ProjectSettings.physics/2d/sleep_threshold_angular].
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time. The default value of this parameter is [member ProjectSettings.physics/2d/time_before_sleep].
