@@ -484,7 +484,7 @@ class AnimationTrackEdit : public Control {
 
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
-	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
+	bool _is_value_key_valid(const Variant &p_key_value, VariantType::Type &r_valid_type) const;
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
 	int lookup_key_idx = -1;
@@ -558,7 +558,7 @@ class AnimationTrackEditPlugin : public RefCounted {
 	GDCLASS(AnimationTrackEditPlugin, RefCounted);
 
 public:
-	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
+	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, VariantType::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object);
 };
@@ -835,7 +835,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_copy_keys(bool p_cut);
 
-	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
+	bool _is_track_compatible(int p_target_track_idx, VariantType::Type p_source_value_type, Animation::TrackType p_source_track_type);
 
 	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 

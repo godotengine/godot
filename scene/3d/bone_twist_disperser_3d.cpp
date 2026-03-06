@@ -144,26 +144,26 @@ void BoneTwistDisperser3D::_get_property_list(List<PropertyInfo> *p_list) const 
 
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "extend_end_bone"));
-		props.push_back(PropertyInfo(Variant::INT, path + "end_bone_direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_direction()));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "root_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "root_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "end_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "extend_end_bone"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "end_bone_direction", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_direction()));
 
-		props.push_back(PropertyInfo(Variant::STRING, path + "reference_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "twist_from_rest"));
-		props.push_back(PropertyInfo(Variant::QUATERNION, path + "twist_from"));
-		props.push_back(PropertyInfo(Variant::INT, path + "disperse_mode", PROPERTY_HINT_ENUM, "Even,Weighted,Custom"));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "weight_position", PROPERTY_HINT_RANGE, "0,1,0.001"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "reference_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "twist_from_rest"));
+		props.push_back(PropertyInfo(VariantType::QUATERNION, path + "twist_from"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "disperse_mode", PROPERTY_HINT_ENUM, "Even,Weighted,Custom"));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "weight_position", PROPERTY_HINT_RANGE, "0,1,0.001"));
+		props.push_back(PropertyInfo(VariantType::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 
-		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
-			props.push_back(PropertyInfo(Variant::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::FLOAT, joint_path + "twist_amount", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,or_less"));
+			props.push_back(PropertyInfo(VariantType::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(VariantType::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(VariantType::FLOAT, joint_path + "twist_amount", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,or_less"));
 		}
 	}
 
@@ -560,7 +560,7 @@ void BoneTwistDisperser3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_joint_count", "index"), &BoneTwistDisperser3D::get_joint_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mutable_bone_axes"), "set_mutable_bone_axes", "are_bone_axes_mutable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "mutable_bone_axes"), "set_mutable_bone_axes", "are_bone_axes_mutable");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 
 	BIND_ENUM_CONSTANT(DISPERSE_MODE_EVEN);

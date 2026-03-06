@@ -113,7 +113,7 @@ void EditorExportPlatformExtension::get_export_options(List<ExportOption> *r_opt
 
 			PropertyInfo pinfo = PropertyInfo::from_dict(d);
 			ERR_CONTINUE(pinfo.name.is_empty() && (pinfo.usage & PROPERTY_USAGE_STORAGE));
-			ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
+			ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= VariantType::VARIANT_MAX);
 
 			Variant default_value;
 			if (d.has("default_value")) {

@@ -127,11 +127,11 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 		return;
 	}
 
-	Variant::Type current_type = current.get_type();
-	Variant::Type placeholder_type = p_set.value.get_type();
+	VariantType::Type current_type = current.get_type();
+	VariantType::Type placeholder_type = p_set.value.get_type();
 
 	// Arrays are a special case, because their containing type might be different.
-	if (current_type != Variant::Type::ARRAY) {
+	if (current_type != VariantType::Type::ARRAY) {
 		// Check if the variant types match.
 		if (Variant::evaluate(Variant::OP_EQUAL, current_type, placeholder_type)) {
 			p_instance->set(p_set.name, p_set.value, &is_valid);
@@ -139,7 +139,7 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 				return;
 			}
 			// Types match but setting failed? This is strange, so let's print a warning!
-			WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, Variant::get_type_name(current_type), p_placeholder->get_name()));
+			WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, VariantType::get_type_name(current_type), p_placeholder->get_name()));
 			return;
 		}
 	} else {
@@ -155,16 +155,16 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 				return;
 			}
 			// Internal array types match but setting failed? This is strange, so let's print a warning!
-			WARN_PRINT(vformat("Array Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, Variant::get_type_name(Variant::Type(current_array.get_typed_builtin())), p_placeholder->get_name()));
+			WARN_PRINT(vformat("Array Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, VariantType::get_type_name(VariantType::Type(current_array.get_typed_builtin())), p_placeholder->get_name()));
 		}
 		// Arrays are not the same internal type. This should be happening because we have a NodePath Array,
 		// but the instance wants a Node Array.
 	}
 
 	switch (current_type) {
-		case Variant::Type::NIL: {
+		case VariantType::Type::NIL: {
 			Ref<Resource> resource = p_set.value;
-			if (placeholder_type != Variant::Type::NODE_PATH && resource.is_null()) {
+			if (placeholder_type != VariantType::Type::NODE_PATH && resource.is_null()) {
 				break;
 			}
 			// If it's nil but we have a NodePath or a Resource, we guess what works.
@@ -176,15 +176,15 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 			p_instance->set(p_set.name, try_get_node(p_placeholder, p_instance, p_set.value), &is_valid);
 			break;
 		}
-		case Variant::Type::OBJECT: {
-			if (placeholder_type != Variant::Type::NODE_PATH) {
+		case VariantType::Type::OBJECT: {
+			if (placeholder_type != VariantType::Type::NODE_PATH) {
 				break;
 			}
 			// Easiest case, we want a node, but we have a deferred NodePath.
 			p_instance->set(p_set.name, try_get_node(p_placeholder, p_instance, p_set.value));
 			break;
 		}
-		case Variant::Type::ARRAY: {
+		case VariantType::Type::ARRAY: {
 			// If we have reached here it means our array types don't match,
 			// so we will convert the placeholder array into the correct type
 			// and resolve nodes if necessary.
@@ -194,7 +194,7 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 			converted_array = current_array.duplicate();
 			converted_array.resize(placeholder_array.size());
 
-			if (Variant::evaluate(Variant::OP_EQUAL, current_array.get_typed_builtin(), Variant::Type::NODE_PATH)) {
+			if (Variant::evaluate(Variant::OP_EQUAL, current_array.get_typed_builtin(), VariantType::Type::NODE_PATH)) {
 				// We want a typed NodePath array.
 				for (int i = 0; i < placeholder_array.size(); i++) {
 					converted_array.set(i, placeholder_array[i]);
@@ -208,12 +208,12 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 
 			p_instance->set(p_set.name, converted_array, &is_valid);
 			if (!is_valid) {
-				WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, Variant::get_type_name(current_type), p_placeholder->get_name()));
+				WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, VariantType::get_type_name(current_type), p_placeholder->get_name()));
 			}
 			break;
 		}
 		default: {
-			WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, Variant::get_type_name(current_type), p_placeholder->get_name()));
+			WARN_PRINT(vformat("Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, VariantType::get_type_name(current_type), p_placeholder->get_name()));
 			break;
 		}
 	}

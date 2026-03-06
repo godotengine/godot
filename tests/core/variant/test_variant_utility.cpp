@@ -38,56 +38,56 @@ namespace TestVariantUtility {
 
 TEST_CASE("[VariantUtility] Type conversion") {
 	Variant converted;
-	converted = VariantUtilityFunctions::type_convert("Hi!", Variant::Type::NIL);
-	CHECK(converted.get_type() == Variant::Type::NIL);
+	converted = VariantUtilityFunctions::type_convert("Hi!", VariantType::Type::NIL);
+	CHECK(converted.get_type() == VariantType::Type::NIL);
 	CHECK(converted == Variant());
 
-	converted = VariantUtilityFunctions::type_convert("Hi!", Variant::Type::INT);
-	CHECK(converted.get_type() == Variant::Type::INT);
+	converted = VariantUtilityFunctions::type_convert("Hi!", VariantType::Type::INT);
+	CHECK(converted.get_type() == VariantType::Type::INT);
 	CHECK(converted == Variant(0));
 
-	converted = VariantUtilityFunctions::type_convert("123", Variant::Type::INT);
-	CHECK(converted.get_type() == Variant::Type::INT);
+	converted = VariantUtilityFunctions::type_convert("123", VariantType::Type::INT);
+	CHECK(converted.get_type() == VariantType::Type::INT);
 	CHECK(converted == Variant(123));
 
-	converted = VariantUtilityFunctions::type_convert(123, Variant::Type::STRING);
-	CHECK(converted.get_type() == Variant::Type::STRING);
+	converted = VariantUtilityFunctions::type_convert(123, VariantType::Type::STRING);
+	CHECK(converted.get_type() == VariantType::Type::STRING);
 	CHECK(converted == Variant("123"));
 
-	converted = VariantUtilityFunctions::type_convert(123.4, Variant::Type::INT);
-	CHECK(converted.get_type() == Variant::Type::INT);
+	converted = VariantUtilityFunctions::type_convert(123.4, VariantType::Type::INT);
+	CHECK(converted.get_type() == VariantType::Type::INT);
 	CHECK(converted == Variant(123));
 
-	converted = VariantUtilityFunctions::type_convert(5, Variant::Type::VECTOR2);
-	CHECK(converted.get_type() == Variant::Type::VECTOR2);
+	converted = VariantUtilityFunctions::type_convert(5, VariantType::Type::VECTOR2);
+	CHECK(converted.get_type() == VariantType::Type::VECTOR2);
 	CHECK(converted == Variant(Vector2(0, 0)));
 
-	converted = VariantUtilityFunctions::type_convert(Vector3(1, 2, 3), Variant::Type::VECTOR2);
-	CHECK(converted.get_type() == Variant::Type::VECTOR2);
+	converted = VariantUtilityFunctions::type_convert(Vector3(1, 2, 3), VariantType::Type::VECTOR2);
+	CHECK(converted.get_type() == VariantType::Type::VECTOR2);
 	CHECK(converted == Variant(Vector2(1, 2)));
 
-	converted = VariantUtilityFunctions::type_convert(Vector2(1, 2), Variant::Type::VECTOR4);
-	CHECK(converted.get_type() == Variant::Type::VECTOR4);
+	converted = VariantUtilityFunctions::type_convert(Vector2(1, 2), VariantType::Type::VECTOR4);
+	CHECK(converted.get_type() == VariantType::Type::VECTOR4);
 	CHECK(converted == Variant(Vector4(1, 2, 0, 0)));
 
-	converted = VariantUtilityFunctions::type_convert(Vector4(1.2, 3.4, 5.6, 7.8), Variant::Type::VECTOR3I);
-	CHECK(converted.get_type() == Variant::Type::VECTOR3I);
+	converted = VariantUtilityFunctions::type_convert(Vector4(1.2, 3.4, 5.6, 7.8), VariantType::Type::VECTOR3I);
+	CHECK(converted.get_type() == VariantType::Type::VECTOR3I);
 	CHECK(converted == Variant(Vector3i(1, 3, 5)));
 
 	{
 		Basis basis = Basis::from_scale(Vector3(1.2, 3.4, 5.6));
 		Transform3D transform = Transform3D(basis, Vector3());
 
-		converted = VariantUtilityFunctions::type_convert(transform, Variant::Type::BASIS);
-		CHECK(converted.get_type() == Variant::Type::BASIS);
+		converted = VariantUtilityFunctions::type_convert(transform, VariantType::Type::BASIS);
+		CHECK(converted.get_type() == VariantType::Type::BASIS);
 		CHECK(converted == basis);
 
-		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::TRANSFORM3D);
-		CHECK(converted.get_type() == Variant::Type::TRANSFORM3D);
+		converted = VariantUtilityFunctions::type_convert(basis, VariantType::Type::TRANSFORM3D);
+		CHECK(converted.get_type() == VariantType::Type::TRANSFORM3D);
 		CHECK(converted == transform);
 
-		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::STRING);
-		CHECK(converted.get_type() == Variant::Type::STRING);
+		converted = VariantUtilityFunctions::type_convert(basis, VariantType::Type::STRING);
+		CHECK(converted.get_type() == VariantType::Type::STRING);
 		CHECK(converted == Variant("[X: (1.2, 0.0, 0.0), Y: (0.0, 3.4, 0.0), Z: (0.0, 0.0, 5.6)]"));
 	}
 
@@ -95,12 +95,12 @@ TEST_CASE("[VariantUtility] Type conversion") {
 		Array arr = { 1.2, 3.4, 5.6 };
 		PackedFloat64Array packed = { 1.2, 3.4, 5.6 };
 
-		converted = VariantUtilityFunctions::type_convert(arr, Variant::Type::PACKED_FLOAT64_ARRAY);
-		CHECK(converted.get_type() == Variant::Type::PACKED_FLOAT64_ARRAY);
+		converted = VariantUtilityFunctions::type_convert(arr, VariantType::Type::PACKED_FLOAT64_ARRAY);
+		CHECK(converted.get_type() == VariantType::Type::PACKED_FLOAT64_ARRAY);
 		CHECK(converted == packed);
 
-		converted = VariantUtilityFunctions::type_convert(packed, Variant::Type::ARRAY);
-		CHECK(converted.get_type() == Variant::Type::ARRAY);
+		converted = VariantUtilityFunctions::type_convert(packed, VariantType::Type::ARRAY);
+		CHECK(converted.get_type() == VariantType::Type::ARRAY);
 		CHECK(converted == arr);
 	}
 
@@ -109,21 +109,21 @@ TEST_CASE("[VariantUtility] Type conversion") {
 		Vector<const Variant *> args;
 		Variant data_arg = "Hi!";
 		args.push_back(&data_arg);
-		Variant type_arg = Variant::Type::NIL;
+		Variant type_arg = VariantType::Type::NIL;
 		args.push_back(&type_arg);
 		Callable::CallError call_error;
 		Variant::call_utility_function("type_convert", &converted, (const Variant **)args.ptr(), 2, call_error);
-		CHECK(converted.get_type() == Variant::Type::NIL);
+		CHECK(converted.get_type() == VariantType::Type::NIL);
 		CHECK(converted == Variant());
 
-		type_arg = Variant::Type::INT;
+		type_arg = VariantType::Type::INT;
 		Variant::call_utility_function("type_convert", &converted, (const Variant **)args.ptr(), 2, call_error);
-		CHECK(converted.get_type() == Variant::Type::INT);
+		CHECK(converted.get_type() == VariantType::Type::INT);
 		CHECK(converted == Variant(0));
 
 		data_arg = "123";
 		Variant::call_utility_function("type_convert", &converted, (const Variant **)args.ptr(), 2, call_error);
-		CHECK(converted.get_type() == Variant::Type::INT);
+		CHECK(converted.get_type() == VariantType::Type::INT);
 		CHECK(converted == Variant(123));
 	}
 }

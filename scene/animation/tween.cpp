@@ -512,8 +512,8 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
-	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
-	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
+	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(VariantType::INT, "idx")));
+	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(VariantType::INT, "loop_count")));
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	BIND_ENUM_CONSTANT(TWEEN_PROCESS_PHYSICS);
@@ -559,8 +559,8 @@ double PropertyTweener::_get_custom_interpolated_value(const Variant &p_value) {
 	custom_method.callp(&argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(false, "Error calling custom method from PropertyTweener: " + Variant::get_callable_error_text(custom_method, &argptr, 1, ce) + ".");
-	} else if (result.get_type() != Variant::FLOAT) {
-		ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+	} else if (result.get_type() != VariantType::FLOAT) {
+		ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", VariantType::get_type_name(result.get_type())));
 	}
 	return result;
 }

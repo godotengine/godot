@@ -60,9 +60,9 @@ static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	p_res->get_property_list(&property_list);
 	for (const PropertyInfo &p : property_list) {
 		Variant value = p_res->get(p.name);
-		if (p.type == Variant::OBJECT && p.hint == PROPERTY_HINT_RESOURCE_TYPE && !(p.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && p_res->get(p.name).get_validated_object()) {
+		if (p.type == VariantType::OBJECT && p.hint == PROPERTY_HINT_RESOURCE_TYPE && !(p.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && p_res->get(p.name).get_validated_object()) {
 			return true;
-		} else if (p.type == Variant::ARRAY) {
+		} else if (p.type == VariantType::ARRAY) {
 			Array arr = value;
 			for (Variant &var : arr) {
 				Ref<Resource> res = var;
@@ -70,7 +70,7 @@ static bool _has_sub_resources(const Ref<Resource> &p_res) {
 					return true;
 				}
 			}
-		} else if (p.type == Variant::DICTIONARY) {
+		} else if (p.type == VariantType::DICTIONARY) {
 			Dictionary dict = value;
 			for (const KeyValue<Variant, Variant> &kv : dict) {
 				Ref<Resource> resk = kv.key;
@@ -1039,13 +1039,13 @@ void EditorResourcePicker::_bind_methods() {
 	GDVIRTUAL_BIND(_set_create_options, "menu_node");
 	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "base_type"), "set_base_type", "get_base_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
-	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(VariantType::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(VariantType::BOOL, "inspect")));
+	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(VariantType::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 }
 
 void EditorResourcePicker::_notification(int p_what) {
@@ -1275,14 +1275,14 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	p_resource->get_property_list(&plist);
 
 	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE) || (E.type != Variant::OBJECT && E.type != Variant::ARRAY && E.type != Variant::DICTIONARY)) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || (E.type != VariantType::OBJECT && E.type != VariantType::ARRAY && E.type != VariantType::DICTIONARY)) {
 			continue;
 		}
 
 		Variant value = p_resource->get(E.name);
 		TreeItem *child = nullptr;
 
-		if (E.type == Variant::ARRAY) {
+		if (E.type == VariantType::ARRAY) {
 			Array arr = value;
 			for (int i = 0; i < arr.size(); i++) {
 				Ref<Resource> res = arr[i];
@@ -1295,7 +1295,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 				}
 			}
 			continue;
-		} else if (E.type == Variant::DICTIONARY) {
+		} else if (E.type == VariantType::DICTIONARY) {
 			Dictionary dict = value;
 			for (const KeyValue<Variant, Variant> &kv : dict) {
 				Ref<Resource> key_res = kv.key;
@@ -1355,9 +1355,9 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 		}
 		Array parent_meta = item->get_parent()->get_metadata(0);
 		Ref<Resource> parent = parent_meta[0];
-		Variant::Type property_type = parent->get(meta[1]).get_type();
+		VariantType::Type property_type = parent->get(meta[1]).get_type();
 
-		if (property_type == Variant::OBJECT) {
+		if (property_type == VariantType::OBJECT) {
 			parent->set(meta[1], unique_resource);
 			continue;
 		}
@@ -1370,7 +1370,7 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 			parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
 		}
 
-		if (property_type == Variant::ARRAY) {
+		if (property_type == VariantType::ARRAY) {
 			Array arr = property;
 			arr[meta[2]] = unique_resource;
 			continue;
@@ -1379,7 +1379,7 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 		Dictionary dict = property;
 		LocalVector<Variant> keys = dict.get_key_list();
 
-		if (meta[2].get_type() == Variant::OBJECT) {
+		if (meta[2].get_type() == VariantType::OBJECT) {
 			if (keys.has(meta[2])) {
 				//It's a key.
 				dict[unique_resource] = dict[meta[2]];
@@ -1559,7 +1559,7 @@ void EditorScriptPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_script_owner", "owner_node"), &EditorScriptPicker::set_script_owner);
 	ClassDB::bind_method(D_METHOD("get_script_owner"), &EditorScriptPicker::get_script_owner);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
 }
 
 // EditorShaderPicker

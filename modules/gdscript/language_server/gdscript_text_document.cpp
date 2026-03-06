@@ -295,7 +295,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 	const LSP::DocumentSymbol *symbol = nullptr;
 
-	if (data.get_type() == Variant::DICTIONARY) {
+	if (data.get_type() == VariantType::DICTIONARY) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == LSP::CompletionItemKind::Method || item.kind == LSP::CompletionItemKind::Function);
 	}

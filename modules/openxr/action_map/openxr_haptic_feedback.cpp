@@ -44,15 +44,15 @@ void OpenXRHapticBase::_bind_methods() {
 void OpenXRHapticVibration::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_duration", "duration"), &OpenXRHapticVibration::set_duration);
 	ClassDB::bind_method(D_METHOD("get_duration"), &OpenXRHapticVibration::get_duration);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "duration"), "set_duration", "get_duration");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "duration"), "set_duration", "get_duration");
 
 	ClassDB::bind_method(D_METHOD("set_frequency", "frequency"), &OpenXRHapticVibration::set_frequency);
 	ClassDB::bind_method(D_METHOD("get_frequency"), &OpenXRHapticVibration::get_frequency);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frequency"), "set_frequency", "get_frequency");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "frequency"), "set_frequency", "get_frequency");
 
 	ClassDB::bind_method(D_METHOD("set_amplitude", "amplitude"), &OpenXRHapticVibration::set_amplitude);
 	ClassDB::bind_method(D_METHOD("get_amplitude"), &OpenXRHapticVibration::get_amplitude);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amplitude", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_amplitude", "get_amplitude");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "amplitude", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_amplitude", "get_amplitude");
 }
 
 void OpenXRHapticVibration::set_duration(int64_t p_duration) {

@@ -376,7 +376,7 @@ void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 	if (CodeEditorBase::_warning_clicked(p_line)) {
 		return true;
-	} else if (p_line.get_type() == Variant::DICTIONARY) {
+	} else if (p_line.get_type() == VariantType::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const int line = meta["line"].operator int64_t() - 1;
 		const String code = meta["code"].operator String();
@@ -406,9 +406,9 @@ bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 }
 
 void ScriptTextEditor::_error_clicked(const Variant &p_line) {
-	if (p_line.get_type() == Variant::INT) {
+	if (p_line.get_type() == VariantType::INT) {
 		goto_line_centered(p_line.operator int64_t());
-	} else if (p_line.get_type() == Variant::DICTIONARY) {
+	} else if (p_line.get_type() == VariantType::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const String path = meta["path"].operator String();
 		const int line = meta["line"].operator int64_t();
@@ -468,7 +468,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 }
 
 bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
-	if (p_info.get_valid("color").get_type() != Variant::COLOR) {
+	if (p_info.get_valid("color").get_type() != VariantType::COLOR) {
 		return false;
 	}
 	if (!p_info.get_valid("color_end").is_num() || !p_info.get_valid("color_mode").is_num()) {

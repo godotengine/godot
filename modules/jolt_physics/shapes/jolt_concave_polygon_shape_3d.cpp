@@ -102,15 +102,15 @@ Variant JoltConcavePolygonShape3D::get_data() const {
 }
 
 void JoltConcavePolygonShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::DICTIONARY);
 
 	const Dictionary data = p_data;
 
 	const Variant maybe_faces = data.get("faces", Variant());
-	ERR_FAIL_COND(maybe_faces.get_type() != Variant::PACKED_VECTOR3_ARRAY);
+	ERR_FAIL_COND(maybe_faces.get_type() != VariantType::PACKED_VECTOR3_ARRAY);
 
 	const Variant maybe_back_face_collision = data.get("backface_collision", Variant());
-	ERR_FAIL_COND(maybe_back_face_collision.get_type() != Variant::BOOL);
+	ERR_FAIL_COND(maybe_back_face_collision.get_type() != VariantType::BOOL);
 
 	faces = maybe_faces;
 	back_face_collision = maybe_back_face_collision;

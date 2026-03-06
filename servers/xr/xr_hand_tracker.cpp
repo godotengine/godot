@@ -54,8 +54,8 @@ void XRHandTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand_joint_angular_velocity", "joint", "angular_velocity"), &XRHandTracker::set_hand_joint_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "joint"), &XRHandTracker::get_hand_joint_angular_velocity);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data", PROPERTY_HINT_NONE), "set_has_tracking_data", "get_has_tracking_data");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand_tracking_source", PROPERTY_HINT_ENUM, "Unknown,Unobstructed,Controller"), "set_hand_tracking_source", "get_hand_tracking_source");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "has_tracking_data", PROPERTY_HINT_NONE), "set_has_tracking_data", "get_has_tracking_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "hand_tracking_source", PROPERTY_HINT_ENUM, "Unknown,Unobstructed,Controller"), "set_hand_tracking_source", "get_hand_tracking_source");
 
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_UNKNOWN);
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_UNOBSTRUCTED);

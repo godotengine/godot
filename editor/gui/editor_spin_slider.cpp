@@ -623,7 +623,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	}
 
 	Variant v = expr->execute(Array(), nullptr, false, true);
-	if (v.get_type() == Variant::NIL) {
+	if (v.get_type() == VariantType::NIL) {
 		return;
 	}
 	set_value(v);
@@ -757,16 +757,16 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deferred_drag_mode_enabled", "enabled"), &EditorSpinSlider::set_deferred_drag_mode_enabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_deferred_drag_mode_enabled"), &EditorSpinSlider::is_deferred_drag_mode_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "control_state"), "set_control_state", "get_control_state");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "suffix"), "set_suffix", "get_suffix");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "read_only"), "set_read_only", "is_read_only");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "flat"), "set_flat", "is_flat");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "control_state"), "set_control_state", "get_control_state");
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 #endif
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_drag_mode"), "set_deferred_drag_mode_enabled", "is_deferred_drag_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "deferred_drag_mode"), "set_deferred_drag_mode_enabled", "is_deferred_drag_mode_enabled");
 
 	BIND_ENUM_CONSTANT(CONTROL_STATE_DEFAULT);
 	BIND_ENUM_CONSTANT(CONTROL_STATE_PREFER_SLIDER);

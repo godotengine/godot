@@ -39,31 +39,31 @@
 void CompositorEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &CompositorEffect::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &CompositorEffect::get_enabled);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "get_enabled");
 
 	ClassDB::bind_method(D_METHOD("set_effect_callback_type", "effect_callback_type"), &CompositorEffect::set_effect_callback_type);
 	ClassDB::bind_method(D_METHOD("get_effect_callback_type"), &CompositorEffect::get_effect_callback_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "effect_callback_type", PROPERTY_HINT_ENUM, "Pre Opaque,Post Opaque,Post Sky,Pre Transparent,Post Transparent"), "set_effect_callback_type", "get_effect_callback_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "effect_callback_type", PROPERTY_HINT_ENUM, "Pre Opaque,Post Opaque,Post Sky,Pre Transparent,Post Transparent"), "set_effect_callback_type", "get_effect_callback_type");
 
 	ClassDB::bind_method(D_METHOD("set_access_resolved_color", "enable"), &CompositorEffect::set_access_resolved_color);
 	ClassDB::bind_method(D_METHOD("get_access_resolved_color"), &CompositorEffect::get_access_resolved_color);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "access_resolved_color"), "set_access_resolved_color", "get_access_resolved_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "access_resolved_color"), "set_access_resolved_color", "get_access_resolved_color");
 
 	ClassDB::bind_method(D_METHOD("set_access_resolved_depth", "enable"), &CompositorEffect::set_access_resolved_depth);
 	ClassDB::bind_method(D_METHOD("get_access_resolved_depth"), &CompositorEffect::get_access_resolved_depth);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "access_resolved_depth"), "set_access_resolved_depth", "get_access_resolved_depth");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "access_resolved_depth"), "set_access_resolved_depth", "get_access_resolved_depth");
 
 	ClassDB::bind_method(D_METHOD("set_needs_motion_vectors", "enable"), &CompositorEffect::set_needs_motion_vectors);
 	ClassDB::bind_method(D_METHOD("get_needs_motion_vectors"), &CompositorEffect::get_needs_motion_vectors);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "needs_motion_vectors"), "set_needs_motion_vectors", "get_needs_motion_vectors");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "needs_motion_vectors"), "set_needs_motion_vectors", "get_needs_motion_vectors");
 
 	ClassDB::bind_method(D_METHOD("set_needs_normal_roughness", "enable"), &CompositorEffect::set_needs_normal_roughness);
 	ClassDB::bind_method(D_METHOD("get_needs_normal_roughness"), &CompositorEffect::get_needs_normal_roughness);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "needs_normal_roughness"), "set_needs_normal_roughness", "get_needs_normal_roughness");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "needs_normal_roughness"), "set_needs_normal_roughness", "get_needs_normal_roughness");
 
 	ClassDB::bind_method(D_METHOD("set_needs_separate_specular", "enable"), &CompositorEffect::set_needs_separate_specular);
 	ClassDB::bind_method(D_METHOD("get_needs_separate_specular"), &CompositorEffect::get_needs_separate_specular);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "needs_separate_specular"), "set_needs_separate_specular", "get_needs_separate_specular");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "needs_separate_specular"), "set_needs_separate_specular", "get_needs_separate_specular");
 
 	BIND_ENUM_CONSTANT(EFFECT_CALLBACK_TYPE_PRE_OPAQUE)
 	BIND_ENUM_CONSTANT(EFFECT_CALLBACK_TYPE_POST_OPAQUE)
@@ -210,7 +210,7 @@ void Compositor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compositor_effects", "compositor_effects"), &Compositor::set_compositor_effects);
 	ClassDB::bind_method(D_METHOD("get_compositor_effects"), &Compositor::get_compositor_effects);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compositor_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CompositorEffect")), "set_compositor_effects", "get_compositor_effects");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "compositor_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CompositorEffect")), "set_compositor_effects", "get_compositor_effects");
 }
 
 Compositor::Compositor() {

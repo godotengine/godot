@@ -75,8 +75,8 @@ TEST_CASE("[Variant] Writer and parser integer") {
 	CHECK_MESSAGE(b64_int_parsed == 9223372036854775807, "The result should be clamped to max value.");
 }
 
-TEST_CASE("[Variant] Writer and parser Variant::FLOAT") {
-	// Variant::FLOAT is always 64-bit (C++ double).
+TEST_CASE("[Variant] Writer and parser VariantType::FLOAT") {
+	// VariantType::FLOAT is always 64-bit (C++ double).
 	// This is the maximum non-infinity double-precision float.
 	double a64 = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0;
 	String a64_str;
@@ -113,7 +113,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(int_v == Variant(true));
 	bool_v = false;
 	int_v = bool_v;
-	CHECK(int_v.get_type() == Variant::BOOL);
+	CHECK(int_v.get_type() == VariantType::BOOL);
 
 	Variant float_v = 0.0f;
 	bool_v = true;
@@ -121,7 +121,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(float_v == Variant(true));
 	bool_v = false;
 	float_v = bool_v;
-	CHECK(float_v.get_type() == Variant::BOOL);
+	CHECK(float_v.get_type() == VariantType::BOOL);
 
 	Variant string_v = "";
 	bool_v = true;
@@ -129,7 +129,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(string_v == Variant(true));
 	bool_v = false;
 	string_v = bool_v;
-	CHECK(string_v.get_type() == Variant::BOOL);
+	CHECK(string_v.get_type() == VariantType::BOOL);
 
 	Variant vec2_v = Vector2(0, 0);
 	bool_v = true;
@@ -137,7 +137,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2_v == Variant(true));
 	bool_v = false;
 	vec2_v = bool_v;
-	CHECK(vec2_v.get_type() == Variant::BOOL);
+	CHECK(vec2_v.get_type() == VariantType::BOOL);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	bool_v = true;
@@ -145,7 +145,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2i_v == Variant(true));
 	bool_v = false;
 	vec2i_v = bool_v;
-	CHECK(vec2i_v.get_type() == Variant::BOOL);
+	CHECK(vec2i_v.get_type() == VariantType::BOOL);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	bool_v = true;
@@ -153,7 +153,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3_v == Variant(true));
 	bool_v = false;
 	vec3_v = bool_v;
-	CHECK(vec3_v.get_type() == Variant::BOOL);
+	CHECK(vec3_v.get_type() == VariantType::BOOL);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	bool_v = true;
@@ -161,7 +161,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3i_v == Variant(true));
 	bool_v = false;
 	vec3i_v = bool_v;
-	CHECK(vec3i_v.get_type() == Variant::BOOL);
+	CHECK(vec3i_v.get_type() == VariantType::BOOL);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	bool_v = true;
@@ -169,7 +169,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4_v == Variant(true));
 	bool_v = false;
 	vec4_v = bool_v;
-	CHECK(vec4_v.get_type() == Variant::BOOL);
+	CHECK(vec4_v.get_type() == VariantType::BOOL);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	bool_v = true;
@@ -177,7 +177,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4i_v == Variant(true));
 	bool_v = false;
 	vec4i_v = bool_v;
-	CHECK(vec4i_v.get_type() == Variant::BOOL);
+	CHECK(vec4i_v.get_type() == VariantType::BOOL);
 
 	Variant rect2_v = Rect2();
 	bool_v = true;
@@ -185,7 +185,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2_v == Variant(true));
 	bool_v = false;
 	rect2_v = bool_v;
-	CHECK(rect2_v.get_type() == Variant::BOOL);
+	CHECK(rect2_v.get_type() == VariantType::BOOL);
 
 	Variant rect2i_v = Rect2i();
 	bool_v = true;
@@ -193,7 +193,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2i_v == Variant(true));
 	bool_v = false;
 	rect2i_v = bool_v;
-	CHECK(rect2i_v.get_type() == Variant::BOOL);
+	CHECK(rect2i_v.get_type() == VariantType::BOOL);
 
 	Variant transform2d_v = Transform2D();
 	bool_v = true;
@@ -201,7 +201,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform2d_v == Variant(true));
 	bool_v = false;
 	transform2d_v = bool_v;
-	CHECK(transform2d_v.get_type() == Variant::BOOL);
+	CHECK(transform2d_v.get_type() == VariantType::BOOL);
 
 	Variant transform3d_v = Transform3D();
 	bool_v = true;
@@ -209,7 +209,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform3d_v == Variant(true));
 	bool_v = false;
 	transform3d_v = bool_v;
-	CHECK(transform3d_v.get_type() == Variant::BOOL);
+	CHECK(transform3d_v.get_type() == VariantType::BOOL);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	bool_v = true;
@@ -217,7 +217,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(col_v == Variant(true));
 	bool_v = false;
 	col_v = bool_v;
-	CHECK(col_v.get_type() == Variant::BOOL);
+	CHECK(col_v.get_type() == VariantType::BOOL);
 
 	Variant call_v = Callable();
 	bool_v = true;
@@ -225,7 +225,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(call_v == Variant(true));
 	bool_v = false;
 	call_v = bool_v;
-	CHECK(call_v.get_type() == Variant::BOOL);
+	CHECK(call_v.get_type() == VariantType::BOOL);
 
 	Variant plane_v = Plane();
 	bool_v = true;
@@ -233,7 +233,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(plane_v == Variant(true));
 	bool_v = false;
 	plane_v = bool_v;
-	CHECK(plane_v.get_type() == Variant::BOOL);
+	CHECK(plane_v.get_type() == VariantType::BOOL);
 
 	Variant basis_v = Basis();
 	bool_v = true;
@@ -241,7 +241,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(basis_v == Variant(true));
 	bool_v = false;
 	basis_v = bool_v;
-	CHECK(basis_v.get_type() == Variant::BOOL);
+	CHECK(basis_v.get_type() == VariantType::BOOL);
 
 	Variant aabb_v = AABB();
 	bool_v = true;
@@ -249,7 +249,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(aabb_v == Variant(true));
 	bool_v = false;
 	aabb_v = bool_v;
-	CHECK(aabb_v.get_type() == Variant::BOOL);
+	CHECK(aabb_v.get_type() == VariantType::BOOL);
 
 	Variant quaternion_v = Quaternion();
 	bool_v = true;
@@ -257,7 +257,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(quaternion_v == Variant(true));
 	bool_v = false;
 	quaternion_v = bool_v;
-	CHECK(quaternion_v.get_type() == Variant::BOOL);
+	CHECK(quaternion_v.get_type() == VariantType::BOOL);
 
 	Variant projection_v = Projection();
 	bool_v = true;
@@ -265,7 +265,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(projection_v == Variant(true));
 	bool_v = false;
 	projection_v = bool_v;
-	CHECK(projection_v.get_type() == Variant::BOOL);
+	CHECK(projection_v.get_type() == VariantType::BOOL);
 
 	Variant rid_v = RID();
 	bool_v = true;
@@ -273,7 +273,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rid_v == Variant(true));
 	bool_v = false;
 	rid_v = bool_v;
-	CHECK(rid_v.get_type() == Variant::BOOL);
+	CHECK(rid_v.get_type() == VariantType::BOOL);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -282,7 +282,7 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(object_v == Variant(true));
 	bool_v = false;
 	object_v = bool_v;
-	CHECK(object_v.get_type() == Variant::BOOL);
+	CHECK(object_v.get_type() == VariantType::BOOL);
 }
 
 TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Vec3i Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -292,7 +292,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(bool_v == Variant(2));
 	int_v = -3;
 	bool_v = int_v;
-	CHECK(bool_v.get_type() == Variant::INT);
+	CHECK(bool_v.get_type() == VariantType::INT);
 
 	Variant float_v = 0.0f;
 	int_v = 2;
@@ -300,7 +300,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(float_v == Variant(2));
 	int_v = -3;
 	float_v = int_v;
-	CHECK(float_v.get_type() == Variant::INT);
+	CHECK(float_v.get_type() == VariantType::INT);
 
 	Variant string_v = "";
 	int_v = 2;
@@ -308,7 +308,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(string_v == Variant(2));
 	int_v = -3;
 	string_v = int_v;
-	CHECK(string_v.get_type() == Variant::INT);
+	CHECK(string_v.get_type() == VariantType::INT);
 
 	Variant vec2_v = Vector2(0, 0);
 	int_v = 2;
@@ -316,7 +316,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2_v == Variant(2));
 	int_v = -3;
 	vec2_v = int_v;
-	CHECK(vec2_v.get_type() == Variant::INT);
+	CHECK(vec2_v.get_type() == VariantType::INT);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	int_v = 2;
@@ -324,7 +324,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2i_v == Variant(2));
 	int_v = -3;
 	vec2i_v = int_v;
-	CHECK(vec2i_v.get_type() == Variant::INT);
+	CHECK(vec2i_v.get_type() == VariantType::INT);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	int_v = 2;
@@ -332,7 +332,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3_v == Variant(2));
 	int_v = -3;
 	vec3_v = int_v;
-	CHECK(vec3_v.get_type() == Variant::INT);
+	CHECK(vec3_v.get_type() == VariantType::INT);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	int_v = 2;
@@ -340,7 +340,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3i_v == Variant(2));
 	int_v = -3;
 	vec3i_v = int_v;
-	CHECK(vec3i_v.get_type() == Variant::INT);
+	CHECK(vec3i_v.get_type() == VariantType::INT);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	int_v = 2;
@@ -348,7 +348,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4_v == Variant(2));
 	int_v = -3;
 	vec4_v = int_v;
-	CHECK(vec4_v.get_type() == Variant::INT);
+	CHECK(vec4_v.get_type() == VariantType::INT);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	int_v = 2;
@@ -356,7 +356,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4i_v == Variant(2));
 	int_v = -3;
 	vec4i_v = int_v;
-	CHECK(vec4i_v.get_type() == Variant::INT);
+	CHECK(vec4i_v.get_type() == VariantType::INT);
 
 	Variant rect2_v = Rect2();
 	int_v = 2;
@@ -364,7 +364,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2_v == Variant(2));
 	int_v = -3;
 	rect2_v = int_v;
-	CHECK(rect2_v.get_type() == Variant::INT);
+	CHECK(rect2_v.get_type() == VariantType::INT);
 
 	Variant rect2i_v = Rect2i();
 	int_v = 2;
@@ -372,7 +372,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2i_v == Variant(2));
 	int_v = -3;
 	rect2i_v = int_v;
-	CHECK(rect2i_v.get_type() == Variant::INT);
+	CHECK(rect2i_v.get_type() == VariantType::INT);
 
 	Variant transform2d_v = Transform2D();
 	int_v = 2;
@@ -380,7 +380,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform2d_v == Variant(2));
 	int_v = -3;
 	transform2d_v = int_v;
-	CHECK(transform2d_v.get_type() == Variant::INT);
+	CHECK(transform2d_v.get_type() == VariantType::INT);
 
 	Variant transform3d_v = Transform3D();
 	int_v = 2;
@@ -388,7 +388,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform3d_v == Variant(2));
 	int_v = -3;
 	transform3d_v = int_v;
-	CHECK(transform3d_v.get_type() == Variant::INT);
+	CHECK(transform3d_v.get_type() == VariantType::INT);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	int_v = 2;
@@ -396,7 +396,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(col_v == Variant(2));
 	int_v = -3;
 	col_v = int_v;
-	CHECK(col_v.get_type() == Variant::INT);
+	CHECK(col_v.get_type() == VariantType::INT);
 
 	Variant call_v = Callable();
 	int_v = 2;
@@ -404,7 +404,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(call_v == Variant(2));
 	int_v = -3;
 	call_v = int_v;
-	CHECK(call_v.get_type() == Variant::INT);
+	CHECK(call_v.get_type() == VariantType::INT);
 
 	Variant plane_v = Plane();
 	int_v = 2;
@@ -412,7 +412,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(plane_v == Variant(2));
 	int_v = -3;
 	plane_v = int_v;
-	CHECK(plane_v.get_type() == Variant::INT);
+	CHECK(plane_v.get_type() == VariantType::INT);
 
 	Variant basis_v = Basis();
 	int_v = 2;
@@ -420,7 +420,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(basis_v == Variant(2));
 	int_v = -3;
 	basis_v = int_v;
-	CHECK(basis_v.get_type() == Variant::INT);
+	CHECK(basis_v.get_type() == VariantType::INT);
 
 	Variant aabb_v = AABB();
 	int_v = 2;
@@ -428,7 +428,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(aabb_v == Variant(2));
 	int_v = -3;
 	aabb_v = int_v;
-	CHECK(aabb_v.get_type() == Variant::INT);
+	CHECK(aabb_v.get_type() == VariantType::INT);
 
 	Variant quaternion_v = Quaternion();
 	int_v = 2;
@@ -436,7 +436,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(quaternion_v == Variant(2));
 	int_v = -3;
 	quaternion_v = int_v;
-	CHECK(quaternion_v.get_type() == Variant::INT);
+	CHECK(quaternion_v.get_type() == VariantType::INT);
 
 	Variant projection_v = Projection();
 	int_v = 2;
@@ -444,7 +444,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(projection_v == Variant(2));
 	int_v = -3;
 	projection_v = int_v;
-	CHECK(projection_v.get_type() == Variant::INT);
+	CHECK(projection_v.get_type() == VariantType::INT);
 
 	Variant rid_v = RID();
 	int_v = 2;
@@ -452,7 +452,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rid_v == Variant(2));
 	bool_v = -3;
 	rid_v = int_v;
-	CHECK(rid_v.get_type() == Variant::INT);
+	CHECK(rid_v.get_type() == VariantType::INT);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -461,7 +461,7 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(object_v == Variant(2));
 	int_v = -3;
 	object_v = int_v;
-	CHECK(object_v.get_type() == Variant::INT);
+	CHECK(object_v.get_type() == VariantType::INT);
 }
 
 TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -471,7 +471,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(bool_v == Variant(1.5f));
 	float_v = -4.6f;
 	bool_v = float_v;
-	CHECK(bool_v.get_type() == Variant::FLOAT);
+	CHECK(bool_v.get_type() == VariantType::FLOAT);
 
 	Variant int_v = 1;
 	float_v = 1.5f;
@@ -479,7 +479,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(int_v == Variant(1.5f));
 	float_v = -4.6f;
 	int_v = float_v;
-	CHECK(int_v.get_type() == Variant::FLOAT);
+	CHECK(int_v.get_type() == VariantType::FLOAT);
 
 	Variant string_v = "";
 	float_v = 1.5f;
@@ -487,7 +487,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(string_v == Variant(1.5f));
 	float_v = -4.6f;
 	string_v = float_v;
-	CHECK(string_v.get_type() == Variant::FLOAT);
+	CHECK(string_v.get_type() == VariantType::FLOAT);
 
 	Variant vec2_v = Vector2(0, 0);
 	float_v = 1.5f;
@@ -495,7 +495,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec2_v = float_v;
-	CHECK(vec2_v.get_type() == Variant::FLOAT);
+	CHECK(vec2_v.get_type() == VariantType::FLOAT);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	float_v = 1.5f;
@@ -503,7 +503,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2i_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec2i_v = float_v;
-	CHECK(vec2i_v.get_type() == Variant::FLOAT);
+	CHECK(vec2i_v.get_type() == VariantType::FLOAT);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	float_v = 1.5f;
@@ -511,7 +511,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec3_v = float_v;
-	CHECK(vec3_v.get_type() == Variant::FLOAT);
+	CHECK(vec3_v.get_type() == VariantType::FLOAT);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	float_v = 1.5f;
@@ -519,7 +519,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3i_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec3i_v = float_v;
-	CHECK(vec3i_v.get_type() == Variant::FLOAT);
+	CHECK(vec3i_v.get_type() == VariantType::FLOAT);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	float_v = 1.5f;
@@ -527,7 +527,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec4_v = float_v;
-	CHECK(vec4_v.get_type() == Variant::FLOAT);
+	CHECK(vec4_v.get_type() == VariantType::FLOAT);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	float_v = 1.5f;
@@ -535,7 +535,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4i_v == Variant(1.5f));
 	float_v = -4.6f;
 	vec4i_v = float_v;
-	CHECK(vec4i_v.get_type() == Variant::FLOAT);
+	CHECK(vec4i_v.get_type() == VariantType::FLOAT);
 
 	Variant rect2_v = Rect2();
 	float_v = 1.5f;
@@ -543,7 +543,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2_v == Variant(1.5f));
 	float_v = -4.6f;
 	rect2_v = float_v;
-	CHECK(rect2_v.get_type() == Variant::FLOAT);
+	CHECK(rect2_v.get_type() == VariantType::FLOAT);
 
 	Variant rect2i_v = Rect2i();
 	float_v = 1.5f;
@@ -551,7 +551,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2i_v == Variant(1.5f));
 	float_v = -4.6f;
 	rect2i_v = float_v;
-	CHECK(rect2i_v.get_type() == Variant::FLOAT);
+	CHECK(rect2i_v.get_type() == VariantType::FLOAT);
 
 	Variant transform2d_v = Transform2D();
 	float_v = 1.5f;
@@ -559,7 +559,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform2d_v == Variant(1.5f));
 	float_v = -4.6f;
 	transform2d_v = float_v;
-	CHECK(transform2d_v.get_type() == Variant::FLOAT);
+	CHECK(transform2d_v.get_type() == VariantType::FLOAT);
 
 	Variant transform3d_v = Transform3D();
 	float_v = 1.5f;
@@ -567,7 +567,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform3d_v == Variant(1.5f));
 	float_v = -4.6f;
 	transform3d_v = float_v;
-	CHECK(transform2d_v.get_type() == Variant::FLOAT);
+	CHECK(transform2d_v.get_type() == VariantType::FLOAT);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	float_v = 1.5f;
@@ -575,7 +575,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(col_v == Variant(1.5f));
 	float_v = -4.6f;
 	col_v = float_v;
-	CHECK(col_v.get_type() == Variant::FLOAT);
+	CHECK(col_v.get_type() == VariantType::FLOAT);
 
 	Variant call_v = Callable();
 	float_v = 1.5f;
@@ -583,7 +583,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(call_v == Variant(1.5f));
 	float_v = -4.6f;
 	call_v = float_v;
-	CHECK(call_v.get_type() == Variant::FLOAT);
+	CHECK(call_v.get_type() == VariantType::FLOAT);
 
 	Variant plane_v = Plane();
 	float_v = 1.5f;
@@ -591,7 +591,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(plane_v == Variant(1.5f));
 	float_v = -4.6f;
 	plane_v = float_v;
-	CHECK(plane_v.get_type() == Variant::FLOAT);
+	CHECK(plane_v.get_type() == VariantType::FLOAT);
 
 	Variant basis_v = Basis();
 	float_v = 1.5f;
@@ -599,7 +599,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(basis_v == Variant(1.5f));
 	float_v = -4.6f;
 	basis_v = float_v;
-	CHECK(basis_v.get_type() == Variant::FLOAT);
+	CHECK(basis_v.get_type() == VariantType::FLOAT);
 
 	Variant aabb_v = AABB();
 	float_v = 1.5f;
@@ -607,7 +607,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(aabb_v == Variant(1.5f));
 	float_v = -4.6f;
 	aabb_v = float_v;
-	CHECK(aabb_v.get_type() == Variant::FLOAT);
+	CHECK(aabb_v.get_type() == VariantType::FLOAT);
 
 	Variant quaternion_v = Quaternion();
 	float_v = 1.5f;
@@ -615,7 +615,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(quaternion_v == Variant(1.5f));
 	float_v = -4.6f;
 	quaternion_v = float_v;
-	CHECK(quaternion_v.get_type() == Variant::FLOAT);
+	CHECK(quaternion_v.get_type() == VariantType::FLOAT);
 
 	Variant projection_v = Projection();
 	float_v = 1.5f;
@@ -623,7 +623,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(projection_v == Variant(1.5f));
 	float_v = -4.6f;
 	projection_v = float_v;
-	CHECK(projection_v.get_type() == Variant::FLOAT);
+	CHECK(projection_v.get_type() == VariantType::FLOAT);
 
 	Variant rid_v = RID();
 	float_v = 1.5f;
@@ -631,7 +631,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(rid_v == Variant(1.5f));
 	float_v = -4.6f;
 	rid_v = float_v;
-	CHECK(rid_v.get_type() == Variant::FLOAT);
+	CHECK(rid_v.get_type() == VariantType::FLOAT);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -640,7 +640,7 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	CHECK(object_v == Variant(1.5f));
 	float_v = -4.6f;
 	object_v = float_v;
-	CHECK(object_v.get_type() == Variant::FLOAT);
+	CHECK(object_v.get_type() == VariantType::FLOAT);
 }
 
 TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -650,7 +650,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(bool_v == Variant("Hello"));
 	string_v = "Hello there";
 	bool_v = string_v;
-	CHECK(bool_v.get_type() == Variant::STRING);
+	CHECK(bool_v.get_type() == VariantType::STRING);
 
 	Variant int_v = 0;
 	string_v = "Hello";
@@ -658,7 +658,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(int_v == Variant("Hello"));
 	string_v = "Hello there";
 	int_v = string_v;
-	CHECK(int_v.get_type() == Variant::STRING);
+	CHECK(int_v.get_type() == VariantType::STRING);
 
 	Variant float_v = 0.0f;
 	string_v = "Hello";
@@ -666,7 +666,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(float_v == Variant("Hello"));
 	string_v = "Hello there";
 	float_v = string_v;
-	CHECK(float_v.get_type() == Variant::STRING);
+	CHECK(float_v.get_type() == VariantType::STRING);
 
 	Variant vec2_v = Vector2(0, 0);
 	string_v = "Hello";
@@ -674,7 +674,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec2_v = string_v;
-	CHECK(vec2_v.get_type() == Variant::STRING);
+	CHECK(vec2_v.get_type() == VariantType::STRING);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	string_v = "Hello";
@@ -682,7 +682,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec2i_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec2i_v = string_v;
-	CHECK(vec2i_v.get_type() == Variant::STRING);
+	CHECK(vec2i_v.get_type() == VariantType::STRING);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	string_v = "Hello";
@@ -690,7 +690,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec3_v = string_v;
-	CHECK(vec3_v.get_type() == Variant::STRING);
+	CHECK(vec3_v.get_type() == VariantType::STRING);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	string_v = "Hello";
@@ -698,7 +698,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec3i_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec3i_v = string_v;
-	CHECK(vec3i_v.get_type() == Variant::STRING);
+	CHECK(vec3i_v.get_type() == VariantType::STRING);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	string_v = "Hello";
@@ -706,7 +706,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec4_v = string_v;
-	CHECK(vec4_v.get_type() == Variant::STRING);
+	CHECK(vec4_v.get_type() == VariantType::STRING);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	string_v = "Hello";
@@ -714,7 +714,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(vec4i_v == Variant("Hello"));
 	string_v = "Hello there";
 	vec4i_v = string_v;
-	CHECK(vec4i_v.get_type() == Variant::STRING);
+	CHECK(vec4i_v.get_type() == VariantType::STRING);
 
 	Variant rect2_v = Rect2();
 	string_v = "Hello";
@@ -722,7 +722,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2_v == Variant("Hello"));
 	string_v = "Hello there";
 	rect2_v = string_v;
-	CHECK(rect2_v.get_type() == Variant::STRING);
+	CHECK(rect2_v.get_type() == VariantType::STRING);
 
 	Variant rect2i_v = Rect2i();
 	string_v = "Hello";
@@ -730,7 +730,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(rect2i_v == Variant("Hello"));
 	string_v = "Hello there";
 	rect2i_v = string_v;
-	CHECK(rect2i_v.get_type() == Variant::STRING);
+	CHECK(rect2i_v.get_type() == VariantType::STRING);
 
 	Variant transform2d_v = Transform2D();
 	string_v = "Hello";
@@ -738,7 +738,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform2d_v == Variant("Hello"));
 	string_v = "Hello there";
 	transform2d_v = string_v;
-	CHECK(transform2d_v.get_type() == Variant::STRING);
+	CHECK(transform2d_v.get_type() == VariantType::STRING);
 
 	Variant transform3d_v = Transform3D();
 	string_v = "Hello";
@@ -746,7 +746,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(transform3d_v == Variant("Hello"));
 	string_v = "Hello there";
 	transform3d_v = string_v;
-	CHECK(transform3d_v.get_type() == Variant::STRING);
+	CHECK(transform3d_v.get_type() == VariantType::STRING);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	string_v = "Hello";
@@ -754,7 +754,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(col_v == Variant("Hello"));
 	string_v = "Hello there";
 	col_v = string_v;
-	CHECK(col_v.get_type() == Variant::STRING);
+	CHECK(col_v.get_type() == VariantType::STRING);
 
 	Variant call_v = Callable();
 	string_v = "Hello";
@@ -762,7 +762,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(call_v == Variant("Hello"));
 	string_v = "Hello there";
 	call_v = string_v;
-	CHECK(call_v.get_type() == Variant::STRING);
+	CHECK(call_v.get_type() == VariantType::STRING);
 
 	Variant plane_v = Plane();
 	string_v = "Hello";
@@ -770,7 +770,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(plane_v == Variant("Hello"));
 	string_v = "Hello there";
 	plane_v = string_v;
-	CHECK(plane_v.get_type() == Variant::STRING);
+	CHECK(plane_v.get_type() == VariantType::STRING);
 
 	Variant basis_v = Basis();
 	string_v = "Hello";
@@ -778,7 +778,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(basis_v == Variant("Hello"));
 	string_v = "Hello there";
 	basis_v = string_v;
-	CHECK(basis_v.get_type() == Variant::STRING);
+	CHECK(basis_v.get_type() == VariantType::STRING);
 
 	Variant aabb_v = AABB();
 	string_v = "Hello";
@@ -786,7 +786,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(aabb_v == Variant("Hello"));
 	string_v = "Hello there";
 	aabb_v = string_v;
-	CHECK(aabb_v.get_type() == Variant::STRING);
+	CHECK(aabb_v.get_type() == VariantType::STRING);
 
 	Variant quaternion_v = Quaternion();
 	string_v = "Hello";
@@ -794,7 +794,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(quaternion_v == Variant("Hello"));
 	string_v = "Hello there";
 	quaternion_v = string_v;
-	CHECK(quaternion_v.get_type() == Variant::STRING);
+	CHECK(quaternion_v.get_type() == VariantType::STRING);
 
 	Variant projection_v = Projection();
 	string_v = "Hello";
@@ -802,7 +802,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(projection_v == Variant("Hello"));
 	string_v = "Hello there";
 	projection_v = string_v;
-	CHECK(projection_v.get_type() == Variant::STRING);
+	CHECK(projection_v.get_type() == VariantType::STRING);
 
 	Variant rid_v = RID();
 	string_v = "Hello";
@@ -810,7 +810,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(rid_v == Variant("Hello"));
 	string_v = "Hello there";
 	rid_v = string_v;
-	CHECK(rid_v.get_type() == Variant::STRING);
+	CHECK(rid_v.get_type() == VariantType::STRING);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -819,7 +819,7 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	CHECK(object_v == Variant("Hello"));
 	string_v = "Hello there";
 	object_v = string_v;
-	CHECK(object_v.get_type() == Variant::STRING);
+	CHECK(object_v.get_type() == VariantType::STRING);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -829,7 +829,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(bool_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	bool_v = vec2_v;
-	CHECK(bool_v.get_type() == Variant::VECTOR2);
+	CHECK(bool_v.get_type() == VariantType::VECTOR2);
 
 	Variant int_v = 0;
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -837,7 +837,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(int_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	int_v = vec2_v;
-	CHECK(int_v.get_type() == Variant::VECTOR2);
+	CHECK(int_v.get_type() == VariantType::VECTOR2);
 
 	Variant float_v = 0.0f;
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -845,7 +845,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(float_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	float_v = vec2_v;
-	CHECK(float_v.get_type() == Variant::VECTOR2);
+	CHECK(float_v.get_type() == VariantType::VECTOR2);
 
 	Variant string_v = "";
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -853,7 +853,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(string_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	string_v = vec2_v;
-	CHECK(string_v.get_type() == Variant::VECTOR2);
+	CHECK(string_v.get_type() == VariantType::VECTOR2);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -861,7 +861,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(vec2i_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	vec2i_v = vec2_v;
-	CHECK(vec2i_v.get_type() == Variant::VECTOR2);
+	CHECK(vec2i_v.get_type() == VariantType::VECTOR2);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -869,7 +869,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(vec3_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	vec3_v = vec2_v;
-	CHECK(vec3_v.get_type() == Variant::VECTOR2);
+	CHECK(vec3_v.get_type() == VariantType::VECTOR2);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -877,7 +877,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(vec3i_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	vec3i_v = vec2_v;
-	CHECK(vec3i_v.get_type() == Variant::VECTOR2);
+	CHECK(vec3i_v.get_type() == VariantType::VECTOR2);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -885,7 +885,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(vec4_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	vec4_v = vec2_v;
-	CHECK(vec4_v.get_type() == Variant::VECTOR2);
+	CHECK(vec4_v.get_type() == VariantType::VECTOR2);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -893,7 +893,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(vec4i_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	vec4i_v = vec2_v;
-	CHECK(vec4i_v.get_type() == Variant::VECTOR2);
+	CHECK(vec4i_v.get_type() == VariantType::VECTOR2);
 
 	Variant rect2_v = Rect2();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -901,7 +901,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(rect2_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	rect2_v = vec2_v;
-	CHECK(rect2_v.get_type() == Variant::VECTOR2);
+	CHECK(rect2_v.get_type() == VariantType::VECTOR2);
 
 	Variant rect2i_v = Rect2i();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -909,7 +909,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(rect2i_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	rect2i_v = vec2_v;
-	CHECK(rect2i_v.get_type() == Variant::VECTOR2);
+	CHECK(rect2i_v.get_type() == VariantType::VECTOR2);
 
 	Variant transform2d_v = Transform2D();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -917,7 +917,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(transform2d_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	transform2d_v = vec2_v;
-	CHECK(transform2d_v.get_type() == Variant::VECTOR2);
+	CHECK(transform2d_v.get_type() == VariantType::VECTOR2);
 
 	Variant transform3d_v = Transform3D();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -925,7 +925,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(transform3d_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	transform3d_v = vec2_v;
-	CHECK(transform3d_v.get_type() == Variant::VECTOR2);
+	CHECK(transform3d_v.get_type() == VariantType::VECTOR2);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -933,7 +933,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(col_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	col_v = vec2_v;
-	CHECK(col_v.get_type() == Variant::VECTOR2);
+	CHECK(col_v.get_type() == VariantType::VECTOR2);
 
 	Variant call_v = Callable();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -941,7 +941,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(call_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	call_v = vec2_v;
-	CHECK(call_v.get_type() == Variant::VECTOR2);
+	CHECK(call_v.get_type() == VariantType::VECTOR2);
 
 	Variant plane_v = Plane();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -949,7 +949,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(plane_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	plane_v = vec2_v;
-	CHECK(plane_v.get_type() == Variant::VECTOR2);
+	CHECK(plane_v.get_type() == VariantType::VECTOR2);
 
 	Variant basis_v = Basis();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -957,7 +957,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(basis_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	basis_v = vec2_v;
-	CHECK(basis_v.get_type() == Variant::VECTOR2);
+	CHECK(basis_v.get_type() == VariantType::VECTOR2);
 
 	Variant aabb_v = AABB();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -965,7 +965,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(aabb_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	aabb_v = vec2_v;
-	CHECK(aabb_v.get_type() == Variant::VECTOR2);
+	CHECK(aabb_v.get_type() == VariantType::VECTOR2);
 
 	Variant quaternion_v = Quaternion();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -973,7 +973,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(quaternion_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	quaternion_v = vec2_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR2);
+	CHECK(quaternion_v.get_type() == VariantType::VECTOR2);
 
 	Variant projection_v = Projection();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -981,7 +981,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(projection_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	projection_v = vec2_v;
-	CHECK(projection_v.get_type() == Variant::VECTOR2);
+	CHECK(projection_v.get_type() == VariantType::VECTOR2);
 
 	Variant rid_v = RID();
 	vec2_v = Vector2(2.2f, 3.5f);
@@ -989,7 +989,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(rid_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	rid_v = vec2_v;
-	CHECK(rid_v.get_type() == Variant::VECTOR2);
+	CHECK(rid_v.get_type() == VariantType::VECTOR2);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -998,7 +998,7 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(object_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	object_v = vec2_v;
-	CHECK(object_v.get_type() == Variant::VECTOR2);
+	CHECK(object_v.get_type() == VariantType::VECTOR2);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1008,7 +1008,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(bool_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	bool_v = vec2i_v;
-	CHECK(bool_v.get_type() == Variant::VECTOR2I);
+	CHECK(bool_v.get_type() == VariantType::VECTOR2I);
 
 	Variant int_v = 0;
 	vec2i_v = Vector2i(2, 3);
@@ -1016,7 +1016,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(int_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	int_v = vec2i_v;
-	CHECK(int_v.get_type() == Variant::VECTOR2I);
+	CHECK(int_v.get_type() == VariantType::VECTOR2I);
 
 	Variant float_v = 0.0f;
 	vec2i_v = Vector2i(2, 3);
@@ -1024,7 +1024,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(float_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	float_v = vec2i_v;
-	CHECK(float_v.get_type() == Variant::VECTOR2I);
+	CHECK(float_v.get_type() == VariantType::VECTOR2I);
 
 	Variant string_v = "";
 	vec2i_v = Vector2i(2, 3);
@@ -1032,7 +1032,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(string_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	string_v = vec2i_v;
-	CHECK(string_v.get_type() == Variant::VECTOR2I);
+	CHECK(string_v.get_type() == VariantType::VECTOR2I);
 
 	Variant vec2_v = Vector2(0, 0);
 	vec2i_v = Vector2i(2, 3);
@@ -1040,7 +1040,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(vec2_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	vec2_v = vec2i_v;
-	CHECK(vec2i_v.get_type() == Variant::VECTOR2I);
+	CHECK(vec2i_v.get_type() == VariantType::VECTOR2I);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	vec2i_v = Vector2i(2, 3);
@@ -1048,7 +1048,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(vec3_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	vec3_v = vec2i_v;
-	CHECK(vec3_v.get_type() == Variant::VECTOR2I);
+	CHECK(vec3_v.get_type() == VariantType::VECTOR2I);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	vec2i_v = Vector2i(2, 3);
@@ -1056,7 +1056,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(vec3i_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	vec3i_v = vec2i_v;
-	CHECK(vec3i_v.get_type() == Variant::VECTOR2I);
+	CHECK(vec3i_v.get_type() == VariantType::VECTOR2I);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	vec2i_v = Vector2i(2, 3);
@@ -1064,7 +1064,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(vec4_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	vec4_v = vec2i_v;
-	CHECK(vec4_v.get_type() == Variant::VECTOR2I);
+	CHECK(vec4_v.get_type() == VariantType::VECTOR2I);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	vec2i_v = Vector2i(2, 3);
@@ -1072,7 +1072,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(vec4i_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	vec4i_v = vec2i_v;
-	CHECK(vec4i_v.get_type() == Variant::VECTOR2I);
+	CHECK(vec4i_v.get_type() == VariantType::VECTOR2I);
 
 	Variant rect2_v = Rect2();
 	vec2i_v = Vector2i(2, 3);
@@ -1080,7 +1080,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(rect2_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	rect2_v = vec2i_v;
-	CHECK(rect2_v.get_type() == Variant::VECTOR2I);
+	CHECK(rect2_v.get_type() == VariantType::VECTOR2I);
 
 	Variant rect2i_v = Rect2i();
 	vec2i_v = Vector2i(2, 3);
@@ -1088,7 +1088,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(rect2i_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	rect2i_v = vec2i_v;
-	CHECK(rect2i_v.get_type() == Variant::VECTOR2I);
+	CHECK(rect2i_v.get_type() == VariantType::VECTOR2I);
 
 	Variant transform2d_v = Transform2D();
 	vec2i_v = Vector2i(2, 3);
@@ -1096,7 +1096,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(transform2d_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	transform2d_v = vec2i_v;
-	CHECK(transform2d_v.get_type() == Variant::VECTOR2I);
+	CHECK(transform2d_v.get_type() == VariantType::VECTOR2I);
 
 	Variant transform3d_v = Transform3D();
 	vec2i_v = Vector2i(2, 3);
@@ -1104,7 +1104,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(transform3d_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	transform3d_v = vec2i_v;
-	CHECK(transform3d_v.get_type() == Variant::VECTOR2I);
+	CHECK(transform3d_v.get_type() == VariantType::VECTOR2I);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	vec2i_v = Vector2i(2, 3);
@@ -1112,7 +1112,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(col_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	col_v = vec2i_v;
-	CHECK(col_v.get_type() == Variant::VECTOR2I);
+	CHECK(col_v.get_type() == VariantType::VECTOR2I);
 
 	Variant call_v = Callable();
 	vec2i_v = Vector2i(2, 3);
@@ -1120,7 +1120,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(call_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	call_v = vec2i_v;
-	CHECK(call_v.get_type() == Variant::VECTOR2I);
+	CHECK(call_v.get_type() == VariantType::VECTOR2I);
 
 	Variant plane_v = Plane();
 	vec2i_v = Vector2i(2, 3);
@@ -1128,7 +1128,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(plane_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	plane_v = vec2i_v;
-	CHECK(plane_v.get_type() == Variant::VECTOR2I);
+	CHECK(plane_v.get_type() == VariantType::VECTOR2I);
 
 	Variant basis_v = Basis();
 	vec2i_v = Vector2i(2, 3);
@@ -1136,7 +1136,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(basis_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	basis_v = vec2i_v;
-	CHECK(basis_v.get_type() == Variant::VECTOR2I);
+	CHECK(basis_v.get_type() == VariantType::VECTOR2I);
 
 	Variant aabb_v = AABB();
 	vec2i_v = Vector2i(2, 3);
@@ -1144,7 +1144,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(aabb_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	aabb_v = vec2i_v;
-	CHECK(aabb_v.get_type() == Variant::VECTOR2I);
+	CHECK(aabb_v.get_type() == VariantType::VECTOR2I);
 
 	Variant quaternion_v = Quaternion();
 	vec2i_v = Vector2i(2, 3);
@@ -1152,7 +1152,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(quaternion_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	quaternion_v = vec2i_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR2I);
+	CHECK(quaternion_v.get_type() == VariantType::VECTOR2I);
 
 	Variant projection_v = Projection();
 	vec2i_v = Vector2i(2, 3);
@@ -1160,7 +1160,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(projection_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	projection_v = vec2i_v;
-	CHECK(projection_v.get_type() == Variant::VECTOR2I);
+	CHECK(projection_v.get_type() == VariantType::VECTOR2I);
 
 	Variant rid_v = RID();
 	vec2i_v = Vector2i(2, 3);
@@ -1168,7 +1168,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(rid_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	rid_v = vec2i_v;
-	CHECK(rid_v.get_type() == Variant::VECTOR2I);
+	CHECK(rid_v.get_type() == VariantType::VECTOR2I);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -1177,7 +1177,7 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	CHECK(object_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	object_v = vec2i_v;
-	CHECK(object_v.get_type() == Variant::VECTOR2I);
+	CHECK(object_v.get_type() == VariantType::VECTOR2I);
 }
 
 TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1187,7 +1187,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(bool_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	bool_v = vec3_v;
-	CHECK(bool_v.get_type() == Variant::VECTOR3);
+	CHECK(bool_v.get_type() == VariantType::VECTOR3);
 
 	Variant int_v = 0;
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1195,7 +1195,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(int_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	int_v = vec3_v;
-	CHECK(int_v.get_type() == Variant::VECTOR3);
+	CHECK(int_v.get_type() == VariantType::VECTOR3);
 
 	Variant float_v = 0.0f;
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1203,7 +1203,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(float_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	float_v = vec3_v;
-	CHECK(float_v.get_type() == Variant::VECTOR3);
+	CHECK(float_v.get_type() == VariantType::VECTOR3);
 
 	Variant string_v = "";
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1211,7 +1211,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(string_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	string_v = vec3_v;
-	CHECK(string_v.get_type() == Variant::VECTOR3);
+	CHECK(string_v.get_type() == VariantType::VECTOR3);
 
 	Variant vec2_v = Vector2(0, 0);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1219,7 +1219,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(vec2_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	vec2_v = vec3_v;
-	CHECK(vec2_v.get_type() == Variant::VECTOR3);
+	CHECK(vec2_v.get_type() == VariantType::VECTOR3);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1227,7 +1227,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(vec2i_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	vec2i_v = vec3_v;
-	CHECK(vec2i_v.get_type() == Variant::VECTOR3);
+	CHECK(vec2i_v.get_type() == VariantType::VECTOR3);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1235,7 +1235,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(vec3i_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	vec3i_v = vec3_v;
-	CHECK(vec3i_v.get_type() == Variant::VECTOR3);
+	CHECK(vec3i_v.get_type() == VariantType::VECTOR3);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1243,7 +1243,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(vec4_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	vec4_v = vec3_v;
-	CHECK(vec4_v.get_type() == Variant::VECTOR3);
+	CHECK(vec4_v.get_type() == VariantType::VECTOR3);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1251,7 +1251,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(vec4i_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	vec4i_v = vec3_v;
-	CHECK(vec4i_v.get_type() == Variant::VECTOR3);
+	CHECK(vec4i_v.get_type() == VariantType::VECTOR3);
 
 	Variant rect2_v = Rect2();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1259,7 +1259,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(rect2_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	rect2_v = vec3_v;
-	CHECK(rect2_v.get_type() == Variant::VECTOR3);
+	CHECK(rect2_v.get_type() == VariantType::VECTOR3);
 
 	Variant rect2i_v = Rect2i();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1267,7 +1267,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(rect2i_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	rect2i_v = vec3_v;
-	CHECK(rect2i_v.get_type() == Variant::VECTOR3);
+	CHECK(rect2i_v.get_type() == VariantType::VECTOR3);
 
 	Variant transform2d_v = Transform2D();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1275,7 +1275,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(transform2d_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	transform2d_v = vec3_v;
-	CHECK(transform2d_v.get_type() == Variant::VECTOR3);
+	CHECK(transform2d_v.get_type() == VariantType::VECTOR3);
 
 	Variant transform3d_v = Transform3D();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1283,7 +1283,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(transform3d_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	transform3d_v = vec3_v;
-	CHECK(transform3d_v.get_type() == Variant::VECTOR3);
+	CHECK(transform3d_v.get_type() == VariantType::VECTOR3);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1291,7 +1291,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(col_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	col_v = vec3_v;
-	CHECK(col_v.get_type() == Variant::VECTOR3);
+	CHECK(col_v.get_type() == VariantType::VECTOR3);
 
 	Variant call_v = Callable();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1299,7 +1299,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(call_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	call_v = vec3_v;
-	CHECK(call_v.get_type() == Variant::VECTOR3);
+	CHECK(call_v.get_type() == VariantType::VECTOR3);
 
 	Variant plane_v = Plane();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1307,7 +1307,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(plane_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	plane_v = vec3_v;
-	CHECK(plane_v.get_type() == Variant::VECTOR3);
+	CHECK(plane_v.get_type() == VariantType::VECTOR3);
 
 	Variant basis_v = Basis();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1315,7 +1315,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(basis_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	basis_v = vec3_v;
-	CHECK(basis_v.get_type() == Variant::VECTOR3);
+	CHECK(basis_v.get_type() == VariantType::VECTOR3);
 
 	Variant aabb_v = AABB();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1323,7 +1323,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(aabb_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	aabb_v = vec3_v;
-	CHECK(aabb_v.get_type() == Variant::VECTOR3);
+	CHECK(aabb_v.get_type() == VariantType::VECTOR3);
 
 	Variant quaternion_v = Quaternion();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1331,7 +1331,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(quaternion_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	quaternion_v = vec3_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR3);
+	CHECK(quaternion_v.get_type() == VariantType::VECTOR3);
 
 	Variant projection_v = Projection();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1339,7 +1339,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(quaternion_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	quaternion_v = vec3_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR3);
+	CHECK(quaternion_v.get_type() == VariantType::VECTOR3);
 
 	Variant rid_v = RID();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1347,7 +1347,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(rid_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	rid_v = vec3_v;
-	CHECK(rid_v.get_type() == Variant::VECTOR3);
+	CHECK(rid_v.get_type() == VariantType::VECTOR3);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -1356,7 +1356,7 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	CHECK(object_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	object_v = vec3_v;
-	CHECK(object_v.get_type() == Variant::VECTOR3);
+	CHECK(object_v.get_type() == VariantType::VECTOR3);
 }
 
 TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,Vec3 and Color") {
@@ -1366,7 +1366,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(bool_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	bool_v = vec3i_v;
-	CHECK(bool_v.get_type() == Variant::VECTOR3I);
+	CHECK(bool_v.get_type() == VariantType::VECTOR3I);
 
 	Variant int_v = 0;
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1374,7 +1374,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(int_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	int_v = vec3i_v;
-	CHECK(int_v.get_type() == Variant::VECTOR3I);
+	CHECK(int_v.get_type() == VariantType::VECTOR3I);
 
 	Variant float_v = 0.0f;
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1382,7 +1382,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(float_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	float_v = vec3i_v;
-	CHECK(float_v.get_type() == Variant::VECTOR3I);
+	CHECK(float_v.get_type() == VariantType::VECTOR3I);
 
 	Variant string_v = "";
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1390,7 +1390,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(string_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	string_v = vec3i_v;
-	CHECK(string_v.get_type() == Variant::VECTOR3I);
+	CHECK(string_v.get_type() == VariantType::VECTOR3I);
 
 	Variant vec2_v = Vector2(0, 0);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1398,7 +1398,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec2_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	vec2_v = vec3i_v;
-	CHECK(vec2_v.get_type() == Variant::VECTOR3I);
+	CHECK(vec2_v.get_type() == VariantType::VECTOR3I);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1406,7 +1406,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec2i_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	vec2i_v = vec3i_v;
-	CHECK(vec2i_v.get_type() == Variant::VECTOR3I);
+	CHECK(vec2i_v.get_type() == VariantType::VECTOR3I);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1414,7 +1414,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec3_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	vec3_v = vec3i_v;
-	CHECK(vec3_v.get_type() == Variant::VECTOR3I);
+	CHECK(vec3_v.get_type() == VariantType::VECTOR3I);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1422,7 +1422,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec4_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	vec4_v = vec3i_v;
-	CHECK(vec4_v.get_type() == Variant::VECTOR3I);
+	CHECK(vec4_v.get_type() == VariantType::VECTOR3I);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1430,7 +1430,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec4i_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	vec4i_v = vec3i_v;
-	CHECK(vec4i_v.get_type() == Variant::VECTOR3I);
+	CHECK(vec4i_v.get_type() == VariantType::VECTOR3I);
 
 	Variant rect2_v = Rect2();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1438,7 +1438,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rect2_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	rect2_v = vec3i_v;
-	CHECK(rect2_v.get_type() == Variant::VECTOR3I);
+	CHECK(rect2_v.get_type() == VariantType::VECTOR3I);
 
 	Variant rect2i_v = Rect2i();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1446,7 +1446,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rect2i_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	rect2i_v = vec3i_v;
-	CHECK(rect2i_v.get_type() == Variant::VECTOR3I);
+	CHECK(rect2i_v.get_type() == VariantType::VECTOR3I);
 
 	Variant transform2d_v = Transform2D();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1454,7 +1454,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(transform2d_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	transform2d_v = vec3i_v;
-	CHECK(transform2d_v.get_type() == Variant::VECTOR3I);
+	CHECK(transform2d_v.get_type() == VariantType::VECTOR3I);
 
 	Variant transform3d_v = Transform3D();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1462,7 +1462,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(transform3d_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	transform3d_v = vec3i_v;
-	CHECK(transform3d_v.get_type() == Variant::VECTOR3I);
+	CHECK(transform3d_v.get_type() == VariantType::VECTOR3I);
 
 	Variant col_v = Color(0.5f, 0.2f, 0.75f);
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1470,7 +1470,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(col_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	col_v = vec3i_v;
-	CHECK(col_v.get_type() == Variant::VECTOR3I);
+	CHECK(col_v.get_type() == VariantType::VECTOR3I);
 
 	Variant call_v = Callable();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1478,7 +1478,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(call_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	call_v = vec3i_v;
-	CHECK(call_v.get_type() == Variant::VECTOR3I);
+	CHECK(call_v.get_type() == VariantType::VECTOR3I);
 
 	Variant plane_v = Plane();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1486,7 +1486,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(plane_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	plane_v = vec3i_v;
-	CHECK(plane_v.get_type() == Variant::VECTOR3I);
+	CHECK(plane_v.get_type() == VariantType::VECTOR3I);
 
 	Variant basis_v = Basis();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1494,7 +1494,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(basis_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	basis_v = vec3i_v;
-	CHECK(basis_v.get_type() == Variant::VECTOR3I);
+	CHECK(basis_v.get_type() == VariantType::VECTOR3I);
 
 	Variant aabb_v = AABB();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1502,7 +1502,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(aabb_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	aabb_v = vec3i_v;
-	CHECK(aabb_v.get_type() == Variant::VECTOR3I);
+	CHECK(aabb_v.get_type() == VariantType::VECTOR3I);
 
 	Variant quaternion_v = Quaternion();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1510,7 +1510,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(quaternion_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	quaternion_v = vec3i_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR3I);
+	CHECK(quaternion_v.get_type() == VariantType::VECTOR3I);
 
 	Variant projection_v = Projection();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1518,7 +1518,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(projection_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	projection_v = vec3i_v;
-	CHECK(projection_v.get_type() == Variant::VECTOR3I);
+	CHECK(projection_v.get_type() == VariantType::VECTOR3I);
 
 	Variant rid_v = RID();
 	vec3i_v = Vector3i(2, 3, 5);
@@ -1526,7 +1526,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rid_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	rid_v = vec3i_v;
-	CHECK(rid_v.get_type() == Variant::VECTOR3I);
+	CHECK(rid_v.get_type() == VariantType::VECTOR3I);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -1535,7 +1535,7 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(object_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	object_v = vec3i_v;
-	CHECK(object_v.get_type() == Variant::VECTOR3I);
+	CHECK(object_v.get_type() == VariantType::VECTOR3I);
 }
 
 TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1545,7 +1545,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(bool_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	bool_v = col_v;
-	CHECK(bool_v.get_type() == Variant::COLOR);
+	CHECK(bool_v.get_type() == VariantType::COLOR);
 
 	Variant int_v = 0;
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1553,7 +1553,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(int_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	int_v = col_v;
-	CHECK(int_v.get_type() == Variant::COLOR);
+	CHECK(int_v.get_type() == VariantType::COLOR);
 
 	Variant float_v = 0.0f;
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1561,7 +1561,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(float_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	float_v = col_v;
-	CHECK(float_v.get_type() == Variant::COLOR);
+	CHECK(float_v.get_type() == VariantType::COLOR);
 
 	Variant string_v = "";
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1569,7 +1569,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(string_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	string_v = col_v;
-	CHECK(string_v.get_type() == Variant::COLOR);
+	CHECK(string_v.get_type() == VariantType::COLOR);
 
 	Variant vec2_v = Vector2(0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1577,7 +1577,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec2_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec2_v = col_v;
-	CHECK(vec2_v.get_type() == Variant::COLOR);
+	CHECK(vec2_v.get_type() == VariantType::COLOR);
 
 	Variant vec2i_v = Vector2i(0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1585,7 +1585,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec2i_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec2i_v = col_v;
-	CHECK(vec2i_v.get_type() == Variant::COLOR);
+	CHECK(vec2i_v.get_type() == VariantType::COLOR);
 
 	Variant vec3_v = Vector3(0, 0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1593,7 +1593,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec3_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec3_v = col_v;
-	CHECK(vec3_v.get_type() == Variant::COLOR);
+	CHECK(vec3_v.get_type() == VariantType::COLOR);
 
 	Variant vec3i_v = Vector3i(0, 0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1601,7 +1601,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec3i_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec3i_v = col_v;
-	CHECK(vec3i_v.get_type() == Variant::COLOR);
+	CHECK(vec3i_v.get_type() == VariantType::COLOR);
 
 	Variant vec4_v = Vector4(0, 0, 0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1609,7 +1609,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec4_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec4_v = col_v;
-	CHECK(vec4_v.get_type() == Variant::COLOR);
+	CHECK(vec4_v.get_type() == VariantType::COLOR);
 
 	Variant vec4i_v = Vector4i(0, 0, 0, 0);
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1617,7 +1617,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(vec4i_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	vec4i_v = col_v;
-	CHECK(vec4i_v.get_type() == Variant::COLOR);
+	CHECK(vec4i_v.get_type() == VariantType::COLOR);
 
 	Variant rect2_v = Rect2();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1625,7 +1625,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rect2_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	rect2_v = col_v;
-	CHECK(rect2_v.get_type() == Variant::COLOR);
+	CHECK(rect2_v.get_type() == VariantType::COLOR);
 
 	Variant rect2i_v = Rect2i();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1633,7 +1633,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rect2i_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	rect2i_v = col_v;
-	CHECK(rect2i_v.get_type() == Variant::COLOR);
+	CHECK(rect2i_v.get_type() == VariantType::COLOR);
 
 	Variant transform2d_v = Transform2D();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1641,7 +1641,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(transform2d_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	transform2d_v = col_v;
-	CHECK(transform2d_v.get_type() == Variant::COLOR);
+	CHECK(transform2d_v.get_type() == VariantType::COLOR);
 
 	Variant transform3d_v = Transform3D();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1649,7 +1649,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(transform3d_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	transform3d_v = col_v;
-	CHECK(transform3d_v.get_type() == Variant::COLOR);
+	CHECK(transform3d_v.get_type() == VariantType::COLOR);
 
 	Variant call_v = Callable();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1657,7 +1657,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(call_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	call_v = col_v;
-	CHECK(call_v.get_type() == Variant::COLOR);
+	CHECK(call_v.get_type() == VariantType::COLOR);
 
 	Variant plane_v = Plane();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1665,7 +1665,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(plane_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	plane_v = col_v;
-	CHECK(plane_v.get_type() == Variant::COLOR);
+	CHECK(plane_v.get_type() == VariantType::COLOR);
 
 	Variant basis_v = Basis();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1673,7 +1673,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(basis_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	basis_v = col_v;
-	CHECK(basis_v.get_type() == Variant::COLOR);
+	CHECK(basis_v.get_type() == VariantType::COLOR);
 
 	Variant aabb_v = AABB();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1681,7 +1681,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(aabb_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	aabb_v = col_v;
-	CHECK(aabb_v.get_type() == Variant::COLOR);
+	CHECK(aabb_v.get_type() == VariantType::COLOR);
 
 	Variant quaternion_v = Quaternion();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1689,7 +1689,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(quaternion_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	quaternion_v = col_v;
-	CHECK(quaternion_v.get_type() == Variant::COLOR);
+	CHECK(quaternion_v.get_type() == VariantType::COLOR);
 
 	Variant projection_v = Projection();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1697,7 +1697,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(projection_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	projection_v = col_v;
-	CHECK(projection_v.get_type() == Variant::COLOR);
+	CHECK(projection_v.get_type() == VariantType::COLOR);
 
 	Variant rid_v = RID();
 	col_v = Color(0.25f, 0.4f, 0.78f);
@@ -1705,7 +1705,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(rid_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	rid_v = col_v;
-	CHECK(rid_v.get_type() == Variant::COLOR);
+	CHECK(rid_v.get_type() == VariantType::COLOR);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
@@ -1714,12 +1714,12 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(object_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	object_v = col_v;
-	CHECK(object_v.get_type() == Variant::COLOR);
+	CHECK(object_v.get_type() == VariantType::COLOR);
 }
 
 TEST_CASE("[Variant] array initializer list") {
 	Variant arr_v = { 0, 1, "test", true, { 0.0, 1.0 } };
-	CHECK(arr_v.get_type() == Variant::ARRAY);
+	CHECK(arr_v.get_type() == VariantType::ARRAY);
 	Array arr = (Array)arr_v;
 	CHECK(arr.size() == 5);
 	CHECK(arr[0] == Variant(0));
@@ -1740,7 +1740,7 @@ TEST_CASE("[Variant] Writer and parser Vector2") {
 	String vec2_str;
 	String errs;
 	int line;
-	// Variant::VECTOR2 and Vector2 can be either 32-bit or 64-bit depending on the precision level of real_t.
+	// VariantType::VECTOR2 and Vector2 can be either 32-bit or 64-bit depending on the precision level of real_t.
 	{
 		Vector2 vec2 = Vector2(1.2, 3.4);
 		VariantWriter::write_to_string(vec2, vec2_str);
@@ -2170,7 +2170,7 @@ TEST_CASE("[Variant] Nested dictionary comparison") {
 }
 
 struct ArgumentData {
-	Variant::Type type;
+	VariantType::Type type;
 	String name;
 	bool has_defval = false;
 	Variant defval;
@@ -2179,7 +2179,7 @@ struct ArgumentData {
 
 struct MethodData {
 	StringName name;
-	Variant::Type return_type;
+	VariantType::Type return_type;
 	List<ArgumentData> arguments;
 	bool is_virtual = false;
 	bool is_vararg = false;
@@ -2232,16 +2232,16 @@ TEST_CASE("[Variant] Utility functions") {
 
 TEST_CASE("[Variant] Operator NOT") {
 	// Verify that operator NOT works for all types and is consistent with booleanize().
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+	for (int i = 0; i < VariantType::VARIANT_MAX; i++) {
 		Variant value;
 		Callable::CallError err;
-		Variant::construct((Variant::Type)i, value, nullptr, 0, err);
+		Variant::construct((VariantType::Type)i, value, nullptr, 0, err);
 
 		REQUIRE_EQ(err.error, Callable::CallError::CALL_OK);
 
 		Variant result = Variant::evaluate(Variant::OP_NOT, value, Variant());
 
-		REQUIRE_EQ(result.get_type(), Variant::BOOL);
+		REQUIRE_EQ(result.get_type(), VariantType::BOOL);
 		CHECK_EQ(!value.booleanize(), result.operator bool());
 	}
 }

@@ -147,7 +147,7 @@ void WindowWrapper::_window_close_request() {
 }
 
 void WindowWrapper::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("window_visibility_changed", PropertyInfo(Variant::BOOL, "visible")));
+	ADD_SIGNAL(MethodInfo("window_visibility_changed", PropertyInfo(VariantType::BOOL, "visible")));
 	ADD_SIGNAL(MethodInfo("window_close_requested"));
 	ADD_SIGNAL(MethodInfo("window_size_changed"));
 }
@@ -439,7 +439,7 @@ void ScreenSelect::_emit_screen_signal(int p_screen_idx) {
 }
 
 void ScreenSelect::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("request_open_in_screen", PropertyInfo(Variant::INT, "screen")));
+	ADD_SIGNAL(MethodInfo("request_open_in_screen", PropertyInfo(VariantType::INT, "screen")));
 }
 
 void ScreenSelect::_notification(int p_what) {

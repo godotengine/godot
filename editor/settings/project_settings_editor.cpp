@@ -284,7 +284,7 @@ void ProjectSettingsEditor::_update_property_box() {
 	}
 }
 
-void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
+void ProjectSettingsEditor::_select_type(VariantType::Type p_type) {
 	type_box->select(type_box->get_item_index(p_type));
 }
 
@@ -740,7 +740,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(EditorVariantTypeOptionButton);
-	type_box->populate({ Variant::NIL, Variant::OBJECT });
+	type_box->populate({ VariantType::NIL, VariantType::OBJECT });
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	type_box->set_accessibility_name(TTRC("Type"));
 	custom_properties->add_child(type_box);

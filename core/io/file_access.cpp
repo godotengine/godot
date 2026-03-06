@@ -1127,7 +1127,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
 	BIND_ENUM_CONSTANT(READ);
 	BIND_ENUM_CONSTANT(WRITE);

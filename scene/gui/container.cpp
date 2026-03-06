@@ -251,7 +251,7 @@ void Container::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_sort_children"));
 	ADD_SIGNAL(MethodInfo("sort_children"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accessibility_region"), "set_accessibility_region", "is_accessibility_region");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "accessibility_region"), "set_accessibility_region", "is_accessibility_region");
 }
 
 Container::Container() {

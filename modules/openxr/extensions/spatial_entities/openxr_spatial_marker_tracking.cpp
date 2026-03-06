@@ -140,7 +140,7 @@ void OpenXRSpatialCapabilityConfigurationAruco::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_aruco_dict", "aruco_dict"), &OpenXRSpatialCapabilityConfigurationAruco::_set_aruco_dict);
 	ClassDB::bind_method(D_METHOD("get_aruco_dict"), &OpenXRSpatialCapabilityConfigurationAruco::_get_aruco_dict);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "aruco_dict"), "set_aruco_dict", "get_aruco_dict");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "aruco_dict"), "set_aruco_dict", "get_aruco_dict");
 
 	BIND_ENUM_CONSTANT(ARUCO_DICT_4X4_50);
 	BIND_ENUM_CONSTANT(ARUCO_DICT_4X4_100);
@@ -224,7 +224,7 @@ void OpenXRSpatialCapabilityConfigurationAprilTag::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_april_dict", "april_dict"), &OpenXRSpatialCapabilityConfigurationAprilTag::_set_april_dict);
 	ClassDB::bind_method(D_METHOD("get_april_dict"), &OpenXRSpatialCapabilityConfigurationAprilTag::_get_april_dict);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "april_dict"), "set_april_dict", "get_april_dict");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "april_dict"), "set_april_dict", "get_april_dict");
 
 	BIND_ENUM_CONSTANT(APRIL_TAG_DICT_16H5);
 	BIND_ENUM_CONSTANT(APRIL_TAG_DICT_25H9);
@@ -376,15 +376,15 @@ Variant OpenXRSpatialComponentMarkerList::get_marker_data(RID p_snapshot, int64_
 void OpenXRMarkerTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounds_size", "bounds_size"), &OpenXRMarkerTracker::set_bounds_size);
 	ClassDB::bind_method(D_METHOD("get_bounds_size"), &OpenXRMarkerTracker::get_bounds_size);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
 
 	ClassDB::bind_method(D_METHOD("set_marker_type", "marker_type"), &OpenXRMarkerTracker::set_marker_type);
 	ClassDB::bind_method(D_METHOD("get_marker_type"), &OpenXRMarkerTracker::get_marker_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "marker_type"), "set_marker_type", "get_marker_type");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "marker_type"), "set_marker_type", "get_marker_type");
 
 	ClassDB::bind_method(D_METHOD("set_marker_id", "marker_id"), &OpenXRMarkerTracker::set_marker_id);
 	ClassDB::bind_method(D_METHOD("get_marker_id"), &OpenXRMarkerTracker::get_marker_id);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "marker_id"), "set_marker_id", "get_marker_id");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "marker_id"), "set_marker_id", "get_marker_id");
 
 	// As the type of marker data can vary, we can't make this a property.
 	ClassDB::bind_method(D_METHOD("set_marker_data", "marker_data"), &OpenXRMarkerTracker::set_marker_data);

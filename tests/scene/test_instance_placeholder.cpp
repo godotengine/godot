@@ -52,18 +52,18 @@ protected:
 		ClassDB::bind_method(D_METHOD("set_int_property", "int_property"), &_TestInstancePlaceholderNode::set_int_property);
 		ClassDB::bind_method(D_METHOD("get_int_property"), &_TestInstancePlaceholderNode::get_int_property);
 
-		ADD_PROPERTY(PropertyInfo(Variant::INT, "int_property"), "set_int_property", "get_int_property");
+		ADD_PROPERTY(PropertyInfo(VariantType::INT, "int_property"), "set_int_property", "get_int_property");
 
 		ClassDB::bind_method(D_METHOD("set_reference_property", "reference_property"), &_TestInstancePlaceholderNode::set_reference_property);
 		ClassDB::bind_method(D_METHOD("get_reference_property"), &_TestInstancePlaceholderNode::get_reference_property);
 
-		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "reference_property", PROPERTY_HINT_NODE_TYPE), "set_reference_property", "get_reference_property");
+		ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "reference_property", PROPERTY_HINT_NODE_TYPE), "set_reference_property", "get_reference_property");
 
 		ClassDB::bind_method(D_METHOD("set_reference_array_property", "reference_array_property"), &_TestInstancePlaceholderNode::set_reference_array_property);
 		ClassDB::bind_method(D_METHOD("get_reference_array_property"), &_TestInstancePlaceholderNode::get_reference_array_property);
 
 		// The hint string value "24/34:Node" is determined from existing PackedScenes with typed Array properties.
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "reference_array_property", PROPERTY_HINT_TYPE_STRING, "24/34:Node"), "set_reference_array_property", "get_reference_array_property");
+		ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "reference_array_property", PROPERTY_HINT_TYPE_STRING, "24/34:Node"), "set_reference_array_property", "get_reference_array_property");
 	}
 
 public:
@@ -98,7 +98,7 @@ public:
 	}
 
 	_TestInstancePlaceholderNode() {
-		reference_array_property.set_typed(Variant::OBJECT, "Node", Variant());
+		reference_array_property.set_typed(VariantType::OBJECT, "Node", Variant());
 	}
 };
 
@@ -177,7 +177,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 		referenced1->set_owner(scene);
 		referenced2->set_owner(scene);
 		Array node_array;
-		node_array.set_typed(Variant::OBJECT, "Node", Variant());
+		node_array.set_typed(VariantType::OBJECT, "Node", Variant());
 		node_array.push_back(referenced1);
 		node_array.push_back(referenced2);
 		scene->set_reference_array_property(node_array);
@@ -286,7 +286,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		root->add_child(override3);
 
 		Array override_node_array;
-		override_node_array.set_typed(Variant::OBJECT, "Node", Variant());
+		override_node_array.set_typed(VariantType::OBJECT, "Node", Variant());
 		override_node_array.push_back(override1);
 		override_node_array.push_back(override2);
 		override_node_array.push_back(override3);
@@ -304,7 +304,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		referenced1->set_owner(scene);
 		referenced2->set_owner(scene);
 		Array referenced_array;
-		referenced_array.set_typed(Variant::OBJECT, "Node", Variant());
+		referenced_array.set_typed(VariantType::OBJECT, "Node", Variant());
 		referenced_array.push_back(referenced1);
 		referenced_array.push_back(referenced2);
 
@@ -436,7 +436,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	internal->add_child(array_ref2);
 	array_ref2->set_owner(internal);
 	Array referenced_array;
-	referenced_array.set_typed(Variant::OBJECT, "Node", Variant());
+	referenced_array.set_typed(VariantType::OBJECT, "Node", Variant());
 	referenced_array.push_back(array_ref1);
 	referenced_array.push_back(array_ref2);
 	internal->set_reference_array_property(referenced_array);
@@ -475,7 +475,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	internal_created->set_reference_property(overriding);
 	Array internal_array = internal_created->get_reference_array_property();
 	Array override_array;
-	override_array.set_typed(Variant::OBJECT, "Node", Variant());
+	override_array.set_typed(VariantType::OBJECT, "Node", Variant());
 	for (int i = 0; i < internal_array.size(); i++) {
 		override_array.push_back(internal_array[i]);
 	}

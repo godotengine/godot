@@ -301,7 +301,7 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 	Button *button = links[p_node_id].input_ports[p_port_id].default_input_button;
 
 	switch (p_value.get_type()) {
-		case Variant::COLOR: {
+		case VariantType::COLOR: {
 			button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 
 			Callable ce = callable_mp(editor, &VisualShaderEditor::_draw_color_over_button);
@@ -309,22 +309,22 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 				button->connect(SceneStringName(draw), ce.bind(button, p_value));
 			}
 		} break;
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			button->set_text(((bool)p_value) ? "true" : "false");
 		} break;
-		case Variant::INT:
-		case Variant::FLOAT: {
+		case VariantType::INT:
+		case VariantType::FLOAT: {
 			button->set_text(String::num(p_value, 4));
 		} break;
-		case Variant::VECTOR2: {
+		case VariantType::VECTOR2: {
 			Vector2 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3));
 		} break;
-		case Variant::VECTOR3: {
+		case VariantType::VECTOR3: {
 			Vector3 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3));
 		} break;
-		case Variant::VECTOR4: {
+		case VariantType::VECTOR4: {
 			Vector4 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3) + "," + String::num(v.w, 3));
 		} break;
@@ -1117,7 +1117,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		hb->add_child(default_input_btn);
 		register_default_input_button(p_id, j, default_input_btn);
 		default_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(default_input_btn, p_id, j));
-		if (default_value.get_type() != Variant::NIL) { // only a label
+		if (default_value.get_type() != VariantType::NIL) { // only a label
 			set_input_port_default_value(p_type, p_id, j, default_value);
 		} else {
 			default_input_btn->hide();
@@ -1502,7 +1502,7 @@ void VisualShaderGraphPlugin::disconnect_nodes(VisualShader::Type p_type, int p_
 				break;
 			}
 		}
-		if (links[p_to_node].input_ports.has(p_to_port) && links[p_to_node].input_ports[p_to_port].default_input_button != nullptr && links[p_to_node].visual_node->get_input_port_default_value(p_to_port).get_type() != Variant::NIL) {
+		if (links[p_to_node].input_ports.has(p_to_port) && links[p_to_node].input_ports[p_to_port].default_input_button != nullptr && links[p_to_node].visual_node->get_input_port_default_value(p_to_port).get_type() != VariantType::NIL) {
 			links[p_to_node].input_ports[p_to_port].default_input_button->show();
 			set_input_port_default_value(p_type, p_to_node, p_to_port, links[p_to_node].visual_node->get_input_port_default_value(p_to_port));
 		}
@@ -1515,7 +1515,7 @@ void VisualShaderEditedProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edited_property", "value"), &VisualShaderEditedProperty::set_edited_property);
 	ClassDB::bind_method(D_METHOD("get_edited_property"), &VisualShaderEditedProperty::get_edited_property);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_edited_property", "get_edited_property");
+	ADD_PROPERTY(PropertyInfo(VariantType::NIL, "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_edited_property", "get_edited_property");
 }
 
 void VisualShaderEditedProperty::set_edited_property(const Variant &p_variant) {
@@ -2038,10 +2038,10 @@ bool VisualShaderEditor::_update_preview_parameter_tree() {
 			found = true;
 		}
 
-		if (prop.value.type == Variant::OBJECT) {
+		if (prop.value.type == VariantType::OBJECT) {
 			item->set_icon(0, get_editor_theme_icon(SNAME("ImageTexture")));
 		} else {
-			item->set_icon(0, get_editor_theme_icon(Variant::get_type_name(prop.value.type)));
+			item->set_icon(0, get_editor_theme_icon(VariantType::get_type_name(prop.value.type)));
 		}
 	}
 
@@ -3408,22 +3408,22 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 
 	// TODO: Define these properties with actual PropertyInfo and feed it to the property editor widget.
 	property_editor = EditorInspector::instantiate_property_editor(edited_property_holder.ptr(), value.get_type(), "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, true);
-	ERR_FAIL_NULL_MSG(property_editor, "Failed to create property editor for type: " + Variant::get_type_name(value.get_type()));
+	ERR_FAIL_NULL_MSG(property_editor, "Failed to create property editor for type: " + VariantType::get_type_name(value.get_type()));
 	property_editor->set_deferred_drag_mode_enabled();
 
 	// Determine the best size for the popup based on the property type.
 	// This is done here, since the property editors are also used in the inspector where they have different layout requirements, so we can't just change their default minimum size.
 	Size2 popup_pref_size;
 	switch (value.get_type()) {
-		case Variant::VECTOR3:
-		case Variant::BASIS:
+		case VariantType::VECTOR3:
+		case VariantType::BASIS:
 			popup_pref_size.width = 320;
 			break;
-		case Variant::VECTOR4:
-		case Variant::PLANE:
-		case Variant::TRANSFORM2D:
-		case Variant::TRANSFORM3D:
-		case Variant::PROJECTION:
+		case VariantType::VECTOR4:
+		case VariantType::PLANE:
+		case VariantType::TRANSFORM2D:
+		case VariantType::TRANSFORM3D:
+		case VariantType::PROJECTION:
 			popup_pref_size.width = 480;
 			break;
 		default:
@@ -3485,7 +3485,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeFloatConstant *float_const = Object::cast_to<VisualShaderNodeFloatConstant>(p_node);
 
 		if (float_const) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::FLOAT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::FLOAT);
 			float_const->set_constant((float)p_ops[0]);
 			return;
 		}
@@ -3496,7 +3496,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeFloatOp *float_op = Object::cast_to<VisualShaderNodeFloatOp>(p_node);
 
 		if (float_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			float_op->set_operator((VisualShaderNodeFloatOp::Operator)(int)p_ops[0]);
 			return;
 		}
@@ -3507,7 +3507,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeFloatFunc *float_func = Object::cast_to<VisualShaderNodeFloatFunc>(p_node);
 
 		if (float_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			float_func->set_function((VisualShaderNodeFloatFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3518,8 +3518,8 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorOp *vec_op = Object::cast_to<VisualShaderNodeVectorOp>(p_node);
 
 		if (vec_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
+			ERR_FAIL_COND(p_ops[1].get_type() != VariantType::INT);
 			vec_op->set_operator((VisualShaderNodeVectorOp::Operator)(int)p_ops[0]);
 			vec_op->set_op_type((VisualShaderNodeVectorOp::OpType)(int)p_ops[1]);
 			return;
@@ -3531,8 +3531,8 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorFunc *vec_func = Object::cast_to<VisualShaderNodeVectorFunc>(p_node);
 
 		if (vec_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
+			ERR_FAIL_COND(p_ops[1].get_type() != VariantType::INT);
 			vec_func->set_function((VisualShaderNodeVectorFunc::Function)(int)p_ops[0]);
 			vec_func->set_op_type((VisualShaderNodeVectorFunc::OpType)(int)p_ops[1]);
 			return;
@@ -3544,7 +3544,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeColorOp *color_op = Object::cast_to<VisualShaderNodeColorOp>(p_node);
 
 		if (color_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			color_op->set_operator((VisualShaderNodeColorOp::Operator)(int)p_ops[0]);
 			return;
 		}
@@ -3555,7 +3555,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeColorFunc *color_func = Object::cast_to<VisualShaderNodeColorFunc>(p_node);
 
 		if (color_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			color_func->set_function((VisualShaderNodeColorFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3566,7 +3566,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeIntOp *int_op = Object::cast_to<VisualShaderNodeIntOp>(p_node);
 
 		if (int_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			int_op->set_operator((VisualShaderNodeIntOp::Operator)(int)p_ops[0]);
 			return;
 		}
@@ -3577,7 +3577,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeIntFunc *int_func = Object::cast_to<VisualShaderNodeIntFunc>(p_node);
 
 		if (int_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			int_func->set_function((VisualShaderNodeIntFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3588,7 +3588,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeUIntOp *uint_op = Object::cast_to<VisualShaderNodeUIntOp>(p_node);
 
 		if (uint_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			uint_op->set_operator((VisualShaderNodeUIntOp::Operator)(int)p_ops[0]);
 			return;
 		}
@@ -3599,7 +3599,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeUIntFunc *uint_func = Object::cast_to<VisualShaderNodeUIntFunc>(p_node);
 
 		if (uint_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			uint_func->set_function((VisualShaderNodeUIntFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3610,7 +3610,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeTransformOp *mat_op = Object::cast_to<VisualShaderNodeTransformOp>(p_node);
 
 		if (mat_op) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			mat_op->set_operator((VisualShaderNodeTransformOp::Operator)(int)p_ops[0]);
 			return;
 		}
@@ -3621,7 +3621,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeTransformFunc *mat_func = Object::cast_to<VisualShaderNodeTransformFunc>(p_node);
 
 		if (mat_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			mat_func->set_function((VisualShaderNodeTransformFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3632,7 +3632,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorCompose *vec_compose = Object::cast_to<VisualShaderNodeVectorCompose>(p_node);
 
 		if (vec_compose) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			vec_compose->set_op_type((VisualShaderNodeVectorCompose::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3643,7 +3643,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorDecompose *vec_decompose = Object::cast_to<VisualShaderNodeVectorDecompose>(p_node);
 
 		if (vec_decompose) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			vec_decompose->set_op_type((VisualShaderNodeVectorDecompose::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3654,7 +3654,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeUVFunc *uv_func = Object::cast_to<VisualShaderNodeUVFunc>(p_node);
 
 		if (uv_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			uv_func->set_function((VisualShaderNodeUVFunc::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3665,7 +3665,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeIs *is = Object::cast_to<VisualShaderNodeIs>(p_node);
 
 		if (is) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			is->set_function((VisualShaderNodeIs::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3676,7 +3676,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeCompare *cmp = Object::cast_to<VisualShaderNodeCompare>(p_node);
 
 		if (cmp) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			cmp->set_function((VisualShaderNodeCompare::Function)(int)p_ops[0]);
 			return;
 		}
@@ -3687,7 +3687,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorDistance *dist = Object::cast_to<VisualShaderNodeVectorDistance>(p_node);
 
 		if (dist) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			dist->set_op_type((VisualShaderNodeVectorDistance::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3698,8 +3698,8 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeDerivativeFunc *der_func = Object::cast_to<VisualShaderNodeDerivativeFunc>(p_node);
 
 		if (der_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
+			ERR_FAIL_COND(p_ops[1].get_type() != VariantType::INT);
 			der_func->set_function((VisualShaderNodeDerivativeFunc::Function)(int)p_ops[0]);
 			der_func->set_op_type((VisualShaderNodeDerivativeFunc::OpType)(int)p_ops[1]);
 			return;
@@ -3711,7 +3711,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeMix *mix = Object::cast_to<VisualShaderNodeMix>(p_node);
 
 		if (mix) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			mix->set_op_type((VisualShaderNodeMix::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3722,7 +3722,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeClamp *clamp_func = Object::cast_to<VisualShaderNodeClamp>(p_node);
 
 		if (clamp_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			clamp_func->set_op_type((VisualShaderNodeClamp::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3733,7 +3733,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeSwitch *switch_func = Object::cast_to<VisualShaderNodeSwitch>(p_node);
 
 		if (switch_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			switch_func->set_op_type((VisualShaderNodeSwitch::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3743,7 +3743,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 	{
 		VisualShaderNodeFaceForward *face_forward = Object::cast_to<VisualShaderNodeFaceForward>(p_node);
 		if (face_forward) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			face_forward->set_op_type((VisualShaderNodeFaceForward::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3753,7 +3753,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 	{
 		VisualShaderNodeVectorLen *length = Object::cast_to<VisualShaderNodeVectorLen>(p_node);
 		if (length) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			length->set_op_type((VisualShaderNodeVectorLen::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3764,7 +3764,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeSmoothStep *smooth_step_func = Object::cast_to<VisualShaderNodeSmoothStep>(p_node);
 
 		if (smooth_step_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			smooth_step_func->set_op_type((VisualShaderNodeSmoothStep::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3775,7 +3775,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeStep *step_func = Object::cast_to<VisualShaderNodeStep>(p_node);
 
 		if (step_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			step_func->set_op_type((VisualShaderNodeStep::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -3786,7 +3786,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeMultiplyAdd *fma_func = Object::cast_to<VisualShaderNodeMultiplyAdd>(p_node);
 
 		if (fma_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			fma_func->set_op_type((VisualShaderNodeMultiplyAdd::OpType)(int)p_ops[0]);
 		}
 	}
@@ -3796,7 +3796,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeRemap *remap_func = Object::cast_to<VisualShaderNodeRemap>(p_node);
 
 		if (remap_func) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			remap_func->set_op_type((VisualShaderNodeRemap::OpType)(int)p_ops[0]);
 		}
 	}
@@ -3806,7 +3806,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		VisualShaderNodeVectorRefract *refract = Object::cast_to<VisualShaderNodeVectorRefract>(p_node);
 
 		if (refract) {
-			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			ERR_FAIL_COND(p_ops[0].get_type() != VariantType::INT);
 			refract->set_op_type((VisualShaderNodeVectorRefract::OpType)(int)p_ops[0]);
 			return;
 		}
@@ -6305,7 +6305,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Node(s) to Visual Shader"));
 
-			if (d["files"].get_type() == Variant::PACKED_STRING_ARRAY) {
+			if (d["files"].get_type() == VariantType::PACKED_STRING_ARRAY) {
 				PackedStringArray arr = d["files"];
 				for (int i = 0; i < arr.size(); i++) {
 					String type = ResourceLoader::get_resource_type(arr[i]);
@@ -8079,7 +8079,7 @@ public:
 			}
 		}
 
-		if (p_value.get_type() == Variant::OBJECT) {
+		if (p_value.get_type() == VariantType::OBJECT) {
 			Ref<Resource> prev_res = vsnode->get(p_property);
 			Ref<Resource> curr_res = p_value;
 
@@ -8382,8 +8382,8 @@ bool EditorInspectorVisualShaderModePlugin::can_handle(Object *p_object) {
 	return true; // Can handle everything.
 }
 
-bool EditorInspectorVisualShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	if (p_path == "mode" && p_object->is_class("VisualShader") && p_type == Variant::INT) {
+bool EditorInspectorVisualShaderModePlugin::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (p_path == "mode" && p_object->is_class("VisualShader") && p_type == VariantType::INT) {
 		EditorPropertyVisualShaderMode *mode_editor = memnew(EditorPropertyVisualShaderMode);
 		Vector<String> options = p_hint_text.split(",");
 		mode_editor->setup(options);

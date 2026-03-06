@@ -376,7 +376,7 @@ uint32_t Dictionary::recursive_hash(int recursion_count) const {
 		return 0;
 	}
 
-	uint32_t h = hash_murmur3_one_32(Variant::DICTIONARY);
+	uint32_t h = hash_murmur3_one_32(VariantType::DICTIONARY);
 
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
@@ -434,8 +434,8 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	const ContainerTypeValidate &typed_value = _p->typed_value;
 	const ContainerTypeValidate &typed_value_source = p_dictionary._p->typed_value;
 
-	if ((typed_key == typed_key_source || typed_key.type == Variant::NIL || (typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source))) &&
-			(typed_value == typed_value_source || typed_value.type == Variant::NIL || (typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source)))) {
+	if ((typed_key == typed_key_source || typed_key.type == VariantType::NIL || (typed_key_source.type == VariantType::OBJECT && typed_key.can_reference(typed_key_source))) &&
+			(typed_value == typed_value_source || typed_value.type == VariantType::NIL || (typed_value_source.type == VariantType::OBJECT && typed_value.can_reference(typed_value_source)))) {
 		// From same to same or,
 		// from anything to variants or,
 		// from subclasses to base classes.
@@ -454,7 +454,7 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	value_array.resize(size);
 	Variant *value_data = value_array.ptrw();
 
-	if (typed_key == typed_key_source || typed_key.type == Variant::NIL || (typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source))) {
+	if (typed_key == typed_key_source || typed_key.type == VariantType::NIL || (typed_key_source.type == VariantType::OBJECT && typed_key.can_reference(typed_key_source))) {
 		// From same to same or,
 		// from anything to variants or,
 		// from subclasses to base classes.
@@ -463,21 +463,21 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			const Variant *key = &E.key;
 			key_data[i++] = *key;
 		}
-	} else if ((typed_key_source.type == Variant::NIL && typed_key.type == Variant::OBJECT) || (typed_key_source.type == Variant::OBJECT && typed_key_source.can_reference(typed_key))) {
+	} else if ((typed_key_source.type == VariantType::NIL && typed_key.type == VariantType::OBJECT) || (typed_key_source.type == VariantType::OBJECT && typed_key_source.can_reference(typed_key))) {
 		// From variants to objects or,
 		// from base classes to subclasses.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
-			if (key->get_type() != Variant::NIL && (key->get_type() != Variant::OBJECT || !typed_key.validate_object(*key, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+			if (key->get_type() != VariantType::NIL && (key->get_type() != VariantType::OBJECT || !typed_key.validate_object(*key, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", VariantType::get_type_name(key->get_type()), VariantType::get_type_name(typed_key.type)));
 			}
 			key_data[i++] = *key;
 		}
-	} else if (typed_key.type == Variant::OBJECT || typed_key_source.type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
-				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
-	} else if (typed_key_source.type == Variant::NIL && typed_key.type != Variant::OBJECT) {
+	} else if (typed_key.type == VariantType::OBJECT || typed_key_source.type == VariantType::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", VariantType::get_type_name(typed_key_source.type), VariantType::get_type_name(typed_value_source.type),
+				VariantType::get_type_name(typed_key.type), VariantType::get_type_name(typed_value.type)));
+	} else if (typed_key_source.type == VariantType::NIL && typed_key.type != VariantType::OBJECT) {
 		// From variants to primitives.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
@@ -486,28 +486,28 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				key_data[i++] = *key;
 				continue;
 			}
-			if (!Variant::can_convert_strict(key->get_type(), typed_key.type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+			if (!VariantType::can_convert_strict(key->get_type(), typed_key.type)) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", VariantType::get_type_name(key->get_type()), VariantType::get_type_name(typed_key.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_key.type, key_data[i++], &key, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", VariantType::get_type_name(key->get_type()), VariantType::get_type_name(typed_key.type)));
 		}
-	} else if (Variant::can_convert_strict(typed_key_source.type, typed_key.type)) {
+	} else if (VariantType::can_convert_strict(typed_key_source.type, typed_key.type)) {
 		// From primitives to different convertible primitives.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
 			Callable::CallError ce;
 			Variant::construct(typed_key.type, key_data[i++], &key, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", VariantType::get_type_name(key->get_type()), VariantType::get_type_name(typed_key.type)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
-				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", VariantType::get_type_name(typed_key_source.type), VariantType::get_type_name(typed_value_source.type),
+				VariantType::get_type_name(typed_key.type), VariantType::get_type_name(typed_value.type)));
 	}
 
-	if (typed_value == typed_value_source || typed_value.type == Variant::NIL || (typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source))) {
+	if (typed_value == typed_value_source || typed_value.type == VariantType::NIL || (typed_value_source.type == VariantType::OBJECT && typed_value.can_reference(typed_value_source))) {
 		// From same to same or,
 		// from anything to variants or,
 		// from subclasses to base classes.
@@ -516,21 +516,21 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			const Variant *value = &E.value;
 			value_data[i++] = *value;
 		}
-	} else if (((typed_value_source.type == Variant::NIL && typed_value.type == Variant::OBJECT) || (typed_value_source.type == Variant::OBJECT && typed_value_source.can_reference(typed_value)))) {
+	} else if (((typed_value_source.type == VariantType::NIL && typed_value.type == VariantType::OBJECT) || (typed_value_source.type == VariantType::OBJECT && typed_value_source.can_reference(typed_value)))) {
 		// From variants to objects or,
 		// from base classes to subclasses.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
-			if (value->get_type() != Variant::NIL && (value->get_type() != Variant::OBJECT || !typed_value.validate_object(*value, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+			if (value->get_type() != VariantType::NIL && (value->get_type() != VariantType::OBJECT || !typed_value.validate_object(*value, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed_value.type)));
 			}
 			value_data[i++] = *value;
 		}
-	} else if (typed_value.type == Variant::OBJECT || typed_value_source.type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
-				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
-	} else if (typed_value_source.type == Variant::NIL && typed_value.type != Variant::OBJECT) {
+	} else if (typed_value.type == VariantType::OBJECT || typed_value_source.type == VariantType::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", VariantType::get_type_name(typed_key_source.type), VariantType::get_type_name(typed_value_source.type),
+				VariantType::get_type_name(typed_key.type), VariantType::get_type_name(typed_value.type)));
+	} else if (typed_value_source.type == VariantType::NIL && typed_value.type != VariantType::OBJECT) {
 		// From variants to primitives.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
@@ -539,25 +539,25 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				value_data[i++] = *value;
 				continue;
 			}
-			if (!Variant::can_convert_strict(value->get_type(), typed_value.type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+			if (!VariantType::can_convert_strict(value->get_type(), typed_value.type)) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed_value.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_value.type, value_data[i++], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed_value.type)));
 		}
-	} else if (Variant::can_convert_strict(typed_value_source.type, typed_value.type)) {
+	} else if (VariantType::can_convert_strict(typed_value_source.type, typed_value.type)) {
 		// From primitives to different convertible primitives.
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
 			Callable::CallError ce;
 			Variant::construct(typed_value.type, value_data[i++], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], VariantType::get_type_name(value->get_type()), VariantType::get_type_name(typed_value.type)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
-				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", VariantType::get_type_name(typed_key_source.type), VariantType::get_type_name(typed_value_source.type),
+				VariantType::get_type_name(typed_key.type), VariantType::get_type_name(typed_value.type)));
 	}
 
 	for (int i = 0; i < size; i++) {
@@ -649,19 +649,19 @@ void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_na
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed_key.type != Variant::NIL || _p->typed_value.type != Variant::NIL, "Type can only be set once.");
-	ERR_FAIL_COND_MSG((p_key_class_name != StringName() && p_key_type != Variant::OBJECT) || (p_value_class_name != StringName() && p_value_type != Variant::OBJECT), "Class names can only be set for type OBJECT.");
+	ERR_FAIL_COND_MSG(_p->typed_key.type != VariantType::NIL || _p->typed_value.type != VariantType::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG((p_key_class_name != StringName() && p_key_type != VariantType::OBJECT) || (p_value_class_name != StringName() && p_value_type != VariantType::OBJECT), "Class names can only be set for type OBJECT.");
 	Ref<Script> key_script = p_key_script;
 	ERR_FAIL_COND_MSG(key_script.is_valid() && p_key_class_name == StringName(), "Script class can only be set together with base class name.");
 	Ref<Script> value_script = p_value_script;
 	ERR_FAIL_COND_MSG(value_script.is_valid() && p_value_class_name == StringName(), "Script class can only be set together with base class name.");
 
-	_p->typed_key.type = Variant::Type(p_key_type);
+	_p->typed_key.type = VariantType::Type(p_key_type);
 	_p->typed_key.class_name = p_key_class_name;
 	_p->typed_key.script = key_script;
 	_p->typed_key.where = "TypedDictionary.Key";
 
-	_p->typed_value.type = Variant::Type(p_value_type);
+	_p->typed_value.type = VariantType::Type(p_value_type);
 	_p->typed_value.class_name = p_value_class_name;
 	_p->typed_value.script = value_script;
 	_p->typed_value.where = "TypedDictionary.Value";
@@ -672,11 +672,11 @@ bool Dictionary::is_typed() const {
 }
 
 bool Dictionary::is_typed_key() const {
-	return _p->typed_key.type != Variant::NIL;
+	return _p->typed_key.type != VariantType::NIL;
 }
 
 bool Dictionary::is_typed_value() const {
-	return _p->typed_value.type != Variant::NIL;
+	return _p->typed_value.type != VariantType::NIL;
 }
 
 bool Dictionary::is_same_instance(const Dictionary &p_other) const {

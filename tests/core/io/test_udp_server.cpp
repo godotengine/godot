@@ -152,7 +152,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 
 		Variant received_var;
 		CHECK_EQ(cfs->get_var(received_var), Error::OK);
-		CHECK_EQ(received_var.get_type(), Variant::STRING);
+		CHECK_EQ(received_var.get_type(), VariantType::STRING);
 		packets.push_back(received_var);
 
 		// Sending data from server to client.
@@ -187,7 +187,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 		Variant received_var;
 		const float expected = 3.1415 + i;
 		CHECK_EQ(clients[i]->get_var(received_var), Error::OK);
-		CHECK_EQ(received_var.get_type(), Variant::FLOAT);
+		CHECK_EQ(received_var.get_type(), VariantType::FLOAT);
 		CHECK_EQ(received_var.operator float(), expected);
 	}
 

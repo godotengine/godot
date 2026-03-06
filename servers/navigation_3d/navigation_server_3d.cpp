@@ -219,7 +219,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationServer3D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationServer3D::get_debug_enabled);
 
-	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
+	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(VariantType::RID, "map")));
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 	ADD_SIGNAL(MethodInfo("avoidance_debug_changed"));
@@ -246,13 +246,13 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults3D::NAV_MESH_CELL_SIZE);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::NAV_MESH_CELL_HEIGHT);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults3D::NAV_MESH_CELL_SIZE);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::NAV_MESH_CELL_HEIGHT);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/3d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
+	GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "navigation/3d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::EDGE_CONNECTION_MARGIN);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::LINK_CONNECTION_RADIUS);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::EDGE_CONNECTION_MARGIN);
+	GLOBAL_DEF_BASIC(PropertyInfo(VariantType::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::LINK_CONNECTION_RADIUS);
 
 #ifdef DEBUG_ENABLED
 #ifndef DISABLE_DEPRECATED
@@ -327,7 +327,7 @@ NavigationServer3D::NavigationServer3D() {
 
 	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths", true);
 	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths_xray", true);
-	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/navigation/3d/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
+	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(VariantType::FLOAT, "debug/shapes/navigation/3d/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
 
 	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
 	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
@@ -1072,7 +1072,7 @@ void NavigationServer3DManager::on_servers_changed() {
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
 		navigation_servers_enum_str += "," + get_server_name(i);
 	}
-	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, navigation_servers_enum_str));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(VariantType::STRING, setting_property_name, PROPERTY_HINT_ENUM, navigation_servers_enum_str));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
 	ProjectSettings::get_singleton()->set_as_basic(setting_property_name, true);
 }

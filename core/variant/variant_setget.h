@@ -66,7 +66,7 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -84,10 +84,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member); \
 		} \
 		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
+			if (value->get_type() == VariantType::FLOAT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<double>::get(value); \
 				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
+			} else if (value->get_type() == VariantType::INT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<int64_t>::get(value); \
 				valid = true; \
 			} else { \
@@ -102,7 +102,7 @@
 			b.m_member = PtrToArg<m_member_type>::convert(member); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -135,7 +135,7 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -153,10 +153,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member); \
 		} \
 		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
+			if (value->get_type() == VariantType::FLOAT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<double>::get(value); \
 				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
+			} else if (value->get_type() == VariantType::INT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<int64_t>::get(value); \
 				valid = true; \
 			} else { \
@@ -171,7 +171,7 @@
 			b.m_custom = PtrToArg<m_member_type>::convert(member); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -204,7 +204,7 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member)); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -222,10 +222,10 @@
 			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member); \
 		} \
 		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
+			if (value->get_type() == VariantType::FLOAT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<double>::get(value)); \
 				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
+			} else if (value->get_type() == VariantType::INT) { \
 				VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<int64_t>::get(value)); \
 				valid = true; \
 			} else { \
@@ -240,7 +240,7 @@
 			b.m_setter(PtrToArg<m_member_type>::convert(member)); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};
@@ -273,7 +273,7 @@
 			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member)); \
 			PtrToArg<m_base_type>::encode(b, base); \
 		} \
-		static Variant::Type get_type() { \
+		static VariantType::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
 		} \
 	};

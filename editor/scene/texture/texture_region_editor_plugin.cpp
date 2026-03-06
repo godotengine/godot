@@ -1335,8 +1335,8 @@ void EditorInspectorPluginTextureRegion::_region_edit(Object *p_object) {
 	texture_region_editor->edit(p_object);
 }
 
-bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	if ((p_type == Variant::RECT2 || p_type == Variant::RECT2I)) {
+bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if ((p_type == VariantType::RECT2 || p_type == VariantType::RECT2I)) {
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			EditorInspectorActionButton *button = memnew(EditorInspectorActionButton(TTRC("Edit Region"), SNAME("RegionEdit")));
 			button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));

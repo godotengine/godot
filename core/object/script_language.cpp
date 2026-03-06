@@ -157,7 +157,7 @@ PropertyInfo Script::get_class_category() const {
 		}
 	}
 
-	return PropertyInfo(Variant::NIL, scr_name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+	return PropertyInfo(VariantType::NIL, scr_name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
 }
 
 #endif // TOOLS_ENABLED
@@ -188,7 +188,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
 void Script::reload_from_file() {
@@ -750,7 +750,7 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 	}
 }
 
-Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
+VariantType::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	if (values.has(p_name)) {
 		if (r_is_valid) {
 			*r_is_valid = true;
@@ -769,7 +769,7 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 		*r_is_valid = false;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
 void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
@@ -822,7 +822,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		StringName n = E.name;
 		new_values.insert(n);
 
-		if (!values.has(n) || (E.type != Variant::NIL && values[n].get_type() != E.type)) {
+		if (!values.has(n) || (E.type != VariantType::NIL && values[n].get_type() != E.type)) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}

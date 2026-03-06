@@ -42,7 +42,7 @@ class EditorPropertyVectorN : public EditorProperty {
 	static const String COMPONENT_LABELS[4];
 
 	int component_count = 0;
-	Variant::Type vector_type;
+	VariantType::Type vector_type;
 
 	Vector<EditorSpinSlider *> spin_sliders;
 	TextureButton *linked = nullptr;
@@ -62,7 +62,7 @@ public:
 	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint, bool p_link = false, bool p_is_int = false);
-	EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal);
+	EditorPropertyVectorN(VariantType::Type p_type, bool p_force_wide, bool p_horizontal);
 };
 
 class EditorPropertyVector2 : public EditorPropertyVectorN {

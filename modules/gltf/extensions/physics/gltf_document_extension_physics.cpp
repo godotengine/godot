@@ -156,7 +156,7 @@ bool _will_gltf_shape_become_subnode(const Ref<GLTFState> &p_state, const Ref<GL
 	}
 	const Ref<GLTFNode> &parent_gltf_node = state_gltf_nodes[parent_index];
 	const Variant parent_body_maybe = parent_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
-	if (parent_body_maybe.get_type() != Variant::NIL) {
+	if (parent_body_maybe.get_type() != VariantType::NIL) {
 		Ref<GLTFPhysicsBody> parent_body = parent_body_maybe;
 		// If the parent matches the triggerness, then this node will be generated as a shape (CollisionShape3D).
 		// Otherwise, if there is a mismatch, a body will be generated for this node, and a subnode will also be generated for the shape.
@@ -173,7 +173,7 @@ bool _will_gltf_shape_become_subnode(const Ref<GLTFState> &p_state, const Ref<GL
 		return false;
 	}
 	Variant compound_trigger_maybe = parent_gltf_node->has_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"));
-	if (compound_trigger_maybe.get_type() != Variant::NIL) {
+	if (compound_trigger_maybe.get_type() != VariantType::NIL) {
 		Array compound_trigger_nodes = compound_trigger_maybe;
 		// Remember, JSON only has numbers, not integers, so must cast to double.
 		return !compound_trigger_nodes.has((double)p_gltf_node_index);
@@ -188,9 +188,9 @@ NodePath _get_scene_node_path_for_shape_index(const Ref<GLTFState> &p_state, con
 		ERR_CONTINUE(gltf_node.is_null());
 		// Check if this node has a shape index and if it matches the one we are looking for.
 		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
-		if (shape_index_maybe.get_type() != Variant::INT) {
+		if (shape_index_maybe.get_type() != VariantType::INT) {
 			shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
-			if (shape_index_maybe.get_type() != Variant::INT) {
+			if (shape_index_maybe.get_type() != VariantType::INT) {
 				continue;
 			}
 		}
@@ -227,12 +227,12 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::import_object_model_p
 			}
 			String godot_prop_name = prop_name;
 			if (prop_name == "size") {
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (prop_name == "height" || prop_name == "radius") {
-				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			} else if (prop_name == "radiusBottom" || prop_name == "radiusTop") {
 				godot_prop_name = "radius";
-				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			} else {
 				// Not something we handle, return without appending a NodePath.
 				return ret;
@@ -259,19 +259,19 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::import_object_model_p
 			}
 			if (prop_name == "mass") {
 				ret->append_path_to_property(node_path, "mass");
-				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			} else if (prop_name == "linearVelocity") {
 				ret->append_path_to_property(node_path, "linear_velocity");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (prop_name == "angularVelocity") {
 				ret->append_path_to_property(node_path, "angular_velocity");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (prop_name == "centerOfMass") {
 				ret->append_path_to_property(node_path, "center_of_mass");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (prop_name == "inertiaDiagonal") {
 				ret->append_path_to_property(node_path, "inertia");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (prop_name == "inertiaOrientation") {
 				WARN_PRINT("GLTF Physics: The 'inertiaOrientation' property is not supported by Godot.");
 			} else {
@@ -634,19 +634,19 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::export_object_model_p
 		split_json_pointer.append("motion");
 		if (node_prop == StringName("mass")) {
 			split_json_pointer.append("mass");
-			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 		} else if (node_prop == StringName("linear_velocity")) {
 			split_json_pointer.append("linearVelocity");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (node_prop == StringName("angular_velocity")) {
 			split_json_pointer.append("angularVelocity");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (node_prop == StringName("center_of_mass")) {
 			split_json_pointer.append("centerOfMass");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (node_prop == StringName("inertia")) {
 			split_json_pointer.append("inertiaDiagonal");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else {
 			// Not something we handle, return without setting the JSON pointer.
 			return ret;
@@ -666,30 +666,30 @@ Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::export_object_model_p
 		const Ref<GLTFNode> &gltf_node = state_gltf_nodes[p_gltf_node_index];
 		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
 		String shape_type;
-		if (shape_index_maybe.get_type() == Variant::INT) {
+		if (shape_index_maybe.get_type() == VariantType::INT) {
 			Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
 			shape_type = collider_shape->get_shape_type();
 		} else {
 			shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
-			if (shape_index_maybe.get_type() == Variant::INT) {
+			if (shape_index_maybe.get_type() == VariantType::INT) {
 				Ref<GLTFPhysicsShape> trigger_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
 				shape_type = trigger_shape->get_shape_type();
 			}
 		}
-		ERR_FAIL_COND_V(shape_index_maybe.get_type() != Variant::INT, ret);
+		ERR_FAIL_COND_V(shape_index_maybe.get_type() != VariantType::INT, ret);
 		GLTFShapeIndex shape_index = shape_index_maybe;
 		split_json_pointer.append(itos(shape_index));
 		split_json_pointer.append(shape_type);
 		const StringName &shape_prop = path_subnames[1];
 		if (shape_prop == StringName("size")) {
 			split_json_pointer.append("size");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (shape_prop == StringName("radius")) {
 			split_json_pointer.append("radius");
-			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 		} else if (shape_prop == StringName("height")) {
 			split_json_pointer.append("height");
-			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 		} else {
 			// Not something we handle, return without setting the JSON pointer.
 			return ret;
@@ -711,13 +711,13 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 		}
 	}
 	Variant collider_shape_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
-	if (collider_shape_index.get_type() == Variant::INT) {
+	if (collider_shape_index.get_type() == VariantType::INT) {
 		Dictionary collider_dict;
 		collider_dict["shape"] = collider_shape_index;
 		physics_body_ext["collider"] = collider_dict;
 	}
 	Variant trigger_shape_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
-	if (trigger_shape_index.get_type() == Variant::INT) {
+	if (trigger_shape_index.get_type() == VariantType::INT) {
 		Dictionary trigger_dict = physics_body_ext.get_or_add("trigger", {});
 		trigger_dict["shape"] = trigger_shape_index;
 	}

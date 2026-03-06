@@ -124,7 +124,7 @@ void BlitMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &BlitMaterial::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &BlitMaterial::get_blend_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Disabled"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Disabled"), "set_blend_mode", "get_blend_mode");
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);

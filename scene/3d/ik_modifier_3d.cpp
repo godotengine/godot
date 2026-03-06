@@ -65,7 +65,7 @@ void IKModifier3D::_bind_methods() {
 	// To process manually.
 	ClassDB::bind_method(D_METHOD("reset"), &IKModifier3D::reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mutable_bone_axes"), "set_mutable_bone_axes", "are_bone_axes_mutable");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "mutable_bone_axes"), "set_mutable_bone_axes", "are_bone_axes_mutable");
 }
 
 void IKModifier3D::_set_active(bool p_active) {

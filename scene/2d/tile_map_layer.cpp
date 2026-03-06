@@ -2269,24 +2269,24 @@ void TileMapLayer::_bind_methods() {
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "coords", "tile_data");
 	GDVIRTUAL_BIND(_update_cells, "coords", "forced_cleanup");
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
+	ADD_PROPERTY(PropertyInfo(VariantType::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, TileSet::get_class_static()), "set_tile_set", "get_tile_set");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, TileSet::get_class_static()), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "x_draw_order_reversed"), "set_x_draw_order_reversed", "is_x_draw_order_reversed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "x_draw_order_reversed"), "set_x_draw_order_reversed", "is_x_draw_order_reversed");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_GROUP("Physics", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_kinematic_bodies"), "set_use_kinematic_bodies", "is_using_kinematic_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_quadrant_size"), "set_physics_quadrant_size", "get_physics_quadrant_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_kinematic_bodies"), "set_use_kinematic_bodies", "is_using_kinematic_bodies");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "physics_quadrant_size"), "set_physics_quadrant_size", "get_physics_quadrant_size");
 #ifndef NAVIGATION_2D_DISABLED
 	ADD_GROUP("Navigation", "navigation_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_navigation_enabled", "is_navigation_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "navigation_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_navigation_enabled", "is_navigation_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 #endif // NAVIGATION_2D_DISABLED
 
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));

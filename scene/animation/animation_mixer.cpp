@@ -131,7 +131,7 @@ uint32_t AnimationMixer::_get_libraries_property_usage() const {
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
 		const String path = vformat("libraries/%s", animation_libraries[i].name);
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, AnimationLibrary::get_class_static(), _get_libraries_property_usage()));
+		p_list->push_back(PropertyInfo(VariantType::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, AnimationLibrary::get_class_static(), _get_libraries_property_usage()));
 	}
 }
 
@@ -2448,22 +2448,22 @@ void AnimationMixer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationMixer::set_reset_on_save_enabled);
 	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationMixer::is_reset_on_save_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "active"), "set_active", "is_active");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
 
 	ADD_GROUP("Root Motion", "root_motion_");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "root_motion_local"), "set_root_motion_local", "is_root_motion_local");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "root_motion_local"), "set_root_motion_local", "is_root_motion_local");
 
 	ADD_GROUP("Audio", "audio_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
 
 	ADD_GROUP("Callback Mode", "callback_mode_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_callback_mode_process", "get_callback_mode_process");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_method", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_callback_mode_method", "get_callback_mode_method");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_discrete", PROPERTY_HINT_ENUM, "Dominant,Recessive,Force Continuous"), "set_callback_mode_discrete", "get_callback_mode_discrete");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_callback_mode_process", "get_callback_mode_process");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "callback_mode_method", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_callback_mode_method", "get_callback_mode_method");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "callback_mode_discrete", PROPERTY_HINT_ENUM, "Dominant,Recessive,Force Continuous"), "set_callback_mode_discrete", "get_callback_mode_discrete");
 
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_IDLE);
@@ -2478,8 +2478,8 @@ void AnimationMixer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo(SNAME("animation_list_changed")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_libraries_updated")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(VariantType::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(VariantType::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
 	ADD_SIGNAL(MethodInfo(SNAME("mixer_applied")));
 	ADD_SIGNAL(MethodInfo(SNAME("mixer_updated"))); // For updating dummy player.

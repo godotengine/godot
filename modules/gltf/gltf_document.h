@@ -139,7 +139,7 @@ private:
 	PackedVector3Array _decode_accessor_as_vec3(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids = PackedInt32Array());
 	PackedColorArray _decode_accessor_as_color(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids = PackedInt32Array());
 	Vector<Quaternion> _decode_accessor_as_quaternion(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index);
-	Array _decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, Variant::Type p_variant_type);
+	Array _decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, VariantType::Type p_variant_type);
 	Error _parse_meshes(Ref<GLTFState> p_state);
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);

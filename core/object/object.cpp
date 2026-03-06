@@ -98,7 +98,7 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	PropertyInfo pi;
 
 	if (p_dict.has("type")) {
-		pi.type = Variant::Type(int(p_dict["type"]));
+		pi.type = VariantType::Type(int(p_dict["type"]));
 	}
 
 	if (p_dict.has("name")) {
@@ -193,7 +193,7 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 }
 
 uint32_t MethodInfo::get_compatibility_hash() const {
-	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+	bool has_return = (return_val.type != VariantType::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 
 	uint32_t hash = hash_murmur3_one_32(has_return);
 	hash = hash_murmur3_one_32(arguments.size(), hash);
@@ -583,7 +583,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	if (_extension) {
 		const ObjectGDExtension *current_extension = _extension;
 		while (current_extension) {
-			p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, current_extension->class_name, PROPERTY_USAGE_CATEGORY));
+			p_list->push_back(PropertyInfo(VariantType::NIL, current_extension->class_name, PROPERTY_HINT_NONE, current_extension->class_name, PROPERTY_USAGE_CATEGORY));
 
 			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
 
@@ -618,7 +618,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	_get_property_listv(p_list, p_reversed);
 
 	const uint32_t base_script_usage = is_class(Script::get_class_static()) ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static(), base_script_usage | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_NEVER_DUPLICATE));
+	p_list->push_back(PropertyInfo(VariantType::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static(), base_script_usage | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_NEVER_DUPLICATE));
 
 	if (script_instance && !p_reversed) {
 		script_instance->get_property_list(p_list);
@@ -626,7 +626,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
 		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
-		if (K.value.get_type() == Variant::OBJECT) {
+		if (K.value.get_type() == VariantType::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
 			if (Object::cast_to<Script>(obj)) {
@@ -655,7 +655,7 @@ void Object::validate_property(PropertyInfo &p_property) const {
 			p_property.usage,
 		};
 		if (_extension->validate_property(_extension_instance, &gdext_prop)) {
-			p_property.type = (Variant::Type)gdext_prop.type;
+			p_property.type = (VariantType::Type)gdext_prop.type;
 			p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
 			p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
 			p_property.hint = (PropertyHint)gdext_prop.hint;
@@ -723,7 +723,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return Variant();
 	}
 
@@ -742,7 +742,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return Variant();
 	}
 
@@ -1118,7 +1118,7 @@ bool Object::has_meta(const StringName &p_name) const {
 }
 
 void Object::set_meta(const StringName &p_name, const Variant &p_value) {
-	if (p_value.get_type() == Variant::NIL) {
+	if (p_value.get_type() == VariantType::NIL) {
 		if (metadata.has(p_name)) {
 			metadata.erase(p_name);
 
@@ -1253,7 +1253,7 @@ Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::Cal
 	if (unlikely(!p_args[0]->is_string())) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
 	}
 
@@ -1459,7 +1459,7 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 			param.name = d["name"];
 		}
 		if (d.has("type")) {
-			param.type = (Variant::Type)(int)d["type"];
+			param.type = (VariantType::Type)(int)d["type"];
 		}
 
 		mi.arguments.push_back(param);
@@ -1834,7 +1834,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 
 void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
-		case Variant::OBJECT: {
+		case VariantType::OBJECT: {
 			Ref<Resource> r = p_var;
 			if (r.is_null()) {
 				return;
@@ -1852,14 +1852,14 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 			r->set_path("");
 			r->clear_internal_resource_paths();
 		} break;
-		case Variant::ARRAY: {
+		case VariantType::ARRAY: {
 			Array a = p_var;
 			for (const Variant &var : a) {
 				_clear_internal_resource_paths(var);
 			}
 
 		} break;
-		case Variant::DICTIONARY: {
+		case VariantType::DICTIONARY: {
 			Dictionary d = p_var;
 
 			for (const KeyValue<Variant, Variant> &kv : d) {
@@ -1948,7 +1948,7 @@ void Object::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "emit_signal";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "signal"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "signal"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi, varray(), false);
 	}
@@ -1956,7 +1956,7 @@ void Object::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call", &Object::_call_bind, mi);
 	}
@@ -1964,7 +1964,7 @@ void Object::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call_deferred";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi, varray(), false);
 	}
@@ -2011,59 +2011,59 @@ void Object::_bind_methods() {
 
 	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_to_string"));
+	BIND_OBJ_CORE_METHOD(MethodInfo(VariantType::STRING, "_to_string"));
 
 	{
 		MethodInfo mi("_notification");
-		mi.arguments.push_back(PropertyInfo(Variant::INT, "what"));
+		mi.arguments.push_back(PropertyInfo(VariantType::INT, "what"));
 		mi.arguments_metadata.push_back(GodotTypeInfo::Metadata::METADATA_INT_IS_INT32);
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
 	{
 		MethodInfo mi("_set");
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
-		mi.arguments.push_back(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
-		mi.return_val.type = Variant::BOOL;
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "property"));
+		mi.arguments.push_back(PropertyInfo(VariantType::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		mi.return_val.type = VariantType::BOOL;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
 #ifdef TOOLS_ENABLED
 	{
 		MethodInfo mi("_get");
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "property"));
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
 	{
 		MethodInfo mi("_get_property_list");
-		mi.return_val.type = Variant::ARRAY;
+		mi.return_val.type = VariantType::ARRAY;
 		mi.return_val.hint = PROPERTY_HINT_ARRAY_TYPE;
 		mi.return_val.hint_string = "Dictionary";
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::NIL, "_validate_property", PropertyInfo(Variant::DICTIONARY, "property")));
+	BIND_OBJ_CORE_METHOD(MethodInfo(VariantType::NIL, "_validate_property", PropertyInfo(VariantType::DICTIONARY, "property")));
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
+	BIND_OBJ_CORE_METHOD(MethodInfo(VariantType::BOOL, "_property_can_revert", PropertyInfo(VariantType::STRING_NAME, "property")));
 
 	{
 		MethodInfo mi("_property_get_revert");
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "property"));
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
 	// These are actually `Variant` methods, but that doesn't matter since scripts can't inherit built-in types.
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_iter_init", PropertyInfo(Variant::ARRAY, "iter")));
+	BIND_OBJ_CORE_METHOD(MethodInfo(VariantType::BOOL, "_iter_init", PropertyInfo(VariantType::ARRAY, "iter")));
 
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_iter_next", PropertyInfo(Variant::ARRAY, "iter")));
+	BIND_OBJ_CORE_METHOD(MethodInfo(VariantType::BOOL, "_iter_next", PropertyInfo(VariantType::ARRAY, "iter")));
 
 	{
 		MethodInfo mi("_iter_get");
-		mi.arguments.push_back(PropertyInfo(Variant::NIL, "iter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		mi.arguments.push_back(PropertyInfo(VariantType::NIL, "iter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
@@ -2096,9 +2096,9 @@ bool Object::is_blocking_signals() const {
 	return _block_signals;
 }
 
-Variant::Type Object::get_static_property_type(const StringName &p_property, bool *r_valid) const {
+VariantType::Type Object::get_static_property_type(const StringName &p_property, bool *r_valid) const {
 	bool valid;
-	Variant::Type t = ClassDB::get_property_type(get_class_name(), p_property, &valid);
+	VariantType::Type t = ClassDB::get_property_type(get_class_name(), p_property, &valid);
 	if (valid) {
 		if (r_valid) {
 			*r_valid = true;
@@ -2113,26 +2113,26 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 		*r_valid = false;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
-Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
+VariantType::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
 	if (p_path.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}
 
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 
 	bool valid = false;
-	Variant::Type t = get_static_property_type(p_path[0], &valid);
+	VariantType::Type t = get_static_property_type(p_path[0], &valid);
 	if (!valid) {
 		if (r_valid) {
 			*r_valid = false;
 		}
 
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 
 	Callable::CallError ce;
@@ -2140,12 +2140,12 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 	Variant::construct(t, check, nullptr, 0, ce);
 
 	for (int i = 1; i < p_path.size(); i++) {
-		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
+		if (check.get_type() == VariantType::OBJECT || check.get_type() == VariantType::DICTIONARY || check.get_type() == VariantType::ARRAY) {
 			// We cannot be sure about the type of properties this type can have
 			if (r_valid) {
 				*r_valid = false;
 			}
-			return Variant::NIL;
+			return VariantType::NIL;
 		}
 
 		check = check.get_named(p_path[i], valid);
@@ -2154,7 +2154,7 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 			if (r_valid) {
 				*r_valid = false;
 			}
-			return Variant::NIL;
+			return VariantType::NIL;
 		}
 	}
 

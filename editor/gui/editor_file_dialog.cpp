@@ -95,7 +95,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disable_overwrite_warning", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 #endif
 }
 

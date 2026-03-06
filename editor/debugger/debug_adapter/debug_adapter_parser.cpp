@@ -191,7 +191,7 @@ Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &p_a
 	Vector<String> play_args;
 	if (p_args.has("playArgs")) {
 		Variant v = p_args["playArgs"];
-		if (v.get_type() == Variant::ARRAY) {
+		if (v.get_type() == VariantType::ARRAY) {
 			Array arr = v;
 			for (const Variant &arg : arr) {
 				play_args.push_back(String(arg));

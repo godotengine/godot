@@ -39,28 +39,28 @@
 
 void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/apply_node_transforms"), true));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/normalize_position_tracks"), true));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/reset_all_bone_poses_after_import"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/apply_node_transforms"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/normalize_position_tracks"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/reset_all_bone_poses_after_import"), true));
 
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "retarget/rest_fixer/retarget_method", PROPERTY_HINT_ENUM, "None,Overwrite Axis,Use Retarget Modifier", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/keep_global_rest_on_leftovers"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, "retarget/rest_fixer/retarget_method", PROPERTY_HINT_ENUM, "None,Overwrite Axis,Use Retarget Modifier", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/keep_global_rest_on_leftovers"), true));
 		String skeleton_bones_must_be_renamed_warning = String(
 				"The skeleton modifier option uses SkeletonProfile as a list of bone names and retargets by name matching. Without renaming, retargeting by modifier will not work and the track path of the animation will be broken and it will be not playbacked correctly."); // TODO: translate.
 		r_options->push_back(ResourceImporter::ImportOption(
 				PropertyInfo(
-						Variant::STRING, U"retarget/rest_fixer/\u26A0_validation_warning/skeleton_bones_must_be_renamed",
+						VariantType::STRING, U"retarget/rest_fixer/\u26A0_validation_warning/skeleton_bones_must_be_renamed",
 						PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
 				Variant(skeleton_bones_must_be_renamed_warning)));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/use_global_pose"), true));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "retarget/rest_fixer/original_skeleton_name"), "OriginalSkeleton"));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/use_global_pose"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::STRING, "retarget/rest_fixer/original_skeleton_name"), "OriginalSkeleton"));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, "retarget/rest_fixer/fix_silhouette/enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		// TODO: PostImportPlugin need to be implemented such as validate_option(PropertyInfo &property, const Dictionary &p_options).
 		// get_internal_option_visibility() is not sufficient because it can only retrieve options implemented in the core and can only read option values.
-		// r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "retarget/rest_fixer/filter", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::STRING_NAME, PROPERTY_HINT_ENUM, "Hips,Spine,Chest")), Array()));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::ARRAY, "retarget/rest_fixer/fix_silhouette/filter", PROPERTY_HINT_ARRAY_TYPE, vformat("%s:", Variant::STRING_NAME)), Array()));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "retarget/rest_fixer/fix_silhouette/threshold"), 15));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "retarget/rest_fixer/fix_silhouette/base_height_adjustment", PROPERTY_HINT_RANGE, "-1,1,0.01"), 0.0));
+		// r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::ARRAY, "retarget/rest_fixer/filter", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", VariantType::STRING_NAME, PROPERTY_HINT_ENUM, "Hips,Spine,Chest")), Array()));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::ARRAY, "retarget/rest_fixer/fix_silhouette/filter", PROPERTY_HINT_ARRAY_TYPE, vformat("%s:", VariantType::STRING_NAME)), Array()));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::FLOAT, "retarget/rest_fixer/fix_silhouette/threshold"), 15));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::FLOAT, "retarget/rest_fixer/fix_silhouette/base_height_adjustment", PROPERTY_HINT_RANGE, "-1,1,0.01"), 0.0));
 	}
 }
 

@@ -79,7 +79,7 @@ void AddMetadataDialog::_complete_init(const StringName &p_title) {
 	set_title(vformat(TTR("Add Metadata Property for \"%s\""), p_title));
 
 	if (add_meta_type->get_item_count() == 0) {
-		add_meta_type->populate({ Variant::NIL }, { { Variant::OBJECT, "Resource" } });
+		add_meta_type->populate({ VariantType::NIL }, { { VariantType::OBJECT, "Resource" } });
 	}
 }
 

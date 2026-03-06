@@ -57,7 +57,7 @@ public:
 
 	Kind kind = VARIANT;
 
-	Variant::Type builtin_type = Variant::NIL;
+	VariantType::Type builtin_type = VariantType::NIL;
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
@@ -69,18 +69,18 @@ public:
 	bool can_contain_object() const {
 		if (kind == BUILTIN) {
 			switch (builtin_type) {
-				case Variant::ARRAY:
+				case VariantType::ARRAY:
 					if (has_container_element_type(0)) {
 						return container_element_types[0].can_contain_object();
 					}
 					return true;
-				case Variant::DICTIONARY:
+				case VariantType::DICTIONARY:
 					if (has_container_element_types()) {
 						return get_container_element_type_or_variant(0).can_contain_object() || get_container_element_type_or_variant(1).can_contain_object();
 					}
 					return true;
-				case Variant::NIL:
-				case Variant::OBJECT:
+				case VariantType::NIL:
+				case VariantType::OBJECT:
 					return true;
 				default:
 					return false;
@@ -360,7 +360,7 @@ private:
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	HashMap<int, VariantType::Type> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;

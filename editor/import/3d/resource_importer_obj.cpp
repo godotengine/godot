@@ -639,14 +639,14 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_lods"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_shadow_mesh"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_lightmap_uv2", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "generate_lightmap_uv2_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_disable_mesh_compression"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "generate_tangents"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "generate_lods"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "generate_shadow_mesh"), true));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "generate_lightmap_uv2", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "generate_lightmap_uv2_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "force_disable_mesh_compression"), false));
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {

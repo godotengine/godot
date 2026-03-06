@@ -65,7 +65,7 @@ void EditorAbout::_notification(int p_what) {
 			for (ItemList *il : name_lists) {
 				for (int i = 0; i < il->get_item_count(); i++) {
 					const Variant val = il->get_item_metadata(i);
-					if (val.get_type() == Variant::STRING) {
+					if (val.get_type() == VariantType::STRING) {
 						il->set_item_tooltip(i, val.operator String() + "\n\n" + TTR("Double-click to open in browser."));
 					}
 				}
@@ -119,7 +119,7 @@ void EditorAbout::_credits_visibility_changed() {
 
 void EditorAbout::_item_activated(int p_idx, ItemList *p_il) {
 	const Variant val = p_il->get_item_metadata(p_idx);
-	if (val.get_type() == Variant::STRING) {
+	if (val.get_type() == VariantType::STRING) {
 		OS::get_singleton()->shell_open(val);
 	} else {
 		// Easter egg! :D

@@ -321,9 +321,9 @@ void EditorPropertyFontMetaOverride::update_property() {
 
 void EditorPropertyFontMetaOverride::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
+	if (prop_val.get_type() == VariantType::NIL) {
 		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+		Variant::construct(VariantType::DICTIONARY, prop_val, nullptr, 0, ce);
 		get_edited_object()->set(get_edited_property(), prop_val);
 	}
 
@@ -408,7 +408,7 @@ void EditorPropertyOTVariation::update_property() {
 	for (const KeyValue<Variant, Variant> &kv : supported) {
 		const int &name_tag = kv.key;
 		const Vector3i &range = kv.value;
-		if ((dict.has(name_tag) && dict[name_tag].get_type() == Variant::NIL) || !dict.has(name_tag)) {
+		if ((dict.has(name_tag) && dict[name_tag].get_type() == VariantType::NIL) || !dict.has(name_tag)) {
 			dict[name_tag] = range.z;
 		}
 	}
@@ -515,9 +515,9 @@ void EditorPropertyOTVariation::update_property() {
 
 void EditorPropertyOTVariation::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
+	if (prop_val.get_type() == VariantType::NIL) {
 		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+		Variant::construct(VariantType::DICTIONARY, prop_val, nullptr, 0, ce);
 		get_edited_object()->set(get_edited_property(), prop_val);
 	}
 
@@ -738,7 +738,7 @@ void EditorPropertyOTFeatures::update_property() {
 
 			if (supported.has(name_tag)) {
 				Dictionary info = supported[name_tag];
-				Variant::Type vtype = Variant::Type(info["type"].operator int());
+				VariantType::Type vtype = VariantType::Type(info["type"].operator int());
 				bool hidden = info["hidden"].operator bool();
 				if (hidden && !show_hidden) {
 					continue;
@@ -746,13 +746,13 @@ void EditorPropertyOTFeatures::update_property() {
 
 				EditorProperty *prop = nullptr;
 				switch (vtype) {
-					case Variant::NIL: {
+					case VariantType::NIL: {
 						prop = memnew(EditorPropertyNil);
 					} break;
-					case Variant::BOOL: {
+					case VariantType::BOOL: {
 						prop = memnew(EditorPropertyCheck);
 					} break;
-					case Variant::INT: {
+					case VariantType::INT: {
 						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 						EditorPropertyRangeHint hint;
 						hint.min = 0;
@@ -764,7 +764,7 @@ void EditorPropertyOTFeatures::update_property() {
 						prop = editor;
 					} break;
 					default: {
-						ERR_CONTINUE_MSG(true, vformat("Unsupported OT feature data type %s", Variant::get_type_name(vtype)));
+						ERR_CONTINUE_MSG(true, vformat("Unsupported OT feature data type %s", VariantType::get_type_name(vtype)));
 					}
 				}
 				prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
@@ -811,9 +811,9 @@ void EditorPropertyOTFeatures::update_property() {
 
 void EditorPropertyOTFeatures::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
+	if (prop_val.get_type() == VariantType::NIL) {
 		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+		Variant::construct(VariantType::DICTIONARY, prop_val, nullptr, 0, ce);
 		get_edited_object()->set(get_edited_property(), prop_val);
 	}
 
@@ -871,7 +871,7 @@ bool EditorInspectorPluginFontVariation::can_handle(Object *p_object) {
 	return (Object::cast_to<FontVariation>(p_object) != nullptr) || (Object::cast_to<DynamicFontImportSettingsData>(p_object) != nullptr);
 }
 
-bool EditorInspectorPluginFontVariation::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorInspectorPluginFontVariation::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "variation_opentype") {
 		add_property_editor(p_path, memnew(EditorPropertyOTVariation));
 		return true;
@@ -987,7 +987,7 @@ void EditorInspectorPluginFontPreview::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	return false;
 }
 
@@ -1047,7 +1047,7 @@ bool EditorInspectorPluginSystemFont::can_handle(Object *p_object) {
 	return Object::cast_to<SystemFont>(p_object) != nullptr;
 }
 
-bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "font_names") {
 		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray);
 		editor->setup(p_type, p_hint_text);

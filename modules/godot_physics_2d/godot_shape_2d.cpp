@@ -117,7 +117,7 @@ real_t GodotWorldBoundaryShape2D::get_moment_of_inertia(real_t p_mass, const Siz
 }
 
 void GodotWorldBoundaryShape2D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::ARRAY);
 	Array arr = p_data;
 	ERR_FAIL_COND(arr.size() != 2);
 	normal = arr[0];
@@ -217,7 +217,7 @@ real_t GodotSegmentShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &p_
 }
 
 void GodotSegmentShape2D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::RECT2);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::RECT2);
 
 	Rect2 r = p_data;
 	a = r.position;
@@ -350,7 +350,7 @@ real_t GodotRectangleShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &
 }
 
 void GodotRectangleShape2D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::VECTOR2);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::VECTOR2);
 
 	half_extents = p_data;
 	configure(Rect2(-half_extents, half_extents * 2.0));
@@ -464,9 +464,9 @@ real_t GodotCapsuleShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &p_
 }
 
 void GodotCapsuleShape2D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::ARRAY && p_data.get_type() != Variant::VECTOR2);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::ARRAY && p_data.get_type() != VariantType::VECTOR2);
 
-	if (p_data.get_type() == Variant::ARRAY) {
+	if (p_data.get_type() == VariantType::ARRAY) {
 		Array arr = p_data;
 		ERR_FAIL_COND(arr.size() != 2);
 		height = arr[0];
@@ -570,9 +570,9 @@ real_t GodotConvexPolygonShape2D::get_moment_of_inertia(real_t p_mass, const Siz
 
 void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 #ifdef REAL_T_IS_DOUBLE
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PACKED_VECTOR2_ARRAY && p_data.get_type() != VariantType::PACKED_FLOAT64_ARRAY);
 #else
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PACKED_VECTOR2_ARRAY && p_data.get_type() != VariantType::PACKED_FLOAT32_ARRAY);
 #endif
 
 	if (points) {
@@ -581,7 +581,7 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 	points = nullptr;
 	point_count = 0;
 
-	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+	if (p_data.get_type() == VariantType::PACKED_VECTOR2_ARRAY) {
 		Vector<Vector2> arr = p_data;
 		ERR_FAIL_COND(arr.is_empty());
 		point_count = arr.size();
@@ -812,14 +812,14 @@ int GodotConcavePolygonShape2D::_generate_bvh(BVH *p_bvh, int p_len, int p_depth
 
 void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 #ifdef REAL_T_IS_DOUBLE
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PACKED_VECTOR2_ARRAY && p_data.get_type() != VariantType::PACKED_FLOAT64_ARRAY);
 #else
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PACKED_VECTOR2_ARRAY && p_data.get_type() != VariantType::PACKED_FLOAT32_ARRAY);
 #endif
 
 	Rect2 aabb_new;
 
-	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+	if (p_data.get_type() == VariantType::PACKED_VECTOR2_ARRAY) {
 		Vector<Vector2> p2arr = p_data;
 		int len = p2arr.size();
 		ERR_FAIL_COND(len % 2);

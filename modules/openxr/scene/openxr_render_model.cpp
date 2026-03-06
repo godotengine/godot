@@ -46,7 +46,7 @@ void OpenXRRenderModel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_render_model"), &OpenXRRenderModel::get_render_model);
 	ClassDB::bind_method(D_METHOD("set_render_model", "render_model"), &OpenXRRenderModel::set_render_model);
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "render_model"), "set_render_model", "get_render_model");
+	ADD_PROPERTY(PropertyInfo(VariantType::RID, "render_model"), "set_render_model", "get_render_model");
 
 	ADD_SIGNAL(MethodInfo("render_model_top_level_path_changed"));
 }

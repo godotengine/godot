@@ -308,17 +308,17 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "p_direction"), &CollisionShape2D::set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_GROUP("One Way Collision", "one_way_collision");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "one_way_collision_direction", PROPERTY_HINT_NONE, "suffix:px"), "set_one_way_collision_direction", "get_one_way_collision_direction");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "one_way_collision_direction", PROPERTY_HINT_NONE, "suffix:px"), "set_one_way_collision_direction", "get_one_way_collision_direction");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
+	ADD_PROPERTY(PropertyInfo(VariantType::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 	// Default value depends on a project setting, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
 }

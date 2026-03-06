@@ -76,8 +76,8 @@ class EditorPropertyVariant : public EditorProperty {
 	Button *edit_button = nullptr;
 	EditorVariantTypePopupMenu *change_type = nullptr;
 
-	Variant::Type current_type = Variant::VARIANT_MAX;
-	Variant::Type new_type = Variant::VARIANT_MAX;
+	VariantType::Type current_type = VariantType::VARIANT_MAX;
+	VariantType::Type new_type = VariantType::VARIANT_MAX;
 
 	void _change_type(int p_to_type);
 	void _popup_edit_menu();
@@ -793,7 +793,7 @@ class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 
-	static EditorProperty *get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
+	static EditorProperty *get_editor_for_property(Object *p_object, const VariantType::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
 };

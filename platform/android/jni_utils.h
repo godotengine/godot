@@ -38,13 +38,13 @@
 
 #include <jni.h>
 
-jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth = 0);
+jobject _variant_to_jobject(JNIEnv *env, VariantType::Type p_type, const Variant *p_arg, int p_depth = 0);
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array);
 
 Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth = 0);
 
-Variant::Type get_jni_type(const String &p_type);
+VariantType::Type get_jni_type(const String &p_type);
 
 /**
  * Convert a Godot Callable to a org.godotengine.godot.variant.Callable java object.

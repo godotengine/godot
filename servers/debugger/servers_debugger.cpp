@@ -202,11 +202,11 @@ public:
 			sig_map.clear();
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_start();
-				if (p_opts.size() == 2 && p_opts[1].get_type() == Variant::BOOL) {
+				if (p_opts.size() == 2 && p_opts[1].get_type() == VariantType::BOOL) {
 					ScriptServer::get_language(i)->profiling_set_save_native_calls(p_opts[1]);
 				}
 			}
-			if (p_opts.size() > 0 && p_opts[0].get_type() == Variant::INT) {
+			if (p_opts.size() > 0 && p_opts[0].get_type() == VariantType::INT) {
 				max_frame_functions = MAX(0, int(p_opts[0]));
 			}
 		} else {

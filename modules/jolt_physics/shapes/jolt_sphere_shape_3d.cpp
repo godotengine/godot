@@ -49,7 +49,7 @@ Variant JoltSphereShape3D::get_data() const {
 }
 
 void JoltSphereShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::FLOAT);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::FLOAT);
 
 	const float new_radius = p_data;
 	if (unlikely(new_radius == radius)) {

@@ -68,7 +68,7 @@ extern "C" {
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_variant_Callable_nativeCall(JNIEnv *p_env, jclass p_clazz, jlong p_native_callable, jobjectArray p_parameters) {
 	const Variant *callable_variant = reinterpret_cast<const Variant *>(p_native_callable);
 	ERR_FAIL_NULL_V(callable_variant, nullptr);
-	if (callable_variant->get_type() != Variant::CALLABLE) {
+	if (callable_variant->get_type() != VariantType::CALLABLE) {
 		return nullptr;
 	}
 

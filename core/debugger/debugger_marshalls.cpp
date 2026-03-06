@@ -66,7 +66,7 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	Array arr = { name, type, value.get_type() };
 
 	Variant var = value;
-	if (value.get_type() == Variant::OBJECT && value.get_validated_object() == nullptr) {
+	if (value.get_type() == VariantType::OBJECT && value.get_validated_object() == nullptr) {
 		var = Variant();
 	}
 
@@ -165,8 +165,8 @@ Ref<Shortcut> DebuggerMarshalls::deserialize_key_shortcut(const Array &p_keys) {
 	Array key_events;
 	ERR_FAIL_COND_V(p_keys.size() % 2 != 0, Ref<Shortcut>());
 	for (int i = 0; i < p_keys.size(); i += 2) {
-		ERR_CONTINUE(p_keys[i].get_type() != Variant::BOOL);
-		ERR_CONTINUE(p_keys[i + 1].get_type() != Variant::INT);
+		ERR_CONTINUE(p_keys[i].get_type() != VariantType::BOOL);
+		ERR_CONTINUE(p_keys[i + 1].get_type() != VariantType::INT);
 		key_events.push_back(InputEventKey::create_reference((Key)p_keys[i + 1].operator int(), p_keys[i].operator bool()));
 	}
 	if (key_events.is_empty()) {

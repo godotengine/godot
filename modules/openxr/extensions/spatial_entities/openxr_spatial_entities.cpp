@@ -73,13 +73,13 @@ void OpenXRSpatialEntityTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_entity", "entity"), &OpenXRSpatialEntityTracker::set_entity);
 	ClassDB::bind_method(D_METHOD("get_entity"), &OpenXRSpatialEntityTracker::get_entity);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "entity"), "set_entity", "get_entity");
+	ADD_PROPERTY(PropertyInfo(VariantType::RID, "entity"), "set_entity", "get_entity");
 
 	ClassDB::bind_method(D_METHOD("set_spatial_tracking_state", "spatial_tracking_state"), &OpenXRSpatialEntityTracker::_set_spatial_tracking_state);
 	ClassDB::bind_method(D_METHOD("get_spatial_tracking_state"), &OpenXRSpatialEntityTracker::_get_spatial_tracking_state);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "spatial_tracking_state"), "set_spatial_tracking_state", "get_spatial_tracking_state");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "spatial_tracking_state"), "set_spatial_tracking_state", "get_spatial_tracking_state");
 
-	ADD_SIGNAL(MethodInfo("spatial_tracking_state_changed", PropertyInfo(Variant::INT, "spatial_tracking_state")));
+	ADD_SIGNAL(MethodInfo("spatial_tracking_state_changed", PropertyInfo(VariantType::INT, "spatial_tracking_state")));
 
 	BIND_ENUM_CONSTANT(ENTITY_TRACKING_STATE_STOPPED);
 	BIND_ENUM_CONSTANT(ENTITY_TRACKING_STATE_PAUSED);

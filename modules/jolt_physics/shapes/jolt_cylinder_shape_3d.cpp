@@ -55,15 +55,15 @@ Variant JoltCylinderShape3D::get_data() const {
 }
 
 void JoltCylinderShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::DICTIONARY);
 
 	const Dictionary data = p_data;
 
 	const Variant maybe_height = data.get("height", Variant());
-	ERR_FAIL_COND(maybe_height.get_type() != Variant::FLOAT);
+	ERR_FAIL_COND(maybe_height.get_type() != VariantType::FLOAT);
 
 	const Variant maybe_radius = data.get("radius", Variant());
-	ERR_FAIL_COND(maybe_radius.get_type() != Variant::FLOAT);
+	ERR_FAIL_COND(maybe_radius.get_type() != VariantType::FLOAT);
 
 	const float new_height = maybe_height;
 	const float new_radius = maybe_radius;

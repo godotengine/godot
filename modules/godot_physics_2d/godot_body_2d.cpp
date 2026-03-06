@@ -687,7 +687,7 @@ void GodotBody2D::call_queries() {
 
 			Callable::CallError ce;
 			Variant rv;
-			if (fi_callback_data->udata.get_type() != Variant::NIL) {
+			if (fi_callback_data->udata.get_type() != VariantType::NIL) {
 				fi_callback_data->callable.callp(vp, 2, rv, ce);
 
 			} else {

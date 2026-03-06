@@ -267,15 +267,15 @@ OpenXRSpatialComponentPlaneSemanticLabelList::PlaneSemanticLabel OpenXRSpatialCo
 void OpenXRPlaneTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounds_size", "bounds_size"), &OpenXRPlaneTracker::set_bounds_size);
 	ClassDB::bind_method(D_METHOD("get_bounds_size"), &OpenXRPlaneTracker::get_bounds_size);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bounds_size"), "set_bounds_size", "get_bounds_size");
 
 	ClassDB::bind_method(D_METHOD("set_plane_alignment", "plane_alignment"), &OpenXRPlaneTracker::set_plane_alignment);
 	ClassDB::bind_method(D_METHOD("get_plane_alignment"), &OpenXRPlaneTracker::get_plane_alignment);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "plane_alignment"), "set_plane_alignment", "get_plane_alignment");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "plane_alignment"), "set_plane_alignment", "get_plane_alignment");
 
 	ClassDB::bind_method(D_METHOD("set_plane_label", "plane_label"), &OpenXRPlaneTracker::set_plane_label);
 	ClassDB::bind_method(D_METHOD("get_plane_label"), &OpenXRPlaneTracker::get_plane_label);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plane_label"), "set_plane_label", "get_plane_label");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "plane_label"), "set_plane_label", "get_plane_label");
 
 	ClassDB::bind_method(D_METHOD("set_mesh_data", "origin", "vertices", "indices"), &OpenXRPlaneTracker::set_mesh_data, DEFVAL(PackedInt32Array()));
 	ClassDB::bind_method(D_METHOD("clear_mesh_data"), &OpenXRPlaneTracker::clear_mesh_data);

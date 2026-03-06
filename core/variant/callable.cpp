@@ -380,9 +380,9 @@ Callable Callable::create(const Variant &p_variant, const StringName &p_method) 
 	ERR_FAIL_COND_V_MSG(p_method == StringName(), Callable(), "Method argument to Callable::create method must be a non-empty string.");
 
 	switch (p_variant.get_type()) {
-		case Variant::NIL:
+		case VariantType::NIL:
 			return Callable(ObjectID(), p_method);
-		case Variant::OBJECT:
+		case VariantType::OBJECT:
 			return Callable(p_variant.operator ObjectID(), p_method);
 		default:
 			return Callable(memnew(VariantCallable(p_variant, p_method)));

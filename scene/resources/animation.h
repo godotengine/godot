@@ -567,7 +567,7 @@ public:
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
-	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
+	static Variant cast_from_blendwise(const Variant p_value, const VariantType::Type p_type);
 
 	static Variant string_to_array(const Variant p_value);
 	static Variant array_to_string(const Variant p_value);

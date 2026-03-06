@@ -131,7 +131,7 @@ Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterM
 						// Swap custom data channels.
 						for (int custom_index = 0; custom_index < 4; custom_index++) {
 							Variant custom_var = this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
-							if (custom_var.get_type() == Variant::PACKED_BYTE_ARRAY) {
+							if (custom_var.get_type() == VariantType::PACKED_BYTE_ARRAY) {
 								PackedByteArray custom_bytes = custom_var;
 								if (!custom_bytes.is_empty()) {
 									// Each vertex may have multiple bytes associated with it, such as in a half precision float.
@@ -145,7 +145,7 @@ Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterM
 									}
 									this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = custom_bytes;
 								}
-							} else if (custom_var.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+							} else if (custom_var.get_type() == VariantType::PACKED_FLOAT32_ARRAY) {
 								PackedFloat32Array custom_floats = custom_var;
 								if (!custom_floats.is_empty()) {
 									// Each vertex may have multiple floats associated with it, such as in a vector or color.
@@ -192,8 +192,8 @@ Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterM
 			}
 			// Check if the surface has bone data by inspecting the actual arrays.
 			// NOTE: Unlike ArrayMesh, we can't use the mesh format flags, because those may not be set by ImporterMesh callers.
-			const bool has_bones = this_surface_arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL;
-			const bool has_weights = this_surface_arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL;
+			const bool has_bones = this_surface_arrays[Mesh::ARRAY_BONES].get_type() != VariantType::NIL;
+			const bool has_weights = this_surface_arrays[Mesh::ARRAY_WEIGHTS].get_type() != VariantType::NIL;
 			const bool name_exists = names_to_surfaces.has(surface_name);
 			if (name_exists) {
 				// Only attempt to deduplicate surfaces if the mesh is not skinned.
@@ -261,11 +261,11 @@ Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterM
 						for (int custom_index = 0; custom_index < 4; custom_index++) {
 							const Variant existing_custom = merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
 							const Variant incoming_custom = this_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index];
-							if (existing_custom.get_type() == Variant::PACKED_BYTE_ARRAY || incoming_custom.get_type() == Variant::PACKED_BYTE_ARRAY) {
+							if (existing_custom.get_type() == VariantType::PACKED_BYTE_ARRAY || incoming_custom.get_type() == VariantType::PACKED_BYTE_ARRAY) {
 								PackedByteArray merged_custom = existing_custom;
 								merged_custom.append_array(PackedByteArray(incoming_custom));
 								merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = merged_custom;
-							} else if (existing_custom.get_type() == Variant::PACKED_FLOAT32_ARRAY || incoming_custom.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+							} else if (existing_custom.get_type() == VariantType::PACKED_FLOAT32_ARRAY || incoming_custom.get_type() == VariantType::PACKED_FLOAT32_ARRAY) {
 								PackedFloat32Array merged_custom = existing_custom;
 								merged_custom.append_array(PackedFloat32Array(incoming_custom));
 								merged_surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_index] = merged_custom;
@@ -458,24 +458,24 @@ static void _remap_arrays(Array &r_arrays, const Vector<uint32_t> &p_remap, uint
 		}
 
 		switch (r_arrays[i].get_type()) {
-			case Variant::NIL:
+			case VariantType::NIL:
 				break;
-			case Variant::PACKED_VECTOR3_ARRAY:
+			case VariantType::PACKED_VECTOR3_ARRAY:
 				r_arrays[i] = _remap_array<Vector3>(r_arrays[i], p_remap, p_vertex_count);
 				break;
-			case Variant::PACKED_VECTOR2_ARRAY:
+			case VariantType::PACKED_VECTOR2_ARRAY:
 				r_arrays[i] = _remap_array<Vector2>(r_arrays[i], p_remap, p_vertex_count);
 				break;
-			case Variant::PACKED_FLOAT32_ARRAY:
+			case VariantType::PACKED_FLOAT32_ARRAY:
 				r_arrays[i] = _remap_array<float>(r_arrays[i], p_remap, p_vertex_count);
 				break;
-			case Variant::PACKED_INT32_ARRAY:
+			case VariantType::PACKED_INT32_ARRAY:
 				r_arrays[i] = _remap_array<int32_t>(r_arrays[i], p_remap, p_vertex_count);
 				break;
-			case Variant::PACKED_BYTE_ARRAY:
+			case VariantType::PACKED_BYTE_ARRAY:
 				r_arrays[i] = _remap_array<uint8_t>(r_arrays[i], p_remap, p_vertex_count);
 				break;
-			case Variant::PACKED_COLOR_ARRAY:
+			case VariantType::PACKED_COLOR_ARRAY:
 				r_arrays[i] = _remap_array<Color>(r_arrays[i], p_remap, p_vertex_count);
 				break;
 			default:
@@ -575,7 +575,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 	LocalVector<Transform3D> bone_transform_vector;
 	for (int i = 0; i < p_bone_transform_array.size(); i++) {
-		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != Variant::TRANSFORM3D);
+		ERR_FAIL_COND(p_bone_transform_array[i].get_type() != VariantType::TRANSFORM3D);
 		bone_transform_vector.push_back(p_bone_transform_array[i]);
 	}
 
@@ -961,10 +961,10 @@ void ImporterMesh::create_shadow_mesh() {
 	}
 	//no shadow mesh for skeletons
 	for (int i = 0; i < surfaces.size(); i++) {
-		if (surfaces[i].arrays[RSE::ARRAY_BONES].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RSE::ARRAY_BONES].get_type() != VariantType::NIL) {
 			return;
 		}
-		if (surfaces[i].arrays[RSE::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
+		if (surfaces[i].arrays[RSE::ARRAY_WEIGHTS].get_type() != VariantType::NIL) {
 			return;
 		}
 	}
@@ -1582,5 +1582,5 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &ImporterMesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }

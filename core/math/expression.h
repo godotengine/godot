@@ -149,7 +149,7 @@ private:
 	};
 
 	struct ConstantNode : public ENode {
-		Variant value = Variant::NIL;
+		Variant value = VariantType::NIL;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
 		}
@@ -190,7 +190,7 @@ private:
 	};
 
 	struct ConstructorNode : public ENode {
-		Variant::Type data_type = Variant::Type::NIL;
+		VariantType::Type data_type = VariantType::Type::NIL;
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {

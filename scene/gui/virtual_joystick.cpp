@@ -223,25 +223,25 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visibility_mode", "mode"), &VirtualJoystick::set_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &VirtualJoystick::get_visibility_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,1"), "set_joystick_size", "get_joystick_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tip_size", PROPERTY_HINT_RANGE, "5,250,1"), "set_tip_size", "get_tip_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "deadzone_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_deadzone_ratio", "get_deadzone_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clampzone_ratio", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_clampzone_ratio", "get_clampzone_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,1"), "set_joystick_size", "get_joystick_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "tip_size", PROPERTY_HINT_RANGE, "5,250,1"), "set_tip_size", "get_tip_size");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "deadzone_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_deadzone_ratio", "get_deadzone_ratio");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "clampzone_ratio", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_clampzone_ratio", "get_clampzone_ratio");
+	ADD_PROPERTY(PropertyInfo(VariantType::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_left", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_left", "get_action_left");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_right", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_right", "get_action_right");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_up", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_up", "get_action_up");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_down", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_down", "get_action_down");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "action_left", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_left", "get_action_left");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "action_right", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_right", "get_action_right");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "action_up", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_up", "get_action_up");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING_NAME, "action_down", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_down", "get_action_down");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,When Touched"), "set_visibility_mode", "get_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,When Touched"), "set_visibility_mode", "get_visibility_mode");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("tapped"));
-	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
-	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(Variant::VECTOR2, "input_vector")));
+	ADD_SIGNAL(MethodInfo("released", PropertyInfo(VariantType::VECTOR2, "input_vector")));
+	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(VariantType::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flick_canceled"));
 
 	BIND_ENUM_CONSTANT(JOYSTICK_FIXED);

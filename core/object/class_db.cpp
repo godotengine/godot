@@ -1472,7 +1472,7 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
 	}
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
+	type->property_list.push_back(PropertyInfo(VariantType::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
 }
 
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
@@ -1485,11 +1485,11 @@ void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_n
 		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
 	}
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
+	type->property_list.push_back(PropertyInfo(VariantType::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
 }
 
 void ClassDB::add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage) {
-	add_property(p_class, PropertyInfo(Variant::INT, p_count_property, PROPERTY_HINT_NONE, "", p_count_usage | PROPERTY_USAGE_ARRAY, vformat("%s,%s", p_label, p_array_element_prefix)), p_count_setter, p_count_getter);
+	add_property(p_class, PropertyInfo(VariantType::INT, p_count_property, PROPERTY_HINT_NONE, "", p_count_usage | PROPERTY_USAGE_ARRAY, vformat("%s,%s", p_label, p_array_element_prefix)), p_count_setter, p_count_getter);
 }
 
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
@@ -1497,7 +1497,7 @@ void ClassDB::add_property_array(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
+	type->property_list.push_back(PropertyInfo(VariantType::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
@@ -1777,7 +1777,7 @@ int ClassDB::get_property_index(const StringName &p_class, const StringName &p_p
 	return -1;
 }
 
-Variant::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
+VariantType::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
@@ -1796,7 +1796,7 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 		*r_is_valid = false;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
 StringName ClassDB::get_property_setter(const StringName &p_class, const StringName &p_property) {
@@ -2313,7 +2313,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	// Instead, those properties should use PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT
 	// to be auto-instantiated when created in the editor with the following method:
 	// EditorNode::get_editor_data().instantiate_object_properties(obj);
-	if (var.get_type() == Variant::OBJECT) {
+	if (var.get_type() == VariantType::OBJECT) {
 		Object *obj = var.get_validated_object();
 		if (obj) {
 			WARN_PRINT(vformat("Instantiated %s used as default value for %s's \"%s\" property.", obj->get_class(), p_class, p_property));

@@ -71,11 +71,11 @@ protected:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_exported_node", "node"), &TestNode::set_exported_node);
 		ClassDB::bind_method(D_METHOD("get_exported_node"), &TestNode::get_exported_node);
-		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "exported_node", PROPERTY_HINT_NODE_TYPE, "Node"), "set_exported_node", "get_exported_node");
+		ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "exported_node", PROPERTY_HINT_NODE_TYPE, "Node"), "set_exported_node", "get_exported_node");
 
 		ClassDB::bind_method(D_METHOD("set_exported_nodes", "node"), &TestNode::set_exported_nodes);
 		ClassDB::bind_method(D_METHOD("get_exported_nodes"), &TestNode::get_exported_nodes);
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exported_nodes", PROPERTY_HINT_TYPE_STRING, "24/34:Node"), "set_exported_nodes", "get_exported_nodes");
+		ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "exported_nodes", PROPERTY_HINT_TYPE_STRING, "24/34:Node"), "set_exported_nodes", "get_exported_nodes");
 	}
 
 private:

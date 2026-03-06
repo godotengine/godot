@@ -168,7 +168,7 @@ void EditorRunNative::resume_run_native() {
 }
 
 void EditorRunNative::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, EditorExportPreset::get_class_static())));
+	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(VariantType::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, EditorExportPreset::get_class_static())));
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {

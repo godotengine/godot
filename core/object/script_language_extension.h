@@ -110,7 +110,7 @@ public:
 	GDVIRTUAL1RC(Variant, _get_script_method_argument_count, const StringName &)
 	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
 		Variant ret;
-		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == Variant::INT) {
+		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == VariantType::INT) {
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
@@ -740,16 +740,16 @@ public:
 			}
 		}
 	}
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
+	virtual VariantType::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
 		if (native_info->get_property_type_func) {
 			GDExtensionBool is_valid = 0;
 			GDExtensionVariantType type = native_info->get_property_type_func(instance, (GDExtensionConstStringNamePtr)&p_name, &is_valid);
 			if (r_is_valid) {
 				*r_is_valid = is_valid != 0;
 			}
-			return Variant::Type(type);
+			return VariantType::Type(type);
 		}
-		return Variant::NIL;
+		return VariantType::NIL;
 	}
 	virtual void validate_property(PropertyInfo &p_property) const override {
 		if (native_info->validate_property_func) {
@@ -764,7 +764,7 @@ public:
 				p_property.usage,
 			};
 			if (native_info->validate_property_func(instance, &gdext_prop)) {
-				p_property.type = (Variant::Type)gdext_prop.type;
+				p_property.type = (VariantType::Type)gdext_prop.type;
 				p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
 				p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
 				p_property.hint = (PropertyHint)gdext_prop.hint;

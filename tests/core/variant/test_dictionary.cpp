@@ -48,7 +48,7 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 
 	map[StringName("HelloName")] = 6;
 	CHECK(int(map[StringName("HelloName")]) == 6);
-	CHECK(int(map.find_key(6).get_type()) == Variant::STRING_NAME);
+	CHECK(int(map.find_key(6).get_type()) == VariantType::STRING_NAME);
 	map[StringName("HelloName")] = 7;
 	CHECK(int(map[StringName("HelloName")]) == 7);
 
@@ -73,7 +73,7 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	// Ensure read-only maps aren't modified by non-existing keys.
 	const int length = map.size();
 	map.make_read_only();
-	CHECK(int(map["This key does not exist"].get_type()) == Variant::NIL);
+	CHECK(int(map["This key does not exist"].get_type()) == VariantType::NIL);
 	CHECK(map.size() == length);
 }
 
@@ -631,7 +631,7 @@ TEST_CASE("[Dictionary] assign()") {
 	CHECK(untyped.size() == 1);
 
 	Dictionary typed;
-	typed.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	typed.set_typed(VariantType::STRING, StringName(), Variant(), VariantType::STRING, StringName(), Variant());
 	typed.assign(untyped);
 	CHECK(typed.size() == 1);
 	typed["key2"] = "value";
@@ -690,12 +690,12 @@ TEST_CASE("[Dictionary] Type checks/comparisons") {
 	CHECK_FALSE(d1.is_typed_key());
 	CHECK_FALSE(d1.is_typed_value());
 
-	d1.set_typed(Variant::STRING, StringName(), Variant(), Variant::OBJECT, "Node", Variant());
+	d1.set_typed(VariantType::STRING, StringName(), Variant(), VariantType::OBJECT, "Node", Variant());
 	CHECK(d1.is_typed());
 	CHECK(d1.is_typed_key());
 	CHECK(d1.is_typed_value());
-	CHECK_EQ(d1.get_typed_key_builtin(), Variant::STRING);
-	CHECK_EQ(d1.get_typed_value_builtin(), Variant::OBJECT);
+	CHECK_EQ(d1.get_typed_key_builtin(), VariantType::STRING);
+	CHECK_EQ(d1.get_typed_value_builtin(), VariantType::OBJECT);
 	CHECK_EQ(d1.get_typed_value_class_name(), "Node");
 
 	Dictionary d2;
@@ -703,7 +703,7 @@ TEST_CASE("[Dictionary] Type checks/comparisons") {
 	CHECK_FALSE(d1.is_same_typed_key(d2));
 	CHECK_FALSE(d1.is_same_typed_value(d2));
 
-	d2.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	d2.set_typed(VariantType::STRING, StringName(), Variant(), VariantType::STRING, StringName(), Variant());
 	CHECK_FALSE(d1.is_same_typed(d2));
 	CHECK(d1.is_same_typed_key(d2));
 	CHECK_FALSE(d1.is_same_typed_value(d2));

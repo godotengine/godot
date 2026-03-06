@@ -46,7 +46,7 @@ protected:
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestUndoRedoObject::set_property);
 		ClassDB::bind_method(D_METHOD("get_property"), &_TestUndoRedoObject::get_property);
-		ADD_PROPERTY(PropertyInfo(Variant::INT, "property"), "set_property", "get_property");
+		ADD_PROPERTY(PropertyInfo(VariantType::INT, "property"), "set_property", "get_property");
 	}
 
 public:

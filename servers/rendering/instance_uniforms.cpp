@@ -109,7 +109,7 @@ Variant InstanceUniforms::get(const StringName &p_name) const {
 
 void InstanceUniforms::set(RID p_self, const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND(p_self.is_null());
-	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
+	ERR_FAIL_COND(p_value.get_type() == VariantType::OBJECT);
 
 	if (Item *ptr = _parameters.getptr(p_name); ptr) {
 		ptr->value = p_value;
@@ -154,12 +154,12 @@ void InstanceUniforms::_init_param(Item &r_item, const RendererMaterialStorage::
 	r_item.info = p_param.info;
 	r_item.default_value = p_param.default_value;
 
-	if (r_item.default_value.get_type() == Variant::NIL) {
+	if (r_item.default_value.get_type() == VariantType::NIL) {
 		Callable::CallError cerr;
 		Variant::construct(r_item.info.type, r_item.default_value, nullptr, 0, cerr);
 	}
 
-	if (r_item.value.get_type() == Variant::NIL) {
+	if (r_item.value.get_type() == VariantType::NIL) {
 		r_item.value = r_item.default_value;
 	}
 

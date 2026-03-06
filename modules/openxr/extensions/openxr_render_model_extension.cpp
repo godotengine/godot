@@ -60,9 +60,9 @@ void OpenXRRenderModelExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("render_model_is_animatable_node_visible", "render_model", "index"), &OpenXRRenderModelExtension::render_model_is_animatable_node_visible);
 	ClassDB::bind_method(D_METHOD("render_model_get_animatable_node_transform", "render_model", "index"), &OpenXRRenderModelExtension::render_model_get_animatable_node_transform);
 
-	ADD_SIGNAL(MethodInfo("render_model_added", PropertyInfo(Variant::RID, "render_model")));
-	ADD_SIGNAL(MethodInfo("render_model_removed", PropertyInfo(Variant::RID, "render_model")));
-	ADD_SIGNAL(MethodInfo("render_model_top_level_path_changed", PropertyInfo(Variant::RID, "render_model")));
+	ADD_SIGNAL(MethodInfo("render_model_added", PropertyInfo(VariantType::RID, "render_model")));
+	ADD_SIGNAL(MethodInfo("render_model_removed", PropertyInfo(VariantType::RID, "render_model")));
+	ADD_SIGNAL(MethodInfo("render_model_top_level_path_changed", PropertyInfo(VariantType::RID, "render_model")));
 }
 
 OpenXRRenderModelExtension::OpenXRRenderModelExtension() {

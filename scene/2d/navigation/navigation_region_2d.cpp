@@ -349,12 +349,12 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationRegion2D::get_bounds);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, NavigationPolygon::get_class_static()), "set_navigation_polygon", "get_navigation_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, NavigationPolygon::get_class_static()), "set_navigation_polygon", "get_navigation_polygon");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 
 	ADD_SIGNAL(MethodInfo("navigation_polygon_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));

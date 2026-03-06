@@ -135,7 +135,7 @@ public:
 
 		// Update existing outdated node paths.
 		for (int i = 0; i < params.size(); i++) {
-			if (params[i].get_type() != Variant::NODE_PATH) {
+			if (params[i].get_type() != VariantType::NODE_PATH) {
 				continue;
 			}
 			StringName property_name = "bind/argument_" + itos(i + 1);
@@ -232,7 +232,7 @@ void ConnectDialog::_method_selected() {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	Variant::Type type = type_list->get_selected_type();
+	VariantType::Type type = type_list->get_selected_type();
 
 	Variant value;
 	Callable::CallError err;
@@ -316,7 +316,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	bool check_signal = compatible_methods_only->is_pressed();
 	List<MethodInfo> ret;
 
-	LocalVector<Pair<Variant::Type, StringName>> effective_args;
+	LocalVector<Pair<VariantType::Type, StringName>> effective_args;
 	int unbind = get_unbinds();
 	effective_args.reserve(MAX(p_signal.arguments.size() - unbind, 0));
 	for (int64_t i = 0; i < p_signal.arguments.size() - unbind; i++) {
@@ -350,15 +350,15 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 
 			bool type_mismatch = false;
 			for (int64_t i = 0; i < effective_args.size() && i < mi.arguments.size(); ++i) {
-				Variant::Type stype = effective_args[i].first;
-				Variant::Type mtype = mi.arguments[i].type;
+				VariantType::Type stype = effective_args[i].first;
+				VariantType::Type mtype = mi.arguments[i].type;
 
-				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
+				if (stype != VariantType::NIL && mtype != VariantType::NIL && stype != mtype) {
 					type_mismatch = true;
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(effective_args[i].second, mi.arguments[i].class_name)) {
+				if (stype == VariantType::OBJECT && mtype == VariantType::OBJECT && !ClassDB::is_parent_class(effective_args[i].second, mi.arguments[i].class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -604,24 +604,24 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 		const PropertyInfo &pi = p_method.arguments[i];
 		String type_name;
 		switch (pi.type) {
-			case Variant::NIL:
+			case VariantType::NIL:
 				type_name = "Variant";
 				break;
-			case Variant::INT:
+			case VariantType::INT:
 				if ((pi.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && pi.class_name != StringName() && !String(pi.class_name).begins_with("res://")) {
 					type_name = pi.class_name;
 				} else {
 					type_name = "int";
 				}
 				break;
-			case Variant::ARRAY:
+			case VariantType::ARRAY:
 				if (pi.hint == PROPERTY_HINT_ARRAY_TYPE && !pi.hint_string.is_empty() && !pi.hint_string.begins_with("res://")) {
 					type_name = "Array[" + pi.hint_string + "]";
 				} else {
 					type_name = "Array";
 				}
 				break;
-			case Variant::DICTIONARY:
+			case VariantType::DICTIONARY:
 				type_name = "Dictionary";
 				if (pi.hint == PROPERTY_HINT_DICTIONARY_TYPE && !pi.hint_string.is_empty()) {
 					String key_hint = pi.hint_string.get_slicec(';', 0);
@@ -637,7 +637,7 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 					}
 				}
 				break;
-			case Variant::OBJECT:
+			case VariantType::OBJECT:
 				if (pi.class_name != StringName()) {
 					type_name = pi.class_name;
 				} else {
@@ -645,7 +645,7 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 				}
 				break;
 			default:
-				type_name = Variant::get_type_name(pi.type);
+				type_name = VariantType::get_type_name(pi.type);
 				break;
 		}
 
@@ -885,7 +885,7 @@ ConnectDialog::ConnectDialog() {
 	type_list = memnew(EditorVariantTypeOptionButton);
 	type_list->set_accessibility_name(TTRC("Type"));
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	type_list->populate({ Variant::NIL, Variant::OBJECT });
+	type_list->populate({ VariantType::NIL, VariantType::OBJECT });
 	add_bind_hb->add_child(type_list);
 	bind_controls.push_back(type_list);
 
@@ -1084,7 +1084,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		}
 
 		for (int i = 0; i < cd.binds.size(); i++) {
-			script_function_args.push_back("extra_arg_" + itos(i) + ": " + Variant::get_type_name(cd.binds[i].get_type()));
+			script_function_args.push_back("extra_arg_" + itos(i) + ": " + VariantType::get_type_name(cd.binds[i].get_type()));
 		}
 
 		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), cd.target, cd.method, script_function_args);

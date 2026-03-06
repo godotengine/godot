@@ -455,7 +455,7 @@ void CompressedTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTexture2D::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTexture2D::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
 CompressedTexture2D::~CompressedTexture2D() {
@@ -639,7 +639,7 @@ void CompressedTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTexture3D::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTexture3D::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
 CompressedTexture3D::~CompressedTexture3D() {
@@ -828,7 +828,7 @@ void CompressedTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTextureLayered::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTextureLayered::get_load_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
 CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {

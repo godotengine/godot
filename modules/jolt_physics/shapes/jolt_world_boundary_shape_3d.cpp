@@ -52,7 +52,7 @@ Variant JoltWorldBoundaryShape3D::get_data() const {
 }
 
 void JoltWorldBoundaryShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::PLANE);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::PLANE);
 
 	const Plane new_plane = p_data;
 	if (unlikely(new_plane == plane)) {

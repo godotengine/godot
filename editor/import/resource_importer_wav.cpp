@@ -74,18 +74,18 @@ String ResourceImporterWAV::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "force/max_rate_hz", PROPERTY_HINT_RANGE, "11025,192000,1,exp"), 44100));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "force/8_bit"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "force/mono"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::FLOAT, "force/max_rate_hz", PROPERTY_HINT_RANGE, "11025,192000,1,exp"), 44100));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "edit/trim"), false));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::BOOL, "edit/normalize"), false));
 	// Keep the `edit/loop_mode` enum in sync with AudioStreamWAV::LoopMode (note: +1 offset due to "Detect From WAV").
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_begin"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_end"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "edit/loop_begin"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "edit/loop_end"), -1));
 	// Quite OK Audio is lightweight enough and supports virtually every significant AudioStreamWAV feature.
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "PCM (Uncompressed),IMA ADPCM,Quite OK Audio"), 2));
+	r_options->push_back(ImportOption(PropertyInfo(VariantType::INT, "compress/mode", PROPERTY_HINT_ENUM, "PCM (Uncompressed),IMA ADPCM,Quite OK Audio"), 2));
 }
 
 Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

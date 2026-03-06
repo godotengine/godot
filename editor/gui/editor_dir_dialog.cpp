@@ -199,8 +199,8 @@ void EditorDirDialog::_make_dir_confirm(const String &p_path, const String &p_ba
 }
 
 void EditorDirDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("copy_pressed", PropertyInfo(Variant::STRING, "dir")));
-	ADD_SIGNAL(MethodInfo("move_pressed", PropertyInfo(Variant::STRING, "dir")));
+	ADD_SIGNAL(MethodInfo("copy_pressed", PropertyInfo(VariantType::STRING, "dir")));
+	ADD_SIGNAL(MethodInfo("move_pressed", PropertyInfo(VariantType::STRING, "dir")));
 }
 
 EditorDirDialog::EditorDirDialog() {

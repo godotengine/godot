@@ -53,11 +53,11 @@ void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &OpenXRHand::set_bone_update);
 	ClassDB::bind_method(D_METHOD("get_bone_update"), &OpenXRHand::get_bone_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton_rig", PROPERTY_HINT_ENUM, "OpenXR,Humanoid"), "set_skeleton_rig", "get_skeleton_rig");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "skeleton_rig", PROPERTY_HINT_ENUM, "OpenXR,Humanoid"), "set_skeleton_rig", "get_skeleton_rig");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);

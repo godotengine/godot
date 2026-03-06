@@ -72,7 +72,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 	uint8_t encode_mode = 0;
 
 	switch (p_variant.get_type()) {
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			if (buf) {
 				// We don't use encode_mode for booleans, so we can use it to store the value.
 				buf[0] = (p_variant.operator bool()) ? (1 << 7) : 0;
@@ -80,7 +80,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 			}
 			r_len += 1;
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			if (buf) {
 				// Reserve the first byte for the meta.
 				buf += 1;
@@ -146,17 +146,17 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 	uint8_t type = buf[0] & VARIANT_META_TYPE_MASK;
 	uint8_t encode_mode = buf[0] & VARIANT_META_EMODE_MASK;
 
-	ERR_FAIL_COND_V(type >= Variant::VARIANT_MAX, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(type >= VariantType::VARIANT_MAX, ERR_INVALID_DATA);
 
 	switch (type) {
-		case Variant::BOOL: {
+		case VariantType::BOOL: {
 			bool val = (buf[0] & VARIANT_META_BOOL_MASK) > 0;
 			r_variant = val;
 			if (r_len) {
 				*r_len = 1;
 			}
 		} break;
-		case Variant::INT: {
+		case VariantType::INT: {
 			buf += 1;
 			len -= 1;
 			if (r_len) {
@@ -221,7 +221,7 @@ Error MultiplayerAPI::encode_and_compress_variants(const Variant **p_variants, i
 	if (r_raw && p_count == 1) {
 		*r_raw = false;
 		const Variant &v = *(p_variants[0]);
-		if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
+		if (v.get_type() == VariantType::PACKED_BYTE_ARRAY) {
 			*r_raw = true;
 			const PackedByteArray pba = v;
 			if (p_buffer) {
@@ -299,14 +299,14 @@ void MultiplayerAPI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_peers"), &MultiplayerAPI::get_peer_ids);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, MultiplayerPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
 
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("set_default_interface", "interface_name"), &MultiplayerAPI::set_default_interface);
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("get_default_interface"), &MultiplayerAPI::get_default_interface);
 	ClassDB::bind_static_method("MultiplayerAPI", D_METHOD("create_default_interface"), &MultiplayerAPI::create_default_interface);
 
-	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(VariantType::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(VariantType::INT, "id")));
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 	ADD_SIGNAL(MethodInfo("server_disconnected"));

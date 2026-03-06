@@ -480,15 +480,15 @@ void Curve::set_data(const Array p_input) {
 
 	// Validate input
 	for (int i = 0; i < p_input.size(); i += ELEMS) {
-		ERR_FAIL_COND(p_input[i].get_type() != Variant::VECTOR2);
+		ERR_FAIL_COND(p_input[i].get_type() != VariantType::VECTOR2);
 		ERR_FAIL_COND(!p_input[i + 1].is_num());
-		ERR_FAIL_COND(p_input[i + 2].get_type() != Variant::FLOAT);
+		ERR_FAIL_COND(p_input[i + 2].get_type() != VariantType::FLOAT);
 
-		ERR_FAIL_COND(p_input[i + 3].get_type() != Variant::INT);
+		ERR_FAIL_COND(p_input[i + 3].get_type() != VariantType::INT);
 		int left_mode = p_input[i + 3];
 		ERR_FAIL_COND(left_mode < 0 || left_mode >= TANGENT_MODE_COUNT);
 
-		ERR_FAIL_COND(p_input[i + 4].get_type() != Variant::INT);
+		ERR_FAIL_COND(p_input[i + 4].get_type() != VariantType::INT);
 		int right_mode = p_input[i + 4];
 		ERR_FAIL_COND(right_mode < 0 || right_mode >= TANGENT_MODE_COUNT);
 	}
@@ -633,13 +633,13 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve::get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve::set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_domain", "get_min_domain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_domain", "get_max_domain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_value", "get_min_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_value", "get_max_value");
-	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_domain", "get_min_domain");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_domain", "get_max_domain");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_value", "get_min_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(VariantType::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
@@ -655,11 +655,11 @@ void Curve::_bind_methods() {
 	base_property_helper.set_prefix("point_");
 	base_property_helper.set_array_length_getter(&Curve::get_point_count);
 	base_property_helper.set_property_filter(&Curve::_filter_property);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve::_set_point_position, &Curve::get_point_position);
-	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "left_tangent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.left_tangent, &Curve::set_point_left_tangent, &Curve::get_point_left_tangent);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "left_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.left_mode, &Curve::set_point_left_mode, &Curve::get_point_left_mode);
-	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "right_tangent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.right_tangent, &Curve::set_point_right_tangent, &Curve::get_point_right_tangent);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "right_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.right_mode, &Curve::set_point_right_mode, &Curve::get_point_right_mode);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve::_set_point_position, &Curve::get_point_position);
+	base_property_helper.register_property(PropertyInfo(VariantType::FLOAT, "left_tangent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.left_tangent, &Curve::set_point_left_tangent, &Curve::get_point_left_tangent);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "left_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.left_mode, &Curve::set_point_left_mode, &Curve::get_point_left_mode);
+	base_property_helper.register_property(PropertyInfo(VariantType::FLOAT, "right_tangent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.right_tangent, &Curve::set_point_right_tangent, &Curve::get_point_right_tangent);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "right_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.right_mode, &Curve::set_point_right_mode, &Curve::get_point_right_mode);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
@@ -1330,8 +1330,8 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve2D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve2D::_set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	Point defaults;
@@ -1339,9 +1339,9 @@ void Curve2D::_bind_methods() {
 	base_property_helper.set_prefix("point_");
 	base_property_helper.set_array_length_getter(&Curve2D::get_point_count);
 	base_property_helper.set_property_filter(&Curve2D::_filter_property);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve2D::set_point_position, &Curve2D::get_point_position);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve2D::set_point_in, &Curve2D::get_point_in);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve2D::set_point_out, &Curve2D::get_point_out);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve2D::set_point_position, &Curve2D::get_point_position);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR2, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve2D::set_point_in, &Curve2D::get_point_in);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR2, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve2D::set_point_out, &Curve2D::get_point_out);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
@@ -2368,24 +2368,24 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve3D::_set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "closed"), "set_closed", "is_closed");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	ADD_GROUP("Up Vector", "up_vector_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
 
 	Point defaults;
 
 	base_property_helper.set_prefix("point_");
 	base_property_helper.set_array_length_getter(&Curve3D::get_point_count);
 	base_property_helper.set_property_filter(&Curve3D::_filter_property);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve3D::set_point_position, &Curve3D::get_point_position);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR3, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve3D::set_point_in, &Curve3D::get_point_in);
-	base_property_helper.register_property(PropertyInfo(Variant::VECTOR3, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve3D::set_point_out, &Curve3D::get_point_out);
-	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "tilt", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.tilt, &Curve3D::set_point_tilt, &Curve3D::get_point_tilt);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR3, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve3D::set_point_position, &Curve3D::get_point_position);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR3, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve3D::set_point_in, &Curve3D::get_point_in);
+	base_property_helper.register_property(PropertyInfo(VariantType::VECTOR3, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve3D::set_point_out, &Curve3D::get_point_out);
+	base_property_helper.register_property(PropertyInfo(VariantType::FLOAT, "tilt", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.tilt, &Curve3D::set_point_tilt, &Curve3D::get_point_tilt);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 

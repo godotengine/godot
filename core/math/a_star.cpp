@@ -583,7 +583,7 @@ void AStar3D::_bind_methods() {
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }
 
 AStar3D::~AStar3D() {
@@ -938,5 +938,5 @@ void AStar2D::_bind_methods() {
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }

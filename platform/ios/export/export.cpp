@@ -43,7 +43,7 @@ void register_ios_exporter() {
 	// TODO: Move to editor_settings.cpp
 #ifdef MACOS_ENABLED
 	EDITOR_DEF("export/ios/ios_deploy", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/ios/ios_deploy", PROPERTY_HINT_GLOBAL_FILE, "*"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/ios/ios_deploy", PROPERTY_HINT_GLOBAL_FILE, "*"));
 #endif
 
 	Ref<EditorExportPlatformIOS> platform;

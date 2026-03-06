@@ -89,11 +89,11 @@ void CopyTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) con
 
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::INT, path + "copy", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"));
-		props.push_back(PropertyInfo(Variant::INT, path + "axes", PROPERTY_HINT_FLAGS, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::INT, path + "invert", PROPERTY_HINT_FLAGS, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "relative"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "additive"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "copy", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "axes", PROPERTY_HINT_FLAGS, "X,Y,Z"));
+		props.push_back(PropertyInfo(VariantType::INT, path + "invert", PROPERTY_HINT_FLAGS, "X,Y,Z"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "relative"));
+		props.push_back(PropertyInfo(VariantType::BOOL, path + "additive"));
 	}
 
 	for (PropertyInfo &p : props) {

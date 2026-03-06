@@ -60,14 +60,14 @@ Variant JNISingleton::callp(const StringName &p_method, const Variant **p_args, 
 	return Variant();
 }
 
-void JNISingleton::add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
+void JNISingleton::add_method(const StringName &p_name, const Vector<VariantType::Type> &p_args, VariantType::Type p_ret_type) {
 	MethodData md;
 	md.argtypes = p_args;
 	md.ret_type = p_ret_type;
 	method_map[p_name] = md;
 }
 
-void JNISingleton::add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
+void JNISingleton::add_signal(const StringName &p_name, const Vector<VariantType::Type> &p_args) {
 	MethodInfo mi;
 	mi.name = p_name;
 	for (int i = 0; i < p_args.size(); i++) {

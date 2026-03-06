@@ -276,7 +276,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
 	GDREGISTER_CLASS(NavigationPathQueryResult2D);
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, NavigationServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+	GLOBAL_DEF(PropertyInfo(VariantType::STRING, NavigationServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	NavigationServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(NavigationServer2DManager::create_dummy_server_callback));
 #endif // NAVIGATION_2D_DISABLED
@@ -304,7 +304,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+	GLOBAL_DEF(PropertyInfo(VariantType::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
 #endif // PHYSICS_2D_DISABLED
@@ -317,7 +317,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, NavigationServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+	GLOBAL_DEF(PropertyInfo(VariantType::STRING, NavigationServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	NavigationServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(NavigationServer3DManager::create_dummy_server_callback));
 #endif // NAVIGATION_3D_DISABLED
@@ -347,7 +347,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
-	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+	GLOBAL_DEF(PropertyInfo(VariantType::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_3d));
 #endif // PHYSICS_3D_DISABLED

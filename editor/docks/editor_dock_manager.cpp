@@ -997,7 +997,7 @@ void DockSlotGrid::_update_rect_cache() {
 }
 
 void DockSlotGrid::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("slot_clicked", PropertyInfo(Variant::INT, "slot")));
+	ADD_SIGNAL(MethodInfo("slot_clicked", PropertyInfo(VariantType::INT, "slot")));
 }
 
 void DockSlotGrid::_notification(int p_what) {

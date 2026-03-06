@@ -118,7 +118,7 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
+	GLOBAL_DEF(PropertyInfo(VariantType::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -1576,7 +1576,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	}
 }
 
-Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
+VariantType::Type CSharpInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	if (script->member_info.has(p_name)) {
 		if (r_is_valid) {
 			*r_is_valid = true;
@@ -1588,7 +1588,7 @@ Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *
 		*r_is_valid = false;
 	}
 
-	return Variant::NIL;
+	return VariantType::NIL;
 }
 
 bool CSharpInstance::property_can_revert(const StringName &p_name) const {
@@ -2079,7 +2079,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 
 #ifdef TOOLS_ENABLED
 	p_script->exported_members_cache.push_back(PropertyInfo(
-			Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
+			VariantType::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
 			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
 #endif
 
@@ -2214,7 +2214,7 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(VariantType::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
@@ -2294,7 +2294,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		for (int j = 0; j < params.size(); j++) {
 			Dictionary param = params[j];
 
-			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			VariantType::Type param_type = (VariantType::Type)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
 			if (param.has("class_name")) {
@@ -2329,7 +2329,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 		for (int i = 0; i < params.size(); i++) {
 			Dictionary param = params[i];
 
-			Variant::Type param_type = (Variant::Type)(int)param["type"];
+			VariantType::Type param_type = (VariantType::Type)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
 			if (param.has("class_name")) {

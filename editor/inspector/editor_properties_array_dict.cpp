@@ -83,7 +83,7 @@ bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) c
 	bool valid;
 	r_ret = array.get(index, &valid);
 
-	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+	if (r_ret.get_type() == VariantType::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
 		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
 	}
 
@@ -128,7 +128,7 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 	if (!get_by_property_name(p_name, r_ret)) {
 		return false;
 	}
-	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+	if (r_ret.get_type() == VariantType::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
 		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
 	}
 	return true;
@@ -237,11 +237,11 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 ///////////////////// ARRAY ///////////////////////////
 
 void EditorPropertyArray::initialize_array(Variant &p_array) {
-	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+	if (array_type == VariantType::ARRAY && subtype != VariantType::NIL) {
 		Array array;
 		StringName subtype_class;
 		Ref<Script> subtype_script;
-		if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
+		if (subtype == VariantType::OBJECT && !subtype_hint_string.is_empty()) {
 			if (ClassDB::class_exists(subtype_hint_string)) {
 				subtype_class = subtype_hint_string;
 			}
@@ -258,7 +258,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		return;
 	}
 
-	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+	if (p_value.get_type() == VariantType::OBJECT && p_value.is_null()) {
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
 	}
 
@@ -282,7 +282,7 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 }
 
 void EditorPropertyArray::_change_type_menu(int p_index) {
-	if (p_index == Variant::VARIANT_MAX) {
+	if (p_index == VariantType::VARIANT_MAX) {
 		_remove_pressed(changing_type_index);
 		return;
 	}
@@ -292,7 +292,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 			"Tried to change type of an array item, but no item was selected.");
 
 	Variant value;
-	VariantInternal::initialize(&value, Variant::Type(p_index));
+	VariantInternal::initialize(&value, VariantType::Type(p_index));
 
 	Variant array = object->get_array().duplicate();
 	array.set(slots[changing_type_index].index, value);
@@ -326,7 +326,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	hbox->add_child(prop);
 
-	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
+	bool is_untyped_array = object->get_array().get_type() == VariantType::ARRAY && subtype == VariantType::NIL;
 
 	Button *edit_btn = nullptr;
 	Button *remove_btn = nullptr;
@@ -365,14 +365,14 @@ void EditorPropertyArray::set_preview_value(bool p_preview_value) {
 void EditorPropertyArray::update_property() {
 	Variant array = get_edited_property_value();
 
-	String array_type_name = Variant::get_type_name(array_type);
+	String array_type_name = VariantType::get_type_name(array_type);
 	String array_sub_type_name;
-	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+	if (array_type == VariantType::ARRAY && subtype != VariantType::NIL) {
 		String type_name;
-		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+		if (subtype == VariantType::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			type_name = subtype_hint_string;
 		} else {
-			type_name = Variant::get_type_name(subtype);
+			type_name = VariantType::get_type_name(subtype);
 		}
 
 		if (preview_value) {
@@ -413,7 +413,7 @@ void EditorPropertyArray::update_property() {
 
 	if (preview_value) {
 		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").remove_char('\n');
-		if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+		if (array_type == VariantType::ARRAY && subtype != VariantType::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
 				ctr_str = ctr_str.substr(type_end + 2);
@@ -502,19 +502,19 @@ void EditorPropertyArray::update_property() {
 			}
 
 			int idx = slot.index;
-			Variant::Type value_type = subtype;
+			VariantType::Type value_type = subtype;
 
-			if (value_type == Variant::NIL) {
+			if (value_type == VariantType::NIL) {
 				value_type = array.get(idx).get_type();
 			}
 
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
-			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+			if (value_type != slot.type || (value_type == VariantType::OBJECT && (value_as_id != slot.as_id))) {
 				slot.as_id = value_as_id;
 				slot.type = value_type;
 				EditorProperty *new_prop = nullptr;
-				if (value_type == Variant::OBJECT && value_as_id) {
+				if (value_type == VariantType::OBJECT && value_as_id) {
 					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 					editor->setup("Object");
 					new_prop = editor;
@@ -525,7 +525,7 @@ void EditorPropertyArray::update_property() {
 				new_prop->set_use_folding(is_using_folding());
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
-				if (value_type == Variant::OBJECT) {
+				if (value_type == VariantType::OBJECT) {
 					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
 				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -592,11 +592,11 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return false;
 	}
 
-	String allowed_type = Variant::get_type_name(subtype);
+	String allowed_type = VariantType::get_type_name(subtype);
 
 	// When the subtype is of type Object, an additional subtype may be specified in the hint string
 	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
-	if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
+	if (subtype == VariantType::OBJECT && !subtype_hint_string.is_empty()) {
 		allowed_type = subtype_hint_string;
 	}
 
@@ -754,9 +754,9 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		for (int i = 0; i < node_paths.size(); i++) {
 			const NodePath &path = node_paths[i];
 
-			if (subtype == Variant::OBJECT) {
+			if (subtype == VariantType::OBJECT) {
 				array.call("push_back", get_node(path));
-			} else if (subtype == Variant::NODE_PATH) {
+			} else if (subtype == VariantType::NODE_PATH) {
 				array.call("push_back", base_node->get_path().rel_path_to(path));
 			}
 		}
@@ -869,7 +869,7 @@ void EditorPropertyArray::_add_element() {
 	_length_changed(double(object->get_array().call("size")) + 1.0);
 }
 
-void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
+void EditorPropertyArray::setup(VariantType::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
 
 	// The format of p_hint_string is:
@@ -885,12 +885,12 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 			}
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
-			subtype = Variant::Type(subtype_string.to_int());
+			subtype = VariantType::Type(subtype_string.to_int());
 		} else {
-			subtype = Variant::get_type_by_name(p_hint_string);
+			subtype = VariantType::get_type_by_name(p_hint_string);
 
-			if (subtype == Variant::VARIANT_MAX) {
-				subtype = Variant::OBJECT;
+			if (subtype == VariantType::VARIANT_MAX) {
+				subtype = VariantType::OBJECT;
 				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
 				subtype_hint_string = p_hint_string;
 			}
@@ -1005,7 +1005,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyArray::_change_type_menu));
 	changing_type_index = -1;
 
-	subtype = Variant::NIL;
+	subtype = VariantType::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
 	has_borders = true;
@@ -1014,27 +1014,27 @@ EditorPropertyArray::EditorPropertyArray() {
 ///////////////////// DICTIONARY ///////////////////////////
 
 void EditorPropertyDictionary::initialize_dictionary(Variant &p_dictionary) {
-	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+	if (key_subtype != VariantType::NIL || value_subtype != VariantType::NIL) {
 		Dictionary dict;
 		StringName key_subtype_class;
 		Ref<Script> key_subtype_script;
-		if (key_subtype == Variant::OBJECT && !key_subtype_hint_string.is_empty() && ClassDB::class_exists(key_subtype_hint_string)) {
+		if (key_subtype == VariantType::OBJECT && !key_subtype_hint_string.is_empty() && ClassDB::class_exists(key_subtype_hint_string)) {
 			key_subtype_class = key_subtype_hint_string;
 		}
 		StringName value_subtype_class;
 		Ref<Script> value_subtype_script;
-		if (value_subtype == Variant::OBJECT && !value_subtype_hint_string.is_empty() && ClassDB::class_exists(value_subtype_hint_string)) {
+		if (value_subtype == VariantType::OBJECT && !value_subtype_hint_string.is_empty() && ClassDB::class_exists(value_subtype_hint_string)) {
 			value_subtype_class = value_subtype_hint_string;
 		}
 		dict.set_typed(key_subtype, key_subtype_class, key_subtype_script, value_subtype, value_subtype_class, value_subtype_script);
 		p_dictionary = dict;
 	} else {
-		VariantInternal::initialize(&p_dictionary, Variant::DICTIONARY);
+		VariantInternal::initialize(&p_dictionary, VariantType::DICTIONARY);
 	}
 }
 
 void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
-	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+	if (p_value.get_type() == VariantType::OBJECT && p_value.is_null()) {
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
 	}
 
@@ -1050,7 +1050,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) 
 	Button *button = Object::cast_to<Button>(p_button);
 	int index = slots[p_slot_index].index;
 	Rect2 rect = button->get_screen_rect();
-	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), index < 0);
+	change_type->set_item_disabled(change_type->get_item_index(VariantType::VARIANT_MAX), index < 0);
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
@@ -1059,7 +1059,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) 
 
 void EditorPropertyDictionary::_add_key_value() {
 	// Do not allow nil as valid key. I experienced errors with this
-	if (object->get_new_item_key().get_type() == Variant::NIL) {
+	if (object->get_new_item_key().get_type() == VariantType::NIL) {
 		return;
 	}
 
@@ -1068,7 +1068,7 @@ void EditorPropertyDictionary::_add_key_value() {
 	Variant new_value = object->get_new_item_value();
 	dict[new_key] = new_value;
 
-	Variant::Type type = new_key.get_type();
+	VariantType::Type type = new_key.get_type();
 	new_key.zero();
 	VariantInternal::initialize(&new_key, type);
 	object->set_new_item_key(new_key);
@@ -1099,7 +1099,7 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	}
 
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
-	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
+	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == VariantType::NIL;
 
 	Button *edit_btn = nullptr;
 	Button *remove_btn = nullptr;
@@ -1146,7 +1146,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	switch (changing_type_index) {
 		case EditorPropertyDictionaryObject::NEW_KEY_INDEX:
 		case EditorPropertyDictionaryObject::NEW_VALUE_INDEX:
-			VariantInternal::initialize(&value, Variant::Type(p_index));
+			VariantInternal::initialize(&value, VariantType::Type(p_index));
 			if (changing_type_index == EditorPropertyDictionaryObject::NEW_KEY_INDEX) {
 				object->set_new_item_key(value);
 			} else {
@@ -1158,8 +1158,8 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 		default:
 			Dictionary dict = object->get_dict().duplicate();
 			Variant key = dict.get_key_at_index(changing_type_index);
-			if (p_index < Variant::VARIANT_MAX) {
-				VariantInternal::initialize(&value, Variant::Type(p_index));
+			if (p_index < VariantType::VARIANT_MAX) {
+				VariantInternal::initialize(&value, VariantType::Type(p_index));
 				dict[key] = value;
 			} else {
 				dict.erase(key);
@@ -1187,12 +1187,12 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			}
 
 			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
-			key_subtype = Variant::Type(key_subtype_string.to_int());
+			key_subtype = VariantType::Type(key_subtype_string.to_int());
 		} else {
-			key_subtype = Variant::get_type_by_name(key);
+			key_subtype = VariantType::get_type_by_name(key);
 
-			if (key_subtype == Variant::VARIANT_MAX) {
-				key_subtype = Variant::OBJECT;
+			if (key_subtype == VariantType::VARIANT_MAX) {
+				key_subtype = VariantType::OBJECT;
 				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
 				key_subtype_hint_string = key;
 			}
@@ -1215,12 +1215,12 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			}
 
 			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
-			value_subtype = Variant::Type(value_subtype_string.to_int());
+			value_subtype = VariantType::Type(value_subtype_string.to_int());
 		} else {
-			value_subtype = Variant::get_type_by_name(value);
+			value_subtype = VariantType::get_type_by_name(value);
 
-			if (value_subtype == Variant::VARIANT_MAX) {
-				value_subtype = Variant::OBJECT;
+			if (value_subtype == VariantType::VARIANT_MAX) {
+				value_subtype = VariantType::OBJECT;
 				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
 				value_subtype_hint_string = value;
 			}
@@ -1241,18 +1241,18 @@ void EditorPropertyDictionary::update_property() {
 
 	String dict_type_name = "Dictionary";
 	String dict_sub_type_name;
-	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+	if (key_subtype != VariantType::NIL || value_subtype != VariantType::NIL) {
 		String key_subtype_name = "Variant";
-		if (key_subtype == Variant::OBJECT && (key_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || key_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+		if (key_subtype == VariantType::OBJECT && (key_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || key_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			key_subtype_name = key_subtype_hint_string;
-		} else if (key_subtype != Variant::NIL) {
-			key_subtype_name = Variant::get_type_name(key_subtype);
+		} else if (key_subtype != VariantType::NIL) {
+			key_subtype_name = VariantType::get_type_name(key_subtype);
 		}
 		String value_subtype_name = "Variant";
-		if (value_subtype == Variant::OBJECT && (value_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || value_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+		if (value_subtype == VariantType::OBJECT && (value_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || value_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			value_subtype_name = value_subtype_hint_string;
-		} else if (value_subtype != Variant::NIL) {
-			value_subtype_name = Variant::get_type_name(value_subtype);
+		} else if (value_subtype != VariantType::NIL) {
+			value_subtype_name = VariantType::get_type_name(value_subtype);
 		}
 		if (preview_value) {
 			dict_sub_type_name = vformat("[%s, %s] ", key_subtype_name, value_subtype_name);
@@ -1261,7 +1261,7 @@ void EditorPropertyDictionary::update_property() {
 		}
 	}
 
-	if (updated_val.get_type() != Variant::DICTIONARY) {
+	if (updated_val.get_type() != VariantType::DICTIONARY) {
 		if (preview_value) {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
@@ -1288,7 +1288,7 @@ void EditorPropertyDictionary::update_property() {
 
 	if (preview_value) {
 		String ctr_str = updated_val.get_construct_string().remove_char('\n');
-		if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+		if (key_subtype != VariantType::NIL || value_subtype != VariantType::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
 				ctr_str = ctr_str.substr(type_end + 2).trim_suffix(")");
@@ -1377,14 +1377,14 @@ void EditorPropertyDictionary::update_property() {
 			if (slot.prop_key) {
 				Variant key;
 				object->get_by_property_name(slot.key_name, key);
-				Variant::Type key_type = key.get_type();
+				VariantType::Type key_type = key.get_type();
 
 				bool key_as_id = Object::cast_to<EncodedObjectAsID>(key);
-				if (key_type != slot.key_type || (key_type == Variant::OBJECT && key_as_id != slot.key_as_id)) {
+				if (key_type != slot.key_type || (key_type == VariantType::OBJECT && key_as_id != slot.key_as_id)) {
 					slot.key_as_id = key_as_id;
 					slot.key_type = key_type;
 					EditorProperty *new_prop = nullptr;
-					if (key_type == Variant::OBJECT && key_as_id) {
+					if (key_type == VariantType::OBJECT && key_as_id) {
 						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 						editor->setup("Object");
 						new_prop = editor;
@@ -1417,9 +1417,9 @@ void EditorPropertyDictionary::update_property() {
 			Variant value;
 			object->get_by_property_name(slot.prop_name, value);
 
-			Variant::Type value_type;
+			VariantType::Type value_type;
 
-			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
+			if (dict.is_typed_value() && value_subtype != VariantType::NIL && slot.prop_key) {
 				value_type = value_subtype;
 			} else {
 				value_type = value.get_type();
@@ -1427,11 +1427,11 @@ void EditorPropertyDictionary::update_property() {
 
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(value);
-			if (value_type != slot.type || (value_type == Variant::OBJECT && value_as_id != slot.as_id)) {
+			if (value_type != slot.type || (value_type == VariantType::OBJECT && value_as_id != slot.as_id)) {
 				slot.as_id = value_as_id;
 				slot.type = value_type;
 				EditorProperty *new_prop = nullptr;
-				if (value_type == Variant::OBJECT && value_as_id) {
+				if (value_type == VariantType::OBJECT && value_as_id) {
 					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 					editor->setup("Object");
 					new_prop = editor;
@@ -1444,7 +1444,7 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_use_folding(is_using_folding());
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
-				if (value_type == Variant::OBJECT) {
+				if (value_type == VariantType::OBJECT) {
 					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
 				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1534,7 +1534,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 
 void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+	if (prop_val.get_type() == VariantType::NIL && edit->is_pressed()) {
 		initialize_dictionary(prop_val);
 		emit_changed(get_edited_property(), prop_val);
 	}
@@ -1585,11 +1585,11 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
 	has_borders = true;
 
-	key_subtype = Variant::NIL;
+	key_subtype = VariantType::NIL;
 	key_subtype_hint = PROPERTY_HINT_NONE;
 	key_subtype_hint_string = "";
 
-	value_subtype = Variant::NIL;
+	value_subtype = VariantType::NIL;
 	value_subtype_hint = PROPERTY_HINT_NONE;
 	value_subtype_hint_string = "";
 }
@@ -1636,7 +1636,7 @@ void EditorPropertyLocalizableString::_remove_item(Object *p_button, int p_index
 void EditorPropertyLocalizableString::update_property() {
 	Variant updated_val = get_edited_property_value();
 
-	if (updated_val.get_type() == Variant::NIL) {
+	if (updated_val.get_type() == VariantType::NIL) {
 		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (container) {
@@ -1759,8 +1759,8 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 
 void EditorPropertyLocalizableString::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
-		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
+	if (prop_val.get_type() == VariantType::NIL && edit->is_pressed()) {
+		VariantInternal::initialize(&prop_val, VariantType::DICTIONARY);
 		get_edited_object()->set(get_edited_property(), prop_val);
 	}
 

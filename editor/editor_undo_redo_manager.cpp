@@ -172,17 +172,17 @@ void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcoun
 		return;
 	}
 
-	if (p_args[0]->get_type() != Variant::OBJECT) {
+	if (p_args[0]->get_type() != VariantType::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::OBJECT;
+		r_error.expected = VariantType::OBJECT;
 		return;
 	}
 
 	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return;
 	}
 
@@ -201,17 +201,17 @@ void EditorUndoRedoManager::_add_undo_method(const Variant **p_args, int p_argco
 		return;
 	}
 
-	if (p_args[0]->get_type() != Variant::OBJECT) {
+	if (p_args[0]->get_type() != VariantType::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::OBJECT;
+		r_error.expected = VariantType::OBJECT;
 		return;
 	}
 
 	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = Variant::STRING_NAME;
+		r_error.expected = VariantType::STRING_NAME;
 		return;
 	}
 
@@ -546,8 +546,8 @@ void EditorUndoRedoManager::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "add_do_method";
-		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::OBJECT, "object"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_do_method", &EditorUndoRedoManager::_add_do_method, mi, varray(), false);
 	}
@@ -555,8 +555,8 @@ void EditorUndoRedoManager::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "add_undo_method";
-		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
-		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+		mi.arguments.push_back(PropertyInfo(VariantType::OBJECT, "object"));
+		mi.arguments.push_back(PropertyInfo(VariantType::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_undo_method", &EditorUndoRedoManager::_add_undo_method, mi, varray(), false);
 	}

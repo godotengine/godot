@@ -69,7 +69,7 @@ bool AudioListener3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AudioListener3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("current")));
+	p_list->push_back(PropertyInfo(VariantType::BOOL, PNAME("current")));
 }
 
 void AudioListener3D::_update_listener() {
@@ -170,7 +170,7 @@ void AudioListener3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &AudioListener3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &AudioListener3D::get_doppler_tracking);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);

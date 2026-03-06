@@ -109,7 +109,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	test(res, res_repr, true);
 	ERR_PRINT_OFF;
 	CHECK(encode(res) == "null");
-	CHECK(decode(res_repr).get_type() == Variant::NIL);
+	CHECK(decode(res_repr).get_type() == VariantType::NIL);
 	ERR_PRINT_ON;
 
 	// `Dictionary`.
@@ -159,7 +159,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	test(res_dict, res_dict_repr, true);
 	ERR_PRINT_OFF;
 	CHECK(encode(res_dict) == "null");
-	CHECK(decode(res_dict_repr).get_type() == Variant::NIL);
+	CHECK(decode(res_dict_repr).get_type() == VariantType::NIL);
 	ERR_PRINT_ON;
 
 	// `Array`.
@@ -185,7 +185,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	test(res_arr, res_arr_repr, true);
 	ERR_PRINT_OFF;
 	CHECK(encode(res_arr) == "null");
-	CHECK(decode(res_arr_repr).get_type() == Variant::NIL);
+	CHECK(decode(res_arr_repr).get_type() == VariantType::NIL);
 	ERR_PRINT_ON;
 
 	// Packed arrays.

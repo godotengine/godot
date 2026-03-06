@@ -567,7 +567,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	int swap_cancel_ok = GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/swap_cancel_ok", PROPERTY_HINT_ENUM, "Auto,Cancel First,OK First"), 0);
+	int swap_cancel_ok = GLOBAL_DEF(PropertyInfo(VariantType::INT, "gui/common/swap_cancel_ok", PROPERTY_HINT_ENUM, "Auto,Cancel First,OK First"), 0);
 	if (DisplayServer::get_singleton() && swap_cancel_ok == 0) {
 		swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 	}

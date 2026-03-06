@@ -47,18 +47,18 @@ void ScriptEditorBase::_bind_methods() {
 
 	// First use in TextEditorBase.
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
-	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(VariantType::STRING, "text")));
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 
 	// First use in ScriptTextEditor.
 	ADD_SIGNAL(MethodInfo("request_save_history"));
-	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
-	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
-	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
-	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
+	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(VariantType::STRING, "topic")));
+	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(VariantType::OBJECT, "script"), PropertyInfo(VariantType::INT, "line")));
+	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(VariantType::STRING, "what")));
+	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(VariantType::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(VariantType::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(VariantType::OBJECT, "script"), PropertyInfo(VariantType::STRING, "method")));
 }
 
 String ScriptEditorBase::get_name() {
@@ -677,7 +677,7 @@ TextEditorBase::~TextEditorBase() {
 //// CodeEditorBase
 
 bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
-	if (p_line.get_type() == Variant::INT) {
+	if (p_line.get_type() == VariantType::INT) {
 		goto_line_centered(p_line.operator int64_t());
 		return true;
 	}

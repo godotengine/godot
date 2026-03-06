@@ -83,9 +83,9 @@ void EditorDebuggerTree::_notification(int p_what) {
 }
 
 void EditorDebuggerTree::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("objects_selected", PropertyInfo(Variant::ARRAY, "object_ids"), PropertyInfo(Variant::INT, "debugger")));
-	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(Variant::INT, "debugger")));
-	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("objects_selected", PropertyInfo(VariantType::ARRAY, "object_ids"), PropertyInfo(VariantType::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(VariantType::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(VariantType::INT, "object_id"), PropertyInfo(VariantType::STRING, "filename"), PropertyInfo(VariantType::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("open"));
 }
 

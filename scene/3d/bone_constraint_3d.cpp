@@ -101,13 +101,13 @@ void BoneConstraint3D::get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "amount", PROPERTY_HINT_RANGE, "0,1,0.001"));
-		props.push_back(PropertyInfo(Variant::STRING, path + "apply_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "apply_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::INT, path + "reference_type", PROPERTY_HINT_ENUM, "Bone,Node"));
-		props.push_back(PropertyInfo(Variant::STRING, path + "reference_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
-		props.push_back(PropertyInfo(Variant::INT, path + "reference_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::NODE_PATH, path + "reference_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"));
+		props.push_back(PropertyInfo(VariantType::FLOAT, path + "amount", PROPERTY_HINT_RANGE, "0,1,0.001"));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "apply_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "apply_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::INT, path + "reference_type", PROPERTY_HINT_ENUM, "Bone,Node"));
+		props.push_back(PropertyInfo(VariantType::STRING, path + "reference_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
+		props.push_back(PropertyInfo(VariantType::INT, path + "reference_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		props.push_back(PropertyInfo(VariantType::NODE_PATH, path + "reference_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"));
 	}
 
 	for (PropertyInfo &p : props) {

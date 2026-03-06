@@ -103,7 +103,7 @@ class GDScriptCompiler {
 			GDScriptDataType type;
 			type.kind = GDScriptDataType::BUILTIN;
 			type.builtin_type = p_constant.get_type();
-			if (type.builtin_type == Variant::OBJECT) {
+			if (type.builtin_type == VariantType::OBJECT) {
 				Object *obj = p_constant;
 				if (obj) {
 					type.kind = GDScriptDataType::NATIVE;
@@ -120,7 +120,7 @@ class GDScriptCompiler {
 						}
 					}
 				} else {
-					type.builtin_type = Variant::NIL;
+					type.builtin_type = VariantType::NIL;
 				}
 			}
 

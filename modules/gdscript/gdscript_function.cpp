@@ -40,13 +40,13 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 			return true;
 		} break;
 		case BUILTIN: {
-			Variant::Type var_type = p_variant.get_type();
+			VariantType::Type var_type = p_variant.get_type();
 			bool valid = builtin_type == var_type;
-			if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+			if (valid && builtin_type == VariantType::ARRAY && has_container_element_type(0)) {
 				Array array = p_variant;
 				if (array.is_typed()) {
 					const GDScriptDataType &elem_type = container_element_types[0];
-					Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
+					VariantType::Type array_builtin_type = (VariantType::Type)array.get_typed_builtin();
 					StringName array_native_type = array.get_typed_class_name();
 					Ref<Script> array_script_type_ref = array.get_typed_script();
 
@@ -60,12 +60,12 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				} else {
 					valid = false;
 				}
-			} else if (valid && builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+			} else if (valid && builtin_type == VariantType::DICTIONARY && has_container_element_types()) {
 				Dictionary dictionary = p_variant;
 				if (dictionary.is_typed()) {
 					if (dictionary.is_typed_key()) {
 						GDScriptDataType key = get_container_element_type_or_variant(0);
-						Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
+						VariantType::Type key_builtin_type = (VariantType::Type)dictionary.get_typed_key_builtin();
 						StringName key_native_type = dictionary.get_typed_key_class_name();
 						Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
 
@@ -80,7 +80,7 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 
 					if (valid && dictionary.is_typed_value()) {
 						GDScriptDataType value = get_container_element_type_or_variant(1);
-						Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
+						VariantType::Type value_builtin_type = (VariantType::Type)dictionary.get_typed_value_builtin();
 						StringName value_native_type = dictionary.get_typed_value_class_name();
 						Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
 
@@ -96,15 +96,15 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 					valid = false;
 				}
 			} else if (!valid && p_allow_implicit_conversion) {
-				valid = Variant::can_convert_strict(var_type, builtin_type);
+				valid = VariantType::can_convert_strict(var_type, builtin_type);
 			}
 			return valid;
 		} break;
 		case NATIVE: {
-			if (p_variant.get_type() == Variant::NIL) {
+			if (p_variant.get_type() == VariantType::NIL) {
 				return true;
 			}
-			if (p_variant.get_type() != Variant::OBJECT) {
+			if (p_variant.get_type() != VariantType::OBJECT) {
 				return false;
 			}
 
@@ -121,10 +121,10 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 		} break;
 		case SCRIPT:
 		case GDSCRIPT: {
-			if (p_variant.get_type() == Variant::NIL) {
+			if (p_variant.get_type() == VariantType::NIL) {
 				return true;
 			}
-			if (p_variant.get_type() != Variant::OBJECT) {
+			if (p_variant.get_type() != VariantType::OBJECT) {
 				return false;
 			}
 
@@ -278,7 +278,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 	if (self.is_null()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = p_argcount - 1;
-		r_error.expected = Variant::OBJECT;
+		r_error.expected = VariantType::OBJECT;
 		return Variant();
 	}
 
@@ -383,7 +383,7 @@ void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
-	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(VariantType::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
 GDScriptFunctionState::GDScriptFunctionState() :

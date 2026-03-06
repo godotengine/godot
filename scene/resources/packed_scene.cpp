@@ -433,7 +433,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					} else {
 						Variant value = props[nprops[j].value];
 
-						if (value.get_type() == Variant::OBJECT) {
+						if (value.get_type() == VariantType::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
@@ -447,12 +447,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							}
 						}
 
-						if (value.get_type() == Variant::ARRAY) {
+						if (value.get_type() == VariantType::ARRAY) {
 							Array set_array = value;
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
 
-							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+							if (is_get_valid && get_value.get_type() == VariantType::ARRAY) {
 								Array get_array = get_value;
 								if (set_array.is_same_typed(get_array)) {
 									set_array = set_array.duplicate();
@@ -464,12 +464,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							value = setup_resources_in_array(set_array, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
 						}
 
-						if (value.get_type() == Variant::DICTIONARY) {
+						if (value.get_type() == VariantType::DICTIONARY) {
 							Dictionary set_dict = value;
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
 
-							if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+							if (is_get_valid && get_value.get_type() == VariantType::DICTIONARY) {
 								Dictionary get_dict = get_value;
 								if (set_dict.is_same_typed(get_dict)) {
 									set_dict = set_dict.duplicate();
@@ -482,7 +482,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						}
 
 						bool set_valid = true;
-						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && value.get_type() == Variant::OBJECT) {
+						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled() && value.get_type() == VariantType::OBJECT) {
 							Ref<MissingResource> mr = value;
 							if (mr.is_valid()) {
 								missing_resource_properties[snames[nprops[j].name]] = mr;
@@ -493,7 +493,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						if (set_valid) {
 							node->set(snames[nprops[j].name], value, &valid);
 						}
-						if (p_edit_state == GEN_EDIT_STATE_INSTANCE && value.get_type() != Variant::OBJECT) {
+						if (p_edit_state == GEN_EDIT_STATE_INSTANCE && value.get_type() != VariantType::OBJECT) {
 							value = value.duplicate(true); // Duplicate arrays and dictionaries for the editor.
 						}
 					}
@@ -598,7 +598,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		// Replace properties stored as NodePaths with actual Nodes.
 		Node *base = ObjectDB::get_instance<Node>(dnp.base);
 		ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
-		if (dnp.value.get_type() == Variant::ARRAY) {
+		if (dnp.value.get_type() == VariantType::ARRAY) {
 			Array paths = dnp.value;
 
 			bool valid;
@@ -611,16 +611,16 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				array.set(i, base->get_node_or_null(paths[i]));
 			}
 			base->set(dnp.property, array);
-		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
+		} else if (dnp.value.get_type() == VariantType::DICTIONARY) {
 			Dictionary paths = dnp.value;
 
 			bool valid;
 			Dictionary dict = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 			dict = dict.duplicate();
-			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
+			bool convert_key = dict.get_typed_key_builtin() == VariantType::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
-			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
+			bool convert_value = dict.get_typed_value_builtin() == VariantType::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
 
 			for (const KeyValue<Variant, Variant> &kv : paths) {
@@ -732,7 +732,7 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 
 Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
 	for (int i = 0; i < p_array_to_scan.size(); i++) {
-		if (p_array_to_scan[i].get_type() == Variant::OBJECT) {
+		if (p_array_to_scan[i].get_type() == VariantType::OBJECT) {
 			p_array_to_scan[i] = make_local_resource(p_array_to_scan[i], p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
 		}
 	}
@@ -883,23 +883,23 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Variant value = p_node->get(name);
 		bool use_deferred_node_path_bit = false;
 
-		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-			if (value.get_type() == Variant::OBJECT) {
+		if (E.type == VariantType::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+			if (value.get_type() == VariantType::OBJECT) {
 				if (Node *n = Object::cast_to<Node>(value)) {
 					value = p_node->get_path_to(n);
 				}
 				use_deferred_node_path_bit = true;
 			}
-			if (value.get_type() != Variant::NODE_PATH) {
+			if (value.get_type() != VariantType::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
-		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
+		} else if (E.type == VariantType::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
 			}
-		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+		} else if (E.type == VariantType::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
 			int hint_subtype_separator = E.hint_string.find_char(':');
 			if (hint_subtype_separator >= 0) {
 				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
@@ -909,15 +909,15 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					subtype_hint = PropertyHint(subtype_string.get_slicec('/', 1).to_int());
 					subtype_string = subtype_string.substr(0, slash_pos);
 				}
-				Variant::Type subtype = Variant::Type(subtype_string.to_int());
+				VariantType::Type subtype = VariantType::Type(subtype_string.to_int());
 
-				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+				if (subtype == VariantType::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
 					use_deferred_node_path_bit = true;
 					Array array = value;
 					Array new_array;
 					for (int i = 0; i < array.size(); i++) {
 						Variant elem = array[i];
-						if (elem.get_type() == Variant::OBJECT) {
+						if (elem.get_type() == VariantType::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(elem)) {
 								new_array.push_back(p_node->get_path_to(n));
 								continue;
@@ -928,7 +928,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value = new_array;
 				}
 			}
-		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+		} else if (E.type == VariantType::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
 			int key_value_separator = E.hint_string.find_char(';');
 			if (key_value_separator >= 0) {
 				int key_subtype_separator = E.hint_string.find_char(':');
@@ -939,8 +939,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					key_subtype_hint = PropertyHint(key_subtype_string.get_slicec('/', 1).to_int());
 					key_subtype_string = key_subtype_string.substr(0, key_slash_pos);
 				}
-				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
-				bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+				VariantType::Type key_subtype = VariantType::Type(key_subtype_string.to_int());
+				bool convert_key = key_subtype == VariantType::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
 
 				int value_subtype_separator = E.hint_string.find_char(':', key_value_separator) - (key_value_separator + 1);
 				String value_subtype_string = E.hint_string.substr(key_value_separator + 1, value_subtype_separator);
@@ -950,8 +950,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value_subtype_hint = PropertyHint(value_subtype_string.get_slicec('/', 1).to_int());
 					value_subtype_string = value_subtype_string.substr(0, value_slash_pos);
 				}
-				Variant::Type value_subtype = Variant::Type(value_subtype_string.to_int());
-				bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+				VariantType::Type value_subtype = VariantType::Type(value_subtype_string.to_int());
+				bool convert_value = value_subtype == VariantType::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
 
 				if (convert_key || convert_value) {
 					use_deferred_node_path_bit = true;
@@ -959,13 +959,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					Dictionary new_dict;
 					for (const KeyValue<Variant, Variant> &kv : dict) {
 						Variant new_key = kv.key;
-						if (convert_key && new_key.get_type() == Variant::OBJECT) {
+						if (convert_key && new_key.get_type() == VariantType::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(new_key)) {
 								new_key = p_node->get_path_to(n);
 							}
 						}
 						Variant new_value = kv.value;
-						if (convert_value && new_value.get_type() == Variant::OBJECT) {
+						if (convert_value && new_value.get_type() == VariantType::OBJECT) {
 							if (Node *n = Object::cast_to<Node>(new_value)) {
 								new_value = p_node->get_path_to(n);
 							}
@@ -982,9 +982,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
 
 			if (is_valid_default && !PropertyUtils::is_property_value_different(p_node, value, default_value)) {
-				if (value.get_type() == Variant::ARRAY && has_local_resource(value)) {
+				if (value.get_type() == VariantType::ARRAY && has_local_resource(value)) {
 					// Save anyway
-				} else if (value.get_type() == Variant::DICTIONARY) {
+				} else if (value.get_type() == VariantType::DICTIONARY) {
 					Dictionary dictionary = value;
 					if (!has_local_resource(dictionary.values()) && !has_local_resource(dictionary.keys())) {
 						continue;
@@ -1569,7 +1569,7 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 				for (int i = 0; i < pc; i++) {
 					if (namep[p[i].name & FLAG_PROP_NAME_MASK] == libraries_sname) {
 						Variant libs_variant = variants[p[i].value];
-						if (libs_variant.get_type() == Variant::DICTIONARY) {
+						if (libs_variant.get_type() == VariantType::DICTIONARY) {
 							Dictionary libs_dict = libs_variant;
 							if (libs_dict.has(library_name)) {
 								r_found = true;
@@ -2618,7 +2618,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_bundled_scene", "_get_bundled_scene");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_bundled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_bundled_scene", "_get_bundled_scene");
 
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);

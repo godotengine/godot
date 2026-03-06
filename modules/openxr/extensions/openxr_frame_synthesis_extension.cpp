@@ -53,11 +53,11 @@ void OpenXRFrameSynthesisExtension::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_enabled"), &OpenXRFrameSynthesisExtension::is_enabled);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enable"), &OpenXRFrameSynthesisExtension::set_enabled);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "enabled"), "set_enabled", "is_enabled");
 
 	ClassDB::bind_method(D_METHOD("get_relax_frame_interval"), &OpenXRFrameSynthesisExtension::get_relax_frame_interval);
 	ClassDB::bind_method(D_METHOD("set_relax_frame_interval", "relax_frame_interval"), &OpenXRFrameSynthesisExtension::set_relax_frame_interval);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "relax_frame_interval"), "set_relax_frame_interval", "get_relax_frame_interval");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "relax_frame_interval"), "set_relax_frame_interval", "get_relax_frame_interval");
 
 	ClassDB::bind_method(D_METHOD("skip_next_frame"), &OpenXRFrameSynthesisExtension::skip_next_frame);
 }

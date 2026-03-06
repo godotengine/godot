@@ -1059,7 +1059,7 @@ void JoltBody3D::call_queries() {
 	if (custom_integration_callback.is_valid()) {
 		const Variant direct_state_variant = get_direct_state();
 		const Variant *args[2] = { &direct_state_variant, &custom_integration_userdata };
-		const int argc = custom_integration_userdata.get_type() != Variant::NIL ? 2 : 1;
+		const int argc = custom_integration_userdata.get_type() != VariantType::NIL ? 2 : 1;
 
 		Callable::CallError ce;
 		Variant ret;

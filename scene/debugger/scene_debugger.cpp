@@ -252,7 +252,7 @@ Error SceneDebugger::_msg_reload_cached_files(const Array &p_args) {
 }
 
 Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != VariantType::DICTIONARY, ERR_INVALID_DATA);
 	Dictionary dict = p_args[0];
 	LocalVector<Variant> keys = dict.get_key_list();
 
@@ -385,7 +385,7 @@ Error SceneDebugger::_msg_live_reparent_node(const Array &p_args) {
 // region Runtime Node Selection.
 
 Error SceneDebugger::_msg_runtime_node_select_setup(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != VariantType::DICTIONARY, ERR_INVALID_DATA);
 	RuntimeNodeSelect::get_singleton()->_setup(p_args[0]);
 	return OK;
 }
@@ -695,7 +695,7 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 	}
 
 	Variant value = p_value;
-	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == VariantType::OBJECT || p_property == "script")) {
 		value = ResourceLoader::load(p_value);
 	}
 

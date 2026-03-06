@@ -206,7 +206,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &MenuButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
@@ -217,13 +217,13 @@ void MenuButton::_bind_methods() {
 
 	base_property_helper.set_prefix("popup/item_");
 	base_property_helper.set_array_length_getter(&MenuButton::get_item_count);
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button"), defaults.checkable_type);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator);
+	base_property_helper.register_property(PropertyInfo(VariantType::STRING, "text"), defaults.text);
+	base_property_helper.register_property(PropertyInfo(VariantType::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "checkable", PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button"), defaults.checkable_type);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "checked"), defaults.checked);
+	base_property_helper.register_property(PropertyInfo(VariantType::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "disabled"), defaults.disabled);
+	base_property_helper.register_property(PropertyInfo(VariantType::BOOL, "separator"), defaults.separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 

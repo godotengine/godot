@@ -52,7 +52,7 @@ Variant JoltBoxShape3D::get_data() const {
 }
 
 void JoltBoxShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::VECTOR3);
+	ERR_FAIL_COND(p_data.get_type() != VariantType::VECTOR3);
 
 	const Vector3 new_half_extents = p_data;
 	if (unlikely(new_half_extents == half_extents)) {

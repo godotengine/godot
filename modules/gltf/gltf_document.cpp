@@ -966,7 +966,7 @@ Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(const Ref<GLTFSt
 	return quaternions;
 }
 
-Array GLTFDocument::_decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, Variant::Type p_variant_type) {
+Array GLTFDocument::_decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, VariantType::Type p_variant_type) {
 	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), Array());
 	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
 	Array variants = accessor->decode_as_variants(p_gltf_state, p_variant_type);
@@ -3268,7 +3268,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> p_state) {
 
 		if (d.has("inverseBindMatrices")) {
 			const GLTFAccessorIndex inv_bind_accessor_index = d["inverseBindMatrices"];
-			Array inv_binds_arr = _decode_accessor_as_variants(p_state, inv_bind_accessor_index, Variant::TRANSFORM3D);
+			Array inv_binds_arr = _decode_accessor_as_variants(p_state, inv_bind_accessor_index, VariantType::TRANSFORM3D);
 			ERR_FAIL_COND_V(inv_binds_arr.size() != joints.size(), ERR_PARSE_ERROR);
 			GLTFTemplateConvert::set_from_array(skin->inverse_binds, inv_binds_arr);
 		}
@@ -3316,7 +3316,7 @@ Error GLTFDocument::_serialize_skins(Ref<GLTFState> p_state) {
 		Ref<GLTFSkin> gltf_skin = p_state->skins[skin_i];
 		Dictionary json_skin;
 		Array inv_binds_arr = GLTFTemplateConvert::to_array(gltf_skin->inverse_binds);
-		json_skin["inverseBindMatrices"] = GLTFAccessor::encode_new_accessor_from_variants(p_state, inv_binds_arr, Variant::TRANSFORM3D, GLTFAccessor::TYPE_MAT4, GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT);
+		json_skin["inverseBindMatrices"] = GLTFAccessor::encode_new_accessor_from_variants(p_state, inv_binds_arr, VariantType::TRANSFORM3D, GLTFAccessor::TYPE_MAT4, GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT);
 		json_skin["joints"] = gltf_skin->get_joints();
 		json_skin["name"] = gltf_skin->get_name();
 		json_skins.push_back(json_skin);
@@ -3905,7 +3905,7 @@ void GLTFDocument::_parse_animation_pointer(Ref<GLTFState> p_state, const String
 			track->scale_track.times = p_times;
 			track->scale_track.values = scales;
 		} else if (split[2] == "matrix") {
-			Array transforms = _decode_accessor_as_variants(p_state, p_output_value_accessor_index, Variant::TRANSFORM3D);
+			Array transforms = _decode_accessor_as_variants(p_state, p_output_value_accessor_index, VariantType::TRANSFORM3D);
 			track->position_track.interpolation = p_interp;
 			track->position_track.times = p_times;
 			track->position_track.values.resize(transforms.size());
@@ -5037,24 +5037,24 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 		const String &node_prop = split[2];
 		if (node_prop == "translation") {
 			ret->append_path_to_property(node_path, "position");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (node_prop == "rotation") {
 			ret->append_path_to_property(node_path, "quaternion");
-			ret->set_types(Variant::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+			ret->set_types(VariantType::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
 		} else if (node_prop == "scale") {
 			ret->append_path_to_property(node_path, "scale");
-			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 		} else if (node_prop == "matrix") {
 			ret->append_path_to_property(node_path, "transform");
-			ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			ret->set_types(VariantType::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
 		} else if (node_prop == "globalMatrix") {
 			ret->append_path_to_property(node_path, "global_transform");
-			ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			ret->set_types(VariantType::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
 		} else if (node_prop == "weights") {
 			if (split.size() > 3) {
 				const String &weight_index_string = split[3];
 				ret->append_path_to_property(node_path, "blend_shapes/morph_" + weight_index_string);
-				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			}
 			// Else, Godot's MeshInstance3D does not expose the blend shape weights as one property.
 			// But that's fine, we handle this case in _parse_animation_pointer instead.
@@ -5064,7 +5064,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 			const String &ext_prop = split[4];
 			if (ext_name == "KHR_node_visibility" && ext_prop == "visible") {
 				ret->append_path_to_property(node_path, "visible");
-				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
+				ret->set_types(VariantType::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
 			}
 		}
 	} else if (split[0] == "cameras") {
@@ -5076,7 +5076,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 				// Check if it's something we should be able to handle.
 				if (camera_prop == "orthographic" || camera_prop == "perspective") {
 					ERR_FAIL_COND_V(split.size() < 4, ret);
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					const String &sub_prop = split[3];
 					if (sub_prop == "xmag" || sub_prop == "ymag") {
 						ret->append_path_to_property(node_path, "size");
@@ -5102,17 +5102,17 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 			const String &mat_prop = split[2];
 			if (mat_prop == "alphaCutoff") {
 				ret->append_path_to_property(mat_path, "alpha_scissor_threshold");
-				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			} else if (mat_prop == "emissiveFactor") {
 				ret->append_path_to_property(mat_path, "emission");
-				ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (mat_prop == "extensions") {
 				ERR_FAIL_COND_V(split.size() < 5, ret);
 				const String &ext_name = split[3];
 				const String &ext_prop = split[4];
 				if (ext_name == "KHR_materials_emissive_strength" && ext_prop == "emissiveStrength") {
 					ret->append_path_to_property(mat_path, "emission_energy_multiplier");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				}
 			} else {
 				ERR_FAIL_COND_V(split.size() < 4, ret);
@@ -5120,24 +5120,24 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 				if (mat_prop == "normalTexture") {
 					if (sub_prop == "scale") {
 						ret->append_path_to_property(mat_path, "normal_scale");
-						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+						ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					}
 				} else if (mat_prop == "occlusionTexture") {
 					if (sub_prop == "strength") {
 						// This is the closest thing Godot has to an occlusion strength property.
 						ret->append_path_to_property(mat_path, "ao_light_affect");
-						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+						ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					}
 				} else if (mat_prop == "pbrMetallicRoughness") {
 					if (sub_prop == "baseColorFactor") {
 						ret->append_path_to_property(mat_path, "albedo_color");
-						ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+						ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
 					} else if (sub_prop == "metallicFactor") {
 						ret->append_path_to_property(mat_path, "metallic");
-						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+						ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					} else if (sub_prop == "roughnessFactor") {
 						ret->append_path_to_property(mat_path, "roughness");
-						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+						ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					} else if (sub_prop == "baseColorTexture") {
 						ERR_FAIL_COND_V(split.size() < 6, ret);
 						const String &tex_ext_dict = split[4];
@@ -5149,10 +5149,10 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 							// Godot does not support texture rotation, only offset and scale.
 							if (tex_ext_prop == "offset") {
 								ret->append_path_to_property(mat_path, "uv1_offset");
-								ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+								ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
 							} else if (tex_ext_prop == "scale") {
 								ret->append_path_to_property(mat_path, "uv1_scale");
-								ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+								ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
 							}
 						}
 					}
@@ -5179,11 +5179,11 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 				if (gltf_node->light == light_index) {
 					NodePath node_path = gltf_node->get_scene_node_path(p_state);
 					partial_paths.append(node_path);
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					// Check if it's something we should be able to handle.
 					if (light_prop == "color") {
 						ret->append_path_to_property(node_path, "light_color");
-						ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+						ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 					} else if (light_prop == "intensity") {
 						ret->append_path_to_property(node_path, "light_energy");
 					} else if (light_prop == "range") {
@@ -5245,7 +5245,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 	for (int64_t i = 0; i < subpath.size() - 1; i++) {
 		const StringName &subname = subpath[i];
 		Variant target_property = target_object->get(subname);
-		if (target_property.get_type() == Variant::OBJECT) {
+		if (target_property.get_type() == VariantType::OBJECT) {
 			target_object = target_property;
 			if (target_object) {
 				target_prop_depth++;
@@ -5266,35 +5266,35 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 				split_json_pointer.append(itos(i));
 				if (target_prop == "alpha_scissor_threshold") {
 					split_json_pointer.append("alphaCutoff");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "emission") {
 					split_json_pointer.append("emissiveFactor");
-					ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+					ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 				} else if (target_prop == "emission_energy_multiplier") {
 					split_json_pointer.append("extensions");
 					split_json_pointer.append("KHR_materials_emissive_strength");
 					split_json_pointer.append("emissiveStrength");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "normal_scale") {
 					split_json_pointer.append("normalTexture");
 					split_json_pointer.append("scale");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "ao_light_affect") {
 					split_json_pointer.append("occlusionTexture");
 					split_json_pointer.append("strength");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "albedo_color") {
 					split_json_pointer.append("pbrMetallicRoughness");
 					split_json_pointer.append("baseColorFactor");
-					ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+					ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
 				} else if (target_prop == "metallic") {
 					split_json_pointer.append("pbrMetallicRoughness");
 					split_json_pointer.append("metallicFactor");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "roughness") {
 					split_json_pointer.append("pbrMetallicRoughness");
 					split_json_pointer.append("roughnessFactor");
-					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 				} else if (target_prop == "uv1_offset" || target_prop == "uv1_scale") {
 					split_json_pointer.append("pbrMetallicRoughness");
 					split_json_pointer.append("baseColorTexture");
@@ -5305,7 +5305,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 					} else {
 						split_json_pointer.append("scale");
 					}
-					ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+					ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
 				} else {
 					split_json_pointer.clear();
 				}
@@ -5325,7 +5325,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			} else {
 				split_json_pointer.append("orthographic");
 			}
-			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			if (target_prop == "size") {
 				PackedStringArray xmag = split_json_pointer.duplicate();
 				xmag.append("xmag");
@@ -5346,10 +5346,10 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			split_json_pointer.append("KHR_lights_punctual");
 			split_json_pointer.append("lights");
 			split_json_pointer.append(itos(gltf_node->light));
-			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			ret->set_types(VariantType::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 			if (target_prop == "light_color") {
 				split_json_pointer.append("color");
-				ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (target_prop == "light_energy") {
 				split_json_pointer.append("intensity");
 			} else if (target_prop == "spot_range") {
@@ -5380,26 +5380,26 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			split_json_pointer.append(itos(p_gltf_node_index));
 			if (target_prop == "position") {
 				split_json_pointer.append("translation");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (target_prop == "quaternion") {
 				// Note: Only Quaternion rotation can be converted from Godot in this mapping.
 				// Struct methods like from_euler are not accessible from the Expression class. :(
 				split_json_pointer.append("rotation");
-				ret->set_types(Variant::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+				ret->set_types(VariantType::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
 			} else if (target_prop == "scale") {
 				split_json_pointer.append("scale");
-				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				ret->set_types(VariantType::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
 			} else if (target_prop == "transform") {
 				split_json_pointer.append("matrix");
-				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+				ret->set_types(VariantType::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
 			} else if (target_prop == "global_transform") {
 				split_json_pointer.append("globalMatrix");
-				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+				ret->set_types(VariantType::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
 			} else if (target_prop == "visible") {
 				split_json_pointer.append("extensions");
 				split_json_pointer.append("KHR_node_visibility");
 				split_json_pointer.append("visible");
-				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
+				ret->set_types(VariantType::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
 			} else {
 				split_json_pointer.clear();
 			}
@@ -6735,12 +6735,12 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
 			&GLTFDocument::write_to_filesystem);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "image_format"), "set_image_format", "get_image_format");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
+	ADD_PROPERTY(PropertyInfo(VariantType::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
+	ADD_PROPERTY(PropertyInfo(VariantType::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("import_object_model_property", "state", "json_pointer"), &GLTFDocument::import_object_model_property);
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("export_object_model_property", "state", "node_path", "godot_node", "gltf_node_index"), &GLTFDocument::export_object_model_property);

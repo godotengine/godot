@@ -107,7 +107,7 @@ void AnimatableBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &AnimatableBody2D::set_sync_to_physics);
 	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &AnimatableBody2D::is_sync_to_physics_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
 }
 
 AnimatableBody2D::AnimatableBody2D() :

@@ -48,9 +48,9 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 		}
 	}
 
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(VariantType::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 }
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
@@ -575,8 +575,8 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
+	ADD_PROPERTY(PropertyInfo(VariantType::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
+	ADD_PROPERTY(PropertyInfo(VariantType::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
 	GDVIRTUAL_BIND(_get_child_nodes);
 	GDVIRTUAL_BIND(_get_parameter_list);
@@ -588,8 +588,8 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
-	ADD_SIGNAL(MethodInfo("animation_node_renamed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
-	ADD_SIGNAL(MethodInfo("animation_node_removed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("animation_node_renamed", PropertyInfo(VariantType::INT, "object_id"), PropertyInfo(VariantType::STRING, "old_name"), PropertyInfo(VariantType::STRING, "new_name")));
+	ADD_SIGNAL(MethodInfo("animation_node_removed", PropertyInfo(VariantType::INT, "object_id"), PropertyInfo(VariantType::STRING, "name")));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
@@ -1018,9 +1018,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, AnimationRootNode::get_class_static()), "set_tree_root", "get_tree_root");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
+	ADD_PROPERTY(PropertyInfo(VariantType::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, AnimationRootNode::get_class_static()), "set_tree_root", "get_tree_root");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
+	ADD_PROPERTY(PropertyInfo(VariantType::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
 	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
 }

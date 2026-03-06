@@ -455,7 +455,7 @@ void AudioStreamInteractive::get_parameter_list(List<Parameter> *r_parameters) {
 		clip_names += ",";
 		clip_names += clips[i].name;
 	}
-	r_parameters->push_back(Parameter(PropertyInfo(Variant::STRING, "switch_to_clip", PROPERTY_HINT_ENUM, clip_names, PROPERTY_USAGE_EDITOR), ""));
+	r_parameters->push_back(Parameter(PropertyInfo(VariantType::STRING, "switch_to_clip", PROPERTY_HINT_ENUM, clip_names, PROPERTY_USAGE_EDITOR), ""));
 }
 
 void AudioStreamInteractive::_bind_methods() {
@@ -484,16 +484,16 @@ void AudioStreamInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_auto_advance_next_clip", "clip_index", "auto_advance_next_clip"), &AudioStreamInteractive::set_clip_auto_advance_next_clip);
 	ClassDB::bind_method(D_METHOD("get_clip_auto_advance_next_clip", "clip_index"), &AudioStreamInteractive::get_clip_auto_advance_next_clip);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_CLIPS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=" + String(TTRC("Add Clip"))), "set_clip_count", "get_clip_count");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "clip_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_CLIPS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=" + String(TTRC("Add Clip"))), "set_clip_count", "get_clip_count");
 	for (int i = 0; i < MAX_CLIPS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::STRING_NAME, "clip_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_name", "get_clip_name", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_stream", "get_clip_stream", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/auto_advance", PROPERTY_HINT_ENUM, "Disabled,Enabled,ReturnToHold", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance", "get_clip_auto_advance", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/next_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance_next_clip", "get_clip_auto_advance_next_clip", i);
+		ADD_PROPERTYI(PropertyInfo(VariantType::STRING_NAME, "clip_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_name", "get_clip_name", i);
+		ADD_PROPERTYI(PropertyInfo(VariantType::OBJECT, "clip_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_stream", "get_clip_stream", i);
+		ADD_PROPERTYI(PropertyInfo(VariantType::INT, "clip_" + itos(i) + "/auto_advance", PROPERTY_HINT_ENUM, "Disabled,Enabled,ReturnToHold", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance", "get_clip_auto_advance", i);
+		ADD_PROPERTYI(PropertyInfo(VariantType::INT, "clip_" + itos(i) + "/next_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance_next_clip", "get_clip_auto_advance_next_clip", i);
 	}
 
 	// Needs to be registered after `clip_*` properties, as it depends on them.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT), "set_initial_clip", "get_initial_clip");
+	ADD_PROPERTY(PropertyInfo(VariantType::INT, "initial_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT), "set_initial_clip", "get_initial_clip");
 
 	// TRANSITIONS
 
@@ -513,7 +513,7 @@ void AudioStreamInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_transitions", "transitions"), &AudioStreamInteractive::_set_transitions);
 	ClassDB::bind_method(D_METHOD("_get_transitions"), &AudioStreamInteractive::_get_transitions);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_transitions", "_get_transitions");
+	ADD_PROPERTY(PropertyInfo(VariantType::DICTIONARY, "_transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_transitions", "_get_transitions");
 
 	BIND_ENUM_CONSTANT(TRANSITION_FROM_TIME_IMMEDIATE);
 	BIND_ENUM_CONSTANT(TRANSITION_FROM_TIME_NEXT_BEAT);

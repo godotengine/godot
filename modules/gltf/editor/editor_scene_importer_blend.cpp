@@ -365,9 +365,9 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
-	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, SNAME(PATH)), VALUE));
+	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::BOOL, SNAME(PATH)), VALUE));
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
-	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
+	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(VariantType::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
 	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
 	ADD_OPTION_BOOL("blender/nodes/active_collection_only", false);
@@ -389,7 +389,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/animation/always_sample", true);
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
 
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(VariantType::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 }
 
 ///////////////////////////

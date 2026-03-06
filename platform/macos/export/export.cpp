@@ -43,12 +43,12 @@ void register_macos_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF_BASIC("export/macos/rcodesign", "");
 #ifdef WINDOWS_ENABLED
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #else
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 	EDITOR_DEF_BASIC("export/macos/actool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/actool", PROPERTY_HINT_GLOBAL_FILE));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(VariantType::STRING, "export/macos/actool", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 
 	Ref<EditorExportPlatformMacOS> platform;
