@@ -53,6 +53,7 @@
 #include "scene/resources/shader.h"
 #endif
 
+class ArrayMesh;
 class TileMap;
 class TileSetSource;
 class TileSetAtlasSource;
