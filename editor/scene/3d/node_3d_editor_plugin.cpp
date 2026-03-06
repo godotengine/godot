@@ -102,6 +102,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
@@ -2645,9 +2646,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_centered_labels();
 			message_time = MIN(message_time, 0.001); // Make it disappear.
 
-			Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
-			preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
-
 			const int item_count = display_submenu->get_item_count();
 			for (int i = 0; i < item_count; i++) {
 				const Array item_data = display_submenu->get_item_metadata(i);
@@ -3046,6 +3044,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHlDarkBackground")));
 			preview_camera->set_button_icon(get_editor_theme_icon(SNAME("Camera3DDarkBackground")));
+
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
@@ -3065,6 +3064,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			override_label_colors(info_label);
+			tooltip_panel->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 
 			frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			// Set a minimum width to prevent the width from changing all the time
@@ -4638,12 +4638,13 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 	}
 	if (add_preview) {
 		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
+		*preview_bounds = _calculate_spatial_bounds(preview_node);
 	}
-
-	*preview_bounds = _calculate_spatial_bounds(preview_node);
 }
 
 void Node3DEditorViewport::_remove_preview_node() {
+	tooltip_panel->hide();
+
 	set_message("");
 	if (preview_node->get_parent()) {
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
@@ -4744,8 +4745,7 @@ void Node3DEditorViewport::_reset_preview_material() const {
 }
 
 void Node3DEditorViewport::_remove_preview_material() {
-	preview_material_label->hide();
-	preview_material_label_desc->hide();
+	tooltip_panel->hide();
 
 	spatial_editor->set_preview_material(Ref<Material>());
 	spatial_editor->set_preview_reset_material(Ref<Material>());
@@ -4946,116 +4946,176 @@ void Node3DEditorViewport::_perform_drop_data() {
 	}
 }
 
+void Node3DEditorViewport::_show_tooltip(const String &p_title, const String &p_description) const {
+	tooltip_panel->set_text(
+			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
+					get_theme_default_font_size() + 2,
+					get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).to_html(false),
+					p_title, p_description));
+	tooltip_panel->show();
+}
+
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (p_point == Vector2(Math::INF, Math::INF)) {
+		tooltip_panel->hide();
 		return false;
 	}
 	preview_node_viewport_pos = p_point;
 
-	bool can_instantiate = false;
-	bool is_cyclical_dep = false;
-	String error_file;
-
-	if (!preview_node->is_inside_tree() && spatial_editor->get_preview_material().is_null()) {
-		Dictionary d = p_data;
-		if (d.has("type") && (String(d["type"]) == "files")) {
-			Vector<String> files = d["files"];
-
-			// Track whether a type other than PackedScene is valid to stop checking them and only
-			// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
-			bool is_other_valid = false;
-			// Check if at least one of the dragged files is a mesh, material, texture or scene.
-			for (int i = 0; i < files.size(); i++) {
-				const String &res_type = ResourceLoader::get_resource_type(files[i]);
-				bool is_scene = ClassDB::is_parent_class(res_type, "PackedScene");
-				bool is_mesh = ClassDB::is_parent_class(res_type, "Mesh");
-				bool is_material = ClassDB::is_parent_class(res_type, "Material");
-				bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
-				bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
-
-				if (is_mesh || is_scene || is_material || is_texture || is_audio) {
-					Ref<Resource> res = ResourceLoader::load(files[i]);
-					if (res.is_null()) {
-						continue;
-					}
-					Ref<PackedScene> scn = res;
-					Ref<Mesh> mesh = res;
-					Ref<Material> mat = res;
-					Ref<Texture2D> tex = res;
-					Ref<AudioStream> audio = res;
-					if (scn.is_valid()) {
-						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-						if (!instantiated_scene) {
-							continue;
-						}
-						Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-						if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
-							memdelete(instantiated_scene);
-							can_instantiate = false;
-							is_cyclical_dep = true;
-							error_file = files[i].get_file();
-							break;
-						}
-						memdelete(instantiated_scene);
-					} else if (!is_other_valid && mat.is_valid()) {
-						Ref<BaseMaterial3D> base_mat = res;
-						Ref<ShaderMaterial> shader_mat = res;
-
-						if (base_mat.is_null() && shader_mat.is_null()) {
-							continue;
-						}
-
-						spatial_editor->set_preview_material(mat);
-						is_other_valid = true;
-						continue;
-					} else if (!is_other_valid && mesh.is_valid()) {
-						// Let the mesh pass.
-						is_other_valid = true;
-					} else if (!is_other_valid && tex.is_valid()) {
-						Ref<StandardMaterial3D> new_mat = memnew(StandardMaterial3D);
-						new_mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
-
-						spatial_editor->set_preview_material(new_mat);
-						is_other_valid = true;
-						continue;
-					} else if (!is_other_valid && audio.is_valid()) {
-						is_other_valid = true;
-					} else {
-						continue;
-					}
-					can_instantiate = true;
-				}
-			}
-			if (can_instantiate) {
-				_create_preview_node(files);
-				preview_node->hide();
-			}
-		}
-	} else {
-		if (preview_node->is_inside_tree()) {
-			can_instantiate = true;
-		}
-	}
-
-	if (is_cyclical_dep) {
-		set_message(vformat(TTR("Can't instantiate: %s."), vformat(TTR("Circular dependency found at %s"), error_file)));
+	Dictionary d = p_data;
+	if (!d.has("type") || String(d["type"]) != "files") {
+		tooltip_panel->hide();
 		return false;
 	}
+	Vector<String> files = d["files"];
 
-	if (can_instantiate) {
-		update_preview_node = true;
-		return true;
-	}
-
+	// If we already have a preview material or preview node,
+	// We just need to update them.
 	if (spatial_editor->get_preview_material().is_valid()) {
-		preview_material_label->show();
-		preview_material_label_desc->show();
-
 		ObjectID new_preview_material_target = _select_ray(p_point);
 		return _apply_preview_material(new_preview_material_target, p_point);
 	}
 
-	return false;
+	if (preview_node->is_inside_tree()) {
+		preview_node_viewport_pos = p_point;
+		update_preview_node = true;
+		return true;
+	}
+
+	// If we don't already have a preview material or preview node,
+	// it means that this is the first time we are visiting this function.
+	// In that case, we need to check that the file(s) are droppable.
+	bool is_cyclical_dep = false;
+	String error_file;
+
+	enum {
+		SCENE = 1 << 0,
+		TEXTURE = 1 << 1,
+		AUDIO = 1 << 2,
+		MESH = 1 << 3,
+		MATERIAL = 1 << 4,
+	};
+	int instantiate_type = 0;
+
+	// Track whether a type other than PackedScene is valid to stop checking them and only
+	// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
+	bool is_other_valid = false;
+	// Check if at least one of the dragged files is a mesh, material, texture, or scene.
+	for (int i = 0; i < files.size(); i++) {
+		const String &res_type = ResourceLoader::get_resource_type(files[i]);
+		bool is_scene = ClassDB::is_parent_class(res_type, "PackedScene");
+		bool is_mesh = ClassDB::is_parent_class(res_type, "Mesh");
+		bool is_material = ClassDB::is_parent_class(res_type, "Material");
+		bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
+		bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
+
+		if (is_mesh || is_scene || is_material || is_texture || is_audio) {
+			Ref<Resource> res = ResourceLoader::load(files[i]);
+			if (res.is_null()) {
+				continue;
+			}
+			Ref<PackedScene> scn = res;
+			Ref<Mesh> mesh = res;
+			Ref<Material> mat = res;
+			Ref<Texture2D> tex = res;
+			Ref<AudioStream> audio = res;
+			if (scn.is_valid()) {
+				Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				if (!instantiated_scene) {
+					continue;
+				}
+				Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+				if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+					memdelete(instantiated_scene);
+					is_cyclical_dep = true;
+					error_file = files[i].get_file();
+					break;
+				}
+				memdelete(instantiated_scene);
+				instantiate_type |= SCENE;
+			} else if (!is_other_valid && mat.is_valid()) {
+				Ref<BaseMaterial3D> base_mat = res;
+				Ref<ShaderMaterial> shader_mat = res;
+
+				if (base_mat.is_null() && shader_mat.is_null()) {
+					continue;
+				}
+
+				spatial_editor->set_preview_material(mat);
+				is_other_valid = true;
+				instantiate_type |= MATERIAL;
+				continue;
+			} else if (!is_other_valid && mesh.is_valid()) {
+				// Let the mesh pass.
+				is_other_valid = true;
+				instantiate_type |= MESH;
+			} else if (!is_other_valid && tex.is_valid()) {
+				Ref<StandardMaterial3D> new_mat;
+				new_mat.instantiate();
+				new_mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
+
+				spatial_editor->set_preview_material(new_mat);
+				is_other_valid = true;
+				instantiate_type |= TEXTURE;
+				continue;
+			} else if (!is_other_valid && audio.is_valid()) {
+				is_other_valid = true;
+				instantiate_type |= AUDIO;
+			} else {
+				continue;
+			}
+		}
+	}
+
+	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	if (is_cyclical_dep) {
+		_show_tooltip(title, vformat(TTR("Circular dependency found at %s."), error_file));
+		return false;
+	}
+
+	if (instantiate_type == 0) {
+		_show_tooltip(title, TTR("File format is not supported."));
+		return false;
+	}
+
+	// Only droppable file(s), on first frame, will make it to this point.
+	// Hence it is a good place to create the previews and tooltips.
+	_create_preview_node(files);
+	preview_node->hide();
+
+	String desc = "[ul]" +
+			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
+					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
+					"[b]Hold Shift:[/b] Add as children of selected node.",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
+					"[b]Hold Alt:[/b] Add as children of root node.",
+					files.size());
+
+	if (files.size() > 1) {
+		title = TTR("Dropping multiple files...");
+	} else if (instantiate_type & SCENE) {
+		title = TTR("Dropping a Scene file...");
+	} else if (instantiate_type & MESH) {
+		title = TTR("Dropping a Mesh file...");
+	} else if (instantiate_type & AUDIO) {
+		title = TTR("Dropping an Audio file...");
+	} else if (instantiate_type & MATERIAL || instantiate_type & TEXTURE) {
+		title = TTR("Dropping a Material...");
+		desc = "[ul]";
+		desc += vformat(TTR("[b]Default:[/b] Place in Geometry's Material Override slot.") +
+						"\n" + TTR("[b]Hold %s:[/b] Place in Mesh's Surface Material Override slot."),
+				keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+	}
+	desc += "[/ul]";
+
+	_show_tooltip(title, desc);
+
+	return true;
 }
 
 void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -5916,22 +5976,21 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	zoom_limit_label->hide();
 	bottom_center_vbox->add_child(zoom_limit_label);
 
-	preview_material_label = memnew(Label);
-	preview_material_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	preview_material_label->set_offset(Side::SIDE_TOP, -70 * EDSCALE);
-	preview_material_label->set_text(TTRC("Overriding material..."));
-	preview_material_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
-	preview_material_label->hide();
-	surface->add_child(preview_material_label);
-
-	preview_material_label_desc = memnew(Label);
-	preview_material_label_desc->set_focus_mode(FOCUS_ACCESSIBILITY);
-	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
-	preview_material_label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.8, 0.8, 0.8, 1));
-	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
-	preview_material_label_desc->hide();
-	surface->add_child(preview_material_label_desc);
+	tooltip_panel = memnew(RichTextLabel);
+	vbox->add_child(tooltip_panel);
+	tooltip_panel->hide();
+	tooltip_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	tooltip_panel->set_focus_mode(FOCUS_ACCESSIBILITY);
+	tooltip_panel->set_use_bbcode(true);
+	tooltip_panel->set_fit_content(true);
+	tooltip_panel->set_scroll_active(false);
+	tooltip_panel->set_tab_size(1);
+	tooltip_panel->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+	tooltip_panel->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
+	tooltip_panel->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
+	tooltip_panel->add_theme_constant_override("paragraph_separation", 5);
 
 	frame_time_gradient = memnew(Gradient);
 	// The color is set when the theme changes.

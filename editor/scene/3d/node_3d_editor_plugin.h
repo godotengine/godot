@@ -57,6 +57,7 @@ class Node3DEditorViewport;
 class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
+class RichTextLabel;
 class SubViewport;
 class SubViewportContainer;
 class VSeparator;
@@ -237,8 +238,7 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
-	Label *preview_material_label = nullptr;
-	Label *preview_material_label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
 	VBoxContainer *bottom_center_vbox = nullptr;
@@ -287,6 +287,8 @@ private:
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 	ObjectID clicked;
 	ObjectID material_target;

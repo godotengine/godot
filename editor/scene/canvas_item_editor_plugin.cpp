@@ -63,6 +63,7 @@
 #include "scene/gui/base_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
@@ -6186,7 +6187,7 @@ void CanvasItemEditorViewport::_on_select_texture_node_type(Object *selected) {
 	CheckBox *check = Object::cast_to<CheckBox>(selected);
 	String type = check->get_text();
 	texture_node_type_selector->set_title(vformat(TTR("Add %s"), type));
-	label->set_text(vformat(TTR("Adding %s..."), type));
+	tooltip_panel->set_text(vformat(TTR("Adding %s..."), type));
 }
 
 void CanvasItemEditorViewport::_on_change_type_confirmed() {
@@ -6206,6 +6207,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 	bool add_preview = false;
+
 	for (int i = 0; i < files.size(); i++) {
 		Ref<Resource> res = ResourceLoader::load(files[i]);
 		ERR_CONTINUE(res.is_null());
@@ -6249,6 +6251,7 @@ void CanvasItemEditorViewport::_remove_preview() {
 		canvas_item_editor->message = "";
 		canvas_item_editor->update_viewport();
 	}
+	tooltip_panel->hide();
 	if (preview_node->get_parent()) {
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
 			Node *node = preview_node->get_child(i);
@@ -6256,9 +6259,6 @@ void CanvasItemEditorViewport::_remove_preview() {
 			preview_node->remove_child(node);
 		}
 		EditorNode::get_singleton()->get_scene_root()->remove_child(preview_node);
-
-		label->hide();
-		label_desc->hide();
 	}
 }
 
@@ -6516,13 +6516,23 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 	}
 }
 
+void CanvasItemEditorViewport::_show_tooltip(const String &p_title, const String &p_description) const {
+	tooltip_panel->set_text(
+			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
+					get_theme_default_font_size() + 2,
+					get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).to_html(false),
+					p_title, p_description));
+	tooltip_panel->show();
+}
+
 bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	if (p_point == Vector2(Math::INF, Math::INF)) {
+		tooltip_panel->hide();
 		return false;
 	}
 	Dictionary d = p_data;
 	if (!d.has("type") || (String(d["type"]) != "files")) {
-		label->hide();
+		tooltip_panel->hide();
 		return false;
 	}
 
@@ -6542,9 +6552,9 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	};
 	int instantiate_type = 0;
 
+	String error_message;
 	for (const String &path : files) {
 		const String &res_type = ResourceLoader::get_resource_type(path);
-		String error_message;
 
 		if (ClassDB::is_parent_class(res_type, "PackedScene")) {
 			Ref<PackedScene> scn = ResourceLoader::load(path);
@@ -6556,6 +6566,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			}
 			if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 				error_message = vformat(TTR("Circular dependency found at %s."), path.get_file());
+				break;
 			}
 			memdelete(instantiated_scene);
 			instantiate_type |= SCENE;
@@ -6566,15 +6577,16 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 			instantiate_type |= AUDIO;
 		}
+	}
 
-		if (!error_message.is_empty()) {
-			// TRANSLATORS: The placeholder is the error message.
-			canvas_item_editor->message = vformat(TTR("Can't instantiate: %s"), error_message);
-			canvas_item_editor->update_viewport();
-			return false;
-		}
+	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	if (!error_message.is_empty()) {
+		_show_tooltip(title, error_message);
+		canvas_item_editor->update_viewport();
+		return false;
 	}
 	if (instantiate_type == 0) {
+		_show_tooltip(title, TTR("This file format is not supported."));
 		return false;
 	}
 
@@ -6600,31 +6612,35 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	}
 	canvas_item_editor->update_viewport();
 
-	if (instantiate_type & TEXTURE && instantiate_type & AUDIO) {
-		// TRANSLATORS: The placeholders are the types of nodes being instantiated.
-		label->set_text(vformat(TTR("Adding %s and %s..."), default_texture_node_type, "AudioStreamPlayer2D"));
-	} else {
-		String node_type;
-		if (instantiate_type & TEXTURE) {
-			node_type = default_texture_node_type;
-		} else if (instantiate_type & AUDIO) {
-			node_type = "AudioStreamPlayer2D";
-		}
-		if (!node_type.is_empty()) {
-			// TRANSLATORS: The placeholder is the type of node being instantiated.
-			label->set_text(vformat(TTR("Adding %s..."), node_type));
-		}
-	}
-	label->set_visible(instantiate_type & ~SCENE);
+	String desc = "[ul]" +
+			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
+					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
+					"[b]Hold Shift:[/b] Add as children of selected node.",
+					files.size()) +
+			"\n" +
+			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
+					"[b]Hold Alt:[/b] Add as children of root node.",
+					files.size());
 
-	String desc = TTR("Drag and drop to add as sibling of selected node (except when root is selected).") +
-			"\n" + TTR("Hold Shift when dropping to add as child of selected node.") +
-			"\n" + TTR("Hold Alt when dropping to add as child of root node.");
-	if (instantiate_type & TEXTURE) {
-		desc += "\n" + TTR("Hold Alt + Shift when dropping to add as different node type.");
+	if (files.size() > 1) {
+		title = TTR("Dropping multiple files...");
+	} else if (instantiate_type & SCENE) {
+		title = TTR("Dropping a Scene file...");
+	} else if (instantiate_type & AUDIO) {
+		title = TTR("Dropping an Audio file...");
+	} else if (instantiate_type & TEXTURE) {
+		// TRANSLATORS: The placeholders are the types of nodes being instantiated.
+		title = vformat(TTR("Dropping a Texture file as a %s node..."), default_texture_node_type);
 	}
-	label_desc->set_text(desc);
-	label_desc->show();
+	if (instantiate_type & TEXTURE) {
+		desc += "\n" + TTR("[b]Hold Alt + Shift:[/b] Add Texture as a different node type.");
+	}
+	desc += "[/ul]";
+
+	_show_tooltip(title, desc);
 
 	return true;
 }
@@ -6703,8 +6719,9 @@ void CanvasItemEditorViewport::_update_theme() {
 		CheckBox *check = Object::cast_to<CheckBox>(btn);
 		check->set_button_icon(get_editor_theme_icon(check->get_text()));
 	}
-
-	label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
+	tooltip_panel->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 }
 
 void CanvasItemEditorViewport::_notification(int p_what) {
@@ -6774,20 +6791,21 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 		check->connect("button_down", callable_mp(this, &CanvasItemEditorViewport::_on_select_texture_node_type).bind(check));
 	}
 
-	label = memnew(Label);
-	label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	label->hide();
-	canvas_item_editor->get_controls_container()->add_child(label);
-
-	label_desc = memnew(Label);
-	label_desc->set_focus_mode(FOCUS_ACCESSIBILITY);
-	label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
-	label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	label_desc->add_theme_constant_override("line_spacing", 0);
-	label_desc->hide();
-	canvas_item_editor->get_controls_container()->add_child(label_desc);
+	tooltip_panel = memnew(RichTextLabel);
+	canvas_item_editor->get_controls_container()->add_child(tooltip_panel);
+	tooltip_panel->hide();
+	tooltip_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	tooltip_panel->set_focus_mode(FOCUS_ACCESSIBILITY);
+	tooltip_panel->set_use_bbcode(true);
+	tooltip_panel->set_fit_content(true);
+	tooltip_panel->set_scroll_active(false);
+	tooltip_panel->set_tab_size(0);
+	tooltip_panel->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+	tooltip_panel->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
+	tooltip_panel->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
+	tooltip_panel->add_theme_constant_override("paragraph_separation", 5);
 
 	RS::get_singleton()->canvas_set_disable_scale(true);
 }
