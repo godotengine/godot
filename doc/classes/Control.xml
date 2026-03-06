@@ -758,6 +758,16 @@
 				Returns [code]true[/code] if the layout is right-to-left. See also [member layout_direction].
 			</description>
 		</method>
+		<method name="push_gui_input">
+			<return type="void" />
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Push a GUI-specific [InputEvent] to this specific [Control] node without affecting focus.
+				This is a low-level method, so it is your responsibility to manage focus using [method grab_focus] and deliver [constant NOTIFICATION_MOUSE_ENTER] and [constant NOTIFICATION_MOUSE_EXIT] noftifications as needed.
+				Make sure to convert [member InputEventMouse.position] to local coordinates using [code]event.global_position * control.get_global_transform_with_canvas()[/code]
+				See [method Viewport.push_input] for the preferred high level way to deliver events to a [Viewport].
+			</description>
+		</method>
 		<method name="release_focus">
 			<return type="void" />
 			<description>

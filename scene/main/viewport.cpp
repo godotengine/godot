@@ -1762,7 +1762,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
 			if (control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
-				control->_call_gui_input(ev);
+				control->push_gui_input(ev);
 			}
 
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
@@ -2319,7 +2319,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (gui.key_focus) {
 			if (gui.key_focus->can_process()) {
-				gui.key_focus->_call_gui_input(p_event);
+				gui.key_focus->push_gui_input(p_event);
 			}
 
 			if (is_input_handled()) {
@@ -2775,7 +2775,7 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
 			mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
-			c->_call_gui_input(mb);
+			c->push_gui_input(mb);
 		}
 	}
 }
@@ -2834,7 +2834,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
 				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
-				gui.mouse_focus->_call_gui_input(mb);
+				gui.mouse_focus->push_gui_input(mb);
 			}
 		}
 
@@ -2852,7 +2852,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
 				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
-				callable_mp(gui.mouse_focus, &Control::_call_gui_input).call_deferred(mb);
+				callable_mp(gui.mouse_focus, &Control::push_gui_input).call_deferred(mb);
 			}
 		}
 	}
