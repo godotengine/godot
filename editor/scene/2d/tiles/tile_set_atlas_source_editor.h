@@ -282,7 +282,6 @@ private:
 	void _check_outside_tiles();
 	void _cleanup_outside_tiles();
 
-	void _set_tile_set_changed_needs_update(bool p_needs_update);
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(const String &p_what);
 	void _atlas_source_proxy_object_changed(const String &p_what);

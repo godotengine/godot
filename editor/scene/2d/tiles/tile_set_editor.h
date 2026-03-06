@@ -106,7 +106,6 @@ private:
 	ObjectID expanded_editor_parent;
 	LocalVector<SplitContainer *> disable_on_expand;
 
-	void _set_tile_set_changed_needs_update(bool p_needs_update);
 	void _tile_set_changed();
 	void _tab_changed(int p_tab_changed);
 
