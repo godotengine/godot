@@ -408,6 +408,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
 			</description>
 		</method>
 		<method name="add_user_signal">
