@@ -729,7 +729,7 @@ Camera3D::ProjectionType Camera3D::get_projection() const {
 }
 
 void Camera3D::set_fov(real_t p_fov) {
-	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
+	ERR_FAIL_COND(p_fov <= CMP_EPSILON || p_fov >= 180.0 - CMP_EPSILON);
 	fov = p_fov;
 	_update_camera_mode();
 }
