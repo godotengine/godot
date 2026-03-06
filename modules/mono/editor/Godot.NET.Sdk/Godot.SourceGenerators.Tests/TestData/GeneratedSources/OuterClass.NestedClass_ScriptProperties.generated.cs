@@ -11,5 +11,12 @@ partial class NestedClass
     /// </summary>
     public new class PropertyName : global::Godot.RefCounted.PropertyName {
     }
+    private static partial class GodotInternal
+    {
+        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector collector)
+        {
+        }
+    }
+#pragma warning restore CS0109
 }
 }
