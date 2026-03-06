@@ -101,6 +101,7 @@
 			The size of the non-navigable border around the bake bounding area.
 			In conjunction with the [member filter_baking_aabb] and a [member edge_max_error] value at [code]1.0[/code] or below the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
 			[b]Note:[/b] If this value is not [code]0.0[/code], it will be rounded up to the nearest multiple of [member cell_size] during baking.
+			[b]Note:[/b] When [member tile_baking_enabled] is [code]true[/code], the effective border is clamped to at least [code]ceil([member agent_radius] / [member cell_size]) * [member cell_size] + 3 * [member cell_size][/code] (and at least 1 meter) so adjacent tiles keep enough overlap after erosion.
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
@@ -160,6 +161,12 @@
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
 			Partitioning algorithm for creating the navigation mesh polys.
+		</member>
+		<member name="tile_baking_enabled" type="bool" setter="set_tile_baking_enabled" getter="is_tile_baking_enabled" default="false">
+			If [code]true[/code], navmesh baking is executed in fixed-size tiles instead of the entire bounds at once. This makes it possible to bake very large areas without running out of memory at the cost of longer bake times.
+		</member>
+		<member name="tile_baking_size" type="float" setter="set_tile_baking_size" getter="get_tile_baking_size" default="30.0">
+			The core size in meters used for each tile when [member tile_baking_enabled] is [code]true[/code]. Values are clamped between 5 and 200 meters to prevent extremely small or extremely large tiles that could cause crashes or long bake times.
 		</member>
 		<member name="vertices_per_polygon" type="float" setter="set_vertices_per_polygon" getter="get_vertices_per_polygon" default="6.0">
 			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
