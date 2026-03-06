@@ -105,25 +105,25 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	from = ai.xform(from);
 	to = ai.xform(to);
 
-	Vector3 p, n;
-	int fi = -1;
-	if (!p_shape_B->intersect_segment(from, to, p, n, fi, true)) {
+	Vector3 hit_point, hit_normal;
+	int face_index = -1;
+	if (!p_shape_B->intersect_segment(from, to, hit_point, hit_normal, face_index, true)) {
 		return false;
 	}
 
 	// Discard contacts when the ray is fully contained inside the shape.
-	if (n == Vector3()) {
+	if (hit_normal == Vector3()) {
 		return false;
 	}
 
 	// Discard contacts in the wrong direction.
-	if (n.dot(from - to) < CMP_EPSILON) {
+	if (hit_normal.dot(from - to) < CMP_EPSILON) {
 		return false;
 	}
 
-	Vector3 support_B = p_transform_B.xform(p);
+	Vector3 support_B = p_transform_B.xform(hit_point);
 	if (ray->get_slide_on_slope()) {
-		Vector3 global_n = ai.basis.xform_inv(n).normalized();
+		Vector3 global_n = ai.basis.xform_inv(hit_normal).normalized();
 		support_B = support_A + (support_B - support_A).length() * global_n;
 	}
 
