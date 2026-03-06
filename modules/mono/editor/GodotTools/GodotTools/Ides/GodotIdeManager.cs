@@ -203,7 +203,7 @@ namespace GodotTools.Ides
 
         public EditorPick PickEditor(ExternalEditorId editorId) => new EditorPick(GetExternalEditorIdentity(editorId));
 
-        private class GodotLogger : ILogger
+        private class GodotLogger : GodotTools.IdeMessaging.ILogger
         {
             public void LogDebug(string message)
             {
