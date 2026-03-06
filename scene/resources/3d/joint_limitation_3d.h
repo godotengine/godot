@@ -40,13 +40,18 @@ class JointLimitation3D : public Resource {
 	GDCLASS(JointLimitation3D, Resource);
 
 protected:
+	static void _bind_methods();
+
 	// Directions are normalized vector from Vector(0, 0, 0). Space is defined by _make_space(), must return normalized vector.
 	virtual Vector3 _solve(const Vector3 &p_direction) const;
+	GDVIRTUAL1RC(Vector3, _solve, Vector3);
+
+	// Define temporary space based on rest and forward vector.
+	virtual Quaternion _make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const;
+	GDVIRTUAL3RC(Quaternion, _make_space, Vector3, Vector3, Quaternion);
 
 public:
-	// Define temporary space based on rest and forward vector.
-	virtual Quaternion make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const;
-
+	Quaternion make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const;
 	Vector3 solve(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset, const Vector3 &p_local_current_vector) const;
 
 #ifdef TOOLS_ENABLED
