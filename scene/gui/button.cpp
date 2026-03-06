@@ -514,14 +514,10 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		}
 	}
 
-	if (!xl_text.is_empty() || !p_text.is_empty()) {
+	if ((!xl_text.is_empty() || !p_text.is_empty()) && vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {
 		Ref<Font> font = theme_cache.font;
 		float font_height = font->get_height(theme_cache.font_size);
-		if (vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {
-			minsize.height = MAX(font_height, minsize.height);
-		} else {
-			minsize.height += font_height;
-		}
+		minsize.height = MAX(font_height, minsize.height);
 	}
 
 	return (theme_cache.align_to_largest_stylebox ? _get_largest_stylebox_size() : _get_current_stylebox()->get_minimum_size()) + minsize;
