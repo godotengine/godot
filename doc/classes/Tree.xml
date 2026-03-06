@@ -383,6 +383,9 @@
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
 		</member>
+		<member name="max_sticky_items" type="int" setter="set_max_sticky_items" getter="get_max_sticky_items" default="0">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</member>
 		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="Tree.ScrollHintMode" default="0">
 			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
 		</member>
