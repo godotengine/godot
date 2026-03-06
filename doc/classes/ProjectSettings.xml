@@ -2890,6 +2890,30 @@
 		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
+		<member name="rendering/camera/motion_blur/motion_blur_framerate_mode" type="int" setter="" getter="" default="1">
+			Define framerate-based behavior of the motion blur. Uses [member rendering/camera/motion_blur/motion_blur_reference_framerate] as the reference framerate for the different modes.
+			MOTION_BLUR_FRAMERATE_MODE_NATIVE applies the blur based on the game's framerate as is, and does not use the reference framerate.
+			MOTION_BLUR_FRAMERATE_MODE_CAPPED applies the blur based on the game's framerate, but below a certain framerate (which means larger time gap and thus larger blur) it will cap the blur to emulate the blur that will be generated at the reference framerate. This is the default value, and it means that if the game lags, the blur will be kept under control.
+			MOTION_BLUR_FRAMERATE_MODE_FIXED enforces the reference framerate blur regardless of the game's framerate. This can lead to overblurring when the game's framerate is higher than the reference framerate.
+		</member>
+		<member name="rendering/camera/motion_blur/motion_blur_quality" type="int" setter="" getter="" default="1">
+			Controls the quality of the motion blur. The motion blur uses noise to smoothen the transition between samples to prevent banding, but it can only do so much. Larger sample counts will mitigate the perceivable noise, at the cost of performance. The sample counts are as follows:
+			MOTION_BLUR_QUALITY_LOW = 4 samples
+			MOTION_BLUR_QUALITY_MEDIUM = 8 samples
+			MOTION_BLUR_QUALITY_HIGH = 16 samples
+		</member>
+		<member name="rendering/camera/motion_blur/motion_blur_reference_framerate" type="int" setter="" getter="" default="30">
+			Defines a framerate to be used as reference by [member rendering/camera/motion_blur/motion_blur_framerate_mode].
+		</member>
+		<member name="rendering/camera/motion_blur/motion_blur_show_in_editor" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/camera/motion_blur/motion_blur_tile_size" type="int" setter="" getter="" default="1">
+			Defines, in pixels, the size of velocity dilation tiles to be used by the motion blur. These tiles collect dominant velocities from neighboring tiles so that fast moving objects can be blurred beyond their original silhouettes. Changing the tile size has little performance cost, rather the cost and effect come in the form of detail vs range. Large tile sizes can blur objects further, but will do so in less detail. The sizes are:
+			MOTION_BLUR_TILE_SIZE_SMALL = 20 pixels
+			MOTION_BLUR_TILE_SIZE_MEDIUM = 40 pixels
+			MOTION_BLUR_TILE_SIZE_LARGE = 60 pixels
+			MOTION_BLUR_TILE_SIZE_EXTRA_LARGE = 80 pixels
+		</member>
 		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables [member rendering/driver/depth_prepass/enable] conditionally for certain vendors. By default, disables the depth prepass for mobile devices as mobile devices do not benefit from the depth prepass due to their unique architecture.
 		</member>
