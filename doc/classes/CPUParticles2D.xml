@@ -109,13 +109,13 @@
 			Minimum equivalent of [member angle_max].
 		</member>
 		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's angular velocity will vary along this [Curve]. Should be a unit [Curve].
+			Each particle's angular velocity (rotation speed) will vary along this [Curve] over its lifetime. Should be a unit [Curve].
 		</member>
 		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
 		</member>
 		<member name="angular_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum equivalent of [member angular_velocity_max].
+			Minimum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
 		</member>
 		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's animation offset will vary along this [Curve]. Should be a unit [Curve].
@@ -230,7 +230,7 @@
 			Minimum equivalent of [member linear_accel_max].
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
-			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles2D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [CPUParticles2D] node (and its parents) when it is moved or rotated.
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the this node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the this node (and its parents) when it is moved or rotated.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
 			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end.
