@@ -387,6 +387,10 @@ void ProjectManager::_select_main_view(int p_id) {
 }
 
 void ProjectManager::_show_about() {
+	if (!about_dialog) {
+		about_dialog = memnew(EditorAbout);
+		add_child(about_dialog);
+	}
 	about_dialog->popup_centered(Size2(780, 500) * EDSCALE);
 }
 
@@ -1858,9 +1862,6 @@ ProjectManager::ProjectManager() {
 		error_dialog = memnew(AcceptDialog);
 		error_dialog->set_title(TTRC("Error"));
 		add_child(error_dialog);
-
-		about_dialog = memnew(EditorAbout);
-		add_child(about_dialog);
 	}
 
 	// Tag management.
