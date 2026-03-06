@@ -409,6 +409,38 @@ void Node::_propagate_after_exit_tree() {
 	emit_signal(SceneStringName(tree_exited));
 }
 
+void Node::_propagate_exit_tree_and_cleanup() {
+#ifdef DEBUG_ENABLED
+	if (!data.scene_file_path.is_empty()) {
+		SceneDebugger::remove_from_cache(data.scene_file_path, this);
+	}
+#endif
+	data.blocked++;
+
+	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
+		I->value->_propagate_exit_tree_and_cleanup();
+	}
+
+	data.blocked--;
+
+	notification(NOTIFICATION_EXIT_TREE, true);
+
+	for (KeyValue<StringName, GroupData> &E : data.grouped) {
+		data.tree->remove_from_group(E.key, this);
+		E.value.group = nullptr;
+	}
+
+	data.viewport = nullptr;
+
+	data.ready_notified = false;
+	data.tree = nullptr;
+	data.depth = -1;
+
+	if (data.owner) {
+		_clean_up_owner();
+	}
+}
+
 void Node::_propagate_exit_tree() {
 	//block while removing children
 
@@ -3448,8 +3480,6 @@ TypedArray<int> Node::get_orphan_node_ids() {
 }
 
 void Node::queue_free() {
-	// There are users which instantiate multiple scene trees for their games.
-	// Use the node's own tree to handle its deletion when relevant.
 	if (data.tree) {
 		data.tree->queue_delete(this);
 	} else {
@@ -3457,6 +3487,83 @@ void Node::queue_free() {
 		ERR_FAIL_NULL_MSG(tree, "Can't queue free a node when no SceneTree is available.");
 		tree->queue_delete(this);
 	}
+}
+
+void Node::free_children() {
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Freeing children from a node inside the SceneTree is only allowed from the main thread.");
+	ERR_THREAD_GUARD
+
+	if (data.children.is_empty()) {
+		return;
+	}
+
+	uint32_t count = data.children.size();
+	LocalVector<Node *> children_copy;
+	children_copy.reserve(count);
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		children_copy.push_back(K.value);
+	}
+
+	data.children.clear();
+	data.children_cache.clear();
+	data.children_cache_dirty = false;
+	data.internal_children_front_count_cache = 0;
+	data.internal_children_back_count_cache = 0;
+	data.external_children_count_cache = 0;
+
+	if (data.tree) {
+		data.blocked++;
+		for (uint32_t i = count; i > 0; i--) {
+			Node *child = children_copy[i - 1];
+			child->_propagate_exit_tree_and_cleanup();
+			child->data.parent = nullptr;
+			memdelete(child);
+		}
+		data.blocked--;
+		data.tree->tree_changed();
+	} else {
+		for (uint32_t i = count; i > 0; i--) {
+			Node *child = children_copy[i - 1];
+			child->data.parent = nullptr;
+			memdelete(child);
+		}
+	}
+
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
+}
+
+void Node::queue_free_children() {
+	ERR_THREAD_GUARD
+
+	if (data.children.is_empty()) {
+		return;
+	}
+
+	SceneTree *tree = data.tree ? data.tree : SceneTree::get_singleton();
+	ERR_FAIL_NULL_MSG(tree, "Can't queue free children when no SceneTree is available.");
+
+	uint32_t count = data.children.size();
+	{
+		MutexLock tree_lock(tree->_thread_safe_);
+		tree->delete_queue.reserve(tree->delete_queue.size() + count);
+		for (KeyValue<StringName, Node *> &K : data.children) {
+			Node *child = K.value;
+			child->data.parent = nullptr;
+			child->_is_queued_for_deletion = true;
+			tree->delete_queue.push_back(child->get_instance_id());
+		}
+	}
+
+	data.children.clear();
+	data.children_cache.clear();
+	data.children_cache_dirty = false;
+	data.internal_children_front_count_cache = 0;
+	data.internal_children_back_count_cache = 0;
+	data.external_children_count_cache = 0;
+
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
 }
 
 #ifdef TOOLS_ENABLED
@@ -3851,6 +3958,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
+
+	ClassDB::bind_method(D_METHOD("free_children"), &Node::free_children);
+	ClassDB::bind_method(D_METHOD("queue_free_children"), &Node::queue_free_children);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 	ClassDB::bind_method(D_METHOD("is_node_ready"), &Node::is_ready);

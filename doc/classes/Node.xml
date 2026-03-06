@@ -828,6 +828,20 @@
 				[b]Note:[/b] The node will only be freed after all other deferred calls are finished. Using this method is not always the same as calling [method Object.free] through [method Object.call_deferred].
 			</description>
 		</method>
+		<method name="free_children">
+			<return type="void" />
+			<description>
+				Immediately deletes all children of this node. Unlike [method queue_free_children], this happens instantly and can only be called from the main thread. The node itself is not deleted. See also [method queue_free_children].
+				[b]Note:[/b] This is equivalent to calling [method Object.free] on each child.
+			</description>
+		</method>
+		<method name="queue_free_children">
+			<return type="void" />
+			<description>
+				Queues all children of this node to be deleted at the end of the current frame. The node itself is not deleted. See also [method free_children].
+				[b]Note:[/b] This is equivalent to calling [method queue_free] on each child.
+			</description>
+		</method>
 		<method name="remove_child">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />

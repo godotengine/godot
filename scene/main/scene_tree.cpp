@@ -1617,14 +1617,22 @@ Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 }
 
 void SceneTree::_flush_delete_queue() {
-	_THREAD_SAFE_METHOD_
+	LocalVector<ObjectID> delete_queue_copy;
+	{
+		_THREAD_SAFE_METHOD_
 
-	while (delete_queue.size()) {
-		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
+		if (delete_queue.is_empty()) {
+			return;
+		}
+
+		SWAP(delete_queue, delete_queue_copy);
+	}
+
+	for (uint32_t i = 0; i < delete_queue_copy.size(); i++) {
+		Object *obj = ObjectDB::get_instance(delete_queue_copy[i]);
 		if (obj) {
 			memdelete(obj);
 		}
-		delete_queue.pop_front();
 	}
 }
 
