@@ -100,7 +100,9 @@ class GodotBody2D : public GodotCollisionObject2D {
 	bool omit_force_integration = false;
 	bool active = true;
 	bool can_sleep = true;
+#ifndef DISABLE_DEPRECATED
 	bool first_time_kinematic = false;
+#endif
 	void _mass_properties_changed();
 	virtual void _shapes_changed() override;
 	Transform2D new_transform;
@@ -156,6 +158,10 @@ class GodotBody2D : public GodotCollisionObject2D {
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
 
 public:
+#ifndef DISABLE_DEPRECATED
+	static inline bool kinematic_body_initial_teleport = false;
+#endif
+
 	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
@@ -299,6 +305,8 @@ public:
 
 	void set_state(PhysicsServer2D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer2D::BodyState p_state) const;
+
+	void flush_kinematic_transform();
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) { continuous_cd_mode = p_mode; }
 	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }

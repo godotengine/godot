@@ -368,6 +368,13 @@
 				Overridable version of [method PhysicsServer2D.body_create].
 			</description>
 		</method>
+		<method name="_body_flush_kinematic_transform" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Overridable version of [method PhysicsServer2D.body_flush_kinematic_transform].
+			</description>
+		</method>
 		<method name="_body_get_canvas_instance_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />

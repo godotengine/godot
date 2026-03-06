@@ -250,7 +250,9 @@ Variant GodotBody2D::get_param(PhysicsServer2D::BodyParameter p_param) const {
 }
 
 void GodotBody2D::set_mode(PhysicsServer2D::BodyMode p_mode) {
+#ifndef DISABLE_DEPRECATED
 	PhysicsServer2D::BodyMode prev = mode;
+#endif
 	mode = p_mode;
 
 	switch (p_mode) {
@@ -264,9 +266,11 @@ void GodotBody2D::set_mode(PhysicsServer2D::BodyMode p_mode) {
 			set_active(p_mode == PhysicsServer2D::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector2();
 			angular_velocity = 0;
-			if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC && prev != mode) {
+#ifndef DISABLE_DEPRECATED
+			if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC && prev != mode && kinematic_body_initial_teleport) {
 				first_time_kinematic = true;
 			}
+#endif
 		} break;
 		case PhysicsServer2D::BODY_MODE_RIGID: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
@@ -305,10 +309,14 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 				new_transform = p_variant;
 				//wakeup_neighbours();
 				set_active(true);
-				if (first_time_kinematic) {
-					_set_transform(p_variant);
-					_set_inv_transform(get_transform().affine_inverse());
+#ifndef DISABLE_DEPRECATED
+				if (!get_space() || first_time_kinematic) {
+					flush_kinematic_transform();
 					first_time_kinematic = false;
+#else
+				if (!get_space()) {
+					flush_kinematic_transform();
+#endif
 				}
 			} else if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
@@ -387,6 +395,13 @@ Variant GodotBody2D::get_state(PhysicsServer2D::BodyState p_state) const {
 	}
 
 	return Variant();
+}
+
+void GodotBody2D::flush_kinematic_transform() {
+	ERR_FAIL_COND_MSG(mode != PhysicsServer2D::BODY_MODE_KINEMATIC, "Attempted to flush kinematic transform of non-kinematic body.");
+
+	_set_transform(new_transform);
+	_set_inv_transform(get_transform().affine_inverse());
 }
 
 void GodotBody2D::set_space(GodotSpace2D *p_space) {

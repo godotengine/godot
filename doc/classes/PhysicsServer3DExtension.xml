@@ -289,6 +289,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_flush_kinematic_transform" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Overridable version of [method PhysicsServer3D.body_flush_kinematic_transform].
+			</description>
+		</method>
 		<method name="_body_get_collision_exceptions" qualifiers="virtual required const">
 			<return type="RID[]" />
 			<param index="0" name="body" type="RID" />
