@@ -48,6 +48,12 @@
 				Returns an array with all [Script] objects which are currently open in editor.
 			</description>
 		</method>
+		<method name="get_unsaved_scripts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of file paths of scripts with unsaved changes open in the editor.
+			</description>
+		</method>
 		<method name="goto_help">
 			<return type="void" />
 			<param index="0" name="topic" type="String" />
