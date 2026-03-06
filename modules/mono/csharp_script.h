@@ -44,6 +44,24 @@
 #include "editor/plugins/editor_plugin.h"
 #endif
 
+namespace godotsharp {
+struct ConstructorTrampoline {
+	void *function_pointer = nullptr;
+};
+struct MethodTrampoline {
+	void *function_pointer = nullptr;
+};
+struct PropertyGetterTrampoline {
+	void *function_pointer = nullptr;
+};
+struct PropertySetterTrampoline {
+	void *function_pointer = nullptr;
+};
+struct RaiseSignalTrampoline {
+	void *function_pointer = nullptr;
+};
+} //namespace godotsharp
+
 class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
@@ -186,8 +204,47 @@ private:
 		MethodInfo method_info;
 	};
 
+	/// Only includes event signals declared in this exact script, not inherited ones.
 	Vector<EventSignalInfo> event_signals;
+	/// Only includes methods declared in this exact script, not inherited ones.
 	Vector<CSharpMethodInfo> methods;
+
+	struct PropertyTrampolines {
+		godotsharp::PropertyGetterTrampoline getter;
+		godotsharp::PropertySetterTrampoline setter;
+	};
+
+	struct MethodKey {
+		StringName name;
+		int32_t arg_count;
+
+		bool operator==(const MethodKey &p_other) const {
+			return name == p_other.name && arg_count == p_other.arg_count;
+		}
+
+		uint32_t hash() const {
+			const uint32_t hash = name.hash();
+			return hash_murmur3_one_32(arg_count, hash);
+		}
+	};
+
+	using SignalKey = MethodKey;
+
+	/// Only includes constructors declared in this exact script, not inherited ones.
+	AHashMap<int32_t /* argc */, godotsharp::ConstructorTrampoline> constructor_trampolines;
+
+	/// Only includes methods declared in this exact script, not inherited ones.
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> static_method_trampolines;
+
+	/// Also includes methods declared in inherited scripts.
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> method_trampolines;
+	/// Also includes properties declared in inherited scripts.
+	AHashMap<StringName, PropertyTrampolines> property_trampolines;
+	/// Also includes event signals declared in inherited scripts.
+	AHashMap<SignalKey, godotsharp::RaiseSignalTrampoline> raise_signal_trampolines;
+	bool should_fallback_to_legacy_trampolines = true;
+
+	bool _has_method_mapping_to_proxy_include_base(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -221,6 +278,12 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
 	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+
+	static bool _callp_static(const CSharpScript *p_script, const StringName &p_method,
+			const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret);
+
+	bool _unchecked_create_managed_for_godot_object_script_instance(
+			Object *p_owner, const Variant **p_args, int p_argcount);
 
 protected:
 	static void _bind_methods();
@@ -335,6 +398,10 @@ class CSharpInstance : public ScriptInstance {
 	// Do not use unless you know what you are doing
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
+	Variant _callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
+
+	void _call_notification(int p_notification, bool p_reversed = false) const;
+
 public:
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
 
@@ -356,6 +423,8 @@ public:
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	void raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
+
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
 
 	/*
@@ -373,7 +442,6 @@ public:
 	const Variant get_rpc_config() const override;
 
 	void notification(int p_notification, bool p_reversed = false) override;
-	void _call_notification(int p_notification, bool p_reversed = false);
 
 	String to_string(bool *r_valid) override;
 

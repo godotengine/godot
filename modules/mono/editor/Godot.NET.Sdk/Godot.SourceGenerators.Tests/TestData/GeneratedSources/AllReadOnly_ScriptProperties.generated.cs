@@ -25,27 +25,35 @@ partial class AllReadOnly
         /// </summary>
         public new static readonly global::Godot.StringName @ReadOnlyField = "ReadOnlyField";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
+    private static partial class GodotInternal
     {
-        if (name == PropertyName.@ReadOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyAutoProperty);
-            return true;
+        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_ReadOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::AllReadOnly)godotObject).@ReadOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_ReadOnlyProperty(object godotObject)
+            {
+                var ret = ((global::AllReadOnly)godotObject).@ReadOnlyProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_InitOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::AllReadOnly)godotObject).@InitOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_ReadOnlyField(object godotObject)
+            {
+                var ret = ((global::AllReadOnly)godotObject).@ReadOnlyField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            collector.TryAdd(PropertyName.@ReadOnlyAutoProperty, (new(&trampoline_get_ReadOnlyAutoProperty), new(null)));
+            collector.TryAdd(PropertyName.@ReadOnlyProperty, (new(&trampoline_get_ReadOnlyProperty), new(null)));
+            collector.TryAdd(PropertyName.@InitOnlyAutoProperty, (new(&trampoline_get_InitOnlyAutoProperty), new(null)));
+            collector.TryAdd(PropertyName.@ReadOnlyField, (new(&trampoline_get_ReadOnlyField), new(null)));
         }
-        if (name == PropertyName.@ReadOnlyProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyProperty);
-            return true;
-        }
-        if (name == PropertyName.@InitOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@InitOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.
