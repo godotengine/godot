@@ -101,11 +101,12 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
-    env["CC"] = "emcc"
-    env["CXX"] = "em++"
+    if env["platform_tools"]:
+        env["CC"] = "emcc"
+        env["CXX"] = "em++"
 
-    env["AR"] = "emar"
-    env["RANLIB"] = "emranlib"
+        env["AR"] = "emar"
+        env["RANLIB"] = "emranlib"
 
     # Get version info for checks below.
     cc_version = get_compiler_version(env)
