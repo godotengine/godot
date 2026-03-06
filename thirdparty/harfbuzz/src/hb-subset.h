@@ -84,6 +84,9 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * HB_SUBSET_FLAGS_RETAIN_GIDS then the number of glyphs in the font won't
  * be reduced as a result of subsetting. If necessary empty glyphs will be
  * included at the end of the font to keep the number of glyphs unchanged.
+ * @HB_SUBSET_FLAGS_DOWNGRADE_CFF2: If set and instantiating a variable font,
+ * convert the output CFF2 table to CFF1. This enables compatibility with older
+ * renderers that don't support CFF2. Since: REPLACEME
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -107,6 +110,7 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00001000u,
   HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS  =  0x00002000u,
 #endif
+  HB_SUBSET_FLAGS_DOWNGRADE_CFF2          =  0x00004000u,
 } hb_subset_flags_t;
 
 /**

@@ -145,6 +145,8 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 			font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		} else if (p_edited_property == "modulate_color_glyphs") {
 			font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
+		} else if (p_edited_property == "prefer_colr") {
+			font_preview->set_prefer_colr(import_settings_data->get("prefer_colr"));
 		} else if (p_edited_property == "hinting") {
 			int hinting = import_settings_data->get("hinting").operator int();
 			if (hinting == 3) { // Light (Except Pixel Fonts)
@@ -654,6 +656,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["modulate_color_glyphs"] = import_settings_data->get("modulate_color_glyphs");
+	main_settings["prefer_colr"] = import_settings_data->get("prefer_colr");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
@@ -955,6 +958,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
+		font_preview->set_prefer_colr(import_settings_data->get("prefer_colr"));
 		int hinting = import_settings_data->get("hinting").operator int();
 		if (hinting == 3) { // Light (Except Pixel Fonts)
 			if (is_pixel) {
@@ -1011,6 +1015,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "prefer_colr"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal,Light (Except Pixel Fonts),Normal (Except Pixel Fonts)"), 3));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));

@@ -406,6 +406,36 @@
 				Returns oversampling factor override. If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
+		<method name="font_get_palette_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns palette colors.
+			</description>
+		</method>
+		<method name="font_get_palette_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns number of palettes.
+			</description>
+		</method>
+		<method name="font_get_palette_custom_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns custom palette colors.
+			</description>
+		</method>
+		<method name="font_get_palette_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns palette name.
+			</description>
+		</method>
 		<method name="font_get_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -542,6 +572,13 @@
 				Returns thickness of the underline in pixels.
 			</description>
 		</method>
+		<method name="font_get_used_palette" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns used palette index.
+			</description>
+		</method>
 		<method name="font_get_variation_coordinates" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="font_rid" type="RID" />
@@ -598,6 +635,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns [code]true[/code] if glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+			</description>
+		</method>
+		<method name="font_is_prefer_colr" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if experimental `hb-raster` API is preferred to rasterize glyphs from COLRv0 / COLRv1, otherwise ThorVG SVG rasterizer is preferred.
 			</description>
 		</method>
 		<method name="font_is_script_supported" qualifiers="const">
@@ -882,7 +926,7 @@
 		<method name="font_set_modulate_color_glyphs">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="force_autohinter" type="bool" />
+			<param index="1" name="modulate" type="bool" />
 			<description>
 				If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
 			</description>
@@ -934,6 +978,22 @@
 			<param index="1" name="oversampling" type="float" />
 			<description>
 				If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_set_palette_custom_colors">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<description>
+				Sets custom palette colors.
+			</description>
+		</method>
+		<method name="font_set_prefer_colrr">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="prefer_colr" type="bool" />
+			<description>
+				If set to [code]true[/code], uses experimental `hb-raster` API to rasterize glyphs from COLRv0 / COLRv1, otherwise ThorVG SVG rasterizer is preferred.
 			</description>
 		</method>
 		<method name="font_set_scale">
@@ -1042,6 +1102,14 @@
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
 				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_set_used_palette">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Sets used palette index.
 			</description>
 		</method>
 		<method name="font_set_variation_coordinates">

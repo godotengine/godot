@@ -468,7 +468,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 12.3.2 (b42511e071162fe76102f613a6ccc009726c99af, 2026)
+- Version: 13.0.0 (a0fc099681a69ae40665fbea74982a2e9d7a5260, 2026)
 - License: MIT
 
 Files extracted from upstream source:

@@ -124,6 +124,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "prefer_colr"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal,Light (Except Pixel Fonts),Normal (Except Pixel Fonts)"), 3));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
@@ -162,6 +163,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 
 	bool autohinter = p_options["force_autohinter"];
 	bool modulate_color_glyphs = p_options["modulate_color_glyphs"];
+	bool prefer_colr = p_options["prefer_colr"];
 	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
@@ -186,6 +188,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
 	font->set_modulate_color_glyphs(modulate_color_glyphs);
+	font->set_prefer_colr(prefer_colr);
 	font->set_allow_system_fallback(allow_system_fallback);
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
