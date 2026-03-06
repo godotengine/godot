@@ -996,15 +996,15 @@ void NativeMenuWindows::set_item_submenu(const RID &p_rid, int p_idx, const RID 
 	int count = GetMenuItemCount(md->menu);
 	ERR_FAIL_COND(p_idx >= count);
 
-	MenuData *md_sub = menus.get_or_null(p_submenu_rid);
-	ERR_FAIL_COND_MSG(md->menu == md_sub->menu, "Can't set submenu to self!");
-
 	MENUITEMINFOW item;
 	ZeroMemory(&item, sizeof(item));
 	item.cbSize = sizeof(item);
 	item.fMask = MIIM_SUBMENU;
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		if (p_submenu_rid.is_valid()) {
+			MenuData *md_sub = menus.get_or_null(p_submenu_rid);
+			ERR_FAIL_NULL(md_sub);
+			ERR_FAIL_COND_MSG(md->menu == md_sub->menu, "Can't set submenu to self!");
 			item.hSubMenu = md_sub->menu;
 		} else {
 			item.hSubMenu = nullptr;

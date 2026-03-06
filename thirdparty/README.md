@@ -501,6 +501,16 @@ Files extracted from upstream source:
 - All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
 - `LICENSE`
 
+Patches:
+
+- `0001-backport-upstream-commit-b385bc3d7.patch` ([GH-111087](https://github.com/godotengine/godot/pull/111087))
+- `0002-backport-upstream-commit-ccfe0a0df.patch` ([GH-111408](https://github.com/godotengine/godot/pull/111408))
+- `0003-backport-upstream-commit-9e48d59be.patch` ([GH-111767](https://github.com/godotengine/godot/pull/111767))
+- `0004-backport-upstream-commit-ee3725250.patch` ([GH-115089](https://github.com/godotengine/godot/pull/115089))
+- `0005-backport-upstream-commit-bc7f1fb8c.patch` ([GH-115305](https://github.com/godotengine/godot/pull/115305))
+- `0006-backport-upstream-commit-365a15367.patch` ([GH-115305](https://github.com/godotengine/godot/pull/115305))
+- `0007-backport-upstream-commit-e0a6a9a16.patch` ([GH-115327](https://github.com/godotengine/godot/pull/115327))
+
 
 ## libbacktrace
 
