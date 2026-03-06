@@ -257,6 +257,7 @@ private:
 			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
+			bool drawn = false;
 		};
 
 		struct SortItem {
@@ -277,6 +278,7 @@ private:
 
 		HashMap<RID, Texture> textures;
 		bool dirty = true;
+		bool draw_dirty = false;
 		int mipmaps = 5;
 
 		RID texture;
@@ -665,7 +667,9 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
+	void decal_atlas_mark_draw_on_texture(RID p_texture);
 	void decal_atlas_remove_texture(RID p_texture);
+	void decal_atlas_redraw_textures();
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
