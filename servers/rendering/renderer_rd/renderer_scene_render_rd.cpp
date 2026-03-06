@@ -265,7 +265,7 @@ bool RendererSceneRenderRD::_compositor_effects_has_flag(const RenderDataRD *p_r
 	}
 
 	ERR_FAIL_COND_V(!comp_storage->is_compositor(p_render_data->compositor), false);
-	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type);
 
 	for (RID rid : re_rids) {
 		if (comp_storage->compositor_effect_get_flag(rid, p_flag)) {
@@ -289,7 +289,7 @@ bool RendererSceneRenderRD::_has_compositor_effect(RSE::CompositorEffectCallback
 
 	ERR_FAIL_COND_V(!comp_storage->is_compositor(p_render_data->compositor), false);
 
-	Vector<RID> effects = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+	Vector<RID> effects = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type);
 
 	return effects.size() > 0;
 }
@@ -307,7 +307,7 @@ void RendererSceneRenderRD::_process_compositor_effects(RSE::CompositorEffectCal
 
 	ERR_FAIL_COND(!comp_storage->is_compositor(p_render_data->compositor));
 
-	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type);
 
 	for (RID rid : re_rids) {
 		Callable callback = comp_storage->compositor_effect_get_callback(rid);
