@@ -1083,7 +1083,7 @@ void EditorFileSystem::_update_dependencies_after_scan() {
 					// In legacy projects, the UID might be missing. And some resources (json/po/mo/crt/key/pub) may not have a UID.
 					// TODO: An interactive repair dialog should be provided.
 					new_deps.push_back(dep);
-					ERR_PRINT_ONCE(vformat("The uid is missing from the path %s in the deps of %s.", dep, file_path));
+					ERR_PRINT_ONCE(vformat("The UID is missing from the path %s in the deps of %s.", dep, file_path));
 					continue;
 				} else {
 					ERR_CONTINUE(dep_infos.size() != 2);
@@ -1103,7 +1103,7 @@ void EditorFileSystem::_update_dependencies_after_scan() {
 					is_first_dep = false;
 					int idx = -1;
 					EditorFileSystemDirectory *dep_dir = find_file(dep_path, &idx);
-					ERR_CONTINUE_MSG(!dep_dir, vformat("The dir info of %s was not found when checking %s", dep_path, file_path));
+					ERR_CONTINUE_MSG(!dep_dir, vformat("The dependency path %s in file %s does not exist. Please edit its dependencies to fix the dependency path manually.", dep_path, file_path));
 					EditorFileInfo *first_dep_fi = dep_dir->files[idx];
 					if (!(first_dep_fi->status & EditorFileInfo::IS_SCRIPT)) {
 						continue;
@@ -1206,7 +1206,7 @@ void EditorFileSystem::_update_project_settings_after_scan() {
 			if (move_paths.has(old_path)) {
 				ProjectSettings::get_singleton()->set_setting(E.key, move_paths[old_path]);
 			}
-		};
+		}
 	}
 
 	// Also search for the file in autoload, as they are stored differently from normal files.
@@ -1242,7 +1242,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 
 	EditorProgress *ep = nullptr;
 	if (scan_uid_actions.size() > (EditorFileSystem::ItemUIDAction::STEP_UID_MAX / 2 + 1)) {
-		ep = memnew(EditorProgress("_update_scan_uid_actions", TTR("Scanning uid actions..."), scan_uid_actions.size()));
+		ep = memnew(EditorProgress("_update_scan_uid_actions", TTR("Scanning UID actions..."), scan_uid_actions.size()));
 	}
 	int step_count = 0;
 	for (const ItemUIDAction &ia : scan_uid_actions) {
@@ -1251,7 +1251,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 				continue;
 			} break;
 			case ItemUIDAction::ACTION_UID_ADD: {
-				print_verbose(vformat("[%.6f] [ADD UID] old uid: %s, uid: %s, path: %s.",
+				print_verbose(vformat(R"([%.6f] [ADD UID] old UID: "%s", UID: "%s", path: "%s".)",
 						OS::get_singleton()->get_ticks_usec() / 1000000.0f,
 						ResourceUID::get_singleton()->id_to_text(ia.old_uid),
 						ResourceUID::get_singleton()->id_to_text(ia.file->uid),
@@ -1288,7 +1288,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 				print_verbose(vformat("[ADD UID] %s, %s", ia.path, ResourceUID::get_singleton()->id_to_text(ia.file->uid)));
 			} break;
 			case ItemUIDAction::ACTION_UID_REMOVE: {
-				print_verbose(vformat("[%.6f] [REMOVE UID] old uid: %s, uid: %s, path: %s.",
+				print_verbose(vformat(R"([%.6f] [REMOVE UID] old UID: "%s", UID: "%s", path: "%s".)",
 						OS::get_singleton()->get_ticks_usec() / 1000000.0f,
 						ResourceUID::get_singleton()->id_to_text(ia.old_uid),
 						ResourceUID::get_singleton()->id_to_text(ia.file->uid),
@@ -1301,7 +1301,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 				}
 			} break;
 			case ItemUIDAction::ACTION_UID_PENDING_ADD: {
-				print_verbose(vformat("[%.6f] [TEST ADD UID] old uid: %s, uid: %s, path: %s.",
+				print_verbose(vformat(R"([%.6f] [TEST ADD UID] old UID: "%s", UID: "%s", path: "%s".)",
 						OS::get_singleton()->get_ticks_usec() / 1000000.0f,
 						ResourceUID::get_singleton()->id_to_text(ia.old_uid),
 						ResourceUID::get_singleton()->id_to_text(ia.file->uid),
@@ -1336,7 +1336,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 	memdelete_notnull(ep);
 
 	if (!retracks.is_empty() || !untracks.is_empty() || !tracks.is_empty()) {
-		print_verbose("======= Scan UID Analysis Start ======");
+		print_verbose("======= Scan UID Analysis Start =======");
 
 		for (KeyValue<ResourceUID::ID, String> &E : untracks) {
 			HashMap<ResourceUID::ID, String>::Iterator I = retracks.find(E.key);
@@ -1376,7 +1376,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 			print_verbose(vformat("[Retracked] %s, at %s.", ResourceUID::get_singleton()->id_to_text(E.key), E.value));
 		}
 
-		print_verbose("======= Scan UID Analysis End ======");
+		print_verbose("======= Scan UID Analysis End =======");
 
 		_update_resource_paths_after_scan();
 	}
@@ -2129,7 +2129,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					}
 
 					if (first_scan) {
-						Vector<String> dirs = dir_path.substr(6, dir_path.length() - 6).split("/");
+						Vector<String> dirs = dir_path.substr(6).split("/");
 						ScannedDirectory *dir = first_scan_root_dir;
 						for (String &D : dirs) {
 							for (ScannedDirectory *SD : dir->subdirs) {
@@ -4225,7 +4225,7 @@ EditorFileSystem::EditorFileSystem() {
 	if (!force_detect) {
 		// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		force_detect = DirAccess::exists("res://.git") || da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "EXFAT";
+		force_detect = da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "EXFAT" || DirAccess::exists("res://.git");
 	}
 
 	scan_total = 0;

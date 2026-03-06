@@ -170,7 +170,7 @@ Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 }
 
 Error ResourceSaver::set_script_class(const String &p_path, const String &p_script_class) {
-	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Can't update the script class for an empty path. Provide a non-empty path.");
 
 	Error err = ERR_FILE_UNRECOGNIZED;
 
