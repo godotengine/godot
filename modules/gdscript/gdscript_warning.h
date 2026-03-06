@@ -87,7 +87,7 @@ public:
 		CONFUSABLE_LOCAL_USAGE, // The identifier will be shadowed below in the block.
 		CONFUSABLE_CAPTURE_REASSIGNMENT, // Reassigning lambda capture does not modify the outer local variable.
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
-		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
+		NATIVE_METHOD_OVERRIDE, // A local method overrides a native method or global function, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
 #ifndef DISABLE_DEPRECATED
