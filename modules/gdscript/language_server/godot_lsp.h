@@ -1073,6 +1073,7 @@ struct CompletionItem {
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
+		dict["deprecated"] = deprecated;
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
@@ -1302,6 +1303,7 @@ struct DocumentSymbol {
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
 		LSP::CompletionItem item;
 		item.label = name;
+		item.deprecated = deprecated;
 
 		if (resolved) {
 			item.documentation = render();
