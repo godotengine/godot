@@ -98,9 +98,9 @@ public:
 	TestResult run_test();
 	bool generate_output();
 
-	const String &get_source_file() const { return source_file; }
-	const String get_source_relative_filepath() const { return source_file.trim_prefix(base_dir); }
-	const String &get_output_file() const { return output_file; }
+	String get_source_file() const;
+	String get_source_relative_filepath() const;
+	String get_output_file() const;
 
 	void set_tokenizer_mode(TokenizerMode p_tokenizer_mode) { tokenizer_mode = p_tokenizer_mode; }
 	TokenizerMode get_tokenizer_mode() const { return tokenizer_mode; }
