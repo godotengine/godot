@@ -1196,7 +1196,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			// For the lightmapper, the indirect energy represents the multiplier for the indirect bounces caused by the light, so the value is not converted when using physical units.
 			float indirect_energy = light->get_param(Light3D::PARAM_INDIRECT_ENERGY);
 			Color linear_color = light->get_color().srgb_to_linear();
-			float energy = light->get_param(Light3D::PARAM_ENERGY);
+			float sign = light->is_negative() ? -1 : 1;
+			float energy = sign * light->get_param(Light3D::PARAM_ENERGY);
+
 			if (use_physical_light_units) {
 				energy *= light->get_param(Light3D::PARAM_INTENSITY);
 				linear_color *= light->get_correlated_color().srgb_to_linear();
