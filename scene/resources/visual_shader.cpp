@@ -3563,10 +3563,10 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
 	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "modulate", "MODULATE" },
 	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture", "source_texture" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture0", "source_texture0" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture1", "source_texture1" },
 	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture2", "source_texture2" },
 	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture3", "source_texture3" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture4", "source_texture4" },
 
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
