@@ -118,6 +118,12 @@
 				Returns the maximum number of channels allowed for connected peers.
 			</description>
 		</method>
+		<method name="get_max_peers" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the maximum number of peers that can be connected at once.
+			</description>
+		</method>
 		<method name="get_peers">
 			<return type="ENetPacketPeer[]" />
 			<description>
