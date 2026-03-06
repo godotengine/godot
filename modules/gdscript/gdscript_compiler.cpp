@@ -40,8 +40,6 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 
-#include "scene/scene_string_names.h"
-
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
 		return false;
@@ -2170,10 +2168,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				if (return_n->void_return) {
-					// Always return "null", even if the expression is a call to a void function.
-					gen->write_return(codegen.add_constant(Variant()));
+					// Always return `null`, even if the expression is a call to a `void` function.
+					gen->write_return(codegen.add_constant(Variant()), false);
 				} else {
-					gen->write_return(return_value);
+					gen->write_return(return_value, return_n->use_conversion);
 				}
 				if (return_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
