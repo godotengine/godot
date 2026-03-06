@@ -80,6 +80,9 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CONTEXT,
 		CONTEXT_VALID_ITEM,
 	};
+
+	static ShaderEditorPlugin *singleton;
+
 	HSplitContainer *files_split = nullptr;
 
 	ItemList *shader_list = nullptr;
@@ -95,6 +98,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	float text_shader_zoom_factor = 1.0f;
 	bool restoring_layout = false;
+	bool selected_changed = false;
 
 	Ref<Resource> _get_current_shader();
 	void _update_shader_list();
@@ -130,6 +134,8 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	static ShaderEditorPlugin *get_singleton() { return singleton; }
+
 	virtual String get_plugin_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
