@@ -86,6 +86,7 @@ private:
 	void _disconnect_inactive_peers();
 	void _destroy_unused(ENetPacket *p_packet);
 	_FORCE_INLINE_ bool _is_active() const { return active_mode != MODE_NONE; }
+	void _close();
 
 	IPAddress bind_ip;
 
