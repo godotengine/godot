@@ -161,6 +161,12 @@
 				[b]Note:[/b] If [param duration] is equal to [code]0[/code], the method will always return the final value, regardless of [param elapsed_time] provided.
 			</description>
 		</method>
+		<method name="is_finished">
+			<return type="bool" />
+			<description>
+				Returns whether the [Tween] is finished, i.e. all [Tweener]s have completed or it was killed.
+			</description>
+		</method>
 		<method name="is_running">
 			<return type="bool" />
 			<description>
@@ -170,7 +176,7 @@
 		<method name="is_valid">
 			<return type="bool" />
 			<description>
-				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). A [Tween] might become invalid when it has finished tweening, is killed, or when created with [code]Tween.new()[/code]. Invalid [Tween]s can't have [Tweener]s appended.
+				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). A [Tween] will become invalid when it is killed, when created with [code]Tween.new()[/code], or after it finishes if it is not reset by [method stop] during [signal finished]. Invalid [Tween]s can't have [Tweener]s appended.
 			</description>
 		</method>
 		<method name="kill">
