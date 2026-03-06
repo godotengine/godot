@@ -182,6 +182,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["fabrik"] = "FABRIK";
 	capitalize_string_remaps["fbx"] = "FBX";
 	capitalize_string_remaps["fbx2gltf"] = "FBX2glTF";
+	capitalize_string_remaps["ffmpeg"] = "FFmpeg";
 	capitalize_string_remaps["fft"] = "FFT";
 	capitalize_string_remaps["fg"] = "FG";
 	capitalize_string_remaps["filesystem"] = "FileSystem";
