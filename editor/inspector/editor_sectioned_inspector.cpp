@@ -54,6 +54,21 @@ static bool _property_path_matches(const String &p_property_path, const String &
 	return false;
 }
 
+static String _get_filter_property_path(const String &p_property_path) {
+	const int last_slash = p_property_path.rfind_char('/');
+	String dir = (last_slash >= 0) ? p_property_path.left(last_slash) : String();
+	String property_name = (last_slash >= 0) ? p_property_path.substr(last_slash + 1) : p_property_path;
+
+	property_name = property_name.uri_decode();
+
+	const int dot = property_name.find_char('.');
+	if (dot >= 0) {
+		property_name = property_name.left(dot);
+	}
+
+	return dir.is_empty() ? property_name : dir + "/" + property_name;
+}
+
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
@@ -257,7 +272,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter_text.is_empty() && !_property_path_matches(pi.name, filter_text, name_style)) {
+		if (!filter_text.is_empty() && !_property_path_matches(_get_filter_property_path(pi.name), filter_text, name_style)) {
 			continue;
 		}
 
