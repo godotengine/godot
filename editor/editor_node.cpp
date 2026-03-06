@@ -1019,7 +1019,15 @@ void EditorNode::_notification(int p_what) {
 						ProjectSettings::get_singleton()->set_setting(initial_setting.key, initial_setting.value);
 					}
 				}
-				ProjectSettings::get_singleton()->save();
+				Error save_err = ProjectSettings::get_singleton()->save();
+				if (save_err != OK) {
+					// Trigger a native OS popup to warn the user
+					OS::get_singleton()->alert(
+							vformat(TTR("Error: Could not save the project at '%s'.\n\nPlease check your folder permissions. If you are on Windows, ensure Windows Defender 'Controlled Folder Access' is not blocking Godot.\n\nThe editor will now exit."), project_settings_path),
+							TTR("Project Initialization Error"));
+					get_tree()->quit();
+					return; // Stop executing the rest of NOTIFICATION_READY
+				}
 			}
 
 			_titlebar_resized();
