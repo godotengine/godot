@@ -750,8 +750,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		Node *ei = ret_nodes[0]->get_node_or_null(e_path);
 		if (ei) {
 			if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
-				if (ei->get_owner() == ret_nodes[0] || ei->has_meta(META_EXPOSED_IN_OWNER)) {
+				if (ei->get_owner() == ret_nodes[0]) {
 					ei->set_meta(META_EXPOSED_IN_OWNER, true);
+					ei->set_meta(META_MARKED_FOR_EXPOSURE, true);
 				}
 			}
 			if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
