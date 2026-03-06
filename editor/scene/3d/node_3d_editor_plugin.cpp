@@ -2017,6 +2017,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (b->is_pressed()) {
 					clicked_wants_append = b->is_shift_pressed();
 
+					if (freelook_active) {
+						break;
+					}
 					if (_edit.mode != TRANSFORM_NONE && (_edit.instant || collision_reposition)) {
 						commit_transform();
 						break; // just commit the edit, stop processing the event so we don't deselect the object
@@ -2232,6 +2235,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
+					if (freelook_active) {
+						clicked = ObjectID();
+						cursor.region_select = false;
+						break;
+					}
+
 					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
 						ruler_start_point->set_visible(false);
@@ -2373,7 +2382,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
-		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT) && !freelook_active) {
 			NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_LEFT_MOUSE, shortcut_check_sets, false);
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
