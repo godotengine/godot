@@ -118,23 +118,24 @@ void RotatedFileLogger::clear_old_backups() {
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	// backups is a RBSet because it guarantees that iterating on it is done in sorted order.
-	// RotatedFileLogger depends on this behavior to delete the oldest log file first.
-	RBSet<String> backups;
+	// RotatedFileLogger depends on backups being sorted to delete the oldest log file first.
+	// We sort backups before removal.
+	LocalVector<String> backups;
 	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
-			backups.insert(f);
+			backups.push_back(f);
 		}
 		f = da->get_next();
 	}
 	da->list_dir_end();
 
-	if (backups.size() > max_backups) {
-		// since backups are appended with timestamp and Set iterates them in sorted order,
+	if ((int)backups.size() > max_backups) {
+		// since backups are appended with timestamp, after sorting,
 		// first backups are the oldest
+		backups.sort();
 		int to_delete = backups.size() - max_backups;
-		for (RBSet<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
-			da->remove(E->get());
+		for (uint32_t i = 0; i < backups.size() && to_delete > 0; i++, --to_delete) {
+			da->remove(backups[i]);
 		}
 	}
 }
