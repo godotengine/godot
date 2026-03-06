@@ -98,11 +98,32 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		Alternatively, the plugin can directly modify the final list of strings, by implementing [method _customize_strings].
 		To use [EditorTranslationParserPlugin], register it using the [method EditorPlugin.add_translation_parser_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_customize_strings" qualifiers="virtual const">
+			<return type="PackedStringArray[]" />
+			<param index="0" name="strings" type="PackedStringArray[]" />
+			<description>
+				Called after parsing all files. You can modify the [param strings] array to add or remove entries from the final list of strings, then return it after modifications. Each entry is a [PackedStringArray] like explained in the [EditorTranslationParserPlugin]'s description.
+				[codeblock]
+				@tool
+				extends EditorTranslationParserPlugin
+
+				func _customize_strings(strings):
+					# Add new string.
+					strings.append(["Test 1", "context", "test 1 plurals", "test 1 comment"])
+
+					# Remove all strings that begin with $.
+					strings = strings.filter(func(s): return not s[0].begins_with("$"))
+
+					return strings
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
