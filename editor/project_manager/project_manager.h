@@ -38,6 +38,7 @@ class EditorAbout;
 class EditorAssetLibrary;
 class EditorFileDialog;
 class EditorTitleBar;
+class EngineUpdateLabel;
 class HFlowContainer;
 class LineEdit;
 class MarginContainer;
@@ -49,6 +50,7 @@ class ProjectList;
 class QuickSettingsDialog;
 class RichTextLabel;
 class TabContainer;
+class TextureRect;
 class VBoxContainer;
 
 class ProjectManager : public Control {
@@ -113,6 +115,11 @@ class ProjectManager : public Control {
 
 	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
+
+#ifdef ENGINE_UPDATE_CHECK_ENABLED
+	EngineUpdateLabel *update_label = nullptr;
+	TextureButton *external_link_icon = nullptr;
+#endif
 
 	EditorAbout *about_dialog = nullptr;
 
@@ -216,6 +223,11 @@ class ProjectManager : public Control {
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);
 	void _on_search_term_submitted(const String &p_text);
+
+#ifdef ENGINE_UPDATE_CHECK_ENABLED
+	void _on_update_available();
+	void _on_external_link_icon_pressed();
+#endif
 
 	// Project tag management.
 
