@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_materialx = env_modules.Clone()
+
+if env.msvc:
+    env_materialx.Append(CCFLAGS="/EHsc")
+else:
+    env_materialx.Append(CCFLAGS="-fexceptions")
+
+env_materialx.Prepend(CPPPATH=["#modules/mtlx", "#modules/mtlx/MaterialXCore", "#thirdparty/materialx/source"])
+
+thirdparty_obj = []
+
+env_thirdparty = env_materialx.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXCore/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/External/PugiXML/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenGlsl/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenGlsl/Nodes/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenShader/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenShader/Nodes/*.cpp")
+env.modules_sources += thirdparty_obj
+
+if env["platform"] == "macos" or env["platform"] == "ios":
+    env_materialx.Append(CPPDEFINES=["DMATERIALXVIEW_METAL_BACKEND=1"])
+elif env["platform"] == "linux":
+    env_materialx.Append(CPPDEFINES=["__linux__"])
+
+env_materialx.Append(CPPDEFINES=["GL_SILENCE_DEPRECATION"])
+
+module_obj = []
+
+env_materialx.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+env.Depends(module_obj, thirdparty_obj)
