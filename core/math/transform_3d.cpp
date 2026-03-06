@@ -94,6 +94,10 @@ void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, con
 }
 
 Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(!is_finite(), Transform3D(), "The starting transform is not finite, contains NaN or INF.");
+	ERR_FAIL_COND_V_MSG(!p_transform.is_finite(), Transform3D(), "The destination transform is not finite, contains NaN or INF.");
+#endif
 	Transform3D interp;
 
 	Vector3 src_scale = basis.get_scale();
