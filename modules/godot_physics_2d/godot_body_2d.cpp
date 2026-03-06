@@ -305,9 +305,10 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 				new_transform = p_variant;
 				//wakeup_neighbours();
 				set_active(true);
+				_set_transform(p_variant);
+				_set_inv_transform(get_transform().affine_inverse());
+
 				if (first_time_kinematic) {
-					_set_transform(p_variant);
-					_set_inv_transform(get_transform().affine_inverse());
 					first_time_kinematic = false;
 				}
 			} else if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
