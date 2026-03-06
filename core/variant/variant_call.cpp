@@ -1422,7 +1422,7 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+		if (ObjectDB::get_instance(_get_obj().id) == nullptr) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}
@@ -1453,7 +1453,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+		if (ObjectDB::get_instance(_get_obj().id) == nullptr) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}
