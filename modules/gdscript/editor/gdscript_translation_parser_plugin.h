@@ -38,7 +38,7 @@
 #include "editor/translations/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
-	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
+	GDSOFTCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
 	const HashMap<int, GDScriptTokenizer::CommentData> *comment_data = nullptr;
 

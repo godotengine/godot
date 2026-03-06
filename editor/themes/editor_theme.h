@@ -33,7 +33,7 @@
 #include "scene/resources/theme.h"
 
 class EditorTheme : public Theme {
-	GDCLASS(EditorTheme, Theme);
+	GDSOFTCLASS(EditorTheme, Theme);
 
 	static Vector<StringName> editor_theme_types;
 
