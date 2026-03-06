@@ -112,6 +112,14 @@
 				Returns an array of the glTF extensions supported by this GLTFDocumentExtension class. This is used to validate if a glTF file with required extensions can be loaded.
 			</description>
 		</method>
+		<method name="_import_get_attribute_map" qualifiers="virtual">
+			<return type="GLTFAttributeMap" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="mesh_index" type="int" />
+			<description>
+				Part of the import process. Allows any mesh to be processed with a custom [GLTFAttributeMap]. Make this function return [code]null[/code] to ignore.
+			</description>
+		</method>
 		<method name="_import_node" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
