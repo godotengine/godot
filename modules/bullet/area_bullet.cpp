@@ -120,7 +120,7 @@ void AreaBullet::call_event(const OverlappingShapeData &p_overlapping_shape, Phy
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
 	if (!areaGodoObject) {
-		event.event_callback_id = 0;
+		event.event_callback_id = ObjectID();
 		return;
 	}
 
@@ -324,7 +324,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 	ev.event_callback_method = p_method;
 
 	/// Set if monitoring
-	if (eventsCallbacks[0].event_callback_id || eventsCallbacks[1].event_callback_id) {
+	if (eventsCallbacks[0].event_callback_id.is_valid() || eventsCallbacks[1].event_callback_id.is_valid()) {
 		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
 	} else {
 		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
@@ -333,7 +333,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 }
 
 bool AreaBullet::has_event_callback(Type p_callbackObjectType) {
-	return eventsCallbacks[static_cast<int>(p_callbackObjectType)].event_callback_id;
+	return eventsCallbacks[static_cast<int>(p_callbackObjectType)].event_callback_id.is_valid();
 }
 
 void AreaBullet::on_enter_area(AreaBullet *p_area) {

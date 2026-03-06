@@ -1102,7 +1102,7 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 		// Note that physics also creates RIDs for non-Object derived objects, these cannot
 		// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
 		// to dangling RIDs (access after free) in this scenario.
-		if (!on_floor_body_id || ObjectDB::get_instance(on_floor_body_id)) {
+		if (!on_floor_body_id.is_valid() || ObjectDB::get_instance(on_floor_body_id)) {
 			// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 			bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body_rid);
 		}
@@ -1570,7 +1570,7 @@ Object *KinematicCollision::get_local_shape() const {
 }
 
 Object *KinematicCollision::get_collider() const {
-	if (collision.collider) {
+	if (collision.collider.is_valid()) {
 		return ObjectDB::get_instance(collision.collider);
 	}
 
@@ -1634,10 +1634,8 @@ void KinematicCollision::_bind_methods() {
 }
 
 KinematicCollision::KinematicCollision() {
-	collision.collider = 0;
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner_id = 0;
 }
 
 ///////////////////////////////////////

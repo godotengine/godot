@@ -373,7 +373,6 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 	PathGetCache::NodeInfo ni;
 	ni.path = path;
-	ni.instance = 0;
 
 	path_get_cache[p_from].nodes[id] = ni;
 
