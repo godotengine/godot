@@ -640,6 +640,10 @@ double VariantUtilityFunctions::pingpong(double value, double length) {
 	return Math::pingpong(value, length);
 }
 
+int VariantUtilityFunctions::intdiv(int a, int b) {
+	return a / b;
+}
+
 Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1731,6 +1735,8 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(pingpong, sarray("value", "length"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDR(intdiv, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	// Random
 

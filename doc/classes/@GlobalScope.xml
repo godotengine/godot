@@ -518,6 +518,22 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="intdiv">
+			<return type="int" />
+			<param index="0" name="a" type="int" />
+			<param index="1" name="b" type="int" />
+			<description>
+				Performs the explicit integer division operation [param a] / [param b].
+				The expression [code]intdiv(a, b)[/code] is equivalent to [code]a / b[/code] in GDScript, but avoids raising the [code]INTEGER_DIVISION[/code] warning.
+				[codeblock]
+				# Prints "2", but also raises the INTEGER_DIVISION warning.
+				print(7 / 3)
+
+				# Prints "2" and does not raise the INTEGER_DIVISION warning.
+				print(intdiv(7, 3))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="inverse_lerp" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />

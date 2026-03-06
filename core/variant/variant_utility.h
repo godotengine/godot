@@ -104,6 +104,7 @@ struct VariantUtilityFunctions {
 	static int64_t wrapi(int64_t value, int64_t min, int64_t max);
 	static double wrapf(double value, double min, double max);
 	static double pingpong(double value, double length);
+	static int intdiv(int a, int b);
 	static Variant max(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	static double maxf(double x, double y);
 	static int64_t maxi(int64_t x, int64_t y);
