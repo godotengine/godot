@@ -2002,7 +2002,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], ignores both frustum and occlusion culling on the specified 3D geometry instance. This is not the same as [member GeometryInstance3D.ignore_occlusion_culling], which only ignores occlusion culling and leaves frustum culling intact.
+				If [code]true[/code], ignores all culling on the specified 3D geometry instance, including frustum culling, occlusion culling, and layer culling. This is not the same as [member GeometryInstance3D.ignore_occlusion_culling], which only ignores occlusion culling but leaves frustum and layer culling intact.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
