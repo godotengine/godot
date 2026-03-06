@@ -32,6 +32,12 @@
 
 #include "core/typedefs.h"
 
+/**
+ * @brief A pair of values.
+ *
+ * @tparam F The data type of the first item in the pair.
+ * @tparam S The data type of the second item in the pair.
+ */
 template <typename F, typename S>
 struct Pair {
 	F first{};
@@ -60,6 +66,12 @@ struct PairSort {
 template <typename F, typename S>
 struct is_zero_constructible<Pair<F, S>> : std::conjunction<is_zero_constructible<F>, is_zero_constructible<S>> {};
 
+/**
+ * @brief A key-value pair. Unlike `Pair`, the key is read-only.
+ *
+ * @tparam K The data type of the key.
+ * @tparam V The data type of the value.
+ */
 template <typename K, typename V>
 struct KeyValue {
 	const K key{};

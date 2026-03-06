@@ -43,9 +43,13 @@ class StringName;
 class Variant;
 
 /**
- * An array-based implementation of a hash map. It is very efficient in terms of performance and
+ * @brief An array-based implementation of a hash map. Use this as the "default"
+ * map type.
+ *
+ * It is very efficient in terms of performance and
  * memory usage. Works like a dynamic array, adding elements to the end of the array, and
  * allows you to access array elements by their index by using `get_by_index` method.
+ *
  * Example:
  * ```
  *  AHashMap<int, Object *> map;
@@ -62,20 +66,26 @@ class Variant;
  * Still, don`t erase the elements because ID can break.
  *
  * When an element erase, its place is taken by the element from the end.
- *
+ * ```
  *        <-------------
  *      |               |
  *  6 8 X 9 32 -1 5 -10 7 X X X
  *  6 8 7 9 32 -1 5 -10 X X X X
+ * ```
  *
+ * Use `RBMap` if you need to iterate over sorted elements.
  *
- * Use RBMap if you need to iterate over sorted elements.
+ * Use `HashMap` if:
  *
- * Use HashMap if:
  *   - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
+ *
  *   - You need to preserve the insertion order when using erase.
  *
- * It is recommended to use `HashMap` if `KeyValue` size is very large.
+ *   - The `KeyValue` size is very large.
+ * @tparam TKey The data type of keys.
+ * @tparam TValue The data type of values.
+ * @tparam Hasher (Optional) The hasher to use for sorting keys into buckets.
+ * @tparam Comparator (Optional) The comparator to use for comparing equality between keys.
  */
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,

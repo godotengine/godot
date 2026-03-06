@@ -36,12 +36,15 @@
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
 
 /**
- * A high performance Vector of fixed capacity.
+ * @brief A high performance Vector of fixed capacity, roughly equivalent
+ * to `std::array` or `boost::container::static_vector`.
  * Especially useful if you need to create an array on the stack, to
- *  prevent dynamic allocations (especially in bottleneck code).
+ * prevent dynamic allocations (especially in bottleneck code).
  *
- * Choose CAPACITY such that it is enough for all elements that could be added through all branches.
- *
+ * In most cases, `Vector` may be sufficient.
+ * @tparam T The data type to store.
+ * @tparam CAPACITY The maximum capacity of the vector. Ensure this value is chosen
+ * such that it is enough for all elements that could be added through all branches.
  */
 template <class T, uint32_t CAPACITY>
 class FixedVector {

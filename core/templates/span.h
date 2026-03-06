@@ -51,11 +51,17 @@ bool are_spans_equal(const LHS *p_lhs, const RHS *p_rhs, size_t p_size) {
 	}
 }
 
-// Equivalent of std::span.
-// Represents a view into a contiguous memory space.
-// DISCLAIMER: This data type does not own the underlying buffer. DO NOT STORE IT.
-//  Additionally, for the lifetime of the Span, do not resize the buffer, and do not insert or remove elements from it.
-//  Failure to respect this may lead to crashes or undefined behavior.
+/**
+ * @brief Represents a view into a contiguous memory space, roughly equivalent
+ * to `std::span`.
+ *
+ * DISCLAIMER: This data type does not own the underlying buffer. DO NOT STORE IT.
+ *
+ * Additionally, for the lifetime of the Span, do not resize the buffer, and do
+ * not insert or remove elements from it.
+ * Failure to respect this may lead to crashes or undefined behavior.
+ * @tparam T The data type to view.
+ */
 template <typename T>
 class Span {
 	const T *_ptr = nullptr;

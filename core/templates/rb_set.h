@@ -35,9 +35,16 @@
 
 #include <initializer_list>
 
-// based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
-
+/**
+ * @brief An unordered collection of items, roughly equivalent to `std::set`.
+ *
+ * It uses a very nice implementation of red-black trees based on
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html,
+ * which allows accesses to be faster.
+ * @tparam T The data type to store.
+ * @tparam C (Optional) The comparator to use for locating and placing items in the tree.
+ * @tparam A (Optional) The allocator to use.
+ */
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
 class RBSet {
 	enum Color {

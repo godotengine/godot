@@ -35,14 +35,18 @@
 #include "core/templates/hashfuncs.h"
 
 /**
- * Implementation of Set using a bidi indexed hash map.
- * Use RBSet instead of this only if the following conditions are met:
+ * @brief Implementation of a set using a bidi indexed hash map.
+ * Use this as the "default" set type.
  *
- * - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
- * - Iteration order does matter (via operator<)
+ * Use `RBSet` instead of this only if the following conditions are met:
  *
+ * - You need to keep an iterator or const pointer to a key, and you intend to add/remove elements in the meantime.
+ *
+ * - Iteration order does matter (via `operator<`).
+ * @tparam TKey The data type to store.
+ * @tparam Hasher (Optional) The hasher to use for sorting keys into buckets.
+ * @tparam Comparator (Optional) The comparator to use for comparing equality between keys.
  */
-
 template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
