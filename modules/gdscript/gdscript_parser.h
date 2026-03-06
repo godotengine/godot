@@ -508,6 +508,7 @@ public:
 		StringName function_name;
 		bool is_super = false;
 		bool is_static = false;
+		bool is_abstract = false;
 
 		CallNode() {
 			type = CALL;
