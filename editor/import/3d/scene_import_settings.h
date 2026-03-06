@@ -246,10 +246,12 @@ protected:
 public:
 	ResourceImporterScene *get_resource_importer_scene() const { return _resource_importer_scene; }
 	void request_generate_collider();
+	void regenerate_collisions(const String &p_node_id, bool p_fit_to_mesh = false);
 	void update_view();
 	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
 	static SceneImportSettingsDialog *get_singleton();
 	Node *get_selected_node();
+	const String &get_selected_id() const;
 	SceneImportSettingsDialog();
 	~SceneImportSettingsDialog();
 };
