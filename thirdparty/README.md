@@ -43,8 +43,8 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-build-fixes.patch` ([GH-81197](https://github.com/godotengine/godot/pull/81197))
-- `0002-godot-fsr2-options.patch` ([GH-81197](https://github.com/godotengine/godot/pull/81197))
+- [`GH-81197.build_fixes.patch`](https://github.com/godotengine/godot/pull/81197)
+- [`GH-81197.godot_fsr2_options.patch`](https://github.com/godotengine/godot/pull/81197)
 
 
 ## angle
@@ -85,12 +85,12 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-external-zstd-pr344.patch` ([GH-73441](https://github.com/godotengine/godot/pull/73441))
-- `0002-external-tinyexr.patch` ([GH-97582](https://github.com/godotengine/godot/pull/97582))
-- `0003-remove-tinydds-qoi.patch` ([GH-97582](https://github.com/godotengine/godot/pull/97582))
-- `0004-clang-warning-exclude.patch` ([GH-111346](https://github.com/godotengine/godot/pull/111346))
-- `0005-unused-typedef.patch` ([GH-111445](https://github.com/godotengine/godot/pull/111445))
-- `0006-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- [`GH-73441.external_zstd_pr344.patch`](https://github.com/godotengine/godot/pull/73441)
+- [`GH-97582.external_tinyexr.patch`](https://github.com/godotengine/godot/pull/97582)
+- [`GH-97582.remove_tinydds_qoi.patch`](https://github.com/godotengine/godot/pull/97582)
+- [`GH-111346.clang_warning_exclude.patch`](https://github.com/godotengine/godot/pull/111346)
+- [`GH-111445.unused_typedef.patch`](https://github.com/godotengine/godot/pull/111445)
+- [`GH-111557.explicit_includes.patch`](https://github.com/godotengine/godot/pull/111557)
 
 
 ## brotli
@@ -130,8 +130,8 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-disable-exceptions.patch` ([GH-80796](https://github.com/godotengine/godot/pull/80796))
-- `0002-llvm-21-header.patch` ([GH-113850](https://github.com/godotengine/godot/pull/113850))
+- [`GH-80796.disable_exceptions.patch`](https://github.com/godotengine/godot/pull/80796)
+- [`GH-113850.llvm_21_header.patch`](https://github.com/godotengine/godot/pull/113850)
 
 
 ## cvtt
@@ -147,7 +147,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-revert-bc6h-reorg.patch` ([GH-73715](https://github.com/godotengine/godot/pull/73715))
+- [`GH-73715.revert_bc6h_reorg.patch`](https://github.com/godotengine/godot/pull/73715)
 
 
 ## d3d12ma
@@ -164,7 +164,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-mingw-support.patch` ([GH-83452](https://github.com/godotengine/godot/pull/83452))
+- [`GH-83452.mingw_support.patch`](https://github.com/godotengine/godot/pull/83452)
 
 
 ## directx_headers
@@ -181,7 +181,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-win7-8-dynamic-load.patch` ([GH-88496](https://github.com/godotengine/godot/pull/88496))
+- [`GH-88496.win7_8_dynamic_load.patch`](https://github.com/godotengine/godot/pull/88496)
 
 
 ## doctest
@@ -197,7 +197,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-ciso646-version.patch` ([GH-105913](https://github.com/godotengine/godot/pull/105913))
+- [`GH-105913.ciso646_version.patch`](https://github.com/godotengine/godot/pull/105913)
 
 
 ## dr_libs
@@ -229,12 +229,12 @@ Files extracted from upstream:
 
 Patches:
 
-- `0001-disable-exceptions.patch` ([GH-48050](https://github.com/godotengine/godot/pull/48050))
-- `0002-godot-config.patch` ([GH-88783](https://github.com/godotengine/godot/pull/88783))
-- `0003-emscripten-nthreads.patch` ([GH-69799](https://github.com/godotengine/godot/pull/69799))
-- `0004-mingw-no-cpuidex.patch` ([GH-92488](https://github.com/godotengine/godot/pull/92488))
-- `0005-mingw-llvm-arm64.patch` ([GH-93364](https://github.com/godotengine/godot/pull/93364))
-- `0006-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- [`GH-48050.disable_exceptions.patch`](https://github.com/godotengine/godot/pull/48050)
+- [`GH-69799.emscripten_nthreads.patch`](https://github.com/godotengine/godot/pull/69799)
+- [`GH-88783.godot_config.patch`](https://github.com/godotengine/godot/pull/88783)
+- [`GH-92488.mingw_no_cpuidex.patch`](https://github.com/godotengine/godot/pull/92488)
+- [`GH-93364.mingw_llvm_arm64.patch`](https://github.com/godotengine/godot/pull/93364)
+- [`GH-111557.explicit_includes.patch`](https://github.com/godotengine/godot/pull/111557)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -256,7 +256,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-godot-socket.patch` ([GH-7985](https://github.com/godotengine/godot/pull/7985))
+- [`GH-7985.godot_socket.patch`](https://github.com/godotengine/godot/pull/7985)
 
 Important: Building against a system wide ENet is possible, but will limit its
 functionality to IPv4 only and no DTLS. We recommend against it.
@@ -280,7 +280,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-remove-bc7enc.patch` ([GH-101362](https://github.com/godotengine/godot/pull/101362))
+- [`GH-101362.remove_bc7enc.patch`](https://github.com/godotengine/godot/pull/101362)
 
 
 ## fonts
@@ -381,7 +381,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-fix-warnings.patch` ([GH-111679](https://github.com/godotengine/godot/pull/111679))
+- [`GH-111679.fix_warnings.patch`](https://github.com/godotengine/godot/pull/111679)
 
 ## glad
 
@@ -407,7 +407,7 @@ a new version of the web instance.
 
 Patches:
 
-- `0001-enable-both-gl-and-gles.patch` ([GH-72831](https://github.com/godotengine/godot/pull/72831))
+- [`GH-72831.enable_both_gl_and_gles.patch`](https://github.com/godotengine/godot/pull/72831)
 
 
 ## glslang
@@ -433,8 +433,8 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-apple-disable-absolute-paths.patch` ([GH-92010](https://github.com/godotengine/godot/pull/92010))
-- `0002-apple-m1-msaa-fix.patch` ([GH-115893](https://github.com/godotengine/godot/issues/115893))
+- [`GH-92010.apple_disable_absolute_paths.patch`](https://github.com/godotengine/godot/pull/92010)
+- [`GH-115893.apple_m1_msaa_fix.patch`](https://github.com/godotengine/godot/pull/115893)
 
 
 ## graphite
@@ -462,7 +462,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-godot-changes.patch` ([GH-98750](https://github.com/godotengine/godot/pull/98750))
+- [`GH-98750.godot_changes.patch`](https://github.com/godotengine/godot/pull/98750)
 
 
 ## harfbuzz
@@ -520,10 +520,10 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-backport-upstream-commit-ee3725250.patch` (GH-115089)
-- `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
-- `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
-- `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
+- [`GH-115089.backport_upstream_commit_ee3725250.patch`](https://github.com/godotengine/godot/pull/115089)
+- [`GH-115305.backport_upstream_commit_365a15367.patch`](https://github.com/godotengine/godot/pull/115305)
+- [`GH-115305.backport_upstream_commit_bc7f1fb8c.patch`](https://github.com/godotengine/godot/pull/115305)
+- [`GH-115327.backport_upstream_commit_e0a6a9a16.patch`](https://github.com/godotengine/godot/pull/115327)
 
 
 ## libbacktrace
@@ -541,7 +541,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-big-files-support.patch` ([GH-100281](https://github.com/godotengine/godot/pull/100281))
+- [`GH-100281.big_files_support.patch`](https://github.com/godotengine/godot/pull/100281)
 
 
 ## libjpeg-turbo
@@ -559,10 +559,10 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-cmake-generated-headers.patch` ([GH-104347](https://github.com/godotengine/godot/pull/104347))
+- [`GH-104347.cmake_generated_headers.patch`](https://github.com/godotengine/godot/pull/104347)
   * Compare with CMake-generated headers to bump version and added potential new config values.
-- `0002-disable-16bitlossless.patch` ([GH-104347](https://github.com/godotengine/godot/pull/104347))
-- `0003-remove-bmp-ppm-support.patch` ([GH-104347](https://github.com/godotengine/godot/pull/104347))
+- [`GH-104347.disable_16bitlossless.patch`](https://github.com/godotengine/godot/pull/104347)
+- [`GH-104347.remove_bmp_ppm_support.patch`](https://github.com/godotengine/godot/pull/104347)
 
 
 ## libktx
@@ -584,9 +584,9 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-external-basisu.patch` ([GH-76572](https://github.com/godotengine/godot/pull/76572))
-- `0002-disable-astc-block-ext.patch` ([GH-76572](https://github.com/godotengine/godot/pull/76572))
-- `0003-basisu-1.60.patch` ([GH-103968](https://github.com/godotengine/godot/pull/103968))
+- [`GH-76572.disable_astc_block_ext.patch`](https://github.com/godotengine/godot/pull/76572)
+- [`GH-76572.external_basisu.patch`](https://github.com/godotengine/godot/pull/76572)
+- [`GH-103968.basisu_1.60.patch`](https://github.com/godotengine/godot/pull/103968)
 
 
 ## libogg
@@ -655,9 +655,9 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-msvc-node-debug-rename.patch` ([GH-75769](https://github.com/godotengine/godot/pull/75769))
-- `0002-msvc-arm64-fpstrict.patch` ([GH-94655](https://github.com/godotengine/godot/pull/94655))
-- `0003-clang-cl-sse2-sse41-avx2.patch` ([GH-92316](https://github.com/godotengine/godot/pull/92316))
+- [`GH-75769.msvc_node_debug_rename.patch`](https://github.com/godotengine/godot/pull/75769)
+- [`GH-92316.clang_cl_sse2_sse41_avx2.patch`](https://github.com/godotengine/godot/pull/92316)
+- [`GH-94655.msvc_arm64_fpstrict.patch`](https://github.com/godotengine/godot/pull/94655)
 
 
 ## linuxbsd_headers
@@ -699,7 +699,7 @@ File extracted from upstream release tarball:
 
 Patches:
 
-- `0001-msvc-2019-psa-redeclaration.patch` ([GH-90535](https://github.com/godotengine/godot/pull/90535))
+- [`GH-90535.msvc_2019_psa_redeclaration.patch`](https://github.com/godotengine/godot/pull/90535)
 
 
 ## metal-cpp
@@ -713,6 +713,9 @@ Update instructions:
 - Download latest metal-cpp ZIP from https://developer.apple.com/metal/cpp/:
 - Run `update-metal-cpp.sh <path to the downloaded zip>` to extract the relevant files and apply patches.
 
+Patches:
+
+- [`GH-114484.add_missing_apis.patch`](https://github.com/godotengine/godot/pull/114484)
 
 ## meshoptimizer
 
@@ -743,9 +746,9 @@ Files extracted from upstream repository:
 
 Patches:
 
-- `0001-disable-exceptions.patch` ([GH-85039](https://github.com/godotengine/godot/pull/85039))
-- `0002-clang-std-replacements-leak.patch` ([GH-85208](https://github.com/godotengine/godot/pull/85208))
-- `0003-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- [`GH-85039.disable_exceptions.patch`](https://github.com/godotengine/godot/pull/85039)
+- [`GH-85208.clang_std_replacements_leak.patch`](https://github.com/godotengine/godot/pull/85208)
+- [`GH-111557.explicit_includes.patch`](https://github.com/godotengine/godot/pull/111557)
 
 
 ## miniupnpc
@@ -779,7 +782,7 @@ Files extracted from the upstream source:
 
 Patches:
 
-- `0001-godot-seek.patch` ([GH-10428](https://github.com/godotengine/godot/pull/10428))
+- [`GH-10428.godot_seek.patch`](https://github.com/godotengine/godot/pull/10428)
 
 
 ## misc
@@ -803,13 +806,13 @@ Collection of single-file libraries used in Godot components.
   * Version: 1.1.0 (f7af54b56518aa659e1cf9fb103c0b6e36a833d9, 2023)
   * License: MIT
   * Patches:
-    - `FastNoiseLite-0001-namespace-warnings.patch` ([GH-88526](https://github.com/godotengine/godot/pull/88526))
+    - [`GH-88526.fastnoiselite_namespace_warnings.patch`](https://github.com/godotengine/godot/pull/88526)
 - `ifaddrs-android.{cc,h}`
   * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
   * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
   * License: BSD-3-Clause
   * Patches:
-    - `ifaddrs-android-0001-complete-struct.patch` ([GH-34101](https://github.com/godotengine/godot/pull/34101))
+    - [`GH-34101.ifaddrs_android_complete_struct.patch`](https://github.com/godotengine/godot/pull/34101)
 - `mikktspace.{c,h}`
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
@@ -823,7 +826,8 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h
   * Version: git (d69831edb90ffdcd08b7e64da3c5405acd48ad2c, 2022)
   * License: MIT
-  * Modifications: License included in header.
+  * Patches:
+    - [`GH-104112.ok_color_srgb_to_okhsl_precision.patch`](https://github.com/godotengine/godot/pull/104112)
 - `ok_color_shader.h`
   * https://www.shadertoy.com/view/7sK3D1
   * Version: 2021-09-13
@@ -837,8 +841,8 @@ Collection of single-file libraries used in Godot components.
   * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
   * License: MIT
   * Patches:
-    - `polypartition-0001-godot-types.patch` (2185c018f)
-    - `polypartition-0002-shadow-warning.patch` ([GH-66808](https://github.com/godotengine/godot/pull/66808))
+    - [`GH-45125.polypartition_godot_types.patch`](https://github.com/godotengine/godot/pull/45125)
+    - [`GH-66808.polypartition_shadow_warning.patch`](https://github.com/godotengine/godot/pull/66808)
 - `qoa.{c,h}`
   * Upstream: https://github.com/phoboslab/qoa
   * Version: git (ae07b57deb98127a5b40916cb57775823d7437d2, 2025)
@@ -854,7 +858,7 @@ Collection of single-file libraries used in Godot components.
   * License: BSD-3-Clause
   * Modifications: License included in header.
   * Patches:
-    - `smaz-0001-write-string-warning.patch` ([GH-8572](https://github.com/godotengine/godot/pull/8572))
+    - [`GH-8572.smaz_write_string_warning.patch`](https://github.com/godotengine/godot/pull/8572)
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
   * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
@@ -883,7 +887,7 @@ Files extracted from the upstream source:
 
 Patches:
 
-- `0001-remove-unused-save-features.patch` ([GH-113965](https://github.com/godotengine/godot/issues/113965))
+- [`GH-113965.remove_unused_save_features.patch`](https://github.com/godotengine/godot/pull/113965)
 
 
 ## openxr
@@ -961,27 +965,25 @@ Files extracted from upstream source:
 
 ## rvo2
 
-For 2D in `rvo2_2d` folder
+- `rvo2_2d`
+  * Upstream: https://github.com/snape/RVO2
+  * Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
+  * License: Apache 2.0
+  * Files extracted from upstream source:
+    * All `.cpp` and `.h` files in the `src/` folder except for `RVO.h`
+    * `Agent`, `KdTree`, `Obstacle`, and `RVOSimulator` files given `2d` suffix.
+  * Patches:
+    - [`GH-69988.godot_sync_2d.patch`](https://github.com/godotengine/godot/pull/69988)
 
-- Upstream: https://github.com/snape/RVO2
-- Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
-- License: Apache 2.0
-
-For 3D in `rvo2_3d` folder
-
-- Upstream: https://github.com/snape/RVO2-3D
-- Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
-- License: Apache 2.0
-
-Files extracted from upstream source:
-
-- All `.cpp` and `.h` files in the `src/` folder except for `Export.h` and `RVO.h`
-- `LICENSE`
-
-Important: Nearly all files have Godot-made changes and renames
-to make the 2D and 3D rvo libraries compatible with each other
-and solve conflicts and also enrich the feature set originally
-proposed by these libraries and better integrate them with Godot.
+- `rvo2_3d`
+  * Upstream: https://github.com/snape/RVO2-3D
+  * Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
+  * License: Apache 2.0
+  * Files extracted from upstream source:
+    * All `.cpp` and `.h` files in the `src/` folder except for `Export.h` and `RVO.h`
+    * `Agent`, `KdTree`, and `RVOSimulator` files given `3d` suffix.
+  * Patches:
+    - [`GH-69988.godot_sync_3d.patch`](https://github.com/godotengine/godot/pull/69988)
 
 
 ## smaa
@@ -1009,12 +1011,13 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-remove-unnecessary-subsystems.patch` ([GH-106218](https://github.com/godotengine/godot/pull/106218))
-- `0003-std-include.patch` ([GH-108144](https://github.com/godotengine/godot/pull/108144))
-- `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
-- `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
-- `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
+- [`GH-106218.remove_unnecessary_subsystems.patch`](https://github.com/godotengine/godot/pull/106218)
+- [`GH-108144.std_include.patch`](https://github.com/godotengine/godot/pull/108144)
+- [`GH-108354.errno_include.patch`](https://github.com/godotengine/godot/pull/108354)
+- [`GH-108373.fix_libudev_dbus.patch`](https://github.com/godotengine/godot/pull/108373)
+- [`GH-109283.fix_cs_environ.patch`](https://github.com/godotengine/godot/pull/109283)
+- [`GH-113873.fix_linux_joycon_serial_num.patch`](https://github.com/godotengine/godot/pull/113873)
+- [`GH-115510.shield_duplicate_macos.patch`](https://github.com/godotengine/godot/pull/115510)
 
 
 ## spirv-cross
@@ -1061,8 +1064,8 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-zero-size-for-sc-sized-arrays.patch` ([GH-94985](https://github.com/godotengine/godot/pull/94985))
-- `0002-spirv-headers.patch` ([GH-111452](https://github.com/godotengine/godot/pull/111452))
+- [`GH-94985.zero_size_for_sc_sized_arrays.patch`](https://github.com/godotengine/godot/pull/94985)
+- [`GH-111452.spirv_headers.patch`](https://github.com/godotengine/godot/pull/111452)
 
 
 ## swappy-frame-pacing
@@ -1091,9 +1094,9 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-revert-tvglines-bezier-precision.patch` ([GH-96658](https://github.com/godotengine/godot/pull/96658))
-- `0002-use-heap-alloc.patch` ([GH-109530](https://github.com/godotengine/godot/pull/109530))
-- `0003-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- [`GH-96658.revert_tvglines_bezier_precision.patch`](https://github.com/godotengine/godot/pull/96658)
+- [`GH-109530.use_heap_alloc.patch`](https://github.com/godotengine/godot/pull/109530)
+- [`GH-111557.explicit_includes.patch`](https://github.com/godotengine/godot/pull/111557)
 
 
 ## tinyexr
@@ -1108,7 +1111,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-external-zlib.patch` ([GH-55115](https://github.com/godotengine/godot/pull/55115))
+- [`GH-55115.external_zlib.patch`](https://github.com/godotengine/godot/pull/55115)
 
 
 ## ufbx
@@ -1136,12 +1139,12 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-bullet-namespace.patch` ([GH-27929](https://github.com/godotengine/godot/pull/27929))
-- `0002-fpermissive-fix.patch` ([GH-27929](https://github.com/godotengine/godot/pull/27929))
-- `0003-fix-musl-build.patch` ([GH-34250](https://github.com/godotengine/godot/pull/34250))
-- `0004-fix-msvc-arm-build.patch` ([GH-34331](https://github.com/godotengine/godot/pull/34331))
-- `0005-fix-scale-calculation.patch` ([GH-38506](https://github.com/godotengine/godot/pull/38506))
-- `0006-gcc13-include-fix.patch` ([GH-77949](https://github.com/godotengine/godot/pull/77949))
+- [`GH-27929.bullet_namespace.patch`](https://github.com/godotengine/godot/pull/27929)
+- [`GH-27929.fpermissive_fix.patch`](https://github.com/godotengine/godot/pull/27929)
+- [`GH-34250.fix_musl_build.patch`](https://github.com/godotengine/godot/pull/34250)
+- [`GH-34331.fix_msvc_arm_build.patch`](https://github.com/godotengine/godot/pull/34331)
+- [`GH-38506.fix_scale_calculation.patch`](https://github.com/godotengine/godot/pull/38506)
+- [`GH-77949.gcc13_include_fix.patch`](https://github.com/godotengine/godot/pull/77949)
 
 
 ## volk
@@ -1189,9 +1192,9 @@ Version: 3.3.0 (1d8f600fd424278486eade7ed3e877c99f0846b1, 2025)
 
 Patches:
 
-- `0001-VKEnumStringHelper-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
-- `0002-VMA-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
-- `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` ([GH-99257](https://github.com/godotengine/godot/pull/99257))
+- [`GH-97510.vk_enum_string_helper_godot_vulkan.patch`](https://github.com/godotengine/godot/pull/97510)
+- [`GH-97510.vma_godot_vulkan.patch`](https://github.com/godotengine/godot/pull/97510)
+- [`GH-99257.vma_calculate_lazily_allocated_bytes.patch`](https://github.com/godotengine/godot/pull/99257)
 
 
 ## wayland
@@ -1266,7 +1269,7 @@ File extracted from upstream release tarball:
 
 Patches:
 
-- `0001-msvc-build-fix.patch` ([GH-30263](https://github.com/godotengine/godot/pull/30263))
+- [`GH-30263.msvc_build_fix.patch`](https://github.com/godotengine/godot/pull/30263)
 
 
 ## xatlas

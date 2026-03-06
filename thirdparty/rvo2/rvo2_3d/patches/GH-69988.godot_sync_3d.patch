@@ -1,0 +1,934 @@
+diff --git a/thirdparty/rvo2/rvo2_3d/Agent.cpp b/thirdparty/rvo2/rvo2_3d/Agent3d.cpp
+similarity index 87%
+rename from thirdparty/rvo2/rvo2_3d/Agent.cpp
+rename to thirdparty/rvo2/rvo2_3d/Agent3d.cpp
+index 5e49a3554c..bddf226db1 100644
+--- a/thirdparty/rvo2/rvo2_3d/Agent.cpp
++++ b/thirdparty/rvo2/rvo2_3d/Agent3d.cpp
+@@ -30,15 +30,15 @@
+  * <https://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "Agent.h"
++#include "Agent3d.h"
+ 
+ #include <cmath>
+ #include <algorithm>
+ 
+ #include "Definitions.h"
+-#include "KdTree.h"
++#include "KdTree3d.h"
+ 
+-namespace RVO {
++namespace RVO3D {
+ 	/**
+ 	 * \brief   A sufficiently small positive number.
+ 	 */
+@@ -47,7 +47,7 @@ namespace RVO {
+ 	/**
+ 	 * \brief   Defines a directed line.
+ 	 */
+-	class Line {
++	class Line3D {
+ 	public:
+ 		/**
+ 		 * \brief   The direction of the directed line.
+@@ -71,7 +71,7 @@ namespace RVO {
+ 	 * \param   result        A reference to the result of the linear program.
+ 	 * \return  True if successful.
+ 	 */
+-	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result);
++	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line3D &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result);
+ 
+ 	/**
+ 	 * \brief   Solves a two-dimensional linear program on a specified plane subject to linear constraints defined by planes and a spherical constraint.
+@@ -105,9 +105,9 @@ namespace RVO {
+ 	 */
+ 	void linearProgram4(const std::vector<Plane> &planes, size_t beginPlane, float radius, Vector3 &result);
+ 
+-	Agent::Agent(RVOSimulator *sim) : sim_(sim), id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f) { }
++	Agent3D::Agent3D() : id_(0), maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f) { }
+ 
+-	void Agent::computeNeighbors()
++	void Agent3D::computeNeighbors(RVOSimulator3D *sim_)
+ 	{
+ 		agentNeighbors_.clear();
+ 
+@@ -116,14 +116,19 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void Agent::computeNewVelocity()
++	void Agent3D::computeNewVelocity(RVOSimulator3D *sim_)
+ 	{
+ 		orcaPlanes_.clear();
++
+ 		const float invTimeHorizon = 1.0f / timeHorizon_;
+ 
+ 		/* Create agent ORCA planes. */
+ 		for (size_t i = 0; i < agentNeighbors_.size(); ++i) {
+-			const Agent *const other = agentNeighbors_[i].second;
++			const Agent3D *const other = agentNeighbors_[i].second;
++
++			//const float timeHorizon_mod = (avoidance_priority_ - other->avoidance_priority_ + 1.0f) * 0.5f;
++			//const float invTimeHorizon = (1.0f / timeHorizon_) * timeHorizon_mod;
++
+ 			const Vector3 relativePosition = other->position_ - position_;
+ 			const Vector3 relativeVelocity = velocity_ - other->velocity_;
+ 			const float distSq = absSq(relativePosition);
+@@ -155,12 +160,12 @@ namespace RVO {
+ 					const float b = relativePosition * relativeVelocity;
+ 					const float c = absSq(relativeVelocity) - absSq(cross(relativePosition, relativeVelocity)) / (distSq - combinedRadiusSq);
+ 					const float t = (b + std::sqrt(sqr(b) - a * c)) / a;
+-					const Vector3 ww = relativeVelocity - t * relativePosition;
+-					const float wwLength = abs(ww);
+-					const Vector3 unitWW = ww / wwLength;
++					const Vector3 w = relativeVelocity - t * relativePosition;
++					const float wLength = abs(w);
++					const Vector3 unitW = w / wLength;
+ 
+-					plane.normal = unitWW;
+-					u = (combinedRadius * t - wwLength) * unitWW;
++					plane.normal = unitW;
++					u = (combinedRadius * t - wLength) * unitW;
+ 				}
+ 			}
+ 			else {
+@@ -185,39 +190,50 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void Agent::insertAgentNeighbor(const Agent *agent, float &rangeSq)
++	void Agent3D::insertAgentNeighbor(const Agent3D *agent, float &rangeSq)
+ 	{
+-		if (this != agent) {
+-			const float distSq = absSq(position_ - agent->position_);
++		// no point processing same agent
++		if (this == agent) {
++			return;
++		}
++		// ignore other agent if layers/mask bitmasks have no matching bit
++		if ((avoidance_mask_ & agent->avoidance_layers_) == 0) {
++			return;
++		}
+ 
+-			if (distSq < rangeSq) {
+-				if (agentNeighbors_.size() < maxNeighbors_) {
+-					agentNeighbors_.push_back(std::make_pair(distSq, agent));
+-				}
++		if (avoidance_priority_ > agent->avoidance_priority_) {
++			return;
++		}
+ 
+-				size_t i = agentNeighbors_.size() - 1;
++		const float distSq = absSq(position_ - agent->position_);
+ 
+-				while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
+-					agentNeighbors_[i] = agentNeighbors_[i - 1];
+-					--i;
+-				}
++		if (distSq < rangeSq) {
++			if (agentNeighbors_.size() < maxNeighbors_) {
++				agentNeighbors_.push_back(std::make_pair(distSq, agent));
++			}
+ 
+-				agentNeighbors_[i] = std::make_pair(distSq, agent);
++			size_t i = agentNeighbors_.size() - 1;
+ 
+-				if (agentNeighbors_.size() == maxNeighbors_) {
+-					rangeSq = agentNeighbors_.back().first;
+-				}
++			while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
++				agentNeighbors_[i] = agentNeighbors_[i - 1];
++				--i;
++			}
++
++			agentNeighbors_[i] = std::make_pair(distSq, agent);
++
++			if (agentNeighbors_.size() == maxNeighbors_) {
++				rangeSq = agentNeighbors_.back().first;
+ 			}
+ 		}
+ 	}
+ 
+-	void Agent::update()
++	void Agent3D::update(RVOSimulator3D *sim_)
+ 	{
+ 		velocity_ = newVelocity_;
+ 		position_ += velocity_ * sim_->timeStep_;
+ 	}
+ 
+-	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result)
++	bool linearProgram1(const std::vector<Plane> &planes, size_t planeNo, const Line3D &line, float radius, const Vector3 &optVelocity, bool directionOpt, Vector3 &result)
+ 	{
+ 		const float dotProduct = line.point * line.direction;
+ 		const float discriminant = sqr(dotProduct) + sqr(radius) - absSq(line.point);
+@@ -236,7 +252,7 @@ namespace RVO {
+ 			const float denominator = line.direction * planes[i].normal;
+ 
+ 			if (sqr(denominator) <= RVO3D_EPSILON) {
+-				/* Lines line is (almost) parallel to plane i. */
++				/* Lines3D line is (almost) parallel to plane i. */
+ 				if (numerator > 0.0f) {
+ 					return false;
+ 				}
+@@ -340,7 +356,7 @@ namespace RVO {
+ 					return false;
+ 				}
+ 
+-				Line line;
++				Line3D line;
+ 				line.direction = normalize(crossProduct);
+ 				const Vector3 lineNormal = cross(line.direction, planes[planeNo].normal);
+ 				line.point = planes[planeNo].point + (((planes[i].point - planes[planeNo].point) * planes[i].normal) / (lineNormal * planes[i].normal)) * lineNormal;
+diff --git a/thirdparty/rvo2/rvo2_3d/Agent.h b/thirdparty/rvo2/rvo2_3d/Agent3d.h
+similarity index 74%
+rename from thirdparty/rvo2/rvo2_3d/Agent.h
+rename to thirdparty/rvo2/rvo2_3d/Agent3d.h
+index d3922ec645..d99e3cac66 100644
+--- a/thirdparty/rvo2/rvo2_3d/Agent.h
++++ b/thirdparty/rvo2/rvo2_3d/Agent3d.h
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,7 +27,7 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+ /**
+@@ -38,62 +38,68 @@
+ #define RVO3D_AGENT_H_
+ 
+ #include <cstddef>
++#include <cstdint>
+ #include <utility>
+ #include <vector>
+ 
+-#include "RVOSimulator.h"
++#include "RVOSimulator3d.h"
+ #include "Vector3.h"
+ 
+-namespace RVO {
++namespace RVO3D {
+ 	/**
+ 	 * \brief   Defines an agent in the simulation.
+ 	 */
+-	class Agent {
+-	private:
++	class Agent3D {
++	public:
+ 		/**
+ 		 * \brief   Constructs an agent instance.
+ 		 * \param   sim  The simulator instance.
+ 		 */
+-		explicit Agent(RVOSimulator *sim);
++		explicit Agent3D();
+ 
+ 		/**
+ 		 * \brief   Computes the neighbors of this agent.
+ 		 */
+-		void computeNeighbors();
++		void computeNeighbors(RVOSimulator3D *sim_);
+ 
+ 		/**
+ 		 * \brief   Computes the new velocity of this agent.
+ 		 */
+-		void computeNewVelocity();
++		void computeNewVelocity(RVOSimulator3D *sim_);
+ 
+ 		/**
+ 		 * \brief   Inserts an agent neighbor into the set of neighbors of this agent.
+ 		 * \param   agent    A pointer to the agent to be inserted.
+ 		 * \param   rangeSq  The squared range around this agent.
+ 		 */
+-		void insertAgentNeighbor(const Agent *agent, float &rangeSq);
++		void insertAgentNeighbor(const Agent3D *agent, float &rangeSq);
+ 
+ 		/**
+ 		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
+ 		 */
+-		void update();
++		void update(RVOSimulator3D *sim_);
+ 
+ 		Vector3 newVelocity_;
+ 		Vector3 position_;
+ 		Vector3 prefVelocity_;
+ 		Vector3 velocity_;
+-		RVOSimulator *sim_;
++		RVOSimulator3D *sim_;
+ 		size_t id_;
+ 		size_t maxNeighbors_;
+ 		float maxSpeed_;
+ 		float neighborDist_;
+ 		float radius_;
+ 		float timeHorizon_;
+-		std::vector<std::pair<float, const Agent *> > agentNeighbors_;
++		float timeHorizonObst_;
++		std::vector<std::pair<float, const Agent3D *> > agentNeighbors_;
+ 		std::vector<Plane> orcaPlanes_;
++		float height_ = 1.0;
++		uint32_t avoidance_layers_ = 1;
++		uint32_t avoidance_mask_ = 1;
++		float avoidance_priority_ = 1.0;
+ 
+-		friend class KdTree;
+-		friend class RVOSimulator;
++		friend class KdTree3D;
++		friend class RVOSimulator3D;
+ 	};
+ }
+ 
+diff --git a/thirdparty/rvo2/rvo2_3d/Definitions.h b/thirdparty/rvo2/rvo2_3d/Definitions.h
+index 707d3c897f..34d1d06e0a 100644
+--- a/thirdparty/rvo2/rvo2_3d/Definitions.h
++++ b/thirdparty/rvo2/rvo2_3d/Definitions.h
+@@ -38,7 +38,7 @@
+ #ifndef RVO3D_DEFINITIONS_H_
+ #define RVO3D_DEFINITIONS_H_
+ 
+-namespace RVO {
++namespace RVO3D {
+ 	/**
+ 	 * \brief   Computes the square of a float.
+ 	 * \param   scalar  The float to be squared.
+diff --git a/thirdparty/rvo2/rvo2_3d/KdTree.cpp b/thirdparty/rvo2/rvo2_3d/KdTree3d.cpp
+similarity index 91%
+rename from thirdparty/rvo2/rvo2_3d/KdTree.cpp
+rename to thirdparty/rvo2/rvo2_3d/KdTree3d.cpp
+index 5e9e9777a6..2534871db1 100644
+--- a/thirdparty/rvo2/rvo2_3d/KdTree.cpp
++++ b/thirdparty/rvo2/rvo2_3d/KdTree3d.cpp
+@@ -30,22 +30,22 @@
+  * <https://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "KdTree.h"
++#include "KdTree3d.h"
+ 
+ #include <algorithm>
+ 
+-#include "Agent.h"
++#include "Agent3d.h"
+ #include "Definitions.h"
+-#include "RVOSimulator.h"
++#include "RVOSimulator3d.h"
+ 
+-namespace RVO {
++namespace RVO3D {
+ 	const size_t RVO3D_MAX_LEAF_SIZE = 10;
+ 
+-	KdTree::KdTree(RVOSimulator *sim) : sim_(sim) { }
++	KdTree3D::KdTree3D(RVOSimulator3D *sim) : sim_(sim) { }
+ 
+-	void KdTree::buildAgentTree()
++	void KdTree3D::buildAgentTree(std::vector<Agent3D *> agents)
+ 	{
+-		agents_ = sim_->agents_;
++		agents_.swap(agents);
+ 
+ 		if (!agents_.empty()) {
+ 			agentTree_.resize(2 * agents_.size() - 1);
+@@ -53,7 +53,7 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
++	void KdTree3D::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
+ 	{
+ 		agentTree_[node].begin = begin;
+ 		agentTree_[node].end = end;
+@@ -121,12 +121,12 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::computeAgentNeighbors(Agent *agent, float rangeSq) const
++	void KdTree3D::computeAgentNeighbors(Agent3D *agent, float rangeSq) const
+ 	{
+ 		queryAgentTreeRecursive(agent, rangeSq, 0);
+ 	}
+ 
+-	void KdTree::queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const
++	void KdTree3D::queryAgentTreeRecursive(Agent3D *agent, float &rangeSq, size_t node) const
+ 	{
+ 		if (agentTree_[node].end - agentTree_[node].begin <= RVO3D_MAX_LEAF_SIZE) {
+ 			for (size_t i = agentTree_[node].begin; i < agentTree_[node].end; ++i) {
+diff --git a/thirdparty/rvo2/rvo2_3d/KdTree.h b/thirdparty/rvo2/rvo2_3d/KdTree3d.h
+similarity index 81%
+rename from thirdparty/rvo2/rvo2_3d/KdTree.h
+rename to thirdparty/rvo2/rvo2_3d/KdTree3d.h
+index a09384c20f..c018f98b23 100644
+--- a/thirdparty/rvo2/rvo2_3d/KdTree.h
++++ b/thirdparty/rvo2/rvo2_3d/KdTree3d.h
+@@ -41,19 +41,19 @@
+ 
+ #include "Vector3.h"
+ 
+-namespace RVO {
+-	class Agent;
+-	class RVOSimulator;
++namespace RVO3D {
++	class Agent3D;
++	class RVOSimulator3D;
+ 
+ 	/**
+ 	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
+ 	 */
+-	class KdTree {
+-	private:
++	class KdTree3D {
++	public:
+ 		/**
+ 		 * \brief   Defines an agent <i>k</i>d-tree node.
+ 		 */
+-		class AgentTreeNode {
++		class AgentTreeNode3D {
+ 		public:
+ 			/**
+ 			 * \brief   The beginning node number.
+@@ -90,12 +90,12 @@ namespace RVO {
+ 		 * \brief   Constructs a <i>k</i>d-tree instance.
+ 		 * \param   sim  The simulator instance.
+ 		 */
+-		explicit KdTree(RVOSimulator *sim);
++		explicit KdTree3D(RVOSimulator3D *sim);
+ 
+ 		/**
+ 		 * \brief   Builds an agent <i>k</i>d-tree.
+ 		 */
+-		void buildAgentTree();
++		void buildAgentTree(std::vector<Agent3D *> agents);
+ 
+ 		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
+ 
+@@ -104,16 +104,16 @@ namespace RVO {
+ 		 * \param   agent    A pointer to the agent for which agent neighbors are to be computed.
+ 		 * \param   rangeSq  The squared range around the agent.
+ 		 */
+-		void computeAgentNeighbors(Agent *agent, float rangeSq) const;
++		void computeAgentNeighbors(Agent3D *agent, float rangeSq) const;
+ 
+-		void queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const;
++		void queryAgentTreeRecursive(Agent3D *agent, float &rangeSq, size_t node) const;
+ 
+-		std::vector<Agent *> agents_;
+-		std::vector<AgentTreeNode> agentTree_;
+-		RVOSimulator *sim_;
++		std::vector<Agent3D *> agents_;
++		std::vector<AgentTreeNode3D> agentTree_;
++		RVOSimulator3D *sim_;
+ 
+-		friend class Agent;
+-		friend class RVOSimulator;
++		friend class Agent3D;
++		friend class RVOSimulator3D;
+ 	};
+ }
+ 
+diff --git a/thirdparty/rvo2/rvo2_3d/RVOSimulator.cpp b/thirdparty/rvo2/rvo2_3d/RVOSimulator3d.cpp
+similarity index 57%
+rename from thirdparty/rvo2/rvo2_3d/RVOSimulator.cpp
+rename to thirdparty/rvo2/rvo2_3d/RVOSimulator3d.cpp
+index 0167783ffd..71e5aea9e2 100644
+--- a/thirdparty/rvo2/rvo2_3d/RVOSimulator.cpp
++++ b/thirdparty/rvo2/rvo2_3d/RVOSimulator3d.cpp
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,28 +27,28 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "RVOSimulator.h"
++#include "RVOSimulator3d.h"
+ 
+ #ifdef _OPENMP
+ #include <omp.h>
+ #endif
+ 
+-#include "Agent.h"
+-#include "KdTree.h"
++#include "Agent3d.h"
++#include "KdTree3d.h"
+ 
+-namespace RVO {
+-	RVOSimulator::RVOSimulator() : defaultAgent_(NULL), kdTree_(NULL), globalTime_(0.0f), timeStep_(0.0f)
++namespace RVO3D {
++	RVOSimulator3D::RVOSimulator3D() : defaultAgent_(NULL), kdTree_(NULL), globalTime_(0.0f), timeStep_(0.0f)
+ 	{
+-		kdTree_ = new KdTree(this);
++		kdTree_ = new KdTree3D(this);
+ 	}
+ 
+-	RVOSimulator::RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity) : defaultAgent_(NULL), kdTree_(NULL), globalTime_(0.0f), timeStep_(timeStep)
++	RVOSimulator3D::RVOSimulator3D(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity) : defaultAgent_(NULL), kdTree_(NULL), globalTime_(0.0f), timeStep_(timeStep)
+ 	{
+-		kdTree_ = new KdTree(this);
+-		defaultAgent_ = new Agent(this);
++		kdTree_ = new KdTree3D(this);
++		defaultAgent_ = new Agent3D();
+ 
+ 		defaultAgent_->maxNeighbors_ = maxNeighbors;
+ 		defaultAgent_->maxSpeed_ = maxSpeed;
+@@ -58,7 +58,7 @@ namespace RVO {
+ 		defaultAgent_->velocity_ = velocity;
+ 	}
+ 
+-	RVOSimulator::~RVOSimulator()
++	RVOSimulator3D::~RVOSimulator3D()
+ 	{
+ 		if (defaultAgent_ != NULL) {
+ 			delete defaultAgent_;
+@@ -73,40 +73,40 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	size_t RVOSimulator::getAgentNumAgentNeighbors(size_t agentNo) const
++	size_t RVOSimulator3D::getAgentNumAgentNeighbors(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->agentNeighbors_.size();
+ 	}
+ 
+-	size_t RVOSimulator::getAgentAgentNeighbor(size_t agentNo, size_t neighborNo) const
++	size_t RVOSimulator3D::getAgentAgentNeighbor(size_t agentNo, size_t neighborNo) const
+ 	{
+ 		return agents_[agentNo]->agentNeighbors_[neighborNo].second->id_;
+ 	}
+ 
+-	size_t RVOSimulator::getAgentNumORCAPlanes(size_t agentNo) const
++	size_t RVOSimulator3D::getAgentNumORCAPlanes(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->orcaPlanes_.size();
+ 	}
+ 
+-	const Plane &RVOSimulator::getAgentORCAPlane(size_t agentNo, size_t planeNo) const
++	const Plane &RVOSimulator3D::getAgentORCAPlane(size_t agentNo, size_t planeNo) const
+ 	{
+ 		return agents_[agentNo]->orcaPlanes_[planeNo];
+ 	}
+ 
+-	void RVOSimulator::removeAgent(size_t agentNo)
++	void RVOSimulator3D::removeAgent(size_t agentNo)
+ 	{
+ 		delete agents_[agentNo];
+ 		agents_[agentNo] = agents_.back();
+ 		agents_.pop_back();
+ 	}
+ 
+-	size_t RVOSimulator::addAgent(const Vector3 &position)
++	size_t RVOSimulator3D::addAgent(const Vector3 &position)
+ 	{
+ 		if (defaultAgent_ == NULL) {
+ 			return RVO3D_ERROR;
+ 		}
+ 
+-		Agent *agent = new Agent(this);
++		Agent3D *agent = new Agent3D();
+ 
+ 		agent->position_ = position;
+ 		agent->maxNeighbors_ = defaultAgent_->maxNeighbors_;
+@@ -123,9 +123,9 @@ namespace RVO {
+ 		return agents_.size() - 1;
+ 	}
+ 
+-	size_t RVOSimulator::addAgent(const Vector3 &position, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity)
++	size_t RVOSimulator3D::addAgent(const Vector3 &position, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity)
+ 	{
+-		Agent *agent = new Agent(this);
++		Agent3D *agent = new Agent3D();
+ 
+ 		agent->position_ = position;
+ 		agent->maxNeighbors_ = maxNeighbors;
+@@ -142,87 +142,81 @@ namespace RVO {
+ 		return agents_.size() - 1;
+ 	}
+ 
+-	void RVOSimulator::doStep()
++	void RVOSimulator3D::doStep()
+ 	{
+-		kdTree_->buildAgentTree();
++		kdTree_->buildAgentTree(agents_);
+ 
+-#ifdef _OPENMP
+-#pragma omp parallel for
+-#endif
+ 		for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
+-			agents_[i]->computeNeighbors();
+-			agents_[i]->computeNewVelocity();
++			agents_[i]->computeNeighbors(this);
++			agents_[i]->computeNewVelocity(this);
+ 		}
+ 
+-#ifdef _OPENMP
+-#pragma omp parallel for
+-#endif
+ 		for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
+-			agents_[i]->update();
++			agents_[i]->update(this);
+ 		}
+ 
+ 		globalTime_ += timeStep_;
+ 	}
+ 
+-	size_t RVOSimulator::getAgentMaxNeighbors(size_t agentNo) const
++	size_t RVOSimulator3D::getAgentMaxNeighbors(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->maxNeighbors_;
+ 	}
+ 
+-	float RVOSimulator::getAgentMaxSpeed(size_t agentNo) const
++	float RVOSimulator3D::getAgentMaxSpeed(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->maxSpeed_;
+ 	}
+ 
+-	float RVOSimulator::getAgentNeighborDist(size_t agentNo) const
++	float RVOSimulator3D::getAgentNeighborDist(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->neighborDist_;
+ 	}
+ 
+-	const Vector3 &RVOSimulator::getAgentPosition(size_t agentNo) const
++	const Vector3 &RVOSimulator3D::getAgentPosition(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->position_;
+ 	}
+ 
+-	const Vector3 &RVOSimulator::getAgentPrefVelocity(size_t agentNo) const
++	const Vector3 &RVOSimulator3D::getAgentPrefVelocity(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->prefVelocity_;
+ 	}
+ 
+-	float RVOSimulator::getAgentRadius(size_t agentNo) const
++	float RVOSimulator3D::getAgentRadius(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->radius_;
+ 	}
+ 
+-	float RVOSimulator::getAgentTimeHorizon(size_t agentNo) const
++	float RVOSimulator3D::getAgentTimeHorizon(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->timeHorizon_;
+ 	}
+ 
+-	const Vector3 &RVOSimulator::getAgentVelocity(size_t agentNo) const
++	const Vector3 &RVOSimulator3D::getAgentVelocity(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->velocity_;
+ 	}
+ 
+-	float RVOSimulator::getGlobalTime() const
++	float RVOSimulator3D::getGlobalTime() const
+ 	{
+ 		return globalTime_;
+ 	}
+ 
+-	size_t RVOSimulator::getNumAgents() const
++	size_t RVOSimulator3D::getNumAgents() const
+ 	{
+ 		return agents_.size();
+ 	}
+ 
+-	float RVOSimulator::getTimeStep() const
++	float RVOSimulator3D::getTimeStep() const
+ 	{
+ 		return timeStep_;
+ 	}
+ 
+-	void RVOSimulator::setAgentDefaults(float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity)
++	void RVOSimulator3D::setAgentDefaults(float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity)
+ 	{
+ 		if (defaultAgent_ == NULL) {
+-			defaultAgent_ = new Agent(this);
++			defaultAgent_ = new Agent3D();
+ 		}
+ 
+ 		defaultAgent_->maxNeighbors_ = maxNeighbors;
+@@ -233,47 +227,47 @@ namespace RVO {
+ 		defaultAgent_->velocity_ = velocity;
+ 	}
+ 
+-	void RVOSimulator::setAgentMaxNeighbors(size_t agentNo, size_t maxNeighbors)
++	void RVOSimulator3D::setAgentMaxNeighbors(size_t agentNo, size_t maxNeighbors)
+ 	{
+ 		agents_[agentNo]->maxNeighbors_ = maxNeighbors;
+ 	}
+ 
+-	void RVOSimulator::setAgentMaxSpeed(size_t agentNo, float maxSpeed)
++	void RVOSimulator3D::setAgentMaxSpeed(size_t agentNo, float maxSpeed)
+ 	{
+ 		agents_[agentNo]->maxSpeed_ = maxSpeed;
+ 	}
+ 
+-	void RVOSimulator::setAgentNeighborDist(size_t agentNo, float neighborDist)
++	void RVOSimulator3D::setAgentNeighborDist(size_t agentNo, float neighborDist)
+ 	{
+ 		agents_[agentNo]->neighborDist_ = neighborDist;
+ 	}
+ 
+-	void RVOSimulator::setAgentPosition(size_t agentNo, const Vector3 &position)
++	void RVOSimulator3D::setAgentPosition(size_t agentNo, const Vector3 &position)
+ 	{
+ 		agents_[agentNo]->position_ = position;
+ 	}
+ 
+-	void RVOSimulator::setAgentPrefVelocity(size_t agentNo, const Vector3 &prefVelocity)
++	void RVOSimulator3D::setAgentPrefVelocity(size_t agentNo, const Vector3 &prefVelocity)
+ 	{
+ 		agents_[agentNo]->prefVelocity_ = prefVelocity;
+ 	}
+ 
+-	void RVOSimulator::setAgentRadius(size_t agentNo, float radius)
++	void RVOSimulator3D::setAgentRadius(size_t agentNo, float radius)
+ 	{
+ 		agents_[agentNo]->radius_ = radius;
+ 	}
+ 
+-	void RVOSimulator::setAgentTimeHorizon(size_t agentNo, float timeHorizon)
++	void RVOSimulator3D::setAgentTimeHorizon(size_t agentNo, float timeHorizon)
+ 	{
+ 		agents_[agentNo]->timeHorizon_ = timeHorizon;
+ 	}
+ 
+-	void RVOSimulator::setAgentVelocity(size_t agentNo, const Vector3 &velocity)
++	void RVOSimulator3D::setAgentVelocity(size_t agentNo, const Vector3 &velocity)
+ 	{
+ 		agents_[agentNo]->velocity_ = velocity;
+ 	}
+ 
+-	void RVOSimulator::setTimeStep(float timeStep)
++	void RVOSimulator3D::setTimeStep(float timeStep)
+ 	{
+ 		timeStep_ = timeStep;
+ 	}
+diff --git a/thirdparty/rvo2/rvo2_3d/RVOSimulator.h b/thirdparty/rvo2/rvo2_3d/RVOSimulator3d.h
+similarity index 94%
+rename from thirdparty/rvo2/rvo2_3d/RVOSimulator.h
+rename to thirdparty/rvo2/rvo2_3d/RVOSimulator3d.h
+index 3ca6f25aee..4ea093d74c 100644
+--- a/thirdparty/rvo2/rvo2_3d/RVOSimulator.h
++++ b/thirdparty/rvo2/rvo2_3d/RVOSimulator3d.h
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,38 +27,37 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+ /**
+  * \file    RVOSimulator.h
+  * \brief   Contains the RVOSimulator class.
+  */
+-#ifndef RVO3D_RVO3D_SIMULATOR_H_
+-#define RVO3D_RVO3D_SIMULATOR_H_
++#ifndef RVO3D_RVO_SIMULATOR_H_
++#define RVO3D_RVO_SIMULATOR_H_
+ 
+ #include <cstddef>
+ #include <limits>
+ #include <vector>
+ 
+-#include "Export.h"
+ #include "Vector3.h"
+ 
+-namespace RVO {
+-	class Agent;
+-	class KdTree;
++namespace RVO3D {
++	class Agent3D;
++	class KdTree3D;
+ 
+ 	/**
+ 	 * \brief   Error value.
+ 	 *
+-	 * A value equal to the largest unsigned integer, which is returned in case of an error by functions in RVO::RVOSimulator.
++	 * A value equal to the largest unsigned integer, which is returned in case of an error by functions in RVO3D::RVOSimulator.
+ 	 */
+ 	const size_t RVO3D_ERROR = std::numeric_limits<size_t>::max();
+ 
+ 	/**
+ 	 * \brief   Defines a plane.
+ 	 */
+-	class RVO3D_EXPORT Plane {
++	class Plane {
+ 	public:
+ 		/**
+ 		 * \brief   A point on the plane.
+@@ -76,12 +75,12 @@ namespace RVO {
+ 	 *
+ 	 * The main class of the library that contains all simulation functionality.
+ 	 */
+-	class RVO3D_EXPORT RVOSimulator {
++	class RVOSimulator3D {
+ 	public:
+ 		/**
+ 		 * \brief   Constructs a simulator instance.
+ 		 */
+-		RVOSimulator();
++		RVOSimulator3D();
+ 
+ 		/**
+ 		 * \brief   Constructs a simulator instance and sets the default properties for any new agent that is added.
+@@ -93,17 +92,17 @@ namespace RVO {
+ 		 * \param   maxSpeed      The default maximum speed of a new agent. Must be non-negative.
+ 		 * \param   velocity      The default initial three-dimensional linear velocity of a new agent (optional).
+ 		 */
+-		RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity = Vector3());
++		RVOSimulator3D(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float radius, float maxSpeed, const Vector3 &velocity = Vector3());
+ 
+ 		/**
+ 		 * \brief   Destroys this simulator instance.
+ 		 */
+-		~RVOSimulator();
++		~RVOSimulator3D();
+ 
+ 		/**
+ 		 * \brief   Adds a new agent with default properties to the simulation.
+ 		 * \param   position  The three-dimensional starting position of this agent.
+-		 * \return  The number of the agent, or RVO::RVO3D_ERROR when the agent defaults have not been set.
++		 * \return  The number of the agent, or RVO3D::RVO3D_ERROR when the agent defaults have not been set.
+ 		 */
+ 		size_t addAgent(const Vector3 &position);
+ 
+@@ -310,15 +309,15 @@ namespace RVO {
+ 		 */
+ 		void setTimeStep(float timeStep);
+ 
+-	private:
+-		Agent *defaultAgent_;
+-		KdTree *kdTree_;
++	public:
++		Agent3D *defaultAgent_;
++		KdTree3D *kdTree_;
+ 		float globalTime_;
+ 		float timeStep_;
+-		std::vector<Agent *> agents_;
++		std::vector<Agent3D *> agents_;
+ 
+-		friend class Agent;
+-		friend class KdTree;
++		friend class Agent3D;
++		friend class KdTree3D;
+ 	};
+ }
+ 
+diff --git a/thirdparty/rvo2/rvo2_3d/Vector3.h b/thirdparty/rvo2/rvo2_3d/Vector3.h
+index 6c3223bb87..6fa4bb074c 100644
+--- a/thirdparty/rvo2/rvo2_3d/Vector3.h
++++ b/thirdparty/rvo2/rvo2_3d/Vector3.h
+@@ -41,13 +41,11 @@
+ #include <cstddef>
+ #include <ostream>
+ 
+-#include "Export.h"
+-
+-namespace RVO {
++namespace RVO3D {
+ 	/**
+ 	 * \brief  Defines a three-dimensional vector.
+ 	 */
+-	class RVO3D_EXPORT Vector3 {
++	class Vector3 {
+ 	public:
+ 		/**
+ 		 * \brief   Constructs and initializes a three-dimensional vector instance to zero.
+@@ -266,6 +264,15 @@ namespace RVO {
+ 			return *this;
+ 		}
+ 
++		inline Vector3 &operator=(const Vector3 &vector)
++		{
++			val_[0] = vector[0];
++			val_[1] = vector[1];
++			val_[2] = vector[2];
++
++			return *this;
++		}
++
+ 	private:
+ 		float val_[3];
+ 	};
+@@ -278,7 +285,7 @@ namespace RVO {
+ 	 * \param    vector  The three-dimensional vector with which the scalar multiplication should be computed.
+ 	 * \return   The scalar multiplication of the three-dimensional vector with the scalar value.
+ 	 */
+-	RVO3D_EXPORT inline Vector3 operator*(float scalar, const Vector3 &vector)
++	inline Vector3 operator*(float scalar, const Vector3 &vector)
+ 	{
+ 		return Vector3(scalar * vector[0], scalar * vector[1], scalar * vector[2]);
+ 	}
+@@ -290,7 +297,7 @@ namespace RVO {
+ 	 * \param    vector2  The second vector with which the cross product should be computed.
+ 	 * \return   The cross product of the two specified vectors.
+ 	 */
+-	RVO3D_EXPORT inline Vector3 cross(const Vector3 &vector1, const Vector3 &vector2)
++	inline Vector3 cross(const Vector3 &vector1, const Vector3 &vector2)
+ 	{
+ 		return Vector3(vector1[1] * vector2[2] - vector1[2] * vector2[1], vector1[2] * vector2[0] - vector1[0] * vector2[2], vector1[0] * vector2[1] - vector1[1] * vector2[0]);
+ 	}
+@@ -302,7 +309,7 @@ namespace RVO {
+ 	 * \param    vector  The three-dimensional vector which to insert into the output stream.
+ 	 * \return   A reference to the output stream.
+ 	 */
+-	RVO3D_EXPORT inline std::ostream &operator<<(std::ostream &os, const Vector3 &vector)
++	inline std::ostream &operator<<(std::ostream &os, const Vector3 &vector)
+ 	{
+ 		os << "(" << vector[0] << "," << vector[1] << "," << vector[2] << ")";
+ 
+@@ -315,7 +322,7 @@ namespace RVO {
+ 	 * \param    vector  The three-dimensional vector whose length is to be computed.
+ 	 * \return   The length of the three-dimensional vector.
+ 	 */
+-	RVO3D_EXPORT inline float abs(const Vector3 &vector)
++	inline float abs(const Vector3 &vector)
+ 	{
+ 		return std::sqrt(vector * vector);
+ 	}
+@@ -326,7 +333,7 @@ namespace RVO {
+ 	 * \param    vector  The three-dimensional vector whose squared length is to be computed.
+ 	 * \return   The squared length of the three-dimensional vector.
+ 	 */
+-	RVO3D_EXPORT inline float absSq(const Vector3 &vector)
++	inline float absSq(const Vector3 &vector)
+ 	{
+ 		return vector * vector;
+ 	}
+@@ -337,7 +344,7 @@ namespace RVO {
+ 	 * \param    vector  The three-dimensional vector whose normalization is to be computed.
+ 	 * \return   The normalization of the three-dimensional vector.
+ 	 */
+-	RVO3D_EXPORT inline Vector3 normalize(const Vector3 &vector)
++	inline Vector3 normalize(const Vector3 &vector)
+ 	{
+ 		return vector / abs(vector);
+ 	}

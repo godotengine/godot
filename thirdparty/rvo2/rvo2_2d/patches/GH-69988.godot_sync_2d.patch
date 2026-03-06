@@ -1,0 +1,1540 @@
+diff --git a/thirdparty/rvo2/rvo2_2d/Agent.cpp b/thirdparty/rvo2/rvo2_2d/Agent2d.cpp
+similarity index 87%
+rename from thirdparty/rvo2/rvo2_2d/Agent.cpp
+rename to thirdparty/rvo2/rvo2_2d/Agent2d.cpp
+index 2de48f5bca..3ff95a4922 100644
+--- a/thirdparty/rvo2/rvo2_2d/Agent.cpp
++++ b/thirdparty/rvo2/rvo2_2d/Agent2d.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Agent.cpp
++ * Agent2d.cpp
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,18 +27,18 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "Agent.h"
++#include "Agent2d.h"
+ 
+-#include "KdTree.h"
+-#include "Obstacle.h"
++#include "KdTree2d.h"
++#include "Obstacle2d.h"
+ 
+-namespace RVO {
+-	Agent::Agent(RVOSimulator *sim) : maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), sim_(sim), timeHorizon_(0.0f), timeHorizonObst_(0.0f), id_(0) { }
++namespace RVO2D {
++	Agent2D::Agent2D() : maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), timeHorizon_(0.0f), timeHorizonObst_(0.0f), id_(0) { }
+ 
+-	void Agent::computeNeighbors()
++	void Agent2D::computeNeighbors(RVOSimulator2D *sim_)
+ 	{
+ 		obstacleNeighbors_.clear();
+ 		float rangeSq = sqr(timeHorizonObst_ * maxSpeed_ + radius_);
+@@ -53,7 +53,7 @@ namespace RVO {
+ 	}
+ 
+ 	/* Search for the best new velocity. */
+-	void Agent::computeNewVelocity()
++	void Agent2D::computeNewVelocity(RVOSimulator2D *sim_)
+ 	{
+ 		orcaLines_.clear();
+ 
+@@ -62,8 +62,8 @@ namespace RVO {
+ 		/* Create obstacle ORCA lines. */
+ 		for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
+ 
+-			const Obstacle *obstacle1 = obstacleNeighbors_[i].second;
+-			const Obstacle *obstacle2 = obstacle1->nextObstacle_;
++			const Obstacle2D *obstacle1 = obstacleNeighbors_[i].second;
++			const Obstacle2D *obstacle2 = obstacle1->nextObstacle_;
+ 
+ 			const Vector2 relativePosition1 = obstacle1->point_ - position_;
+ 			const Vector2 relativePosition2 = obstacle2->point_ - position_;
+@@ -119,7 +119,7 @@ namespace RVO {
+ 
+ 				continue;
+ 			}
+-			else if (s >= 0.0f && s <= 1.0f && distSqLine <= radiusSq) {
++			else if (s >= 0.0f && s < 1.0f && distSqLine <= radiusSq) {
+ 				/* Collision with obstacle segment. */
+ 				line.point = Vector2(0.0f, 0.0f);
+ 				line.direction = -obstacle1->unitDir_;
+@@ -194,7 +194,7 @@ namespace RVO {
+ 			 * "foreign" leg, no constraint is added.
+ 			 */
+ 
+-			const Obstacle *const leftNeighbor = obstacle1->prevObstacle_;
++			const Obstacle2D *const leftNeighbor = obstacle1->prevObstacle_;
+ 
+ 			bool isLeftLegForeign = false;
+ 			bool isRightLegForeign = false;
+@@ -287,7 +287,10 @@ namespace RVO {
+ 
+ 		/* Create agent ORCA lines. */
+ 		for (size_t i = 0; i < agentNeighbors_.size(); ++i) {
+-			const Agent *const other = agentNeighbors_[i].second;
++			const Agent2D *const other = agentNeighbors_[i].second;
++
++			//const float timeHorizon_mod = (avoidance_priority_ - other->avoidance_priority_ + 1.0f) * 0.5f;
++			//const float invTimeHorizon = (1.0f / timeHorizon_) * timeHorizon_mod;
+ 
+ 			const Vector2 relativePosition = other->position_ - position_;
+ 			const Vector2 relativeVelocity = velocity_ - other->velocity_;
+@@ -357,35 +360,59 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void Agent::insertAgentNeighbor(const Agent *agent, float &rangeSq)
++	void Agent2D::insertAgentNeighbor(const Agent2D *agent, float &rangeSq)
+ 	{
+-		if (this != agent) {
+-			const float distSq = absSq(position_ - agent->position_);
++		// no point processing same agent
++		if (this == agent) {
++			return;
++		}
++		// ignore other agent if layers/mask bitmasks have no matching bit
++		if ((avoidance_mask_ & agent->avoidance_layers_) == 0) {
++			return;
++		}
++		// ignore other agent if this agent is below or above
++		if ((elevation_ > agent->elevation_ + agent->height_) || (elevation_ + height_ < agent->elevation_)) {
++			return;
++		}
+ 
+-			if (distSq < rangeSq) {
+-				if (agentNeighbors_.size() < maxNeighbors_) {
+-					agentNeighbors_.push_back(std::make_pair(distSq, agent));
+-				}
++		if (avoidance_priority_ > agent->avoidance_priority_) {
++			return;
++		}
+ 
+-				size_t i = agentNeighbors_.size() - 1;
++		const float distSq = absSq(position_ - agent->position_);
+ 
+-				while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
+-					agentNeighbors_[i] = agentNeighbors_[i - 1];
+-					--i;
+-				}
++		if (distSq < rangeSq) {
++			if (agentNeighbors_.size() < maxNeighbors_) {
++				agentNeighbors_.push_back(std::make_pair(distSq, agent));
++			}
+ 
+-				agentNeighbors_[i] = std::make_pair(distSq, agent);
++			size_t i = agentNeighbors_.size() - 1;
+ 
+-				if (agentNeighbors_.size() == maxNeighbors_) {
+-					rangeSq = agentNeighbors_.back().first;
+-				}
++			while (i != 0 && distSq < agentNeighbors_[i - 1].first) {
++				agentNeighbors_[i] = agentNeighbors_[i - 1];
++				--i;
++			}
++
++			agentNeighbors_[i] = std::make_pair(distSq, agent);
++
++			if (agentNeighbors_.size() == maxNeighbors_) {
++				rangeSq = agentNeighbors_.back().first;
+ 			}
+ 		}
+ 	}
+ 
+-	void Agent::insertObstacleNeighbor(const Obstacle *obstacle, float rangeSq)
++	void Agent2D::insertObstacleNeighbor(const Obstacle2D *obstacle, float rangeSq)
+ 	{
+-		const Obstacle *const nextObstacle = obstacle->nextObstacle_;
++		const Obstacle2D *const nextObstacle = obstacle->nextObstacle_;
++		
++		// ignore obstacle if no matching layer/mask
++		if ((avoidance_mask_ & nextObstacle->avoidance_layers_) == 0) {
++			return;
++		}
++		// ignore obstacle if below or above
++		if ((elevation_ > obstacle->elevation_ + obstacle->height_) || (elevation_ + height_ < obstacle->elevation_)) {
++			return;
++		}
+ 
+ 		const float distSq = distSqPointLineSegment(obstacle->point_, nextObstacle->point_, position_);
+ 
+@@ -401,9 +428,10 @@ namespace RVO {
+ 
+ 			obstacleNeighbors_[i] = std::make_pair(distSq, obstacle);
+ 		}
++		//}
+ 	}
+ 
+-	void Agent::update()
++	void Agent2D::update(RVOSimulator2D *sim_)
+ 	{
+ 		velocity_ = newVelocity_;
+ 		position_ += velocity_ * sim_->timeStep_;
+diff --git a/thirdparty/rvo2/rvo2_2d/Agent.h b/thirdparty/rvo2/rvo2_2d/Agent2d.h
+similarity index 83%
+rename from thirdparty/rvo2/rvo2_2d/Agent.h
+rename to thirdparty/rvo2/rvo2_2d/Agent2d.h
+index be467188cf..c666c2de7b 100644
+--- a/thirdparty/rvo2/rvo2_2d/Agent.h
++++ b/thirdparty/rvo2/rvo2_2d/Agent2d.h
+@@ -1,5 +1,5 @@
+ /*
+- * Agent.h
++ * Agent2d.h
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,41 +27,41 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#ifndef RVO_AGENT_H_
+-#define RVO_AGENT_H_
++#ifndef RVO2D_AGENT_H_
++#define RVO2D_AGENT_H_
+ 
+ /**
+- * \file       Agent.h
++ * \file       Agent2d.h
+  * \brief      Contains the Agent class.
+  */
+ 
+ #include "Definitions.h"
+-#include "RVOSimulator.h"
++#include "RVOSimulator2d.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ 	/**
+ 	 * \brief      Defines an agent in the simulation.
+ 	 */
+-	class Agent {
+-	private:
++	class Agent2D {
++	public:
+ 		/**
+ 		 * \brief      Constructs an agent instance.
+ 		 * \param      sim             The simulator instance.
+ 		 */
+-		explicit Agent(RVOSimulator *sim);
++		explicit Agent2D();
+ 
+ 		/**
+ 		 * \brief      Computes the neighbors of this agent.
+ 		 */
+-		void computeNeighbors();
++		void computeNeighbors(RVOSimulator2D *sim_);
+ 
+ 		/**
+ 		 * \brief      Computes the new velocity of this agent.
+ 		 */
+-		void computeNewVelocity();
++		void computeNewVelocity(RVOSimulator2D *sim_);
+ 
+ 		/**
+ 		 * \brief      Inserts an agent neighbor into the set of neighbors of
+@@ -69,7 +69,7 @@ namespace RVO {
+ 		 * \param      agent           A pointer to the agent to be inserted.
+ 		 * \param      rangeSq         The squared range around this agent.
+ 		 */
+-		void insertAgentNeighbor(const Agent *agent, float &rangeSq);
++		void insertAgentNeighbor(const Agent2D *agent, float &rangeSq);
+ 
+ 		/**
+ 		 * \brief      Inserts a static obstacle neighbor into the set of neighbors
+@@ -78,33 +78,37 @@ namespace RVO {
+ 		 *                             inserted.
+ 		 * \param      rangeSq         The squared range around this agent.
+ 		 */
+-		void insertObstacleNeighbor(const Obstacle *obstacle, float rangeSq);
++		void insertObstacleNeighbor(const Obstacle2D *obstacle, float rangeSq);
+ 
+ 		/**
+ 		 * \brief      Updates the two-dimensional position and two-dimensional
+ 		 *             velocity of this agent.
+ 		 */
+-		void update();
++		void update(RVOSimulator2D *sim_);
+ 
+-		std::vector<std::pair<float, const Agent *> > agentNeighbors_;
++		std::vector<std::pair<float, const Agent2D *> > agentNeighbors_;
+ 		size_t maxNeighbors_;
+ 		float maxSpeed_;
+ 		float neighborDist_;
+ 		Vector2 newVelocity_;
+-		std::vector<std::pair<float, const Obstacle *> > obstacleNeighbors_;
++		std::vector<std::pair<float, const Obstacle2D *> > obstacleNeighbors_;
+ 		std::vector<Line> orcaLines_;
+ 		Vector2 position_;
+ 		Vector2 prefVelocity_;
+ 		float radius_;
+-		RVOSimulator *sim_;
+ 		float timeHorizon_;
+ 		float timeHorizonObst_;
+ 		Vector2 velocity_;
++		float height_ = 0.0;
++		float elevation_ = 0.0;
++		uint32_t avoidance_layers_ = 1;
++		uint32_t avoidance_mask_ = 1;
++		float avoidance_priority_ = 1.0;
+ 
+ 		size_t id_;
+ 
+-		friend class KdTree;
+-		friend class RVOSimulator;
++		friend class KdTree2D;
++		friend class RVOSimulator2D;
+ 	};
+ 
+ 	/**
+@@ -153,4 +157,4 @@ namespace RVO {
+ 						float radius, Vector2 &result);
+ }
+ 
+-#endif /* RVO_AGENT_H_ */
++#endif /* RVO2D_AGENT_H_ */
+diff --git a/thirdparty/rvo2/rvo2_2d/Definitions.h b/thirdparty/rvo2/rvo2_2d/Definitions.h
+index 7b5c94b317..a5553d8378 100644
+--- a/thirdparty/rvo2/rvo2_2d/Definitions.h
++++ b/thirdparty/rvo2/rvo2_2d/Definitions.h
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,11 +27,11 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#ifndef RVO_DEFINITIONS_H_
+-#define RVO_DEFINITIONS_H_
++#ifndef RVO2D_DEFINITIONS_H_
++#define RVO2D_DEFINITIONS_H_
+ 
+ /**
+  * \file       Definitions.h
+@@ -41,6 +41,7 @@
+ #include <algorithm>
+ #include <cmath>
+ #include <cstddef>
++#include <cstdint>
+ #include <limits>
+ #include <vector>
+ 
+@@ -51,10 +52,10 @@
+  */
+ const float RVO_EPSILON = 0.00001f;
+ 
+-namespace RVO {
+-	class Agent;
+-	class Obstacle;
+-	class RVOSimulator;
++namespace RVO2D {
++	class Agent2D;
++	class Obstacle2D;
++	class RVOSimulator2D;
+ 
+ 	/**
+ 	 * \brief      Computes the squared distance from a line segment with the
+@@ -106,4 +107,4 @@ namespace RVO {
+ 	}
+ }
+ 
+-#endif /* RVO_DEFINITIONS_H_ */
++#endif /* RVO2D_DEFINITIONS_H_ */
+diff --git a/thirdparty/rvo2/rvo2_2d/KdTree.cpp b/thirdparty/rvo2/rvo2_2d/KdTree2d.cpp
+similarity index 81%
+rename from thirdparty/rvo2/rvo2_2d/KdTree.cpp
+rename to thirdparty/rvo2/rvo2_2d/KdTree2d.cpp
+index d744c3e813..184bc74fe2 100644
+--- a/thirdparty/rvo2/rvo2_2d/KdTree.cpp
++++ b/thirdparty/rvo2/rvo2_2d/KdTree2d.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * KdTree.cpp
++ * KdTree2d.cpp
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,39 +27,34 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "KdTree.h"
++#include "KdTree2d.h"
+ 
+-#include "Agent.h"
+-#include "RVOSimulator.h"
+-#include "Obstacle.h"
++#include "Agent2d.h"
++#include "RVOSimulator2d.h"
++#include "Obstacle2d.h"
+ 
+-namespace RVO {
+-	KdTree::KdTree(RVOSimulator *sim) : obstacleTree_(NULL), sim_(sim) { }
++namespace RVO2D {
++	KdTree2D::KdTree2D(RVOSimulator2D *sim) : obstacleTree_(NULL), sim_(sim) { }
+ 
+-	KdTree::~KdTree()
++	KdTree2D::~KdTree2D()
+ 	{
+ 		deleteObstacleTree(obstacleTree_);
+ 	}
+ 
+-	void KdTree::buildAgentTree()
++	void KdTree2D::buildAgentTree(std::vector<Agent2D *> agents)
+ 	{
+-		if (agents_.size() < sim_->agents_.size()) {
+-			for (size_t i = agents_.size(); i < sim_->agents_.size(); ++i) {
+-				agents_.push_back(sim_->agents_[i]);
+-			}
+-
+-			agentTree_.resize(2 * agents_.size() - 1);
+-		}
++		agents_.swap(agents);
+ 
+ 		if (!agents_.empty()) {
++			agentTree_.resize(2 * agents_.size() - 1);
+ 			buildAgentTreeRecursive(0, agents_.size(), 0);
+ 		}
+ 	}
+ 
+-	void KdTree::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
++	void KdTree2D::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
+ 	{
+ 		agentTree_[node].begin = begin;
+ 		agentTree_[node].end = end;
+@@ -110,21 +105,15 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::buildObstacleTree()
++	void KdTree2D::buildObstacleTree(std::vector<Obstacle2D *> obstacles)
+ 	{
+ 		deleteObstacleTree(obstacleTree_);
+ 
+-		std::vector<Obstacle *> obstacles(sim_->obstacles_.size());
+-
+-		for (size_t i = 0; i < sim_->obstacles_.size(); ++i) {
+-			obstacles[i] = sim_->obstacles_[i];
+-		}
+-
+ 		obstacleTree_ = buildObstacleTreeRecursive(obstacles);
+ 	}
+ 
+ 
+-	KdTree::ObstacleTreeNode *KdTree::buildObstacleTreeRecursive(const std::vector<Obstacle *> &obstacles)
++	KdTree2D::ObstacleTreeNode *KdTree2D::buildObstacleTreeRecursive(const std::vector<Obstacle2D *> &obstacles)
+ 	{
+ 		if (obstacles.empty()) {
+ 			return NULL;
+@@ -140,8 +129,8 @@ namespace RVO {
+ 				size_t leftSize = 0;
+ 				size_t rightSize = 0;
+ 
+-				const Obstacle *const obstacleI1 = obstacles[i];
+-				const Obstacle *const obstacleI2 = obstacleI1->nextObstacle_;
++				const Obstacle2D *const obstacleI1 = obstacles[i];
++				const Obstacle2D *const obstacleI2 = obstacleI1->nextObstacle_;
+ 
+ 				/* Compute optimal split node. */
+ 				for (size_t j = 0; j < obstacles.size(); ++j) {
+@@ -149,8 +138,8 @@ namespace RVO {
+ 						continue;
+ 					}
+ 
+-					const Obstacle *const obstacleJ1 = obstacles[j];
+-					const Obstacle *const obstacleJ2 = obstacleJ1->nextObstacle_;
++					const Obstacle2D *const obstacleJ1 = obstacles[j];
++					const Obstacle2D *const obstacleJ2 = obstacleJ1->nextObstacle_;
+ 
+ 					const float j1LeftOfI = leftOf(obstacleI1->point_, obstacleI2->point_, obstacleJ1->point_);
+ 					const float j2LeftOfI = leftOf(obstacleI1->point_, obstacleI2->point_, obstacleJ2->point_);
+@@ -179,23 +168,23 @@ namespace RVO {
+ 			}
+ 
+ 			/* Build split node. */
+-			std::vector<Obstacle *> leftObstacles(minLeft);
+-			std::vector<Obstacle *> rightObstacles(minRight);
++			std::vector<Obstacle2D *> leftObstacles(minLeft);
++			std::vector<Obstacle2D *> rightObstacles(minRight);
+ 
+ 			size_t leftCounter = 0;
+ 			size_t rightCounter = 0;
+ 			const size_t i = optimalSplit;
+ 
+-			const Obstacle *const obstacleI1 = obstacles[i];
+-			const Obstacle *const obstacleI2 = obstacleI1->nextObstacle_;
++			const Obstacle2D *const obstacleI1 = obstacles[i];
++			const Obstacle2D *const obstacleI2 = obstacleI1->nextObstacle_;
+ 
+ 			for (size_t j = 0; j < obstacles.size(); ++j) {
+ 				if (i == j) {
+ 					continue;
+ 				}
+ 
+-				Obstacle *const obstacleJ1 = obstacles[j];
+-				Obstacle *const obstacleJ2 = obstacleJ1->nextObstacle_;
++				Obstacle2D *const obstacleJ1 = obstacles[j];
++				Obstacle2D *const obstacleJ2 = obstacleJ1->nextObstacle_;
+ 
+ 				const float j1LeftOfI = leftOf(obstacleI1->point_, obstacleI2->point_, obstacleJ1->point_);
+ 				const float j2LeftOfI = leftOf(obstacleI1->point_, obstacleI2->point_, obstacleJ2->point_);
+@@ -212,7 +201,7 @@ namespace RVO {
+ 
+ 					const Vector2 splitpoint = obstacleJ1->point_ + t * (obstacleJ2->point_ - obstacleJ1->point_);
+ 
+-					Obstacle *const newObstacle = new Obstacle();
++					Obstacle2D *const newObstacle = new Obstacle2D();
+ 					newObstacle->point_ = splitpoint;
+ 					newObstacle->prevObstacle_ = obstacleJ1;
+ 					newObstacle->nextObstacle_ = obstacleJ2;
+@@ -244,17 +233,17 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::computeAgentNeighbors(Agent *agent, float &rangeSq) const
++	void KdTree2D::computeAgentNeighbors(Agent2D *agent, float &rangeSq) const
+ 	{
+ 		queryAgentTreeRecursive(agent, rangeSq, 0);
+ 	}
+ 
+-	void KdTree::computeObstacleNeighbors(Agent *agent, float rangeSq) const
++	void KdTree2D::computeObstacleNeighbors(Agent2D *agent, float rangeSq) const
+ 	{
+ 		queryObstacleTreeRecursive(agent, rangeSq, obstacleTree_);
+ 	}
+ 
+-	void KdTree::deleteObstacleTree(ObstacleTreeNode *node)
++	void KdTree2D::deleteObstacleTree(ObstacleTreeNode *node)
+ 	{
+ 		if (node != NULL) {
+ 			deleteObstacleTree(node->left);
+@@ -263,7 +252,7 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const
++	void KdTree2D::queryAgentTreeRecursive(Agent2D *agent, float &rangeSq, size_t node) const
+ 	{
+ 		if (agentTree_[node].end - agentTree_[node].begin <= MAX_LEAF_SIZE) {
+ 			for (size_t i = agentTree_[node].begin; i < agentTree_[node].end; ++i) {
+@@ -297,14 +286,14 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	void KdTree::queryObstacleTreeRecursive(Agent *agent, float rangeSq, const ObstacleTreeNode *node) const
++	void KdTree2D::queryObstacleTreeRecursive(Agent2D *agent, float rangeSq, const ObstacleTreeNode *node) const
+ 	{
+ 		if (node == NULL) {
+ 			return;
+ 		}
+ 		else {
+-			const Obstacle *const obstacle1 = node->obstacle;
+-			const Obstacle *const obstacle2 = obstacle1->nextObstacle_;
++			const Obstacle2D *const obstacle1 = node->obstacle;
++			const Obstacle2D *const obstacle2 = obstacle1->nextObstacle_;
+ 
+ 			const float agentLeftOfLine = leftOf(obstacle1->point_, obstacle2->point_, agent->position_);
+ 
+@@ -328,19 +317,19 @@ namespace RVO {
+ 		}
+ 	}
+ 
+-	bool KdTree::queryVisibility(const Vector2 &q1, const Vector2 &q2, float radius) const
++	bool KdTree2D::queryVisibility(const Vector2 &q1, const Vector2 &q2, float radius) const
+ 	{
+ 		return queryVisibilityRecursive(q1, q2, radius, obstacleTree_);
+ 	}
+ 
+-	bool KdTree::queryVisibilityRecursive(const Vector2 &q1, const Vector2 &q2, float radius, const ObstacleTreeNode *node) const
++	bool KdTree2D::queryVisibilityRecursive(const Vector2 &q1, const Vector2 &q2, float radius, const ObstacleTreeNode *node) const
+ 	{
+ 		if (node == NULL) {
+ 			return true;
+ 		}
+ 		else {
+-			const Obstacle *const obstacle1 = node->obstacle;
+-			const Obstacle *const obstacle2 = obstacle1->nextObstacle_;
++			const Obstacle2D *const obstacle1 = node->obstacle;
++			const Obstacle2D *const obstacle2 = obstacle1->nextObstacle_;
+ 
+ 			const float q1LeftOfI = leftOf(obstacle1->point_, obstacle2->point_, q1);
+ 			const float q2LeftOfI = leftOf(obstacle1->point_, obstacle2->point_, q2);
+diff --git a/thirdparty/rvo2/rvo2_2d/KdTree.h b/thirdparty/rvo2/rvo2_2d/KdTree2d.h
+similarity index 84%
+rename from thirdparty/rvo2/rvo2_2d/KdTree.h
+rename to thirdparty/rvo2/rvo2_2d/KdTree2d.h
+index fa66dfce09..c7159eab97 100644
+--- a/thirdparty/rvo2/rvo2_2d/KdTree.h
++++ b/thirdparty/rvo2/rvo2_2d/KdTree2d.h
+@@ -1,5 +1,5 @@
+ /*
+- * KdTree.h
++ * KdTree2d.h
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,26 +27,26 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#ifndef RVO_KD_TREE_H_
+-#define RVO_KD_TREE_H_
++#ifndef RVO2D_KD_TREE_H_
++#define RVO2D_KD_TREE_H_
+ 
+ /**
+- * \file       KdTree.h
++ * \file       KdTree2d.h
+  * \brief      Contains the KdTree class.
+  */
+ 
+ #include "Definitions.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ 	/**
+ 	 * \brief      Defines <i>k</i>d-trees for agents and static obstacles in the
+ 	 *             simulation.
+ 	 */
+-	class KdTree {
+-	private:
++	class KdTree2D {
++	public:
+ 		/**
+ 		 * \brief      Defines an agent <i>k</i>d-tree node.
+ 		 */
+@@ -106,7 +106,7 @@ namespace RVO {
+ 			/**
+ 			 * \brief      The obstacle number.
+ 			 */
+-			const Obstacle *obstacle;
++			const Obstacle2D *obstacle;
+ 
+ 			/**
+ 			 * \brief      The right obstacle tree node.
+@@ -118,26 +118,26 @@ namespace RVO {
+ 		 * \brief      Constructs a <i>k</i>d-tree instance.
+ 		 * \param      sim             The simulator instance.
+ 		 */
+-		explicit KdTree(RVOSimulator *sim);
++		explicit KdTree2D(RVOSimulator2D *sim);
+ 
+ 		/**
+ 		 * \brief      Destroys this kd-tree instance.
+ 		 */
+-		~KdTree();
++		~KdTree2D();
+ 
+ 		/**
+ 		 * \brief      Builds an agent <i>k</i>d-tree.
+ 		 */
+-		void buildAgentTree();
++		void buildAgentTree(std::vector<Agent2D *> agents);
+ 
+ 		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
+ 
+ 		/**
+ 		 * \brief      Builds an obstacle <i>k</i>d-tree.
+ 		 */
+-		void buildObstacleTree();
++		void buildObstacleTree(std::vector<Obstacle2D *> obstacles);
+ 
+-		ObstacleTreeNode *buildObstacleTreeRecursive(const std::vector<Obstacle *> &
++		ObstacleTreeNode *buildObstacleTreeRecursive(const std::vector<Obstacle2D *> &
+ 													 obstacles);
+ 
+ 		/**
+@@ -146,7 +146,7 @@ namespace RVO {
+ 		 *                             neighbors are to be computed.
+ 		 * \param      rangeSq         The squared range around the agent.
+ 		 */
+-		void computeAgentNeighbors(Agent *agent, float &rangeSq) const;
++		void computeAgentNeighbors(Agent2D *agent, float &rangeSq) const;
+ 
+ 		/**
+ 		 * \brief      Computes the obstacle neighbors of the specified agent.
+@@ -154,7 +154,7 @@ namespace RVO {
+ 		 *                             neighbors are to be computed.
+ 		 * \param      rangeSq         The squared range around the agent.
+ 		 */
+-		void computeObstacleNeighbors(Agent *agent, float rangeSq) const;
++		void computeObstacleNeighbors(Agent2D *agent, float rangeSq) const;
+ 
+ 		/**
+ 		 * \brief      Deletes the specified obstacle tree node.
+@@ -163,10 +163,10 @@ namespace RVO {
+ 		 */
+ 		void deleteObstacleTree(ObstacleTreeNode *node);
+ 
+-		void queryAgentTreeRecursive(Agent *agent, float &rangeSq,
++		void queryAgentTreeRecursive(Agent2D *agent, float &rangeSq,
+ 									 size_t node) const;
+ 
+-		void queryObstacleTreeRecursive(Agent *agent, float rangeSq,
++		void queryObstacleTreeRecursive(Agent2D *agent, float rangeSq,
+ 										const ObstacleTreeNode *node) const;
+ 
+ 		/**
+@@ -188,16 +188,16 @@ namespace RVO {
+ 									  float radius,
+ 									  const ObstacleTreeNode *node) const;
+ 
+-		std::vector<Agent *> agents_;
++		std::vector<Agent2D *> agents_;
+ 		std::vector<AgentTreeNode> agentTree_;
+ 		ObstacleTreeNode *obstacleTree_;
+-		RVOSimulator *sim_;
++		RVOSimulator2D *sim_;
+ 
+ 		static const size_t MAX_LEAF_SIZE = 10;
+ 
+-		friend class Agent;
+-		friend class RVOSimulator;
++		friend class Agent2D;
++		friend class RVOSimulator2D;
+ 	};
+ }
+ 
+-#endif /* RVO_KD_TREE_H_ */
++#endif /* RVO2D_KD_TREE_H_ */
+diff --git a/thirdparty/rvo2/rvo2_2d/Obstacle.cpp b/thirdparty/rvo2/rvo2_2d/Obstacle2d.cpp
+similarity index 77%
+rename from thirdparty/rvo2/rvo2_2d/Obstacle.cpp
+rename to thirdparty/rvo2/rvo2_2d/Obstacle2d.cpp
+index 2b3b2c3808..a80c8af136 100644
+--- a/thirdparty/rvo2/rvo2_2d/Obstacle.cpp
++++ b/thirdparty/rvo2/rvo2_2d/Obstacle2d.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Obstacle.cpp
++ * Obstacle2d.cpp
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,12 +27,12 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "Obstacle.h"
+-#include "RVOSimulator.h"
++#include "Obstacle2d.h"
++#include "RVOSimulator2d.h"
+ 
+-namespace RVO {
+-	Obstacle::Obstacle() : isConvex_(false), nextObstacle_(NULL), prevObstacle_(NULL), id_(0) { }
++namespace RVO2D {
++	Obstacle2D::Obstacle2D() : isConvex_(false), nextObstacle_(NULL), prevObstacle_(NULL), id_(0) { }
+ }
+diff --git a/thirdparty/rvo2/rvo2_2d/Obstacle.h b/thirdparty/rvo2/rvo2_2d/Obstacle2d.h
+similarity index 71%
+rename from thirdparty/rvo2/rvo2_2d/Obstacle.h
+rename to thirdparty/rvo2/rvo2_2d/Obstacle2d.h
+index 2c66a0002c..9ba5937053 100644
+--- a/thirdparty/rvo2/rvo2_2d/Obstacle.h
++++ b/thirdparty/rvo2/rvo2_2d/Obstacle2d.h
+@@ -1,5 +1,5 @@
+ /*
+- * Obstacle.h
++ * Obstacle2d.h
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,42 +27,46 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#ifndef RVO_OBSTACLE_H_
+-#define RVO_OBSTACLE_H_
++#ifndef RVO2D_OBSTACLE_H_
++#define RVO2D_OBSTACLE_H_
+ 
+ /**
+- * \file       Obstacle.h
++ * \file       Obstacle2d.h
+  * \brief      Contains the Obstacle class.
+  */
+ 
+ #include "Definitions.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ 	/**
+ 	 * \brief      Defines static obstacles in the simulation.
+ 	 */
+-	class Obstacle {
+-	private:
++	class Obstacle2D {
++	public:
+ 		/**
+ 		 * \brief      Constructs a static obstacle instance.
+ 		 */
+-		Obstacle();
++		Obstacle2D();
+ 
+ 		bool isConvex_;
+-		Obstacle *nextObstacle_;
++		Obstacle2D *nextObstacle_;
+ 		Vector2 point_;
+-		Obstacle *prevObstacle_;
++		Obstacle2D *prevObstacle_;
+ 		Vector2 unitDir_;
+ 
++		float height_ = 1.0;
++		float elevation_ = 0.0;
++		uint32_t avoidance_layers_ = 1;
++
+ 		size_t id_;
+ 
+-		friend class Agent;
+-		friend class KdTree;
+-		friend class RVOSimulator;
++		friend class Agent2D;
++		friend class KdTree2D;
++		friend class RVOSimulator2D;
+ 	};
+ }
+ 
+-#endif /* RVO_OBSTACLE_H_ */
++#endif /* RVO2D_OBSTACLE_H_ */
+diff --git a/thirdparty/rvo2/rvo2_2d/RVOSimulator.cpp b/thirdparty/rvo2/rvo2_2d/RVOSimulator2d.cpp
+similarity index 58%
+rename from thirdparty/rvo2/rvo2_2d/RVOSimulator.cpp
+rename to thirdparty/rvo2/rvo2_2d/RVOSimulator2d.cpp
+index 833f565788..9fb1555ebc 100644
+--- a/thirdparty/rvo2/rvo2_2d/RVOSimulator.cpp
++++ b/thirdparty/rvo2/rvo2_2d/RVOSimulator2d.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * RVOSimulator.cpp
++ * RVOSimulator2d.cpp
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,29 +27,29 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#include "RVOSimulator.h"
++#include "RVOSimulator2d.h"
+ 
+-#include "Agent.h"
+-#include "KdTree.h"
+-#include "Obstacle.h"
++#include "Agent2d.h"
++#include "KdTree2d.h"
++#include "Obstacle2d.h"
+ 
+ #ifdef _OPENMP
+ #include <omp.h>
+ #endif
+ 
+-namespace RVO {
+-	RVOSimulator::RVOSimulator() : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(0.0f)
++namespace RVO2D {
++	RVOSimulator2D::RVOSimulator2D() : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(0.0f)
+ 	{
+-		kdTree_ = new KdTree(this);
++		kdTree_ = new KdTree2D(this);
+ 	}
+ 
+-	RVOSimulator::RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity) : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(timeStep)
++	RVOSimulator2D::RVOSimulator2D(float timeStep, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity) : defaultAgent_(NULL), globalTime_(0.0f), kdTree_(NULL), timeStep_(timeStep)
+ 	{
+-		kdTree_ = new KdTree(this);
+-		defaultAgent_ = new Agent(this);
++		kdTree_ = new KdTree2D(this);
++		defaultAgent_ = new Agent2D();
+ 
+ 		defaultAgent_->maxNeighbors_ = maxNeighbors;
+ 		defaultAgent_->maxSpeed_ = maxSpeed;
+@@ -60,7 +60,7 @@ namespace RVO {
+ 		defaultAgent_->velocity_ = velocity;
+ 	}
+ 
+-	RVOSimulator::~RVOSimulator()
++	RVOSimulator2D::~RVOSimulator2D()
+ 	{
+ 		if (defaultAgent_ != NULL) {
+ 			delete defaultAgent_;
+@@ -77,13 +77,13 @@ namespace RVO {
+ 		delete kdTree_;
+ 	}
+ 
+-	size_t RVOSimulator::addAgent(const Vector2 &position)
++	size_t RVOSimulator2D::addAgent(const Vector2 &position)
+ 	{
+ 		if (defaultAgent_ == NULL) {
+-			return RVO_ERROR;
++			return RVO2D_ERROR;
+ 		}
+ 
+-		Agent *agent = new Agent(this);
++		Agent2D *agent = new Agent2D();
+ 
+ 		agent->position_ = position;
+ 		agent->maxNeighbors_ = defaultAgent_->maxNeighbors_;
+@@ -101,9 +101,9 @@ namespace RVO {
+ 		return agents_.size() - 1;
+ 	}
+ 
+-	size_t RVOSimulator::addAgent(const Vector2 &position, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
++	size_t RVOSimulator2D::addAgent(const Vector2 &position, float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
+ 	{
+-		Agent *agent = new Agent(this);
++		Agent2D *agent = new Agent2D();
+ 
+ 		agent->position_ = position;
+ 		agent->maxNeighbors_ = maxNeighbors;
+@@ -121,16 +121,16 @@ namespace RVO {
+ 		return agents_.size() - 1;
+ 	}
+ 
+-	size_t RVOSimulator::addObstacle(const std::vector<Vector2> &vertices)
++	size_t RVOSimulator2D::addObstacle(const std::vector<Vector2> &vertices)
+ 	{
+ 		if (vertices.size() < 2) {
+-			return RVO_ERROR;
++			return RVO2D_ERROR;
+ 		}
+ 
+ 		const size_t obstacleNo = obstacles_.size();
+ 
+ 		for (size_t i = 0; i < vertices.size(); ++i) {
+-			Obstacle *obstacle = new Obstacle();
++			Obstacle2D *obstacle = new Obstacle2D();
+ 			obstacle->point_ = vertices[i];
+ 
+ 			if (i != 0) {
+@@ -160,152 +160,146 @@ namespace RVO {
+ 		return obstacleNo;
+ 	}
+ 
+-	void RVOSimulator::doStep()
++	void RVOSimulator2D::doStep()
+ 	{
+-		kdTree_->buildAgentTree();
++		kdTree_->buildAgentTree(agents_);
+ 
+-#ifdef _OPENMP
+-#pragma omp parallel for
+-#endif
+ 		for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
+-			agents_[i]->computeNeighbors();
+-			agents_[i]->computeNewVelocity();
++			agents_[i]->computeNeighbors(this);
++			agents_[i]->computeNewVelocity(this);
+ 		}
+ 
+-#ifdef _OPENMP
+-#pragma omp parallel for
+-#endif
+ 		for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
+-			agents_[i]->update();
++			agents_[i]->update(this);
+ 		}
+ 
+ 		globalTime_ += timeStep_;
+ 	}
+ 
+-	size_t RVOSimulator::getAgentAgentNeighbor(size_t agentNo, size_t neighborNo) const
++	size_t RVOSimulator2D::getAgentAgentNeighbor(size_t agentNo, size_t neighborNo) const
+ 	{
+ 		return agents_[agentNo]->agentNeighbors_[neighborNo].second->id_;
+ 	}
+ 
+-	size_t RVOSimulator::getAgentMaxNeighbors(size_t agentNo) const
++	size_t RVOSimulator2D::getAgentMaxNeighbors(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->maxNeighbors_;
+ 	}
+ 
+-	float RVOSimulator::getAgentMaxSpeed(size_t agentNo) const
++	float RVOSimulator2D::getAgentMaxSpeed(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->maxSpeed_;
+ 	}
+ 
+-	float RVOSimulator::getAgentNeighborDist(size_t agentNo) const
++	float RVOSimulator2D::getAgentNeighborDist(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->neighborDist_;
+ 	}
+ 
+-	size_t RVOSimulator::getAgentNumAgentNeighbors(size_t agentNo) const
++	size_t RVOSimulator2D::getAgentNumAgentNeighbors(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->agentNeighbors_.size();
+ 	}
+ 
+-	size_t RVOSimulator::getAgentNumObstacleNeighbors(size_t agentNo) const
++	size_t RVOSimulator2D::getAgentNumObstacleNeighbors(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->obstacleNeighbors_.size();
+ 	}
+ 
+-	size_t RVOSimulator::getAgentNumORCALines(size_t agentNo) const
++	size_t RVOSimulator2D::getAgentNumORCALines(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->orcaLines_.size();
+ 	}
+ 
+-	size_t RVOSimulator::getAgentObstacleNeighbor(size_t agentNo, size_t neighborNo) const
++	size_t RVOSimulator2D::getAgentObstacleNeighbor(size_t agentNo, size_t neighborNo) const
+ 	{
+ 		return agents_[agentNo]->obstacleNeighbors_[neighborNo].second->id_;
+ 	}
+ 
+-	const Line &RVOSimulator::getAgentORCALine(size_t agentNo, size_t lineNo) const
++	const Line &RVOSimulator2D::getAgentORCALine(size_t agentNo, size_t lineNo) const
+ 	{
+ 		return agents_[agentNo]->orcaLines_[lineNo];
+ 	}
+ 
+-	const Vector2 &RVOSimulator::getAgentPosition(size_t agentNo) const
++	const Vector2 &RVOSimulator2D::getAgentPosition(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->position_;
+ 	}
+ 
+-	const Vector2 &RVOSimulator::getAgentPrefVelocity(size_t agentNo) const
++	const Vector2 &RVOSimulator2D::getAgentPrefVelocity(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->prefVelocity_;
+ 	}
+ 
+-	float RVOSimulator::getAgentRadius(size_t agentNo) const
++	float RVOSimulator2D::getAgentRadius(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->radius_;
+ 	}
+ 
+-	float RVOSimulator::getAgentTimeHorizon(size_t agentNo) const
++	float RVOSimulator2D::getAgentTimeHorizon(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->timeHorizon_;
+ 	}
+ 
+-	float RVOSimulator::getAgentTimeHorizonObst(size_t agentNo) const
++	float RVOSimulator2D::getAgentTimeHorizonObst(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->timeHorizonObst_;
+ 	}
+ 
+-	const Vector2 &RVOSimulator::getAgentVelocity(size_t agentNo) const
++	const Vector2 &RVOSimulator2D::getAgentVelocity(size_t agentNo) const
+ 	{
+ 		return agents_[agentNo]->velocity_;
+ 	}
+ 
+-	float RVOSimulator::getGlobalTime() const
++	float RVOSimulator2D::getGlobalTime() const
+ 	{
+ 		return globalTime_;
+ 	}
+ 
+-	size_t RVOSimulator::getNumAgents() const
++	size_t RVOSimulator2D::getNumAgents() const
+ 	{
+ 		return agents_.size();
+ 	}
+ 
+-	size_t RVOSimulator::getNumObstacleVertices() const
++	size_t RVOSimulator2D::getNumObstacleVertices() const
+ 	{
+ 		return obstacles_.size();
+ 	}
+ 
+-	const Vector2 &RVOSimulator::getObstacleVertex(size_t vertexNo) const
++	const Vector2 &RVOSimulator2D::getObstacleVertex(size_t vertexNo) const
+ 	{
+ 		return obstacles_[vertexNo]->point_;
+ 	}
+ 
+-	size_t RVOSimulator::getNextObstacleVertexNo(size_t vertexNo) const
++	size_t RVOSimulator2D::getNextObstacleVertexNo(size_t vertexNo) const
+ 	{
+ 		return obstacles_[vertexNo]->nextObstacle_->id_;
+ 	}
+ 
+-	size_t RVOSimulator::getPrevObstacleVertexNo(size_t vertexNo) const
++	size_t RVOSimulator2D::getPrevObstacleVertexNo(size_t vertexNo) const
+ 	{
+ 		return obstacles_[vertexNo]->prevObstacle_->id_;
+ 	}
+ 
+-	float RVOSimulator::getTimeStep() const
++	float RVOSimulator2D::getTimeStep() const
+ 	{
+ 		return timeStep_;
+ 	}
+ 
+-	void RVOSimulator::processObstacles()
++	void RVOSimulator2D::processObstacles()
+ 	{
+-		kdTree_->buildObstacleTree();
++		kdTree_->buildObstacleTree(obstacles_);
+ 	}
+ 
+-	bool RVOSimulator::queryVisibility(const Vector2 &point1, const Vector2 &point2, float radius) const
++	bool RVOSimulator2D::queryVisibility(const Vector2 &point1, const Vector2 &point2, float radius) const
+ 	{
+ 		return kdTree_->queryVisibility(point1, point2, radius);
+ 	}
+ 
+-	void RVOSimulator::setAgentDefaults(float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
++	void RVOSimulator2D::setAgentDefaults(float neighborDist, size_t maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, const Vector2 &velocity)
+ 	{
+ 		if (defaultAgent_ == NULL) {
+-			defaultAgent_ = new Agent(this);
++			defaultAgent_ = new Agent2D();
+ 		}
+ 
+ 		defaultAgent_->maxNeighbors_ = maxNeighbors;
+@@ -317,52 +311,52 @@ namespace RVO {
+ 		defaultAgent_->velocity_ = velocity;
+ 	}
+ 
+-	void RVOSimulator::setAgentMaxNeighbors(size_t agentNo, size_t maxNeighbors)
++	void RVOSimulator2D::setAgentMaxNeighbors(size_t agentNo, size_t maxNeighbors)
+ 	{
+ 		agents_[agentNo]->maxNeighbors_ = maxNeighbors;
+ 	}
+ 
+-	void RVOSimulator::setAgentMaxSpeed(size_t agentNo, float maxSpeed)
++	void RVOSimulator2D::setAgentMaxSpeed(size_t agentNo, float maxSpeed)
+ 	{
+ 		agents_[agentNo]->maxSpeed_ = maxSpeed;
+ 	}
+ 
+-	void RVOSimulator::setAgentNeighborDist(size_t agentNo, float neighborDist)
++	void RVOSimulator2D::setAgentNeighborDist(size_t agentNo, float neighborDist)
+ 	{
+ 		agents_[agentNo]->neighborDist_ = neighborDist;
+ 	}
+ 
+-	void RVOSimulator::setAgentPosition(size_t agentNo, const Vector2 &position)
++	void RVOSimulator2D::setAgentPosition(size_t agentNo, const Vector2 &position)
+ 	{
+ 		agents_[agentNo]->position_ = position;
+ 	}
+ 
+-	void RVOSimulator::setAgentPrefVelocity(size_t agentNo, const Vector2 &prefVelocity)
++	void RVOSimulator2D::setAgentPrefVelocity(size_t agentNo, const Vector2 &prefVelocity)
+ 	{
+ 		agents_[agentNo]->prefVelocity_ = prefVelocity;
+ 	}
+ 
+-	void RVOSimulator::setAgentRadius(size_t agentNo, float radius)
++	void RVOSimulator2D::setAgentRadius(size_t agentNo, float radius)
+ 	{
+ 		agents_[agentNo]->radius_ = radius;
+ 	}
+ 
+-	void RVOSimulator::setAgentTimeHorizon(size_t agentNo, float timeHorizon)
++	void RVOSimulator2D::setAgentTimeHorizon(size_t agentNo, float timeHorizon)
+ 	{
+ 		agents_[agentNo]->timeHorizon_ = timeHorizon;
+ 	}
+ 
+-	void RVOSimulator::setAgentTimeHorizonObst(size_t agentNo, float timeHorizonObst)
++	void RVOSimulator2D::setAgentTimeHorizonObst(size_t agentNo, float timeHorizonObst)
+ 	{
+ 		agents_[agentNo]->timeHorizonObst_ = timeHorizonObst;
+ 	}
+ 
+-	void RVOSimulator::setAgentVelocity(size_t agentNo, const Vector2 &velocity)
++	void RVOSimulator2D::setAgentVelocity(size_t agentNo, const Vector2 &velocity)
+ 	{
+ 		agents_[agentNo]->velocity_ = velocity;
+ 	}
+ 
+-	void RVOSimulator::setTimeStep(float timeStep)
++	void RVOSimulator2D::setTimeStep(float timeStep)
+ 	{
+ 		timeStep_ = timeStep;
+ 	}
+diff --git a/thirdparty/rvo2/rvo2_2d/RVOSimulator.h b/thirdparty/rvo2/rvo2_2d/RVOSimulator2d.h
+similarity index 96%
+rename from thirdparty/rvo2/rvo2_2d/RVOSimulator.h
+rename to thirdparty/rvo2/rvo2_2d/RVOSimulator2d.h
+index 4a9ffbabb0..e074e0fe0e 100644
+--- a/thirdparty/rvo2/rvo2_2d/RVOSimulator.h
++++ b/thirdparty/rvo2/rvo2_2d/RVOSimulator2d.h
+@@ -1,5 +1,5 @@
+ /*
+- * RVOSimulator.h
++ * RVOSimulator2d.h
+  * RVO2 Library
+  *
+  * Copyright 2008 University of North Carolina at Chapel Hill
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,37 +27,36 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+-#ifndef RVO_RVO_SIMULATOR_H_
+-#define RVO_RVO_SIMULATOR_H_
++#ifndef RVO2D_RVO_SIMULATOR_H_
++#define RVO2D_RVO_SIMULATOR_H_
+ 
+ /**
+- * \file       RVOSimulator.h
+- * \brief      Contains the RVOSimulator class.
++ * \file       RVOSimulator2d.h
++ * \brief      Contains the RVOSimulator2D class.
+  */
+ 
+ #include <cstddef>
+ #include <limits>
+ #include <vector>
+ 
+-#include "Export.h"
+ #include "Vector2.h"
+ 
+-namespace RVO {
++namespace RVO2D {
+ 	/**
+ 	 * \brief       Error value.
+ 	 *
+ 	 * A value equal to the largest unsigned integer that is returned in case
+-	 * of an error by functions in RVO::RVOSimulator.
++	 * of an error by functions in RVO2D::RVOSimulator2D.
+ 	 */
+-	const size_t RVO_ERROR = std::numeric_limits<size_t>::max();
++	const size_t RVO2D_ERROR = std::numeric_limits<size_t>::max();
+ 
+ 	/**
+ 	 * \brief      Defines a directed line.
+ 	 */
+-	class RVO_EXPORT Line {
++	class Line {
+ 	public:
+ 		/**
+ 		 * \brief     A point on the directed line.
+@@ -70,21 +69,21 @@ namespace RVO {
+ 		Vector2 direction;
+ 	};
+ 
+-	class Agent;
+-	class KdTree;
+-	class Obstacle;
++	class Agent2D;
++	class KdTree2D;
++	class Obstacle2D;
+ 
+ 	/**
+ 	 * \brief      Defines the simulation.
+ 	 *
+ 	 * The main class of the library that contains all simulation functionality.
+ 	 */
+-	class RVO_EXPORT RVOSimulator {
++	class RVOSimulator2D {
+ 	public:
+ 		/**
+ 		 * \brief      Constructs a simulator instance.
+ 		 */
+-		RVOSimulator();
++		RVOSimulator2D();
+ 
+ 		/**
+ 		 * \brief      Constructs a simulator instance and sets the default
+@@ -127,21 +126,21 @@ namespace RVO {
+ 		 * \param      velocity        The default initial two-dimensional linear
+ 		 *                             velocity of a new agent (optional).
+ 		 */
+-		RVOSimulator(float timeStep, float neighborDist, size_t maxNeighbors,
++		RVOSimulator2D(float timeStep, float neighborDist, size_t maxNeighbors,
+ 					 float timeHorizon, float timeHorizonObst, float radius,
+ 					 float maxSpeed, const Vector2 &velocity = Vector2());
+ 
+ 		/**
+ 		 * \brief      Destroys this simulator instance.
+ 		 */
+-		~RVOSimulator();
++		~RVOSimulator2D();
+ 
+ 		/**
+ 		 * \brief      Adds a new agent with default properties to the
+ 		 *             simulation.
+ 		 * \param      position        The two-dimensional starting position of
+ 		 *                             this agent.
+-		 * \return     The number of the agent, or RVO::RVO_ERROR when the agent
++		 * \return     The number of the agent, or RVO2D::RVO2D_ERROR when the agent
+ 		 *             defaults have not been set.
+ 		 */
+ 		size_t addAgent(const Vector2 &position);
+@@ -197,7 +196,7 @@ namespace RVO {
+ 		 * \param      vertices        List of the vertices of the polygonal
+ 		 *             obstacle in counterclockwise order.
+ 		 * \return     The number of the first vertex of the obstacle,
+-		 *             or RVO::RVO_ERROR when the number of vertices is less than two.
++		 *             or RVO2D::RVO2D_ERROR when the number of vertices is less than two.
+ 		 * \note       To add a "negative" obstacle, e.g. a bounding polygon around
+ 		 *             the environment, the vertices should be listed in clockwise
+ 		 *             order.
+@@ -576,18 +575,18 @@ namespace RVO {
+ 		 */
+ 		void setTimeStep(float timeStep);
+ 
+-	private:
+-		std::vector<Agent *> agents_;
+-		Agent *defaultAgent_;
++	public:
++		std::vector<Agent2D *> agents_;
++		Agent2D *defaultAgent_;
+ 		float globalTime_;
+-		KdTree *kdTree_;
+-		std::vector<Obstacle *> obstacles_;
++		KdTree2D *kdTree_;
++		std::vector<Obstacle2D *> obstacles_;
+ 		float timeStep_;
+ 
+-		friend class Agent;
+-		friend class KdTree;
+-		friend class Obstacle;
++		friend class Agent2D;
++		friend class KdTree2D;
++		friend class Obstacle2D;
+ 	};
+ }
+ 
+-#endif /* RVO_RVO_SIMULATOR_H_ */
++#endif /* RVO2D_RVO_SIMULATOR_H_ */
+diff --git a/thirdparty/rvo2/rvo2_2d/Vector2.h b/thirdparty/rvo2/rvo2_2d/Vector2.h
+index d45229eb87..24353e09f3 100644
+--- a/thirdparty/rvo2/rvo2_2d/Vector2.h
++++ b/thirdparty/rvo2/rvo2_2d/Vector2.h
+@@ -8,7 +8,7 @@
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+- *     https://www.apache.org/licenses/LICENSE-2.0
++ *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+@@ -27,7 +27,7 @@
+  * Chapel Hill, N.C. 27599-3175
+  * United States of America
+  *
+- * <https://gamma.cs.unc.edu/RVO2/>
++ * <http://gamma.cs.unc.edu/RVO2/>
+  */
+ 
+ #ifndef RVO_VECTOR2_H_
+@@ -41,13 +41,11 @@
+ #include <cmath>
+ #include <ostream>
+ 
+-#include "Export.h"
+-
+-namespace RVO {
++namespace RVO2D {
+ 	/**
+ 	 * \brief      Defines a two-dimensional vector.
+ 	 */
+-	class RVO_EXPORT Vector2 {
++	class Vector2 {
+ 	public:
+ 		/**
+ 		 * \brief      Constructs and initializes a two-dimensional vector instance
+@@ -65,6 +63,12 @@ namespace RVO {
+ 		 */
+ 		inline Vector2(float x, float y) : x_(x), y_(y) { }
+ 
++		inline Vector2(const Vector2 &vector)
++		{
++			x_ = vector.x();
++			y_ = vector.y();
++		}
++
+ 		/**
+ 		 * \brief      Returns the x-coordinate of this two-dimensional vector.
+ 		 * \return     The x-coordinate of the two-dimensional vector.
+@@ -239,6 +243,14 @@ namespace RVO {
+ 			return *this;
+ 		}
+ 
++		inline Vector2 &operator=(const Vector2 &vector)
++		{
++			x_ = vector.x();
++			y_ = vector.y();
++
++			return *this;
++		}
++
+ 	private:
+ 		float x_;
+ 		float y_;
+@@ -255,7 +267,7 @@ namespace RVO {
+ 	 * \return     The scalar multiplication of the two-dimensional vector with the
+ 	 *             scalar value.
+ 	 */
+-	RVO_EXPORT inline Vector2 operator*(float s, const Vector2 &vector)
++	inline Vector2 operator*(float s, const Vector2 &vector)
+ 	{
+ 		return Vector2(s * vector.x(), s * vector.y());
+ 	}
+@@ -270,8 +282,7 @@ namespace RVO {
+ 	 *                             the output stream.
+ 	 * \return     A reference to the output stream.
+ 	 */
+-	RVO_EXPORT inline std::ostream &operator<<(std::ostream &os,
+-											   const Vector2 &vector)
++	inline std::ostream &operator<<(std::ostream &os, const Vector2 &vector)
+ 	{
+ 		os << "(" << vector.x() << "," << vector.y() << ")";
+ 
+@@ -285,7 +296,7 @@ namespace RVO {
+ 	 *                             computed.
+ 	 * \return     The length of the two-dimensional vector.
+ 	 */
+-	RVO_EXPORT inline float abs(const Vector2 &vector)
++	inline float abs(const Vector2 &vector)
+ 	{
+ 		return std::sqrt(vector * vector);
+ 	}
+@@ -298,7 +309,7 @@ namespace RVO {
+ 	 *                             is to be computed.
+ 	 * \return     The squared length of the two-dimensional vector.
+ 	 */
+-	RVO_EXPORT inline float absSq(const Vector2 &vector)
++	inline float absSq(const Vector2 &vector)
+ 	{
+ 		return vector * vector;
+ 	}
+@@ -313,7 +324,7 @@ namespace RVO {
+ 	 *                             matrix.
+ 	 * \return     The determinant of the two-dimensional square matrix.
+ 	 */
+-	RVO_EXPORT inline float det(const Vector2 &vector1, const Vector2 &vector2)
++	inline float det(const Vector2 &vector1, const Vector2 &vector2)
+ 	{
+ 		return vector1.x() * vector2.y() - vector1.y() * vector2.x();
+ 	}
+@@ -326,7 +337,7 @@ namespace RVO {
+ 	 *                             is to be computed.
+ 	 * \return     The normalization of the two-dimensional vector.
+ 	 */
+-	RVO_EXPORT inline Vector2 normalize(const Vector2 &vector)
++	inline Vector2 normalize(const Vector2 &vector)
+ 	{
+ 		return vector / abs(vector);
+ 	}
