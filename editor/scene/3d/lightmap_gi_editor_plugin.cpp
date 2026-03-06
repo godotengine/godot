@@ -74,9 +74,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 
 			if (err == LightmapGI::BAKE_ERROR_OK) {
 				if (get_tree()->get_edited_scene_root() == lightmap) {
-					err = lightmap->bake(lightmap, p_file, bake_func_step);
+					err = lightmap->bake(lightmap, p_file, bake_func_step, nullptr, preview_mode);
 				} else {
-					err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step);
+					err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step, nullptr, preview_mode);
 				}
 			}
 		} else {
@@ -131,7 +131,8 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	}
 }
 
-void LightmapGIEditorPlugin::_bake() {
+void LightmapGIEditorPlugin::_bake(bool p_preview_mode) {
+	preview_mode = p_preview_mode;
 	_bake_select_file("");
 }
 
@@ -150,8 +151,10 @@ bool LightmapGIEditorPlugin::handles(Object *p_object) const {
 
 void LightmapGIEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
+		bake_preview->show();
 		bake->show();
 	} else {
+		bake_preview->hide();
 		bake->hide();
 	}
 }
@@ -185,11 +188,21 @@ void LightmapGIEditorPlugin::_bind_methods() {
 }
 
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
-	bake = memnew(Button);
-	bake->set_theme_type_variation(SceneStringName(FlatButton));
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
+	bake_preview = memnew(Button);
+	bake_preview->set_theme_type_variation(SceneStringName(FlatButton));
+	bake_preview->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("BakePreview"), EditorStringName(EditorIcons)));
+	bake_preview->set_tooltip_text(TTRC("Bakes lightmaps with low-quality settings for quick iteration.\nPreview bake quality can be changed in the Rendering > Lightmapping > Preview Bake section of the Project Settings."));
+	bake_preview->set_text(TTRC("Preview Bake"));
+	bake_preview->hide();
+	bake_preview->connect(SceneStringName(pressed), callable_mp(this, &LightmapGIEditorPlugin::_bake).bind(true));
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_preview);
+
+	bake = memnew(Button);
+	bake->set_theme_type_variation(SceneStringName(FlatButton));
 	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+	bake->set_tooltip_text(TTR("Bakes lightmaps with the settings specified in the LightmapGI node."));
 	bake->set_text(TTR("Bake Lightmaps"));
 
 #ifdef MODULE_LIGHTMAPPER_RD_ENABLED
@@ -209,7 +222,7 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 #endif // MODULE_LIGHTMAPPER_RD_ENABLED
 
 	bake->hide();
-	bake->connect(SceneStringName(pressed), Callable(this, "_bake"));
+	bake->connect(SceneStringName(pressed), callable_mp(this, &LightmapGIEditorPlugin::_bake).bind(false));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
 	lightmap = nullptr;
 
