@@ -139,6 +139,7 @@
 #include "editor/settings/editor_layouts_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/editor_settings_dialog.h"
+#include "editor/settings/editor_settings_helper.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
 #include "editor/shader/visual_shader_editor_plugin.h"
@@ -8315,6 +8316,7 @@ EditorNode::EditorNode() {
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
+		EditorSettingsHelper::create();
 	}
 
 	ED_SHORTCUT("editor/lock_selected_nodes", TTRC("Lock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::L);
@@ -9541,6 +9543,7 @@ EditorNode::~EditorNode() {
 	memdelete(project_upgrade_tool);
 	memdelete(editor_dock_manager);
 
+	EditorSettingsHelper::destroy();
 	EditorSettings::destroy();
 	EditorThemeManager::finalize();
 

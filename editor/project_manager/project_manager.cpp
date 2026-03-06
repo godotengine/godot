@@ -54,6 +54,7 @@
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_helper.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
@@ -1335,6 +1336,7 @@ ProjectManager::ProjectManager() {
 	{
 		if (!EditorSettings::get_singleton()) {
 			EditorSettings::create();
+			EditorSettingsHelper::create();
 		}
 		EditorSettings::get_singleton()->set_optimize_save(false); // Just write settings as they come.
 
@@ -1987,6 +1989,7 @@ ProjectManager::~ProjectManager() {
 #endif
 
 	if (EditorSettings::get_singleton()) {
+		EditorSettingsHelper::destroy();
 		EditorSettings::destroy();
 	}
 
