@@ -128,6 +128,27 @@ TEST_CASE("[Vector2i] Operators") {
 	CHECK_MESSAGE(
 			Vector2i(Vector2(1.1, 2.9)) == Vector2i(1, 2),
 			"Vector2i constructed from Vector2 should work as expected.");
+
+	CHECK_MESSAGE(
+			(Vector2i(1, 2) + 1) == Vector2i(2, 3),
+			"Vector2i + int should give expected results.");
+	CHECK_MESSAGE(
+			(Vector2i(1, 2) - 3) == Vector2i(-2, -1),
+			"Vector2i - int should give expected results.");
+	{
+		Vector2i v(1, 2);
+		v += -5;
+		CHECK_MESSAGE(
+				v == Vector2i(-4, -3),
+				"Vector2i += int should give expected results.");
+	}
+	{
+		Vector2i v(1, 2);
+		v -= -5;
+		CHECK_MESSAGE(
+				v == Vector2i(6, 7),
+				"Vector2i -= int should give expected results.");
+	}
 }
 
 TEST_CASE("[Vector2i] Other methods") {

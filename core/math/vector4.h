@@ -137,6 +137,12 @@ struct [[nodiscard]] Vector4 {
 	constexpr Vector4 operator*(real_t p_s) const;
 	constexpr Vector4 operator/(real_t p_s) const;
 
+	constexpr Vector4 operator+(real_t p_s) const;
+	constexpr void operator+=(real_t p_s);
+
+	constexpr Vector4 operator-(real_t p_s) const;
+	constexpr void operator-=(real_t p_s);
+
 	constexpr bool operator==(const Vector4 &p_vec4) const;
 	constexpr bool operator!=(const Vector4 &p_vec4) const;
 	constexpr bool operator>(const Vector4 &p_vec4) const;
@@ -228,6 +234,28 @@ constexpr Vector4 Vector4::operator/(const Vector4 &p_vec4) const {
 
 constexpr Vector4 Vector4::operator-() const {
 	return Vector4(-x, -y, -z, -w);
+}
+
+constexpr Vector4 Vector4::operator+(real_t p_s) const {
+	return Vector4(x + p_s, y + p_s, z + p_s, w + p_s);
+}
+
+constexpr void Vector4::operator+=(real_t p_s) {
+	x += p_s;
+	y += p_s;
+	z += p_s;
+	w += p_s;
+}
+
+constexpr Vector4 Vector4::operator-(real_t p_s) const {
+	return Vector4(x - p_s, y - p_s, z - p_s, w - p_s);
+}
+
+constexpr void Vector4::operator-=(real_t p_s) {
+	x -= p_s;
+	y -= p_s;
+	z -= p_s;
+	w -= p_s;
 }
 
 constexpr Vector4 Vector4::operator*(real_t p_s) const {
