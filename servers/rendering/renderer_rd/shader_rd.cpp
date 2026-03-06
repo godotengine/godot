@@ -816,7 +816,7 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 	ERR_FAIL_COND(pipeline_type != RD::PIPELINE_TYPE_RASTERIZATION);
 
 	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_NULL(version);
+	ERR_FAIL_NULL_MSG(version, "Can't set shader code for a nonexistent shader version. This may happen because the shader previously failed to compile.");
 
 	MutexLock lock(*version->mutex);
 
@@ -833,7 +833,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 	ERR_FAIL_COND(pipeline_type != RD::PIPELINE_TYPE_COMPUTE);
 
 	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_NULL(version);
+	ERR_FAIL_NULL_MSG(version, "Can't set compute shader code for a nonexistent shader version. This may happen because the shader previously failed to compile.");
 
 	MutexLock lock(*version->mutex);
 
@@ -1180,7 +1180,7 @@ Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &
 		ERR_PRINT(error);
 
 #ifdef DEBUG_ENABLED
-		ERR_PRINT("code:\n" + p_stage_sources[compilation_failed_stage].get_with_code_lines());
+		ERR_PRINT("Code:\n" + p_stage_sources[compilation_failed_stage].get_with_code_lines());
 #endif
 
 		return Vector<RD::ShaderStageSPIRVData>();
@@ -1232,7 +1232,7 @@ bool ShaderRD::shader_cache_save_debug = true;
 ShaderRD::~ShaderRD() {
 	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
-		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
+		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed.");
 		for (const RID &version_rid : remaining) {
 			version_free(version_rid);
 		}
