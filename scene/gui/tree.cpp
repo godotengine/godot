@@ -4528,6 +4528,9 @@ bool Tree::edit_selected(bool p_force_edit) {
 		line_editor->select_all();
 		line_editor->show();
 
+		const String &col_title = columns[col].title;
+		line_editor->set_accessibility_name(col_title.is_empty() ? c.text : col_title);
+
 		text_editor->hide();
 
 		popup_editor->set_position(popup_rect.position);
@@ -4551,6 +4554,9 @@ bool Tree::edit_selected(bool p_force_edit) {
 		text_editor->set_text(c.text);
 		text_editor->select_all();
 		text_editor->show();
+
+		const String &col_title_ml = columns[col].title;
+		text_editor->set_accessibility_name(col_title_ml.is_empty() ? c.text : col_title_ml);
 
 		popup_editor->set_position(get_screen_position() + rect.position);
 		popup_editor->set_size(rect.size * popup_scale);
