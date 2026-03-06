@@ -79,6 +79,7 @@ ignore-words-list = [
 	"doubleclick",
 	"expct",
 	"findn",
+	"fo",
 	"gird",
 	"hel",
 	"inout",
