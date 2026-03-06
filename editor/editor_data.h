@@ -200,8 +200,8 @@ public:
 	void instantiate_object_properties(Object *p_object);
 
 	int add_edited_scene(int p_at_pos);
-	void move_edited_scene_index(int p_idx, int p_to_idx);
 	void remove_scene(int p_idx);
+	void set_scene_root(int p_idx, Node *p_root);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
@@ -223,6 +223,7 @@ public:
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
+	void move_scene_to_index(int p_idx, int p_to_idx);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
