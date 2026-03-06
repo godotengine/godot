@@ -31,8 +31,52 @@
 #include "editor_title_bar.h"
 
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "editor/gui/editor_caption_buttons.h"
 #include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
+
+void EditorTitleBar::_ensure_window_buttons() {
+#ifdef WINDOWS_ENABLED
+	if (window_buttons || !can_move || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE)) {
+		return;
+	}
+
+	Window *win = get_window();
+	if (!win || !win->get_flag(Window::FLAG_EXTEND_TO_TITLE)) {
+		return;
+	}
+
+	window_buttons = memnew(EditorCaptionButtons);
+	window_buttons->connect("minimize_requested", callable_mp(this, &EditorTitleBar::_minimize_pressed));
+	window_buttons->connect("toggle_maximize_requested", callable_mp(this, &EditorTitleBar::_maximize_pressed));
+	window_buttons->connect("close_requested", callable_mp(this, &EditorTitleBar::_close_pressed));
+
+	add_child(window_buttons);
+	move_child(window_buttons, get_child_count() - 1);
+	_sync_window_buttons();
+#endif
+}
+
+void EditorTitleBar::_sync_window_buttons() {
+	if (!window_buttons) {
+		return;
+	}
+
+	window_buttons->update_for_window(get_window());
+}
+
+void EditorTitleBar::_minimize_pressed() {
+	emit_signal(SNAME("minimize_requested"));
+}
+
+void EditorTitleBar::_maximize_pressed() {
+	emit_signal(SNAME("toggle_maximize_requested"));
+}
+
+void EditorTitleBar::_close_pressed() {
+	emit_signal(SNAME("close_requested"));
+}
 
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (!can_move) {
@@ -56,18 +100,6 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && has_point(mb->get_position())) {
 		Window *w = Object::cast_to<Window>(get_viewport());
 		if (w) {
-			if (mb->get_button_index() == MouseButton::LEFT) {
-				if (mb->is_pressed()) {
-					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_DRAG)) {
-						DisplayServer::get_singleton()->window_start_drag(w->get_window_id());
-					} else {
-						click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
-						moving = true;
-					}
-				} else {
-					moving = false;
-				}
-			}
 			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
 				if (DisplayServer::get_singleton()->window_maximize_on_title_dbl_click()) {
 					if (w->get_mode() == Window::MODE_WINDOWED) {
@@ -79,6 +111,20 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 					w->set_mode(Window::MODE_MINIMIZED);
 				}
 				moving = false;
+				return;
+			}
+
+			if (mb->get_button_index() == MouseButton::LEFT) {
+				if (mb->is_pressed()) {
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_DRAG)) {
+						DisplayServer::get_singleton()->window_start_drag(w->get_window_id());
+					} else {
+						click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
+						moving = true;
+					}
+				} else {
+					moving = false;
+				}
 			}
 		}
 	}
@@ -100,10 +146,15 @@ void EditorTitleBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			SceneTree::get_singleton()->get_root()->connect(SceneStringName(nonclient_window_input), callable_mp(this, &EditorTitleBar::gui_input));
+			_ensure_window_buttons();
 			[[fallthrough]];
 		}
 		case NOTIFICATION_RESIZED: {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
+			_sync_window_buttons();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_sync_window_buttons();
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!center_control) {
@@ -129,7 +180,7 @@ void EditorTitleBar::_notification(int p_what) {
 			}
 
 			for (int i = start; i != end; i += delta) {
-				Control *c = as_sortable_control(get_child(i));
+				Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
 				if (!c) {
 					continue;
 				}
@@ -157,6 +208,7 @@ void EditorTitleBar::_notification(int p_what) {
 				fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
 			}
+			_sync_window_buttons();
 		} break;
 	}
 }
@@ -164,8 +216,16 @@ void EditorTitleBar::_notification(int p_what) {
 void EditorTitleBar::set_can_move_window(bool p_enabled) {
 	can_move = p_enabled;
 	set_process_input(can_move);
+	_ensure_window_buttons();
+	_sync_window_buttons();
 }
 
 bool EditorTitleBar::get_can_move_window() const {
 	return can_move;
+}
+
+void EditorTitleBar::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("minimize_requested"));
+	ADD_SIGNAL(MethodInfo("toggle_maximize_requested"));
+	ADD_SIGNAL(MethodInfo("close_requested"));
 }

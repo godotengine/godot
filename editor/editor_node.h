@@ -578,6 +578,9 @@ private:
 	void _vp_resized();
 	void _titlebar_resized();
 	void _viewport_resized();
+	void _titlebar_minimize_requested();
+	void _titlebar_toggle_maximize_requested();
+	void _titlebar_close_requested();
 
 	void _update_undo_redo_allowed();
 
