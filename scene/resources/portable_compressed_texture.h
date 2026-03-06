@@ -63,7 +63,7 @@ private:
 	Vector<uint8_t> compressed_buffer;
 	Size2 size;
 	Size2 size_override;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 	Image::Format format = Image::FORMAT_L8;
 
 	mutable RID texture;
