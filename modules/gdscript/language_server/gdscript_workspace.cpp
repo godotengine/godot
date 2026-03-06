@@ -593,6 +593,36 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
+Vector<LSP::CodeAction> GDScriptWorkspace::get_code_actions_for_params(const LSP::CodeActionParams &p_params) {
+	Vector<LSP::CodeAction> lsp_code_actions_to_send;
+
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_params.textDocument.uri));
+	if (parser) {
+		const Vector<LSP::CodeAction> &list = parser->get_lsp_code_actions();
+
+		for (const LSP::CodeAction &action : list) {
+			// Loop over diagnostics in params
+			// If any of them overlap with this action's diagnostics, then add it, otherwise skip
+			bool overlap_found = false;
+			for (const LSP::Diagnostic &d : p_params.context.diagnostics) {
+				for (const LSP::Diagnostic &d2 : action.diagnostics) {
+					if (d.range.overlaps(d2.range)) {
+						overlap_found = true;
+						break;
+					}
+				}
+			}
+			if (!overlap_found) {
+				continue;
+			}
+			lsp_code_actions_to_send.append(action);
+		}
+		return lsp_code_actions_to_send;
+	}
+
+	return Vector<LSP::CodeAction>();
+}
+
 void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	String path = get_file_path(p_params.textDocument.uri);
 	String call_hint;

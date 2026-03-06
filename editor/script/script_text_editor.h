@@ -158,13 +158,18 @@ class ScriptTextEditor : public CodeEditorBase {
 
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
+	Vector<ScriptLanguage::CodeActionAndDiagnostics> code_actions;
+
 protected:
 	void _breakpoint_toggled(int p_row);
 
 	void _on_caret_moved();
 
+	void _on_code_action_apply_requested(const Dictionary &p_action);
+
 	void _update_warnings();
 	void _update_errors();
+	void _update_code_actions();
 
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;

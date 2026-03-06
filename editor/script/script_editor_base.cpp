@@ -59,6 +59,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
+	ADD_SIGNAL(MethodInfo("document_edits_requested", PropertyInfo(Variant::DICTIONARY, "edits")));
 }
 
 String ScriptEditorBase::get_name() {

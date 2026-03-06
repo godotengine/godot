@@ -145,6 +145,29 @@ struct Range {
 		}
 	}
 
+	bool overlaps(const Range &p_range) const {
+		// TODO: I think this has potential to break when dealing with specific
+		// character ranges? Need to double-check, and come up with such a scenario...
+
+		//     v p_range.start.line      v p_range.end.line
+		//     |-------------------------|
+		// |---------------------|
+		// ^ start.line          ^ end.line
+		if (start.line <= p_range.start.line && p_range.end.line <= end.line) {
+			return true;
+		}
+
+		// v p_range.start.line    v p_range.end.line
+		// |-----------------------|
+		//      |---------------------|
+		//      ^ start.line          ^ end.line
+		if (start.line <= p_range.end.line && p_range.end.line <= end.line) {
+			return true;
+		}
+
+		return false;
+	}
+
 	String to_string() const {
 		return vformat("[%s:%s]", start.to_string(), end.to_string());
 	}
@@ -767,6 +790,11 @@ struct DiagnosticRelatedInformation {
 	 */
 	String message;
 
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		location.load(p_params["location"]);
+		message = p_params["message"];
+	}
+
 	Dictionary to_json() const {
 		Dictionary dict;
 		dict["location"] = location.to_json();
@@ -812,6 +840,23 @@ struct Diagnostic {
 	 * a scope collide all definitions can be marked via this property.
 	 */
 	Vector<DiagnosticRelatedInformation> relatedInformation;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+		severity = p_params["severity"];
+		code = p_params["code"];
+		source = p_params["source"];
+		message = p_params["message"];
+
+		relatedInformation.clear();
+		if (p_params.has("relatedInformation")) {
+			for (const Variant &a : Array(p_params["relatedInformation"])) {
+				DiagnosticRelatedInformation d;
+				d.load(a);
+				relatedInformation.append(d);
+			}
+		}
+	}
 
 	Dictionary to_json() const {
 		Dictionary dict;
@@ -1631,6 +1676,150 @@ struct SignatureHelp {
 };
 
 /**
+ * Contains additional diagnostic information about the context in which
+ * a code action is run.
+ */
+struct CodeActionContext {
+	/**
+	 * An array of diagnostics known on the client side overlapping the range
+	 * provided to the `textDocument/codeAction` request. They are provided so
+	 * that the server knows which errors are currently presented to the user
+	 * for the given range. There is no guarantee that these accurately reflect
+	 * the error state of the resource. The primary parameter
+	 * to compute code actions is the provided range.
+	 */
+	Vector<Diagnostic> diagnostics;
+
+	/**
+	 * Requested kind of actions to return.
+	 *
+	 * Actions not of this kind are filtered out by the client before being
+	 * shown. So servers can omit computing them.
+	 */
+	Vector<String> only;
+
+	/**
+	 * The reason why code actions were requested.
+	 *
+	 * @since 3.17.0
+	 */
+	int triggerKind;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		diagnostics.clear();
+		for (const Variant &a : Array(p_params["diagnostics"])) {
+			Diagnostic d;
+			d.load(a);
+			diagnostics.append(d);
+		}
+
+		triggerKind = p_params["triggerKind"];
+	}
+};
+
+/**
+ * Params for the CodeActionRequest
+ */
+struct CodeActionParams {
+	/**
+	 * The document in which the command was invoked.
+	 */
+	TextDocumentIdentifier textDocument;
+
+	/**
+	 * The range for which the command was invoked.
+	 */
+	Range range;
+
+	/**
+	 * Context carrying additional information.
+	 */
+	CodeActionContext context;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		textDocument.load(p_params["textDocument"]);
+		range.load(p_params["range"]);
+		context.load(p_params["context"]);
+	}
+};
+
+/**
+ * A code action represents a change that can be performed in code, e.g. to fix
+ * a problem or to refactor code.
+ *
+ * A CodeAction must set either `edit` and/or a `command`. If both are supplied,
+ * the `edit` is applied first, then the `command` is executed.
+ */
+struct CodeAction {
+	/**
+	 * A short, human-readable, title for this code action.
+	 */
+	String title;
+
+	/**
+	 * The kind of the code action.
+	 *
+	 * Used to filter code actions.
+	 */
+	String kind = "quickfix";
+
+	/**
+	 * The diagnostics that this code action resolves.
+	 */
+	Vector<Diagnostic> diagnostics;
+
+	/**
+	 * Marks this as a preferred action. Preferred actions are used by the
+	 * `auto fix` command and can be targeted by keybindings.
+	 *
+	 * A quick fix should be marked preferred if it properly addresses the
+	 * underlying error. A refactoring should be marked preferred if it is the
+	 * most reasonable choice of actions to take.
+	 *
+	 * @since 3.15.0
+	 */
+	bool isPreferred = false;
+
+	// NOT IMPLEMENTED: disabled (object with "reason" string)
+
+	/**
+	 * The workspace edit this code action performs.
+	 */
+	WorkspaceEdit edit;
+
+	/**
+	 * A command this code action executes. If a code action
+	 * provides an edit and a command, first the edit is
+	 * executed and then the command.
+	 */
+	Command command;
+
+	// NOT IMPLEMENTED: data (LSPAny)
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["title"] = title;
+		dict["kind"] = kind;
+
+		Array diagnostics_arr;
+		for (const Diagnostic &d : diagnostics) {
+			diagnostics_arr.append(d.to_json());
+		}
+		dict["diagnostics"] = diagnostics_arr;
+
+		dict["isPreferred"] = isPreferred;
+		dict["edit"] = edit.to_json();
+
+		if (command.command.length() > 0) {
+			dict["command"] = command.to_json();
+		}
+
+		return dict;
+	}
+};
+
+/**
  * A pattern to describe in which file operation requests or notifications
  * the server is interested in.
  */
@@ -1801,7 +1990,7 @@ struct ServerCapabilities {
 	 * valid if the client signals code action literal support via the property
 	 * `textDocument.codeAction.codeActionLiteralSupport`.
 	 */
-	bool codeActionProvider = false;
+	bool codeActionProvider = true;
 
 	/**
 	 * The server provides code lens.

@@ -880,9 +880,14 @@ void ScriptTextEditor::_validate_script() {
 		}
 		script_is_valid = true;
 	}
+
+	code_actions.clear();
+	script->get_language()->get_code_actions(text, script->get_path(), &code_actions);
+
 	_update_connected_methods();
 	_update_warnings();
 	_update_errors();
+	_update_code_actions();
 	_update_background_color();
 
 	if (!pending_dragged_exports.is_empty()) {
@@ -1036,6 +1041,10 @@ void ScriptTextEditor::_update_errors() {
 			te->set_line_gutter_item_color(i, 1, default_line_number_color);
 		}
 	}
+}
+
+void ScriptTextEditor::_update_code_actions() {
+	code_editor->get_text_editor()->set_code_actions(code_actions);
 }
 
 static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {

@@ -217,6 +217,84 @@ public:
 	virtual String get_extension() const = 0;
 	virtual void finish() = 0;
 
+	/* CODE ACTIONS */
+	struct TextEditOperation {
+		int start_line;
+		int start_col;
+		int end_line;
+		int end_col;
+		String new_text;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["start_line"] = start_line;
+			out["start_col"] = start_col;
+			out["end_line"] = end_line;
+			out["end_col"] = end_col;
+			out["new_text"] = new_text;
+			return out;
+		}
+
+		static TextEditOperation from_dict(const Dictionary &p_dict) {
+			TextEditOperation out;
+			out.start_line = p_dict["start_line"];
+			out.start_col = p_dict["start_col"];
+			out.end_line = p_dict["end_line"];
+			out.end_col = p_dict["end_col"];
+			out.new_text = p_dict["new_text"];
+			return out;
+		}
+	};
+
+	struct DocumentEditOperation {
+		String file_path;
+		Vector<TextEditOperation> edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["file_path"] = file_path;
+
+			Array edits_arr;
+			for (const TextEditOperation &edit : edits) {
+				edits_arr.append(edit.to_dict());
+			}
+			out["edits"] = edits_arr;
+			return out;
+		}
+
+		static DocumentEditOperation from_dict(const Dictionary &p_dict) {
+			DocumentEditOperation out;
+			out.file_path = p_dict["file_path"];
+
+			for (const Variant &v : Array(p_dict["edits"])) {
+				out.edits.append(TextEditOperation::from_dict(v));
+			}
+			return out;
+		}
+	};
+
+	struct CodeActionOperation {
+		String description;
+		Vector<DocumentEditOperation> document_edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["description"] = description;
+
+			Array document_edits_arr;
+			for (const DocumentEditOperation &doc_edit : document_edits) {
+				document_edits_arr.append(doc_edit.to_dict());
+			}
+			out["document_edits"] = document_edits_arr;
+			return out;
+		}
+	};
+
+	struct CodeActionGroup {
+		String title;
+		Vector<CodeActionOperation> actions;
+	};
+
 	/* EDITOR FUNCTIONS */
 	struct Warning {
 		int start_line = 0;
@@ -224,6 +302,7 @@ public:
 		int code;
 		String string_code;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -231,6 +310,13 @@ public:
 		int line = -1;
 		int column = -1;
 		String message;
+		CodeActionGroup code_actions;
+	};
+
+	struct CodeActionAndDiagnostics {
+		CodeActionOperation code_action;
+		Vector<Warning> related_warnings;
+		Vector<ScriptError> related_errors;
 	};
 
 	enum TemplateLocation {
@@ -386,6 +472,8 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
+
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<CodeActionAndDiagnostics> *r_actions) { return ERR_UNAVAILABLE; }
 
 	/* MULTITHREAD FUNCTIONS */
 

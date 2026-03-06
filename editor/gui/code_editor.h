@@ -156,6 +156,7 @@ public:
 };
 
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorGetCodeActionsFunc)(void *p_ud, const String &p_code, Vector<ScriptLanguage::CodeActionAndDiagnostics> *r_actions);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -295,6 +296,9 @@ public:
 	void goto_next_bookmark();
 	void goto_prev_bookmark();
 	void remove_all_bookmarks();
+
+	void clear_code_actions();
+	void add_code_action_group(int p_start_line, const ScriptLanguage::CodeActionGroup &p_code_actions);
 
 	void set_zoom_factor(float p_zoom_factor);
 	float get_zoom_factor();

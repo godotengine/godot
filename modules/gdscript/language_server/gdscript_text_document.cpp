@@ -438,6 +438,20 @@ Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
 	return ret;
 }
 
+Array GDScriptTextDocument::codeAction(const Dictionary &p_params) {
+	LSP::CodeActionParams params;
+	params.load(p_params);
+
+	Vector<LSP::CodeAction> overlapping_code_actions = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_code_actions_for_params(params);
+
+	Array arr;
+	for (const LSP::CodeAction &action : overlapping_code_actions) {
+		arr.push_back(action.to_json());
+	}
+
+	return arr;
+}
+
 GDScriptTextDocument::GDScriptTextDocument() {
 	file_checker = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 }
