@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../../glue/GodotSharp/GodotSharp/GodotSharp.csproj" />
+  <Project Path="Godot.NET.Sdk/Godot.NET.Sdk.csproj" />
+  <Project Path="Godot.SourceGenerators.Sample/Godot.SourceGenerators.Sample.csproj" />
+  <Project Path="Godot.SourceGenerators.Tests/Godot.SourceGenerators.Tests.csproj" />
+  <Project Path="Godot.SourceGenerators/Godot.SourceGenerators.csproj" />
+</Solution>
