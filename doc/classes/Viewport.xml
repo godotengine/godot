@@ -211,6 +211,12 @@
 				Sets the human-readable description of the drag data to [param description], used for assistive apps.
 			</description>
 		</method>
+		<method name="is_camera_3d_override_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user activated a camera override mode at the Game tab.
+			</description>
+		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
 			<description>
