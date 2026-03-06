@@ -66,8 +66,6 @@ public:
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() const = 0; // { return Vector<Vector3>(); }
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const = 0;
-	/// Returns the radius of a sphere that fully enclose this shape
-	virtual real_t get_enclosing_radius() const = 0;
 
 	void add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform);
 
