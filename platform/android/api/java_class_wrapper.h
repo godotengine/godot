@@ -191,6 +191,7 @@ class JavaClass : public RefCounted {
 	String java_constructor_name;
 	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
+	bool is_interface;
 #endif
 
 protected:
@@ -252,8 +253,10 @@ class JavaClassWrapper : public Object {
 	jmethodID Class_getConstructors;
 	jmethodID Class_getDeclaredMethods;
 	jmethodID Class_getFields;
+	jmethodID Class_getInterfaces;
 	jmethodID Class_getName;
 	jmethodID Class_getSuperclass;
+	jmethodID Class_isInterface;
 	jmethodID Constructor_getParameterTypes;
 	jmethodID Constructor_getModifiers;
 	jmethodID Method_getParameterTypes;
@@ -272,7 +275,16 @@ class JavaClassWrapper : public Object {
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
 
+	jclass proxy_class;
+	jmethodID Proxy_isProxyClass;
+
+	jclass android_runtime_class;
+	jmethodID ARP_create_proxy_from_godot_callable;
+	jmethodID ARP_create_proxy_from_godot_object_id;
+
+	bool _is_proxy_class(JNIEnv *env, jclass p_class);
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
+	bool _wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access);
 #endif
 
 	Ref<JavaObject> exception;
@@ -290,6 +302,9 @@ public:
 	Ref<JavaClass> wrap(const String &p_class) {
 		return _wrap(p_class, false);
 	}
+
+	Ref<JavaObject> create_sam_callback(const String &p_sam_interface, const Callable &p_callable);
+	Ref<JavaObject> create_proxy(const Object *p_object, const PackedStringArray &p_interfaces);
 
 	Ref<JavaObject> get_exception() {
 		return exception;
