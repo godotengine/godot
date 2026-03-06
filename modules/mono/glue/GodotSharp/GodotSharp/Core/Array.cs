@@ -174,15 +174,20 @@ namespace Godot.Collections
 
         private Array(godot_array nativeValueToOwn)
         {
-            NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated ?
-                nativeValueToOwn :
-                NativeFuncs.godotsharp_array_new());
-            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            TakeOwnershipOfDisposableValue(nativeValueToOwn);
         }
 
         // Explicit name to make it very clear
         internal static Array CreateTakingOwnershipOfDisposableValue(godot_array nativeValueToOwn)
             => new Array(nativeValueToOwn);
+
+        internal void TakeOwnershipOfDisposableValue(godot_array nativeValueToOwn)
+        {
+            NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated ?
+                       nativeValueToOwn :
+                       NativeFuncs.godotsharp_array_new());
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+        }
 
         ~Array()
         {
@@ -1084,7 +1089,7 @@ namespace Godot.Collections
             VariantUtils.GenericConversion<Array<T>>.FromVariantCb = FromVariantFunc;
         }
 
-        private readonly Array _underlyingArray;
+        internal Array _underlyingArray;
 
         Array IGenericGodotArray.UnderlyingArray => _underlyingArray;
 
