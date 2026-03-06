@@ -128,6 +128,50 @@ if env["builtin_harfbuzz"]:
 
     env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
+    # Disable features not used by Godot.
+    env_harfbuzz.Append(
+        CPPDEFINES=[
+            "HB_DISABLE_DEPRECATED",
+            # "HB_NO_AAT",
+            # "HB_NO_ATEXIT",
+            "HB_NO_BEYOND_64K",
+            "HB_NO_BITMAP",
+            "HB_NO_BUFFER_MESSAGE",
+            "HB_NO_BUFFER_SERIALIZE",
+            "HB_NO_BUFFER_VERIFY",
+            "HB_NO_CFF",
+            "HB_NO_COLOR",
+            "HB_NO_CUBIC_GLYF",
+            "HB_NO_DRAW",
+            "HB_NO_ERRNO",
+            "HB_NO_FACE_COLLECT_UNICODES",
+            "HB_NO_GETENV",
+            "HB_NO_HINTING",
+            # "HB_NO_LAYOUT_FEATURE_PARAMS",
+            # "HB_NO_LAYOUT_COLLECT_GLYPHS",
+            "HB_NO_LAYOUT_RARELY_USED",
+            "HB_NO_LAYOUT_UNUSED",
+            # "HB_NO_LEGACY",
+            "HB_NO_MATH",
+            "HB_NO_META",
+            "HB_NO_METRICS",
+            "HB_NO_MMAP",
+            # "HB_NO_NAME",
+            "HB_NO_OPEN",
+            "HB_NO_OT_FONT_GLYPH_NAMES",
+            "HB_NO_OT_FONT_SHAPE_FRACTIONS",
+            # "HB_NO_OT_SHAPE",
+            # "HB_NO_OT_SHAPE_FALLBACK",
+            "HB_NO_PAINT",
+            "HB_NO_SETLOCALE",
+            "HB_NO_STYLE",
+            "HB_NO_SUBSET_LAYOUT",
+            "HB_NO_VAR_COMPOSITES",
+            "HB_NO_VAR_HVF",
+            "HB_NO_VERTICAL",
+        ]
+    )
+
     env_harfbuzz.Append(CPPDEFINES=["HAVE_ICU"])
     if env["builtin_icu4c"]:
         env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
