@@ -1155,6 +1155,13 @@
 				Returns the drag coefficient of the given soft body.
 			</description>
 		</method>
+		<method name="soft_body_get_form" qualifiers="const">
+			<return type="int" enum="PhysicsServer3D.SoftBodyForm" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the volumetric form of the body.
+			</description>
+		</method>
 		<method name="soft_body_get_linear_stiffness" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
@@ -1286,6 +1293,15 @@
 			<param index="1" name="drag_coefficient" type="float" />
 			<description>
 				Sets the drag coefficient of the given soft body. Higher values increase this body's air resistance.
+				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
+			</description>
+		</method>
+		<method name="soft_body_set_form">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="form" type="int" enum="PhysicsServer3D.SoftBodyForm" />
+			<description>
+				Sets the geometric form of the soft body.  Choose between either cloth or volumetric.
 				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
 			</description>
 		</method>
@@ -1438,6 +1454,12 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="SOFT_BODY_FORM_CLOTH" value="0" enum="SoftBodyForm">
+			Soft body simulates cloth.
+		</constant>
+		<constant name="SOFT_BODY_FORM_VOLUME" value="1" enum="SoftBodyForm">
+			Soft body simulates a volumetric form.
+		</constant>
 		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
 			The [Joint3D] is a [PinJoint3D].
 		</constant>
