@@ -4022,6 +4022,23 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				p_call->set_datatype(call_type);
 				return;
 			}
+
+			/// [Monarch] if param_type is now fully concrete (no longer an open generic),
+			/// actually validate the argument type, infer_generic_bindings_from_types only
+			/// catches inference conflicts, not type mismatches against resolved concrete types
+			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE) {
+				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i])) {
+					push_error(vformat(
+							R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
+							i + 1,
+							p_call->function_name,
+							arg_type.to_string(),
+							param_type.to_string()),
+							p_call->arguments[i]);
+					p_call->set_datatype(call_type);
+					return;
+				}
+			}
 		}
 
 		if (!call_generic_bindings.is_empty()) {
