@@ -37,11 +37,13 @@ String ResourceImporterWAV::get_importer_name() const {
 }
 
 String ResourceImporterWAV::get_visible_name() const {
-	return "Microsoft WAV";
+	return "WAV/AIFF";
 }
 
 void ResourceImporterWAV::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("wav");
+	p_extensions->push_back("aif");
+	p_extensions->push_back("aiff");
 }
 
 String ResourceImporterWAV::get_save_extension() const {
