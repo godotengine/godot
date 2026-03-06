@@ -149,7 +149,6 @@ private:
 	void _restore_old_static_data();
 
 	HashMap<StringName, int> member_lines;
-	HashMap<StringName, Variant> member_default_values;
 	List<PropertyInfo> members_cache;
 	HashMap<StringName, Variant> member_default_values_cache;
 	Ref<GDScript> base_cache;
