@@ -360,6 +360,7 @@ private:
 	virtual uint32_t get_max_lights_per_mesh() override;
 
 	enum {
+		INSTANCE_DATA_FLAGS_NEGATIVE_DETERMINANT = 1 << 1,
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
