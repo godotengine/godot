@@ -393,7 +393,7 @@ void NavMap3D::_build_iteration() {
 	iteration_build.map_iteration = &next_map_iteration;
 
 	if (use_async_iterations) {
-		iteration_build_thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMap3D::_build_iteration_threaded, &iteration_build, true, SNAME("NavMapBuilder3D"));
+		iteration_build_thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMap3D::_build_iteration_threaded, &iteration_build, true, false, SNAME("NavMapBuilder3D"));
 	} else {
 		NavMapBuilder3D::build_navmap_iteration(iteration_build);
 

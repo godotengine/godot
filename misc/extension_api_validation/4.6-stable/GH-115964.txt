@@ -1,0 +1,6 @@
+GH-115964
+---------
+Validate extension JSON: Error: Field 'classes/ResourceLoader/methods/load_threaded_request/arguments': size changed value in new API, from 4 to 5.
+
+Added a new argument to push the request on top of the current queue.
+Compatibility methods registered.

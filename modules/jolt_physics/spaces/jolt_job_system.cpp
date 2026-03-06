@@ -104,7 +104,7 @@ void JoltJobSystem::Job::queue() {
 	// thread-safe lookup every time we create/queue a task. So instead we use the same cached description for all of them.
 	static const String task_name("Jolt Physics");
 
-	task_id = WorkerThreadPool::get_singleton()->add_native_task(&_execute, this, true, task_name);
+	task_id = WorkerThreadPool::get_singleton()->add_native_task(&_execute, this, true, false, task_name);
 }
 
 int JoltJobSystem::GetMaxConcurrency() const {
