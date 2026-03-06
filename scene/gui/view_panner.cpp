@@ -159,7 +159,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			zoom_callback.call(zoom, pan_gesture->get_position(), p_event);
 			return true;
 		}
-		pan_callback.call(-pan_gesture->get_delta() * scroll_speed, p_event);
+		pan_callback.call(-pan_gesture->get_delta() / 10 * scroll_speed, p_event);
 	}
 
 	Ref<InputEventScreenDrag> screen_drag = p_event;
