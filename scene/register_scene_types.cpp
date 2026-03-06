@@ -195,6 +195,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
+#include "scene/2d/trail_2d.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/resources/2d/polygon_path_finder.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
@@ -912,6 +913,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimatedSprite2D);
 	GDREGISTER_CLASS(Marker2D);
 	GDREGISTER_CLASS(Line2D);
+	GDREGISTER_CLASS(Trail2D);
 	GDREGISTER_CLASS(MeshInstance2D);
 	GDREGISTER_CLASS(MultiMeshInstance2D);
 #ifndef PHYSICS_2D_DISABLED
