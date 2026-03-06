@@ -57,16 +57,6 @@ namespace Godot.SourceGenerators
                 "The type of the exported member is not supported. Use a supported type, or remove the '[Export]' attribute.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0102"));
 
-        public static readonly DiagnosticDescriptor ExportedMemberIsReadOnlyRule =
-            new DiagnosticDescriptor(id: "GD0103",
-                title: "The exported member is read-only",
-                messageFormat: "The exported member '{0}' is read-only",
-                category: "Usage",
-                DiagnosticSeverity.Error,
-                isEnabledByDefault: true,
-                "The exported member is read-only. Exported member must be writable.",
-                helpLinkUri: string.Format(_helpLinkFormat, "GD0103"));
-
         public static readonly DiagnosticDescriptor ExportedPropertyIsWriteOnlyRule =
             new DiagnosticDescriptor(id: "GD0104",
                 title: "The exported property is write-only",
