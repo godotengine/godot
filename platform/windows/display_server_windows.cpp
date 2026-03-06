@@ -51,6 +51,7 @@
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include <wingdi.h>
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
@@ -121,6 +122,33 @@ static void track_mouse_leave_event(HWND hWnd) {
 }
 
 static int _get_titlebar_extend_height_px() {
+	typedef int(WINAPI *GetSystemMetricsForDpiPtr)(int, UINT);
+	typedef UINT(WINAPI *GetDpiForSystemPtr)();
+
+	static GetSystemMetricsForDpiPtr get_system_metrics_for_dpi = nullptr;
+	static GetDpiForSystemPtr get_dpi_for_system = nullptr;
+	static bool dpi_functions_loaded = false;
+
+	if (!dpi_functions_loaded) {
+		HMODULE user32 = GetModuleHandleW(L"user32.dll");
+		if (user32) {
+			get_system_metrics_for_dpi = reinterpret_cast<GetSystemMetricsForDpiPtr>(GetProcAddress(user32, "GetSystemMetricsForDpi"));
+			get_dpi_for_system = reinterpret_cast<GetDpiForSystemPtr>(GetProcAddress(user32, "GetDpiForSystem"));
+		}
+		dpi_functions_loaded = true;
+	}
+
+	if (get_system_metrics_for_dpi) {
+		UINT dpi = 96;
+		if (get_dpi_for_system) {
+			dpi = get_dpi_for_system();
+		}
+
+		return get_system_metrics_for_dpi(SM_CYCAPTION, dpi) +
+				get_system_metrics_for_dpi(SM_CYSIZEFRAME, dpi) +
+				get_system_metrics_for_dpi(SM_CXPADDEDBORDER, dpi);
+	}
+
 	return GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
 }
 
