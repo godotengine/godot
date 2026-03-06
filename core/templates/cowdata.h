@@ -52,6 +52,18 @@ GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignor
 GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wdangling-pointer=0") // Can't "ignore" this for some reason.
 #endif
 
+namespace CowDataThreading {
+static constexpr size_t READER_BUCKET_COUNT = 128; // Must be a power of 2 to facilitate fast modulo
+
+// We provide thread-safe assignment operations (internally ref/unref) supporting one writer and multiple readers.
+// To facilitate this in a lock-free fashion (with fixed memory cost) we maintain reader count "buckets". Each
+// bucket contains the sum of multiple individual CowData's "reader count". The reader count being the number of
+// threads that are actively in the process of trying to obtain a reference to the underlying buffer of a particular
+// CowData. Although, reader counts are incredibly unlikely to exceed the size of even uint8_t, uint64_t was chosen
+// as a mitigation for "false sharing".
+inline SafeNumeric<uint64_t> reader_counts[READER_BUCKET_COUNT];
+}; //namespace CowDataThreading
+
 template <typename T>
 class CowData {
 public:
@@ -72,7 +84,18 @@ private:
 	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
 	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
 
-	mutable T *_ptr = nullptr;
+	static SafeNumeric<uint64_t> &get_reader_count(const CowData *instance) {
+		uint64_t hash = reinterpret_cast<uint64_t>(instance);
+		// Primes taken from MurmurHash3
+		hash ^= hash >> 33;
+		hash *= 0xff51afd7ed558ccdULL;
+		hash ^= hash >> 33;
+		hash *= 0xc4ceb9fe1a85ec53ULL;
+		hash ^= hash >> 33;
+		return CowDataThreading::reader_counts[hash & (CowDataThreading::READER_BUCKET_COUNT - 1)];
+	}
+
+	mutable T *volatile _ptr = nullptr;
 
 	// internal helpers
 
@@ -101,14 +124,25 @@ private:
 		return (T *)(p_ptr + DATA_OFFSET);
 	}
 
+	static _FORCE_INLINE_ USize *_get_size(uint8_t *p_ptr) {
+		return (USize *)(p_ptr - DATA_OFFSET + SIZE_OFFSET);
+	}
+
+	static _FORCE_INLINE_ SafeNumeric<USize> *_get_refcount(uint8_t *p_ptr) {
+		return (SafeNumeric<USize> *)(p_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
+	}
+
+	// Decrements the reference count of p_ptr (must not be nullptr). Deallocates the backing buffer if needed.
+	static void _unref(uint8_t *p_ptr);
+
 	/// Note: Assumes _ptr != nullptr.
 	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
-		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
+		return _get_refcount((uint8_t *)_ptr);
 	}
 
 	/// Note: Assumes _ptr != nullptr.
 	_FORCE_INLINE_ USize *_get_size() const {
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
+		return _get_size((uint8_t *)_ptr);
 	}
 
 	/// Note: Assumes _ptr != nullptr.
@@ -116,9 +150,40 @@ private:
 		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
 	}
 
-	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
-	void _unref();
+	// Decrements the reference count. Deallocates the backing buffer if needed.
+	_FORCE_INLINE_ void _unref() const {
+		if (!_ptr) {
+			return;
+		}
+
+		// First, invalidate our own reference.
+		// NOTE: It is required to do so immediately because it must not be observable outside of this
+		//       function after refcount has already been reduced to 0.
+		// WARNING: It must be done before calling the destructors, because one of them may otherwise
+		//          observe it through a reference to us. In this case, it may try to access the buffer,
+		//          which is illegal after some of the elements in it have already been destructed, and
+		//          may lead to a segmentation fault.
+		T *prev_ptr = _ptr;
+		_ptr = nullptr;
+
+		if (prev_ptr) {
+			SafeNumeric<uint64_t> &reader_count = get_reader_count(this);
+
+			while (reader_count.get() > 0) {
+				// spin lock prevents prev_ptr being freed as a reader is obtaining a reference to it
+			}
+
+			_unref((uint8_t *)prev_ptr);
+		}
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+		// If any destructors access us through pointers, it is a bug.
+		// We can't really test for that, but we can at least check no items have been added.
+		ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
+#endif
+	}
+
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 
@@ -152,9 +217,19 @@ public:
 			return;
 		}
 
-		_unref();
+		T *prev_ptr = _ptr;
 		_ptr = p_from._ptr;
 		p_from._ptr = nullptr;
+
+		if (prev_ptr) {
+			SafeNumeric<uint64_t> &reader_count = get_reader_count(this);
+
+			while (reader_count.get() > 0) {
+				// spin lock prevents prev_ptr being freed as a reader is obtaining a reference to it
+			}
+
+			_unref((uint8_t *)prev_ptr);
+		}
 	}
 
 	_FORCE_INLINE_ T *ptrw() {
@@ -223,42 +298,17 @@ public:
 };
 
 template <typename T>
-void CowData<T>::_unref() {
-	if (!_ptr) {
-		return;
-	}
-
-	if (_get_refcount()->decrement() > 0) {
+void CowData<T>::_unref(uint8_t *p_ptr) {
+	if (_get_refcount(p_ptr)->decrement() > 0) {
 		// Data is still in use elsewhere.
-		_ptr = nullptr;
 		return;
 	}
-	// We had the only reference; destroy the data.
 
-	// First, invalidate our own reference.
-	// NOTE: It is required to do so immediately because it must not be observable outside of this
-	//       function after refcount has already been reduced to 0.
-	// WARNING: It must be done before calling the destructors, because one of them may otherwise
-	//          observe it through a reference to us. In this case, it may try to access the buffer,
-	//          which is illegal after some of the elements in it have already been destructed, and
-	//          may lead to a segmentation fault.
-	USize current_size = size();
-	T *prev_ptr = _ptr;
-	_ptr = nullptr;
-
-	destruct_arr_placement(prev_ptr, current_size);
-
-	// Safety check; none of the destructors should have added elements during destruction.
-	DEV_ASSERT(!_ptr);
+	USize current_size = *_get_size(p_ptr);
+	destruct_arr_placement(p_ptr, current_size);
 
 	// Free Memory.
-	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
-
-#ifdef DEBUG_ENABLED
-	// If any destructors access us through pointers, it is a bug.
-	// We can't really test for that, but we can at least check no items have been added.
-	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
-#endif
+	Memory::free_static(p_ptr - DATA_OFFSET, false);
 }
 
 template <typename T>
@@ -546,18 +596,37 @@ void CowData<T>::_ref(const CowData *p_from) {
 
 template <typename T>
 void CowData<T>::_ref(const CowData &p_from) {
-	if (_ptr == p_from._ptr) {
+	if (_ptr == p_from._ptr || this == &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(); // Resets _ptr to nullptr.
+	T *prev_ptr = _ptr;
 
-	if (!p_from._ptr) {
-		return; //nothing to do
+	SafeNumeric<uint64_t> &from_reader_count = get_reader_count(&p_from);
+
+	from_reader_count.increment(); // prevents p_from._ptr being freed + acts as memory barrier for p_from._pt
+	T *from_ptr = p_from._ptr; // memory barrier has ensured the value obtained has not been deallocated
+
+	if (from_ptr == nullptr) {
+		_ptr = nullptr;
+	} else if (_get_refcount((uint8_t *)from_ptr)->conditional_increment() > 0) {
+		_ptr = from_ptr;
 	}
 
-	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
-		_ptr = p_from._ptr;
+	// Memory barrier + _reader_count spin lock will prevent conditional_increment()
+	// failing, for a single writer. If there's multiple writers, all bets are off.
+	DEV_ASSERT(_ptr == from_ptr);
+
+	from_reader_count.decrement();
+
+	if (prev_ptr) {
+		SafeNumeric<uint64_t> &reader_count = get_reader_count(this);
+
+		while (reader_count.get() > 0) {
+			// spin lock prevents prev_ptr being freed as a reader is obtaining a reference to it
+		}
+
+		_unref((uint8_t *)prev_ptr);
 	}
 }
 
