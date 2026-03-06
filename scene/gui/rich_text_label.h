@@ -745,6 +745,11 @@ private:
 
 	bool fit_content = false;
 
+	bool resize_font_to_fit = false;
+	int minimum_font_size = 10;
+	int maximum_font_size = 60;
+	mutable int current_fitted_font_size = -1;
+
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
 		Ref<StyleBox> focus_style;
@@ -880,6 +885,17 @@ public:
 
 	void set_fit_content(bool p_enabled);
 	bool is_fit_content_enabled() const;
+
+	void set_resize_font_to_fit(bool p_enabled);
+	bool is_resize_font_to_fit_enabled() const;
+
+	void set_minimum_font_size(int p_size);
+	int get_minimum_font_size() const;
+
+	void set_maximum_font_size(int p_size);
+	int get_maximum_font_size() const;
+
+	int get_rendered_font_size() const;
 
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
