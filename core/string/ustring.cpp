@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "ustring.h"
+#include "core/string/char_utils.h"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
@@ -4146,10 +4147,16 @@ String String::simplify_path() const {
 	bool found = false;
 	if (p > 0) {
 		bool only_chars = true;
-		for (int i = 0; i < p; i++) {
-			if (!is_ascii_alphanumeric_char(s[i])) {
-				only_chars = false;
-				break;
+		// See https://www.rfc-editor.org/rfc/rfc3986#section-3.1
+		// The first character is technically required to be an ascii alphabet character, but we're keeping this for backwards compatibility with previous Godot versions.
+		if (!is_ascii_alphanumeric_char(s[0])) {
+			only_chars = false;
+		} else {
+			for (int i = 1; i < p; i++) {
+				if (!is_uri_scheme_char(s[i])) {
+					only_chars = false;
+					break;
+				}
 			}
 		}
 		if (only_chars) {
