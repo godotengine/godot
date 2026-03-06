@@ -79,6 +79,7 @@ class EditorExport;
 class EditorExportPreset;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
+class EditorIconManager;
 class EditorFolding;
 class EditorLayoutsDialog;
 class EditorLog;
@@ -358,6 +359,7 @@ private:
 	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
+	EditorIconManager *icon_manager = nullptr;
 
 	bool follow_system_theme = false;
 	bool use_system_accent_color = false;
