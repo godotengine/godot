@@ -96,6 +96,12 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
+		<method name="get_editor_export" qualifiers="const">
+			<return type="EditorExport" />
+			<description>
+				Returns the editor's [EditorExport].
+			</description>
+		</method>
 		<method name="get_editor_language" qualifiers="const">
 			<return type="String" />
 			<description>
