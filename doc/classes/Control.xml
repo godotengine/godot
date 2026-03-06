@@ -1065,7 +1065,7 @@
 		</member>
 		<member name="localize_numeral_system" type="bool" setter="set_localize_numeral_system" getter="is_localizing_numeral_system" default="true">
 			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
-			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
+			[b]Note:[/b] Numbers within the text are not automatically converted. This can be done manually with [method TextServer.format_number].
 		</member>
 		<member name="mouse_behavior_recursive" type="int" setter="set_mouse_behavior_recursive" getter="get_mouse_behavior_recursive" enum="Control.MouseBehaviorRecursive" default="0">
 			Determines which controls can receive mouse input together with [member mouse_filter]. See [method get_mouse_filter_with_override]. Since the default behavior is [constant MOUSE_BEHAVIOR_INHERITED], this can be used to prevent all children controls from receiving mouse input.
