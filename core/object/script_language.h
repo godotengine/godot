@@ -252,6 +252,7 @@ public:
 		String name;
 		String description;
 		String content;
+		bool is_default = false;
 		int id = 0;
 		TemplateLocation origin = TemplateLocation::TEMPLATE_BUILT_IN;
 
