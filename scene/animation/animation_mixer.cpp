@@ -147,6 +147,59 @@ void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+PackedStringArray AnimationMixer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (deterministic && has_animation(SceneStringName(RESET))) {
+		Ref<Animation> reset_animation = get_animation(SceneStringName(RESET));
+		for (int i = 0; i < reset_animation->get_track_count(); ++i) {
+			if (!reset_animation->track_is_enabled(i)) {
+				continue;
+			}
+
+			NodePath property_path = reset_animation->track_get_path(i);
+			if (property_path.get_subname_count() == 0) {
+				continue;
+			}
+
+			PropertyInfo property_info;
+			Variant property_value;
+			if (!_get_property_data(property_path, &property_info, &property_value) || property_value.get_type() != Variant::FLOAT) {
+				continue;
+			}
+
+			NodePath property_parent_path = property_path.slice(0, property_path.get_total_name_count() - 1);
+			if (!_get_property_data(property_parent_path, &property_info, nullptr)) {
+				continue;
+			}
+
+			switch (property_info.type) {
+				case Variant::VECTOR2:
+				case Variant::VECTOR3:
+				case Variant::QUATERNION:
+				case Variant::COLOR:
+				case Variant::PLANE:
+					break;
+				default:
+					continue;
+			}
+
+			for (int j = 0; j < reset_animation->get_track_count(); ++j) {
+				if (!reset_animation->track_is_enabled(j)) {
+					continue;
+				}
+
+				NodePath other_property_path = reset_animation->track_get_path(j);
+				if (other_property_path == property_parent_path) {
+					warnings.push_back(vformat("Conflicting tracks found in RESET animation, \"%s\" and \"%s\".\nThis will cause unpredictable behavior during deterministic playback.\nAvoid having bezier and non-bezier tracks animate the same property.", property_path, other_property_path));
+				}
+			}
+		}
+	}
+
+	return warnings;
+}
+
 /* -------------------------------------------- */
 /* -- Data lists ------------------------------ */
 /* -------------------------------------------- */
@@ -238,6 +291,7 @@ void AnimationMixer::_animation_renamed(const StringName &p_name, const StringNa
 
 void AnimationMixer::_animation_changed(const StringName &p_name) {
 	_clear_caches();
+	update_configuration_warnings();
 }
 
 void AnimationMixer::_set_active(bool p_active) {
@@ -485,6 +539,7 @@ NodePath AnimationMixer::get_root_node() const {
 void AnimationMixer::set_deterministic(bool p_deterministic) {
 	deterministic = p_deterministic;
 	_clear_caches();
+	update_configuration_warnings();
 }
 
 bool AnimationMixer::is_deterministic() const {
@@ -983,6 +1038,40 @@ bool AnimationMixer::_update_caches() {
 	track_count = idx;
 
 	cache_valid = true;
+
+	return true;
+}
+
+bool AnimationMixer::_get_property_data(const NodePath &p_property_path, PropertyInfo *r_property_info, Variant *r_property_value) const {
+	Node *root_object = get_node_or_null(root_node);
+	ERR_FAIL_NULL_V(root_object, false);
+
+	Ref<Resource> resource;
+	Vector<StringName> property_subpath;
+	Object *object = root_object->get_node_and_resource(p_property_path, resource, property_subpath, true);
+	if (!object || property_subpath.is_empty()) {
+		return false;
+	}
+
+	if (resource.is_valid()) {
+		object = resource.ptr();
+	}
+
+	if (r_property_value != nullptr) {
+		*r_property_value = object->get_indexed(property_subpath);
+	}
+
+	List<PropertyInfo> property_infos;
+	Variant(object).get_property_list(&property_infos);
+
+	StringName property_name = property_subpath[property_subpath.size() - 1];
+	for (const PropertyInfo &property_info : property_infos) {
+		if (property_info.name == property_name) {
+			if (r_property_info != nullptr) {
+				*r_property_info = property_info;
+			}
+		}
+	}
 
 	return true;
 }

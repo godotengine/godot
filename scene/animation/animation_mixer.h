@@ -316,6 +316,7 @@ protected:
 	void _init_root_motion_cache();
 	bool _update_caches();
 	void _create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation);
+	bool _get_property_data(const NodePath &p_property_path, PropertyInfo *r_property_info, Variant *r_property_value) const;
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;
@@ -342,6 +343,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
