@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorContextMenuPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plugin for adding custom context menus in the editor.
+		Plugin for adding custom context menu options in the editor.
 	</brief_description>
 	<description>
-		[EditorContextMenuPlugin] allows for the addition of custom options in the editor's context menu.
-		Currently, context menus are supported for three commonly used areas: the file system, scene tree, and editor script list panel.
+		[EditorContextMenuPlugin] allows for the addition of custom options in various editor context menus. Use [method EditorPlugin.add_context_menu_plugin] to add a custom plugin. It needs to implement [method _popup_menu].
 	</description>
 	<tutorials>
 	</tutorials>
