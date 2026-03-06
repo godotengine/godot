@@ -33,6 +33,106 @@
 				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
+		<method name="get_cached_entries">
+			<return type="Dictionary" />
+			<description>
+				Returns the entire contents of the ResourceCache as a [Dictionary] where keys are representing the cached paths [String] and values are the [Resource] objects.
+				[code] { "res://icon.svg", Image() } [/code]
+				[b]Example:[/b] Get all infos and print as JSON
+				[codeblock]
+				var all_entries = ResourceLoader.get_cached_entries()
+				print(JSON.stringify(all_entries, "\t"))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_cached_entries_filtered">
+			<return type="Dictionary" />
+			<param index="0" name="target" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
+			<param index="2" name="value" type="Variant" />
+			<param index="3" name="limit" type="int" />
+			<description>
+				Returns filtered entries of the ResourceCache as a [Dictionary] key-value-pairs of [String] and [Resource]
+				[code] SELECT * FROM ResourceCache WHERE (Target) (Comparator) (Value) LIMIT (limit) [/code]
+				[b]Example1:[/b] All [Image] resources (type hint)
+				[codeblock]
+				var img_paths = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_TYPE_HINT,
+					ResourceLoader.FILTER_COMP_EQUALS,
+					"Image",
+					0)
+				[/codeblock]
+				[b]Example2:[/b] All resources in the [code]res://assets/[/code] folder:
+				[codeblock]
+				var in_dir = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_COMP_BEGINS_WITH,
+					"res://assets/",
+					0)
+				[/codeblock]
+				[b]Example3:[/b] All PNG files (by extension):
+				[codeblock]
+				var pngs = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_FILE_EXTENSION,
+					ResourceLoader.FILTER_COMP_EQUALS,
+					"png",
+					0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_cached_paths_infos">
+			<return type="Dictionary" />
+			<param index="0" name="info" type="int" enum="ResourceLoader.FilterTarget" />
+			<description>
+				Returns all entries of the ResourceCache as a [Dictionary] with key-value-pairs of [String] and [Variant]
+				The values depend on the provided [param info].
+				[b]Example:[/b] Get all paths and their type_hint
+				[codeblock]
+				var all_infos = ResourceLoader.get_cached_paths_infos(ResourceLoader.FILTER_TARGET_TYPE_HINT)
+				print(JSON.stringify(all_infos, "\t"))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_cached_paths_infos_filtered">
+			<return type="Dictionary" />
+			<param index="0" name="info" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="1" name="target" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="2" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
+			<param index="3" name="value" type="Variant" />
+			<param index="4" name="limit" type="int" />
+			<description>
+				Returns filtered entries of the ResourceCache as a [Dictionary] with key-value-pairs of [String] and [Variant]
+				The value behind [Variant] depends on the [param info] provided.
+				[code] SELECT Path,Info FROM ResourceCache WHERE (Target) (Comparator) (Value) LIMIT (limit) [/code]
+				[b]Example1:[/b] Select all (Path,TypeHint) where TypeHint equals "Image"
+				[codeblock]
+				var img_paths = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_TARGET_TYPE_HINT,
+					ResourceLoader.FILTER_COMP_EQUALS,
+					"Image",
+				0)
+				[/codeblock]
+				[b]Example2:[/b] Select all (Path,TypeHint) of resources where path begins with [code]res://assets/[/code]:
+				[codeblock]
+				var in_dir = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_COMP_BEGINS_WITH,
+					"res://assets/",
+					0)
+				[/codeblock]
+				[b]Example3:[/b] Select all (Path,ReferenceCount) of resources with PNG file extension:
+				[codeblock]
+				var pngs = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_REFERENCE_COUNT,
+					ResourceLoader.FILTER_TARGET_FILE_EXTENSION,
+					ResourceLoader.FILTER_COMP_EQUALS,
+					"png",
+					0)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_cached_ref">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
@@ -179,6 +279,56 @@
 		</constant>
 		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
 			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="FILTER_TARGET_TYPE_HINT" value="0" enum="FilterTarget">
+			Target attribute is the resource's type hint (its GDType name),
+			e.g., [Image] [Texture2D] [AudioStreamWAV] [AudioStreamMP3] [Shader].
+		</constant>
+		<constant name="FILTER_TARGET_PATH" value="1" enum="FilterTarget">
+			Target attribute is the full resource path, e.g. [code]"res://assets/ui/button.png"[/code].
+		</constant>
+		<constant name="FILTER_TARGET_FILE_NAME" value="2" enum="FilterTarget">
+			Target attribute is the file name part only (without directories), e.g. "button.png". [method String.get_file]
+		</constant>
+		<constant name="FILTER_TARGET_FILE_EXTENSION" value="3" enum="FilterTarget">
+			Target attribute is the file extension (without dot), e.g. "png", "tscn", "gd". [method String.get_extension]
+		</constant>
+		<constant name="FILTER_TARGET_BASE_DIR" value="4" enum="FilterTarget">
+			Target attribute is the base directory of the resource path, e.g. "res://assets/ui" [method String.get_base_dir]
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_NAME" value="5" enum="FilterTarget">
+			Target attribute is the resource's user-defined name
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_PATH" value="6" enum="FilterTarget">
+			Target attribute is the resource's internal path
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_CLASS" value="7" enum="FilterTarget">
+			Target attribute is the resource's class name, e.g., [Texture2D], [Script], [AudioStreamMP3].
+		</constant>
+		<constant name="FILTER_TARGET_REFERENCE_COUNT" value="8" enum="FilterTarget">
+		</constant>
+		<constant name="FILTER_COMP_EQUALS" value="0" enum="FilterComparator">
+			Compares for exact equality between the target attribute and the provided value.
+		</constant>
+		<constant name="FILTER_COMP_NOT_EQUAL" value="1" enum="FilterComparator">
+			Matches when the target attribute is not exactly equal to the provided value.
+		</constant>
+		<constant name="FILTER_COMP_BEGINS_WITH" value="2" enum="FilterComparator">
+			Matches when the target attribute starts with the provided value (prefix).
+		</constant>
+		<constant name="FILTER_COMP_ENDS_WITH" value="3" enum="FilterComparator">
+			Matches when the target attribute ends with the provided value (suffix).
+		</constant>
+		<constant name="FILTER_COMP_CONTAINS" value="4" enum="FilterComparator">
+			Matches when the target attribute contains the provided value as a substring.
+		</constant>
+		<constant name="FILTER_COMP_GREATER" value="5" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_GREATER_OR_EQUAL" value="7" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_LESS" value="6" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_LESS_OR_EQUAL" value="8" enum="FilterComparator">
 		</constant>
 	</constants>
 </class>
