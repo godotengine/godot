@@ -31,6 +31,7 @@
 #include "style_box_flat.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
@@ -206,6 +207,51 @@ void StyleBoxFlat::set_shadow_offset(const Point2 &p_offset) {
 
 Point2 StyleBoxFlat::get_shadow_offset() const {
 	return shadow_offset;
+}
+
+void StyleBoxFlat::_set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture) {
+	DEV_ASSERT(p_destination);
+	Ref<Texture2D> &destination = *p_destination;
+	if (destination == p_texture) {
+		return;
+	}
+	if (destination.is_valid()) {
+		destination->disconnect_changed(callable_mp(this, &StyleBoxFlat::_texture_changed));
+	}
+	destination = p_texture;
+	if (destination.is_valid()) {
+		// Pass `CONNECT_REFERENCE_COUNTED` to avoid early disconnect in case the same texture is assigned to different "slots".
+		destination->connect_changed(callable_mp(this, &StyleBoxFlat::_texture_changed), CONNECT_REFERENCE_COUNTED);
+	}
+	_texture_changed();
+}
+
+void StyleBoxFlat::_texture_changed() {
+	emit_changed();
+}
+
+void StyleBoxFlat::set_bg_texture(Ref<Texture2D> p_texture) {
+	_set_texture(&bg_texture, p_texture);
+}
+
+Ref<Texture2D> StyleBoxFlat::get_bg_texture() const {
+	return bg_texture;
+}
+
+void StyleBoxFlat::set_border_texture(Ref<Texture2D> p_texture) {
+	_set_texture(&border_texture, p_texture);
+}
+
+Ref<Texture2D> StyleBoxFlat::get_border_texture() const {
+	return border_texture;
+}
+
+void StyleBoxFlat::set_shadow_texture(Ref<Texture2D> p_texture) {
+	_set_texture(&shadow_texture, p_texture);
+}
+
+Ref<Texture2D> StyleBoxFlat::get_shadow_texture() const {
+	return shadow_texture;
 }
 
 void StyleBoxFlat::set_anti_aliased(const bool &p_anti_aliased) {
@@ -523,6 +569,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Vector<Color> colors;
 	Vector<Point2> uvs;
 
+	Vector<int> fi;
+	Vector<int> bi;
+	Vector<int> si;
+
+	bool share_indices = bg_texture.is_null() && border_texture.is_null() && shadow_texture.is_null();
+	Vector<int> &fill_indices = share_indices ? indices : fi;
+	Vector<int> &border_indices = share_indices ? indices : bi;
+	Vector<int> &shadow_indices = share_indices ? indices : si;
+
 	// Create shadow.
 	if (draw_shadow) {
 		Rect2 shadow_inner_rect = style_rect;
@@ -533,24 +588,24 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 		Color shadow_color_transparent = Color(shadow_color.r, shadow_color.g, shadow_color.b, 0);
 
-		draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
+		draw_rounded_rectangle(verts, shadow_indices, colors, shadow_inner_rect, adapted_corner,
 				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew);
 
 		if (draw_center) {
-			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
+			draw_rounded_rectangle(verts, shadow_indices, colors, shadow_inner_rect, adapted_corner,
 					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
-		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+		draw_rounded_rectangle(verts, border_indices, colors, border_style_rect, adapted_corner,
 				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew);
 	}
 
 	// Create infill (no AA).
 	if (draw_center && (!aa_on || blend_on)) {
-		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+		draw_rounded_rectangle(verts, fill_indices, colors, border_style_rect, adapted_corner,
 				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
 	}
 
@@ -592,13 +647,13 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 					-aa_fill_width[SIDE_RIGHT], -aa_fill_width[SIDE_BOTTOM]);
 			if (!blend_on) {
 				// Create center fill, not antialiased yet
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+				draw_rounded_rectangle(verts, fill_indices, colors, border_style_rect, adapted_corner,
 						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true);
 			}
 			if (!blend_on || !draw_border) {
 				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
 				// Add antialiasing on the center fill
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+				draw_rounded_rectangle(verts, fill_indices, colors, border_style_rect, adapted_corner,
 						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew);
 			}
 		}
@@ -618,15 +673,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
 
 			// Create border ring, not antialiased yet
-			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+			draw_rounded_rectangle(verts, border_indices, colors, border_style_rect, adapted_corner,
 					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
 			if (!blend_on) {
 				// Add antialiasing on the ring inner border
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+				draw_rounded_rectangle(verts, border_indices, colors, border_style_rect, adapted_corner,
 						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
 			}
 			// Add antialiasing on the ring outer border
-			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+			draw_rounded_rectangle(verts, border_indices, colors, border_style_rect, adapted_corner,
 					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew);
 		}
 	}
@@ -642,7 +697,19 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	// Draw stylebox.
 	RenderingServer *vs = RenderingServer::get_singleton();
-	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors, uvs);
+	if (!share_indices) {
+		if (draw_shadow) {
+			vs->canvas_item_add_triangle_array(p_canvas_item, shadow_indices, verts, colors, uvs, {}, {}, shadow_texture.is_valid() ? shadow_texture->get_rid() : RID());
+		}
+		if (draw_border) {
+			vs->canvas_item_add_triangle_array(p_canvas_item, border_indices, verts, colors, uvs, {}, {}, border_texture.is_valid() ? border_texture->get_rid() : RID());
+		}
+		if (draw_center) {
+			vs->canvas_item_add_triangle_array(p_canvas_item, fill_indices, verts, colors, uvs, {}, {}, bg_texture.is_valid() ? bg_texture->get_rid() : RID());
+		}
+	} else {
+		vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors, uvs);
+	}
 }
 
 void StyleBoxFlat::_bind_methods() {
@@ -694,7 +761,17 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_corner_detail", "detail"), &StyleBoxFlat::set_corner_detail);
 	ClassDB::bind_method(D_METHOD("get_corner_detail"), &StyleBoxFlat::get_corner_detail);
 
+	ClassDB::bind_method(D_METHOD("set_bg_texture", "bg_texture"), &StyleBoxFlat::set_bg_texture);
+	ClassDB::bind_method(D_METHOD("get_bg_texture"), &StyleBoxFlat::get_bg_texture);
+
+	ClassDB::bind_method(D_METHOD("set_border_texture", "border_texture"), &StyleBoxFlat::set_border_texture);
+	ClassDB::bind_method(D_METHOD("get_border_texture"), &StyleBoxFlat::get_border_texture);
+
+	ClassDB::bind_method(D_METHOD("set_shadow_texture", "shadow_texture"), &StyleBoxFlat::set_shadow_texture);
+	ClassDB::bind_method(D_METHOD("get_shadow_texture"), &StyleBoxFlat::get_shadow_texture);
+
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bg_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_bg_texture", "get_bg_texture");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "skew"), "set_skew", "get_skew");
@@ -707,6 +784,7 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_GROUP("Border", "border_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "border_color"), "set_border_color", "get_border_color");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "border_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_border_texture", "get_border_texture");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 
@@ -726,6 +804,7 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_shadow_texture", "get_shadow_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
 

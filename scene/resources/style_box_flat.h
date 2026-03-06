@@ -32,6 +32,8 @@
 
 #include "scene/resources/style_box.h"
 
+class Texture2D;
+
 class StyleBoxFlat : public StyleBox {
 	GDCLASS(StyleBoxFlat, StyleBox);
 
@@ -52,6 +54,13 @@ class StyleBoxFlat : public StyleBox {
 	int shadow_size = 0;
 	Point2 shadow_offset;
 	real_t aa_size = 1;
+
+	Ref<Texture2D> bg_texture;
+	Ref<Texture2D> border_texture;
+	Ref<Texture2D> shadow_texture;
+
+	void _set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture);
+	void _texture_changed();
 
 protected:
 	virtual float get_style_margin(Side p_side) const override;
@@ -101,6 +110,15 @@ public:
 
 	void set_shadow_offset(const Point2 &p_offset);
 	Point2 get_shadow_offset() const;
+
+	void set_bg_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_bg_texture() const;
+
+	void set_border_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_border_texture() const;
+
+	void set_shadow_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_shadow_texture() const;
 
 	void set_anti_aliased(const bool &p_anti_aliased);
 	bool is_anti_aliased() const;
