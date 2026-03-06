@@ -110,10 +110,6 @@ void Node3D::_propagate_transform_changed_deferred() {
 }
 
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
 		Node3D *s = data.node3d_children[n];
 
@@ -124,9 +120,9 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	}
 
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if (is_inside_tree() && (!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (is_inside_tree() && data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
 		// SceneTree::xform_change_list is not thread safe to modify, and is read by the main thread when processings are done.
 		if (Thread::is_main_thread()) {
@@ -235,6 +231,8 @@ void Node3D::_notification(int p_what) {
 			data.index_in_parent = UINT32_MAX;
 
 			data.parent = nullptr;
+			_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM); // In case users want to access the out-of-tree branch transform.
+
 			_update_visibility_parent(true);
 			_disable_client_physics_interpolation();
 		} break;
@@ -646,8 +644,6 @@ Transform3D Node3D::get_global_transform_interpolated() {
 }
 
 Transform3D Node3D::get_global_transform() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
-
 	/* Due to how threads work at scene level, while this global transform won't be able to be changed from outside a thread,
 	 * it is possible that multiple threads can access it while it's dirty from previous work. Due to this, we must ensure that
 	 * the dirty/update process is thread safe by utilizing atomic copies.
