@@ -889,6 +889,18 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			r_device.name.find("Turnip") < 0;
+
+	// Workaround for the AMD GCN family of devices.
+	//
+	// There's a known issue with the Vulkan driver in this family of devices which makes these very sensitive to submission order.
+	//
+	// Render graph dependency detection improvements caused these devices to render incorrectly. Disabling this feature and
+	// marking any buffer changes as write usage seems to fix the issue.
+	//
+	r_device.workarounds.force_write_usage =
+			r_device.vendor == Vendor::VENDOR_AMD &&
+			p_device_properties.deviceID <= 0x7300 &&
+			p_device_properties.deviceID >= 0x6600; // GCN 1.0 - GCN 5.1
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {
