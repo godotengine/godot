@@ -34,7 +34,7 @@ partial class EventSignals
 }
     protected void EmitSignalMySignal(string @str, int @num)
     {
-        EmitSignal(SignalName.MySignal, @str, @num);
+        EmitSignal(SignalName.MySignal, [@str, @num]);
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
