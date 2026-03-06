@@ -3389,8 +3389,18 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 
 	if (!p_inspect && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		bool open_editor = unfold && _has_external_editor(p_resource);
+		if (open_editor) {
+			// Mark before update_property() so the sub-inspector update path doesn't queue the same open twice.
+			opened_editor = true;
+		}
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
+
+		if (open_editor) {
+			callable_mp(this, &EditorPropertyResource::_open_resource_editor).call_deferred(p_resource);
+		}
+
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
 	}
@@ -3499,10 +3509,31 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 	emit_signal(SNAME("object_id_selected"), get_edited_property(), p_id);
 }
 
+bool EditorPropertyResource::_has_external_editor(const Ref<Resource> &p_resource) const {
+	if (p_resource.is_null()) {
+		return false;
+	}
+
+	for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
+		EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
+		if (ep->handles(p_resource.ptr())) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
 		EditorNode::get_singleton()->edit_item(res.ptr(), this);
+	}
+}
+
+void EditorPropertyResource::_open_resource_editor(const Ref<Resource> &p_resource) {
+	if (p_resource.is_valid()) {
+		EditorNode::get_singleton()->edit_item(p_resource.ptr(), this);
 	}
 }
 
@@ -3668,25 +3699,15 @@ void EditorPropertyResource::update_property() {
 				set_bottom_editor(sub_inspector);
 
 				resource_picker->set_toggle_pressed(true);
-
-				Array editor_list;
-				for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
-					EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
-					if (ep->handles(res.ptr())) {
-						editor_list.push_back(ep);
-					}
-				}
-
-				if (!editor_list.is_empty()) {
-					// Open editor directly.
-					_open_editor_pressed();
-					opened_editor = true;
-				}
 			}
 
 			sub_inspector->set_read_only(is_checkable() && !is_checked());
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
+				if (_has_external_editor(res) && (!opened_editor || sub_inspector->get_edited_object() != nullptr)) {
+					callable_mp(this, &EditorPropertyResource::_open_resource_editor).call_deferred(res);
+					opened_editor = true;
+				}
 				sub_inspector->edit(res.ptr());
 				_update_property_bg();
 			}
