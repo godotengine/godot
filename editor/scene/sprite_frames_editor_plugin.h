@@ -69,6 +69,25 @@ public:
 	static Ref<ClipboardAnimation> from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim);
 };
 
+class ClipboardAnimationMulti : public Resource {
+	GDCLASS(ClipboardAnimationMulti, Resource);
+
+public:
+	Vector<Ref<ClipboardAnimation>> animations;
+
+	void add_animation(const Ref<ClipboardAnimation> &p_anim) {
+		animations.push_back(p_anim);
+	}
+
+	Vector<Ref<ClipboardAnimation>> get_animations() const {
+		return animations;
+	}
+
+	int get_count() const {
+		return animations.size();
+	}
+};
+
 class SpriteFramesEditor : public EditorDock {
 	GDCLASS(SpriteFramesEditor, EditorDock);
 
@@ -160,6 +179,7 @@ class SpriteFramesEditor : public EditorDock {
 	PopupMenu *menu = nullptr;
 
 	StringName edited_anim;
+	Vector<StringName> selected_anims;
 
 	ConfirmationDialog *delete_dialog = nullptr;
 
@@ -230,6 +250,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _stop_pressed();
 
 	void _animation_selected();
+	void _animation_multi_selected(TreeItem *p_item, int p_column, bool p_selected);
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_duplicate();
@@ -242,9 +263,9 @@ class SpriteFramesEditor : public EditorDock {
 	void _animation_loop_changed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
-	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);
+	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<StringName> &p_anims_to_delete, const HashMap<StringName, Vector<ClipboardSpriteFrames::Frame>> *p_frames_map);
 
-	StringName _find_next_animation();
+	StringName _find_next_animation_excluding(const Vector<StringName> &p_exclude);
 	String _generate_unique_animation_name(const String &p_base_name) const;
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
@@ -299,6 +320,8 @@ class SpriteFramesEditor : public EditorDock {
 
 	void _select_animation(const String &p_name, bool p_update_node = true);
 	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
+
+	void _sync_selected_anims();
 
 protected:
 	void _notification(int p_what);
