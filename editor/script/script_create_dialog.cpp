@@ -414,6 +414,9 @@ void ScriptCreateDialog::_load_exist() {
 
 void ScriptCreateDialog::_language_changed(int l) {
 	language = ScriptServer::get_language(l);
+	if (language == nullptr) {
+		return;
+	}
 
 	can_inherit_from_file = language->can_inherit_from_file();
 	supports_built_in = language->supports_builtin_mode();
@@ -528,6 +531,9 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 }
 
 void ScriptCreateDialog::_update_template_menu() {
+	if (language == nullptr) {
+		return;
+	}
 	bool is_language_using_templates = language->is_using_templates();
 	template_menu->set_disabled(false);
 	template_menu->clear();
@@ -899,8 +905,18 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			default_language = i;
 		}
 	}
-	if (default_language >= 0) {
+	if (ScriptServer::get_language_count() == 0) {
+		// Edge Case 1: No scripting languages exist at all.
+		get_ok_button()->set_disabled(true); // Explicitly disable the confirmation button to prevent downstream crashes.
+		language_menu->set_disabled(true);
+		language_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		language_menu->add_item(TTR("No Scripting Languages Available"));
+	} else if (default_language >= 0) {
+		// Normal Case: GDScript is available, select it.
 		language_menu->select(default_language);
+	} else {
+		// Edge Case 2: Languages exist (like C#), but GDScript is disabled.
+		language_menu->select(0);
 	}
 
 	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
