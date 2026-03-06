@@ -110,6 +110,7 @@ class UniformSetCacheRD : public Object {
 
 	uint32_t cache_instances_used = 0;
 
+	void _remove(Cache *p_cache);
 	void _invalidate(Cache *p_cache);
 	static void _uniform_set_invalidation_callback(void *p_userdata);
 
@@ -205,6 +206,14 @@ public:
 	}
 
 	static RID get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms);
+
+	// Re-keys a cache entry after a texture RID was replaced in its uniforms.
+	void texture_replaced_in_uniform_set(void *p_cache_userdata, RID p_old_texture, RID p_new_texture);
+
+	// Returns true if the given callback is the one used by this cache.
+	bool is_cache_invalidation_callback(void (*p_callback)(void *)) const {
+		return p_callback == _uniform_set_invalidation_callback;
+	}
 
 	static UniformSetCacheRD *get_singleton() { return singleton; }
 
