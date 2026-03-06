@@ -134,6 +134,7 @@ class InspectorDock : public EditorDock {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 private:
