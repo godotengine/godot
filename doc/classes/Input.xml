@@ -700,7 +700,7 @@
 				[param duration] is the duration of the effect in seconds (a duration of [code]0.0[/code] will try to play the vibration as long as possible, which is about 65 seconds).
 				The vibration can be stopped early by calling [method stop_joy_vibration].
 				See also [method get_joy_vibration_strength] and [method get_joy_vibration_duration].
-				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
+				[b]Note:[/b] For Android, joypad vibration is not supported due to Android limitations. For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>
 		<method name="stop_joy_motion_sensors_calibration" experimental="">
