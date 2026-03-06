@@ -68,6 +68,12 @@ public:
 	};
 
 private:
+	struct ExcludedShapeSW {
+		GodotShape3D *local_shape = nullptr;
+		const GodotCollisionObject3D *against_object = nullptr;
+		int against_shape_index = 0;
+	};
+
 	uint64_t elapsed_time[ELAPSED_TIME_MAX] = {};
 
 	GodotPhysicsDirectSpaceState3D *direct_access = nullptr;

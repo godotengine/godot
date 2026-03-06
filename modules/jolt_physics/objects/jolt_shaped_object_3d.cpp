@@ -456,3 +456,38 @@ void JoltShapedObject3D::set_shape_disabled(int p_index, bool p_disabled) {
 
 	_shapes_changed();
 }
+
+bool JoltShapedObject3D::is_shape_set_as_one_way_collision(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), false);
+	return shapes[p_index].is_set_as_one_way_collision();
+}
+
+void JoltShapedObject3D::set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin, const Vector3 &p_direction) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	JoltShapeInstance3D &shape = shapes[p_index];
+
+	if (shape.is_set_as_one_way_collision() == p_enabled && shape.get_one_way_collision_margin() == p_margin && shape.get_one_way_collision_direction() == p_direction) {
+		return;
+	}
+
+	if (shape.is_set_as_one_way_collision() && !p_enabled) {
+		one_way_collision_shape_count--;
+	} else if (!shape.is_set_as_one_way_collision() && p_enabled) {
+		one_way_collision_shape_count++;
+	}
+
+	shape.set_as_one_way_collision(p_enabled, p_margin, p_direction);
+
+	//_shapes_changed(); // TODO check
+}
+
+real_t JoltShapedObject3D::get_shape_one_way_collision_margin(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), 0.0f);
+	return shapes[p_index].get_one_way_collision_margin();
+}
+
+Vector3 JoltShapedObject3D::get_shape_one_way_collision_direction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), Vector3(0, -1, 0));
+	return shapes[p_index].get_one_way_collision_direction();
+}

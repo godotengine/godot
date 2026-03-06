@@ -45,6 +45,7 @@ class JoltShapedObject3D : public JoltObject3D {
 protected:
 	SelfList<JoltShapedObject3D> shapes_changed_element;
 	SelfList<JoltShapedObject3D> needs_optimization_element;
+	int one_way_collision_shape_count = 0;
 
 	LocalVector<JoltShapeInstance3D> shapes;
 
@@ -129,4 +130,10 @@ public:
 
 	bool is_shape_disabled(int p_index) const;
 	void set_shape_disabled(int p_index, bool p_disabled);
+
+	bool has_one_way_collision_shapes() const { return one_way_collision_shape_count > 0; }
+	bool is_shape_set_as_one_way_collision(int p_index) const;
+	void set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin, const Vector3 &p_direction);
+	real_t get_shape_one_way_collision_margin(int p_index) const;
+	Vector3 get_shape_one_way_collision_direction(int p_index) const;
 };
