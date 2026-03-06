@@ -39,6 +39,7 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	}
 
 	if (tj3DecompressHeader(tj_instance, p_buffer, p_buffer_len) < 0) {
+		print_verbose(vformat("libjpeg-turbo header error: %s", tj3GetErrorStr(tj_instance)));
 		tj3Destroy(tj_instance);
 		return ERR_FILE_CORRUPT;
 	}
@@ -68,8 +69,14 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	data.resize(width * height * tjPixelSize[tj_pixel_format]);
 
 	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
-		tj3Destroy(tj_instance);
-		return ERR_FILE_CORRUPT;
+		int error_code = tjGetErrorCode(tj_instance);
+		if (error_code == TJERR_FATAL) {
+			print_verbose(vformat("libjpeg-turbo decompress error: %s", tj3GetErrorStr(tj_instance)));
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		}
+		// TJERR_WARNING: Decompression succeeded with warnings (e.g., partial/corrupt frame).
+		print_verbose(vformat("libjpeg-turbo decompress warning: %s", tj3GetErrorStr(tj_instance)));
 	}
 
 	tj3Destroy(tj_instance);
@@ -184,6 +191,7 @@ static Error _jpeg_turbo_save_func(const String &p_path, const Ref<Image> &p_img
 
 ImageLoaderLibJPEGTurbo::ImageLoaderLibJPEGTurbo() {
 	Image::_jpg_mem_loader_func = _jpeg_turbo_mem_loader_func;
+	Image::_jpg_mem_loader_func_ex = jpeg_turbo_load_image_from_buffer;
 	Image::save_jpg_func = _jpeg_turbo_save_func;
 	Image::save_jpg_buffer_func = _jpeg_turbo_buffer_save_func;
 }
