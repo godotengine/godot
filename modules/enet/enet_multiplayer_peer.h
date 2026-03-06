@@ -103,7 +103,6 @@ public:
 	virtual void close() override;
 	virtual void disconnect_peer(int p_peer, bool p_force = false) override;
 
-	virtual bool is_server() const override;
 	virtual bool is_server_relay_supported() const override;
 
 	// Overridden so we can instrument the DTLSServer when needed.
