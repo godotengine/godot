@@ -1307,6 +1307,7 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 				return FAILED;
 			}
 			process_directive(&p_tokenizer);
+			last_size = output.size();
 		} else {
 			if (is_char_end(t.text)) {
 				expand_output_macros(last_size, p_tokenizer.get_line());
