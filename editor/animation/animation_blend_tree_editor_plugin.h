@@ -168,7 +168,12 @@ public:
 
 	void update_graph();
 
+	void update_theme();
+
 	AnimationNodeBlendTreeEditor();
+
+private:
+	Ref<Theme> ab_msdf_fonts_theme;
 };
 
 // EditorPluginAnimationNodeAnimation
