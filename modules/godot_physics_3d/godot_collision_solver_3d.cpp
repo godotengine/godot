@@ -122,7 +122,7 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	}
 
 	Vector3 support_B = p_transform_B.xform(p);
-	if (ray->get_slide_on_slope()) {
+	if (!ray->get_separate_along_ray()) {
 		Vector3 global_n = ai.basis.xform_inv(n).normalized();
 		support_B = support_A + (support_B - support_A).length() * global_n;
 	}
