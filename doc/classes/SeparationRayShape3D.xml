@@ -4,7 +4,7 @@
 		A 3D ray shape used for physics collision that tries to separate itself from any collider.
 	</brief_description>
 	<description>
-		A 3D ray shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. When a [SeparationRayShape3D] collides with an object, it tries to separate itself from it by moving its endpoint to the collision point. For example, a [SeparationRayShape3D] next to a character can allow it to instantly move up when touching stairs.
+		A 3D ray shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. When a [SeparationRayShape3D] collides with an object, it tries to separate itself from it by moving its endpoint to the collision point. For example, a [SeparationRayShape3D] next to a character can allow it to instantly move up when touching stairs. [SeparationRayShape3D] is intended mainly for depenetation and thus will not prevent motion unless [member slide_on_slope] or [member PhysicsTestMotionParameters3D.collide_separation_ray] is [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,8 +13,8 @@
 			The ray's length.
 		</member>
 		<member name="slide_on_slope" type="bool" setter="set_slide_on_slope" getter="get_slide_on_slope" default="false">
-			If [code]false[/code] (default), the shape always separates and returns a normal along its own direction.
-			If [code]true[/code], the shape can return the correct normal and separate in any direction, allowing sliding motion on slopes.
+			If [code]false[/code] (default), the shape only resolves collisions by moving along the direction of the ray. Normals are only reported along the ray. The shape will only be used for depenetation.
+			If [code]true[/code], the shape resolves collisions in any direction based on the correct collision normal. The shape will be able to stop motion like a regular shape.
 		</member>
 	</members>
 </class>
