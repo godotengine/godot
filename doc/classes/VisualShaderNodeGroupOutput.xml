@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeGroupOutput" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents the output ports of a [VisualShaderGroup] within its graph.
+	</brief_description>
+	<description>
+		This node is automatically created inside each [VisualShaderGroup]. It has no output ports and its input ports correspond to the output ports defined on the parent [VisualShaderGroup].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
