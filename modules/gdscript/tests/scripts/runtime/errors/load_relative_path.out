@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR: Condition "err" is true. Returning: err
+>>   Attempt to open script 'res://load_relative_path.gd' resulted in error 'File not found'.
+>> ERROR: Condition "found" is true. Returning: Ref<Resource>()
+>>   Failed loading resource: res://load_relative_path.gd.
+<Object#null>
