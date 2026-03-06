@@ -86,6 +86,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/sticky_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
@@ -509,6 +510,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GridContainer);
 	GDREGISTER_CLASS(CenterContainer);
 	GDREGISTER_CLASS(ScrollContainer);
+	GDREGISTER_CLASS(StickyContainer);
 	GDREGISTER_CLASS(PanelContainer);
 	GDREGISTER_CLASS(FlowContainer);
 	GDREGISTER_CLASS(HFlowContainer);
