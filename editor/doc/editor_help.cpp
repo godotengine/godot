@@ -72,6 +72,8 @@
 #include "modules/mono/csharp_script.h"
 #endif
 
+#include "modules/regex/regex.h"
+
 #define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 
 #ifdef MODULE_MONO_ENABLED
@@ -3693,6 +3695,18 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 
 				if (!is_native) {
 					break;
+				}
+			}
+
+			if (property.name.contains("{index}")) {
+				RegEx reg_index = RegEx(property.name.replace("{index}", "\\d*"));
+				Ref<RegExMatch> match = reg_index.search(p_property_name);
+				if (match.is_valid()) {
+					result = current;
+
+					if (!is_native) {
+						break;
+					}
 				}
 			}
 
