@@ -56,6 +56,8 @@ class Sprite2D : public Node2D {
 	int vframes = 1;
 	int hframes = 1;
 
+	Vector2i separation;
+
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const;
 	Point2 _get_rect_offset(const Size2i &p_size) const;
 
@@ -131,6 +133,9 @@ public:
 
 	void set_hframes(int p_amount);
 	int get_hframes() const;
+
+	void set_separation(const Vector2i &p_separation);
+	Vector2i get_separation() const;
 
 	Rect2 get_rect() const;
 	virtual Rect2 get_anchorable_rect() const override;
