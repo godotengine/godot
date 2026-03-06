@@ -142,6 +142,14 @@ public:
 			AudioEffectFilter(AudioFilterSW::NOTCH) {}
 };
 
+class AudioEffectPeakFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectPeakFilter, AudioEffectFilter);
+
+public:
+	AudioEffectPeakFilter() :
+			AudioEffectFilter(AudioFilterSW::PEAK) {}
+};
+
 class AudioEffectBandLimitFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter);
 
