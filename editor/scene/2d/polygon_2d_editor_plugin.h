@@ -93,6 +93,11 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *b_snap_grid = nullptr;
 	MenuButton *edit_menu = nullptr;
 
+	HBoxContainer *action_points_hb = nullptr;
+	HBoxContainer *action_transform_hb = nullptr;
+	HBoxContainer *action_polygon_hb = nullptr;
+	HBoxContainer *action_bones_hb = nullptr;
+
 	Control *canvas = nullptr;
 	Panel *canvas_background = nullptr;
 	Polygon2D *preview_polygon = nullptr;
