@@ -32,104 +32,143 @@
 
 #include "scene/gui/dialogs.h"
 
+class Button;
 class EditorExportPreset;
-class ExportTemplateVersion;
-class FileDialog;
 class HTTPRequest;
-class MenuButton;
-class OptionButton;
-class ProgressBar;
+class ItemList;
+class Texture2D;
 class Tree;
+class TreeItem;
 
 class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);
 
-	bool current_version_exists = false;
-	bool mirrors_available = false;
-	bool is_refreshing_mirrors = false;
-	bool is_downloading_templates = false;
-	float update_countdown = 0;
+	enum class TemplateID {
+		WINDOWS_X86_32,
+		WINDOWS_X86_64,
+		WINDOWS_ARM64,
 
-	Label *current_value = nullptr;
-	Label *current_missing_label = nullptr;
-	Label *current_installed_label = nullptr;
+		LINUX_X86_32,
+		LINUX_X86_64,
+		LINUX_ARM32,
+		LINUX_ARM64,
 
-	HBoxContainer *current_installed_hb = nullptr;
-	LineEdit *current_installed_path = nullptr;
-	Button *current_uninstall_button = nullptr;
+		MACOS,
 
-	VBoxContainer *install_options_vb = nullptr;
-	OptionButton *mirrors_list = nullptr;
+		WEB,
+		WEB_EXTENSIONS,
+		WEB_NOTHREADS,
+		WEB_EXTENSIONS_NOTHREADS,
 
-	enum MirrorAction {
-		VISIT_WEB_MIRROR,
-		COPY_MIRROR_URL,
+		ANDROID,
+		ANDROID_SOURCE,
+
+		IOS,
+
+		ICU_DATA,
 	};
 
-	MenuButton *mirror_options_button = nullptr;
-	HBoxContainer *enable_online_hb = nullptr;
-	HBoxContainer *download_progress_hb = nullptr;
-	ProgressBar *download_progress_bar = nullptr;
-	Label *download_progress_label = nullptr;
-	HTTPRequest *download_templates = nullptr;
-	Button *install_file_button = nullptr;
-	Button *download_current_button = nullptr;
-	HTTPRequest *request_mirrors = nullptr;
-
-	enum TemplatesAction {
-		OPEN_TEMPLATE_FOLDER,
-		UNINSTALL_TEMPLATE,
+	enum class PlatformID {
+		WINDOWS,
+		LINUX,
+		MACOS,
+		WEB,
+		ANDROID,
+		IOS,
+		COMMON,
 	};
 
-	Tree *installed_table = nullptr;
+	enum class DownloadStatus {
+		PENDING,
+		IN_PROGRESS,
+		COMPLETED,
+		FAILED,
+	};
 
-	ConfirmationDialog *uninstall_confirm = nullptr;
-	String uninstall_version;
-	FileDialog *install_file_dialog = nullptr;
-	AcceptDialog *hide_dialog_accept = nullptr;
+	enum class ButtonID {
+		DOWNLOAD,
+		REPAIR,
+		REMOVE,
+		CANCEL,
+	};
 
-	void _update_template_status();
+	struct PlatformInfo {
+		String name;
+		Ref<Texture2D> icon;
+		HashSet<TemplateID> templates;
+		String group;
+	};
 
-	void _download_current();
-	void _download_template(const String &p_url, bool p_skip_check = false);
-	void _download_template_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
-	void _cancel_template_download();
-	void _refresh_mirrors();
-	void _refresh_mirrors_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
-	void _force_online_mode();
+	struct TemplateInfo {
+		String name;
+		PackedStringArray file_list;
+	};
 
-	bool _humanize_http_status(HTTPRequest *p_request, String *r_status, int *r_downloaded_bytes, int *r_total_bytes);
-	void _set_current_progress_status(const String &p_status, bool p_error = false);
-	void _set_current_progress_value(float p_value, const String &p_status);
+	HashMap<PlatformID, PlatformInfo> platform_map;
+	HashMap<TemplateID, TemplateInfo> template_data;
 
-	void _install_file();
-	bool _install_file_selected(const String &p_file, bool p_skip_progress = false);
+	LocalVector<HTTPRequest *> downloaders;
 
-	void _uninstall_template(const String &p_version);
-	void _uninstall_template_confirmed();
+	bool download_all_enabled = true;
+	HashSet<String> queued_templates;
+	HashSet<String> queued_files;
+	LocalVector<TreeItem *> downloading_items;
+	bool queue_update_pending = false;
 
-	String _get_selected_mirror() const;
-	void _mirror_options_button_cbk(int p_id);
-	void _installed_table_button_cbk(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	HashMap<String, bool> folding_cache_installed;
+	HashMap<String, bool> folding_cache_available;
 
-	void _open_template_folder(const String &p_version);
+	ItemList *version_list = nullptr;
+	Tree *installed_templates_tree = nullptr;
+	VBoxContainer *available_templates_container = nullptr;
+	Tree *available_templates_tree = nullptr;
+	Button *open_folder_button = nullptr;
+	Button *install_button = nullptr;
 
-	virtual void ok_pressed() override;
-	void _hide_dialog();
+	void _initialize_template_data();
+	void _update_template_tree();
+	void _update_template_tree_with_folding();
+	void _update_install_button_text();
+
+	void _update_folding_cache(HashMap<String, bool> &p_cache, TreeItem *p_item);
+
+	String _get_template_folder_path(const String &p_version) const;
+	Ref<Texture2D> _get_platform_icon(const String &p_platform_name);
+
+	void _version_selected();
+	void _tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
+	void _tree_item_edited();
+	void _install_templates();
+	void _open_template_directory();
+
+	void _queue_download_tree_item(TreeItem *p_item);
+	void _process_download_queue();
+	void _queue_process_download_queue();
+	HTTPRequest *_get_available_downloader(int *r_from_index);
+	void _download_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body, HTTPRequest *p_downloader);
+	bool _is_downloading() const;
+
+	void _setup_custom_item(TreeItem *p_item, const String &p_text);
+	void _setup_downloading_item(TreeItem *p_item, const String &p_text);
+	void _setup_check_item(TreeItem *p_item, const String &p_text);
+	void _apply_item_folding(TreeItem *p_item, bool p_default = false);
+	void _fail_item_download(TreeItem *p_item, const String &p_reason);
+
+	bool _item_is_file(TreeItem *p_item) const;
+	float _get_download_progress(TreeItem *p_item) const;
+	void _draw_item_progress(TreeItem *p_item, const Rect2 &p_rect);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	static String get_android_build_directory(const Ref<EditorExportPreset> &p_preset);
-	static String get_android_source_zip(const Ref<EditorExportPreset> &p_preset);
-	static String get_android_template_identifier(const Ref<EditorExportPreset> &p_preset);
-
-	bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset);
-	bool can_install_android_template(const Ref<EditorExportPreset> &p_preset);
-	Error install_android_template(const Ref<EditorExportPreset> &p_preset);
-
-	Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
+	// TODO :D
+	static String get_android_build_directory(const Ref<EditorExportPreset> &p_preset) { return ""; }
+	static String get_android_template_identifier(const Ref<EditorExportPreset> &p_preset) { return ""; }
+	static void install_android_template(const Ref<EditorExportPreset> &p_preset) {}
+	static void install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset) {}
+	bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset) { return false; }
+	bool can_install_android_template(const Ref<EditorExportPreset> &p_preset) { return false; }
 
 	void popup_manager();
 
