@@ -302,6 +302,7 @@ void SplitContainerDragger::update_touch_dragger() {
 	touch_dragger->set_texture(sc->_get_touch_dragger_icon());
 	touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	touch_dragger->set_default_cursor_shape(sc->vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
+	touch_dragger->set_visible(sc->dragging_enabled);
 }
 
 void SplitContainerDragger::stop_dragging() {
@@ -850,9 +851,6 @@ void SplitContainer::_resort() {
 	}
 	for (SplitContainerDragger *dragger : dragging_area_controls) {
 		dragger->set_visible(!collapsed);
-		if (touch_dragger_enabled) {
-			dragger->touch_dragger->set_visible(dragging_enabled);
-		}
 	}
 
 	_update_default_dragger_positions();
@@ -1481,6 +1479,11 @@ void SplitContainer::set_dragging_enabled(bool p_enabled) {
 	if (!dragging_enabled) {
 		for (SplitContainerDragger *dragger : dragging_area_controls) {
 			dragger->stop_dragging();
+		}
+	}
+	if (touch_dragger_enabled) {
+		for (SplitContainerDragger *dragger : dragging_area_controls) {
+			dragger->update_touch_dragger();
 		}
 	}
 	if (get_viewport()) {
