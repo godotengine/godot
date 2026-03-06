@@ -1033,6 +1033,7 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_NONE: {
+			PhysicsServer3D::get_singleton()->joint_clear(joint);
 		} break;
 	}
 }
