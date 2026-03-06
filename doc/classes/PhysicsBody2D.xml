@@ -38,7 +38,7 @@
 			<param index="3" name="recovery_as_collision" type="bool" default="false" />
 			<description>
 				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
-				Returns a [KinematicCollision2D], which contains information about the collision when stopped, or when touching another body along the motion.
+				Returns a [KinematicCollision2D] if a collision occured, which contains information about the collision when stopped, or when touching another body along the motion.
 				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
 				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody2D.safe_margin] for more details).
 				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is used e.g. by [CharacterBody2D] for improving floor detection during floor snapping.
