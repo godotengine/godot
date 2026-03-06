@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VideoStreamPlayback" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Internal class used by [VideoStream] to manage playback state when played from a [VideoStreamPlayer].
+		Class used by [VideoStream] to manage playback state and decoding of video frame data to [Texture2D].
 	</brief_description>
 	<description>
-		This class is intended to be overridden by video decoder extensions with custom implementations of [VideoStream].
+		The virtual functions of this class can be extended and overridden to support custom implementations of [VideoStream] formats.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,43 +12,43 @@
 		<method name="_get_channels" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns the number of audio channels.
+				Called when the number of audio channels is requested.
 			</description>
 		</method>
 		<method name="_get_length" qualifiers="virtual const">
 			<return type="float" />
 			<description>
-				Returns the video duration in seconds, if known, or 0 if unknown.
+				Called when the video duration in seconds is requested. Return 0.0 when unknown.
 			</description>
 		</method>
 		<method name="_get_mix_rate" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns the audio sample rate used for mixing.
+				Called when the audio sample rate is requested for mixing.
 			</description>
 		</method>
 		<method name="_get_playback_position" qualifiers="virtual const">
 			<return type="float" />
 			<description>
-				Return the current playback timestamp. Called in response to the [member VideoStreamPlayer.stream_position] getter.
+				Called when the current playback timestamp is requested.
 			</description>
 		</method>
 		<method name="_get_texture" qualifiers="virtual const">
 			<return type="Texture2D" />
 			<description>
-				Allocates a [Texture2D] in which decoded video frames will be drawn.
+				Called when the current video texture is requested in which decoded video frames are drawn.
 			</description>
 		</method>
 		<method name="_is_paused" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns the paused status, as set by [method _set_paused].
+				Called when the current video pause status is requested.
 			</description>
 		</method>
 		<method name="_is_playing" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns the playback state, as determined by calls to [method _play] and [method _stop].
+				Called when the current video playing status is requested, as determined by calls to [method _play] and [method _stop].
 			</description>
 		</method>
 		<method name="_play" qualifiers="virtual">
@@ -61,34 +61,76 @@
 			<return type="void" />
 			<param index="0" name="time" type="float" />
 			<description>
-				Seeks to [param time] seconds. Called in response to the [member VideoStreamPlayer.stream_position] setter.
+				Called when the current video [param time] in seconds is set. E.g. in response to the [member VideoStreamPlayer.stream_position] setter.
 			</description>
 		</method>
 		<method name="_set_audio_track" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Select the audio track [param idx]. Called when playback starts, and in response to the [member VideoStreamPlayer.audio_track] setter.
+				Called when the audio track is selected. Called when playback starts, and in response to the [member VideoStreamPlayer.audio_track] setter.
 			</description>
 		</method>
 		<method name="_set_paused" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="paused" type="bool" />
 			<description>
-				Set the paused status of video playback. [method _is_paused] must return [param paused]. Called in response to the [member VideoStreamPlayer.paused] setter.
+				Called when the paused status of video playback should change. [method _is_paused] must return [param paused]. Called in response to the [member VideoStreamPlayer.paused] setter.
 			</description>
 		</method>
 		<method name="_stop" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Stops playback. May be called multiple times before [method _play], or in response to [method VideoStreamPlayer.stop]. [method _is_playing] should return [code]false[/code] once stopped.
+				Called when a stop of the video playback is requested. May be called multiple times before [method _play]. [method _is_playing] should return [code]false[/code] once stopped.
 			</description>
 		</method>
 		<method name="_update" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Ticks video playback for [param delta] seconds. Called every frame as long as both [method _is_paused] and [method _is_playing] return [code]true[/code].
+				Called when the video playback should be advanced for [param delta] seconds. Expected to be called every frame as long as both [method _is_paused] and [method _is_playing] return [code]true[/code].
+			</description>
+		</method>
+		<method name="get_channels" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of audio channels.
+			</description>
+		</method>
+		<method name="get_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the video duration in seconds, if known, or [code]0[/code] if unknown.
+			</description>
+		</method>
+		<method name="get_mix_rate" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the audio sample rate used for mixing.
+			</description>
+		</method>
+		<method name="get_playback_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Return the current video playback timestamp in seconds.
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				Returns the [Texture2D] in which a decoded video frame is drawn after each call to [method update].
+			</description>
+		</method>
+		<method name="is_paused" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns the paused state, controlled by calls to [method set_paused].
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns the playback state, controlled by calls to [method play] and [method stop].
 			</description>
 		</method>
 		<method name="mix_audio">
@@ -98,6 +140,50 @@
 			<param index="2" name="offset" type="int" default="0" />
 			<description>
 				Render [param num_frames] audio frames (of [method _get_channels] floats each) from [param buffer], starting from index [param offset] in the array. Returns the number of audio frames rendered, or -1 on error.
+			</description>
+		</method>
+		<method name="play">
+			<return type="void" />
+			<description>
+				Starts the video playback from the current [method get_playback_position]. [method is_playing] will return [code]true[/code] once playing.
+				b]Note:[/b] This will not unpause a video playback, use [method set_paused] to unpause.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Seeks the video playback position to [param time] seconds.
+				[b]Note:[/b] Depending on the used video format may do nothing when the seek time exceeds the video length. Consider manually clamping the seek time between [code]0.0[/code] and [method get_length].
+			</description>
+		</method>
+		<method name="set_audio_track">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Selects the used audio track [param idx] for the video playback (in case a video has multiple tracks).
+			</description>
+		</method>
+		<method name="set_paused">
+			<return type="void" />
+			<param index="0" name="paused" type="bool" />
+			<description>
+				Depending on [param paused], pauses or unpauses the video playback.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the video playback, sets the playback state returned by [method is_playing] to [code]false[/code], and performs a seek to the [code]0.0[/code] playback position.
+				[b]Note:[/b] To keep the playback position consider using [method set_paused] instead.
+			</description>
+		</method>
+		<method name="update">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Advances the current video playback position by [param delta] seconds.
+				[b]Note:[/b] Use with caution as this call causes performance costly decoding of the video frame followed by an update of the [method get_texture] with updated [Image] data.
 			</description>
 		</method>
 	</methods>

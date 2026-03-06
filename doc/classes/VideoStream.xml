@@ -17,6 +17,12 @@
 				Called when the video starts playing, to initialize and return a subclass of [VideoStreamPlayback].
 			</description>
 		</method>
+		<method name="instantiate_playback">
+			<return type="VideoStreamPlayback" />
+			<description>
+				Initializes and returns a subclass of [VideoStreamPlayback] to control the video playback of the stream.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="file" type="String" setter="set_file" getter="get_file" default="&quot;&quot;">

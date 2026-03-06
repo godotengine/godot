@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VideoStreamPlaybackTheora" inherits="VideoStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class used to manage playback state and decoding of [url=https://www.theora.org/]Ogg Theora[/url] video frame data.
+	</brief_description>
+	<description>
+		When loading Theora files and seeking frames the decoding is done fully on the CPU.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
