@@ -273,6 +273,8 @@ private:
 
 	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
+	bool show_information = false;
+	bool show_frame_time = false;
 	Label *cinema_label = nullptr;
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
