@@ -213,9 +213,11 @@ cscope.po.out
 *.swp
 
 # Visual Studio Code
-.vscode/
+.vscode/*
 *.code-workspace
 .history/
+# Recommends the .editorconfig extension when setting up the workspace.
+!.vscode/extensions.json
 
 # Xcode
 xcuserdata/
