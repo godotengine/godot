@@ -360,7 +360,6 @@ void EditorResourcePreview::_iterate() {
 				cache_valid = false;
 			} else {
 				// Update modified time.
-
 				Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
 				if (f2.is_null()) {
 					// Not returning as this would leave the thread hanging and would require
