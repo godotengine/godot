@@ -317,6 +317,30 @@
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
+		<method name="tween_assign">
+			<return type="AssignTweener" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="NodePath" />
+			<param index="2" name="new_val" type="Variant" />
+			<description>
+				Creates and appends an [AssignTweener]. This method is similar to [method tween_property], but it doesn't interpolate the value over time. Instead, it assigns the desired value to the property when the tweener starts. This can be useful for sequencing actions in a tween without any animation, or for setting up initial values for later tweening.
+				[codeblocks]
+				[gdscript]
+				var tween = create_tween()
+				tween.tween_assign($Sprite, "texture", new_texture)
+				tween.tween_assign($Sprite, "position", Vector2(100, 200))
+				tween.tween_property($Sprite, "position", Vector2(200, 300), 1.0)
+				[/gdscript]
+				[csharp]
+				Tween tween = CreateTween();
+				tween.TweenAssign(GetNode("Sprite"), "texture", newTexture);
+				tween.TweenAssign(GetNode("Sprite"), "position", new Vector2(100.0f, 200.0f));
+				tween.TweenProperty(GetNode("Sprite"), "position", new Vector2(200.0f, 300.0f), 1.0f);
+				[/csharp]
+				[/codeblocks]
+				In the example above, the sprite will be immediately moved to position [code](100, 200)[/code] and then tweened to [code](200, 300)[/code].
+			</description>
+		</method>
 		<method name="tween_await">
 			<return type="AwaitTweener" />
 			<param index="0" name="signal" type="Signal" />
