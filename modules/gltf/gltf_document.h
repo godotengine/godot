@@ -56,6 +56,10 @@ public:
 		ROOT_NODE_MODE_KEEP_ROOT,
 		ROOT_NODE_MODE_MULTI_ROOT,
 	};
+	enum TextureMapMode {
+		TEXTURE_MAP_MODE_DO_NOT_REMAP,
+		TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL,
+	};
 	enum VisibilityMode {
 		VISIBILITY_MODE_INCLUDE_REQUIRED,
 		VISIBILITY_MODE_INCLUDE_OPTIONAL,
@@ -70,6 +74,7 @@ private:
 	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
+	TextureMapMode _texture_map_mode = TextureMapMode::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL;
 	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
 
 protected:
@@ -102,11 +107,14 @@ public:
 	float get_fallback_image_quality() const;
 	void set_root_node_mode(RootNodeMode p_root_node_mode);
 	RootNodeMode get_root_node_mode() const;
+	void set_texture_map_mode(TextureMapMode p_texture_map_mode);
+	TextureMapMode get_texture_map_mode() const { return _texture_map_mode; }
 	void set_visibility_mode(VisibilityMode p_visibility_mode);
 	VisibilityMode get_visibility_mode() const;
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
+	static void _append_khr_texture_transform_ext_json_pointer(PackedStringArray &p_split_json_pointer, const String &p_texture_name, const bool p_is_offset);
 	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
@@ -290,4 +298,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
+VARIANT_ENUM_CAST(GLTFDocument::TextureMapMode);
 VARIANT_ENUM_CAST(GLTFDocument::VisibilityMode);
