@@ -116,6 +116,8 @@
 	</methods>
 	<members>
 		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array()">
+			The raw buffer data for this multimesh object. This property provides access to the underlying buffer that stores transformation matrices and other instance data for all mesh instances.
+			The buffer structure depends on the [member transform_format] property and if [member use_custom_data] or [member use_colors] is enabled. See [method RenderingServer.multimesh_set_buffer] for more information.
 		</member>
 		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" deprecated="Accessing this property is very slow. Use [method set_instance_color] and [method get_instance_color] instead.">
 			Array containing each [Color] used by all instances of this mesh.
