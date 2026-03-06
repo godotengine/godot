@@ -5,7 +5,7 @@
  *
  * Generator: C/C++
  * Specification: gl
- * Extensions: 8
+ * Extensions: 10
  *
  * APIs:
  *  - gl:compatibility=3.3
@@ -20,10 +20,10 @@
  *  - ON_DEMAND = False
  *
  * Commandline:
- *    --merge --api='gl:compatibility=3.3,gles2=3.2' --extensions='GL_ARB_debug_output,GL_ARB_framebuffer_object,GL_ARB_get_program_binary,GL_EXT_framebuffer_blit,GL_EXT_framebuffer_multisample,GL_EXT_framebuffer_object,GL_OVR_multiview,GL_OVR_multiview2' c --loader
+ *    --merge --api='gl:compatibility=3.3,gles2=3.2' --extensions='GL_ARB_debug_output,GL_ARB_framebuffer_object,GL_ARB_get_program_binary,GL_ARB_polygon_offset_clamp,GL_EXT_framebuffer_blit,GL_EXT_framebuffer_multisample,GL_EXT_framebuffer_object,GL_EXT_polygon_offset_clamp,GL_OVR_multiview,GL_OVR_multiview2' c --loader
  *
  * Online:
- *    http://glad.sh/#api=gl%3Acompatibility%3D3.3%2Cgles2%3D3.2&extensions=GL_ARB_debug_output%2CGL_ARB_framebuffer_object%2CGL_ARB_get_program_binary%2CGL_EXT_framebuffer_blit%2CGL_EXT_framebuffer_multisample%2CGL_EXT_framebuffer_object%2CGL_OVR_multiview%2CGL_OVR_multiview2&generator=c&options=MERGE%2CLOADER
+ *    http://glad.sh/#api=gl%3Acompatibility%3D3.3%2Cgles2%3D3.2&extensions=GL_ARB_debug_output%2CGL_ARB_framebuffer_object%2CGL_ARB_get_program_binary%2CGL_ARB_polygon_offset_clamp%2CGL_EXT_framebuffer_blit%2CGL_EXT_framebuffer_multisample%2CGL_EXT_framebuffer_object%2CGL_EXT_polygon_offset_clamp%2CGL_OVR_multiview%2CGL_OVR_multiview2&generator=c&options=MERGE%2CLOADER
  *
  */
 
@@ -980,6 +980,8 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 #define GL_POLYGON 0x0009
 #define GL_POLYGON_BIT 0x00000008
 #define GL_POLYGON_MODE 0x0B40
+#define GL_POLYGON_OFFSET_CLAMP 0x8E1B
+#define GL_POLYGON_OFFSET_CLAMP_EXT 0x8E1B
 #define GL_POLYGON_OFFSET_FACTOR 0x8038
 #define GL_POLYGON_OFFSET_FILL 0x8037
 #define GL_POLYGON_OFFSET_LINE 0x2A02
@@ -1979,12 +1981,16 @@ GLAD_API_CALL int GLAD_GL_ARB_debug_output;
 GLAD_API_CALL int GLAD_GL_ARB_framebuffer_object;
 #define GL_ARB_get_program_binary 1
 GLAD_API_CALL int GLAD_GL_ARB_get_program_binary;
+#define GL_ARB_polygon_offset_clamp 1
+GLAD_API_CALL int GLAD_GL_ARB_polygon_offset_clamp;
 #define GL_EXT_framebuffer_blit 1
 GLAD_API_CALL int GLAD_GL_EXT_framebuffer_blit;
 #define GL_EXT_framebuffer_multisample 1
 GLAD_API_CALL int GLAD_GL_EXT_framebuffer_multisample;
 #define GL_EXT_framebuffer_object 1
 GLAD_API_CALL int GLAD_GL_EXT_framebuffer_object;
+#define GL_EXT_polygon_offset_clamp 1
+GLAD_API_CALL int GLAD_GL_EXT_polygon_offset_clamp;
 #define GL_OVR_multiview 1
 GLAD_API_CALL int GLAD_GL_OVR_multiview;
 #define GL_OVR_multiview2 1
@@ -2394,6 +2400,7 @@ typedef void (GLAD_API_PTR *PFNGLMULTITEXCOORDP3UIPROC)(GLenum texture, GLenum t
 typedef void (GLAD_API_PTR *PFNGLMULTITEXCOORDP3UIVPROC)(GLenum texture, GLenum type, const GLuint * coords);
 typedef void (GLAD_API_PTR *PFNGLMULTITEXCOORDP4UIPROC)(GLenum texture, GLenum type, GLuint coords);
 typedef void (GLAD_API_PTR *PFNGLMULTITEXCOORDP4UIVPROC)(GLenum texture, GLenum type, const GLuint * coords);
+typedef void (GLAD_API_PTR *PFNGLNAMEDFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
 typedef void (GLAD_API_PTR *PFNGLNEWLISTPROC)(GLuint list, GLenum mode);
 typedef void (GLAD_API_PTR *PFNGLNORMAL3BPROC)(GLbyte nx, GLbyte ny, GLbyte nz);
 typedef void (GLAD_API_PTR *PFNGLNORMAL3BVPROC)(const GLbyte * v);
@@ -2425,6 +2432,8 @@ typedef void (GLAD_API_PTR *PFNGLPOINTPARAMETERIVPROC)(GLenum pname, const GLint
 typedef void (GLAD_API_PTR *PFNGLPOINTSIZEPROC)(GLfloat size);
 typedef void (GLAD_API_PTR *PFNGLPOLYGONMODEPROC)(GLenum face, GLenum mode);
 typedef void (GLAD_API_PTR *PFNGLPOLYGONOFFSETPROC)(GLfloat factor, GLfloat units);
+typedef void (GLAD_API_PTR *PFNGLPOLYGONOFFSETCLAMPPROC)(GLfloat factor, GLfloat units, GLfloat clamp);
+typedef void (GLAD_API_PTR *PFNGLPOLYGONOFFSETCLAMPEXTPROC)(GLfloat factor, GLfloat units, GLfloat clamp);
 typedef void (GLAD_API_PTR *PFNGLPOLYGONSTIPPLEPROC)(const GLubyte * mask);
 typedef void (GLAD_API_PTR *PFNGLPOPATTRIBPROC)(void);
 typedef void (GLAD_API_PTR *PFNGLPOPCLIENTATTRIBPROC)(void);
@@ -3654,6 +3663,8 @@ GLAD_API_CALL PFNGLMULTITEXCOORDP4UIPROC glad_glMultiTexCoordP4ui;
 #define glMultiTexCoordP4ui glad_glMultiTexCoordP4ui
 GLAD_API_CALL PFNGLMULTITEXCOORDP4UIVPROC glad_glMultiTexCoordP4uiv;
 #define glMultiTexCoordP4uiv glad_glMultiTexCoordP4uiv
+GLAD_API_CALL PFNGLNAMEDFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glad_glNamedFramebufferTextureMultiviewOVR;
+#define glNamedFramebufferTextureMultiviewOVR glad_glNamedFramebufferTextureMultiviewOVR
 GLAD_API_CALL PFNGLNEWLISTPROC glad_glNewList;
 #define glNewList glad_glNewList
 GLAD_API_CALL PFNGLNORMAL3BPROC glad_glNormal3b;
@@ -3716,6 +3727,10 @@ GLAD_API_CALL PFNGLPOLYGONMODEPROC glad_glPolygonMode;
 #define glPolygonMode glad_glPolygonMode
 GLAD_API_CALL PFNGLPOLYGONOFFSETPROC glad_glPolygonOffset;
 #define glPolygonOffset glad_glPolygonOffset
+GLAD_API_CALL PFNGLPOLYGONOFFSETCLAMPPROC glad_glPolygonOffsetClamp;
+#define glPolygonOffsetClamp glad_glPolygonOffsetClamp
+GLAD_API_CALL PFNGLPOLYGONOFFSETCLAMPEXTPROC glad_glPolygonOffsetClampEXT;
+#define glPolygonOffsetClampEXT glad_glPolygonOffsetClampEXT
 GLAD_API_CALL PFNGLPOLYGONSTIPPLEPROC glad_glPolygonStipple;
 #define glPolygonStipple glad_glPolygonStipple
 GLAD_API_CALL PFNGLPOPATTRIBPROC glad_glPopAttrib;

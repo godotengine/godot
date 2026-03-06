@@ -174,7 +174,7 @@ public:
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create() = 0;
-	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) = 0;
+	virtual RID material_create_from_shader(RID p_next_pass, float p_depth_bias_clamp, float p_depth_bias_slope_factor, float p_depth_bias_constant_factor, int p_render_priority, RID p_shader) = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
 
@@ -182,6 +182,10 @@ public:
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
+
+	virtual void material_set_depth_bias_constant_factor(RID p_material, float p_constant_factor) = 0;
+	virtual void material_set_depth_bias_slope_factor(RID p_material, float p_slope_factor) = 0;
+	virtual void material_set_depth_bias_clamp(RID p_material, float p_clamp) = 0;
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
 

@@ -5228,9 +5228,6 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.RasterizerState)->DepthBias = p_rasterization_state.depth_bias_constant_factor;
 		(&pipeline_desc.RasterizerState)->DepthBiasClamp = p_rasterization_state.depth_bias_clamp;
 		(&pipeline_desc.RasterizerState)->SlopeScaledDepthBias = p_rasterization_state.depth_bias_slope_factor;
-		(&pipeline_desc.RasterizerState)->DepthBias = 0;
-		(&pipeline_desc.RasterizerState)->DepthBiasClamp = 0.0f;
-		(&pipeline_desc.RasterizerState)->SlopeScaledDepthBias = 0.0f;
 	}
 	(&pipeline_desc.RasterizerState)->ForcedSampleCount = 0;
 	(&pipeline_desc.RasterizerState)->ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
@@ -5910,6 +5907,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 		case SUPPORTS_POINT_SIZE:
 			return false;
 		case SUPPORTS_HDR_OUTPUT:
+			return true;
+		case SUPPORTS_DEPTH_BIAS_CLAMP:
 			return true;
 		default:
 			return false;

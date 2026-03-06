@@ -3761,6 +3761,28 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 			}
 
+			// Before issuing draw calls, apply depth bias from material if needed.
+			{
+				bool material_has_depth_bias = material_data->depth_bias_constant_factor != 0.0f || material_data->depth_bias_slope_factor != 0.0f;
+
+				// Only GL_POLYGON_OFFSET_FILL is supported on web/mobile, so we can't apply depth bias to lines or points.
+				if (material_has_depth_bias && primitive_gl != GL_LINES && primitive_gl != GL_POINTS) {
+					glEnable(GL_POLYGON_OFFSET_FILL);
+					// OpenGL may apply the clamp even when it's zero, so we must use glPolygonOffset when it is zero to avoid unintended clamping.
+					if (GLES3::Config::get_singleton()->polygon_offset_clamp_supported && material_data->depth_bias_clamp != 0.0f) {
+#ifdef glPolygonOffsetClampEXT
+						glPolygonOffsetClampEXT(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
+#elif !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
+						glPolygonOffsetClamp(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor, material_data->depth_bias_clamp);
+#endif
+					} else {
+						glPolygonOffset(material_data->depth_bias_slope_factor, material_data->depth_bias_constant_factor);
+					}
+				} else {
+					glDisable(GL_POLYGON_OFFSET_FILL);
+				}
+			}
+
 			if (inst->instance_count > 0) {
 				// Using MultiMesh or Particles.
 				// Bind instance buffers.

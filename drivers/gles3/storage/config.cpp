@@ -86,6 +86,14 @@ Config::Config() {
 	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
+	{
+		int major = 0, minor = 0;
+		glGetIntegerv(GL_MAJOR_VERSION, &major);
+		glGetIntegerv(GL_MINOR_VERSION, &minor);
+		bool gl_version_4_6 = (major > 4) || (major == 4 && minor >= 6);
+		polygon_offset_clamp_supported = gl_version_4_6 || extensions.has("GL_ARB_polygon_offset_clamp") || extensions.has("GL_EXT_polygon_offset_clamp");
+	}
+
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
@@ -189,6 +197,14 @@ Config::Config() {
 			external_texture_supported = false;
 		}
 	}
+
+	if (polygon_offset_clamp_supported) {
+		eglPolygonOffsetClampEXT = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)eglGetProcAddress("glPolygonOffsetClampEXT");
+		if (eglPolygonOffsetClampEXT == nullptr) {
+			polygon_offset_clamp_supported = false;
+		}
+	}
+
 #endif
 
 	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");

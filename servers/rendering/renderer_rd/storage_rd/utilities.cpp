@@ -290,6 +290,10 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
+	if (p_feature == "depth_bias_clamp" && RD::get_singleton()->has_feature(RD::SUPPORTS_DEPTH_BIAS_CLAMP)) {
+		return true;
+	}
+
 	return false;
 }
 
