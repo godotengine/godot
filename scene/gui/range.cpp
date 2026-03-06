@@ -161,6 +161,8 @@ void Range::Shared::redraw_owners() {
 		if (!r->is_inside_tree()) {
 			continue;
 		}
+
+		r->_value_changed(val);
 		r->queue_accessibility_update();
 		r->queue_redraw();
 	}
