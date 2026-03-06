@@ -33,7 +33,16 @@
 #include "core/io/resource.h"
 
 #ifdef TOOLS_ENABLED
+#include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+
+class EditorNode3DGizmo;
+
+struct ExtraMeshEntry {
+	Ref<ArrayMesh> mesh;
+	Ref<Material> material;
+	Transform3D transform;
+};
 #endif // TOOLS_ENABLED
 
 class JointLimitation3D : public Resource {
@@ -50,6 +59,7 @@ public:
 	Vector3 solve(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset, const Vector3 &p_local_current_vector) const;
 
 #ifdef TOOLS_ENABLED
-	virtual void draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const; // For drawing gizmo.
+	virtual void draw_shape(Ref<SurfaceTool> p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const; // For drawing gizmo.
+	virtual void append_extra_gizmo_meshes(const Transform3D &p_transform, float p_bone_length, const Color &p_color, Vector<ExtraMeshEntry> &r_extra_meshes, int p_bone_index = -1) const;
 #endif // TOOLS_ENABLED
 };

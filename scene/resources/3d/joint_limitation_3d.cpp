@@ -32,12 +32,20 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#endif // TOOLS_ENABLED
+
 Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
 	const double ALMOST_ONE = 1.0 - CMP_EPSILON;
 	// The default is to interpret the forward vector as the +Y axis.
 	Vector3 axis_y = p_local_forward_vector.normalized();
 	Vector3 axis_x = p_local_right_vector.normalized();
-	if (axis_x.is_zero_approx() || Math::abs(axis_x.dot(axis_y)) > ALMOST_ONE) {
+	if (axis_y.is_zero_approx() || axis_x.is_zero_approx() || Math::abs(axis_x.dot(axis_y)) > ALMOST_ONE) {
+		// If axis_y is zero, use identity rotation
+		if (axis_y.is_zero_approx()) {
+			return p_rotation_offset.normalized();
+		}
 		return (Quaternion(Vector3(0, 1, 0), axis_y) * p_rotation_offset.normalized()).normalized();
 	}
 	// Prior X axis.
@@ -59,7 +67,9 @@ Vector3 JointLimitation3D::solve(const Vector3 &p_local_forward_vector, const Ve
 }
 
 #ifdef TOOLS_ENABLED
-void JointLimitation3D::draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const {
-	//
+void JointLimitation3D::draw_shape(Ref<SurfaceTool> p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const {
+}
+
+void JointLimitation3D::append_extra_gizmo_meshes(const Transform3D &p_transform, float p_bone_length, const Color &p_color, Vector<ExtraMeshEntry> &r_extra_meshes, int p_bone_index) const {
 }
 #endif // TOOLS_ENABLED
