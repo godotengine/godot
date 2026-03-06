@@ -170,6 +170,9 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The camera's relative offset. Useful for looking around or camera shake animations. The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
 		</member>
+		<member name="position_smoothing_delta_independent" type="bool" setter="set_position_smoothing_delta_independent" getter="is_position_smoothing_delta_independent" default="false">
+			If [code]true[/code], the position smoothing speed is delta-independent, automatically accounting for frame rate variations. This ensures consistent smoothing behavior across different frame rates. If [code]false[/code], smoothing is frame-dependent using a fixed coefficient per frame.
+		</member>
 		<member name="position_smoothing_enabled" type="bool" setter="set_position_smoothing_enabled" getter="is_position_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's view smoothly moves towards its target position at [member position_smoothing_speed].
 		</member>
@@ -186,11 +189,44 @@
 		<member name="rotation_smoothing_speed" type="float" setter="set_rotation_smoothing_speed" getter="get_rotation_smoothing_speed" default="5.0">
 			The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
 		</member>
+		<member name="smoothing_delta_limit" type="float" setter="set_smoothing_delta_limit" getter="get_smoothing_delta_limit" default="0.1">
+			The maximum delta time used for smoothing calculations, in seconds. This prevents excessive smoothing when frame times are unusually large (e.g., after window focus regain). Must be greater than zero.
+		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
 			The camera's zoom. Higher values are more zoomed in. For example, a zoom of [code]Vector2(2.0, 2.0)[/code] will be twice as zoomed in on each axis (the view covers an area four times smaller). In contrast, a zoom of [code]Vector2(0.5, 0.5)[/code] will be twice as zoomed out on each axis (the view covers an area four times larger). The X and Y components should generally always be set to the same value, unless you wish to stretch the camera view.
 			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 		</member>
+		<member name="zoom_limit_enabled" type="bool" setter="set_zoom_limit_enabled" getter="is_zoom_limit_enabled" default="false">
+			If [code]true[/code], the zoom is limited between [member zoom_limit_min] and [member zoom_limit_max]. Attempts to set zoom outside these limits will trigger the [signal zoom_limit_reached] signal.
+		</member>
+		<member name="zoom_limit_max" type="Vector2" setter="set_zoom_max" getter="get_zoom_max" default="Vector2(10, 10)">
+			The maximum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally always be set to the same value.
+		</member>
+		<member name="zoom_limit_min" type="Vector2" setter="set_zoom_min" getter="get_zoom_min" default="Vector2(0.1, 0.1)">
+			The minimum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally always be set to the same value.
+		</member>
 	</members>
+	<signals>
+		<signal name="position_limit_reached">
+			<param index="0" name="sides_hit" type="int" />
+			<description>
+				Emitted when the camera reaches a position limit. The [param sides_hit] parameter is a bitmask indicating which limits were reached (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+			</description>
+		</signal>
+		<signal name="position_limit_released">
+			<param index="0" name="sides_released" type="int" />
+			<description>
+				Emitted when the camera stops being limited by a position limit. The [param sides_released] parameter is a bitmask indicating which limits were released (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+			</description>
+		</signal>
+		<signal name="zoom_limit_reached">
+			<param index="0" name="attempted_zoom" type="Vector2" />
+			<param index="1" name="clamped_zoom" type="Vector2" />
+			<description>
+				Emitted when an attempt is made to set the zoom outside the limits defined by [member zoom_limit_min] and [member zoom_limit_max], when [member zoom_limit_enabled] is [code]true[/code]. The [param attempted_zoom] parameter contains the requested zoom level, and [param clamped_zoom] contains the zoom level after being clamped to the limits.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0" enum="AnchorMode">
 			The camera's position is fixed so that the top-left corner is always at the origin.
