@@ -69,9 +69,9 @@ void GLTFObjectModelProperty::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gltf_to_godot_expression", PROPERTY_HINT_RESOURCE_TYPE, Expression::get_class_static()), "set_gltf_to_godot_expression", "get_gltf_to_godot_expression"); // Ref<Expression>
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_to_gltf_expression", PROPERTY_HINT_RESOURCE_TYPE, Expression::get_class_static()), "set_godot_to_gltf_expression", "get_godot_to_gltf_expression"); // Ref<Expression>
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_paths", PROPERTY_HINT_TYPE_STRING, "NodePath"), "set_node_paths", "get_node_paths"); // TypedArray<NodePath>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_paths", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_node_paths", "get_node_paths"); // TypedArray<NodePath>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "object_model_type"), "set_object_model_type", "get_object_model_type"); // GLTFObjectModelType
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "json_pointers"), "set_json_pointers", "get_json_pointers"); // TypedArray<PackedStringArray>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "json_pointers", PROPERTY_HINT_ARRAY_TYPE, "PackedStringArray"), "set_json_pointers", "get_json_pointers"); // TypedArray<PackedStringArray>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "variant_type"), "set_variant_type", "get_variant_type"); // Variant::Type
 }
 

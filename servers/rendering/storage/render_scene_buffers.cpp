@@ -64,11 +64,11 @@ void RenderSceneBuffersConfiguration::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &RenderSceneBuffersConfiguration::get_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("set_fsr_sharpness", "fsr_sharpness"), &RenderSceneBuffersConfiguration::set_fsr_sharpness);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fsr_sharpness"), "set_fsr_sharpness", "get_fsr_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness"), "set_fsr_sharpness", "get_fsr_sharpness");
 
 	ClassDB::bind_method(D_METHOD("get_texture_mipmap_bias"), &RenderSceneBuffersConfiguration::get_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("set_texture_mipmap_bias", "texture_mipmap_bias"), &RenderSceneBuffersConfiguration::set_texture_mipmap_bias);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "texture_mipmap_bias"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 
 	ClassDB::bind_method(D_METHOD("get_anisotropic_filtering_level"), &RenderSceneBuffersConfiguration::get_anisotropic_filtering_level);
 	ClassDB::bind_method(D_METHOD("set_anisotropic_filtering_level", "anisotropic_filtering_level"), &RenderSceneBuffersConfiguration::set_anisotropic_filtering_level);

@@ -1508,29 +1508,85 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 	ERR_FAIL_NULL(type);
 
+// Do not abort registration of an invalid property for compatibility reasons (GDExtension).
+#define ERR_CHECK_PROPERTY(m_condition, m_message) \
+	if (unlikely(m_condition)) { \
+		ERR_PRINT(m_message); \
+	} else \
+		((void)0)
+
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
+
 #ifdef DEBUG_ENABLED
+		ERR_FAIL_NULL_MSG(mb_set, vformat(R"(Invalid setter "%s::%s" for property "%s".)", p_class, p_setter, p_pinfo.name));
 
-		ERR_FAIL_NULL_MSG(mb_set, vformat("Invalid setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
+		const int exp_args = 1 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat(R"(Invalid function for setter "%s::%s" for property "%s".)", p_class, p_setter, p_pinfo.name));
 
-		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
+		const PropertyInfo arg_info = mb_set->get_argument_info(exp_args - 1);
+		ERR_CHECK_PROPERTY(p_pinfo.type != arg_info.type,
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong type: %s != %s).)", p_pinfo.name, p_class, p_setter, Variant::get_type_name(p_pinfo.type), Variant::get_type_name(arg_info.type)));
+		// `PROPERTY_USAGE_ARRAY` uses `class_name` for a metadata.
+		// TODO: Enum/bitfield validation is temporarily disabled.
+		ERR_CHECK_PROPERTY((p_pinfo.class_name != arg_info.class_name) && !(p_pinfo.usage & PROPERTY_USAGE_ARRAY) && !(arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)),
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong class name: "%s" != "%s").)", p_pinfo.name, p_class, p_setter, p_pinfo.class_name, arg_info.class_name));
+		/*ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) != (arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM),
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong enum usage flag).)", p_pinfo.name, p_class, p_setter));
+		ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD) != (arg_info.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD),
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong bitfield usage flag).)", p_pinfo.name, p_class, p_setter));*/
+
+		ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) != (arg_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT),
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong nil_is_variant usage flag).)", p_pinfo.name, p_class, p_setter));
+		ERR_CHECK_PROPERTY(p_pinfo.hint != arg_info.hint && (p_pinfo.hint == PROPERTY_HINT_ARRAY_TYPE || arg_info.hint == PROPERTY_HINT_ARRAY_TYPE),
+				vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong typed array hint).)", p_pinfo.name, p_class, p_setter));
+		if (p_pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+			ERR_CHECK_PROPERTY(p_pinfo.hint_string != arg_info.hint_string,
+					vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong typed array hint string: "%s" != "%s").)", p_pinfo.name, p_class, p_setter, p_pinfo.hint_string, arg_info.hint_string));
+		} else if (p_pinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+			ERR_CHECK_PROPERTY(p_pinfo.hint_string != arg_info.hint_string,
+					vformat(R"(PropertyInfo of property "%s" does not match argument PropertyInfo of setter "%s::%s" (wrong typed dictionary hint string: "%s" != "%s").)", p_pinfo.name, p_class, p_setter, p_pinfo.hint_string, arg_info.hint_string));
+		}
 #endif // DEBUG_ENABLED
 	}
 
 	MethodBind *mb_get = nullptr;
 	if (p_getter) {
 		mb_get = get_method(p_class, p_getter);
+
 #ifdef DEBUG_ENABLED
+		ERR_FAIL_NULL_MSG(mb_get, vformat(R"(Invalid getter "%s::%s" for property "%s".)", p_class, p_getter, p_pinfo.name));
 
-		ERR_FAIL_NULL_MSG(mb_get, vformat("Invalid getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
+		const int exp_args = 0 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat(R"(Invalid function for getter "%s::%s" for property "%s".)", p_class, p_getter, p_pinfo.name));
 
-		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
+		const PropertyInfo return_info = mb_get->get_return_info();
+		ERR_CHECK_PROPERTY(p_pinfo.type != return_info.type,
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong type: %s != %s).)", p_pinfo.name, p_class, p_getter, Variant::get_type_name(p_pinfo.type), Variant::get_type_name(return_info.type)));
+		// `PROPERTY_USAGE_ARRAY` uses `class_name` for a metadata.
+		// TODO: Enum/bitfield validation is temporarily disabled.
+		ERR_CHECK_PROPERTY((p_pinfo.class_name != return_info.class_name) && !(p_pinfo.usage & PROPERTY_USAGE_ARRAY) && !(return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)),
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong class name: "%s" != "%s").)", p_pinfo.name, p_class, p_getter, p_pinfo.class_name, return_info.class_name));
+		/*ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) != (return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM),
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong enum usage flag).)", p_pinfo.name, p_class, p_getter));
+		ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD) != (return_info.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD),
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong bitfield usage flag).)", p_pinfo.name, p_class, p_getter));*/
+		ERR_CHECK_PROPERTY((p_pinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) != (return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT),
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong nil_is_variant usage flag).)", p_pinfo.name, p_class, p_getter));
+		ERR_CHECK_PROPERTY(p_pinfo.hint != return_info.hint && (p_pinfo.hint == PROPERTY_HINT_ARRAY_TYPE || return_info.hint == PROPERTY_HINT_ARRAY_TYPE),
+				vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong typed array hint).)", p_pinfo.name, p_class, p_getter));
+		if (p_pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+			ERR_CHECK_PROPERTY(p_pinfo.hint_string != return_info.hint_string,
+					vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong typed array hint string: "%s" != "%s").)", p_pinfo.name, p_class, p_getter, p_pinfo.hint_string, return_info.hint_string));
+		} else if (p_pinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+			ERR_CHECK_PROPERTY(p_pinfo.hint_string != return_info.hint_string,
+					vformat(R"(PropertyInfo of property "%s" does not match return PropertyInfo of getter "%s::%s" (wrong typed dictionary hint string: "%s" != "%s").)", p_pinfo.name, p_class, p_getter, p_pinfo.hint_string, return_info.hint_string));
+		}
 #endif // DEBUG_ENABLED
 	}
+
+#undef ERR_CHECK_PROPERTY
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), vformat("Object '%s' already has property '%s'.", p_class, p_pinfo.name));

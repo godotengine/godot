@@ -506,7 +506,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("clear_ids"), &RDUniform::clear_ids);
 		ClassDB::bind_method(D_METHOD("_set_ids", "ids"), &RDUniform::_set_ids);
 		ClassDB::bind_method(D_METHOD("get_ids"), &RDUniform::get_ids);
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_ARRAY_TYPE, "RID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
 	}
 };
 
