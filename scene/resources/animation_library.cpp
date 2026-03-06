@@ -178,4 +178,5 @@ void AnimationLibrary::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "name")));
 }
 AnimationLibrary::AnimationLibrary() {
+	set_use_shared_copy(false);
 }

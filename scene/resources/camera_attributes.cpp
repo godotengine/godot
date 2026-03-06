@@ -137,6 +137,7 @@ void CameraAttributes::_bind_methods() {
 }
 
 CameraAttributes::CameraAttributes() {
+	set_use_shared_copy(false);
 	camera_attributes = RS::get_singleton()->camera_attributes_create();
 }
 

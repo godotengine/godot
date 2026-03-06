@@ -139,6 +139,7 @@
 			When using low physics tick rates (typically below 20) or high rates of object rotation, you may get better results from the high quality setting.
 			[b]Note:[/b] Fast quality does not equate to low quality. Except in the special cases mentioned above, the quality should be comparable to high quality.
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="false" />
 		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array" deprecated="Accessing this property is very slow. Use [method set_instance_transform_2d] and [method get_instance_transform_2d] instead.">
 			Array containing each [Transform2D] value used by all instances of this mesh, as a [PackedVector2Array]. Each transform is divided into 3 [Vector2] values corresponding to the transforms' [code]x[/code], [code]y[/code], and [code]origin[/code].
 		</member>
