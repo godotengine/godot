@@ -244,6 +244,45 @@ real_t HeightMapShape3D::get_max_height() const {
 	return max_height;
 }
 
+real_t HeightMapShape3D::get_height(int x, int y) const {
+	ERR_FAIL_COND_V(x < 0 || y < 0 || x >= map_width || y >= map_depth, NAN);
+
+	return map_data[y * map_width + x];
+}
+
+real_t HeightMapShape3D::get_heightv(const Point2i &p_point) const {
+	return get_height(p_point.x, p_point.y);
+}
+
+real_t HeightMapShape3D::sample_height(float x, float y) const {
+	return sample_heightv(Point2(x, y));
+}
+
+real_t HeightMapShape3D::sample_heightv(const Point2 &p_point) const {
+	ERR_FAIL_COND_V(p_point.x < 0.0 || p_point.y < 0.0 || p_point.x >= map_width || p_point.y >= map_depth, NAN);
+
+	const Point2i p0 = p_point;
+	const Point2i p1 = p0 + Point2i(1, 1);
+
+	// Note: If any of these 4 height values are NaN, then NaN propagation rules ensure that the final output will always be NaN
+	const real_t h0 = get_height(p0.x, p0.y); // bl
+	const real_t h1 = get_height(p1.x, p0.y); // br
+	const real_t h2 = get_height(p0.x, p1.y); // tl
+	const real_t h3 = get_height(p1.x, p1.y); // tr
+
+	const Point2 frac = p_point - p_point.floor();
+
+	if (frac.x + frac.y < 1.0) {
+		const real_t hx = (h1 - h0) * frac.x;
+		const real_t hy = (h2 - h0) * frac.y;
+		return h0 + hx + hy;
+	} else {
+		const real_t hx = (h2 - h3) * (1.0 - frac.x);
+		const real_t hy = (h1 - h3) * (1.0 - frac.y);
+		return h3 + hx + hy;
+	}
+}
+
 void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, real_t p_height_min, real_t p_height_max) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Heightmap update image requires a valid Image reference.");
 	ERR_FAIL_COND_MSG(p_image->get_format() != Image::FORMAT_RF && p_image->get_format() != Image::FORMAT_RH && p_image->get_format() != Image::FORMAT_R8, "Heightmap update image requires Image in format FORMAT_RF (32 bit), FORMAT_RH (16 bit), or FORMAT_R8 (8 bit).");
@@ -353,6 +392,12 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_height"), &HeightMapShape3D::get_max_height);
 
 	ClassDB::bind_method(D_METHOD("update_map_data_from_image", "image", "height_min", "height_max"), &HeightMapShape3D::update_map_data_from_image);
+
+	ClassDB::bind_method(D_METHOD("get_height", "x", "y"), &HeightMapShape3D::get_height);
+	ClassDB::bind_method(D_METHOD("get_heightv", "point"), &HeightMapShape3D::get_heightv);
+
+	ClassDB::bind_method(D_METHOD("sample_height", "x", "y"), &HeightMapShape3D::sample_height);
+	ClassDB::bind_method(D_METHOD("sample_heightv", "point"), &HeightMapShape3D::sample_heightv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_map_width", "get_map_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_map_depth", "get_map_depth");
