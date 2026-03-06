@@ -192,6 +192,18 @@ void CopyEffects::copy_screen(float p_multiply) {
 	draw_screen_triangle();
 }
 
+void CopyEffects::copy_with_exposure(float p_exposure, float p_multiply) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::EXPOSURE, p_exposure, copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
+	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
+
+	draw_screen_triangle();
+}
+
 void CopyEffects::copy_cube_to_rect(const Rect2 &p_rect) {
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_CUBE_TO_OCTAHEDRAL);
 	if (!success) {
