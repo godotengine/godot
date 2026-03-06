@@ -1276,6 +1276,14 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				}
 			}
 
+			if (op->op == Variant::OP_AND || op->op == Variant::OP_OR ||
+					op->op == Variant::OP_XOR) {
+				a = a.booleanize();
+				b = b.booleanize();
+			} else if (op->op == Variant::OP_NOT) {
+				a = a.booleanize();
+			}
+
 			bool valid = true;
 			Variant::evaluate(op->op, a, b, r_ret, valid);
 			if (!valid) {
