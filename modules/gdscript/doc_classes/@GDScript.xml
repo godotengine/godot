@@ -266,7 +266,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="type_exists">
+		<method name="type_exists" deprecated="Use [method ClassDB.class_exists] instead.">
 			<return type="bool" />
 			<param index="0" name="type" type="StringName" />
 			<description>
