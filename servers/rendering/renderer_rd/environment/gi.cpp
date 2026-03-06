@@ -3065,6 +3065,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			//transform aabb to voxel_gi
 			AABB aabb = (to_probe_xform * instance->get_transform()).xform(instance->get_aabb());
 
+			//normalize inverted AABB from rotation transform
+			aabb = aabb.abs();
+
 			//this needs to wrap to grid resolution to avoid jitter
 			//also extend margin a bit just in case
 			Vector3i begin = aabb.position - Vector3i(1, 1, 1);
@@ -3076,6 +3079,11 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				}
 				begin[j] = MAX(begin[j], 0);
 				end[j] = MIN(end[j], octree_size[j] * multiplier);
+			}
+
+			//skip if AABB doesn't intersect probe bounds after clamping
+			if (end.x <= begin.x || end.y <= begin.y || end.z <= begin.z) {
+				continue;
 			}
 
 			//aabb = aabb.intersection(probe_aabb); //intersect
