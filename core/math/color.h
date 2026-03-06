@@ -31,6 +31,8 @@
 #pragma once
 
 #include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
+#include "core/math/vector4.h"
 #include "core/templates/hashfuncs.h"
 
 class String;
@@ -64,6 +66,22 @@ struct [[nodiscard]] Color {
 	float get_ok_hsl_l() const;
 	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+
+	constexpr Vector3 get_rgb() const { return Vector3(r, g, b); }
+	constexpr Vector4 get_rgba() const { return Vector4(r, g, b, a); }
+
+	constexpr void set_rgb(const Vector3 &p_rgb) {
+		r = p_rgb.x;
+		g = p_rgb.y;
+		b = p_rgb.z;
+	}
+
+	constexpr void set_rgba(const Vector4 &p_rgba) {
+		r = p_rgba.x;
+		g = p_rgba.y;
+		b = p_rgba.z;
+		a = p_rgba.w;
+	}
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -269,6 +287,15 @@ struct [[nodiscard]] Color {
 	 */
 	constexpr Color(const Color &p_c, float p_a) :
 			r(p_c.r), g(p_c.g), b(p_c.b), a(p_a) {}
+
+	constexpr Color(const Vector3 &p_rgb) :
+			r(p_rgb.x), g(p_rgb.y), b(p_rgb.z), a(1) {}
+
+	constexpr Color(const Vector3 &p_rgb, float p_a) :
+			r(p_rgb.x), g(p_rgb.y), b(p_rgb.z), a(p_a) {}
+
+	constexpr Color(const Vector4 &p_rgba) :
+			r(p_rgba.x), g(p_rgba.y), b(p_rgba.z), a(p_rgba.w) {}
 
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	Color(const String &p_code) {

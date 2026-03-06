@@ -134,6 +134,9 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Color, b);
 	REGISTER_MEMBER(Color, a);
 
+	REGISTER_MEMBER(Color, rgb);
+	REGISTER_MEMBER(Color, rgba);
+
 	REGISTER_MEMBER(Color, r8);
 	REGISTER_MEMBER(Color, g8);
 	REGISTER_MEMBER(Color, b8);
