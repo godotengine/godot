@@ -622,8 +622,10 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 	// Apply annotations.
 	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
-		resolve_annotation(E);
-		E->apply(parser, p_class, p_class->outer);
+		if (E->name != SNAME("@static_assert")) {
+			resolve_annotation(E);
+			E->apply(parser, p_class, p_class->outer);
+		}
 	}
 
 	parser->current_class = previous_class;
@@ -1564,6 +1566,14 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 			} else {
 				break;
 			}
+		}
+	}
+
+	// Resolve and apply `@static_assert`s here, after all local constants have been resolved.
+	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
+		if (E->name == SNAME("@static_assert")) {
+			resolve_annotation(E);
+			E->apply(parser, p_class, p_class->outer);
 		}
 	}
 
