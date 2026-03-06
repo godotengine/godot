@@ -30,12 +30,15 @@
 
 #include "callable.h"
 
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant_callable.h"
+
+#include <functional>
 
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
@@ -199,6 +202,29 @@ int Callable::get_argument_count(bool *r_is_valid) const {
 	}
 }
 
+bool Callable::get_method_info(MethodInfo *r_info, Variant *r_return_script) const {
+	if (is_custom()) {
+		return custom->get_method_info(r_info, r_return_script);
+	} else if (is_valid()) {
+		Object *obj = get_object();
+		// Try the script first (covers GDScript/C# methods).
+		ScriptInstance *si = obj->get_script_instance();
+		Ref<Script> script = si ? si->get_script() : nullptr;
+		if (script.is_valid()) {
+			MethodInfo mi = script->get_method_info(method);
+			if (!(mi == MethodInfo())) {
+				if (r_info) {
+					*r_info = mi;
+				}
+				return true;
+			}
+		}
+		// Fall back to native ClassDB methods.
+		return ClassDB::get_method_info(obj->get_class_name(), method, r_info);
+	}
+	return false;
+}
+
 int Callable::get_bound_arguments_count() const {
 	if (!is_null() && is_custom()) {
 		return custom->get_bound_arguments_count();
@@ -306,7 +332,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 			if (less_a == less_b) {
 				return less_a(custom, p_callable.custom);
 			} else {
-				return less_a < less_b; //it's something..
+				return std::less<CallableCustom::CompareLessFunc>()(less_a, less_b);
 			}
 
 		} else {
@@ -469,6 +495,10 @@ const Callable *CallableCustom::get_base_comparator() const {
 int CallableCustom::get_argument_count(bool &r_is_valid) const {
 	r_is_valid = false;
 	return 0;
+}
+
+bool CallableCustom::get_method_info(MethodInfo *r_info, Variant *r_return_script) const {
+	return false;
 }
 
 int CallableCustom::get_bound_arguments_count() const {

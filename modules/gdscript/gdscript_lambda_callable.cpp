@@ -89,6 +89,24 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 	return function->get_argument_count() - captures.size();
 }
 
+bool GDScriptLambdaCallable::get_method_info(MethodInfo *r_info, Variant *r_return_script) const {
+	if (function == nullptr) {
+		return false;
+	}
+	if (r_info) {
+		*r_info = function->get_method_info();
+	}
+	if (r_return_script) {
+		const GDScriptDataType &ret_type = function->get_return_type();
+		Ref<Script> ret_script = ret_type.script_type_ref;
+		if (ret_script.is_null() && ret_type.script_type != nullptr) {
+			ret_script.reference_ptr(ret_type.script_type);
+		}
+		*r_return_script = ret_script;
+	}
+	return true;
+}
+
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	int captures_amount = captures.size();
 
@@ -211,6 +229,24 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+bool GDScriptLambdaSelfCallable::get_method_info(MethodInfo *r_info, Variant *r_return_script) const {
+	if (function == nullptr) {
+		return false;
+	}
+	if (r_info) {
+		*r_info = function->get_method_info();
+	}
+	if (r_return_script) {
+		const GDScriptDataType &ret_type = function->get_return_type();
+		Ref<Script> ret_script = ret_type.script_type_ref;
+		if (ret_script.is_null() && ret_type.script_type != nullptr) {
+			ret_script.reference_ptr(ret_type.script_type);
+		}
+		*r_return_script = ret_script;
+	}
+	return true;
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

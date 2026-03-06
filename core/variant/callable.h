@@ -37,6 +37,7 @@ class Array;
 class Object;
 class Variant;
 class CallableCustom;
+struct MethodInfo;
 
 // This is an abstraction of things that can be called.
 // It is used for signals and other cases where efficient calling of functions
@@ -109,6 +110,7 @@ public:
 	StringName get_method() const;
 	CallableCustom *get_custom() const;
 	int get_argument_count(bool *r_is_valid = nullptr) const;
+	bool get_method_info(MethodInfo *r_info, Variant *r_return_script = nullptr) const;
 	int get_bound_arguments_count() const;
 	void get_bound_arguments_ref(Vector<Variant> &r_arguments) const; // Internal engine use, the exposed one is below.
 	Array get_bound_arguments() const;
@@ -161,6 +163,7 @@ public:
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
 	virtual int get_argument_count(bool &r_is_valid) const;
+	virtual bool get_method_info(MethodInfo *r_info, Variant *r_return_script = nullptr) const;
 	virtual int get_bound_arguments_count() const;
 	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const;
 	virtual int get_unbound_arguments_count() const;

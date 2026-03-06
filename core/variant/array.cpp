@@ -646,6 +646,16 @@ Array Array::map(const Callable &p_callable) const {
 		}
 	}
 
+	// Preserve typed array metadata from the callable's return type when available.
+	MethodInfo mi;
+	Variant return_script;
+	if (p_callable.get_method_info(&mi, &return_script) && mi.return_val.type != Variant::NIL) {
+		new_arr._p->typed.type = mi.return_val.type;
+		new_arr._p->typed.class_name = mi.return_val.class_name;
+		new_arr._p->typed.script = return_script;
+		new_arr._p->typed.where = "TypedArray";
+	}
+
 	return new_arr;
 }
 
