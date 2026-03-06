@@ -32,7 +32,7 @@
 			Disabling this will use UVs better fit for level prototyping, with the side faces aligned along the Y axis and the top and bottom faces aligned along the Z axis.
 			[b]Note:[/b] [member scale_uv] only works when [member uv_compatibility_mode] is disabled.
 		</member>
-		<member name="uv_floor_rotation" type="float" setter="set_uv_floor_rotation" getter="get_uv_floor_rotation" default="0">
+		<member name="uv_floor_rotation" type="float" setter="set_uv_floor_rotation" getter="get_uv_floor_rotation" default="0.0">
 			Rotates the top and bottom faces of CSGBox3D.
 		</member>
 		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
