@@ -1952,13 +1952,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Object *obj = ret->get_validated_object_with_check(was_freed);
 
 						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-							err_text = R"(Trying to call an async function without "await".)";
-							OPCODE_BREAK;
+							GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(obj);
+							if (!gdfs->_handled) {
+								err_text = R"(Trying to call an async function without "await".)";
+								OPCODE_BREAK;
+							}
 						}
 					}
 #endif
 				} else {
 					base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
+#ifdef DEBUG_ENABLED
+					if (temp_ret.get_type() == Variant::OBJECT) {
+						bool was_freed = false;
+						Object *obj = temp_ret.get_validated_object_with_check(was_freed);
+
+						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+							GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(obj);
+							gdfs->_handled = true;
+						}
+					}
+#endif
 				}
 #ifdef DEBUG_ENABLED
 
@@ -2576,6 +2590,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
 								result = Signal(obj, SNAME("completed"));
+#ifdef DEBUG_ENABLED
+								GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(obj);
+								gdfs->_handled = true;
+#endif
 							}
 						}
 					}
