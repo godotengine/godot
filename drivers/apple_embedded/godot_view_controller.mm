@@ -42,6 +42,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
+#import <objc/runtime.h>
 
 @interface GDTViewController () <GDTViewDelegate>
 
@@ -172,6 +173,9 @@
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
 	[self.godotView startRendering];
+#ifdef IOS_ENABLED
+	[self propagateUIPreferencesToRootViewController];
+#endif
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -236,6 +240,35 @@
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+
+// Propagate UI preferences to the root VC (the SwiftUI hosting controller doesn't delegate these).
+#ifdef IOS_ENABLED
+- (void)propagateUIPreferencesToRootViewController {
+	UIViewController *rootVC = self.view.window.rootViewController;
+	if (!rootVC || rootVC == self) {
+		return;
+	}
+
+	Class rootClass = [rootVC class];
+
+	SEL selectors[] = {
+		@selector(preferredScreenEdgesDeferringSystemGestures),
+		@selector(prefersHomeIndicatorAutoHidden),
+		@selector(prefersStatusBarHidden),
+	};
+
+	for (SEL sel : selectors) {
+		Method method = class_getInstanceMethod([GDTViewController class], sel);
+		if (!class_addMethod(rootClass, sel, method_getImplementation(method), method_getTypeEncoding(method))) {
+			method_setImplementation(class_getInstanceMethod(rootClass, sel), method_getImplementation(method));
+		}
+	}
+
+	[rootVC setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+	[rootVC setNeedsUpdateOfHomeIndicatorAutoHidden];
+	[rootVC setNeedsStatusBarAppearanceUpdate];
+}
+#endif
 
 // MARK: Orientation
 
