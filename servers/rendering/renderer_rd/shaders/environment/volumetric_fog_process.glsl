@@ -81,7 +81,7 @@ struct VoxelGIData {
 	bool blend_ambient; // 4 - 92
 	uint mipmaps; // 4 - 96
 
-	vec3 pad; // 12 - 108
+	vec3 octree_size; // 12 - 108
 	float exposure_normalization; // 4 - 112
 };
 
