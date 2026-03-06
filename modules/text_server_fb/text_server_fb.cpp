@@ -1549,6 +1549,51 @@ bool TextServerFallback::_font_is_modulate_color_glyphs(const RID &p_font_rid) c
 	return fd->modulate_color_glyphs;
 }
 
+int64_t TextServerFallback::_font_get_palette_count(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+String TextServerFallback::_font_get_palette_name(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, String());
+
+	return String();
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+void TextServerFallback::_font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_custom_colors(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+int64_t TextServerFallback::_font_get_used_palette(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+void TextServerFallback::_font_set_used_palette(const RID &p_font_rid, int64_t p_index) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
 void TextServerFallback::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);

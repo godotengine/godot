@@ -332,6 +332,14 @@ public:
 	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) = 0;
 	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const = 0;
 
+	virtual int64_t font_get_palette_count(const RID &p_font_rid) const = 0;
+	virtual String font_get_palette_name(const RID &p_font_rid, int64_t p_index) const = 0;
+	virtual Vector<Color> font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const = 0;
+	virtual void font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) = 0;
+	virtual Vector<Color> font_get_palette_custom_colors(const RID &p_font_rid) const = 0;
+	virtual int64_t font_get_used_palette(const RID &p_font_rid) const = 0;
+	virtual void font_set_used_palette(const RID &p_font_rid, int64_t p_index) = 0;
+
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const = 0;
 

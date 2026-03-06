@@ -649,6 +649,14 @@ public:
 	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
 	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
+	MODBIND1RC(int64_t, font_get_palette_count, const RID &);
+	MODBIND2RC(String, font_get_palette_name, const RID &, int64_t);
+	MODBIND2RC(Vector<Color>, font_get_palette_colors, const RID &, int64_t);
+	MODBIND2(font_set_palette_custom_colors, const RID &, const Vector<Color> &);
+	MODBIND1RC(Vector<Color>, font_get_palette_custom_colors, const RID &);
+	MODBIND1RC(int64_t, font_get_used_palette, const RID &);
+	MODBIND2(font_set_used_palette, const RID &, int64_t);
+
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
 

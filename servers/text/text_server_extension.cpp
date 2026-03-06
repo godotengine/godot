@@ -115,6 +115,14 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_modulate_color_glyphs, "font_rid", "modulate");
 	GDVIRTUAL_BIND(_font_is_modulate_color_glyphs, "font_rid");
 
+	GDVIRTUAL_BIND(_font_get_palette_count, "font_rid");
+	GDVIRTUAL_BIND(_font_get_palette_name, "font_rid", "index");
+	GDVIRTUAL_BIND(_font_get_palette_colors, "font_rid", "index");
+	GDVIRTUAL_BIND(_font_set_palette_custom_colors, "font_rid", "colors");
+	GDVIRTUAL_BIND(_font_get_palette_custom_colors, "font_rid");
+	GDVIRTUAL_BIND(_font_get_used_palette, "font_rid");
+	GDVIRTUAL_BIND(_font_set_used_palette, "font_rid", "index");
+
 	GDVIRTUAL_BIND(_font_set_hinting, "font_rid", "hinting");
 	GDVIRTUAL_BIND(_font_get_hinting, "font_rid");
 
@@ -688,6 +696,43 @@ bool TextServerExtension::font_is_modulate_color_glyphs(const RID &p_font_rid) c
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_modulate_color_glyphs, p_font_rid, ret);
 	return ret;
+}
+
+int64_t TextServerExtension::font_get_palette_count(const RID &p_font_rid) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_font_get_palette_count, p_font_rid, ret);
+	return ret;
+}
+
+String TextServerExtension::font_get_palette_name(const RID &p_font_rid, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_font_get_palette_name, p_font_rid, p_index, ret);
+	return ret;
+}
+Vector<Color> TextServerExtension::font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const {
+	Vector<Color> ret;
+	GDVIRTUAL_CALL(_font_get_palette_colors, p_font_rid, p_index, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) {
+	GDVIRTUAL_CALL(_font_set_palette_custom_colors, p_font_rid, p_colors);
+}
+
+Vector<Color> TextServerExtension::font_get_palette_custom_colors(const RID &p_font_rid) const {
+	Vector<Color> ret;
+	GDVIRTUAL_CALL(_font_get_palette_custom_colors, p_font_rid, ret);
+	return ret;
+}
+
+int64_t TextServerExtension::font_get_used_palette(const RID &p_font_rid) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_font_get_used_palette, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_used_palette(const RID &p_font_rid, int64_t p_index) {
+	GDVIRTUAL_CALL(_font_set_used_palette, p_font_rid, p_index);
 }
 
 void TextServerExtension::font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {

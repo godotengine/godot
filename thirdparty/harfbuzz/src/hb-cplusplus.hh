@@ -138,50 +138,54 @@ struct vtable_t
   static constexpr auto get_user_data = _get_user_data;
 };
 
-#define HB_DEFINE_VTABLE(name) \
+#define HB_DEFINE_VTABLE(name, empty) \
 	template<> \
 	struct vtable<hb_##name##_t> \
 	     : vtable_t<hb_##name##_t, \
-			&hb_##name##_get_empty, \
+			empty, \
 			&hb_##name##_reference, \
 			&hb_##name##_destroy, \
 			&hb_##name##_set_user_data, \
 			&hb_##name##_get_user_data> {}
 
-HB_DEFINE_VTABLE (buffer);
-HB_DEFINE_VTABLE (blob);
-HB_DEFINE_VTABLE (face);
-HB_DEFINE_VTABLE (font);
-HB_DEFINE_VTABLE (font_funcs);
-HB_DEFINE_VTABLE (map);
-HB_DEFINE_VTABLE (set);
-HB_DEFINE_VTABLE (shape_plan);
-HB_DEFINE_VTABLE (unicode_funcs);
-HB_DEFINE_VTABLE (draw_funcs);
-HB_DEFINE_VTABLE (paint_funcs);
-
-#undef HB_DEFINE_VTABLE
+HB_DEFINE_VTABLE (buffer, &hb_buffer_get_empty);
+HB_DEFINE_VTABLE (blob, &hb_blob_get_empty);
+HB_DEFINE_VTABLE (face, &hb_face_get_empty);
+HB_DEFINE_VTABLE (font, &hb_font_get_empty);
+HB_DEFINE_VTABLE (font_funcs, &hb_font_funcs_get_empty);
+HB_DEFINE_VTABLE (map, &hb_map_get_empty);
+HB_DEFINE_VTABLE (set, &hb_set_get_empty);
+HB_DEFINE_VTABLE (shape_plan, &hb_shape_plan_get_empty);
+HB_DEFINE_VTABLE (unicode_funcs, &hb_unicode_funcs_get_empty);
+HB_DEFINE_VTABLE (draw_funcs, &hb_draw_funcs_get_empty);
+HB_DEFINE_VTABLE (paint_funcs, &hb_paint_funcs_get_empty);
 
 
 #ifdef HB_SUBSET_H
 
-#define HB_DEFINE_VTABLE(name) \
-	template<> \
-	struct vtable<hb_##name##_t> \
-	     : vtable_t<hb_##name##_t, \
-			nullptr, \
-			&hb_##name##_reference, \
-			&hb_##name##_destroy, \
-			&hb_##name##_set_user_data, \
-			&hb_##name##_get_user_data> {}
-
-
-HB_DEFINE_VTABLE (subset_input);
-HB_DEFINE_VTABLE (subset_plan);
-
-#undef HB_DEFINE_VTABLE
+HB_DEFINE_VTABLE (subset_input, nullptr);
+HB_DEFINE_VTABLE (subset_plan, nullptr);
 
 #endif
+
+
+#ifdef HB_RASTER_H
+
+HB_DEFINE_VTABLE (raster_image, nullptr);
+HB_DEFINE_VTABLE (raster_draw, nullptr);
+HB_DEFINE_VTABLE (raster_paint, nullptr);
+
+#endif
+
+
+#ifdef HB_VECTOR_H
+
+HB_DEFINE_VTABLE (vector_draw, nullptr);
+HB_DEFINE_VTABLE (vector_paint, nullptr);
+
+#endif
+
+#undef HB_DEFINE_VTABLE
 
 
 } // namespace hb

@@ -407,9 +407,19 @@ rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distance
 	     rebase_tent_result_t &out,
 	     rebase_tent_result_t &scratch)
 {
-  assert (-1.0 <= axisLimit.minimum && axisLimit.minimum <= axisLimit.middle && axisLimit.middle <= axisLimit.maximum && axisLimit.maximum <= +1.0);
-  assert (-2.0 <= tent.minimum && tent.minimum <= tent.middle && tent.middle <= tent.maximum && tent.maximum <= +2.0);
-  assert (tent.middle != 0.0);
+  if (unlikely (!(-1.0 <= axisLimit.minimum &&
+                  axisLimit.minimum <= axisLimit.middle &&
+                  axisLimit.middle <= axisLimit.maximum &&
+                  axisLimit.maximum <= +1.0) ||
+                !(-2.0 <= tent.minimum &&
+                  tent.minimum <= tent.middle &&
+                  tent.middle <= tent.maximum &&
+                  tent.maximum <= +2.0) ||
+                tent.middle == 0.0))
+  {
+    out.reset ();
+    return;
+  }
 
   rebase_tent_result_t &sols = scratch;
   _solve (tent, axisLimit, sols);

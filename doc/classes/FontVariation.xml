@@ -52,6 +52,12 @@
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 		</member>
+		<member name="palette_custom_colors" type="PackedColorArray" setter="set_palette_custom_colors" getter="get_palette_custom_colors" default="PackedColorArray()">
+			An array of colors to override predefined palette. Use [code]Color(0, 0, 0, 0)[/code], to keep predefined palette color at specific position.
+		</member>
+		<member name="palette_index" type="int" setter="set_palette_index" getter="get_palette_index" default="0">
+			A palette index.
+		</member>
 		<member name="spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the bottom of the line in pixels.
 		</member>

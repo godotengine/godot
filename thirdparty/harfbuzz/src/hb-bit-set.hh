@@ -438,23 +438,31 @@ struct hb_bit_set_t
       return false;
 
     uint32_t spi = 0;
-    for (uint32_t lpi = 0; spi < page_map.length && lpi < larger_set.page_map.length; lpi++)
+    uint32_t lpi = 0;
+    while (spi < page_map.length && lpi < larger_set.page_map.length)
     {
       uint32_t spm = page_map.arrayZ[spi].major;
       uint32_t lpm = larger_set.page_map.arrayZ[lpi].major;
       auto sp = page_at (spi);
 
-      if (spm < lpm && !sp.is_empty ())
-        return false;
-
-      if (lpm < spm)
+      if (spm < lpm) {
+        if (!sp.is_empty ())
+          return false;
+        spi++;
         continue;
+      }
+
+      if (lpm < spm) {
+        lpi++;
+        continue;
+      }
 
       auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
       spi++;
+      lpi++;
     }
 
     while (spi < page_map.length)
