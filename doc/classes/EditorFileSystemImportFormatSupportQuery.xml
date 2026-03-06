@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This class is used to query and configure a certain import format. It is used in conjunction with asset format import plugins.
+		To use [EditorFileSystemImportFormatSupportQuery], register it using the [method EditorFileSystem.add_import_format_support_query] method first.
 	</description>
 	<tutorials>
 	</tutorials>
