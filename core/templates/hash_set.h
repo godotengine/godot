@@ -255,6 +255,12 @@ public:
 		_size = 0;
 	}
 
+	HashSet duplicate() const {
+		HashSet copy;
+		copy._init_from(*this);
+		return copy;
+	}
+
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _idx = 0;
 		return _lookup_key_idx(p_key, _idx);
