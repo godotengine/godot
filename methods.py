@@ -112,12 +112,25 @@ def redirect_emitter(target, source, env):
     return redirected_targets, source
 
 
-def disable_warnings(self):
-    # 'self' is the environment
-    if self.msvc and not using_clang(self):
-        self["WARNLEVEL"] = "/w"
+def disable_warnings(env):
+    """
+    Disables warnings for a given environment. Explicitly removes warnings made up to
+    that point in order to reduce recompilation times. Will unilaterally enable warning errors
+    in order to catch any warnings which erroneously slip through the cracks & need to be
+    explicitly excluded in `WARNLEVEL`.
+
+    This is a one-way process. Should only be used for third-party environments, or
+    an environment where warnings are entirely disabled from the start.
+    """
+    if env.msvc and not using_clang(env):
+        WARN_CHECK = ("/w", "/W")
+        env["WARNLEVEL"] = ["/w", "/WX", "/wd4244", "/wd4267"]
     else:
-        self["WARNLEVEL"] = "-w"
+        WARN_CHECK = ("-w", "-W")
+        env["WARNLEVEL"] = ["-w", "-Werror"]
+    env["CCFLAGS"] = [x for x in env["CCFLAGS"] if not x.startswith(WARN_CHECK)]
+    env["CFLAGS"] = [x for x in env["CFLAGS"] if not x.startswith(WARN_CHECK)]
+    env["CXXFLAGS"] = [x for x in env["CXXFLAGS"] if not x.startswith(WARN_CHECK)]
 
 
 def force_optimization_on_debug(self):
