@@ -700,7 +700,7 @@
 		<method name="_font_set_data_ptr" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="data_ptr" type="const uint8_t*" />
+			<param index="1" name="p_data_ptr" type="const uint8_t*" />
 			<param index="2" name="data_size" type="int" />
 			<description>
 				Sets pointer to the font source data, e.g contents of the dynamic font source file.
@@ -1424,7 +1424,7 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="position" type="int" />
-			<param index="2" name="caret" type="CaretInfo*" />
+			<param index="2" name="r_caret" type="CaretInfo*" />
 			<description>
 				Returns shapes of the carets corresponding to the character offset [param position] in the text. Returned caret shape is 1 pixel wide rectangle.
 			</description>
