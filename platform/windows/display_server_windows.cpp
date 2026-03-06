@@ -123,8 +123,8 @@ static void track_mouse_leave_event(HWND hWnd) {
 }
 
 static int _get_titlebar_extend_height_px() {
-	typedef int(WINAPI *GetSystemMetricsForDpiPtr)(int, UINT);
-	typedef UINT(WINAPI *GetDpiForSystemPtr)();
+	typedef int(WINAPI * GetSystemMetricsForDpiPtr)(int, UINT);
+	typedef UINT(WINAPI * GetDpiForSystemPtr)();
 
 	static GetSystemMetricsForDpiPtr get_system_metrics_for_dpi = nullptr;
 	static GetDpiForSystemPtr get_dpi_for_system = nullptr;
