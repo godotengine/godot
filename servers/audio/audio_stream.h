@@ -170,7 +170,7 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
+	GDVIRTUAL0R_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
