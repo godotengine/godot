@@ -70,6 +70,19 @@
 				Creates and compiles a new [RegEx] object. See also [method compile].
 			</description>
 		</method>
+		<method name="escape_literal" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="literal" type="String" />
+			<description>
+				Escapes a string such that when used as a regular expression, the only text it will match is the textual content of the string. See also [method String.c_escape].
+			</description>
+		</method>
+		<method name="get_compile_error" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the last compilation error.
+			</description>
+		</method>
 		<method name="get_group_count" qualifiers="const">
 			<return type="int" />
 			<description>
