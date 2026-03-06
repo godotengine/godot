@@ -4094,7 +4094,7 @@
                     "name": "r_return",
                     "type": "GDExtensionUninitializedVariantPtr",
                     "description": [
-                        "A pointer a Variant which will be assigned the return value."
+                        "A pointer to a Variant which will be assigned the return value, or NULL to discard the return value."
                     ]
                 },
                 {
@@ -4148,7 +4148,7 @@
                     "name": "r_return",
                     "type": "GDExtensionUninitializedVariantPtr",
                     "description": [
-                        "A pointer a Variant which will be assigned the return value."
+                        "A pointer to a Variant which will be assigned the return value, or NULL to discard the return value."
                     ]
                 },
                 {
@@ -4195,7 +4195,7 @@
                     "name": "r_return",
                     "type": "GDExtensionUninitializedVariantPtr",
                     "description": [
-                        "A pointer a Variant which will be assigned the return value."
+                        "A pointer to a Variant which will be assigned the return value."
                     ]
                 },
                 {
@@ -7463,7 +7463,7 @@
                     "name": "r_ret",
                     "type": "GDExtensionUninitializedVariantPtr",
                     "description": [
-                        "A pointer to Variant which will receive the return value."
+                        "A pointer to a Variant which will receive the return value, or NULL to discard the return value."
                     ]
                 },
                 {
@@ -7856,7 +7856,7 @@
                     "name": "r_return",
                     "type": "GDExtensionUninitializedVariantPtr",
                     "description": [
-                        "A pointer a Variant which will be assigned the return value."
+                        "A pointer to a Variant which will be assigned the return value, or NULL to discard the return value."
                     ]
                 },
                 {

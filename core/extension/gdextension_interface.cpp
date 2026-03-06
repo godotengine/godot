@@ -331,9 +331,11 @@ static void gdextension_variant_call(GDExtensionVariantPtr p_self, GDExtensionCo
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
-	memnew_placement(r_return, Variant);
-	Variant *ret = reinterpret_cast<Variant *>(r_return);
-	self->callp(method, args, p_argcount, *ret, error);
+	Variant ret;
+	self->callp(method, args, p_argcount, ret, error);
+	if (r_return != nullptr) {
+		memnew_placement(r_return, Variant(ret));
+	}
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
@@ -347,9 +349,11 @@ static void gdextension_variant_call_static(GDExtensionVariantType p_type, GDExt
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
-	memnew_placement(r_return, Variant);
-	Variant *ret = reinterpret_cast<Variant *>(r_return);
-	Variant::call_static(type, method, args, p_argcount, *ret, error);
+	Variant ret;
+	Variant::call_static(type, method, args, p_argcount, ret, error);
+	if (r_return != nullptr) {
+		memnew_placement(r_return, Variant(ret));
+	}
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)error.error;
@@ -1333,7 +1337,10 @@ static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_metho
 	const Variant **args = (const Variant **)p_args;
 	Callable::CallError error;
 
-	memnew_placement(r_return, Variant(mb->call(o, args, p_arg_count, error)));
+	Variant ret = mb->call(o, args, p_arg_count, error);
+	if (r_return != nullptr) {
+		memnew_placement(r_return, Variant(ret));
+	}
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
@@ -1426,8 +1433,10 @@ static void gdextension_object_call_script_method(GDExtensionObjectPtr p_object,
 	const Variant **args = (const Variant **)p_args;
 
 	Callable::CallError error; // TODO: Check `error`?
-	memnew_placement(r_return, Variant);
-	*(Variant *)r_return = o->callp(method, args, p_argument_count, error);
+	Variant ret = o->callp(method, args, p_argument_count, error);
+	if (r_return != nullptr) {
+		memnew_placement(r_return, Variant(ret));
+	}
 
 	if (r_error) {
 		r_error->error = (GDExtensionCallErrorType)(error.error);
