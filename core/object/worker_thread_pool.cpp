@@ -222,12 +222,20 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 }
 
 void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task) {
-	// Fall back to processing on the calling thread if there are no worker threads.
+	// Fall back to processing on the calling thread if there are no worker threads,
+	// or if we're shutting down the languages and a worker thread posts a new task.
+	// During language shutdown we block new tasks, however a worker thread posting
+	// a new task would deadlock with the language exit mechanism.
+
+	ThreadData *caller_pool_thread = thread_ids.has(Thread::get_caller_id()) ? &threads[thread_ids[Thread::get_caller_id()]] : nullptr;
+
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
+	bool no_threads = threads.is_empty();
+	bool worker_thread_during_language_exit = runlevel == RUNLEVEL_EXIT_LANGUAGES && caller_pool_thread;
 
-	// Avoid calling pump tasks or low priority tasks from the calling thread.
-	bool process_on_calling_thread = threads.is_empty() && !p_pump_task;
+	// Avoid calling pump tasks from the calling thread.
+	bool process_on_calling_thread = (no_threads || worker_thread_during_language_exit) && !p_pump_task;
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
@@ -237,14 +245,18 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 		return;
 	}
 
+	// If a worker thread during language exit reaches this loop, it will deadlock.
+	// The main thread is waiting in WorkerThreadPool::exit_languages_threads() for
+	// all worker threads to report their language exit at RUNLEVEL_EXIT_LANGUAGES.
+	// The worker thread will indefinitely wait here and is blocked from reporting
+	// its language exit.
+	DEV_ASSERT(!worker_thread_during_language_exit);
 	while (runlevel == RUNLEVEL_EXIT_LANGUAGES) {
 		control_cond_var.wait(p_lock);
 	}
 
 	uint32_t to_process = 0;
 	uint32_t to_promote = 0;
-
-	ThreadData *caller_pool_thread = thread_ids.has(Thread::get_caller_id()) ? &threads[thread_ids[Thread::get_caller_id()]] : nullptr;
 
 	for (uint32_t i = 0; i < p_count; i++) {
 		p_tasks[i]->low_priority = !p_high_priority;
