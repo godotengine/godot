@@ -628,6 +628,14 @@ _ALWAYS_INLINE_ double round(double p_val) {
 _ALWAYS_INLINE_ float round(float p_val) {
 	return std::round(p_val);
 }
+_ALWAYS_INLINE_ float round_to_decimal(const float p_val, const uint8_t precision) {
+	const float factor = pow(10.0F, precision);
+	return round(p_val * factor) / factor;
+}
+_ALWAYS_INLINE_ double round_to_decimal(const double p_val, const uint8_t precision) {
+	const double factor = pow(10.0, precision);
+	return round(p_val * factor) / factor;
+}
 
 _ALWAYS_INLINE_ double wrapf(double p_value, double p_min, double p_max) {
 	double range = p_max - p_min;

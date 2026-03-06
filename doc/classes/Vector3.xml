@@ -363,6 +363,13 @@
 				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
+		<method name="round_to_decimal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="precision" type="int" />
+			<description>
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero, and precision up to [param precision] decimal places.
+			</description>
+		</method>
 		<method name="sign" qualifiers="const">
 			<return type="Vector3" />
 			<description>
