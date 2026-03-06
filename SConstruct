@@ -198,7 +198,7 @@ opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
-opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
+opts.Add(BoolVariable(["use_volk", "volk"], "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
 opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
@@ -279,7 +279,11 @@ opts.Add(
     "Use this path as TLS certificates default for editor and Linux/BSD export templates (for package maintainers)",
     "",
 )
-opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(
+    BoolVariable(
+        ["use_precise_math_checks", "precise_math_checks"], "Math checks use very precise epsilon (debug option)", False
+    )
+)
 opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
 opts.Add(
     BoolVariable(
@@ -665,7 +669,7 @@ if env["dev_mode"]:
     env["tests"] = methods.get_cmdline_bool("tests", True)
     env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
 if env["production"]:
-    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", methods.get_cmdline_bool("static_cpp", True))
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
     if env["platform"] == "android":
         env["swappy"] = methods.get_cmdline_bool("swappy", True)

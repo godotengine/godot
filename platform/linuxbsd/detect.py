@@ -31,15 +31,17 @@ def get_opts():
 
     return [
         EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
-        BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
-        BoolVariable("use_coverage", "Test Godot coverage", False),
-        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
-        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
-        BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
-        BoolVariable("use_sowrap", "Dynamically load system libraries", True),
+        BoolVariable(["use_llvm", "llvm"], "Use the LLVM compiler", False),
+        BoolVariable(
+            ["use_static_cpp", "static_cpp"], "Link libgcc and libstdc++ statically for better portability", True
+        ),
+        BoolVariable(["use_coverage", "coverage"], "Test Godot coverage", False),
+        BoolVariable(["use_ubsan", "ubsan"], "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["use_asan", "asan"], "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable(["use_lsan", "lsan"], "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
+        BoolVariable(["use_tsan", "tsan"], "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable(["use_msan", "msan"], "Use LLVM compiler memory sanitizer (MSAN)", False),
+        BoolVariable(["use_sowrap", "sowrap"], "Dynamically load system libraries", True),
         BoolVariable("alsa", "Use ALSA", True),
         BoolVariable("pulseaudio", "Use PulseAudio", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
