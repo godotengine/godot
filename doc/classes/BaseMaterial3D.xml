@@ -192,6 +192,9 @@
 		<member name="disable_fog" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object will not be affected by fog (neither volumetric nor depth fog). This is useful for unshaded or transparent materials (e.g. particles), which without this setting will be affected even if fully transparent.
 		</member>
+		<member name="disable_occlusion_bounce" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], disables multi-bounce ambient occlusion even if [member ProjectSettings.rendering/lights_and_shadows/multi_bounce_occlusion/enabled] is [code]false[/code].
+		</member>
 		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
@@ -775,7 +778,10 @@
 		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
 			Enables using [member fov_override].
 		</constant>
-		<constant name="FLAG_MAX" value="25" enum="Flags">
+		<constant name="FLAG_DISABLE_MULTI_BOUNCE_OCCLUSION" value="25" enum="Flags">
+			Disables multi-bounce ambient occlusion.
+		</constant>
+		<constant name="FLAG_MAX" value="26" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
