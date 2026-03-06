@@ -37,6 +37,10 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef _MSC_VER
+#include <intrin.h>
+#pragma intrinsic(_AddressOfReturnAddress)
+#endif
 
 typedef HRESULT(WINAPI *SetThreadDescriptionPtr)(HANDLE p_thread, PCWSTR p_thread_description);
 SetThreadDescriptionPtr w10_SetThreadDescription = nullptr;
@@ -50,10 +54,37 @@ static Error set_name(const String &p_name) {
 	return SUCCEEDED(res) ? OK : ERR_INVALID_PARAMETER;
 }
 
+static bool get_stack_limits(void **r_bottom, void **r_top, void **r_frame) {
+	ULONG_PTR stack_lo = 0;
+	ULONG_PTR stack_hi = 0;
+	GetCurrentThreadStackLimits(&stack_lo, &stack_hi);
+	SYSTEM_INFO sys_info;
+	GetSystemInfo(&sys_info);
+
+	if (stack_lo && stack_hi) {
+		if (r_bottom) {
+			*r_bottom = (uint8_t *)stack_hi;
+		}
+		if (r_top) {
+			*r_top = (uint8_t *)stack_lo + sys_info.dwPageSize; // Add guard page size.
+		}
+		if (r_frame) {
+#ifdef _MSC_VER
+			*r_frame = _AddressOfReturnAddress();
+#else
+			*r_frame = __builtin_frame_address(0);
+#endif
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void init_thread_win() {
 	w10_SetThreadDescription = (SetThreadDescriptionPtr)(void *)GetProcAddress(LoadLibraryW(L"kernel32.dll"), "SetThreadDescription");
 
-	Thread::_set_platform_functions({ set_name });
+	Thread::_set_platform_functions({ set_name, get_stack_limits });
 }
 
 #endif // WINDOWS_ENABLED

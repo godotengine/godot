@@ -96,6 +96,14 @@ Error Thread::set_name(const String &p_name) {
 	return ERR_UNAVAILABLE;
 }
 
+bool Thread::get_stack_limits(void **r_bottom, void **r_top, void **r_frame) {
+	if (platform_functions.get_stack_limits) {
+		return platform_functions.get_stack_limits(r_bottom, r_top, r_frame);
+	} else {
+		return false;
+	}
+}
+
 Thread::~Thread() {
 	if (id != UNASSIGNED_ID) {
 #ifdef DEBUG_ENABLED

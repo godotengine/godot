@@ -97,6 +97,7 @@ public:
 	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; }
 
 	static Error set_name(const String &p_name);
+	static bool get_stack_limits(void **r_bottom, void **r_top, void **r_frame);
 
 	ID start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
 	bool is_started() const { return id != UNASSIGNED_ID; }
