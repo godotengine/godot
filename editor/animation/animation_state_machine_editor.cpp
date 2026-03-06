@@ -41,6 +41,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -1709,6 +1710,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
+				error_label->set_tooltip_text(error);
 				if (!error.is_empty()) {
 					error_panel->show();
 				} else {
@@ -2070,15 +2072,18 @@ AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nu
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	singleton = this;
 
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	FlowContainer *top_fc = memnew(FlowContainer);
+	add_child(top_fc);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
 
+	HBoxContainer *tools_hb = memnew(HBoxContainer);
+	top_fc->add_child(tools_hb);
+
 	tool_select = memnew(Button);
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_select);
+	tools_hb->add_child(tool_select);
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
@@ -2088,7 +2093,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	tool_create = memnew(Button);
 	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_create);
+	tools_hb->add_child(tool_create);
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip_text(TTR("Create new nodes."));
@@ -2096,7 +2101,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	tool_connect = memnew(Button);
 	tool_connect->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_connect);
+	tools_hb->add_child(tool_connect);
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
@@ -2104,7 +2109,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	// Context-sensitive selection tools:
 	selection_tools_hb = memnew(HBoxContainer);
-	top_hb->add_child(selection_tools_hb);
+	top_fc->add_child(selection_tools_hb);
 	selection_tools_hb->add_child(memnew(VSeparator));
 
 	tool_erase = memnew(Button);
@@ -2115,7 +2120,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	selection_tools_hb->add_child(tool_erase);
 
 	transition_tools_hb = memnew(HBoxContainer);
-	top_hb->add_child(transition_tools_hb);
+	top_fc->add_child(transition_tools_hb);
 	transition_tools_hb->add_child(memnew(VSeparator));
 
 	transition_tools_hb->add_child(memnew(Label(TTR("Transition:"))));
@@ -2131,11 +2136,14 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	//
 
-	top_hb->add_spacer();
+	HBoxContainer *play_mode_hb = memnew(HBoxContainer);
+	play_mode_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	play_mode_hb->set_alignment(BoxContainer::ALIGNMENT_END);
+	top_fc->add_child(play_mode_hb);
 
-	top_hb->add_child(memnew(Label(TTR("Play Mode:"))));
+	play_mode_hb->add_child(memnew(Label(TTR("Play Mode:"))));
 	play_mode = memnew(OptionButton);
-	top_hb->add_child(play_mode);
+	play_mode_hb->add_child(play_mode);
 
 	panel = memnew(PanelContainer);
 	panel->set_clip_contents(true);
@@ -2171,10 +2179,12 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	error_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	error_panel->add_child(error_label);
 	error_panel->hide();
-
-	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
