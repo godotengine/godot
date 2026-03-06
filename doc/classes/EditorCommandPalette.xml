@@ -50,5 +50,6 @@
 	</methods>
 	<members>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="title_auto_translate_mode" type="int" setter="set_title_auto_translate_mode" getter="get_title_auto_translate_mode" overrides="Window" enum="Window.TitleAutoTranslateMode" default="3" />
 	</members>
 </class>
