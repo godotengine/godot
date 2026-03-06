@@ -339,7 +339,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 		if (p_motion.length_squared() > 0) {
 			const Vector3 direction = p_motion.normalized();
 
-			if (direction.dot(normal) >= -CMP_EPSILON) {
+			if (direction.dot(normal) >= CMP_EPSILON) {
 				continue;
 			}
 		}
