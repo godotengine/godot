@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
 
@@ -74,11 +75,13 @@ namespace Godot
             }
         }
 
+        private static readonly ConcurrentDictionary<string, StringName> _stringNameCache = [];
+
         /// <summary>
         /// Converts a string to a <see cref="StringName"/>.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator StringName(string from) => new StringName(from);
+        public static implicit operator StringName(string from) => _stringNameCache.GetOrAdd(from, static from => new StringName(from));
 
         /// <summary>
         /// Converts a <see cref="StringName"/> to a string.
