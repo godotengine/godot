@@ -11,7 +11,8 @@
 		 To add custom attributes, use the "gradle_build/custom_theme_attributes" Android export option. -->
 	<style name="GodotAppSplashTheme" parent="Theme.SplashScreen">
 		<item name="android:windowSplashScreenBackground">@mipmap/icon_background</item>
-		<item name="windowSplashScreenAnimatedIcon">@mipmap/icon_foreground</item>
+		<item name="android:windowSplashScreenBrandingImage">@drawable/splash_branding_image</item>
+		<item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
 		<item name="postSplashScreenTheme">@style/GodotAppMainTheme</item>
 		<item name="android:windowIsTranslucent">false</item>
 	</style>
