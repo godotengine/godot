@@ -1664,11 +1664,17 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
-		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
-			CanvasItem *ci = data.canvas_item_children[n];
-
-			if (!ci->top_level && ci->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				ci->_update_texture_filter_changed(true);
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+					child_ci->_update_texture_filter_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->get_default_canvas_item_texture_filter() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+				child_vp->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1720,10 +1726,17 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	_update_self_texture_repeat(texture_repeat_cache);
 
 	if (p_propagate) {
-		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
-			CanvasItem *ci = data.canvas_item_children[n];
-			if (!ci->top_level && ci->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				ci->_update_texture_repeat_changed(true);
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_repeat == CanvasItem::TEXTURE_REPEAT_PARENT_NODE) {
+					child_ci->_update_texture_repeat_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->get_default_canvas_item_texture_repeat() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE) {
+				child_vp->_update_texture_repeat_changed(true);
 			}
 		}
 	}

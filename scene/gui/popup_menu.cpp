@@ -3636,6 +3636,9 @@ void PopupMenu::set_visible(bool p_visible) {
 
 PopupMenu::PopupMenu() {
 	set_flag(FLAG_TRANSPARENT, true);
+	set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	set_default_canvas_item_texture_repeat(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
+
 	// The panel used to draw the panel style.
 	panel = memnew(PanelContainer);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
