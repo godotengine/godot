@@ -455,7 +455,9 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 			}
 		}
 
-		strnew += p_line.replace("$launch_screen_image_mode", value) + "\n";
+		strnew += p_line.replace("$launch_screen_image_mode", value).replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
+	} else if (p_line.contains("$launch_screen_image_file_name")) {
+		strnew += p_line.replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
 	} else if (p_line.contains("$launch_screen_background_color")) {
 		bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 		Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
