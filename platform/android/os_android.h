@@ -189,5 +189,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	static void _on_main_screen_changed(const String &p_screen_name);
+	static void _on_distraction_free_mode_changed(bool p_enable);
 #endif
 };

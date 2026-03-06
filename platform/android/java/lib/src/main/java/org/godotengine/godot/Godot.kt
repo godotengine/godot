@@ -1309,6 +1309,11 @@ class Godot private constructor(val context: Context) {
 	}
 
 	@Keep
+	private fun nativeOnDistractionFreeModeChanged(enabled: Boolean) {
+		primaryHost?.onDistractionFreeModeChanged(enabled)
+	}
+
+	@Keep
 	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
 		try {
 			val buildProvider = primaryHost?.getBuildProvider()

@@ -36,6 +36,8 @@
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_node.h"
+#include "editor/gui/editor_title_bar.h"
 #include "editor/run/editor_run_bar.h"
 #include "main/main.h"
 #endif
@@ -90,6 +92,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_toggleTitleBar(JNIEnv *p_env, jclass, jboolean p_visible) {
+#ifdef TOOLS_ENABLED
+	EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
+	if (title_bar != nullptr) {
+		title_bar->call_deferred("set_visible", p_visible);
 	}
 #endif
 }
