@@ -73,9 +73,9 @@ protected:
 		} else if (is_pressed()) {
 			color = get_theme_color(SNAME("font_pressed_color"), type);
 		} else if (is_hovered()) {
-			color = get_theme_color(SNAME("font_hover_color"), type);
+			color = get_theme_color(SceneStringName("font_hover_color"), type);
 		} else {
-			color = get_theme_color(SNAME("font_color"), type);
+			color = get_theme_color(SceneStringName("font_color"), type);
 		}
 
 		const Size2 size = get_size();

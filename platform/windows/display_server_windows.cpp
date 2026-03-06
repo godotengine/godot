@@ -51,6 +51,7 @@
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #include <wingdi.h>
 
 #ifdef SDL_ENABLED
