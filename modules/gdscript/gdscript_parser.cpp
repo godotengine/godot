@@ -346,6 +346,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	context.type = p_type;
 	context.current_class = current_class;
 	context.current_function = current_function;
+	context.current_variable = current_variable;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.current_argument = p_argument;
@@ -368,6 +369,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	context.type = p_type;
 	context.current_class = current_class;
 	context.current_function = current_function;
+	context.current_variable = current_variable;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.current_argument = p_argument;
@@ -390,6 +392,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Typ
 	context.type = p_type;
 	context.current_class = current_class;
 	context.current_function = current_function;
+	context.current_variable = current_variable;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.builtin_type = p_builtin_type;
@@ -1235,6 +1238,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	variable->identifier = parse_identifier();
 	variable->export_info.name = variable->identifier->name;
 	variable->is_static = p_is_static;
+	current_variable = variable;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check(GDScriptTokenizer::Token::NEWLINE)) {
