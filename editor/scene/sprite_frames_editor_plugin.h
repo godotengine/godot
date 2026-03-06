@@ -143,6 +143,7 @@ class SpriteFramesEditor : public EditorDock {
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
+	Button *anim_ping_pong = nullptr;
 
 	HBoxContainer *autoplay_container = nullptr;
 	Button *autoplay = nullptr;
@@ -240,6 +241,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
+	void _animation_ping_pong_changed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
 	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);

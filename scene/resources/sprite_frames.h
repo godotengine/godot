@@ -45,6 +45,7 @@ class SpriteFrames : public Resource {
 	struct Anim {
 		double speed = 5.0;
 		bool loop = true;
+		bool ping_pong = false;
 		Vector<Frame> frames;
 	};
 
@@ -71,6 +72,9 @@ public:
 
 	void set_animation_loop(const StringName &p_anim, bool p_loop);
 	bool get_animation_loop(const StringName &p_anim) const;
+
+	void set_ping_pong(const StringName &p_anim, bool p_ping_pong);
+	bool get_ping_pong(const StringName &p_anim) const;
 
 	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_texture, float p_duration = 1.0, int p_at_pos = -1);
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_texture, float p_duration = 1.0);
