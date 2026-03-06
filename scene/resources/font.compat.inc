@@ -59,11 +59,15 @@ real_t Font::_draw_char_outline_bind_compat_104872(RID p_canvas_item, const Poin
 }
 
 RID Font::_find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
-	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, 0, 0, 0, 0, 0.0);
+	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, 0, 0, 0, 0, 0.0, 0, Vector<Color>());
 }
 
 RID Font::_find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
-	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, 0.0);
+	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, 0.0, 0, Vector<Color>());
+}
+
+RID Font::_find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, 0, Vector<Color>());
 }
 
 void Font::_bind_compatibility_methods() {
@@ -78,6 +82,7 @@ void Font::_bind_compatibility_methods() {
 
 	ClassDB::bind_compatibility_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform"), &Font::_find_variation_bind_compat_80954, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()));
 	ClassDB::bind_compatibility_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph"), &Font::_find_variation_bind_compat_87668, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset"), &Font::_find_variation_bind_compat_117149, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0));
 }
 
 #endif // DISABLE_DEPRECATED

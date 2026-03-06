@@ -602,10 +602,10 @@ hb_cairo_render_glyph (cairo_scaled_font_t  *scaled_font,
 
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
+
   cairo_scale (cr,
 	       +1. / (x_scale ? x_scale : 1),
 	       -1. / (y_scale ? y_scale : 1));
-
   if (hb_font_draw_glyph_or_fail (font, glyph, hb_cairo_draw_get_funcs (), cr))
     cairo_fill (cr);
 
@@ -881,7 +881,6 @@ hb_cairo_font_face_get_scale_factor (cairo_font_face_t *font_face)
 	 cairo_font_face_get_user_data (font_face,
 					&hb_cairo_scale_factor_user_data_key);
 }
-
 
 /**
  * hb_cairo_glyphs_from_buffer:
