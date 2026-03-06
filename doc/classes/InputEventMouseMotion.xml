@@ -33,7 +33,7 @@
 		</member>
 		<member name="screen_velocity" type="Vector2" setter="set_screen_velocity" getter="get_screen_velocity" default="Vector2(0, 0)">
 			The unscaled mouse velocity in pixels per second in screen coordinates. This velocity is [i]not[/i] scaled according to the content scale factor or calls to [method InputEvent.xformed_by].
-			[b]Note:[/b] Use [member screen_relative] for mouse aiming using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode.
+			[b]Note:[/b] In [constant Input.MOUSE_MODE_CAPTURED] mode, [member screen_velocity] returns [code](0, 0)[/code] because the mouse cursor is hidden and locked. Use [member screen_relative] for mouse aiming using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode.
 		</member>
 		<member name="tilt" type="Vector2" setter="set_tilt" getter="get_tilt" default="Vector2(0, 0)">
 			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
@@ -41,7 +41,7 @@
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
 			The mouse velocity in pixels per second.
 			[b]Note:[/b] [member velocity] is automatically scaled according to the content scale factor, which is defined by the project's stretch mode settings. That means mouse sensitivity may appear different depending on resolution.
-			[b]Note:[/b] Use [member screen_relative] for mouse aiming using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode.
+			[b]Note:[/b] In [constant Input.MOUSE_MODE_CAPTURED] mode, [member velocity] returns [code](0, 0)[/code] because the mouse cursor is hidden and locked. Use [member screen_relative] for mouse aiming using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode.
 		</member>
 	</members>
 </class>
