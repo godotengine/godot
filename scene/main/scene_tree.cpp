@@ -1684,6 +1684,11 @@ void SceneTree::_flush_scene_change() {
 		// Update display for cursor instantly.
 		root->update_mouse_cursor_state();
 
+		if (multiplayer.is_valid()) {
+			// Resume packet processing
+			multiplayer->set_packet_processing_paused(false);
+		}
+
 		// Only on successful scene change.
 		emit_signal(SNAME("scene_changed"));
 	} else {
@@ -1734,6 +1739,12 @@ Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
 	DEV_ASSERT(!current_scene);
 
 	pending_new_scene_id = p_node->get_instance_id();
+
+	if (multiplayer.is_valid()) {
+		// Pause packet processing until _flush_scene_change
+		multiplayer->set_packet_processing_paused(true);
+	}
+
 	return OK;
 }
 
