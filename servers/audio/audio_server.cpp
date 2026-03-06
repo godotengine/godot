@@ -721,7 +721,32 @@ void AudioServer::_delete_stream_playback(Ref<AudioStreamPlayback> p_playback) {
 	}
 }
 
+void AudioServer::_set_output_driver_sleep(bool p_enable) {
+	AudioDriver *driver = AudioDriver::get_singleton();
+	if (!driver) {
+		return;
+	}
+
+	if (!driver->can_output_device_sleep() || output_driver_sleeping == p_enable) {
+		return;
+	}
+
+	if (driver->set_output_device_sleep(p_enable)) {
+		output_driver_sleeping = p_enable;
+	}
+}
+
 void AudioServer::_delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_playback_node) {
+	if (p_playback_node->removed_from_playback_list.exchange(true)) {
+		return;
+	}
+
+	int32_t previous_stream_count = playback_stream_count.fetch_sub(1);
+	if (previous_stream_count <= 0) {
+		playback_stream_count.store(0);
+		ERR_PRINT("AudioServer playback stream counter underflowed.");
+	}
+
 	// Remove the playback from the list, registering a destructor to be run on the main thread.
 	playback_list.erase(p_playback_node, [](AudioStreamPlaybackListNode *p) {
 		delete p->prev_bus_details;
@@ -1274,6 +1299,9 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
 
 	playback_list.insert(playback_node);
+	playback_stream_count.fetch_add(1);
+	playback_stream_idle_since_msec = 0;
+	_set_output_driver_sleep(false);
 }
 
 void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
@@ -1608,6 +1636,20 @@ void AudioServer::update() {
 
 	for (CallbackItem *ci : update_callback_list) {
 		ci->callback(ci->userdata);
+	}
+
+	if (AudioDriver::get_singleton()->can_output_device_sleep()) {
+		if (playback_stream_count.load() == 0) {
+			uint64_t now_msec = OS::get_singleton()->get_ticks_msec();
+			if (playback_stream_idle_since_msec == 0) {
+				playback_stream_idle_since_msec = now_msec;
+			} else if (now_msec - playback_stream_idle_since_msec >= AUDIO_DRIVER_SLEEP_DELAY_MSEC) {
+				_set_output_driver_sleep(true);
+			}
+		} else {
+			playback_stream_idle_since_msec = 0;
+			_set_output_driver_sleep(false);
+		}
 	}
 
 	_cleanup_lists();
