@@ -523,7 +523,18 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			if (array_type.has_container_element_type(0)) {
-				gen->write_construct_typed_array(result, array_type.get_container_element_type(0), values);
+
+				const GDScriptDataType& elem_type = array_type.get_container_element_type(0);
+				gen->write_construct_typed_array(result, elem_type, values);
+
+				///at this point, the compiler used to fucking throw away nested types
+				///but it doesn't have to be that way now
+
+				if (elem_type.builtin_type == Variant::ARRAY && elem_type.has_container_element_type(0)) {
+					gen->write_stamp_array_element_typed(result, elem_type.get_container_element_type(0));
+				}
+
+
 			} else {
 				gen->write_construct_array(result, values);
 			}
@@ -2391,7 +2402,11 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
 				if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
-					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					const GDScriptDataType& elem_type = field_type.get_container_element_type(0);
+					codegen.generator->write_construct_typed_array(dst_address, elem_type, Vector<GDScriptCodeGenerator::Address>());
+					if (elem_type.builtin_type == Variant::ARRAY && elem_type.has_container_element_type(0)) {
+						codegen.generator->write_stamp_array_element_typed(dst_address, elem_type.get_container_element_type(0));
+					}
 				} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
 					codegen.generator->write_construct_typed_dictionary(dst_address, field_type.get_container_element_type_or_variant(0),
 							field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
@@ -2585,8 +2600,12 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 			codegen.generator->write_newline(field->start_line);
 
 			if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
+				const GDScriptDataType& elem_type = field_type.get_container_element_type(0);
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
-				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+				codegen.generator->write_construct_typed_array(temp, elem_type, Vector<GDScriptCodeGenerator::Address>());
+				if (elem_type.builtin_type == Variant::ARRAY && elem_type.has_container_element_type(0)) {
+					codegen.generator->write_stamp_array_element_typed(temp, elem_type.get_container_element_type(0));
+				}
 				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
 				codegen.generator->pop_temporary();
 			} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {

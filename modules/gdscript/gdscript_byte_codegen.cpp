@@ -1477,6 +1477,15 @@ void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_tar
 	ct.cleanup();
 }
 
+/// allows runtime stamping of arrays with their proper types
+void GDScriptByteCodeGenerator::write_stamp_array_element_typed(const Address& p_array, const GDScriptDataType& p_element_type) {
+	append_opcode(GDScriptFunction::OPCODE_STAMP_ARRAY_ELEMENT_TYPED);
+	append(p_array);
+	append(get_constant_pos(p_element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+	append(p_element_type.builtin_type);
+	append(p_element_type.native_type);
+}
+
 void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) {
 	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {

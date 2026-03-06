@@ -291,6 +291,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_VALIDATED, \
 		&&OPCODE_CONSTRUCT_ARRAY, \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY, \
+		&&OPCODE_STAMP_ARRAY_ELEMENT_TYPED, \
 		&&OPCODE_CONSTRUCT_DICTIONARY, \
 		&&OPCODE_CONSTRUCT_TYPED_DICTIONARY, \
 		&&OPCODE_CALL, \
@@ -1824,6 +1825,50 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
+
+			/// dude the shit i have to go through just to get proper runtime shit is so insane
+			OPCODE(OPCODE_STAMP_ARRAY_ELEMENT_TYPED) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(arr, 0);
+				GET_VARIANT_PTR(script_type, 1);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				int native_type_idx = _code_ptr[ip + 4];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				if (arr->get_type() == Variant::ARRAY) {
+					Array* outer = VariantInternal::get_array(arr);
+					for (int i = 0; i < outer->size(); i++) { /// walk arrays inside this array, stamping types as you go
+						Variant elem = outer->get(i);
+						if (elem.get_type() != Variant::ARRAY) {
+#ifdef DEBUG_ENABLED
+							err_text = vformat(R"(Cannot stamp element %d: expected Array, but instead got "%s".)", i, Variant::get_type_name(elem.get_type()));
+							OPCODE_BREAK;
+#else
+							continue;
+#endif
+						}
+						Array* inner = VariantInternal::get_array(&elem);
+						if (inner->get_typed_builtin() == (uint32_t)builtin_type &&
+								inner->get_typed_class_name() == native_type &&
+								inner->get_typed_script() == *script_type) {
+							continue;
+						}
+						Array stamped(elem, builtin_type, native_type, *script_type);
+#ifdef DEBUG_ENABLED
+						if (stamped.get_typed_builtin() != (uint32_t)builtin_type) {
+							err_text = vformat(R"(Cannot coerce element %d to Array[%s].)", i, _get_element_type(builtin_type, native_type, *script_type));
+							OPCODE_BREAK;
+						}
+#endif
+						outer->set(i, stamped);
+					}
+				}
+
+				ip += 5;
+			}
+			DISPATCH_OPCODE;
+
 
 			OPCODE(OPCODE_CONSTRUCT_DICTIONARY) {
 				LOAD_INSTRUCTION_ARGS
