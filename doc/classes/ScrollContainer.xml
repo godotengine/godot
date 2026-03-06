@@ -49,6 +49,10 @@
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
+		<member name="horizontal_scroll_with_wheel" type="bool" setter="set_horizontal_scroll_with_wheel" getter="is_horizontal_scroll_with_wheel" default="false">
+			If [code]true[/code], the mouse wheel scrolls the view horizontally, and holding [kbd]Shift[/kbd] scrolls vertically.
+			If [code]false[/code] (default), the mouse wheel scrolls the view vertically, and holding [kbd]Shift[/kbd] scrolls horizontally.
+		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
 		</member>

@@ -87,6 +87,7 @@ private:
 	bool follow_focus = false;
 	int scroll_border = 20;
 	int scroll_speed = 12;
+	bool horizontal_scroll_with_wheel = false;
 
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
@@ -155,6 +156,9 @@ public:
 
 	void set_vertical_scroll_mode(ScrollMode p_mode);
 	ScrollMode get_vertical_scroll_mode() const;
+
+	void set_horizontal_scroll_with_wheel(bool p_enable);
+	bool is_horizontal_scroll_with_wheel() const;
 
 	void set_deadzone(int p_deadzone);
 	int get_deadzone() const;
