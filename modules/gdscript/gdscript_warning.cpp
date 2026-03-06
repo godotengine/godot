@@ -141,6 +141,18 @@ String GDScriptWarning::get_message() const {
 		case DEPRECATED_KEYWORD:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release. Please replace it with "%s".)", symbols[0], symbols[1]);
+		case DEPRECATED_MEMBER_USED:
+			CHECK_SYMBOLS(3);
+			if (!symbols[2].is_empty()) {
+				return vformat(R"(The %s "%s" is deprecated: %s)", symbols[0], symbols[1], symbols[2]);
+			}
+			return vformat(R"(The %s "%s" is deprecated and may be removed in a future version.)", symbols[0], symbols[1]);
+		case EXPERIMENTAL_MEMBER_USED:
+			CHECK_SYMBOLS(3);
+			if (!symbols[2].is_empty()) {
+				return vformat(R"(The %s "%s" is experimental: %s)", symbols[0], symbols[1], symbols[2]);
+			}
+			return vformat(R"(The %s "%s" is experimental and may be changed or removed in a future version.)", symbols[0], symbols[1]);
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
@@ -233,6 +245,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("ENUM_VARIABLE_WITHOUT_DEFAULT"),
 		PNAME("EMPTY_FILE"),
 		PNAME("DEPRECATED_KEYWORD"),
+		PNAME("DEPRECATED_MEMBER_USED"),
+		PNAME("EXPERIMENTAL_MEMBER_USED"),
 		PNAME("CONFUSABLE_IDENTIFIER"),
 		PNAME("CONFUSABLE_LOCAL_DECLARATION"),
 		PNAME("CONFUSABLE_LOCAL_USAGE"),

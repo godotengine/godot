@@ -753,6 +753,10 @@ public:
 		bool extends_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
@@ -807,6 +811,10 @@ public:
 	};
 
 	struct ConstantNode : public AssignableNode {
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -860,6 +868,10 @@ public:
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
 		bool is_abstract = false;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
 		Variant rpc_config;
@@ -1066,6 +1078,10 @@ public:
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		MethodInfo method_info;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1270,6 +1286,10 @@ public:
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1556,6 +1576,8 @@ private:
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool deprecated_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool experimental_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

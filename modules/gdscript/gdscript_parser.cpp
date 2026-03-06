@@ -151,6 +151,9 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		// Deprecation and experimental annotations.
+		register_annotation(MethodInfo("@deprecated", PropertyInfo(Variant::STRING, "message")), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS_LEVEL, &GDScriptParser::deprecated_annotation, varray(""));
+		register_annotation(MethodInfo("@experimental", PropertyInfo(Variant::STRING, "message")), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS_LEVEL, &GDScriptParser::experimental_annotation, varray(""));
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -1825,11 +1828,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 	bool valid = true;
 
 	if (!valid_annotations.has(annotation->name)) {
-		if (annotation->name == "@deprecated") {
-			push_error(R"("@deprecated" annotation does not exist. Use "## @deprecated: Reason here." instead.)");
-		} else if (annotation->name == "@experimental") {
-			push_error(R"("@experimental" annotation does not exist. Use "## @experimental: Reason here." instead.)");
-		} else if (annotation->name == "@tutorial") {
+		if (annotation->name == "@tutorial") {
 			push_error(R"("@tutorial" annotation does not exist. Use "## @tutorial(Title): https://example.com" instead.)");
 		} else {
 			push_error(vformat(R"(Unrecognized annotation: "%s".)", annotation->name));
@@ -4506,6 +4505,170 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 		return true;
 	}
 	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
+}
+
+bool GDScriptParser::deprecated_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	// NOTE: Use `p_target`, **not** `p_class`, because when `p_target` is a class then `p_class` refers to the outer class.
+	String message;
+	if (p_annotation->resolved_arguments.size() > 0) {
+		message = String(p_annotation->resolved_arguments[0]);
+	}
+	switch (p_target->type) {
+		case Node::CLASS: {
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->is_deprecated) {
+				push_error(R"("@deprecated" annotation can only be used once per class.)", p_annotation);
+				return false;
+			}
+			class_node->is_deprecated = true;
+			class_node->deprecated_message = message;
+#ifdef TOOLS_ENABLED
+			class_node->doc_data.is_deprecated = true;
+			class_node->doc_data.deprecated_message = message;
+#endif
+			return true;
+		}
+		case Node::FUNCTION: {
+			FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+			if (function_node->is_deprecated) {
+				push_error(R"("@deprecated" annotation can only be used once per function.)", p_annotation);
+				return false;
+			}
+			function_node->is_deprecated = true;
+			function_node->deprecated_message = message;
+#ifdef TOOLS_ENABLED
+			function_node->doc_data.is_deprecated = true;
+			function_node->doc_data.deprecated_message = message;
+#endif
+			return true;
+		}
+		case Node::VARIABLE: {
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			if (variable_node->is_deprecated) {
+				push_error(R"("@deprecated" annotation can only be used once per variable.)", p_annotation);
+				return false;
+			}
+			variable_node->is_deprecated = true;
+			variable_node->deprecated_message = message;
+#ifdef TOOLS_ENABLED
+			variable_node->doc_data.is_deprecated = true;
+			variable_node->doc_data.deprecated_message = message;
+#endif
+			return true;
+		}
+		case Node::CONSTANT: {
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			if (constant_node->is_deprecated) {
+				push_error(R"("@deprecated" annotation can only be used once per constant.)", p_annotation);
+				return false;
+			}
+			constant_node->is_deprecated = true;
+			constant_node->deprecated_message = message;
+#ifdef TOOLS_ENABLED
+			constant_node->doc_data.is_deprecated = true;
+			constant_node->doc_data.deprecated_message = message;
+#endif
+			return true;
+		}
+		case Node::SIGNAL: {
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			if (signal_node->is_deprecated) {
+				push_error(R"("@deprecated" annotation can only be used once per signal.)", p_annotation);
+				return false;
+			}
+			signal_node->is_deprecated = true;
+			signal_node->deprecated_message = message;
+#ifdef TOOLS_ENABLED
+			signal_node->doc_data.is_deprecated = true;
+			signal_node->doc_data.deprecated_message = message;
+#endif
+			return true;
+		}
+		default:
+			ERR_FAIL_V_MSG(false, R"("@deprecated" annotation can only be applied to classes, functions, variables, constants, and signals.)");
+	}
+}
+
+bool GDScriptParser::experimental_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	// NOTE: Use `p_target`, **not** `p_class`, because when `p_target` is a class then `p_class` refers to the outer class.
+	String message;
+	if (p_annotation->resolved_arguments.size() > 0) {
+		message = String(p_annotation->resolved_arguments[0]);
+	}
+	switch (p_target->type) {
+		case Node::CLASS: {
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->is_experimental) {
+				push_error(R"("@experimental" annotation can only be used once per class.)", p_annotation);
+				return false;
+			}
+			class_node->is_experimental = true;
+			class_node->experimental_message = message;
+#ifdef TOOLS_ENABLED
+			class_node->doc_data.is_experimental = true;
+			class_node->doc_data.experimental_message = message;
+#endif
+			return true;
+		}
+		case Node::FUNCTION: {
+			FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+			if (function_node->is_experimental) {
+				push_error(R"("@experimental" annotation can only be used once per function.)", p_annotation);
+				return false;
+			}
+			function_node->is_experimental = true;
+			function_node->experimental_message = message;
+#ifdef TOOLS_ENABLED
+			function_node->doc_data.is_experimental = true;
+			function_node->doc_data.experimental_message = message;
+#endif
+			return true;
+		}
+		case Node::VARIABLE: {
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			if (variable_node->is_experimental) {
+				push_error(R"("@experimental" annotation can only be used once per variable.)", p_annotation);
+				return false;
+			}
+			variable_node->is_experimental = true;
+			variable_node->experimental_message = message;
+#ifdef TOOLS_ENABLED
+			variable_node->doc_data.is_experimental = true;
+			variable_node->doc_data.experimental_message = message;
+#endif
+			return true;
+		}
+		case Node::CONSTANT: {
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			if (constant_node->is_experimental) {
+				push_error(R"("@experimental" annotation can only be used once per constant.)", p_annotation);
+				return false;
+			}
+			constant_node->is_experimental = true;
+			constant_node->experimental_message = message;
+#ifdef TOOLS_ENABLED
+			constant_node->doc_data.is_experimental = true;
+			constant_node->doc_data.experimental_message = message;
+#endif
+			return true;
+		}
+		case Node::SIGNAL: {
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			if (signal_node->is_experimental) {
+				push_error(R"("@experimental" annotation can only be used once per signal.)", p_annotation);
+				return false;
+			}
+			signal_node->is_experimental = true;
+			signal_node->experimental_message = message;
+#ifdef TOOLS_ENABLED
+			signal_node->doc_data.is_experimental = true;
+			signal_node->doc_data.experimental_message = message;
+#endif
+			return true;
+		}
+		default:
+			ERR_FAIL_V_MSG(false, R"("@experimental" annotation can only be applied to classes, functions, variables, constants, and signals.)");
+	}
 }
 
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
