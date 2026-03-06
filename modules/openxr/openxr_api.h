@@ -167,7 +167,18 @@ private:
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace custom_play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
+
+	// Head info
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
+	XrPosef head_pose = { { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 1.6, 0.0 } };
+	Transform3D head_transform;
+	Vector3 head_linear_velocity;
+	Vector3 head_angular_velocity;
+
+	// View (eye) info
+	bool view_pose_valid = false;
+	LocalVector<Transform3D> view_offsets;
+	LocalVector<XrFovf> view_fovs;
 
 	RID velocity_texture;
 	RID velocity_depth_texture;
@@ -271,6 +282,7 @@ private:
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
 	bool setup_play_space();
 	bool setup_view_space();
+	bool update_head_tracking();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
@@ -360,11 +372,14 @@ private:
 		uint64_t frame = 0;
 		Rect2i render_region;
 
-		LocalVector<XrView> views;
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+
+		uint32_t view_count = 0;
 		bool view_pose_valid = false;
+		LocalVector<XrPosef> view_poses;
+		LocalVector<XrFovf> view_fovs;
 
 		double z_near = 0.0;
 		double z_far = 0.0;
@@ -389,6 +404,8 @@ private:
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
+	static void _set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	static void _set_render_state_near_and_far(double p_z_near, double p_z_far);
 	static void _update_main_swapchain_size_rt();
 
 	void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
@@ -398,6 +415,8 @@ private:
 	void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode);
 	void set_render_state_multiplier(double p_render_target_size_multiplier);
 	void set_render_state_render_region(const Rect2i &p_render_region);
+	void set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	void set_render_state_near_and_far(double p_z_near, double p_z_far);
 
 public:
 	void update_main_swapchain_size();
@@ -482,7 +501,10 @@ public:
 
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
+	bool get_view_offset(uint32_t p_view, Transform3D &r_transform);
+#ifndef DISABLE_DEPRECATED
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
+#endif
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
 	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();

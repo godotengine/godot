@@ -465,6 +465,31 @@ Transform3D MobileVRInterface::get_camera_transform() {
 	return transform_for_eye;
 }
 
+Transform3D MobileVRInterface::get_view_offset(uint32_t p_view) {
+	_THREAD_SAFE_METHOD_
+
+	Transform3D view_offset;
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, view_offset);
+
+	if (initialized) {
+		float world_scale = xr_server->get_world_scale();
+
+		// We don't need to check for the existence of our HMD, doesn't affect our values...
+		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
+		if (p_view == 0) {
+			view_offset.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
+		} else if (p_view == 1) {
+			view_offset.origin.x = intraocular_dist * 0.01 * 0.5 * world_scale;
+		} else {
+			// should not have any other values..
+		};
+	}
+
+	return view_offset;
+}
+
 Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
@@ -476,21 +501,11 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	if (initialized) {
 		float world_scale = xr_server->get_world_scale();
 
-		// we don't need to check for the existence of our HMD, doesn't affect our values...
-		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
-		if (p_view == 0) {
-			transform_for_eye.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
-		} else if (p_view == 1) {
-			transform_for_eye.origin.x = intraocular_dist * 0.01 * 0.5 * world_scale;
-		} else {
-			// should not have any other values..
-		};
-
 		// just scale our origin point of our transform
 		Transform3D _head_transform = head_transform;
 		_head_transform.origin *= world_scale;
 
-		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * transform_for_eye;
+		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * get_view_offset(p_view);
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;

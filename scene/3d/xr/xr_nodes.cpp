@@ -36,9 +36,20 @@
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_first_view", "index"), &XRCamera3D::set_first_view);
+	ClassDB::bind_method(D_METHOD("get_first_view"), &XRCamera3D::get_first_view);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "first_view"), "set_first_view", "get_first_view");
+
+	ClassDB::bind_method(D_METHOD("set_last_view", "index"), &XRCamera3D::set_last_view);
+	ClassDB::bind_method(D_METHOD("get_last_view"), &XRCamera3D::get_last_view);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "last_view"), "set_last_view", "get_last_view");
+}
 
 void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
@@ -48,6 +59,60 @@ void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+}
+
+void XRCamera3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_current()) {
+				_update_projections();
+			}
+		} break;
+	}
+}
+
+void XRCamera3D::_update_camera_mode() {
+	// Ignore this here, we are setting our projection matrices later
+}
+
+void XRCamera3D::fti_update_servers_property() {
+	// TODO: We don't update the projection matrices right away,
+	// but we'll need to see if there is anything we need to capture here.
+}
+
+void XRCamera3D::_update_projections() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL(xr_server);
+	Viewport *vp = get_viewport();
+	ERR_FAIL_NULL(vp);
+
+	Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
+	if (xr_interface.is_null()) {
+		return;
+	}
+
+	// We don't get updates when resolution changes (though we could),
+	// or when projections change, so we update this every frame.
+	// With eye tracking it is possible this changes regularly.
+
+	Size2 viewport_size = vp->get_visible_rect().size;
+
+	int view_count = xr_interface->get_view_count();
+	int last = last_view < view_count ? last_view : (view_count - 1);
+	ERR_FAIL_COND(first_view > last);
+
+	offsets.resize(last - first_view + 1);
+	projections.resize(last - first_view + 1);
+	for (int v = first_view; v <= last; v++) {
+		offsets[v - first_view] = xr_interface->get_view_offset(v);
+		projections[v - first_view] = xr_interface->get_projection_for_view(v, viewport_size.aspect(), get_near(), get_far());
+	}
+
+	// TODO add in logic for xr_server->is_camera_locked_to_origin()
+
+	rendering_server->camera_set_projections(get_camera(), projections, offsets);
 }
 
 void XRCamera3D::_bind_tracker() {
@@ -221,6 +286,9 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 XRCamera3D::XRCamera3D() {
 	// XRCamera3D gets its transform updated every render frame and shouldn't be interpolated.
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
+
+	// Run internal process in runtime.
+	set_desired_process_modes(!Engine::get_singleton()->is_editor_hint(), false);
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);

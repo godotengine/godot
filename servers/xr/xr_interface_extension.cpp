@@ -214,6 +214,14 @@ Transform3D XRInterfaceExtension::get_camera_transform() {
 	return transform;
 }
 
+Transform3D XRInterfaceExtension::get_view_offset(uint32_t p_view) {
+	Transform3D transform;
+	if (!GDVIRTUAL_CALL(_get_view_offset, p_view, transform)) {
+		transform = XRInterface::get_view_offset(p_view);
+	}
+	return transform;
+}
+
 Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D transform;
 	GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform);

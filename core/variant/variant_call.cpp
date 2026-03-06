@@ -2624,6 +2624,8 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Projection, get_aspect, sarray(), varray());
 	bind_method(Projection, get_fov, sarray(), varray());
 	bind_method(Projection, is_orthogonal, sarray(), varray());
+	bind_method(Projection, is_asymmetrical, sarray(), varray());
+	bind_method(Projection, is_z_axis_projection, sarray(), varray());
 
 	bind_method(Projection, get_viewport_half_extents, sarray(), varray());
 	bind_method(Projection, get_far_plane_half_extents, sarray(), varray());

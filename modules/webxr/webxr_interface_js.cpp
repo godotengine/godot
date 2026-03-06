@@ -453,6 +453,37 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	return camera_transform;
 }
 
+Transform3D WebXRInterfaceJS::get_view_offset(uint32_t p_view) {
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, Transform3D());
+	ERR_FAIL_COND_V(!initialized, Transform3D());
+
+	// Get our view transform
+	float js_matrix[16];
+	bool has_transform = godot_webxr_get_transform_for_view(p_view, js_matrix);
+	if (!has_transform) {
+		return Transform3D();
+	}
+
+	Transform3D transform_for_view = _js_matrix_to_transform(js_matrix);
+
+	// Get our head transform
+	has_transform = godot_webxr_get_transform_for_view(-1, js_matrix);
+	if (!has_transform) {
+		return Transform3D();
+	}
+
+	Transform3D head_transform = _js_matrix_to_transform(js_matrix);
+
+	// Calculate the offset
+	Transform3D view_offset = head_transform.inverse() * transform_for_view;
+
+	double world_scale = xr_server->get_world_scale();
+	view_offset.origin *= world_scale;
+
+	return view_offset;
+}
+
 Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, p_cam_transform);

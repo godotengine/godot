@@ -75,6 +75,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_passthrough_enabled"), &XRInterface::is_passthrough_enabled);
 	ClassDB::bind_method(D_METHOD("start_passthrough"), &XRInterface::start_passthrough);
 	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
+	ClassDB::bind_method(D_METHOD("get_view_offset", "view"), &XRInterface::get_view_offset);
 	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
 	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
 
@@ -227,4 +228,12 @@ void XRInterface::trigger_haptic_pulse(const String &p_action_name, const String
 
 Array XRInterface::get_supported_environment_blend_modes() {
 	return Array{ XR_ENV_BLEND_MODE_OPAQUE };
+}
+
+Transform3D XRInterface::get_view_offset(uint32_t p_view) {
+	// Fallback code for backwards compatibility
+	WARN_PRINT_ONCE("get_view_offset has not been implemented on this interface, reconstructing by calling deprecated get_transform_for_view.");
+	Transform3D camera_transform = get_camera_transform();
+	Transform3D view_transform = get_transform_for_view(p_view, Transform3D());
+	return camera_transform.inverse() * view_transform;
 }

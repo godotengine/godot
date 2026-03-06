@@ -111,7 +111,7 @@
 				Returns the current status of our tracking.
 			</description>
 		</method>
-		<method name="_get_transform_for_view" qualifiers="virtual">
+		<method name="_get_transform_for_view" qualifiers="virtual" deprecated="Use get_view_offset">
 			<return type="Transform3D" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="cam_transform" type="Transform3D" />
