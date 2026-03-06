@@ -812,22 +812,7 @@ void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {
 	shader_cache_dir = p_dir;
 }
 
-void ShaderGLES3::set_shader_cache_save_compressed(bool p_enable) {
-	shader_cache_save_compressed = p_enable;
-}
-
-void ShaderGLES3::set_shader_cache_save_compressed_zstd(bool p_enable) {
-	shader_cache_save_compressed_zstd = p_enable;
-}
-
-void ShaderGLES3::set_shader_cache_save_debug(bool p_enable) {
-	shader_cache_save_debug = p_enable;
-}
-
 String ShaderGLES3::shader_cache_dir;
-bool ShaderGLES3::shader_cache_save_compressed = true;
-bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
-bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
 	LocalVector<RID> remaining = version_owner.get_owned_list();
