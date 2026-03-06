@@ -4218,6 +4218,23 @@ Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint
 	return retval;
 }
 
+void Node::disconnect_all(const StringName &p_signal) {
+	ERR_THREAD_GUARD;
+
+#ifdef TOOLS_ENABLED
+	// Already under thread guard, don't check again.
+	List<Connection> _connections;
+	Object::get_signal_connection_list(p_signal, &_connections);
+#endif
+	[[maybe_unused]] bool changed = Object::_disconnect_all(p_signal);
+
+#ifdef TOOLS_ENABLED
+	if (changed) {
+		_emit_editor_state_changed();
+	}
+#endif
+}
+
 void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	ERR_THREAD_GUARD;
 

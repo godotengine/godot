@@ -794,6 +794,7 @@ protected:
 	static void _add_class_to_classdb(const GDType &p_class, const GDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
+	bool _disconnect_all(const StringName &p_signal, bool p_force = false);
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 	// Prefer using derives_from.
@@ -987,6 +988,7 @@ public:
 	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	DEBUG_VIRTUAL void disconnect_all(const StringName &p_signal);
 	DEBUG_VIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
 	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;
