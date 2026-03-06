@@ -1269,6 +1269,10 @@ void main() {
 #CODE : FRAGMENT
 	}
 
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_DEBUG_DRAW_UNSHADED)) {
+		metallic_highp = 0.0;
+	}
+
 	// Store variables in half precision after user shader code is run.
 	hvec3 view = hvec3(view_highp);
 	hvec3 albedo = hvec3(albedo_highp);

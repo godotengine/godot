@@ -1351,6 +1351,10 @@ void fragment_shader(in SceneData scene_data) {
 #CODE : FRAGMENT
 	}
 
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_DEBUG_DRAW_UNSHADED)) {
+		metallic_highp = 0.0;
+	}
+
 	float roughness = roughness_highp;
 	float metallic = metallic_highp;
 	vec3 albedo = albedo_highp;
