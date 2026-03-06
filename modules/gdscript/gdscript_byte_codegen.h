@@ -104,7 +104,14 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> temp_stack;
 #endif
 
-	HashMap<Variant, int> constant_map;
+	// The default comparator is not suitable for storing consts in a HashMap.
+	struct ConstVariantComparator {
+		static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) {
+			return p_lhs.identity_compare(p_rhs);
+		}
+	};
+
+	HashMap<Variant, int, HashMapHasherDefault, ConstVariantComparator> constant_map;
 	RBMap<StringName, int> name_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;
