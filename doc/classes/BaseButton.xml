@@ -34,6 +34,13 @@
 				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
 			</description>
 		</method>
+		<method name="press">
+			<return type="void" />
+			<description>
+				Presses the button. This causes the corresponding virtual method to be called and the corresponding signal to be emitted, depending on [member toggle_mode]. If [member disabled] is [code]true[/code], nothing happens.
+				[b]Note:[/b] This method does not change the visual state of the button and does not grab focus to the button.
+			</description>
+		</method>
 		<method name="set_pressed_no_signal">
 			<return type="void" />
 			<param index="0" name="pressed" type="bool" />

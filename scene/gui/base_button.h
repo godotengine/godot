@@ -103,14 +103,14 @@ public:
 
 	DrawMode get_draw_mode() const;
 
-	/* Signals */
-
 	bool is_pressed() const; ///< return whether button is pressed (toggled in)
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
+	void press();
 	void set_pressed(bool p_pressed); // Only works in toggle mode.
 	void set_pressed_no_signal(bool p_pressed);
+
 	void set_toggle_mode(bool p_on);
 	bool is_toggle_mode() const;
 
