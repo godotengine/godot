@@ -73,6 +73,9 @@
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">
 			If [code]true[/code], the video is paused.
 		</member>
+		<member name="playback_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="VideoStreamPlayer.UpdateMode" default="1">
+			The update mode for advancing the video playback.
+		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The stream's current speed scale. [code]1.0[/code] is the normal speed, while [code]2.0[/code] is double speed and [code]0.5[/code] is half speed. A speed scale of [code]0.0[/code] pauses the video, similar to setting [member paused] to [code]true[/code].
 		</member>
@@ -96,4 +99,15 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
+			Do not update the video stream player. Acts similar to [member paused] but keeps the current playback state without changing any playback properties.
+		</constant>
+		<constant name="UPDATE_WHEN_VISIBLE" value="1" enum="UpdateMode">
+			Only update and advance the video playback state while the video stream player is visible. Visibility is determined by the [CanvasItem] visibility notifier and [SceneTree] node visibility. Effectively the video will automatically act as if paused while off-screen or hidden saving performance and resuming when it becomes visible again.
+		</constant>
+		<constant name="UPDATE_ALWAYS" value="2" enum="UpdateMode">
+			Always update the video stream player even while hidden and off-screen.
+		</constant>
+	</constants>
 </class>
