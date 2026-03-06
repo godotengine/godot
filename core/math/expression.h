@@ -117,7 +117,10 @@ private:
 			TYPE_DICTIONARY,
 			TYPE_CONSTRUCTOR,
 			TYPE_BUILTIN_FUNC,
-			TYPE_CALL
+			TYPE_CALL,
+			TYPE_BASIC_TYPE_FUNC,
+			TYPE_BASIC_TYPE_CONSTANT,
+			TYPE_BASIC_TYPE_ENUM
 		};
 
 		ENode *next = nullptr;
@@ -227,6 +230,32 @@ private:
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
 			type = TYPE_BUILTIN_FUNC;
+		}
+	};
+
+	struct BasicTypeFuncNode : public ENode {
+		Variant::Type data_type = Variant::Type::NIL;
+		StringName func;
+		Vector<ENode *> arguments;
+		BasicTypeFuncNode() {
+			type = TYPE_BASIC_TYPE_FUNC;
+		}
+	};
+
+	struct BasicTypeConstNode : public ENode {
+		Variant::Type data_type = Variant::Type::NIL;
+		StringName name;
+		BasicTypeConstNode() {
+			type = TYPE_BASIC_TYPE_CONSTANT;
+		}
+	};
+
+	struct BasicTypeEnumNode : public ENode {
+		Variant::Type data_type = Variant::Type::NIL;
+		StringName enum_name;
+		StringName enumeration;
+		BasicTypeEnumNode() {
+			type = TYPE_BASIC_TYPE_ENUM;
 		}
 	};
 
