@@ -1193,6 +1193,19 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("grabber_area_highlight", "VSlider", EditorThemeManager::make_flat_stylebox(p_config.contrast_color_1, background_margin, 0, background_margin, 0));
 		p_theme->set_constant("center_grabber", "VSlider", 0);
 		p_theme->set_constant("grabber_offset", "VSlider", 0);
+
+		// Resizable scroll bars.
+		int resizable_scroll_thickness = 8 * EDSCALE;
+
+		// HResizableScrollBar.
+		Ref<StyleBoxEmpty> h_resizable_scroll_style = p_config.base_empty_style->duplicate();
+		h_resizable_scroll_style->set_content_margin_individual(0, resizable_scroll_thickness, 0, resizable_scroll_thickness);
+		p_theme->set_stylebox("scroll", "HResizableScrollBar", h_resizable_scroll_style);
+
+		// VResizableScrollBar.
+		Ref<StyleBoxEmpty> v_resizable_scroll_style = p_config.base_empty_style->duplicate();
+		v_resizable_scroll_style->set_content_margin_individual(resizable_scroll_thickness, 0, resizable_scroll_thickness, 0);
+		p_theme->set_stylebox("scroll", "VResizableScrollBar", v_resizable_scroll_style);
 	}
 
 	// Labels.
