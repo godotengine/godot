@@ -356,6 +356,7 @@ public:
 
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 		bool has_initial_data = false;
 		bool pending_clear = false;
 

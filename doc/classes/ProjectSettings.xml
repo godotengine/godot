@@ -3617,6 +3617,10 @@
 			Applied foveation level if supported.
 			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
+		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] and foveation is also enabled, subsampled images will be used on Vulkan. This can improve the performance gain from foveated rendering, especially when using high foveation levels.
+			[b]Note:[/b]: Using subsampled images is incompatible with many screen-space rendering features or post-processing effects like FXAA or glow. If any such effects are enabled, subsampled images will automatically be disabled and a warning shown in the log.
+		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.
 		</member>

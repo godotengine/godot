@@ -444,6 +444,7 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {

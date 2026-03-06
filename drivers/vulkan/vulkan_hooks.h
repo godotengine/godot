@@ -47,5 +47,6 @@ public:
 	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) = 0;
 	virtual bool use_fragment_density_offsets() = 0;
 	virtual void get_fragment_density_offsets(LocalVector<VkOffset2D> &r_offsets, const Vector2i &p_granularity) = 0;
+	virtual bool use_subsampled_images() = 0;
 	static VulkanHooks *get_singleton() { return singleton; }
 };

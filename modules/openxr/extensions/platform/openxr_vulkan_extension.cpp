@@ -229,6 +229,15 @@ void OpenXRVulkanExtension::get_fragment_density_offsets(LocalVector<VkOffset2D>
 	}
 }
 
+bool OpenXRVulkanExtension::use_subsampled_images() {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return false;
+	}
+
+	return fb_foveation->is_foveation_with_subsampled_images_enabled();
+}
+
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
