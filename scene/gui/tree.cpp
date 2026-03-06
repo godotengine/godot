@@ -3794,7 +3794,7 @@ bool Tree::_scroll(bool p_horizontal, float p_pages) {
 
 	bool scroll_happened = scroll->get_value() != prev_value;
 	if (scroll_happened) {
-		_determine_hovered_item();
+		_queue_update_hovered_item();
 	}
 	return scroll_happened;
 }
@@ -5799,7 +5799,6 @@ int Tree::get_columns() const {
 }
 
 void Tree::_scroll_moved(float) {
-	_determine_hovered_item();
 	queue_redraw();
 	popup_editor->hide();
 }
