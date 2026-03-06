@@ -137,7 +137,7 @@
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Virtual method to be implemented by the user. Override this method to handle and accept inputs on UI elements. See also [method accept_event].
+				Virtual method to be implemented by the user. Override this method to handle and accept inputs on UI elements. The [Control] node first calls the virtual function [method Control._gui_input], allowing you to manually handle the input event before it's processed internally. See also [method accept_event].
 				[b]Example:[/b] Click on the control to print a message:
 				[codeblocks]
 				[gdscript]
