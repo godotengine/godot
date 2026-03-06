@@ -35,6 +35,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Interaction profile editor base
@@ -171,6 +172,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	interaction_profile_sc = memnew(ScrollContainer);
+	interaction_profile_sc->set_theme_type_variation("ScrollContainerSecondary");
 	interaction_profile_sc->set_h_size_flags(SIZE_EXPAND_FILL);
 	interaction_profile_sc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(interaction_profile_sc);
@@ -394,7 +396,10 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 void OpenXRInteractionProfileEditor::_theme_changed() {
 	OpenXRInteractionProfileEditorBase::_theme_changed();
 
-	interaction_profile_sc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+	const bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+	if (is_theme_classic) {
+		interaction_profile_sc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+	}
 
 	for (int i = 0; i < interaction_profile_hb->get_child_count(); i++) {
 		Control *panel = Object::cast_to<Control>(interaction_profile_hb->get_child(i));

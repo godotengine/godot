@@ -498,12 +498,10 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				tree->set_theme_type_variation("");
 				if (horizontal) {
 					toolbar2_hbc->hide();
-
-					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-					tree_mc->set_theme_type_variation("NoBorderBottomPanel");
+					tree->set_scroll_hint_mode(touches_bottom ? Tree::SCROLL_HINT_MODE_TOP : Tree::SCROLL_HINT_MODE_BOTH);
+					tree_mc->set_theme_type_variation("NoBorderHorizontal");
 				} else {
 					toolbar2_hbc->show();
-
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 					tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 				}
@@ -528,7 +526,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				if (is_vertical) {
 					tree->set_theme_type_variation("");
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-					tree_mc->set_theme_type_variation(horizontal ? "NoBorderBottomPanel" : "NoBorderHorizontal");
+					tree_mc->set_theme_type_variation("NoBorderHorizontal");
 
 					files->set_theme_type_variation(horizontal ? "ItemListSecondary" : "");
 					files->set_scroll_hint_mode(horizontal ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_TOP);
@@ -4180,12 +4178,14 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
+void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
 	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	if (horizontal == new_horizontal) {
+	bool new_touches_bottom = (p_slot != EditorDock::DOCK_SLOT_BOTTOM);
+	if (horizontal == new_horizontal && touches_bottom == new_touches_bottom) {
 		return;
 	}
 	horizontal = new_horizontal;
+	touches_bottom = new_touches_bottom;
 
 	if (horizontal) {
 		path_hb->reparent(toolbar_hbc);

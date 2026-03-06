@@ -1033,6 +1033,16 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 	update_palette();
 }
 
+void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		palette_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	} else {
+		palette_mc->set_theme_type_variation("NoBorderHorizontal");
+		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	}
+}
+
 void GridMapEditor::update_palette() {
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
@@ -1443,7 +1453,6 @@ GridMapEditor::GridMapEditor() {
 	set_global(false);
 	set_transient(true);
 	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
-	set_theme_type_variation("NoBorderBottomPanel");
 
 	ED_SHORTCUT("grid_map/previous_floor", TTRC("Previous Floor"), Key::KEY_1, true);
 	ED_SHORTCUT("grid_map/next_floor", TTRC("Next Floor"), Key::KEY_3, true);
@@ -1685,12 +1694,16 @@ GridMapEditor::GridMapEditor() {
 
 	toolbar->add_child(options);
 
+	palette_mc = memnew(MarginContainer);
+	palette_mc->set_theme_type_variation("NoBorderHorizontal");
+	palette_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(palette_mc);
+
 	mesh_library_palette = memnew(ItemList);
 	search_box->set_forward_control(mesh_library_palette);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_vb->add_child(mesh_library_palette);
+	palette_mc->add_child(mesh_library_palette);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 
