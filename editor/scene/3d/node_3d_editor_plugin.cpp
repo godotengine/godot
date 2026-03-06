@@ -581,6 +581,13 @@ void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	look_control->set_visible(show_viewport_navigation_gizmo);
 }
 
+void Node3DEditorViewport::_update_editor_settings() {
+	freelook_inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
+	orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+	translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
+	zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+}
+
 bool Node3DEditorViewport::_is_rotation_arc_visible() const {
 	return _edit.mode == TRANSFORM_ROTATE && !Math::is_zero_approx(_edit.accumulated_rotation_angle) && _edit.gizmo_initiated;
 }
@@ -598,13 +605,11 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 		if (is_freelook_active()) {
 			// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
 			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-			const real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
-			real_t factor = (1.0 / inertia) * p_interp_delta;
+			real_t factor = (1.0 / freelook_inertia) * p_interp_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
 			camera_cursor.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
 
-			const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
@@ -620,10 +625,6 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 			camera_cursor.pos = camera_cursor.eye_pos + forward * camera_cursor.distance;
 
 		} else {
-			const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-			const real_t translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
-			const real_t zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
-
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
@@ -3336,6 +3337,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
+			_update_editor_settings();
 			_update_navigation_controls_visibility();
 		} break;
 
@@ -3741,6 +3743,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+				_update_editor_settings();
 				_update_navigation_controls_visibility();
 			}
 		} break;
@@ -6603,6 +6606,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	freelook_active = false;
 	freelook_speed = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+	_update_editor_settings();
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);

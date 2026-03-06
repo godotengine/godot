@@ -269,6 +269,10 @@ private:
 
 	bool freelook_active;
 	real_t freelook_speed;
+	real_t freelook_inertia = 0.0;
+	real_t orbit_inertia = 0.0;
+	real_t translation_inertia = 0.0;
+	real_t zoom_inertia = 0.0;
 	Vector2 previous_mouse_position;
 
 	PanelContainer *info_panel = nullptr;
@@ -481,6 +485,7 @@ private:
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
+	void _update_editor_settings();
 	void _update_navigation_controls_visibility();
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
