@@ -977,6 +977,13 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 		if (rcd.best_len != 0) {
 			if (r_result) {
+				// if the motion is not going into collision surface, ignore this collision
+				real_t test = rcd.best_normal.dot(-motion_normal);
+				if (motion_length > CMP_EPSILON && test < CMP_EPSILON) {
+					*r_result = PhysicsServer2D::MotionResult();
+					r_result->travel = p_parameters.motion;
+					return false;
+				}
 				r_result->collider = rcd.best_object->get_self();
 				r_result->collider_id = rcd.best_object->get_instance_id();
 				r_result->collider_shape = rcd.best_shape;
