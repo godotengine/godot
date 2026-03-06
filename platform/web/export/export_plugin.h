@@ -113,7 +113,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
 
 	Error _export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
-	Error _launch_browser(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
+	Error _launch_browser(const Ref<EditorExportPreset> &p_preset, const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
 	Error _start_server(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
 	Error _stop_server();
 
