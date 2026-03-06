@@ -174,24 +174,6 @@ String GDScriptTokenizer::Token::get_debug_name() const {
 	}
 }
 
-bool GDScriptTokenizer::Token::can_precede_bin_op() const {
-	switch (type) {
-		case IDENTIFIER:
-		case LITERAL:
-		case SELF:
-		case BRACKET_CLOSE:
-		case BRACE_CLOSE:
-		case PARENTHESIS_CLOSE:
-		case CONST_PI:
-		case CONST_TAU:
-		case CONST_INF:
-		case CONST_NAN:
-			return true;
-		default:
-			return false;
-	}
-}
-
 bool GDScriptTokenizer::Token::is_identifier() const {
 	// Note: Most keywords should not be recognized as identifiers.
 	// These are only exceptions for stuff that already is on the engine's API.
@@ -402,7 +384,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 			}
 		}
 	}
-
 	last_token = token;
 	return token;
 }
@@ -675,11 +656,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	bool need_digits = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
 
-	// Sign before hexadecimal or binary.
-	if ((_peek(-1) == '+' || _peek(-1) == '-') && _peek() == '0') {
-		_advance();
-	}
-
 	if (_peek(-1) == '.') {
 		has_decimal = true;
 	} else if (_peek(-1) == '0') {
@@ -832,8 +808,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {
-		int64_t value = number.hex_to_int();
-		return make_literal(value);
+		if (unlikely((last_token.type == Token::MINUS || last_token.type == Token::MINUS_EQUAL) && (number.substr(2, -1) == "8000000000000000"))) {
+			uint64_t value = 9223372036854775808ULL;
+			return make_literal(value);
+		} else {
+			int64_t value = number.hex_to_int();
+			return make_literal(value);
+		}
 	} else if (base == 2) {
 		int64_t value = number.bin_to_int();
 		return make_literal(value);
@@ -841,8 +822,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 		double value = number.to_float();
 		return make_literal(value);
 	} else {
-		int64_t value = number.to_int();
-		return make_literal(value);
+		if (unlikely((last_token.type == Token::MINUS || last_token.type == Token::MINUS_EQUAL) && (number == "9223372036854775808"))) {
+			uint64_t value = 9223372036854775808ULL;
+			return make_literal(value);
+		} else {
+			int64_t value = number.to_int();
+			return make_literal(value);
+		}
 	}
 }
 
@@ -1507,9 +1493,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::PLUS_EQUAL);
-			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
-				// Number starting with '+'.
-				return number();
 			} else {
 				return make_token(Token::PLUS);
 			}
@@ -1517,9 +1500,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::MINUS_EQUAL);
-			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
-				// Number starting with '-'.
-				return number();
 			} else if (_peek() == '>') {
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
