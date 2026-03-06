@@ -135,10 +135,12 @@ void TexturePreview::_update_texture_display_ratio() {
 }
 
 static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
+#ifdef RD_ENABLED
 	const Ref<Texture2DRD> rd_texture = p_texture;
 	if (rd_texture.is_valid() && RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
 		return rd_texture->get_image()->get_format();
 	}
+#endif
 
 	return p_texture->get_format();
 }
@@ -149,7 +151,9 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
 	Ref<Image> image;
 	Ref<AtlasTexture> at = p_texture;
+#ifdef RD_ENABLED
 	Ref<Texture2DRD> rd_texture = p_texture;
+#endif
 
 	if (at.is_valid()) {
 		// The AtlasTexture tries to obtain the region from the atlas as an image,
@@ -158,13 +162,19 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		if (atlas.is_valid()) {
 			image = atlas->get_image();
 		}
-	} else if (rd_texture.is_valid()) {
-		if (RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
-			return -1;
-		}
-		image = p_texture->get_image();
 	} else {
+#ifdef RD_ENABLED
+		if (rd_texture.is_valid()) {
+			if (RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
+				return -1;
+			}
+			image = p_texture->get_image();
+		} else {
+			image = p_texture->get_image();
+		}
+#else
 		image = p_texture->get_image();
+#endif
 	}
 
 	if (image.is_valid()) {
@@ -351,10 +361,15 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 			Object::cast_to<CompressedTexture2D>(p_object) != nullptr ||
 			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
 			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
-			Object::cast_to<DPITexture>(p_object) != nullptr ||
-			Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+			Object::cast_to<DPITexture>(p_object) != nullptr) {
 		return true;
 	}
+
+#ifdef RD_ENABLED
+	if (Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+		return true;
+	}
+#endif
 
 	Ref<Texture2D> texture_2d(Object::cast_to<Texture2D>(p_object));
 	if (texture_2d.is_valid()) {

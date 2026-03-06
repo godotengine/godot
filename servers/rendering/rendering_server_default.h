@@ -1166,7 +1166,9 @@ public:
 #endif
 
 	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override;
+#ifdef RD_ENABLED
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override;
+#endif
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
 	virtual Vector<RenderingServerTypes::FrameProfileArea> get_frame_profile() override;
