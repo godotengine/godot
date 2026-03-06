@@ -735,9 +735,21 @@ void Array::sort() {
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
+Array Array::sorted() const {
+	Array ret = duplicate();
+	ret.sort();
+	return ret;
+}
+
 void Array::sort_custom(const Callable &p_callable) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<CallableComparator, true>(p_callable);
+}
+
+Array Array::sorted_custom(const Callable &p_callable) const {
+	Array ret = duplicate();
+	ret.sort_custom(p_callable);
+	return ret;
 }
 
 void Array::shuffle() {
