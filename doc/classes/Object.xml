@@ -1037,6 +1037,12 @@
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
 		</constant>
+		<constant name="NOTIFICATION_BEFORE_UNLOAD_SCRIPT" value="5">
+			Notification received during script reload, before Godot starts unloading any affected script instances. Scripts are guaranteed to be in a valid state, so it can be used to implement custom unload-related cleanup logic.
+		</constant>
+		<constant name="NOTIFICATION_AFTER_LOAD_SCRIPT" value="6">
+			Notification received during script reload, after Godot finishes reloading and restoring all affected script instances. Scripts are guaranteed to be in a valid state, so it can be used to implement custom reload-related setup logic.
+		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
