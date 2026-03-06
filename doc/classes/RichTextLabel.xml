@@ -103,7 +103,7 @@
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the height of the content.
+				Returns the height of the content, in pixels.
 				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
@@ -111,7 +111,7 @@
 		<method name="get_content_width" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the width of the content.
+				Returns the width of the content, in pixels.
 				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
