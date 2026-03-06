@@ -4119,11 +4119,11 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					layout_binding.descriptorCount = uniform.length;
+					layout_binding.descriptorCount = (uniform.length == 0) ? 16384 : uniform.length;
 				} break;
 				case UNIFORM_TYPE_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-					layout_binding.descriptorCount = uniform.length;
+					layout_binding.descriptorCount = (uniform.length == 0) ? 16384 : uniform.length;
 				} break;
 				case UNIFORM_TYPE_IMAGE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -4144,6 +4144,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+					layout_binding.descriptorCount = (uniform.length == 0) ? 16384 : 1;
 				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -4743,17 +4744,22 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
-				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
-				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
-				*vk_buf_info = {};
-				vk_buf_info->buffer = buf_info->vk_buffer;
-				vk_buf_info->range = buf_info->size;
+				num_descriptors = uniform.ids.size();
+				VkDescriptorBufferInfo *vk_buf_infos = ALLOCA_ARRAY(VkDescriptorBufferInfo, num_descriptors);
 
-				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
-						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				for (uint32_t j = 0; j < num_descriptors; j++) {
+					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j].id;
+
+					vk_buf_infos[j] = {};
+					vk_buf_infos[j].buffer = buf_info->vk_buffer;
+					vk_buf_infos[j].range = buf_info->size;
+
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				}
 
 				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_infos;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
