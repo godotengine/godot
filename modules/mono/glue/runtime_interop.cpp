@@ -1383,6 +1383,10 @@ int32_t godotsharp_node_path_get_subname_count(const NodePath *p_self) {
 	return p_self->get_subname_count();
 }
 
+void godotsharp_node_path_slice(const NodePath *p_self, int32_t p_begin, int32_t p_end, NodePath *r_result) {
+	memnew_placement(r_result, NodePath(p_self->slice(p_begin, p_end)));
+}
+
 bool godotsharp_node_path_is_absolute(const NodePath *p_self) {
 	return p_self->is_absolute();
 }
@@ -1817,6 +1821,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_node_path_get_name_count,
 	(void *)godotsharp_node_path_get_subname,
 	(void *)godotsharp_node_path_get_subname_count,
+	(void *)godotsharp_node_path_slice,
 	(void *)godotsharp_node_path_is_absolute,
 	(void *)godotsharp_node_path_equals,
 	(void *)godotsharp_node_path_hash,
