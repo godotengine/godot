@@ -10,6 +10,7 @@
 		- A "-add" animation to blend with when the blend amount is negative
 		- A "+add" animation to blend with when the blend amount is positive
 		If the absolute value of the amount is greater than [code]1.0[/code], the animation connected to "in" port is blended with the amplified animation connected to "-add"/"+add" port.
+		[b]Note:[/b] The signs are only used to distinguish ports, and additive blending occurs based on absolute values always, meaning the animation of a "-add" port does not subtract from the animation of an "in" port.
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
