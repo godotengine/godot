@@ -612,9 +612,50 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 					array[Mesh::ARRAY_VERTEX] = _decode_vertex_attrib_vec3(fbx_mesh->vertex_position, indices);
 				}
 
-				// Normals always exist as they're generated if missing,
-				// see `ufbx_load_opts.generate_missing_normals`.
-				Vector<Vector3> normals = _decode_vertex_attrib_vec3(fbx_mesh->vertex_normal, indices);
+				// Generate normals respecting FBX smoothing groups
+				Vector<Vector3> normals;
+				normals.resize(vertex_num);
+
+				HashMap<Vector3, Vector3> normal_accum_smooth;
+				HashMap<Vector3, int> normal_count_smooth;
+				HashMap<Vector3, Vector3> normal_accum_faceted;
+				HashMap<Vector3, int> normal_count_faceted;
+
+				for (size_t face_idx = 0; face_idx < fbx_mesh->faces.count; face_idx++) {
+					ufbx_face face = fbx_mesh->faces.data[face_idx];
+
+					if (face.num_indices >= 3) {
+						Vector3 v0 = _as_vec3(fbx_mesh->vertex_position[face.index_begin]);
+						Vector3 v1 = _as_vec3(fbx_mesh->vertex_position[face.index_begin + 1]);
+						Vector3 v2 = _as_vec3(fbx_mesh->vertex_position[face.index_begin + 2]);
+
+						Vector3 face_normal = Plane(v0, v1, v2).normal;
+
+						bool is_smooth = (face_idx < fbx_mesh->face_smoothing.count) && fbx_mesh->face_smoothing.data[face_idx];
+
+						HashMap<Vector3, Vector3> &normal_accum = is_smooth ? normal_accum_smooth : normal_accum_faceted;
+						HashMap<Vector3, int> &normal_count = is_smooth ? normal_count_smooth : normal_count_faceted;
+
+						normal_accum[v0] += face_normal;
+						normal_accum[v1] += face_normal;
+						normal_accum[v2] += face_normal;
+						normal_count[v0]++;
+						normal_count[v1]++;
+						normal_count[v2]++;
+					}
+				}
+
+				for (int i = 0; i < vertex_num; i++) {
+					Vector3 vertex_pos = _as_vec3(fbx_mesh->vertex_position[indices[i]]);
+
+					if (normal_count_smooth.has(vertex_pos) && normal_count_smooth[vertex_pos] > 0) {
+						normals.write[i] = (normal_accum_smooth[vertex_pos] / normal_count_smooth[vertex_pos]).normalized();
+					} else if (normal_count_faceted.has(vertex_pos) && normal_count_faceted[vertex_pos] > 0) {
+						normals.write[i] = (normal_accum_faceted[vertex_pos] / normal_count_faceted[vertex_pos]).normalized();
+					} else {
+						normals.write[i] = Vector3(0, 1, 0);
+					}
+				}
 				array[Mesh::ARRAY_NORMAL] = normals;
 
 				if (fbx_mesh->vertex_tangent.exists) {
@@ -2054,7 +2095,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, const String &p_path, Ref<FileA
 		opts.ignore_geometry = true;
 		opts.ignore_embedded = true;
 	}
-	opts.generate_missing_normals = true;
+	opts.generate_missing_normals = false;
 
 	ThreadPoolFBX thread_pool;
 	thread_pool.pool = WorkerThreadPool::get_singleton();
