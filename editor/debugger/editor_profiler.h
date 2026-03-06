@@ -110,6 +110,7 @@ private:
 
 	Tree *variables = nullptr;
 	HSplitContainer *h_split = nullptr;
+	VBoxContainer *v_split = nullptr;
 
 	HashSet<StringName> plot_sigs;
 
@@ -119,6 +120,8 @@ private:
 	CheckButton *display_internal_profiles = nullptr;
 
 	SpinBox *cursor_metric_edit = nullptr;
+
+	LineEdit *filter_metrics = nullptr;
 
 	Vector<Metric> frame_metrics;
 	int total_metrics = 0;
@@ -141,6 +144,8 @@ private:
 	void _activate_pressed();
 	void _clear_pressed();
 	void _autostart_toggled(bool p_toggled_on);
+
+	void _filter_metrics_text_changed(const String &p_newtext);
 
 	void _internal_profiles_pressed();
 
