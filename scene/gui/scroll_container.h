@@ -47,6 +47,7 @@ public:
 		SCROLL_MODE_SHOW_ALWAYS,
 		SCROLL_MODE_SHOW_NEVER,
 		SCROLL_MODE_RESERVE,
+		SCROLL_MODE_MAXIMIZE_FIRST,
 	};
 
 	enum ScrollHintMode {
@@ -118,6 +119,7 @@ private:
 
 protected:
 	Size2 get_minimum_size() const override;
+	Size2 get_inner_combined_maximum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
 	void _reposition_children();
@@ -128,6 +130,7 @@ protected:
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
 	void _scroll_moved(float);
+	void _maximum_size_changed();
 
 	void _accessibility_action_scroll_set(const Variant &p_data);
 	void _accessibility_action_scroll_up(const Variant &p_data);
