@@ -415,6 +415,23 @@ static bool is_generic_in_open_context(const GDScriptParser::DataType& p_generic
 	return p_generic.kind == GDScriptParser::DataType::GENERIC_TYPE && p_generic.generic_owner_class != nullptr && p_generic.generic_owner_class == p_current_class;
 }
 
+static bool param_type_still_has_open_generics(const GDScriptParser::DataType &p_type) {
+    if (p_type.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+        return true;
+    }
+    for (int i = 0; i < p_type.container_element_types.size(); i++) {
+        if (param_type_still_has_open_generics(p_type.container_element_types[i])) {
+            return true;
+        }
+    }
+    for (const KeyValue<StringName, GDScriptParser::DataType> &E : p_type.generic_type_bindings) {
+        if (param_type_still_has_open_generics(E.value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
@@ -4027,7 +4044,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			/// actually validate the argument type, infer_generic_bindings_from_types only
 			/// catches inference conflicts, not type mismatches against resolved concrete types
 			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE) {
-				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i])) {
+				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i]) && !param_type_still_has_open_generics(param_type)) {
 					push_error(vformat(
 							R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
 							i + 1,
