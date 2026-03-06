@@ -1160,7 +1160,11 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 					}
 					AnimationImportTracks track_mode = import_tracks_mode[track_channel_type];
 					NodePath path = anim->track_get_path(track_i);
-					Node *n = p_root->get_node(path);
+					Node *n = p_root->get_node_or_null(path);
+					if (!n) {
+						tracks_to_keep.remove_at(tracks_to_keep.size() - 1);
+						continue;
+					}
 					Node3D *n3d = Object::cast_to<Node3D>(n);
 					Skeleton3D *skel = Object::cast_to<Skeleton3D>(n);
 					bool keep_track = false;
