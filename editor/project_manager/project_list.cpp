@@ -1437,7 +1437,7 @@ void ProjectList::erase_missing_projects() {
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
 
-		if (item.missing) {
+		if (item.missing || !FileAccess::exists(item.path.path_join("project.godot"))) {
 			_remove_project(i, true);
 			--i;
 			++deleted_count;
