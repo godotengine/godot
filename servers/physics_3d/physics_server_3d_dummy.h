@@ -396,6 +396,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) override {}
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override { return Vector3(); }
 
+	virtual float pin_joint_get_applied_force(RID p_joint) const override { return 0; }
+
 	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B) override {}
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override {}
 
@@ -405,15 +407,24 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) override {}
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override { return false; }
 
+	virtual float hinge_joint_get_applied_force(RID p_joint) const override { return 0; }
+	virtual float hinge_joint_get_applied_torque(RID p_joint) const override { return 0; }
+
 	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override {}
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override { return 0; }
 
+	virtual float slider_joint_get_applied_force(RID p_joint) const override { return 0; }
+	virtual float slider_joint_get_applied_torque(RID p_joint) const override { return 0; }
+
 	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override {}
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override { return 0; }
+
+	virtual float cone_twist_joint_get_applied_force(RID p_joint) const override { return 0; }
+	virtual float cone_twist_joint_get_applied_torque(RID p_joint) const override { return 0; }
 
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
@@ -422,6 +433,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override {}
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override { return false; }
+
+	virtual float generic_6dof_joint_get_applied_force(RID p_joint) const override { return 0; }
+	virtual float generic_6dof_joint_get_applied_torque(RID p_joint) const override { return 0; }
 
 	/* MISC */
 
