@@ -6554,7 +6554,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<Fil
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_preflight(p_state, p_state->json["extensionsUsed"]);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext->duplicate());
 		}
 	}
 
@@ -7120,7 +7120,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		ERR_CONTINUE(ext.is_null());
 		Error err = ext->export_preflight(state, p_node);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext->duplicate());
 		}
 	}
 	// Add the root node(s) and their descendants to the state.
