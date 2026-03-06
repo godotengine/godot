@@ -806,7 +806,7 @@
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
 				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
-				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
+				- [code]OS.request_permission("appleembedded.permission.RECORD_AUDIO")[/code]
 				[b]Note:[/b] On Android, permission must be checked during export.
 				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
 			</description>
