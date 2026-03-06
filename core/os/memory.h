@@ -104,22 +104,26 @@ public:
 	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
-// Works around an issue where memnew_placement (char *) would call the p_description version.
-inline void *operator new(size_t p_size, char *p_dest) {
-	return operator new(p_size, (void *)p_dest);
+// Overload of new operator to use the Memory::alloc_static function.
+// The DefaultAllocator parameter is just a tag to select this overload.
+inline void *operator new(size_t p_size, DefaultAllocator p_allocator) {
+	return Memory::alloc_static(p_size);
 }
-void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool
-void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)); ///< operator new that takes a description and uses MemoryStaticPool
+// Overload of new operator to use a custom allocation function.
+inline void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
+	return p_allocfunc(p_size);
+}
 
-void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description); ///< operator new that takes a description and uses a pointer to the preallocated memory
-
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 // When compiling with VC++ 2017, the above declarations of placement new generate many irrelevant warnings (C4291).
 // The purpose of the following definitions is to muffle these warnings, not to provide a usable implementation of placement delete.
-void operator delete(void *p_mem, const char *p_description);
-void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size));
-void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description);
-#endif
+inline void operator delete(void *p_mem, DefaultAllocator p_allocator) {
+	CRASH_NOW_MSG("Call to placement delete should not happen.");
+}
+inline void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
+	CRASH_NOW_MSG("Call to placement delete should not happen.");
+}
+#endif // defined(_MSC_VER) && !defined(__clang__)
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
 #define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
@@ -134,7 +138,7 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	return p_obj;
 }
 
-#define memnew(m_class) _post_initialize(::new ("") m_class)
+#define memnew(m_class) _post_initialize(::new (DefaultAllocator{}) m_class)
 
 #define memnew_allocator(m_class, m_allocator) _post_initialize(::new (m_allocator::alloc) m_class)
 #define memnew_placement(m_placement, m_class) _post_initialize(::new (m_placement) m_class)
