@@ -1063,5 +1063,8 @@
 				test_signal.emit("emit_arg_1", "emit_arg_2") # Prints emit_arg_1 &lt;Object#35332818393&gt;
 			[/codeblock]
 		</constant>
+		<constant name="CONNECT_AND_CALL" value="64" enum="ConnectFlags">
+			The callable is called immediately upon connecting.
+		</constant>
 	</constants>
 </class>
