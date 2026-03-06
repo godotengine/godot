@@ -546,14 +546,21 @@ real_t Vector3::length_squared() const {
 }
 
 void Vector3::normalize() {
-	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = 0;
+	if (!is_finite()) {
+#ifdef MATH_CHECKS
+		WARN_PRINT("Vector3 cannot be normalized, the elements must be finite. Making (0, 0, 0) as a fallback.");
+#endif // MATH_CHECKS
+		zero();
+		return;
+	}
+
+	if (is_zero_approx()) {
+		zero();
 	} else {
-		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
+		real_t l = length();
+		x /= l;
+		y /= l;
+		z /= l;
 	}
 }
 
