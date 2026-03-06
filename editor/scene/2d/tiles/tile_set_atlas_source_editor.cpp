@@ -1487,6 +1487,10 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			}
 			break;
 		case DRAG_TYPE_RECT_SELECT: {
+			// HACK: If a `EditorSpinSlider` is still being edited while a tile is changed, the new value will go to the other tile instead.
+			// So drop the focus to trigger the value change in the current tile before switching.
+			get_viewport()->gui_release_focus();
+
 			Vector2i start_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_mouse_pos, true);
 			Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position(), true);
 			ERR_FAIL_COND(start_base_tiles_coords == TileSetSource::INVALID_ATLAS_COORDS);
