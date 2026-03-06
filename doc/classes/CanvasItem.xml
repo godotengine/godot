@@ -23,6 +23,26 @@
 				Corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].
 			</description>
 		</method>
+		<method name="add_gizmo">
+			<return type="void" />
+			<param index="0" name="gizmo" type="CanvasItemGizmo" />
+			<description>
+				Attaches the given [param gizmo] to this node. Only works in the editor.
+				[b]Note:[/b] [param gizmo] should be an [EditorCanvasItemGizmo]. The argument type is [CanvasItemGizmo] to avoid depending on editor classes in [CanvasItem].
+			</description>
+		</method>
+		<method name="clear_gizmos">
+			<return type="void" />
+			<description>
+				Clears all [EditorCanvasItemGizmo] objects attached to this node. Only works in the editor.
+			</description>
+		</method>
+		<method name="clear_subgizmo_selection">
+			<return type="void" />
+			<description>
+				Deselects all subgizmos for this node. Useful to call when the selected subgizmo may no longer exist after a property change. Only works in the editor.
+			</description>
+		</method>
 		<method name="draw_animation_slice">
 			<return type="void" />
 			<param index="0" name="animation_length" type="float" />
@@ -485,6 +505,12 @@
 				Returns the transform of this node, converted from its registered canvas's coordinate system to its viewport's coordinate system. See also [method Node.get_viewport].
 			</description>
 		</method>
+		<method name="get_gizmos" qualifiers="const">
+			<return type="CanvasItemGizmo[]" />
+			<description>
+				Returns all the [CanvasItemGizmo] objects attached to this node. Only works in the editor.
+			</description>
+		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -638,6 +664,16 @@
 				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
+		<method name="set_subgizmo_selection">
+			<return type="void" />
+			<param index="0" name="gizmo" type="CanvasItemGizmo" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<description>
+				Selects the [param gizmo]'s subgizmo with the given [param id] and sets its transform. Only works in the editor.
+				[b]Note:[/b] The gizmo object would typically be an instance of [EditorCanvasItemGizmo], but the argument type is kept generic to avoid creating a dependency on editor classes in [CanvasItem].
+			</description>
+		</method>
 		<method name="set_visibility_layer_bit">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
@@ -651,6 +687,12 @@
 			<description>
 				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code].
 				[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+			</description>
+		</method>
+		<method name="update_gizmos">
+			<return type="void" />
+			<description>
+				Updates all the [CanvasItemGizmo] objects attached to this node. Only works in the editor.
 			</description>
 		</method>
 	</methods>

@@ -415,6 +415,14 @@
 				Adds a script at [param path] to the Autoload list as [param name].
 			</description>
 		</method>
+		<method name="add_canvas_item_gizmo_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorCanvasItemGizmoPlugin" />
+			<description>
+				Registers a new [EditorCanvasItemGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 2D preview viewport for a [CanvasItem].
+				See [method add_inspector_plugin] for an example of how to register a plugin.
+			</description>
+		</method>
 		<method name="add_context_menu_plugin">
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorContextMenuPlugin.ContextMenuSlot" />
@@ -654,6 +662,13 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Removes an Autoload [param name] from the list.
+			</description>
+		</method>
+		<method name="remove_canvas_item_gizmo_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorCanvasItemGizmoPlugin" />
+			<description>
+				Removes a gizmo plugin registered by [method add_canvas_item_gizmo_plugin].
 			</description>
 		</method>
 		<method name="remove_context_menu_plugin">

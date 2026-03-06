@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasItemGizmo" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract class to expose editor gizmos for [CanvasItem].
+	</brief_description>
+	<description>
+		This abstract class helps connect the [CanvasItem] scene with the editor-specific [EditorCanvasItemGizmo] class.
+		[CanvasItemGizmo] by itself has no exposed API, refer to [method CanvasItem.add_gizmo] and pass it an [EditorCanvasItemGizmo] instance.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
