@@ -52,7 +52,7 @@ void Path2DEditor::_notification(int p_what) {
 			curve_del->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_button_icon(get_editor_theme_icon(SNAME("CurveClose")));
 			curve_clear_points->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-
+			curve_auto_tangent->set_button_icon(get_editor_theme_icon(SNAME("CurveAutoTangent")));
 			create_curve_button->set_button_icon(get_editor_theme_icon(SNAME("Curve2D")));
 		} break;
 	}
@@ -809,6 +809,52 @@ void Path2DEditor::_confirm_clear_points() {
 	clear_points_dialog->reset_size();
 	clear_points_dialog->popup_centered();
 }
+void Path2DEditor::_auto_tangent() {
+	if (!node || node->get_curve().is_null() || node->get_curve()->get_point_count() <= 2) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector2Array points = node->get_curve()->get_points().duplicate();
+	Ref<Curve2D> curve = node->get_curve();
+	undo_redo->create_action(TTR("Auto Tangent"));
+	int point_count = curve->get_point_count();
+	const float smooth_ratio = 0.5;
+	for (int i = 1; i < point_count - 1; i++) {
+		Vector2 prev_p = curve->get_point_position(i - 1);
+		Vector2 next_p = curve->get_point_position(i + 1);
+		Vector2 curr_p = curve->get_point_position(i);
+		Vector2 tangent = (next_p - prev_p).normalized();
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+	}
+	Vector2 begin = curve->get_point_position(0);
+	Vector2 end = curve->get_point_position(point_count - 1);
+
+	if (begin.is_equal_approx(end)) {
+		// handles closed curves in path2D having the end and start points at the same location
+		Vector2 next_p = curve->get_point_position(1);
+		Vector2 prev_p = curve->get_point_position(point_count - 2);
+		Vector2 first_last_tangent = (next_p - prev_p).normalized();
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -first_last_tangent * end.distance_to(prev_p) * smooth_ratio);
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, first_last_tangent * begin.distance_to(next_p) * smooth_ratio);
+
+	} else {
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector2());
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector2());
+	}
+	undo_redo->commit_action();
+}
 
 void Path2DEditor::_clear_curve_points(Path2D *p_path2d) {
 	if (!p_path2d || p_path2d->get_curve().is_null()) {
@@ -890,6 +936,13 @@ Path2DEditor::Path2DEditor() {
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	toolbar->add_child(curve_close);
+
+	curve_auto_tangent = memnew(Button);
+	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_auto_tangent->set_tooltip_text(TTR("Auto Tangent"));
+	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_auto_tangent));
+	toolbar->add_child(curve_auto_tangent);
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));

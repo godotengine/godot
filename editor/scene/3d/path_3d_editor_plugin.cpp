@@ -871,6 +871,56 @@ void Path3DEditorPlugin::_confirm_clear_points() {
 	clear_points_dialog->popup_centered();
 }
 
+void Path3DEditorPlugin::_auto_tangent() {
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() <= 2) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector3Array points = path->get_curve()->get_points().duplicate();
+	Ref<Curve3D> curve = path->get_curve();
+	undo_redo->create_action(TTR("Auto Tangent"));
+
+	// Catmull–Rom smoothing
+	int point_count = curve->get_point_count();
+	const float smooth_ratio = 0.5;
+	for (int i = 1; i < point_count - 1; i++) {
+		Vector3 next_p = curve->get_point_position(i + 1);
+		Vector3 prev_p = curve->get_point_position(i - 1);
+		Vector3 curr_p = curve->get_point_position(i);
+		Vector3 tangent = (next_p - prev_p).normalized();
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+	}
+	if (curve->is_closed()) {
+		Vector3 first_p = curve->get_point_position(0);
+		Vector3 second_p = curve->get_point_position(1);
+		Vector3 last_p = curve->get_point_position(point_count - 1);
+		Vector3 tangent_first = (second_p - last_p).normalized();
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", 0, curve->get_point_in(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", 0, -tangent_first * first_p.distance_to(last_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, tangent_first * first_p.distance_to(second_p) * smooth_ratio);
+
+		Vector3 second_last_p = curve->get_point_position(point_count - 2);
+		Vector3 tangent_last = (first_p - second_last_p).normalized();
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -tangent_last * last_p.distance_to(second_last_p) * smooth_ratio);
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", point_count - 1, curve->get_point_out(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", point_count - 1, tangent_last * last_p.distance_to(first_p) * smooth_ratio);
+
+	} else {
+		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
+		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector3());
+
+		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
+		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector3());
+	}
+	undo_redo->commit_action();
+}
 void Path3DEditorPlugin::_clear_points() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
@@ -913,6 +963,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_del->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
 	curve_closed->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
 	curve_clear_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
+	curve_auto_tangent->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveAutoTangent")));
 	create_curve_button->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
 }
 
@@ -1061,6 +1112,13 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_closed->set_tooltip_text(TTR("Close Curve"));
 	toolbar->add_child(curve_closed);
 	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
+
+	curve_auto_tangent = memnew(Button);
+	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_auto_tangent->set_tooltip_text(TTR("Auto Tangent"));
+	toolbar->add_child(curve_auto_tangent);
+	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_auto_tangent));
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
