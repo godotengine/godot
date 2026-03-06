@@ -57,6 +57,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), get_minimum_deployment_target()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_gpu_family", PROPERTY_HINT_ENUM, "Apple5,Apple6,Apple7,Apple8,Apple9,Apple10"), "Apple7"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));

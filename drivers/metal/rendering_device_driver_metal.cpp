@@ -2833,6 +2833,9 @@ static MetalDeviceProfile device_profile_from_properties(MetalDeviceProperties *
 		case MTL::GPUFamilyApple9:
 			res.gpu = DP::GPU::Apple9;
 			break;
+		case MTL::GPUFamilyApple10:
+			res.gpu = DP::GPU::Apple10;
+			break;
 		default: {
 			// Programming error if the default case is hit.
 			CRASH_NOW_MSG("Unsupported GPU family");
