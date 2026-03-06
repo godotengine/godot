@@ -89,6 +89,8 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 			if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
 				changed_settings.insert(exec_args_name);
 			}
+		} else if (p_name == SNAME("docks/filesystem/textfile_extensions") || p_name == SNAME("docks/filesystem/other_file_extensions")) {
+			text_file_extensions_dirty = true;
 		}
 		emit_signal(SNAME("settings_changed"));
 
@@ -1320,6 +1322,22 @@ void EditorSettings::_rename_setting(const String &p_old_name, const String &p_n
 }
 #endif
 
+void EditorSettings::_update_textfile_extensions_cache() {
+	if (!text_file_extensions_dirty) {
+		return;
+	}
+	text_file_extensions_dirty = false;
+
+	text_file_extensions.clear();
+	for (const String &ext : get_setting("docks/filesystem/textfile_extensions").operator String().split(",", 0)) {
+		text_file_extensions.insert(ext);
+	}
+	other_file_extensions.clear();
+	for (const String &ext : get_setting("docks/filesystem/other_file_extensions").operator String().split(",", 0)) {
+		other_file_extensions.insert(ext);
+	}
+}
+
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -2316,6 +2334,16 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 	}
 
 	return Array();
+}
+
+const HashSet<String> EditorSettings::get_textfile_extensions() {
+	_update_textfile_extensions_cache();
+	return text_file_extensions;
+}
+
+const HashSet<String> EditorSettings::get_other_file_extensions() {
+	_update_textfile_extensions_cache();
+	return other_file_extensions;
 }
 
 void EditorSettings::notify_changes() {
