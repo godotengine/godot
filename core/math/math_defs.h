@@ -45,6 +45,9 @@ inline constexpr double PI = 3.1415926535897932384626433833;
 inline constexpr double E = 2.7182818284590452353602874714;
 inline constexpr double INF = std::numeric_limits<double>::infinity();
 inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
+
+inline constexpr float NORMALIZE_32_SAFE_THRESHOLD = 1e-4f;
+inline constexpr float NORMALIZE_32_RESCUE_THRESHOLD = 1e-16f;
 } // namespace Math
 
 #define CMP_EPSILON 0.00001
@@ -158,3 +161,15 @@ namespace Math {
 using int_alt_t = std::conditional_t<std::is_same_v<int64_t, long>, long long, long>;
 using uint_alt_t = std::conditional_t<std::is_same_v<uint64_t, unsigned long>, unsigned long long, unsigned long>;
 } //namespace Math
+
+// NORMALIZATION epsilons.
+// We want rescue to cover tiny-but-representable vectors, but still avoid
+// catastrophic cancellation or excessive denormal behavior.
+static_assert(Math::NORMALIZE_32_SAFE_THRESHOLD >= 1e-5f && Math::NORMALIZE_32_SAFE_THRESHOLD <= 1e-3f,
+		"NORMALIZE_32_SAFE_THRESHOLD should be in a practical range (~1e-5 … 1e-3)");
+
+static_assert(Math::NORMALIZE_32_RESCUE_THRESHOLD >= 1e-20f && Math::NORMALIZE_32_RESCUE_THRESHOLD <= 1e-10f,
+		"NORMALIZE_32_RESCUE_THRESHOLD should cover tiny vectors but avoid denormals/underflow issues");
+
+static_assert(Math::NORMALIZE_32_RESCUE_THRESHOLD < Math::NORMALIZE_32_SAFE_THRESHOLD,
+		"Rescue threshold must be strictly below safe threshold");
