@@ -30,6 +30,8 @@
 
 #include "collision_object_2d.h"
 
+#include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
 
@@ -141,6 +143,15 @@ void CollisionObject2D::_notification(int p_what) {
 }
 
 void CollisionObject2D::set_collision_layer(uint32_t p_layer) {
+	if (!setting_preset && collision_preset != -1) {
+		// If the layer matches, then the node has probably been duplicated and we shouldn't
+		// change the preset to <custom>.
+		if (!_preset_layer_matches("layer", p_layer)) {
+			// Set the collision preset to be <custom>.
+			set_collision_preset(-1);
+		}
+	}
+
 	collision_layer = p_layer;
 	if (area) {
 		PhysicsServer2D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
@@ -154,6 +165,13 @@ uint32_t CollisionObject2D::get_collision_layer() const {
 }
 
 void CollisionObject2D::set_collision_mask(uint32_t p_mask) {
+	if (!setting_preset && collision_preset != -1) {
+		if (!_preset_layer_matches("mask", p_mask)) {
+			// Set the collision preset to be <custom>.
+			set_collision_preset(-1);
+		}
+	}
+
 	collision_mask = p_mask;
 	if (area) {
 		PhysicsServer2D::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
@@ -200,6 +218,51 @@ bool CollisionObject2D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+void CollisionObject2D::set_collision_preset(int p_preset) {
+	setting_preset = true;
+	collision_preset = p_preset;
+
+	// -1 means the preset is <custom>.
+	if (p_preset == -1) {
+		setting_preset = false;
+		return;
+	}
+
+	int check_preset = p_preset;
+	for (int i = 0; i < 2; i++) {
+		if (check_preset == 0) {
+			check_preset = ProjectSettings::get_singleton()->get_setting("physics/2d/default_preset");
+			if (check_preset == 0) {
+				// If the default preset is zero, essentially treat it as <custom>.
+				setting_preset = false;
+				return;
+			}
+		}
+
+		Array presets = ProjectSettings::get_singleton()->get_setting("physics/2d/presets");
+		for (Dictionary preset : presets) {
+			if (int(preset["id"]) != check_preset) {
+				continue;
+			}
+
+			set_collision_layer(preset["layer"]);
+			set_collision_mask(preset["mask"]);
+			setting_preset = false;
+			return;
+		}
+
+		// If we fail to find a preset, use the default preset instead, but don't overwrite
+		// collision_preset, as the preset may be restored.
+		check_preset = 0;
+	}
+
+	setting_preset = false;
+}
+
+int CollisionObject2D::get_collision_preset() const {
+	return collision_preset;
 }
 
 void CollisionObject2D::set_collision_priority(real_t p_priority) {
@@ -589,6 +652,21 @@ void CollisionObject2D::set_body_mode(PhysicsServer2D::BodyMode p_mode) {
 void CollisionObject2D::_space_changed(const RID &p_new_space) {
 }
 
+bool CollisionObject2D::_preset_layer_matches(const String &p_layer_name, const uint32_t p_layer) const {
+	Array presets = ProjectSettings::get_singleton()->get_setting("physics/2d/presets");
+	for (Dictionary preset : presets) {
+		if (int(preset.get("id", 0)) == get_collision_preset() && uint32_t(preset.get(p_layer_name, 0)) == p_layer) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CollisionObject2D::_refresh_preset() {
+	set_collision_preset(collision_preset);
+}
+
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree()) {
 		return;
@@ -622,6 +700,8 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject2D::get_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject2D::set_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject2D::get_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("set_collision_preset", "preset"), &CollisionObject2D::set_collision_preset);
+	ClassDB::bind_method(D_METHOD("get_collision_preset"), &CollisionObject2D::get_collision_preset);
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CollisionObject2D::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CollisionObject2D::get_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject2D::set_disable_mode);
@@ -665,6 +745,7 @@ void CollisionObject2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,Make Static,Keep Active"), "set_disable_mode", "get_disable_mode");
 
 	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_preset", PROPERTY_HINT_PRESETS_2D_PHYSICS), "set_collision_preset", "get_collision_preset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
@@ -694,6 +775,16 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 		PhysicsServer2D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 		PhysicsServer2D::get_singleton()->body_set_mode(rid, body_mode);
 	}
+
+	// Always need to refresh the preset here, as otherwise nodes in unloaded scenes could have incorrect
+	// values at runtime.
+	_refresh_preset();
+
+	// Users really shouldn't be changing collision preset settings at runtime, so this connection
+	// is only made in the editor.
+#ifdef TOOLS_ENABLED
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CollisionObject2D::_refresh_preset));
+#endif
 }
 
 CollisionObject2D::CollisionObject2D() {

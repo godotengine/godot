@@ -396,6 +396,39 @@ public:
 	EditorPropertyLayers();
 };
 
+class EditorPropertyLayerPresets : public EditorProperty {
+	GDCLASS(EditorPropertyLayerPresets, EditorProperty);
+
+public:
+	enum PresetType {
+		PRESET_PHYSICS_2D,
+		PRESET_PHYSICS_3D,
+	};
+
+private:
+	OptionButton *option_button;
+	Button *edit_button;
+
+	PresetType preset_type;
+	bool is_default_selector;
+
+	void _preset_changed(int p_index);
+	bool _sort_presets(Variant p_l, Variant p_r);
+	bool _set_selected(int p_id);
+	String _get_setting_base();
+	void _edit_button_pressed();
+	void _settings_changed();
+	void _update_options();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	void setup(PresetType p_preset_type, const String &p_hint_string);
+	EditorPropertyLayerPresets();
+};
+
 class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin = nullptr;

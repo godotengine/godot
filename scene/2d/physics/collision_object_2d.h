@@ -49,6 +49,7 @@ public:
 	};
 
 private:
+	int collision_preset = 0;
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
@@ -57,6 +58,7 @@ private:
 	RID rid;
 	uint32_t callback_lock = 0;
 	bool pickable = false;
+	bool setting_preset = false;
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
@@ -98,6 +100,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	bool _preset_layer_matches(const String &p_layer_name, const uint32_t p_layer) const;
+	void _refresh_preset();
+
 	void _update_pickable();
 	friend class Viewport;
 	void _input_event_call(Viewport *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape);
@@ -131,6 +136,9 @@ public:
 
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
+
+	void set_collision_preset(int p_preset);
+	int get_collision_preset() const;
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;

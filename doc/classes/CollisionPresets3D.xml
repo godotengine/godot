@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionPresets3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Helper class for working with 3D collision presets.
+	</brief_description>
+	<description>
+		Collision presets provide an abstraction over collision masks and layers that allow masks and layers to be synchronized between objects, as well as other functionality. Presets are generally referenced via an internal [int] ID, with the special values [code]0[/code] and [code]-1[/code] used to represent the [b]default[/b] and [b]custom[/b] presets respectively.
+		[b]Note: [/b] This class does not expose methods to set the values of collision presets; this is not generally recommended, especially at runtime as objects only read collision presets when created. However, if you really need to, you can modify the [code]physics/3d/presets[/code] setting. This setting contains an array of dictionaries, each of which have the properties: [code]id[/code] : [int], [code]name[/code] : [String], [code]layer[/code] : [int], and [code]mask[/code] : [int].
+		See also: [constant PROPERTY_HINT_PRESETS_3D_PHYSICS].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_preset" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Gets the ID of the collision preset with the given name.
+			</description>
+		</method>
+		<method name="get_preset_is_custom" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Gets whether a collision preset with the given ID is considered [b]custom[/b].
+				This usually means that the preset is [code]-1[/code], however it can also be true if the preset is [b]default[/b], and the default 3D preset is [b]none[/b].
+			</description>
+		</method>
+		<method name="get_preset_layer" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Gets the collision layer associated with the given preset ID.
+			</description>
+		</method>
+		<method name="get_preset_mask" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Gets the collision mask associated with the given preset ID.
+			</description>
+		</method>
+		<method name="get_preset_name" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Gets the name associated with the given preset ID.
+			</description>
+		</method>
+		<method name="has_preset" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Checks whether a preset with the given ID exists.
+			</description>
+		</method>
+		<method name="has_preset_named" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Checks whether a preset with the given name exists.
+			</description>
+		</method>
+	</methods>
+</class>

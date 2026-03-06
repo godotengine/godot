@@ -93,6 +93,8 @@ enum PropertyHint {
 	PROPERTY_HINT_GROUP_ENABLE, ///< used to make the property's group checkable. Only use for boolean types.
 	PROPERTY_HINT_INPUT_NAME,
 	PROPERTY_HINT_FILE_PATH,
+	PROPERTY_HINT_PRESETS_2D_PHYSICS, ///< used to display a selector on an int property that allows choosing between 2d physics presets. Optionally accepts a hint string of "default_selector", which should be used if the preset being selected is meant to be a default.
+	PROPERTY_HINT_PRESETS_3D_PHYSICS, ///< used to display a selector on an int property that allows choosing between 3d physics presets. Optionally accepts a hint string of "default_selector", which should be used if the preset being selected is meant to be a default.
 	PROPERTY_HINT_MAX,
 };
 

@@ -185,10 +185,17 @@
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The physics layers this CollisionObject3D [b]is in[/b]. Collision objects can exist in one or more of 32 different layers. See also [member collision_mask].
 			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			[b]Note:[/b] If this property is set to a value that does not match the active [member collision_preset], the [member collision_preset] will be set to [b]custom[/b].
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this CollisionObject3D [b]scans[/b]. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
 			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			[b]Note:[/b] If this property is set to a value that does not match the active [member collision_preset], the [member collision_preset] will be set to [b]custom[/b].
+		</member>
+		<member name="collision_preset" type="int" setter="set_collision_preset" getter="get_collision_preset" default="0">
+			Sets the values of [member collision_layer] and [member collision_mask] as specified in the project settings at [code]physics/3d/presets[/code] unless set to [b]custom[/b].
+			The preset IDs [code]0[/code] and [code]-1[/code] are special values that represent the [b]default[/b] and [b]custom[/b] presets respectively.
+			See also: [CollisionPresets3D].
 		</member>
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
