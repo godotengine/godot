@@ -346,6 +346,8 @@ private:
 	StringName name;
 	StringName source;
 	bool _static = false;
+	bool _self_used = false;
+	bool _class_used = false;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 	MethodInfo method_info;
