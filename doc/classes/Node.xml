@@ -321,6 +321,13 @@
 				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested nodes. Consider storing a reference to the found node in a variable. Alternatively, use [method get_node] with unique names (see [member unique_name_in_owner]).
 			</description>
 		</method>
+		<method name="free_children">
+			<return type="void" />
+			<description>
+				Immediately deletes all children of this node. Unlike [method queue_free_children], this happens instantly and can only be called from the main thread. The node itself is not deleted. See also [method queue_free_children].
+				[b]Note:[/b] This is equivalent to calling [method Object.free] on each child.
+			</description>
+		</method>
 		<method name="get_accessibility_element" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -826,13 +833,6 @@
 				Queues this node to be deleted at the end of the current frame. When deleted, all of its children are deleted as well, and all references to the node and its children become invalid.
 				Unlike with [method Object.free], the node is not deleted instantly, and it can still be accessed before deletion. It is also safe to call [method queue_free] multiple times. Use [method Object.is_queued_for_deletion] to check if the node will be deleted at the end of the frame.
 				[b]Note:[/b] The node will only be freed after all other deferred calls are finished. Using this method is not always the same as calling [method Object.free] through [method Object.call_deferred].
-			</description>
-		</method>
-		<method name="free_children">
-			<return type="void" />
-			<description>
-				Immediately deletes all children of this node. Unlike [method queue_free_children], this happens instantly and can only be called from the main thread. The node itself is not deleted. See also [method queue_free_children].
-				[b]Note:[/b] This is equivalent to calling [method Object.free] on each child.
 			</description>
 		</method>
 		<method name="queue_free_children">
