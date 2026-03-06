@@ -197,6 +197,8 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_ONREADY, "onready" },
 	{ GDScriptTokenizer::TK_PR_TOOL, "tool" },
 	{ GDScriptTokenizer::TK_PR_STATIC, "static" },
+	{ GDScriptTokenizer::TK_PR_INLINE, "inline" },
+	{ GDScriptTokenizer::TK_PR_UNROLL, "unroll" },
 	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
 	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
 	{ GDScriptTokenizer::TK_PR_VAR, "var" },
@@ -340,6 +342,8 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_ONREADY:
 		case TK_PR_TOOL:
 		case TK_PR_STATIC:
+		case TK_PR_INLINE:
+		case TK_PR_UNROLL:
 		case TK_PR_EXPORT:
 		case TK_PR_SETGET:
 		case TK_PR_SIGNAL:

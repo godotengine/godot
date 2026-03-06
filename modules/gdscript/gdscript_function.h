@@ -247,6 +247,7 @@ private:
 	int _call_size;
 	int _initial_line;
 	bool _static;
+	bool _inline_func = false;
 	MultiplayerAPI::RPCMode rpc_mode;
 
 	GDScript *_script;
@@ -313,6 +314,7 @@ public:
 	};
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ bool is_inline() const { return _inline_func; }
 
 	const int *get_code() const; //used for debug
 	int get_code_size() const;
