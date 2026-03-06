@@ -696,6 +696,26 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	stored_properties.clear();
 }
 
+void InspectorDock::gui_input(const Ref<InputEvent> &p_event) {
+	// Allow navigation shortcuts only when the mouse is currently over the inspector dock.
+	// This avoids conflicts with the script editor, which uses the same mouse buttons to navigate history,
+	// but does not require clicking over the inspector to get focus first.
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && get_rect().has_point(get_local_mouse_position())) {
+		if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+			if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
+				_edit_back();
+				get_viewport()->set_input_as_handled();
+			}
+		} else if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+			if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
+				_edit_forward();
+				get_viewport()->set_input_as_handled();
+			}
+		}
+	}
+}
+
 void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
