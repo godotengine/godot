@@ -60,6 +60,7 @@ private:
 
 	real_t mass = 1.0;
 	Vector3 inertia;
+	Vector3 product_of_inertia;
 	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
 	Vector3 center_of_mass;
 
@@ -159,11 +160,16 @@ public:
 	void set_inertia(const Vector3 &p_inertia);
 	const Vector3 &get_inertia() const;
 
+	void set_product_of_inertia(const Vector3 &p_product_of_inertia);
+	const Vector3 &get_product_of_inertia() const;
+
 	void set_center_of_mass_mode(CenterOfMassMode p_mode);
 	CenterOfMassMode get_center_of_mass_mode() const;
 
 	void set_center_of_mass(const Vector3 &p_center_of_mass);
 	const Vector3 &get_center_of_mass() const;
+
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;

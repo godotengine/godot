@@ -593,6 +593,17 @@
 				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
+		<method name="body_set_mass_properties">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mass" type="float" />
+			<param index="2" name="center_of_mass" type="Vector3" />
+			<param index="3" name="inertia" type="Vector3" />
+			<param index="4" name="product_of_inertia" type="Vector3" />
+			<description>
+				Sets all mass properties for the body in a single function call.
+			</description>
+		</method>
 		<method name="body_set_max_contacts_reported">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -1800,7 +1811,10 @@
 		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
 			Constant to set/get a body's angular damping factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
+		<constant name="BODY_PARAM_PROD_INERTIA" value="10" enum="BodyParameter">
+			Constant to set/get a body's product of inertia.
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="11" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">

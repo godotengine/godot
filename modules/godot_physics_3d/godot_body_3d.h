@@ -56,6 +56,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	real_t bounce = 0.0;
 	real_t friction = 1.0;
 	Vector3 inertia;
+	Vector3 product_of_inertia;
 
 	PhysicsServer3D::BodyDampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
 	PhysicsServer3D::BodyDampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
@@ -74,6 +75,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
 	// Relative to the local frame of reference
+	Basis inertia_tensor_local;
 	Basis principal_inertia_axes_local;
 	Vector3 center_of_mass_local;
 
@@ -146,6 +148,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	uint64_t island_step = 0;
 
 	void _update_transform_dependent();
+	void _update_local_inertia();
 
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
@@ -203,6 +206,7 @@ public:
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
 
+	_FORCE_INLINE_ Basis get_inertia_tensor_local() const { return inertia_tensor_local; }
 	_FORCE_INLINE_ Basis get_principal_inertia_axes() const { return principal_inertia_axes; }
 	_FORCE_INLINE_ Vector3 get_center_of_mass() const { return center_of_mass; }
 	_FORCE_INLINE_ Vector3 get_center_of_mass_local() const { return center_of_mass_local; }
@@ -304,6 +308,7 @@ public:
 
 	void set_space(GodotSpace3D *p_space) override;
 
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
 	void update_mass_properties();
 	void reset_mass_properties();
 
