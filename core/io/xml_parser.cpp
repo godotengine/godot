@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "xml_parser.h"
+#include "xml_parser.compat.inc"
 
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
@@ -357,7 +358,7 @@ void XMLParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_attribute_value", "idx"), &XMLParser::get_attribute_value);
 	ClassDB::bind_method(D_METHOD("has_attribute", "name"), &XMLParser::has_attribute);
 	ClassDB::bind_method(D_METHOD("get_named_attribute_value", "name"), &XMLParser::get_named_attribute_value);
-	ClassDB::bind_method(D_METHOD("get_named_attribute_value_safe", "name"), &XMLParser::get_named_attribute_value_safe);
+	ClassDB::bind_method(D_METHOD("get_named_attribute_value_safe", "name", "default"), &XMLParser::get_named_attribute_value_safe, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("is_empty"), &XMLParser::is_empty);
 	ClassDB::bind_method(D_METHOD("get_current_line"), &XMLParser::get_current_line);
 	ClassDB::bind_method(D_METHOD("skip_section"), &XMLParser::skip_section);
@@ -436,7 +437,7 @@ String XMLParser::get_named_attribute_value(const String &p_name) const {
 	return attributes[idx].value;
 }
 
-String XMLParser::get_named_attribute_value_safe(const String &p_name) const {
+String XMLParser::get_named_attribute_value_safe(const String &p_name, const String &p_default) const {
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
@@ -446,7 +447,7 @@ String XMLParser::get_named_attribute_value_safe(const String &p_name) const {
 	}
 
 	if (idx < 0) {
-		return "";
+		return p_default;
 	}
 	return attributes[idx].value;
 }
