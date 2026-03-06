@@ -59,20 +59,24 @@
 #define HAVE_LIBC 1
 #define HAVE_DINPUT_H 1
 #define HAVE_XINPUT_H 1
-#if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00 /* Windows 10 SDK */
-#define HAVE_WINDOWS_GAMING_INPUT_H 1
-#define SDL_JOYSTICK_WGI 1
+
+#ifdef HAVE_GAMEINPUT_H // May be defined in "drivers/sdl/SCsub"
+#define SDL_JOYSTICK_GAMEINPUT 1
 #endif
+
 #define SDL_JOYSTICK_DINPUT 1
-#define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_RAWINPUT 1
 #define SDL_JOYSTICK_XINPUT 1
+#define SDL_JOYSTICK_HIDAPI 1
+
 #define SDL_HAPTIC_DINPUT 1
+
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
 #define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS 1
+
 #define SDL_TIMER_WINDOWS 1
 #define SDL_SENSOR_WINDOWS 1
+#define SDL_LOADSO_WINDOWS 1
 
 // Linux defines
 #elif defined(SDL_PLATFORM_LINUX)
