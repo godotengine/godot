@@ -83,6 +83,8 @@ private:
 
 	SpinBox *cursor_metric_edit = nullptr;
 
+	bool using_metal = false;
+
 	Vector<Metric> frame_metrics;
 	int last_metric = -1;
 
