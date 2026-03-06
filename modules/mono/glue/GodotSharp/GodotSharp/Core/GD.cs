@@ -336,10 +336,11 @@ namespace Godot
         }
 
         [StackTraceHidden]
-        private static void ErrPrintError(string message, godot_error_handler_type type = godot_error_handler_type.ERR_HANDLER_ERROR)
+        private static void ErrPrintError(string message, StackFrame stackFrame = null, godot_error_handler_type type = godot_error_handler_type.ERR_HANDLER_ERROR)
         {
             // Skip 1 frame to avoid current method.
-            var stackFrame = DebuggingUtils.GetCurrentStackFrame(skipFrames: 1);
+            stackFrame ??= DebuggingUtils.GetCurrentStackFrame(skipFrames: 1);
+
             string callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName());
             DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out string callerName);
             int callerLineNumber = stackFrame.GetFileLineNumber();
@@ -383,6 +384,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
+        ///
+        /// Note: Errors printed this way will not pause project execution.
+        ///
+        /// Note: Unlike <see cref="PushError(string)"/>, this method uses the stacktrace from the given <paramref name="exception"/>.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushError(new Exception("test error")); // Prints "test error" to debugger and terminal as error call
+        /// </code>
+        /// </example>
+        /// <param name="exception">Exception containing a message and a stack trace.</param>
+        public static void PushError(Exception exception)
+        {
+            var stackFrame = new StackTrace(exception, fNeedFileInfo: true).GetFrame(0);
+            ErrPrintError(exception.Message, stackFrame);
+        }
+
+        /// <summary>
         /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
         /// </summary>
         /// <example>
@@ -408,6 +428,23 @@ namespace Godot
         public static void PushWarning(params object[] what)
         {
             ErrPrintError(AppendPrintParams(what), type: godot_error_handler_type.ERR_HANDLER_WARNING);
+        }
+
+        /// <summary>
+        /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+        ///
+        /// Note: Unlike <see cref="PushWarning(string)"/>, this method uses the stacktrace from the given <paramref name="exception"/>.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.PushWarning(new Exception("test warning")); // Prints "test warning" to debugger and terminal as warning call
+        /// </code>
+        /// </example>
+        /// <param name="exception">Exception containing a message and a stack trace.</param>
+        public static void PushWarning(Exception exception)
+        {
+            var stackFrame = new StackTrace(exception, fNeedFileInfo: true).GetFrame(0);
+            ErrPrintError(exception.Message, stackFrame, godot_error_handler_type.ERR_HANDLER_WARNING);
         }
 
         /// <summary>
