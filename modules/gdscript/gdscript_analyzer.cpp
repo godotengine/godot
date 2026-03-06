@@ -4043,8 +4043,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			/// [Monarch] if param_type is now fully concrete (no longer an open generic),
 			/// actually validate the argument type, infer_generic_bindings_from_types only
 			/// catches inference conflicts, not type mismatches against resolved concrete types
-			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE) {
-				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i]) && !param_type_still_has_open_generics(param_type)) {
+			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE && !param_type_still_has_open_generics(param_type)) {
+				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i])) {
 					push_error(vformat(
 							R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
 							i + 1,
@@ -6486,6 +6486,12 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 			break;
 		}
 		GDScriptParser::DataType par_type = *par_itr;
+
+		/// skip type checking for parameters that contain unresolved generic types still
+		/// those will be validated after generic inference in the call site
+		if (param_type_still_has_open_generics(par_type)) {
+			continue;
+		}
 
 		if (par_type.is_hard_type() && p_call->arguments[i]->is_constant) {
 			update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
