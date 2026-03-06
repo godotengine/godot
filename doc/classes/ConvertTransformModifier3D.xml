@@ -14,7 +14,7 @@
 		- Extract reference pose absolutely and add it to the apply bone's pose.
 		[b]Not Relative + Not Additive:[/b]
 		- Extract reference pose absolutely and the apply bone's pose is replaced with it.
-		[b]Note:[/b] Relative option is available only in the case [method BoneConstraint3D.get_reference_type] is [constant BoneConstraint3D.REFERENCE_TYPE_BONE]. See also [enum BoneConstraint3D.ReferenceType].
+		[b]Note:[/b] The relative option is only available when [method BoneConstraint3D.get_reference_type] is [constant BoneConstraint3D.REFERENCE_TYPE_BONE]. See also [enum BoneConstraint3D.ReferenceType].
 		[b]Note:[/b] If there is a rotation greater than [code]180[/code] degrees with constrained axes, flipping may occur.
 	</description>
 	<tutorials>
