@@ -290,18 +290,46 @@ namespace Godot.Collections
         /// <summary>
         /// Returns a random value from the target array.
         /// </summary>
+        /// <param name="rng">Optional random number generator to use. If null, uses the default RNG.</param>
         /// <example>
         /// <code>
         /// var array = new Godot.Collections.Array { 1, 2, 3, 4 };
         /// GD.Print(array.PickRandom()); // Prints either of the four numbers.
+        ///
+        /// // Or with a custom RNG:
+        /// var rng = new RandomNumberGenerator();
+        /// rng.Seed = 12345;
+        /// GD.Print(array.PickRandom(rng)); // Prints a deterministic random number.
         /// </code>
         /// </example>
         /// <returns>A random element from the array.</returns>
-        public Variant PickRandom()
+        public Variant PickRandom(RandomNumberGenerator rng = null)
         {
             godot_variant resVariant;
             var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
+            NativeFuncs.godotsharp_array_pick_random(ref self, rng, out resVariant);
+            return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
+        }
+
+        /// <summary>
+        /// Removes and returns a random value from the target array.
+        /// </summary>
+        /// <param name="rng">Optional random number generator to use. If null, uses the default RNG.</param>
+        /// <example>
+        /// <code>
+        /// var array = new Godot.Collections.Array { 1, 2, 3, 4 };
+        /// GD.Print(array.Count); // Prints 4
+        /// var item = array.PopRandom();
+        /// GD.Print(array.Count); // Prints 3
+        /// GD.Print(item); // Prints the removed item
+        /// </code>
+        /// </example>
+        /// <returns>The removed element.</returns>
+        public Variant PopRandom(RandomNumberGenerator rng = null)
+        {
+            godot_variant resVariant;
+            var self = (godot_array)NativeValue;
+            NativeFuncs.godotsharp_array_pop_random(ref self, rng, out resVariant);
             return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
         }
 
@@ -1242,18 +1270,46 @@ namespace Godot.Collections
         /// <summary>
         /// Returns a random value from the target array.
         /// </summary>
+        /// <param name="rng">Optional random number generator to use. If null, uses the default RNG.</param>
         /// <example>
         /// <code>
         /// var array = new Godot.Collections.Array&lt;int&gt; { 1, 2, 3, 4 };
         /// GD.Print(array.PickRandom()); // Prints either of the four numbers.
+        ///
+        /// // Or with a custom RNG:
+        /// var rng = new RandomNumberGenerator();
+        /// rng.Seed = 12345;
+        /// GD.Print(array.PickRandom(rng)); // Prints a deterministic random number.
         /// </code>
         /// </example>
         /// <returns>A random element from the array.</returns>
-        public T PickRandom()
+        public T PickRandom(RandomNumberGenerator rng = null)
         {
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
-            NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
+            NativeFuncs.godotsharp_array_pick_random(ref self, rng, out resVariant);
+            return VariantUtils.ConvertTo<T>(resVariant);
+        }
+
+        /// <summary>
+        /// Removes and returns a random value from the target array.
+        /// </summary>
+        /// <param name="rng">Optional random number generator to use. If null, uses the default RNG.</param>
+        /// <example>
+        /// <code>
+        /// var array = new Godot.Collections.Array&lt;int&gt; { 1, 2, 3, 4 };
+        /// GD.Print(array.Count); // Prints 4
+        /// var item = array.PopRandom();
+        /// GD.Print(array.Count); // Prints 3
+        /// GD.Print(item); // Prints the removed item
+        /// </code>
+        /// </example>
+        /// <returns>The removed element.</returns>
+        public T PopRandom(RandomNumberGenerator? rng = null)
+        {
+            godot_variant resVariant;
+            var self = (godot_array)_underlyingArray.NativeValue;
+            NativeFuncs.godotsharp_array_pop_random(ref self, rng, out resVariant);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 

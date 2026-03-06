@@ -40,6 +40,9 @@
 class Callable;
 class StringName;
 class Variant;
+class RandomNumberGenerator;
+template <typename T>
+class Ref;
 
 struct ArrayPrivate;
 struct ContainerType;
@@ -130,7 +133,7 @@ public:
 
 	Variant front() const;
 	Variant back() const;
-	Variant pick_random() const;
+	Variant pick_random(const Ref<RandomNumberGenerator> &p_rng) const;
 
 	void sort();
 	void sort_custom(const Callable &p_callable);
@@ -152,6 +155,7 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 	Variant pop_at(int p_pos);
+	Variant pop_random(const Ref<RandomNumberGenerator> &p_rng);
 
 	Array duplicate(bool p_deep = false) const;
 	Array duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;

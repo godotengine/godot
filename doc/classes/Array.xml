@@ -584,6 +584,7 @@
 		</method>
 		<method name="pick_random" qualifiers="const">
 			<return type="Variant" />
+			<param index="0" name="rng" type="Variant" default="null" />
 			<description>
 				Returns a random element from the array. Generates an error and returns [code]null[/code] if the array is empty.
 				[codeblocks]
@@ -618,6 +619,27 @@
 			<description>
 				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without generating an error. See also [method pop_back].
 				[b]Note:[/b] This method shifts every other element's index back, which may have a noticeable performance cost, especially on larger arrays.
+			</description>
+		</method>
+		<method name="pop_random">
+			<return type="Variant" />
+			<param index="0" name="rng" type="Variant" default="null" />
+			<description>
+				Removes and returns a random element from the array. Generates an error and returns [code]null[/code] if the array is empty.
+				[codeblocks]
+				[gdscript]
+				var arr = [1, 2, 3.25, "Hi"]
+				print(arr.pop_random()) # May print 1, 2, 3.25, or "Hi".
+				print(arr) # Prints the array with the previously printed element removed.
+				[/gdscript]
+				[csharp]
+				Godot.Collections.Array array = [1, 2, 3.25f, "Hi"];
+				GD.Print(array.PopRandom()); // May print 1, 2, 3.25, or "Hi".
+				GD.Print(array); // Prints the array with the previously printed element removed.
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] Like many similar functions in the engine (such as [method @GlobalScope.randi] or [method shuffle]), this method uses a common, global random seed. To get a predictable outcome from this method, see [method @GlobalScope.seed].
+				[b]Note:[/b] This method shifts every element's index after the removed element back, which may have a noticeable performance cost, especially on larger arrays.
 			</description>
 		</method>
 		<method name="push_back">

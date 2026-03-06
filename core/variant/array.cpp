@@ -36,6 +36,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 
 #include "container_type_validate.h"
 #include "core/math/math_funcs.h"
+#include "core/math/random_number_generator.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
@@ -361,9 +362,20 @@ Variant Array::back() const {
 	return operator[](_p->array.size() - 1);
 }
 
-Variant Array::pick_random() const {
-	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
-	return operator[](Math::rand() % _p->array.size());
+Variant Array::pick_random(const Ref<RandomNumberGenerator> &p_rng) const {
+	if (_p->array.is_empty()) {
+		return Variant();
+	}
+
+	int idx;
+
+	if (p_rng.is_valid()) {
+		idx = p_rng->randi_range(0, _p->array.size() - 1);
+	} else {
+		idx = Math::rand() % _p->array.size();
+	}
+
+	return _p->array.get(idx);
 }
 
 int Array::find(const Variant &p_value, int p_from) const {
@@ -822,6 +834,27 @@ Variant Array::pop_at(int p_pos) {
 
 	const Variant ret = _p->array.get(p_pos);
 	_p->array.remove_at(p_pos);
+	return ret;
+}
+
+Variant Array::pop_random(const Ref<RandomNumberGenerator> &p_rng) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+
+	if (_p->array.is_empty()) {
+		return Variant();
+	}
+
+	int idx;
+
+	if (p_rng.is_valid()) {
+		idx = p_rng->randi_range(0, _p->array.size() - 1);
+	} else {
+		idx = Math::rand() % _p->array.size();
+	}
+
+	const Variant ret = _p->array.get(idx);
+	_p->array.remove_at(idx);
+
 	return ret;
 }
 
