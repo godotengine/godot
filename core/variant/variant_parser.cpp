@@ -2304,30 +2304,29 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
 			} else {
-				LocalVector<Variant> keys = dict.get_key_list();
-				keys.sort_custom<StringLikeVariantOrder>();
-
-				if (keys.is_empty()) {
+				if (dict.is_empty()) {
 					// Avoid unnecessary line break.
 					p_store_string_func(p_store_string_ud, "{}");
 				} else {
 					p_recursion_count++;
 
-					p_store_string_func(p_store_string_ud, "{\n");
+					p_store_string_func(p_store_string_ud, "{");
 
-					for (uint32_t i = 0; i < keys.size(); i++) {
-						const Variant &key = keys[i];
-						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						p_store_string_func(p_store_string_ud, ": ");
-						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						if (i + 1 < keys.size()) {
-							p_store_string_func(p_store_string_ud, ",\n");
+					bool first = true;
+					for (const KeyValue<Variant, Variant> &kv : dict) {
+						if (first) {
+							first = false;
 						} else {
-							p_store_string_func(p_store_string_ud, "\n");
+							p_store_string_func(p_store_string_ud, ",");
 						}
+						p_store_string_func(p_store_string_ud, "\n");
+
+						write(kv.key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						p_store_string_func(p_store_string_ud, ": ");
+						write(kv.value, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 					}
 
-					p_store_string_func(p_store_string_ud, "}");
+					p_store_string_func(p_store_string_ud, "\n}");
 				}
 			}
 
