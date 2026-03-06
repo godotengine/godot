@@ -12,6 +12,18 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
+		<method name="get_area_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the width and height of the area.
+			</description>
+		</method>
+		<method name="get_area_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				Returns the texture used for the area light.
+			</description>
+		</method>
 		<method name="get_correlated_color" qualifiers="const">
 			<return type="Color" />
 			<description>
@@ -23,6 +35,34 @@
 			<param index="0" name="param" type="int" enum="Light3D.Param" />
 			<description>
 				Returns the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+		<method name="is_area_normalizing_energy" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Getter for [member AreaLight3D.area_normalize_energy]. If [code]true[/code], the energy of [AreaLight3D]s are normalized by their areas.
+			</description>
+		</method>
+		<method name="set_area_normalize_energy">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Setter for [member AreaLight3D.area_normalize_energy]. If [code]true[/code], the energy of [AreaLight3D]s are normalized by their areas.
+			</description>
+		</method>
+		<method name="set_area_size">
+			<return type="void" />
+			<param index="0" name="area_size" type="Vector2" />
+			<description>
+				Sets the width and height of the area.
+			</description>
+		</method>
+		<method name="set_area_texture">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<description>
+				[Texture2D] simulating the colors on the surface of the light. Area light textures make the light appear like a TV screen. For best performance, the texture dimensions should be a multiple of [code]128[/code].
+				[b]Note:[/b] Area light textures are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			</description>
 		</method>
 		<method name="set_param">

@@ -254,6 +254,7 @@ void Utilities::update_dirty_resources() {
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();
 	TextureStorage::get_singleton()->update_decal_atlas();
+	TextureStorage::get_singleton()->update_area_light_atlas();
 }
 
 bool Utilities::has_os_feature(const String &p_feature) const {
