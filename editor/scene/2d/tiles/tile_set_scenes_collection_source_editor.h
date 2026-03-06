@@ -112,6 +112,7 @@ private:
 	EditorInspector *tile_inspector = nullptr;
 
 	ItemList *scene_tiles_list = nullptr;
+	Label *scenes_empty_label = nullptr;
 	Button *scene_tile_add_button = nullptr;
 	Button *scene_tile_delete_button = nullptr;
 	EditorFileDialog *scene_select_dialog = nullptr;
