@@ -311,6 +311,7 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
+	void _propagate_exit_tree_and_cleanup();
 	void _propagate_physics_interpolated(bool p_interpolated);
 	void _propagate_physics_interpolation_reset_requested(bool p_requested);
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
@@ -777,7 +778,8 @@ public:
 
 	void queue_free();
 
-	//hacks for speed
+	void free_children();
+	void queue_free_children();
 	static void init_node_hrcr();
 
 	bool is_owned_by_parent() const;
