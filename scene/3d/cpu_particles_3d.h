@@ -217,6 +217,7 @@ protected:
 #endif
 
 public:
+	RID get_multimesh_rid() const;
 	AABB get_aabb() const override;
 
 	void set_emitting(bool p_emitting);
