@@ -67,12 +67,23 @@ void AudioStreamInteractive::set_clip_count(int p_count) {
 			}
 		}
 
-		for (KeyValue<TransitionKey, Transition> &K : transition_map) {
-			if (K.value.filler_clip >= p_count) {
-				K.value.use_filler_clip = false;
-				K.value.filler_clip = 0;
+		HashMap<TransitionKey, Transition, TransitionKeyHasher>::Iterator E = transition_map.begin();
+		while (E) {
+			HashMap<TransitionKey, Transition, TransitionKeyHasher>::Iterator N = E;
+			++N;
+
+			if (E->value.filler_clip >= p_count) {
+				E->value.use_filler_clip = false;
+				E->value.filler_clip = 0;
 			}
+
+			if (E->key.from_clip >= (uint32_t)p_count || E->key.to_clip >= (uint32_t)p_count) {
+				transition_map.remove(E);
+			}
+
+			E = N;
 		}
+
 		if (initial_clip >= p_count) {
 			initial_clip = 0;
 		}
