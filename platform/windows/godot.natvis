@@ -60,7 +60,7 @@
 		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::_RID">{*(RID *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::OBJECT">{*(Variant::ObjData *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::POOL_BYTE_ARRAY">{*(PoolByteArray *)_data._mem}</DisplayString>
@@ -90,7 +90,7 @@
 			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::_RID">*(RID *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Object *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Variant::ObjData *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::ARRAY">*(Array *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::POOL_BYTE_ARRAY">*(PoolByteArray *)_data._mem</Item>
@@ -100,6 +100,13 @@
 			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR2_ARRAY">*(PoolVector2Array *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR3_ARRAY">*(PoolVector3Array *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::POOL_COLOR_ARRAY">*(PoolColorArray *)_data._mem</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Variant::ObjData" Inheritable="false">
+		<Expand>
+			<Item Name="rc">rc</Item>
+			<Item Name="ref">(Ref&lt;Reference&gt; *)&amp;ref</Item>
 		</Expand>
 	</Type>
 
