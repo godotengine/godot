@@ -6,6 +6,10 @@ Diagnostics:
   Includes:
     IgnoreHeader:
       - \.compat\.inc
+
+CompileFlags:
+  # Remove used emscripten build options and only them
+  Remove: [-sA*, -sI*, -sS*, -sM*, -sO*, -sG*, -sU*, -sD*, -sP*, -sW*, -sT*, -sE*]
 ---
 # Header-specific conditions.
 
