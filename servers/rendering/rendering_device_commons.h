@@ -889,6 +889,15 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	enum AccelerationStructureGeometryFlagBits {
+		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT = (1 << 1),
+	};
+
 	/**************/
 	/**** MISC ****/
 	/**************/
