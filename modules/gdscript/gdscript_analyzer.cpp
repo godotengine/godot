@@ -3077,12 +3077,25 @@ void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNo
 		if (element_node->is_constant) {
 			update_const_expression_builtin_type(element_node, expected_type, "include");
 		}
+		if (element_node->type == GDScriptParser::Node::ARRAY && expected_type.builtin_type == Variant::ARRAY && expected_type.has_container_element_type(0)) {
+			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode*>(element_node), expected_type.get_container_element_type(0));
+		}
+		if (element_node->type == GDScriptParser::Node::DICTIONARY && expected_type.builtin_type == Variant::DICTIONARY && expected_type.has_container_element_types()) {
+			update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode*>(element_node), expected_type.get_container_element_type_or_variant(0), expected_type.get_container_element_type_or_variant(1));
+		}
+
 		const GDScriptParser::DataType &actual_type = element_node->get_datatype();
 		if (actual_type.has_no_type() || actual_type.is_variant() || !actual_type.is_hard_type()) {
 			mark_node_unsafe(element_node);
 			continue;
 		}
-		if (!is_type_compatible(expected_type, actual_type, true, p_array)) {
+		
+		bool is_compatible = is_type_compatible(expected_type, actual_type, true, p_array);
+		if (is_compatible && element_node->is_constant) {
+			is_compatible = is_type_compatible_strict_collections(expected_type, actual_type);
+		}
+
+		if (!is_compatible){
 			if (is_type_compatible(actual_type, expected_type)) {
 				mark_node_unsafe(element_node);
 				continue;
