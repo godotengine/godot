@@ -2108,12 +2108,20 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		}
 
 		if (is_constant && !p_assignable->initializer->is_constant) {
-			bool is_initializer_value_reduced = false;
-			Variant initializer_value = make_expression_reduced_value(p_assignable->initializer, is_initializer_value_reduced);
-			if (is_initializer_value_reduced) {
-				p_assignable->initializer->is_constant = true;
-				p_assignable->initializer->reduced_value = initializer_value;
-			} else {
+			bool valid = specified_type.can_be_constant_expression();
+
+			if (valid) {
+				bool is_initializer_value_reduced = false;
+				Variant initializer_value = make_expression_reduced_value(p_assignable->initializer, is_initializer_value_reduced);
+				if (is_initializer_value_reduced) {
+					p_assignable->initializer->is_constant = true;
+					p_assignable->initializer->reduced_value = initializer_value;
+				} else {
+					valid = false;
+				}
+			}
+
+			if (!valid) {
 				push_error(vformat(R"(Assigned value for %s "%s" isn't a constant expression.)", p_kind, p_assignable->identifier->name), p_assignable->initializer);
 			}
 		}
@@ -5395,6 +5403,23 @@ Variant GDScriptAnalyzer::make_call_reduced_value(GDScriptParser::CallNode *p_ca
 			argptrs[i] = &args[i];
 		}
 
+		if (type == Variant::ARRAY) {
+			if (args.size() > 1) {
+				const Variant::Type elem_type = args[1];
+				if (elem_type >= Variant::PACKED_BYTE_ARRAY) {
+					return Variant();
+				}
+			}
+		} else if (type == Variant::DICTIONARY) {
+			if (args.size() > 4) {
+				const Variant::Type key_type = args[1];
+				const Variant::Type value_type = args[4];
+				if (key_type >= Variant::PACKED_BYTE_ARRAY || value_type >= Variant::PACKED_BYTE_ARRAY) {
+					return Variant();
+				}
+			}
+		}
+
 		Variant result;
 		Callable::CallError ce;
 		Variant::construct(type, result, argptrs, args.size(), ce);
@@ -5485,7 +5510,7 @@ Variant GDScriptAnalyzer::make_cast_reduced_value(GDScriptParser::CastNode *p_ca
 
 	GDScriptParser::DataType cast_type = type_from_metatype(resolve_datatype(p_cast->cast_type));
 
-	if (!cast_type.is_set()) {
+	if (!cast_type.is_set() || !cast_type.can_be_constant_expression()) {
 		return Variant();
 	}
 
