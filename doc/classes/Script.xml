@@ -91,6 +91,13 @@
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
 			</description>
 		</method>
+		<method name="has_script_method" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the script, or a base class, defines a method with the given name.
+			</description>
+		</method>
 		<method name="has_script_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal_name" type="StringName" />
