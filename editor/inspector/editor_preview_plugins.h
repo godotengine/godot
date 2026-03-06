@@ -34,6 +34,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 
 class ScriptLanguage;
+class ProceduralSkyMaterial;
 
 void post_process_preview(Ref<Image> p_image);
 
@@ -87,6 +88,9 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light_instance2;
 	RID camera;
 	RID camera_attributes;
+	RID environment;
+	RID sky;
+	Ref<ProceduralSkyMaterial> sky_material;
 	mutable DrawRequester draw_requester;
 
 public:
