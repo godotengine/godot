@@ -138,6 +138,8 @@ public:
 		ITEM_MENU_SHOW_IN_EXPLORER,
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 		// Not in the menu, only for shortcuts.
+		ITEM_MENU_PREVIOUS,
+		ITEM_MENU_NEXT,
 		ITEM_MENU_GO_UP,
 		ITEM_MENU_TOGGLE_HIDDEN,
 		ITEM_MENU_FIND,
@@ -355,6 +357,7 @@ private:
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
 	void _update_make_dir_visible();
 
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _native_popup();
