@@ -1871,8 +1871,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		List<GDScriptParser::DataType> parameters_types;
 		int default_par_count = 0;
 		BitField<MethodFlags> method_flags = {};
-		StringName native_base;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
+		StringName defining_class;
+		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &defining_class)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
 			if (p_function->return_type == nullptr) {
@@ -1958,12 +1958,29 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
+
+			// Mark the function as an override if the check succeeds.
+			p_function->is_override = true;
+
+			// Then if we don't see the @override annotation, raise a warning.
+			if (!p_function->is_marked_as_override) {
+				StringName base_class_name = !defining_class.is_empty() ? defining_class : StringName{ "<unknown nlass>" };
+				parser->push_warning(p_function, GDScriptWarning::IMPLICIT_FUNCTION_OVERRIDE, function_name, defining_class);
+			}
+
 #ifdef DEBUG_ENABLED
-			if (native_base != StringName()) {
-				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
+			MethodBind *native_method = ClassDB::get_method(defining_class, function_name);
+			if (native_method != nullptr) {
+				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, defining_class);
 			}
 #endif // DEBUG_ENABLED
 		}
+
+		// If a function with `@override` doesn't override anything, raise an error.
+		if (p_function->is_marked_as_override && !p_function->is_override) {
+			push_error(vformat(R"*(The function %s() has the "@override" annotation, but does not override anything.)*", function_name), p_function);
+		}
+
 #endif // TOOLS_ENABLED
 	}
 
@@ -5902,11 +5919,11 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
-bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class) {
+bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_defining_class) {
 	r_method_flags = METHOD_FLAGS_DEFAULT;
 	r_default_arg_count = 0;
-	if (r_native_class) {
-		*r_native_class = StringName();
+	if (r_defining_class) {
+		*r_defining_class = StringName();
 	}
 	StringName function_name = p_function;
 
@@ -5941,6 +5958,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 				if (!r_method_flags.has_flag(METHOD_FLAG_STATIC) && was_enum && !(E.flags & METHOD_FLAG_CONST)) {
 					push_error(vformat(R"*(Cannot call non-const Dictionary function "%s()" on enum "%s".)*", p_function, p_base_type.enum_type), p_source);
 				}
+				if (r_defining_class) {
+					*r_defining_class = __constant_get_enum_name(p_base_type.builtin_type);
+				}
 				return true;
 			}
 		}
@@ -5972,7 +5992,8 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		r_method_flags.set_flag(METHOD_FLAG_STATIC);
 	}
 
-	GDScriptParser::ClassNode *base_class = p_base_type.class_type;
+	GDScriptParser::DataType base_type = p_base_type;
+	GDScriptParser::ClassNode *base_class = base_type.class_type;
 	GDScriptParser::FunctionNode *found_function = nullptr;
 
 	while (found_function == nullptr && base_class != nullptr) {
@@ -5985,10 +6006,18 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 
 			resolve_class_member(base_class, function_name, p_source);
 			found_function = base_class->get_member(function_name).function;
+			if (r_defining_class != nullptr) {
+				*r_defining_class = base_class->get_identifier_name();
+				if (*r_defining_class == StringName()) {
+					*r_defining_class = StringName(base_type.script_path);
+				}
+			}
+			break;
 		}
 
 		resolve_class_inheritance(base_class, p_source);
-		base_class = base_class->base_type.class_type;
+		base_type = base_class->base_type;
+		base_class = base_type.class_type;
 	}
 
 	if (found_function != nullptr) {
@@ -6020,6 +6049,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		MethodInfo info = base_script->get_method_info(function_name);
 
 		if (!(info == MethodInfo())) {
+			if (r_defining_class != nullptr) {
+				*r_defining_class = base_script->get_global_name();
+			}
 			return function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_method_flags);
 		}
 		base_script = base_script->get_base_script();
@@ -6031,6 +6063,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		StringName script_class = p_base_type.kind == GDScriptParser::DataType::SCRIPT ? p_base_type.script_type->get_class_name() : StringName(GDScript::get_class_static());
 
 		if (ClassDB::get_method_info(script_class, function_name, &info)) {
+			if (r_defining_class != nullptr) {
+				*r_defining_class = script_class;
+			}
 			return function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_method_flags);
 		}
 	}
@@ -6049,12 +6084,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		if (valid && Engine::get_singleton()->has_singleton(base_native)) {
 			r_method_flags.set_flag(METHOD_FLAG_STATIC);
 		}
-#ifdef DEBUG_ENABLED
-		MethodBind *native_method = ClassDB::get_method(base_native, function_name);
-		if (native_method && r_native_class) {
-			*r_native_class = native_method->get_instance_class();
+		if (r_defining_class != nullptr) {
+			*r_defining_class = base_native;
 		}
-#endif // DEBUG_ENABLED
 		return valid;
 	}
 

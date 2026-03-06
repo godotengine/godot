@@ -24,7 +24,9 @@ class Super:
 		print(dir)
 
 class Duper extends Super:
+	@override
 	func set_type(type: Variant.Type) -> void:
 		print(type)
+	@override
 	func set_direction(dir: ClockDirection) -> void:
 		print(dir)
