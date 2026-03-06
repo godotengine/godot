@@ -3391,6 +3391,22 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
+
+		if (unfold) {
+			Array editor_list;
+			for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
+				EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
+				if (ep->handles(p_resource.ptr())) {
+					editor_list.push_back(ep);
+				}
+			}
+
+			if (!editor_list.is_empty()) {
+				callable_mp(this, &EditorPropertyResource::_open_editor_pressed).call_deferred();
+				opened_editor = true;
+			}
+		}
+
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
 	}
@@ -3668,20 +3684,6 @@ void EditorPropertyResource::update_property() {
 				set_bottom_editor(sub_inspector);
 
 				resource_picker->set_toggle_pressed(true);
-
-				Array editor_list;
-				for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
-					EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
-					if (ep->handles(res.ptr())) {
-						editor_list.push_back(ep);
-					}
-				}
-
-				if (!editor_list.is_empty()) {
-					// Open editor directly.
-					_open_editor_pressed();
-					opened_editor = true;
-				}
 			}
 
 			sub_inspector->set_read_only(is_checkable() && !is_checked());
