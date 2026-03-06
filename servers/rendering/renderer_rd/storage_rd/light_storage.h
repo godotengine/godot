@@ -246,6 +246,7 @@ private:
 		int count = 0;
 		int size = 0;
 		int reflection_texture_size = 0;
+		int roughness_levels = 1;
 		float uv_border_size = 0.0;
 		bool update_always = false;
 
@@ -906,6 +907,12 @@ public:
 		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
 		ERR_FAIL_NULL_V(atlas, 0.0);
 		return atlas->uv_border_size;
+	}
+
+	_FORCE_INLINE_ float reflection_atlas_get_roughness_levels(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
+		ERR_FAIL_NULL_V(atlas, 1.0);
+		return atlas->roughness_levels;
 	}
 
 	/* REFLECTION PROBE INSTANCE */
