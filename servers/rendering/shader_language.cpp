@@ -8023,7 +8023,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 		}
 
-		bool is_struct = shader->structs.has(tk.text);
+		bool is_struct = shader->structs.has(tk.text) && !(p_block && _find_identifier(p_block, false, p_function_info, tk.text));
 		bool is_var_init = false;
 		bool is_condition = false;
 
