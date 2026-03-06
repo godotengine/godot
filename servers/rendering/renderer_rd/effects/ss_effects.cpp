@@ -1746,7 +1746,7 @@ void SSEffects::sss_set_scale(float p_scale, float p_depth_scale) {
 	sss_depth_scale = p_depth_scale;
 }
 
-void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size) {
+void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float taa_frame_count) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -1777,6 +1777,7 @@ void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffer
 		sss.push_constant.vertical = false;
 		sss.push_constant.scale = sss_scale;
 		sss.push_constant.depth_scale = sss_depth_scale;
+		sss.push_constant.taa_frame_count = taa_frame_count;
 
 		RID shader = sss.shader.version_get_shader(sss.shader_version, sss_quality - 1);
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[sss_quality - 1].get_rid());
