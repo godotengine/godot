@@ -34,7 +34,7 @@
 #include "gdscript_workspace.h"
 #include "scene_cache.h"
 
-#include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer.h"
 #include "core/io/tcp_server.h"
 
 #include "modules/jsonrpc/jsonrpc.h"
@@ -51,12 +51,11 @@ class GDScriptLanguageProtocol : public JSONRPC {
 
 private:
 	struct LSPeer : RefCounted {
-		Ref<StreamPeerTCP> connection;
+		Ref<StreamPeer> connection;
 
 		uint8_t req_buf[LSP_MAX_BUFFER_SIZE];
 		int req_pos = 0;
 		bool has_header = false;
-		bool has_content = false;
 		int content_length = 0;
 		Vector<CharString> res_queue;
 		int res_sent = 0;
@@ -107,13 +106,18 @@ private:
 	String process_message(const String &p_text);
 	String format_output(const String &p_text);
 
+	Variant reject_message(const Variant &p_params);
+
 	bool _initialized = false;
+	bool _shutdown = false;
 
 protected:
 	static void _bind_methods();
 
 	Dictionary initialize(const Dictionary &p_params);
 	void initialized(const Variant &p_params);
+	Variant shutdown();
+	void exit();
 
 public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
@@ -125,6 +129,7 @@ public:
 
 	void poll(int p_limit_usec);
 	Error start(int p_port, const IPAddress &p_bind_ip);
+	Error start_stdio();
 	void stop();
 
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);
