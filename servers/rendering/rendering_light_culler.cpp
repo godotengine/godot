@@ -646,7 +646,9 @@ bool RenderingLightCuller::create_frustum_points(const Plane *p_frustum_planes, 
 		bool res = p_frustum_planes[intersections[i][0]].intersect_3(p_frustum_planes[intersections[i][1]], p_frustum_planes[intersections[i][2]], &r_result[i]);
 
 		// What happens with a zero frustum? NYI - deal with this.
-		ERR_FAIL_COND_V(!res, false);
+		if (!res) {
+			return false;
+		}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 		if (is_logging()) {
