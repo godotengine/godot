@@ -5337,8 +5337,18 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 		} break;
-		case WM_NCACTIVATE:
-		case WM_NCPAINT:
+		case WM_NCACTIVATE: {
+			if (windows[window_id].extend_to_title) {
+				// Prevent native titlebar activation painting when extending client area into title.
+				return 1;
+			}
+		} break;
+		case WM_NCPAINT: {
+			if (windows[window_id].extend_to_title) {
+				// Suppress non-client caption repaints to avoid native titlebar flashes while moving.
+				return 0;
+			}
+		} break;
 		case WM_NCMOUSEMOVE:
 		case WM_NCLBUTTONDOWN:
 		case WM_NCLBUTTONUP:
@@ -6557,14 +6567,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
+			windows[window_id].in_size_move_loop = true;
 			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_MOVE_REDRAW, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 		} break;
 		case WM_EXITSIZEMOVE: {
+			const bool was_in_size_move_loop = windows[window_id].in_size_move_loop;
+			windows[window_id].in_size_move_loop = false;
 			KillTimer(windows[window_id].hWnd, windows[window_id].move_timer_id);
 			windows[window_id].move_timer_id = 0;
 			// Reset the correct mouse mode because we couldn't call ReleaseCapture in
 			// _set_mouse_mode_impl while in _process_activate_event (because the user was moving a window).
 			_set_mouse_mode_impl(mouse_mode);
+			if (was_in_size_move_loop && windows[window_id].extend_to_title) {
+				// Ensure the custom titlebar is redrawn immediately after the native move loop exits.
+				RedrawWindow(windows[window_id].hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
+			}
 		} break;
 		case WM_TIMER: {
 			if (wParam == windows[window_id].move_timer_id) {

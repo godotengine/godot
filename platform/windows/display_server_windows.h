@@ -328,6 +328,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool extend_to_title = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
+		bool in_size_move_loop = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
