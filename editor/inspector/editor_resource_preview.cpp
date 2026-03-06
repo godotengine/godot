@@ -352,11 +352,10 @@ void EditorResourcePreview::_iterate() {
 			f.unref();
 			cache_valid = false;
 		} else if (source_modtime > last_modtime) {
-			String last_md5 = f->get_line();
 			String md5 = FileAccess::get_md5(item.path);
 			f.unref();
 
-			if (last_md5 != md5) {
+			if (hash != md5) {
 				cache_valid = false;
 			} else {
 				// Update modified time.
