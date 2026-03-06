@@ -133,8 +133,17 @@ static int _get_titlebar_extend_height_px() {
 	if (!dpi_functions_loaded) {
 		HMODULE user32 = GetModuleHandleW(L"user32.dll");
 		if (user32) {
-			get_system_metrics_for_dpi = reinterpret_cast<GetSystemMetricsForDpiPtr>(GetProcAddress(user32, "GetSystemMetricsForDpi"));
-			get_dpi_for_system = reinterpret_cast<GetDpiForSystemPtr>(GetProcAddress(user32, "GetDpiForSystem"));
+			union {
+				FARPROC raw;
+				GetSystemMetricsForDpiPtr typed;
+			} get_system_metrics_for_dpi_proc = { GetProcAddress(user32, "GetSystemMetricsForDpi") };
+			get_system_metrics_for_dpi = get_system_metrics_for_dpi_proc.typed;
+
+			union {
+				FARPROC raw;
+				GetDpiForSystemPtr typed;
+			} get_dpi_for_system_proc = { GetProcAddress(user32, "GetDpiForSystem") };
+			get_dpi_for_system = get_dpi_for_system_proc.typed;
 		}
 		dpi_functions_loaded = true;
 	}
