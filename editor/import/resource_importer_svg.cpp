@@ -69,6 +69,8 @@ void ResourceImporterSVG::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "color_map"), Dictionary()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "fix_alpha_border"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }
 
@@ -81,12 +83,16 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 
 	double base_scale = p_options["base_scale"];
 	double saturation = p_options["saturation"];
+	bool fix_alpha_border = p_options["fix_alpha_border"];
+	bool premult_alpha = p_options["premult_alpha"];
 	Dictionary color_map = p_options["color_map"];
 
 	dpi_tex->set_base_scale(base_scale);
 	dpi_tex->set_saturation(saturation);
 	dpi_tex->set_color_map(color_map);
 	dpi_tex->set_source(source);
+	dpi_tex->set_fix_alpha_border(fix_alpha_border);
+	dpi_tex->set_premult_alpha(premult_alpha);
 
 	ERR_FAIL_COND_V_MSG(dpi_tex->get_rid().is_null(), ERR_CANT_OPEN, vformat("Failed loading SVG, unsupported or invalid SVG data in \"%s\".", p_source_file));
 
