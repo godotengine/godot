@@ -33,6 +33,5 @@
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" overrides="Window" default="Vector2i(200, 70)" />
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(200, 100)" />
-		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Please Confirm...&quot;" />
 	</members>
 </class>
