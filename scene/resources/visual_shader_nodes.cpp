@@ -1225,6 +1225,241 @@ VisualShaderNodeCurveXYZTexture::VisualShaderNodeCurveXYZTexture() {
 	allow_v_resize = false;
 }
 
+////////////// Texture Func
+
+String VisualShaderNodeTextureFunc::get_caption() const {
+	return "TextureFunc";
+}
+
+int VisualShaderNodeTextureFunc::get_input_port_count() const {
+	if (func == FUNC_SIZE || func == FUNC_QUERY_LOD) {
+		return 2;
+	}
+	return 1;
+}
+
+VisualShaderNodeTextureFunc::PortType VisualShaderNodeTextureFunc::get_input_port_type(int p_port) const {
+	if (p_port == 0) {
+		return PORT_TYPE_SAMPLER;
+	} else if (p_port == 1) {
+		switch (func) {
+			case FUNC_SIZE:
+				return PORT_TYPE_SCALAR_INT;
+			case FUNC_QUERY_LEVELS:
+				break;
+			case FUNC_QUERY_LOD: {
+				switch (sampler_type) {
+					case SAMPLER_TYPE_2D:
+						return PORT_TYPE_VECTOR_2D;
+					case SAMPLER_TYPE_2D_ARRAY:
+						return PORT_TYPE_VECTOR_2D;
+					case SAMPLER_TYPE_3D:
+						return PORT_TYPE_VECTOR_3D;
+					case SAMPLER_TYPE_CUBE:
+						return PORT_TYPE_VECTOR_3D;
+					case SAMPLER_TYPE_MAX:
+						break;
+				}
+			} break;
+			case FUNC_MAX:
+				break;
+		}
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTextureFunc::get_input_port_name(int p_port) const {
+	if (p_port == 0) {
+		switch (sampler_type) {
+			case SAMPLER_TYPE_2D:
+				return "sampler2D";
+			case SAMPLER_TYPE_2D_ARRAY:
+				return "sampler2DArray";
+			case SAMPLER_TYPE_3D:
+				return "sampler3D";
+			case SAMPLER_TYPE_CUBE:
+				return "samplerCube";
+			case SAMPLER_TYPE_MAX:
+				break;
+		}
+	} else if (p_port == 1) {
+		switch (func) {
+			case FUNC_SIZE:
+				return "lod";
+			case FUNC_QUERY_LEVELS:
+				break;
+			case FUNC_QUERY_LOD:
+				return "coords";
+			case FUNC_MAX:
+				break;
+		}
+	}
+	return String();
+}
+
+int VisualShaderNodeTextureFunc::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeTextureFunc::PortType VisualShaderNodeTextureFunc::get_output_port_type(int p_port) const {
+	if (p_port == 0) {
+		switch (func) {
+			case FUNC_SIZE:
+				switch (sampler_type) {
+					case SAMPLER_TYPE_2D:
+						return PORT_TYPE_VECTOR_2D;
+					case SAMPLER_TYPE_2D_ARRAY:
+						return PORT_TYPE_VECTOR_3D;
+					case SAMPLER_TYPE_3D:
+						return PORT_TYPE_VECTOR_3D;
+					case SAMPLER_TYPE_CUBE:
+						return PORT_TYPE_VECTOR_2D;
+					case SAMPLER_TYPE_MAX:
+						return PORT_TYPE_SCALAR;
+				}
+				break;
+			case FUNC_QUERY_LEVELS:
+				return PORT_TYPE_SCALAR_INT;
+			case FUNC_QUERY_LOD:
+				return PORT_TYPE_VECTOR_2D;
+			case FUNC_MAX:
+				break;
+		}
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTextureFunc::get_output_port_name(int p_port) const {
+	if (p_port == 0) {
+		switch (func) {
+			case FUNC_SIZE:
+				return "size";
+			case FUNC_QUERY_LEVELS:
+				return "levels";
+			case FUNC_QUERY_LOD:
+				return "lod";
+			case FUNC_MAX:
+				break;
+		}
+	}
+	return String();
+}
+
+void VisualShaderNodeTextureFunc::set_sampler_type(SamplerType p_sampler_type) {
+	ERR_FAIL_INDEX(int(p_sampler_type), int(SAMPLER_TYPE_MAX));
+	if (sampler_type == p_sampler_type) {
+		return;
+	}
+	sampler_type = p_sampler_type;
+	emit_changed();
+}
+
+VisualShaderNodeTextureFunc::SamplerType VisualShaderNodeTextureFunc::get_sampler_type() const {
+	return sampler_type;
+}
+
+void VisualShaderNodeTextureFunc::set_function(Function p_func) {
+	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	if (func == p_func) {
+		return;
+	}
+
+	func = p_func;
+	emit_changed();
+}
+
+VisualShaderNodeTextureFunc::Function VisualShaderNodeTextureFunc::get_function() const {
+	return func;
+}
+
+String VisualShaderNodeTextureFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	switch (func) {
+		case FUNC_SIZE: {
+			String lod;
+			if (p_input_vars[1].is_empty()) {
+				lod = "0";
+			} else {
+				lod = p_input_vars[1];
+			}
+
+			switch (sampler_type) {
+				case SAMPLER_TYPE_CUBE:
+				case SAMPLER_TYPE_2D:
+					if (p_input_vars[0].is_empty()) {
+						return "	" + p_output_vars[0] + " = vec2(0.0);";
+					}
+					return "	" + p_output_vars[0] + " = vec2(textureSize(" + p_input_vars[0] + ", " + lod + "));\n";
+				case SAMPLER_TYPE_2D_ARRAY:
+				case SAMPLER_TYPE_3D:
+					if (p_input_vars[0].is_empty()) {
+						return "	" + p_output_vars[0] + " = vec3(0.0);";
+					}
+					return "	" + p_output_vars[0] + " = vec3(textureSize(" + p_input_vars[0] + ", " + lod + "));\n";
+				case SAMPLER_TYPE_MAX:
+					break;
+			}
+		} break;
+		case FUNC_QUERY_LEVELS: {
+			if (p_input_vars[0].is_empty()) {
+				return "	" + p_output_vars[0] + " = 0;";
+			}
+			return "	" + p_output_vars[0] + " = textureQueryLevels(" + p_input_vars[0] + ");\n";
+		} break;
+		case FUNC_QUERY_LOD: {
+			if (p_input_vars[0].is_empty()) {
+				return "	" + p_output_vars[0] + " = vec2(0.0);";
+			}
+
+			String coords;
+			if (p_input_vars[1].is_empty()) {
+				if (sampler_type == SAMPLER_TYPE_3D || sampler_type == SAMPLER_TYPE_CUBE) {
+					coords = "vec3(0.0)";
+				} else {
+					coords = "vec2(0.0)";
+				}
+			} else {
+				coords = p_input_vars[1];
+			}
+			return "	" + p_output_vars[0] + " = textureQueryLod(" + p_input_vars[0] + ", " + coords + ");\n";
+		} break;
+		case FUNC_MAX:
+			break;
+	}
+	return String();
+}
+
+void VisualShaderNodeTextureFunc::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeTextureFunc::set_function);
+	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeTextureFunc::get_function);
+
+	ClassDB::bind_method(D_METHOD("set_sampler_type", "sampler_type"), &VisualShaderNodeTextureFunc::set_sampler_type);
+	ClassDB::bind_method(D_METHOD("get_sampler_type"), &VisualShaderNodeTextureFunc::get_sampler_type);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Size,QueryLevels,QueryLod"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sampler_type", PROPERTY_HINT_ENUM, "2D,2DArray,3D,Cube"), "set_sampler_type", "get_sampler_type");
+
+	BIND_ENUM_CONSTANT(FUNC_SIZE);
+	BIND_ENUM_CONSTANT(FUNC_QUERY_LEVELS);
+	BIND_ENUM_CONSTANT(FUNC_QUERY_LOD);
+	BIND_ENUM_CONSTANT(FUNC_MAX);
+
+	BIND_ENUM_CONSTANT(SAMPLER_TYPE_2D);
+	BIND_ENUM_CONSTANT(SAMPLER_TYPE_2D_ARRAY);
+	BIND_ENUM_CONSTANT(SAMPLER_TYPE_3D);
+	BIND_ENUM_CONSTANT(SAMPLER_TYPE_CUBE);
+	BIND_ENUM_CONSTANT(SAMPLER_TYPE_MAX);
+}
+
+Vector<StringName> VisualShaderNodeTextureFunc::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("function");
+	props.push_back("sampler_type");
+	return props;
+}
+
+VisualShaderNodeTextureFunc::VisualShaderNodeTextureFunc() {
+}
+
 ////////////// Sample3D
 
 int VisualShaderNodeSample3D::get_input_port_count() const {

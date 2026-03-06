@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTextureFunc" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Function to be applied on texture sampler.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeTextureFunc.Function" default="0">
+			A function to be applied to the texture sampler.
+		</member>
+		<member name="sampler_type" type="int" setter="set_sampler_type" getter="get_sampler_type" enum="VisualShaderNodeTextureFunc.SamplerType" default="0">
+			A type of sampler.
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_SIZE" value="0" enum="Function">
+			A function to retrieve the dimensions of a level of a texture.
+		</constant>
+		<constant name="FUNC_QUERY_LEVELS" value="1" enum="Function">
+			A function to compute the number of accessible mipmap levels of a texture.
+		</constant>
+		<constant name="FUNC_QUERY_LOD" value="2" enum="Function">
+			A function to compute the level-of-detail that would be used to sample from a texture.
+		</constant>
+		<constant name="FUNC_MAX" value="3" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+		<constant name="SAMPLER_TYPE_2D" value="0" enum="SamplerType">
+			2D sampler type.
+		</constant>
+		<constant name="SAMPLER_TYPE_2D_ARRAY" value="1" enum="SamplerType">
+			2D-array sampler type.
+		</constant>
+		<constant name="SAMPLER_TYPE_3D" value="2" enum="SamplerType">
+			3D sampler type.
+		</constant>
+		<constant name="SAMPLER_TYPE_CUBE" value="3" enum="SamplerType">
+			Cubemap sampler type.
+		</constant>
+		<constant name="SAMPLER_TYPE_MAX" value="4" enum="SamplerType">
+			Represents the size of the [enum SamplerType] enum.
+		</constant>
+	</constants>
+</class>

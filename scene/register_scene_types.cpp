@@ -830,6 +830,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeVectorDecompose);
 	GDREGISTER_CLASS(VisualShaderNodeTransformDecompose);
 	GDREGISTER_CLASS(VisualShaderNodeTexture);
+	GDREGISTER_CLASS(VisualShaderNodeTextureFunc);
 	GDREGISTER_CLASS(VisualShaderNodeCurveTexture);
 	GDREGISTER_CLASS(VisualShaderNodeCurveXYZTexture);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeSample3D);

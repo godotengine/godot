@@ -523,6 +523,60 @@ public:
 
 ///////////////////////////////////////
 
+class VisualShaderNodeTextureFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeTextureFunc, VisualShaderNode);
+
+public:
+	enum SamplerType {
+		SAMPLER_TYPE_2D,
+		SAMPLER_TYPE_2D_ARRAY,
+		SAMPLER_TYPE_3D,
+		SAMPLER_TYPE_CUBE,
+		SAMPLER_TYPE_MAX,
+	};
+
+	enum Function {
+		FUNC_SIZE,
+		FUNC_QUERY_LEVELS,
+		FUNC_QUERY_LOD,
+		FUNC_MAX,
+	};
+
+private:
+	SamplerType sampler_type = SAMPLER_TYPE_2D;
+	Function func = FUNC_SIZE;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_sampler_type(SamplerType p_sampler_type);
+	SamplerType get_sampler_type() const;
+
+	void set_function(Function p_func);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+	VisualShaderNodeTextureFunc();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeTextureFunc::SamplerType)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureFunc::Function)
+
+///////////////////////////////////////
+
 class VisualShaderNodeSample3D : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSample3D, VisualShaderNode);
 
