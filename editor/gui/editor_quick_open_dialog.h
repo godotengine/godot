@@ -34,6 +34,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 
+class AudioStreamPlayer;
 class Button;
 class CenterContainer;
 class CheckButton;
@@ -104,6 +105,9 @@ public:
 	bool is_instant_preview_enabled() const;
 	void set_instant_preview_toggle_visible(bool p_visible);
 
+	void set_audio_controls_visible(bool p_visible);
+	void set_audio_pause_state(bool p_paused);
+
 	void save_selected_item();
 	void cleanup();
 
@@ -147,6 +151,10 @@ private:
 
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
+
+	Button *audio_pause_button = nullptr;
+	Button *audio_stop_button = nullptr;
+
 	CheckButton *instant_preview_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
@@ -180,6 +188,9 @@ private:
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
 	void _menu_option(int p_option);
+
+	void _toggle_pause_audio();
+	void _stop_audio();
 
 	String _get_cache_file_path() const;
 
@@ -270,18 +281,33 @@ protected:
 	void item_pressed(bool p_double_click);
 	void selection_changed();
 
+	void audio_pause_toggled();
+	void play_audio();
+	void set_audio_paused(bool p_paused);
+	bool get_audio_paused();
+	void stop_audio();
+
 private:
 	static String get_dialog_title(const Vector<StringName> &p_base_types);
 
 	LineEdit *search_box = nullptr;
 	QuickOpenResultContainer *container = nullptr;
 
+	AudioStreamPlayer *audio_player = nullptr;
+	bool audio_player_stopped = true;
+
 	Callable item_selected_callback;
 
 	Object *property_object = nullptr;
 	StringName property_path;
 	Variant initial_property_value;
-	bool initial_selection_performed = false;
+
+	// Starts at -1 so that the initial selection performed when the Quick Open
+	// dialog box first appears increments it to 0, meaning the user has performed
+	// no selections.
+	int selections_performed = -1;
+
+	void _instant_preview_toggled(bool p_enabled);
 	bool _is_instant_preview_active() const;
 	void _search_box_text_changed(const String &p_query);
 	void _finish_dialog_setup(const Vector<StringName> &p_base_types);

@@ -46,6 +46,9 @@
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/audio_stream_player_2d.h"
+#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
@@ -55,6 +58,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "servers/audio/audio_stream.h"
 
 void HighlightedLabel::draw_substr_rects(const Vector2i &p_substr, Vector2 p_offset, int p_line_limit, int line_spacing) {
 	for (int i = get_lines_skipped(); i < p_line_limit; i++) {
@@ -106,6 +110,9 @@ void HighlightedLabel::_notification(int p_notification) {
 }
 
 EditorQuickOpenDialog::EditorQuickOpenDialog() {
+	audio_player = memnew(AudioStreamPlayer);
+	add_child(audio_player);
+
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->add_theme_constant_override("separation", 0);
 	add_child(vbc);
@@ -129,8 +136,12 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 
 	{
 		container = memnew(QuickOpenResultContainer);
+		container->connect("instant_preview_toggled", callable_mp(this, &EditorQuickOpenDialog::_instant_preview_toggled));
 		container->connect("selection_changed", callable_mp(this, &EditorQuickOpenDialog::selection_changed));
 		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::item_pressed));
+
+		container->connect("audio_pause_toggled", callable_mp(this, &EditorQuickOpenDialog::audio_pause_toggled));
+		container->connect("audio_stopped", callable_mp(this, &EditorQuickOpenDialog::stop_audio));
 		vbc->add_child(container);
 	}
 
@@ -138,6 +149,98 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 	search_box->connect(SceneStringName(gui_input), callable_mp(container, &QuickOpenResultContainer::handle_search_box_input));
 	register_text_enter(search_box);
 	get_ok_button()->hide();
+}
+
+void EditorQuickOpenDialog::_instant_preview_toggled(bool p_enabled) {
+	stop_audio();
+}
+
+void EditorQuickOpenDialog::audio_pause_toggled() {
+	// If the user has not selected a new item yet, then pressing this should
+	// use the currently selected item and play through it.
+	if (selections_performed == 0) {
+		selections_performed++;
+		preview_property();
+		return;
+	}
+
+	if (audio_player_stopped) {
+		play_audio();
+		audio_player_stopped = false;
+	} else {
+		set_audio_paused(!get_audio_paused());
+	}
+}
+
+void EditorQuickOpenDialog::play_audio() {
+	AudioStreamPlayer *as_asp = Object::cast_to<AudioStreamPlayer>(property_object);
+	AudioStreamPlayer2D *as_asp2d = Object::cast_to<AudioStreamPlayer2D>(property_object);
+	AudioStreamPlayer3D *as_asp3d = Object::cast_to<AudioStreamPlayer3D>(property_object);
+	bool is_stream_property = (property_path == SNAME("stream"));
+	if (as_asp && is_stream_property) {
+		as_asp->play();
+	} else if (as_asp2d && is_stream_property) {
+		as_asp2d->play();
+	} else if (as_asp3d && is_stream_property) {
+		as_asp3d->play();
+	} else {
+		audio_player->play();
+	}
+
+	audio_player_stopped = false;
+	container->set_audio_pause_state(false);
+}
+
+void EditorQuickOpenDialog::set_audio_paused(bool p_paused) {
+	AudioStreamPlayer *as_asp = Object::cast_to<AudioStreamPlayer>(property_object);
+	AudioStreamPlayer2D *as_asp2d = Object::cast_to<AudioStreamPlayer2D>(property_object);
+	AudioStreamPlayer3D *as_asp3d = Object::cast_to<AudioStreamPlayer3D>(property_object);
+	bool is_stream_property = (property_path == SNAME("stream"));
+	if (as_asp && is_stream_property) {
+		as_asp->set_stream_paused(p_paused);
+	} else if (as_asp2d && is_stream_property) {
+		as_asp2d->set_stream_paused(p_paused);
+	} else if (as_asp3d && is_stream_property) {
+		as_asp3d->set_stream_paused(p_paused);
+	} else {
+		audio_player->set_stream_paused(p_paused);
+	}
+	container->set_audio_pause_state(p_paused);
+}
+
+bool EditorQuickOpenDialog::get_audio_paused() {
+	AudioStreamPlayer *as_asp = Object::cast_to<AudioStreamPlayer>(property_object);
+	AudioStreamPlayer2D *as_asp2d = Object::cast_to<AudioStreamPlayer2D>(property_object);
+	AudioStreamPlayer3D *as_asp3d = Object::cast_to<AudioStreamPlayer3D>(property_object);
+	bool is_stream_property = (property_path == SNAME("stream"));
+	if (as_asp && is_stream_property) {
+		return as_asp->get_stream_paused();
+	} else if (as_asp2d && is_stream_property) {
+		return as_asp2d->get_stream_paused();
+	} else if (as_asp3d && is_stream_property) {
+		return as_asp3d->get_stream_paused();
+	} else {
+		return audio_player->get_stream_paused();
+	}
+}
+
+void EditorQuickOpenDialog::stop_audio() {
+	AudioStreamPlayer *as_asp = Object::cast_to<AudioStreamPlayer>(property_object);
+	AudioStreamPlayer2D *as_asp2d = Object::cast_to<AudioStreamPlayer2D>(property_object);
+	AudioStreamPlayer3D *as_asp3d = Object::cast_to<AudioStreamPlayer3D>(property_object);
+	bool is_stream_property = (property_path == SNAME("stream"));
+	if (as_asp && is_stream_property) {
+		as_asp->stop();
+	} else if (as_asp2d && is_stream_property) {
+		as_asp2d->stop();
+	} else if (as_asp3d && is_stream_property) {
+		as_asp3d->stop();
+	} else {
+		audio_player->stop();
+	}
+
+	audio_player_stopped = true;
+	container->set_audio_pause_state(true);
 }
 
 String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_types) {
@@ -177,7 +280,10 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 
 	// Reset this, so that the property isn't updated immediately upon opening
 	// the window.
-	initial_selection_performed = false;
+	// As stated in the header file, we initialize this to -1 because the window
+	// itself will make a selection and increment this to 0, before the user
+	// has a chance to make selections and further increment it.
+	selections_performed = -1;
 
 	container->init(p_base_types);
 	container->set_instant_preview_toggle_visible(true);
@@ -197,6 +303,7 @@ void EditorQuickOpenDialog::ok_pressed() {
 	update_property();
 	container->cleanup();
 	search_box->clear();
+	stop_audio();
 	hide();
 }
 
@@ -206,14 +313,20 @@ bool EditorQuickOpenDialog::_is_instant_preview_active() const {
 
 void EditorQuickOpenDialog::selection_changed() {
 	if (!_is_instant_preview_active()) {
+		container->set_audio_controls_visible(false);
 		return;
+	}
+
+	// If the selected resource is an AudioStream, then enable the player controls.
+	if (container->get_selected() != ResourceUID::INVALID_ID) {
+		Ref<AudioStream> loaded_resource = ResourceLoader::load(container->get_selected_path());
+		container->set_audio_controls_visible(loaded_resource.is_valid());
 	}
 
 	// This prevents the property from being changed the first time the Quick Open
 	// window is opened.
-	if (!initial_selection_performed) {
-		initial_selection_performed = true;
-	} else {
+	selections_performed++;
+	if (selections_performed >= 1) {
 		preview_property();
 	}
 }
@@ -249,6 +362,8 @@ void EditorQuickOpenDialog::preview_property() {
 		}
 	}
 
+	stop_audio();
+
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't
 	// create undo/redo actions.
@@ -257,6 +372,14 @@ void EditorQuickOpenDialog::preview_property() {
 		Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, loaded_resource, "", false);
 	} else {
 		property_object->set(property_path, loaded_resource);
+
+		Ref<AudioStream> audio_stream = loaded_resource;
+		if (audio_stream.is_valid()) {
+			play_audio();
+			container->set_audio_controls_visible(true);
+		} else {
+			container->set_audio_controls_visible(false);
+		}
 	}
 	property_object->set_block_signals(false);
 }
@@ -281,6 +404,7 @@ void EditorQuickOpenDialog::update_property() {
 	}
 
 	item_selected_callback.call(container->get_selected_path());
+	stop_audio();
 }
 
 void EditorQuickOpenDialog::cancel_pressed() {
@@ -293,6 +417,8 @@ void EditorQuickOpenDialog::cancel_pressed() {
 	}
 	container->cleanup();
 	search_box->clear();
+
+	stop_audio();
 }
 
 void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
@@ -388,6 +514,19 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_theme_constant_override("separation", 3);
 		add_child(bottom_bar);
 
+		// Audio controls
+		audio_pause_button = memnew(Button);
+		style_button(audio_pause_button);
+		audio_pause_button->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_pause_audio));
+		bottom_bar->add_child(audio_pause_button);
+
+		audio_stop_button = memnew(Button);
+		style_button(audio_stop_button);
+		audio_stop_button->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_stop_audio));
+		bottom_bar->add_child(audio_stop_button);
+
+		bottom_bar->add_spacer();
+
 		instant_preview_toggle = memnew(CheckButton);
 		style_button(instant_preview_toggle);
 		instant_preview_toggle->set_text(TTRC("Instant Preview"));
@@ -420,6 +559,14 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 		bottom_bar->add_child(display_mode_toggle);
 	}
+}
+
+void QuickOpenResultContainer::_toggle_pause_audio() {
+	emit_signal(SNAME("audio_pause_toggled"));
+}
+
+void QuickOpenResultContainer::_stop_audio() {
+	emit_signal(SNAME("audio_stopped"));
 }
 
 void QuickOpenResultContainer::_menu_option(int p_option) {
@@ -945,6 +1092,14 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 
 void QuickOpenResultContainer::_toggle_instant_preview(bool p_pressed) {
 	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/instant_preview", p_pressed);
+	emit_signal(SNAME("instant_preview_toggled"), p_pressed);
+
+	// Only display the audio controls if Instant Preview is enabled *and* the current
+	// resource is (or inherits from) AudioStream.
+	if (get_selected() != ResourceUID::INVALID_ID) {
+		Ref<AudioStream> loaded_resource = ResourceLoader::load(get_selected_path());
+		set_audio_controls_visible(p_pressed && loaded_resource.is_valid());
+	}
 }
 
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
@@ -1011,6 +1166,19 @@ void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_
 	} else {
 		display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 		display_mode_toggle->set_tooltip_text(TTR("List view"));
+	}
+}
+
+void QuickOpenResultContainer::set_audio_controls_visible(bool p_visible) {
+	audio_pause_button->set_visible(p_visible);
+	audio_stop_button->set_visible(p_visible);
+}
+
+void QuickOpenResultContainer::set_audio_pause_state(bool p_paused) {
+	if (p_paused) {
+		audio_pause_button->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+	} else {
+		audio_pause_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 	}
 }
 
@@ -1134,13 +1302,20 @@ void QuickOpenResultContainer::_notification(int p_what) {
 			} else {
 				display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 			}
+
+			audio_pause_button->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+			audio_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 		} break;
 	}
 }
 
 void QuickOpenResultContainer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("instant_preview_toggled", PropertyInfo(Variant::BOOL, "toggled")));
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(Variant::BOOL, "double_click")));
+
+	ADD_SIGNAL(MethodInfo("audio_pause_toggled"));
+	ADD_SIGNAL(MethodInfo("audio_stopped"));
 }
 
 //------------------------- Result Item
