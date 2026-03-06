@@ -165,6 +165,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 	const bool has_mipmaps = r_img->has_mipmaps();
 	int width = r_img->get_width();
 	int height = r_img->get_height();
+	const int original_mip_count = has_mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
 
 	/*
 	The first mipmap level of a compressed texture must be a multiple of 4. Quote from D3D11.3 spec:
@@ -198,8 +199,9 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 	Vector<uint8_t> dest_data;
 	dest_data.resize(Image::get_image_data_size(width, height, target_format, has_mipmaps));
 	uint8_t *dest_write = dest_data.ptrw();
+	const Vector<uint8_t> src_data = r_img->get_data();
 
-	const uint8_t *src_read = r_img->get_data().ptr();
+	const uint8_t *src_read = src_data.ptr();
 
 	const int mip_count = has_mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
 	Vector<uint32_t> padded_src;
@@ -222,9 +224,13 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 		int64_t src_mip_ofs, src_mip_size;
 		int src_mip_w, src_mip_h;
 
-		r_img->get_mipmap_offset_size_and_dimensions(i, src_mip_ofs, src_mip_size, src_mip_w, src_mip_h);
+		// If the mipmap index is greater than the original mipmap count, use the last mipmap.
+		const int src_mip_index = i < original_mip_count + 1 ? i : original_mip_count;
+
+		r_img->get_mipmap_offset_size_and_dimensions(src_mip_index, src_mip_ofs, src_mip_size, src_mip_w, src_mip_h);
 
 		const uint32_t *src_mip_read = reinterpret_cast<const uint32_t *>(src_read + src_mip_ofs);
+		DEV_ASSERT(src_mip_ofs < src_data.size());
 
 		// Pad textures to nearest block by smearing.
 		if (dest_mip_w != src_mip_w || dest_mip_h != src_mip_h) {
