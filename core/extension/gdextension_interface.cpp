@@ -547,6 +547,11 @@ static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDE
 	memnew_placement(r_ret, String(name));
 }
 
+static GDExtensionVariantType gdextension_variant_get_type_by_name(GDExtensionConstStringPtr p_type) {
+	const String *type = (const String *)p_type;
+	return static_cast<GDExtensionVariantType>(Variant::get_type_by_name(*type));
+}
+
 static GDExtensionBool gdextension_variant_can_convert(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
 	return Variant::can_convert((Variant::Type)p_from, (Variant::Type)p_to);
 }
@@ -1743,6 +1748,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(variant_has_key);
 	REGISTER_INTERFACE_FUNC(variant_get_object_instance_id);
 	REGISTER_INTERFACE_FUNC(variant_get_type_name);
+	REGISTER_INTERFACE_FUNC(variant_get_type_by_name);
 	REGISTER_INTERFACE_FUNC(variant_can_convert);
 	REGISTER_INTERFACE_FUNC(variant_can_convert_strict);
 	REGISTER_INTERFACE_FUNC(get_variant_from_type_constructor);

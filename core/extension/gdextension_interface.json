@@ -4979,6 +4979,28 @@
             "since": "4.1"
         },
         {
+            "name": "variant_get_type_by_name",
+            "return_value": {
+                "type": "GDExtensionVariantType",
+                "description": [
+                    "The variant type for the given name; otherwise VARIANT_MAX if name is invalid."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_type_name",
+                    "type": "GDExtensionConstStringPtr",
+                    "description": [
+                        "The variant type name."
+                    ]
+                }
+            ],
+            "description": [
+                "Gets the Variant type by name."
+            ],
+            "since": "4.7"
+        },
+        {
             "name": "variant_can_convert",
             "return_value": {
                 "type": "GDExtensionBool",
