@@ -30,6 +30,8 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
@@ -193,6 +195,17 @@ void TexturePreview::_update_metadata_label_text() {
 
 	const Vector2i resolution = texture->get_size();
 
+	// Determine export file size. Uses the imported resource path (e.g., .ctex) rather than the source file, as this reflects the size that ends up in the exported PCK.
+	String export_size_text;
+	const String res_path = texture->get_path();
+	if (!res_path.is_empty() && !texture->is_built_in()) {
+		const String imported_path = ResourceLoader::import_remap(res_path);
+		if (!imported_path.is_empty() && FileAccess::exists(imported_path)) {
+			const uint64_t export_size = FileAccess::get_size(imported_path);
+			export_size_text = "\n" + vformat(TTR("Export Size: %s"), String::humanize_size(export_size));
+		}
+	}
+
 	if (format != Image::FORMAT_MAX) {
 		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
 		uint64_t memory = uint64_t(resolution.x) * uint64_t(resolution.y) * uint64_t(Image::get_format_pixel_size(format));
@@ -216,7 +229,8 @@ void TexturePreview::_update_metadata_label_text() {
 							texture->get_height(),
 							format_name,
 							mipmaps,
-							String::humanize_size(memory)));
+							String::humanize_size(memory)) +
+					export_size_text);
 		} else {
 			// "No Mipmaps" is easier to distinguish than "0 Mipmaps",
 			// especially since 0, 6, and 8 look quite close with the default code font.
@@ -225,14 +239,16 @@ void TexturePreview::_update_metadata_label_text() {
 							texture->get_width(),
 							texture->get_height(),
 							format_name,
-							String::humanize_size(memory)));
+							String::humanize_size(memory)) +
+					export_size_text);
 		}
 	} else {
 		metadata_label->set_text(
 				vformat(String::utf8("%d×%d %s"),
 						texture->get_width(),
 						texture->get_height(),
-						format_name));
+						format_name) +
+				export_size_text);
 	}
 }
 
