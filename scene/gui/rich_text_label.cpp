@@ -7076,7 +7076,11 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line) const {
 				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 				ItemFrame *frame = static_cast<ItemFrame *>(E);
 				for (int i = 0; !selection.to_line_found && i < (int)frame->lines.size(); i++) {
-					txt += _get_line_text(frame, i);
+					String cell_text = _get_line_text(frame, i);
+					if (!txt.is_empty() && !cell_text.is_empty()) {
+						txt += " ";
+					}
+					txt += cell_text;
 				}
 				if (selection.to_line_found) {
 					break;
@@ -7093,7 +7097,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line) const {
 		} else if (it->type == ITEM_TEXT) {
 			const ItemText *t = static_cast<ItemText *>(it);
 			txt += t->text;
-		} else if (it->type == ITEM_NEWLINE) {
+		} else if (it->type == ITEM_NEWLINE || it->type == ITEM_PARAGRAPH) {
 			txt += "\n";
 		} else if (it->type == ITEM_IMAGE) {
 			txt += " ";
