@@ -3334,6 +3334,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_set_transform", "item", "transform"), &RenderingServer::canvas_item_add_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_clip_ignore", "item", "ignore"), &RenderingServer::canvas_item_add_clip_ignore);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_animation_slice", "item", "animation_length", "slice_begin", "slice_end", "offset"), &RenderingServer::canvas_item_add_animation_slice, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_rendering_callback", "item", "callable"), &RenderingServer::canvas_item_add_rendering_callback);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_sort_children_by_y", "item", "enabled"), &RenderingServer::canvas_item_set_sort_children_by_y);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_index", "item", "z_index"), &RenderingServer::canvas_item_set_z_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_as_relative_to_parent", "item", "enabled"), &RenderingServer::canvas_item_set_z_as_relative_to_parent);

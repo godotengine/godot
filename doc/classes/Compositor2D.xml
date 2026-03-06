@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Compositor2D" inherits="Node2D" experimental="The implementation may change as more of the rendering internals are exposed over time." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		This node allows for creating custom rendering commands in 2D.
+	</brief_description>
+	<description>
+		Similar to [Compositor] feature, this node allows to customize the rendering pipeline in 2D scenes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_render_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="render_data" type="RenderCanvasDataRD" />
+			<description>
+				Implement this function with your custom rendering code. This function will be called in the drawing order of the CanvasItems in the scene tree. [param render_data] provides access to the rendering state, it is only valid during rendering and should not be stored.
+			</description>
+		</method>
+		<method name="disable_backbuffer">
+			<return type="void" />
+			<description>
+				Disables back-buffering, it's disabled by default.
+			</description>
+		</method>
+		<method name="enable_backbuffer">
+			<return type="void" />
+			<description>
+				Enables back-buffering, useful for screen effects. See also [BackBufferCopy].
+			</description>
+		</method>
+	</methods>
+</class>
