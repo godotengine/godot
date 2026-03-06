@@ -968,16 +968,54 @@ def prepare_purge(env):
     atexit.register(purge_flaky_files)
 
 
-def prepare_timer():
-    import time
+def get_build_timezone(env):
+    import datetime
 
-    def print_elapsed_time(time_at_start: float):
-        time_elapsed = time.time() - time_at_start
-        time_formatted = time.strftime("%H:%M:%S", time.gmtime(time_elapsed))
-        time_centiseconds = (time_elapsed % 1) * 100
-        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds:02.0f}")
+    build_timestamp_timezone = env["build_timestamp_timezone"]  # type: str
+    timezone = datetime.timezone.utc
+    if build_timestamp_timezone == "system":
+        system_tzinfo = datetime.datetime.now().astimezone().tzinfo
+        if system_tzinfo is not None and isinstance(system_tzinfo, datetime.timezone):
+            timezone = system_tzinfo
 
-    atexit.register(print_elapsed_time, time.time())
+    return timezone
+
+
+def prepare_timer(timezone):
+    import datetime
+
+    # cs: centisecond 0.01
+    # us: microsecond 0.000001
+    us_to_cs_shift_left = 4
+    cs_in_ms = 1 * (10 ^ (us_to_cs_shift_left))
+
+    def now() -> datetime.datetime:
+        return datetime.datetime.now(timezone)
+
+    def print_elapsed_time(time_at_start: datetime.datetime):
+        time_at_end = now()
+        time_elapsed = time_at_end - time_at_start
+        time_elapsed_rounded = datetime.timedelta(
+            days=time_elapsed.days,
+            seconds=time_elapsed.seconds,
+            microseconds=round(time_elapsed.microseconds / cs_in_ms) * cs_in_ms,
+        )
+        time_elapsed_str = str(time_elapsed_rounded)
+        if time_elapsed_rounded.microseconds > 0:
+            time_elapsed_str = time_elapsed_str[:-us_to_cs_shift_left]
+
+        print_info(
+            f"Time elapsed: {time_elapsed_str} (build ended at {time_at_end.strftime('%Y-%m-%d %H:%M:%S')} {timezone.tzname(time_at_end)})"
+        )
+
+    atexit.register(print_elapsed_time, now())
+
+
+def print_started_at(timezone):
+    import datetime
+
+    time_at_start = datetime.datetime.now(timezone)
+    print_info(f"(build started at {time_at_start.strftime('%Y-%m-%d %H:%M:%S')} {timezone.tzname(time_at_start)})")
 
 
 def dump(env):

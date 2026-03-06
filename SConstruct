@@ -358,9 +358,22 @@ opts.Add("rcflags", "Custom flags for Windows resource compiler")
 opts.Add("c_compiler_launcher", "C compiler launcher (e.g. `ccache`)")
 opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 
+opts.Add(
+    EnumVariable(
+        "build_timestamp_timezone",
+        "Determines which timezone to use to print build timestamps in SCons terminal output. Defaults to `utc`",
+        "utc",
+        ["utc", "system"],
+        {"local": "system"},
+    )
+)
+
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env)
+
+if not env.GetOption("clean") and not env.GetOption("help"):
+    methods.print_started_at(methods.get_build_timezone(env))
 
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
@@ -1241,4 +1254,4 @@ if not env.GetOption("clean") and not env.GetOption("help"):
     methods.dump(env)
     methods.show_progress(env)
     methods.prepare_purge(env)
-    methods.prepare_timer()
+    methods.prepare_timer(methods.get_build_timezone(env))
