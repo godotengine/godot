@@ -131,15 +131,17 @@ class ScriptTextEditor : public CodeEditorBase {
 		MODE_MAX
 	};
 
-	class EditMenusSTE : public EditMenusCEB {
-		GDCLASS(EditMenusSTE, EditMenusCEB);
+	class EditMenusScTE : public EditMenusCEB {
+		GDCLASS(EditMenusScTE, EditMenusCEB);
 		PopupMenu *breakpoints_menu = nullptr;
 
 		void _update_breakpoint_list();
 		void _breakpoint_item_pressed(int p_idx);
 
 	public:
-		EditMenusSTE();
+		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ScriptTextEditor>(p_seb); }
+
+		EditMenusScTE();
 	};
 
 	void _enable_code_editor();
@@ -166,7 +168,6 @@ protected:
 	void _update_warnings();
 	void _update_errors();
 
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
 
 	void _set_theme_for_script();
@@ -222,7 +223,7 @@ public:
 	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 
-	virtual Control *get_edit_menu() override;
+	virtual EditMenusBase *create_edit_menu() override { return memnew(EditMenusScTE); }
 
 	virtual Ref<Texture2D> get_theme_icon() override;
 

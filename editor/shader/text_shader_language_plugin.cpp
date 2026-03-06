@@ -30,32 +30,8 @@
 
 #include "text_shader_language_plugin.h"
 
-#include "text_shader_editor.h"
-
 #include "core/string/string_builder.h"
 #include "servers/rendering/shader_types.h"
-
-bool TextShaderLanguagePlugin::handles_shader(const Ref<Shader> &p_shader) const {
-	// The text shader editor only edits the base Shader class,
-	// not classes that inherit from it like VisualShader.
-	return p_shader->get_class_name() == Shader::get_class_static();
-}
-
-bool TextShaderLanguagePlugin::handles_shader_include(const Ref<ShaderInclude> &p_shader_inc) const {
-	return p_shader_inc->get_class_static() == ShaderInclude::get_class_static();
-}
-
-ShaderEditor *TextShaderLanguagePlugin::edit_shader(const Ref<Shader> &p_shader) {
-	TextShaderEditor *editor = memnew(TextShaderEditor);
-	editor->edit_shader(p_shader);
-	return editor;
-}
-
-ShaderEditor *TextShaderLanguagePlugin::edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {
-	TextShaderEditor *editor = memnew(TextShaderEditor);
-	editor->edit_shader_include(p_shader_inc);
-	return editor;
-}
 
 Ref<Shader> TextShaderLanguagePlugin::create_new_shader(int p_variation_index, Shader::Mode p_shader_mode, int p_template_index) {
 	Ref<Shader> shader;
@@ -147,10 +123,6 @@ Ref<ShaderInclude> TextShaderLanguagePlugin::create_new_shader_include() {
 	Ref<ShaderInclude> shader_inc;
 	shader_inc.instantiate();
 	return shader_inc;
-}
-
-PackedStringArray TextShaderLanguagePlugin::get_language_variations() const {
-	return PackedStringArray{ "Shader", "ShaderInclude" };
 }
 
 String TextShaderLanguagePlugin::get_file_extension(int p_variation_index) const {
