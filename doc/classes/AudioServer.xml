@@ -389,6 +389,10 @@
 		<member name="playback_speed_scale" type="float" setter="set_playback_speed_scale" getter="get_playback_speed_scale" default="1.0">
 			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed). See also [member Engine.time_scale] to affect the general simulation speed, which is independent from [member AudioServer.playback_speed_scale].
 		</member>
+		<member name="speed_of_sound" type="float" setter="set_speed_of_sound" getter="get_speed_of_sound" default="343.0">
+			The speed of sound, in meters per second. Used for Doppler calculation in [AudioStreamPlayer3D]. On initialization, this is set to [member ProjectSettings.audio/general/speed_of_sound]. This must be set to a value greater than [code]0.0[/code].
+			[b]Note:[/b] The engine currently does not simulate audio delay based on the distance between the [AudioStreamPlayer3D] node and the listener.
+		</member>
 	</members>
 	<signals>
 		<signal name="bus_layout_changed">
