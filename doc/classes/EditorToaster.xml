@@ -13,7 +13,7 @@
 		<method name="push_toast">
 			<return type="void" />
 			<param index="0" name="message" type="String" />
-			<param index="1" name="severity" type="int" enum="EditorToaster.Severity" default="0" />
+			<param index="1" name="severity" type="int" enum="EditorToaster.Severity" default="SEVERITY_INFO" />
 			<param index="2" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
 				Pushes a toast notification to the editor for display.

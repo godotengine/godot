@@ -90,7 +90,7 @@
 		</method>
 		<method name="instantiate" qualifiers="const" keywords="create, make, spawn, new">
 			<return type="Node" />
-			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
+			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="GEN_EDIT_STATE_DISABLED" />
 			<description>
 				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification on the root node.
 			</description>

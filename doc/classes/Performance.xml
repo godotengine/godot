@@ -18,7 +18,7 @@
 			<param index="0" name="id" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="arguments" type="Array" default="[]" />
-			<param index="3" name="type" type="int" enum="Performance.MonitorType" default="0" />
+			<param index="3" name="type" type="int" enum="Performance.MonitorType" default="MONITOR_TYPE_QUANTITY" />
 			<description>
 				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
 				[codeblocks]

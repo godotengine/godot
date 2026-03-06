@@ -174,7 +174,7 @@
 		<method name="create_action">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
-			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
+			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="MERGE_DISABLE" />
 			<param index="2" name="backward_undo_ops" type="bool" default="false" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].

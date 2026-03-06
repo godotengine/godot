@@ -28,7 +28,7 @@
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="id" type="int" default="-1" />
-			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<param index="2" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new checkable item with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
@@ -51,7 +51,7 @@
 			<param index="0" name="texture" type="Texture2D" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
-			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<param index="3" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param texture].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
@@ -75,7 +75,7 @@
 			<param index="0" name="texture" type="Texture2D" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
-			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<param index="3" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new item with text [param label] and icon [param texture].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
@@ -86,7 +86,7 @@
 			<param index="0" name="texture" type="Texture2D" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
-			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<param index="3" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Same as [method add_icon_check_item], but uses a radio check button.
 			</description>
@@ -118,7 +118,7 @@
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="id" type="int" default="-1" />
-			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<param index="2" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new item with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
@@ -131,7 +131,7 @@
 			<param index="1" name="max_states" type="int" />
 			<param index="2" name="default_state" type="int" default="0" />
 			<param index="3" name="id" type="int" default="-1" />
-			<param index="4" name="accel" type="int" enum="Key" default="0" />
+			<param index="4" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new multistate item with text [param label].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
@@ -158,7 +158,7 @@
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="id" type="int" default="-1" />
-			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<param index="2" name="accel" type="int" enum="Key" default="KEY_NONE" />
 			<description>
 				Adds a new radio check button with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.

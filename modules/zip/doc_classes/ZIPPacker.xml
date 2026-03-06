@@ -26,7 +26,7 @@
 		<method name="add_directory">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="493" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="UNIX_READ_OWNER | UNIX_WRITE_OWNER | UNIX_EXECUTE_OWNER | UNIX_READ_GROUP | UNIX_EXECUTE_GROUP | UNIX_READ_OTHER | UNIX_EXECUTE_OTHER" />
 			<param index="2" name="modified_time" type="int" default="0" />
 			<description>
 				Adds directory to the archive. If [param modified_time] is set to [code]0[/code], current system time is used.
@@ -49,7 +49,7 @@
 		<method name="open">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0" />
+			<param index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="APPEND_CREATE" />
 			<description>
 				Opens a zip file for writing at the given path using the specified write mode.
 				This must be called before everything else.
@@ -58,7 +58,7 @@
 		<method name="start_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="UNIX_READ_OWNER | UNIX_WRITE_OWNER | UNIX_READ_GROUP | UNIX_READ_OTHER" />
 			<param index="2" name="modified_time" type="int" default="0" />
 			<description>
 				Starts writing to a file within the archive. Only one file can be written at the same time. If [param modified_time] is set to [code]0[/code], current system time is used.

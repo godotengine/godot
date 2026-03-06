@@ -96,7 +96,7 @@
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
-			<param index="2" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<param index="2" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="CACHE_MODE_REUSE" />
 			<description>
 				Loads a resource at the given [param path], caching the result for further access.
 				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
@@ -131,7 +131,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
 			<param index="2" name="use_sub_threads" type="bool" default="false" />
-			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="CACHE_MODE_REUSE" />
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.

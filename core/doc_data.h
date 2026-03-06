@@ -975,7 +975,7 @@ public:
 		}
 	};
 
-	static String get_default_value_string(const Variant &p_value);
+	static String get_default_value_string(const Variant &p_value, const PropertyInfo &p_info);
 
 	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);

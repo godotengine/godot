@@ -494,7 +494,7 @@
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
 			<param index="0" name="image" type="Resource" />
-			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
+			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="CURSOR_ARROW" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image, which is only visible inside the game window, for the given mouse [param shape]. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor.
@@ -507,7 +507,7 @@
 		</method>
 		<method name="set_default_cursor_shape">
 			<return type="void" />
-			<param index="0" name="shape" type="int" enum="Input.CursorShape" default="0" />
+			<param index="0" name="shape" type="int" enum="Input.CursorShape" default="CURSOR_ARROW" />
 			<description>
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.

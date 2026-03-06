@@ -84,7 +84,7 @@
 		<method name="get_file_export_mode" qualifiers="const">
 			<return type="int" enum="EditorExportPreset.FileExportMode" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="default" type="int" enum="EditorExportPreset.FileExportMode" default="0" />
+			<param index="1" name="default" type="int" enum="EditorExportPreset.FileExportMode" default="MODE_FILE_NOT_CUSTOMIZED" />
 			<description>
 				Returns file export mode for the specified file.
 			</description>

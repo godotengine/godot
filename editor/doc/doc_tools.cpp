@@ -562,7 +562,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				}
 
 				if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
-					prop.default_value = DocData::get_default_value_string(default_value);
+					prop.default_value = DocData::get_default_value_string(default_value, E);
 				}
 
 				StringName setter = ClassDB::get_property_setter(name, E.name);
@@ -734,7 +734,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					}
 
 					if (theme_item.data_type == Theme::DATA_TYPE_COLOR || theme_item.data_type == Theme::DATA_TYPE_CONSTANT) {
-						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname));
+						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname), PropertyInfo());
 					}
 
 					c.theme_properties.push_back(tid);
@@ -865,7 +865,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
 				if (darg_idx >= 0) {
-					ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx]);
+					ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx], arginfo);
 				}
 
 				method.arguments.push_back(ad);
@@ -913,7 +913,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::PropertyDoc property;
 			property.name = pi.name;
 			property.type = Variant::get_type_name(pi.type);
-			property.default_value = DocData::get_default_value_string(v.get(pi.name));
+			property.default_value = DocData::get_default_value_string(v.get(pi.name), pi);
 
 			c.properties.push_back(property);
 		}
@@ -945,7 +945,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = DocData::get_default_value_string(value);
+			constant.value = DocData::get_default_value_string(value, PropertyInfo());
 			constant.is_value_valid = true;
 			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);
@@ -1075,7 +1075,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
-						ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx]);
+						ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx], mi.arguments[j]);
 					}
 
 					md.arguments.push_back(ad);
@@ -1120,7 +1120,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 					int64_t darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {
-						ad.default_value = DocData::get_default_value_string(ai.default_arguments[darg_idx]);
+						ad.default_value = DocData::get_default_value_string(ai.default_arguments[darg_idx], ai.arguments[j]);
 					}
 
 					atd.arguments.push_back(ad);

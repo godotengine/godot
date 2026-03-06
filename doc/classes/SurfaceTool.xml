@@ -107,7 +107,7 @@
 		<method name="create_from_arrays">
 			<return type="void" />
 			<param index="0" name="arrays" type="Array" />
-			<param index="1" name="primitive_type" type="int" enum="Mesh.PrimitiveType" default="3" />
+			<param index="1" name="primitive_type" type="int" enum="Mesh.PrimitiveType" default="PRIMITIVE_TRIANGLES" />
 			<description>
 				Creates this SurfaceTool from existing vertex arrays such as returned by [method commit_to_arrays], [method Mesh.surface_get_arrays], [method Mesh.surface_get_blend_shape_arrays], [method ImporterMesh.get_surface_arrays], and [method ImporterMesh.get_surface_blend_shape_arrays]. [param primitive_type] controls the type of mesh data, defaulting to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>

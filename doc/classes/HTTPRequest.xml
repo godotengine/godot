@@ -186,7 +186,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="METHOD_GET" />
 			<param index="3" name="request_data" type="String" default="&quot;&quot;" />
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
@@ -199,7 +199,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
 			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
-			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="METHOD_GET" />
 			<param index="3" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
