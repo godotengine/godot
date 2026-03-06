@@ -99,6 +99,7 @@ public:
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+		command_queue.flush_if_pending();
 		return physics_server_2d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
 
@@ -114,6 +115,7 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
+		command_queue.flush_if_pending();
 		return physics_server_2d->space_get_direct_state(p_space);
 	}
 
@@ -259,6 +261,8 @@ public:
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+		command_queue.flush_if_pending();
 		return physics_server_2d->body_collide_shape(p_body, p_body_shape, p_shape, p_shape_xform, p_motion, r_results, p_result_max, r_result_count);
 	}
 
@@ -266,12 +270,14 @@ public:
 
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+		command_queue.flush_if_pending();
 		return physics_server_2d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
+		command_queue.flush_if_pending();
 		return physics_server_2d->body_get_direct_state(p_body);
 	}
 
