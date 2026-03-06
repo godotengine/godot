@@ -62,10 +62,6 @@ Error RemoteDebuggerPeerTCP::put_message(const Array &p_arr) {
 	return OK;
 }
 
-int RemoteDebuggerPeerTCP::get_max_message_size() const {
-	return 8 << 20; // 8 MiB
-}
-
 void RemoteDebuggerPeerTCP::close() {
 	running = false;
 	if (thread.is_started()) {
