@@ -242,6 +242,13 @@
 				Returns whether [param class] (or its ancestor classes if [param no_inheritance] is [code]false[/code]) has an enum called [param enum] that is a bitfield.
 			</description>
 		</method>
+		<method name="is_class_exposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<description>
+				Returns whether this [param class] is accessible to scripting languages or not.
+			</description>
+		</method>
 		<method name="is_parent_class" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
