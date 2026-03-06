@@ -1475,6 +1475,9 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 
 						} else {
 							has_valid_getter = true;
+							if (!is_type_compatible(member.variable->datatype, return_datatype)) {
+								member.variable->use_getter_conversion = true;
+							}
 #ifdef DEBUG_ENABLED
 							if (member.variable->datatype.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
 								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
