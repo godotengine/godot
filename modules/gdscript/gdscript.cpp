@@ -975,7 +975,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		{
-			HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
+			AHashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 			if (E) {
 				if (likely(top->valid) && E->value.getter) {
 					Callable::CallError ce;
@@ -1023,7 +1023,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 
 	GDScript *top = this;
 	while (top) {
-		HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
+		AHashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 		if (E) {
 			const MemberInfo *member = &E->value;
 			Variant value = p_value;
@@ -1533,7 +1533,7 @@ GDScript::~GDScript() {
 
 bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	{
-		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
+		AHashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
 			Variant value = p_value;
@@ -1560,7 +1560,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	GDScript *sptr = script.ptr();
 	while (sptr) {
 		{
-			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
+			AHashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				const GDScript::MemberInfo *member = &E->value;
 				Variant value = p_value;
@@ -1606,7 +1606,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
 bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	{
-		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
+		AHashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
 		if (E) {
 			if (likely(script->valid) && E->value.getter) {
 				Callable::CallError err;
@@ -1630,7 +1630,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		{
-			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
+			AHashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				if (likely(sptr->valid) && E->value.getter) {
 					Callable::CallError ce;
