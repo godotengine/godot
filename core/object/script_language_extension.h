@@ -136,6 +136,10 @@ public:
 	}
 	GDVIRTUAL0RC(bool, _is_abstract)
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	EXBIND0RC(bool, has_default_constructor)
+#endif
+
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
 
