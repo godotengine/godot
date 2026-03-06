@@ -315,6 +315,11 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
 			return id->name;
 		} break;
+		case GDP::Node::LAMBDA: {
+			const GDP::LambdaNode *lambda = static_cast<const GDP::LambdaNode *>(p_expression);
+			const GDP::IdentifierNode *id = lambda->function->identifier;
+			return id != nullptr ? id->name : "<anonymous lambda>";
+		} break;
 		default: {
 			// Nothing to do.
 		} break;
