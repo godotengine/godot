@@ -9,6 +9,16 @@ env.main_sources = []
 
 env_main = env.Clone()
 
+opts = Variables([], ARGUMENTS)
+opts.Add(
+    BoolVariable(
+        "user_test",
+        "Include the --user-test option. This option does nothing by default, so you can ignore this flag unless you plan to edit main/usertest/usertest.cpp.",
+        False,
+    )
+)
+opts.Update(env_main)
+
 env_main.add_source_files(env.main_sources, "*.cpp")
 
 if env["steamapi"] and env.editor_build:
@@ -16,6 +26,10 @@ if env["steamapi"] and env.editor_build:
 
 if env["tests"]:
     env_main.Append(CPPDEFINES=["TESTS_ENABLED"])
+
+if env_main["user_test"]:
+    env_main.Append(CPPDEFINES=["GODOT_USER_TEST_ENABLED"])
+    env_main.add_source_files(env.main_sources, "usertest/*.cpp")
 
 env_main.CommandNoCache(
     "#main/splash.gen.h",
