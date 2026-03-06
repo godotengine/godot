@@ -522,7 +522,6 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				update_skeletons = false;
 			}
 			//render anything pending, including clearing if no items
-
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info, material_screen_texture_mipmaps_cached);
 			item_count = 0;
 
@@ -575,6 +574,12 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 
 void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingServerTypes::RenderInfo *r_render_info, bool p_backbuffer_has_mipmaps) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
+
+	if (p_to_backbuffer && render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+		WARN_PRINT_ONCE("MSAA is not supported by the Canvas backbuffer.");
+	}
 
 	canvas_begin(p_to_render_target, p_to_backbuffer, p_backbuffer_has_mipmaps);
 
@@ -2211,7 +2216,11 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
 		glBindTexture(GL_TEXTURE_2D, tex->tex_id);
 	} else {
-		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.fbo != 0) {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		}
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
 		if (render_target->backbuffer != 0) {
