@@ -152,7 +152,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _help_callback(const String &p_topic);
 
-	void _add_text(const String &p_bbcode);
+	void _add_text(const String &p_bbcode, bool p_from_doc = true);
 	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
@@ -176,6 +176,10 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
+	bool bilingual = false;
+	String _combine_to_bilingual(const String &p_string, const String &p_translation, bool p_inline) const;
+	String _format_doc_desc(const String &p_string, bool p_is_native, bool p_inline = true) const;
+	String _format_editor_prompt(const String &p_string) const;
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
