@@ -335,11 +335,18 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	ERR_FAIL_NULL(spatial_node);
 	Instance ins;
 
+	real_t scale = (real_t)EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_scale") * p_scale;
+	selectable_icon_size = scale;
+
+	if (scale == 0.0) {
+		return;
+	}
+
 	Vector<Vector3> vs = {
-		Vector3(-p_scale, p_scale, 0),
-		Vector3(p_scale, p_scale, 0),
-		Vector3(p_scale, -p_scale, 0),
-		Vector3(-p_scale, -p_scale, 0)
+		Vector3(-scale, scale, 0),
+		Vector3(scale, scale, 0),
+		Vector3(scale, -scale, 0),
+		Vector3(-scale, -scale, 0)
 	};
 
 	Vector<Vector2> uv = {
@@ -368,7 +375,6 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
 	mesh->surface_set_material(0, p_material);
 
-	selectable_icon_size = p_scale;
 	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 100.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 200.0f));
 
 	ins.mesh = mesh;
@@ -376,8 +382,6 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 		ins.create_instance(spatial_node, hidden);
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
-
-	selectable_icon_size = p_scale;
 
 	instances.push_back(ins);
 }
