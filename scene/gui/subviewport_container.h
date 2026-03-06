@@ -35,8 +35,16 @@
 class SubViewportContainer : public Container {
 	GDCLASS(SubViewportContainer, Container);
 
+public:
+	enum ResolutionMode {
+		RESOLUTION_MODE_SHRINK,
+		RESOLUTION_MODE_FIXED,
+	};
+
+	ResolutionMode mode = RESOLUTION_MODE_SHRINK;
 	bool stretch = false;
 	int shrink = 1;
+	Vector2i fixed_resolution = Vector2i(512, 512);
 	bool mouse_target = false;
 
 	void _notify_viewports(int p_notification);
@@ -54,6 +62,12 @@ protected:
 	GDVIRTUAL1RC(bool, _propagate_input_event, RequiredParam<InputEvent>);
 
 public:
+	void set_mode(ResolutionMode p_mode);
+	ResolutionMode get_mode() const;
+
+	void set_fixed_resolution(const Vector2i &p_fixed_resolution);
+	Vector2i get_fixed_resolution() const;
+
 	void set_stretch(bool p_enable);
 	bool is_stretch_enabled() const;
 
@@ -72,7 +86,10 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	PackedStringArray get_configuration_warnings() const override;
 
 	SubViewportContainer();
 };
+
+VARIANT_ENUM_CAST(SubViewportContainer::ResolutionMode);

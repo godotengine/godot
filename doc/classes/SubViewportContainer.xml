@@ -26,14 +26,28 @@
 			If [code]false[/code], the [Control] nodes inside its [SubViewport] children are considered as targets.
 			If [code]true[/code], the [SubViewportContainer] itself will be considered as a target.
 		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="ResolutionMode" default="0">
+			Determines the method that is used to set the resolution of the [SubViewport].
+		</member>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
 			If [code]true[/code], the sub-viewport will be automatically resized to the control's size.
 			[b]Note:[/b] If [code]true[/code], this will prohibit changing [member SubViewport.size] of its children manually.
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
-			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
+			If [member mode] is [constant RESOLUTION_MODE_SHRINK], divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
 			For example, a 1280×720 sub-viewport with [member stretch_shrink] set to [code]2[/code] will be rendered at 640×360 while occupying the same size in the container.
 			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
 		</member>
+		<member name="fixed_resolution" type="Vector2i" setter="set_fixed_resolution" getter="get_fixed_resolution" default="Vector2i(512, 512)">
+			Determines the method that is used to set the resolution of the [SubViewport].
+		</member>
 	</members>
+	<constants>
+		<constant name="RESOLUTION_MODE_SHRINK" value="0" enum="ResolutionMode">
+			Use the [member stretch_shrink] value to calculate the effective resolution of the [SubViewport].
+		</constant>
+		<constant name="RESOLUTION_MODE_FIXED" value="1" enum="ResolutionMode">
+			Use the [member fixed_resolution] value to determine the effective resolution of the [SubViewport].
+		</constant>
+	</constants>
 </class>
