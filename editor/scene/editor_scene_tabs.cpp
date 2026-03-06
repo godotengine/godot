@@ -66,6 +66,8 @@ void EditorSceneTabs::_notification(int p_what) {
 			scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
 
 			scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
+
+			_update_tab_titles();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
