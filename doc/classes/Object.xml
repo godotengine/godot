@@ -76,6 +76,30 @@
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
+		<method name="_get_property_description" qualifiers="virtual">
+			<return type="String" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Override this method to provide a custom description for the given [param property]. The description is displayed as a tooltip in the Inspector dock when hovering over the property.
+				This is particularly useful for dynamically exported properties (via [method _get_property_list]) which cannot be documented using the standard documentation system.
+				[codeblocks]
+				[gdscript]
+				func _get_property_description(property):
+					if property == "my_dynamic_property":
+						return "A dynamically exported property with a custom tooltip."
+					return ""
+				[/gdscript]
+				[csharp]
+				public override string _GetPropertyDescription(StringName property)
+				{
+					if (property == "my_dynamic_property")
+						return "A dynamically exported property with a custom tooltip.";
+					return "";
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="_get_property_list" qualifiers="virtual">
 			<return type="Dictionary[]" />
 			<description>
