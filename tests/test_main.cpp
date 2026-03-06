@@ -174,8 +174,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String suite_name = String(p_in.m_test_suite);
 
 		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
-			memnew(MessageQueue);
-
 			memnew(Input);
 			Input::get_singleton()->set_use_accumulated_input(false);
 
@@ -195,9 +193,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 					break;
 				}
 			}
-			memnew(RenderingServerDefault());
-			RenderingServerDefault::get_singleton()->init();
-			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
 			// ThemeDB requires RenderingServer to initialize the default theme.
 			// So we have to do this for each test case. Also make sure there is
@@ -340,14 +335,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (RenderingServer::get_singleton()) {
-			// ThemeDB requires RenderingServer to finalize the default theme.
-			// So we have to do this for each test case.
 			ThemeDB::get_singleton()->finalize_theme();
-
-			RenderingServer::get_singleton()->sync();
-			RenderingServer::get_singleton()->global_shader_parameters_clear();
-			RenderingServer::get_singleton()->finish();
-			memdelete(RenderingServer::get_singleton());
 		}
 
 		if (AccessibilityServer::get_singleton()) {
@@ -360,11 +348,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		if (InputMap::get_singleton()) {
 			memdelete(InputMap::get_singleton());
-		}
-
-		if (MessageQueue::get_singleton()) {
-			MessageQueue::get_singleton()->flush();
-			memdelete(MessageQueue::get_singleton());
 		}
 
 		if (AudioServer::get_singleton()) {
