@@ -90,6 +90,7 @@ _arguments \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
   '--dump-gdextension-interface[generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.]' \
   '--dump-extension-api[generate JSON dump of the Godot API for GDExtension bindings named "extension_api.json" in the current folder]' \
+  '--dump-shader-api[generate a JSON dump of the Godot shader API for GDShader bindings named "shader_api.json" in the current folder]' \
   '--benchmark[benchmark the run time and print it to console]' \
   '--benchmark-file[benchmark the run time and save it to a given file in JSON format]:path to output JSON file' \
   '--test[run all unit tests; run with "--test --help" for more information]'
