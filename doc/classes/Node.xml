@@ -895,7 +895,7 @@
 				Changes the RPC configuration for the given [param method]. [param config] should either be [code]null[/code] to disable the feature (as by default), or a [Dictionary] containing the following entries:
 				- [code]rpc_mode[/code]: see [enum MultiplayerAPI.RPCMode];
 				- [code]transfer_mode[/code]: see [enum MultiplayerPeer.TransferMode];
-				- [code]call_local[/code]: if [code]true[/code], the method will also be called locally;
+				- [code]call_local[/code]: if [code]true[/code], the method can be called locally;
 				- [code]channel[/code]: an [int] representing the channel to send the RPC on.
 				[b]Note:[/b] In GDScript, this method corresponds to the [annotation @GDScript.@rpc] annotation, with various parameters passed ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]...). See also the [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]high-level multiplayer[/url] tutorial.
 			</description>
