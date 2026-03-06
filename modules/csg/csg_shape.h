@@ -214,8 +214,20 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
+public:
+	enum FlipUVMode {
+		UV_MODE_FLIP_X,
+		UV_MODE_FLIP_Y,
+		UV_MODE_FLIP_X_AND_Y,
+
+	};
+
+private:
+	FlipUVMode flip_uv_mode = UV_MODE_FLIP_X;
+
 protected:
 	bool flip_faces;
+	bool flip_uvs = false;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
@@ -223,8 +235,16 @@ public:
 	void set_flip_faces(bool p_invert);
 	bool get_flip_faces();
 
+	void set_flip_uvs(const bool p_flip);
+	bool is_flip_uvs() const;
+
+	void set_flip_uv_mode(FlipUVMode p_flip);
+	FlipUVMode get_flip_uv_mode() const;
+
 	CSGPrimitive3D();
 };
+
+VARIANT_ENUM_CAST(CSGPrimitive3D::FlipUVMode)
 
 class CSGMesh3D : public CSGPrimitive3D {
 	GDCLASS(CSGMesh3D, CSGPrimitive3D);
@@ -238,6 +258,7 @@ class CSGMesh3D : public CSGPrimitive3D {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
@@ -284,7 +305,14 @@ class CSGBox3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
+	Ref<Material> top_material;
+	Ref<Material> bottom_material;
 	Vector3 size = Vector3(1, 1, 1);
+	bool scale_uv = true;
+	Vector3 uv_offset;
+	float uv_floor_rotation = 0.0;
+	float uv_size = 1.0;
+	bool uv_compatibility_mode = false;
 
 protected:
 	static void _bind_methods();
@@ -297,8 +325,29 @@ public:
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
+	void set_scale_uv(const bool p_scale_uv);
+	bool is_scale_uv() const;
+
+	void set_uv_offset(const Vector3 &p_size);
+	Vector3 get_uv_offset() const;
+
+	void set_uv_floor_rotation(const float p_rotation);
+	float get_uv_floor_rotation() const;
+
+	void set_uv_size(const float p_size);
+	float get_uv_size() const;
+
+	void set_uv_compatibility_mode(const bool p_compat);
+	bool is_uv_compatibility_mode() const;
+
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_top_material(const Ref<Material> &p_material);
+	Ref<Material> get_top_material() const;
+
+	void set_bottom_material(const Ref<Material> &p_material);
+	Ref<Material> get_bottom_material() const;
 
 	CSGBox3D() {}
 };
@@ -308,11 +357,18 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
+	Ref<Material> top_material;
+	Ref<Material> bottom_material;
 	float radius;
 	float height;
 	int sides;
 	bool cone;
 	bool smooth_faces;
+	bool scale_uv = true;
+	float uv_size = 1.0;
+	int uv_horizontal_divisions = 4;
+	Vector2 uv_offset;
+	Vector2 top_uv_offset;
 
 protected:
 	static void _bind_methods();
@@ -330,11 +386,32 @@ public:
 	void set_cone(const bool p_cone);
 	bool is_cone() const;
 
+	void set_scale_uv(const bool p_scale_uv);
+	bool is_scale_uv() const;
+
+	void set_uv_horizontal_divisions(const int p_sides);
+	int get_uv_horizontal_divisions() const;
+
+	void set_uv_offset(const Vector2 &p_size);
+	Vector2 get_uv_offset() const;
+
+	void set_top_uv_offset(const Vector2 &p_size);
+	Vector2 get_top_uv_offset() const;
+
+	void set_uv_size(const float p_size);
+	float get_uv_size() const;
+
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_top_material(const Ref<Material> &p_material);
+	Ref<Material> get_top_material() const;
+
+	void set_bottom_material(const Ref<Material> &p_material);
+	Ref<Material> get_bottom_material() const;
 
 	CSGCylinder3D();
 };
@@ -349,6 +426,11 @@ class CSGTorus3D : public CSGPrimitive3D {
 	int sides;
 	int ring_sides;
 	bool smooth_faces;
+	bool scale_uv = true;
+	float uv_size = 1.0;
+	int uv_horizontal_divisions = 8;
+	int uv_vertical_divisions = 4;
+	Vector2 uv_offset;
 
 protected:
 	static void _bind_methods();
@@ -368,6 +450,21 @@ public:
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
+
+	void set_scale_uv(bool p_scale_uv);
+	bool is_scale_uv() const;
+
+	void set_uv_size(const float p_size);
+	float get_uv_size() const;
+
+	void set_uv_horizontal_divisions(const int p_sides);
+	int get_uv_horizontal_divisions() const;
+
+	void set_uv_vertical_divisions(const int p_sides);
+	int get_uv_vertical_divisions() const;
+
+	void set_uv_offset(const Vector2 &p_size);
+	Vector2 get_uv_offset() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;

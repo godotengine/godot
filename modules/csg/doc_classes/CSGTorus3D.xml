@@ -23,11 +23,29 @@
 		<member name="ring_sides" type="int" setter="set_ring_sides" getter="get_ring_sides" default="6">
 			The number of edges each ring of the torus is constructed of.
 		</member>
+		<member name="scale_uv" type="bool" setter="set_scale_uv" getter="is_scale_uv" default="true">
+			Enabling this will scale the UVs to account for CSGTorus [member inner_radius] and [member outer_radius], maintaining uniform texel size.
+			[b]Note:[/b] [member scale_uv] might have issues with non-repeating textures.
+		</member>
 		<member name="sides" type="int" setter="set_sides" getter="get_sides" default="8">
 			The number of slices the torus is constructed of.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="true">
 			If [code]true[/code] the normals of the torus are set to give a smooth effect making the torus seem rounded. If [code]false[/code] the torus will have a flat shaded look.
+		</member>
+		<member name="uv_horizontal_divisions" type="int" setter="set_uv_horizontal_divisions" getter="get_uv_horizontal_divisions" default="8">
+			The number of times the texture on the CSGTorus is going to repeat horizontally. Default is 8.
+			When [member scale_uv] is enabled, this is used to calculate the number of horizontal repetitions on the UVs of a torus. Increasing the radius will increase the repetitions, while reducing it will reduce the number of repetitions.
+		</member>
+		<member name="uv_offset" type="Vector2" setter="set_uv_offset" getter="get_uv_offset" default="Vector2(0, 0)">
+			Offsets the UVs on the side faces of the CSGTorus.
+		</member>
+		<member name="uv_size" type="float" setter="set_uv_size" getter="get_uv_size" default="1.0">
+			Uniformly scales UVs to set the texel size.
+		</member>
+		<member name="uv_vertical_divisions" type="int" setter="set_uv_vertical_divisions" getter="get_uv_vertical_divisions" default="4">
+			The number of times the texture on the CSGTorus is going to repeat vertically. Default is 4.
+			When [member scale_uv] is enabled, this is used to calculate the number of vertical repetitions on the UVs of a torus. Increasing the radius will increase the repetitions, while reducing it will reduce the number of repetitions.
 		</member>
 	</members>
 </class>

@@ -11,11 +11,35 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
+		<member name="bottom_material" type="Material" setter="set_bottom_material" getter="get_bottom_material">
+			When not null, sets a custom material for the bottom face of the CSGBox. Useful for floors.
+		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the box.
 		</member>
+		<member name="scale_uv" type="bool" setter="set_scale_uv" getter="is_scale_uv" default="true">
+			Enabling this will scale the UVs to account for CSGBox size, maintaining uniform texel size.
+			[b]Note:[/b] [member scale_uv] might have issues with non-repeating textures.
+		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
 			The box's width, height and depth.
+		</member>
+		<member name="top_material" type="Material" setter="set_top_material" getter="get_top_material">
+			When not null, sets a custom material for the top face of the CSGBox. Useful for roofs or ceilings.
+		</member>
+		<member name="uv_compatibility_mode" type="bool" setter="set_uv_compatibility_mode" getter="is_uv_compatibility_mode" default="false">
+			Enabling this will use UVs identical to those from previous versions of godot.
+			Disabling this will use UVs better fit for level prototyping, with the side faces aligned along the Y axis and the top and bottom faces aligned along the Z axis.
+			[b]Note:[/b] [member scale_uv] only works when [member uv_compatibility_mode] is disabled.
+		</member>
+		<member name="uv_floor_rotation" type="float" setter="set_uv_floor_rotation" getter="get_uv_floor_rotation" default="0.0">
+			Rotates the top and bottom faces of CSGBox3D.
+		</member>
+		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
+			Offsets the UVs of the CSGBox.
+		</member>
+		<member name="uv_size" type="float" setter="set_uv_size" getter="get_uv_size" default="1.0">
+			Uniformly scales UVs to set the texel size.
 		</member>
 	</members>
 </class>
