@@ -5538,6 +5538,9 @@
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER" value="27" enum="ViewportDebugDraw">
+			Depth buffer is drawn instead of regular scene so you can see the per-pixel depth.
+		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.
 		</constant>

@@ -13,10 +13,12 @@ mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
 mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
 mode_cube_to_panorama = #define CUBE_TO_PANORAMA
+mode_copy_linearize_depth = #define MODE_COPY_LINEARIZE_DEPTH \n#define USE_COPY_SECTION
 
 #[specializations]
 
 CONVERT_LINEAR_TO_SRGB = false
+USE_MULTIVIEW = false
 
 #[vertex]
 
@@ -104,6 +106,19 @@ uniform float upscale;
 uniform float aspect_ratio;
 #endif // APPLY_LENS_DISTORTION
 
+#ifdef MODE_COPY_LINEARIZE_DEPTH
+
+#ifdef USE_MULTIVIEW
+uniform highp sampler2DArray depth_buffer; // texunit:-7
+#else
+uniform highp sampler2D depth_buffer; // texunit:-7
+#endif // USE_MULTIVIEW
+
+uniform highp float z_near;
+uniform highp float z_far;
+
+#endif // MODE_COPY_LINEARIZE_DEPTH
+
 layout(location = 0) out vec4 frag_color;
 
 // This approximation expects non-negative input; negative input behaves poorly.
@@ -180,6 +195,23 @@ void main() {
 #ifdef MODE_SIMPLE_COLOR
 	frag_color = color_in;
 #endif
+
+#ifdef MODE_COPY_LINEARIZE_DEPTH
+#ifdef USE_MULTIVIEW
+	float depth = texture(depth_buffer[ViewIndex], uv_interp).r;
+#else
+	float depth = texture(depth_buffer, uv_interp).r;
+#endif // USE_MULTIVIEW
+	depth = 1.0 - depth * 2.0;
+	depth = (2.0 * z_near * z_far) / (z_far + z_near - depth * (z_far - z_near));
+
+	frag_color = vec4(vec3(depth / z_far), 1.0);
+
+	// Special color if close to z_far
+	if ((z_far - depth) < (z_far / 1000.0)) {
+		frag_color = vec4(0.0, 0.2705, 0.5490, 1.0);
+	}
+#endif // MODE_COPY_LINEARIZE_DEPTH
 
 // Efficient box filter from Jimenez: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
 // Approximates a Gaussian in a single pass.
