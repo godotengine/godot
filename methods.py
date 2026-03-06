@@ -955,6 +955,22 @@ def prepare_cache(env) -> None:
     atexit.register(clean_cache, cache_path, cache_limit, env["verbose"])
 
 
+def prepare_bin_dir(env) -> None:
+    bin_dir = env.Dir("#bin").abspath
+    tag_path = os.path.join(bin_dir, "CACHEDIR.TAG")
+    if not os.path.exists(tag_path):
+        os.makedirs(bin_dir, exist_ok=True)
+        with open(tag_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(
+                textwrap.dedent("""
+                    Signature: 8a477f597d28d172789f06886806bc55
+                    # This file is a cache directory tag created by the Godot build system.
+                    # For information about cache directory tags, see:
+                    #\thttps://bford.info/cachedir/
+                    """).strip()
+            )
+
+
 def prepare_purge(env):
     from SCons.Script.Main import GetBuildFailures
 
