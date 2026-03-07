@@ -85,7 +85,7 @@ public:
 private:
 	static XRMode xr_mode;
 
-	Vector<Ref<XRInterface>> interfaces;
+	LocalVector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
