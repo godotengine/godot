@@ -15,9 +15,18 @@ Why not contribute to Godot itself? Well, I WANT to. But I have a few issues wit
 ## Shit I want to add
 
 - type unifier
-- generics (holy shit!!!!!!!)
 - traits (holy shit!!!)
+
+## Shit I added
+- generics
 - nested types
+
+## Caveats
+- Godot's `core` is rotten. Generics can LIE to you at runtime because static analysis is turned off for Variant-typed variables!!! (I didn't add this, this is Godot's default behaviour) Use static typing everywhere lest you want to run into undefined behaviour with generics.
+- Do not inherit from a generic class, that behaviour is currently UNDEFINED because I haven't added it in yet lol sorry about that
+- Nested types can ALSO lie to you because the runtime is genuinely unaware of what goes inside a nested type. MAKE SURE TO USE STATIC TYPING EVERYWHERE, because at least STATIC ANALYSIS is aware of types!! (i added that in, heh)
+- I'm not fucking omniscient bro. There might be bugs, and I ask you to REPORT THEM!! catch my ass on discord at monarch_zero or open an issue here.
+
 
 ## call for help
 I hate c++ but my spite is greater. contribute and I'll be in your eternal debt 🙏
