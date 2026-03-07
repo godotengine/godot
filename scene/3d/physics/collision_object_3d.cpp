@@ -31,6 +31,7 @@
 #include "collision_object_3d.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
@@ -143,6 +144,15 @@ void CollisionObject3D::_notification(int p_what) {
 }
 
 void CollisionObject3D::set_collision_layer(uint32_t p_layer) {
+	if (!setting_preset && collision_preset != -1) {
+		// If the layer matches, then the node has probably been duplicated and we shouldn't
+		// change the preset to <custom>.
+		if (!_preset_layer_matches("layer", p_layer)) {
+			// Set the collision preset to be <custom>.
+			set_collision_preset(-1);
+		}
+	}
+
 	collision_layer = p_layer;
 	if (area) {
 		PhysicsServer3D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
@@ -156,6 +166,13 @@ uint32_t CollisionObject3D::get_collision_layer() const {
 }
 
 void CollisionObject3D::set_collision_mask(uint32_t p_mask) {
+	if (!setting_preset && collision_preset != -1) {
+		if (!_preset_layer_matches("mask", p_mask)) {
+			// Set the collision preset to be <custom>.
+			set_collision_preset(-1);
+		}
+	}
+
 	collision_mask = p_mask;
 	if (area) {
 		PhysicsServer3D::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
@@ -202,6 +219,51 @@ bool CollisionObject3D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+void CollisionObject3D::set_collision_preset(int p_preset) {
+	setting_preset = true;
+	collision_preset = p_preset;
+
+	// -1 means the preset is <custom>.
+	if (p_preset == -1) {
+		setting_preset = false;
+		return;
+	}
+
+	int check_preset = p_preset;
+	for (int i = 0; i < 2; i++) {
+		if (check_preset == 0) {
+			check_preset = ProjectSettings::get_singleton()->get_setting("physics/3d/default_preset");
+			if (check_preset == 0) {
+				// If the default preset is zero, essentially treat it as <custom>.
+				setting_preset = false;
+				return;
+			}
+		}
+
+		Array presets = ProjectSettings::get_singleton()->get_setting("physics/3d/presets");
+		for (Dictionary preset : presets) {
+			if (int(preset["id"]) != check_preset) {
+				continue;
+			}
+
+			set_collision_layer(preset["layer"]);
+			set_collision_mask(preset["mask"]);
+			setting_preset = false;
+			return;
+		}
+
+		// If we fail to find a preset, use the default preset instead, but don't overwrite
+		// collision_preset, as the preset may be restored.
+		check_preset = 0;
+	}
+
+	setting_preset = false;
+}
+
+int CollisionObject3D::get_collision_preset() const {
+	return collision_preset;
 }
 
 void CollisionObject3D::set_collision_priority(real_t p_priority) {
@@ -334,6 +396,21 @@ void CollisionObject3D::set_only_update_transform_changes(bool p_enable) {
 
 bool CollisionObject3D::is_only_update_transform_changes_enabled() const {
 	return only_update_transform_changes;
+}
+
+bool CollisionObject3D::_preset_layer_matches(const String &p_layer_name, const uint32_t p_layer) const {
+	Array presets = ProjectSettings::get_singleton()->get_setting("physics/3d/presets");
+	for (Dictionary preset : presets) {
+		if (int(preset.get("id", 0)) == get_collision_preset() && uint32_t(preset.get(p_layer_name, 0)) == p_layer) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CollisionObject3D::_refresh_preset() {
+	set_collision_preset(collision_preset);
 }
 
 void CollisionObject3D::_update_pickable() {
@@ -472,6 +549,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject3D::get_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject3D::set_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject3D::get_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("set_collision_preset", "preset"), &CollisionObject3D::set_collision_preset);
+	ClassDB::bind_method(D_METHOD("get_collision_preset"), &CollisionObject3D::get_collision_preset);
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CollisionObject3D::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CollisionObject3D::get_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject3D::set_disable_mode);
@@ -508,6 +587,7 @@ void CollisionObject3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,Make Static,Keep Active"), "set_disable_mode", "get_disable_mode");
 
 	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_preset", PROPERTY_HINT_PRESETS_3D_PHYSICS), "set_collision_preset", "get_collision_preset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
@@ -727,6 +807,16 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_mode(rid, body_mode);
 	}
+
+	// Always need to refresh the preset here, as otherwise nodes in unloaded scenes could have incorrect
+	// values at runtime.
+	_refresh_preset();
+
+	// Users really shouldn't be changing collision preset settings at runtime, so this connection
+	// is only made in the editor.
+#ifdef TOOLS_ENABLED
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CollisionObject3D::_refresh_preset));
+#endif
 }
 
 void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {
