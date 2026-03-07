@@ -580,7 +580,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		Ref<StyleBoxFlat> style_tree_selected = style_tree_focus->duplicate();
 
-		const Color guide_color = p_config.mono_color * Color(1, 1, 1, 0.05);
+		const Color guide_color = p_config.mono_color * Color(1, 1, 1, p_config.dark_theme ? 0.025 : 0.075);
 
 		// Tree.
 		{
@@ -601,6 +601,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_stylebox("custom_button", "Tree", EditorThemeManager::make_empty_stylebox());
 			p_theme->set_stylebox("custom_button_pressed", "Tree", EditorThemeManager::make_empty_stylebox());
 			p_theme->set_stylebox("custom_button_hover", "Tree", p_config.button_style);
+			p_theme->set_stylebox("alternate_rows", "Tree", EditorThemeManager::make_flat_stylebox(guide_color, 0, 0, 0, 0, p_config.corner_radius));
 
 			p_theme->set_color("custom_button_font_highlight", "Tree", p_config.font_hover_color);
 			p_theme->set_color(SceneStringName(font_color), "Tree", p_config.font_color);

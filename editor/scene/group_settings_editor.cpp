@@ -531,6 +531,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_child(mc);
 
 	tree = memnew(Tree);
+	tree->set_alternate_rows_visible(true);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);

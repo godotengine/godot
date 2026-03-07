@@ -775,6 +775,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		translation_list = memnew(Tree);
 		translation_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+		translation_list->set_alternate_rows_visible(true);
 		mc->add_child(translation_list);
 		trees.push_back(translation_list);
 		tree_data_types[translation_list] = "localization_editor_translation_item";
@@ -815,6 +816,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 		translation_remap->connect("cell_selected", callable_mp(this, &LocalizationEditor::_translation_res_select));
 		translation_remap->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_delete));
+		translation_remap->set_alternate_rows_visible(true);
 		mc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
@@ -855,6 +857,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
 		translation_remap_options->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		translation_remap_options->connect("custom_popup_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_popup));
+		translation_remap_options->set_alternate_rows_visible(true);
 		mc->add_child(translation_remap_options);
 
 		translation_res_option_file_open_dialog = memnew(EditorFileDialog);
@@ -890,6 +893,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		template_source_list = memnew(Tree);
 		template_source_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+		template_source_list->set_alternate_rows_visible(true);
 		mc->add_child(template_source_list);
 		trees.push_back(template_source_list);
 		tree_data_types[template_source_list] = "localization_editor_pot_item";

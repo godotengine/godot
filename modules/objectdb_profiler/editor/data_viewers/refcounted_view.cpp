@@ -118,6 +118,7 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_list->set_column_title_tooltip_text(offset + 5, TTRC("Cycles detected in the ObjectDB"));
 
 	refs_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotRefCountedView::_refcounted_selected));
+	refs_list->set_alternate_rows_visible(true);
 	refs_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	refs_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
@@ -263,6 +264,7 @@ void SnapshotRefCountedView::_refcounted_selected() {
 		inbound_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 		inbound_tree->set_v_scroll_enabled(false);
 		inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotRefCountedView::_ref_selected).bind(inbound_tree));
+		inbound_tree->set_alternate_rows_visible(true);
 
 		// The same reference can exist as multiple properties of an object (for example, gdscript `@export` properties exist twice).
 		// We flag for the user if a property is exposed multiple times so it's clearer why there are more references in the list
@@ -302,6 +304,7 @@ void SnapshotRefCountedView::_refcounted_selected() {
 		cycles_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 		cycles_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 		cycles_tree->set_v_scroll_enabled(false);
+		cycles_tree->set_alternate_rows_visible(true);
 
 		TreeItem *root = cycles_tree->create_item();
 		for (const Variant &cycle : ref_cycles) {

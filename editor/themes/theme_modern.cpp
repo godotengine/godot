@@ -600,6 +600,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 	// Tree & ItemList.
 	{
+		const Color guide_color = p_config.mono_color * Color(1, 1, 1, p_config.dark_theme ? 0.025 : 0.075);
+
 		// Tree.
 		{
 			// Use empty stylebox for trees to avoid drawing unnecessary borders in docks.
@@ -626,6 +628,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("button_pressed", "Tree", style_button_pressed);
 			p_theme->set_stylebox("custom_button", "Tree", p_config.flat_button);
 			p_theme->set_stylebox("custom_button_pressed", "Tree", style_button_pressed);
+			p_theme->set_stylebox("alternate_rows", "Tree", EditorThemeManager::make_flat_stylebox(guide_color, 0, 0, 0, 0, p_config.corner_radius));
 
 			p_theme->set_color("custom_button_font_highlight", "Tree", p_config.font_hover_color);
 			p_theme->set_color(SceneStringName(font_color), "Tree", p_config.font_color);
@@ -684,7 +687,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("parent_hl_line_color", "Tree", highlight_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
-			p_theme->set_color("guide_color", "Tree", Color(1, 1, 1, 0));
+			p_theme->set_color("guide_color", "Tree", guide_color);
 			p_theme->set_color("scroll_hint_color", "Tree", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 
 			Ref<StyleBoxFlat> style_tree_hover = p_config.flat_button_hover->duplicate();
@@ -743,7 +746,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("focus", "ProjectList", p_config.focus_style);
 
 			p_theme->set_color(SceneStringName(font_color), "ProjectList", p_config.font_color);
-			p_theme->set_color("guide_color", "ProjectList", Color(1, 1, 1, 0));
+			p_theme->set_color("guide_color", "ProjectList", guide_color);
 		}
 
 		// ItemList.
