@@ -2164,11 +2164,12 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
 
+	_pre_popup();
+
 	Rect2i screen_rect = p_screen_rect;
 	if (screen_rect != Rect2i()) {
 		set_size(screen_rect.size);
 	}
-	_pre_popup();
 	if (screen_rect != Rect2i()) {
 		screen_rect.size = get_size();
 	}
