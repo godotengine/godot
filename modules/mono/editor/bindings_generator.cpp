@@ -2165,6 +2165,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System.ComponentModel;\n"); // EditorBrowsable
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
+	output.append("using Godot.Bridge;\n");
+	output.append("using System.Runtime.CompilerServices;\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -2324,6 +2326,182 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
+	// Generate ScriptPropertyRegistry
+
+	// only non-static ones
+	if (!itype.is_singleton) {
+		output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
+		// Add ScriptPropertyRegistry
+		output << MEMBER_BEGIN "protected "
+			   << (is_derived_type ? "new " : "")
+			   << "static readonly ScriptPropertyRegistry<"
+			   << itype.proxy_name
+			   << "> PropertyRegistry = new ScriptPropertyRegistry<"
+			   << itype.proxy_name
+			   << ">()";
+
+		// TODO: this is a 99% copy & paste from above: we need to know if we inherit from someone to "inherit" the base type MethodRegistry
+		if (is_derived_type && !itype.is_singleton) {
+			if (obj_types.has(itype.base_name)) {
+				TypeInterface base_type = obj_types[itype.base_name];
+
+				output << "\n"
+					   << INDENT2 ".Register(global::Godot."
+					   << base_type.proxy_name;
+				if (base_type.is_singleton) {
+					// If the type is a singleton, use the instance type.
+					output << CS_SINGLETON_INSTANCE_SUFFIX;
+				}
+				output << ".PropertyRegistry)";
+			} else {
+				ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+				return ERR_INVALID_DATA;
+			}
+		}
+
+		output.append("\n");
+
+		if (itype.cs_type == "Node") {
+			output.append("\n");
+		}
+
+		for (const PropertyInterface &iprop : itype.properties) {
+			auto p_itype = itype;
+			auto p_iprop = iprop;
+
+			auto &p_output = output;
+
+			const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
+
+			// Search it in base types too
+			const TypeInterface *current_type = &p_itype;
+			while (!setter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
+				current_type = &base_match->value;
+				setter = current_type->find_method_by_name(p_iprop.setter);
+			}
+
+			const MethodInterface *getter = p_itype.find_method_by_name(p_iprop.getter);
+
+			// Search it in base types too
+			current_type = &p_itype;
+			while (!getter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				ERR_FAIL_COND_V_MSG(!base_match, ERR_BUG, "Type not found '" + current_type->base_name + "'. Inherited by '" + current_type->name + "'.");
+				current_type = &base_match->value;
+				getter = current_type->find_method_by_name(p_iprop.getter);
+			}
+
+			ERR_FAIL_COND_V(!setter && !getter, ERR_BUG);
+
+			if (setter) {
+				int setter_argc = p_iprop.index != -1 ? 2 : 1;
+				ERR_FAIL_COND_V(setter->arguments.size() != setter_argc, ERR_BUG);
+			}
+
+			if (getter) {
+				int getter_argc = p_iprop.index != -1 ? 1 : 0;
+				ERR_FAIL_COND_V(getter->arguments.size() != getter_argc, ERR_BUG);
+			}
+
+			if (getter && setter) {
+				const ArgumentInterface &setter_first_arg = setter->arguments.back()->get();
+				if (getter->return_type.cname != setter_first_arg.type.cname) {
+					ERR_FAIL_V_MSG(ERR_BUG,
+							"Return type from getter doesn't match first argument of setter for property: '" +
+									p_itype.name + "." + String(p_iprop.cname) + "'.");
+				}
+			}
+
+			const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
+
+			const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
+			ERR_FAIL_NULL_V_MSG(prop_itype, ERR_BUG, "Property type '" + proptype_name.cname + "' was not found.");
+
+			ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
+					"Property type is a singleton: '" + p_itype.name + "." + String(p_iprop.cname) + "'.");
+
+			if (p_itype.api_type == ClassDB::API_CORE) {
+				ERR_FAIL_COND_V_MSG(prop_itype->api_type == ClassDB::API_EDITOR, ERR_BUG,
+						"Property '" + p_itype.name + "." + String(p_iprop.cname) + "' has type '" + prop_itype->name +
+								"' from the editor API. Core API cannot have dependencies on the editor API.");
+			}
+
+			if (getter) {
+				p_output << INDENT2 << ".Register("
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
+						 << INDENT3 << "{\n"
+						 << INDENT4 << "var callRet = Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name << ";\n"
+						 << INDENT4 << "return ";
+
+				const TypeInterface *return_interface = _get_type_or_null(getter->return_type);
+				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name).replacen("params ", "");
+
+				p_output << to_managed << ";\n";
+
+				//if (p_iprop.index != -1) {
+				//	const ArgumentInterface &idx_arg = getter->arguments.front()->get();
+				//	if (idx_arg.type.cname != name_cache.type_int) {
+				//		// Assume the index parameter is an enum
+				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
+				//		CRASH_COND(idx_arg_type == nullptr);
+				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + ")");
+				//	} else {
+				//		p_output.append(itos(p_iprop.index));
+				//	}
+				//}
+				p_output << INDENT3 << "})\n";
+			}
+
+			if (setter) {
+				p_output << INDENT2 << ".Register("
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
+						 << INDENT3 << "{\n"
+						 << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name;
+
+				//if (p_iprop.index != -1) {
+				//	const ArgumentInterface &idx_arg = setter->arguments.front()->get();
+				//	if (idx_arg.type.cname != name_cache.type_int) {
+				//		// Assume the index parameter is an enum
+				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
+				//		CRASH_COND(idx_arg_type == nullptr);
+				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + "), ");
+				//	} else {
+				//		p_output.append(itos(p_iprop.index) + ", ");
+				//	}
+				//}
+
+				p_output << " = ";
+
+				const auto iarg = setter->arguments.back()->get();
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					String to_managed = sformat(arg_type->cs_variant_to_managed, "value", arg_cs_type, arg_type->name).replacen("params ", "");
+					p_output << "new " << arg_cs_type << "(" << to_managed << ")";
+				} else {
+					p_output << sformat(arg_type->cs_variant_to_managed, "value", arg_type->cs_type, arg_type->name).replacen("params ", "");
+				}
+
+				p_output << ";\n"
+						 << INDENT4 << "return default;\n"
+						 << INDENT3 "})\n";
+			}
+		}
+
+		output << INDENT2 << ".Build();\n";
+
+		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
+	}
+
 	// Add native name static field and cached type.
 
 	if (is_derived_type && !itype.is_singleton) {
@@ -2460,9 +2638,87 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << " = \"" << isignal.proxy_name << "\";\n";
 		}
 
+		// Add ScriptMethodRegistry
+		output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
+		output << MEMBER_BEGIN "protected "
+			   << (is_derived_type ? "new " : "")
+			   << "static readonly ScriptMethodRegistry<"
+			   << itype.proxy_name
+			   << "> MethodRegistry = new ScriptMethodRegistry<"
+			   << itype.proxy_name
+			   << ">()";
+
+		// TODO: this is a 99% copy & paste from above: we need to know if we inherit from someone to "inherit" the base type MethodRegistry
+		if (is_derived_type && !itype.is_singleton) {
+			if (obj_types.has(itype.base_name)) {
+				TypeInterface base_type = obj_types[itype.base_name];
+
+				output << "\n"
+					   << INDENT2 ".Register(global::Godot." << base_type.proxy_name;
+				if (base_type.is_singleton) {
+					// If the type is a singleton, use the instance type.
+					output << CS_SINGLETON_INSTANCE_SUFFIX;
+				}
+				output << ".MethodRegistry)";
+			} else {
+				ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+				return ERR_INVALID_DATA;
+			}
+		}
+
+		output.append("\n");
+
+		// Generate Method registrations
+
+		// We only need the alias registrations (from C++ names to C# proxy names) and not the method registrations, as all methods are just wrappers
+		// of the native API which should directly call from C++ to C++ and not via .NET first.
+
+		// Generate alias names for methods
+
+		for (const MethodInterface &imethod : itype.methods) {
+			if (!imethod.is_virtual) {
+				continue;
+			}
+			output << INDENT2 ".AddAlias("
+				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ", " << itos(imethod.arguments.size()) << ", MethodName." << imethod.proxy_name
+				   << ")\n";
+		}
+		output << INDENT2 ".Build();\n";
+
+		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
+
+		// Generate GetGodotClassMethodOrNullRef
+
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
+
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Returns script method. NullRef if not found.\n"
+			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
+			   << INDENT1 "/// <param name=\"argCount\">Argument count.</param>\n"
+			   << INDENT1 "/// <returns>Ref to the script method</returns>\n";
+
+		output << INDENT1 << "/// <inheritdoc/>\n"
+			   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
+			   << INDENT1 << "public " << (is_derived_type ? "override" : "virtual") << " ref readonly ScriptMethod GetGodotClassMethodOrNullRef(in godot_string_name method, int argCount)\n"
+			   << INDENT1 << "{\n"
+			   << INDENT2 << "return ref MethodRegistry.GetMethodOrNullRef(in method, argCount);\n"
+			   << INDENT1 << "}\n\n";
+
+		output << "#pragma warning restore CS0618\n";
+
 		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
 
 		// Generate InvokeGodotClassMethod
+
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
 
 		output << MEMBER_BEGIN "/// <summary>\n"
 			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
@@ -2473,89 +2729,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
 			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
 
-		// Avoid raising diagnostics because of calls to obsolete methods.
-		output << "#pragma warning disable CS0618 // Member is obsolete\n";
-
 		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
-			   << INDENT1 "{\n";
-
-		for (const MethodInterface &imethod : itype.methods) {
-			if (!imethod.is_virtual) {
-				continue;
-			}
-
-			// We also call HasGodotClassMethod to ensure the method is overridden and avoid calling
-			// the stub implementation. This solution adds some extra overhead to calls, but it's
-			// much simpler than other solutions. This won't be a problem once we move to function
-			// pointers of generated wrappers for each method, as lookup will only happen once.
-
-			// We check both native names (snake_case) and proxy names (PascalCase)
-			output << INDENT2 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
-				   << " || method == MethodName." << imethod.proxy_name
-				   << ") && args.Count == " << itos(imethod.arguments.size())
-				   << " && " << CS_METHOD_HAS_GODOT_CLASS_METHOD << "((godot_string_name)"
-				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ".NativeValue))\n"
-				   << INDENT2 "{\n";
-
-			if (imethod.return_type.cname != name_cache.type_void) {
-				output << INDENT3 "var callRet = ";
-			} else {
-				output << INDENT3;
-			}
-
-			output << imethod.proxy_name << "(";
-
-			int i = 0;
-			for (List<BindingsGenerator::ArgumentInterface>::ConstIterator itr = imethod.arguments.begin(); itr != imethod.arguments.end(); ++itr, ++i) {
-				const ArgumentInterface &iarg = *itr;
-
-				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
-
-				if (i != 0) {
-					output << ", ";
-				}
-
-				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
-					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-
-					output << "new " << arg_cs_type << "(" << sformat(arg_type->cs_variant_to_managed, "args[" + itos(i) + "]", arg_type->cs_type, arg_type->name) << ")";
-				} else {
-					output << sformat(arg_type->cs_variant_to_managed,
-							"args[" + itos(i) + "]", arg_type->cs_type, arg_type->name);
-				}
-			}
-
-			output << ");\n";
-
-			if (imethod.return_type.cname != name_cache.type_void) {
-				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
-				ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + imethod.return_type.cname + "' was not found.");
-
-				output << INDENT3 "ret = "
-					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
-					   << ";\n"
-					   << INDENT3 "return true;\n";
-			} else {
-				output << INDENT3 "ret = default;\n"
-					   << INDENT3 "return true;\n";
-			}
-
-			output << INDENT2 "}\n";
-		}
-
-		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, out ret);\n";
-		} else {
-			output << INDENT2 "ret = default;\n"
-				   << INDENT2 "return false;\n";
-		}
-
-		output << INDENT1 "}\n";
-
-		output << "#pragma warning restore CS0618\n";
+			   << INDENT1 << "{\n"
+			   << INDENT2 << "ref readonly var scriptMethod = ref GetGodotClassMethodOrNullRef(in method, args.Count);\n"
+			   << INDENT2 << "if (!Unsafe.IsNullRef(in scriptMethod))\n"
+			   << INDENT2 << "{\n"
+			   << INDENT3 << "ret = scriptMethod(this, args);\n"
+			   << INDENT3 << "return true;\n"
+			   << INDENT2 << "}\n\n"
+			   << INDENT2 << "ret = new godot_variant();\n"
+			   << INDENT2 << "return false;\n"
+			   << INDENT1 << "}\n\n";
 
 		// Generate HasGodotClassMethod
 
@@ -2564,35 +2750,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
 			   << INDENT1 "{\n";
 
-		for (const MethodInterface &imethod : itype.methods) {
-			if (!imethod.is_virtual) {
-				continue;
-			}
-
-			// We check for native names (snake_case). If we detect one, we call HasGodotClassMethod
-			// again, but this time with the respective proxy name (PascalCase). It's the job of
-			// user derived classes to override the method and check for those. Our C# source
-			// generators take care of generating those override methods.
-			output << INDENT2 "if (method == MethodName." << imethod.proxy_name
-				   << ")\n" INDENT2 "{\n"
-				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
-				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-				   << INDENT4 "return true;\n"
-				   << INDENT3 "}\n" INDENT2 "}\n";
-		}
-
-		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
-		} else {
-			output << INDENT2 "return false;\n";
-		}
+		output << INDENT2 "return MethodRegistry.ContainsName(method);\n";
 
 		output << INDENT1 "}\n";
 
@@ -2603,33 +2767,99 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
+			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
 
-		for (const SignalInterface &isignal : itype.signals_) {
-			// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
-			// again, but this time with the respective proxy name (PascalCase). It's the job of
-			// user derived classes to override the method and check for those. Our C# source
-			// generators take care of generating those override methods.
-			output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
-				   << ")\n" INDENT2 "{\n"
-				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
-				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-				   << INDENT4 "return true;\n"
-				   << INDENT3 "}\n" INDENT2 "}\n";
-		}
+		output << INDENT2 << "return SignalRegistry.ContainsName(signal);\n"
+			   << INDENT1 << "}\n\n";
 
 		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
-		} else {
-			output << INDENT2 "return false;\n";
+			output << INDENT1 << "/// <inheritdoc/>\n"
+				   << INDENT1 << "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n"
+				   << INDENT1 << "protected internal override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)\n"
+				   << INDENT1 << "{\n"
+				   << INDENT2 << "throw new InvalidOperationException(\"RaiseGodotClassSignalCallbacks should not be called for built-in types!\");\n"
+				   << INDENT2 << "//ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);\n"
+				   << INDENT2 << "//if (!Unsafe.IsNullRef(in signalMethod))"
+				   << INDENT2 << "//{\n"
+				   << INDENT3 << "//signalMethod(this, args);\n"
+				   << INDENT2 << "//}\n"
+				   << INDENT1 << "}\n";
 		}
 
-		output << INDENT1 "}\n";
+		// Generate SignalRegistry
+
+		if (!itype.is_singleton) {
+			output << "\n#pragma warning disable CS0618 // Type or member is obsolete\n";
+			output << "#pragma warning disable CS0628 // new protected member declared in sealed class\n";
+
+			output << INDENT1 << "protected " << (is_derived_type ? "new" : "") << " static readonly ScriptSignalRegistry<" << itype.proxy_name << "> SignalRegistry = new ScriptSignalRegistry<" << itype.proxy_name << ">()\n ";
+
+			// Copy over base type registration
+
+			if (obj_types.has(itype.base_name)) {
+				TypeInterface base_type = obj_types[itype.base_name];
+
+				output << INDENT2 << ".Register(global::Godot." << base_type.proxy_name << (base_type.is_singleton ? CS_SINGLETON_INSTANCE_SUFFIX : "") << ".SignalRegistry)\n";
+			}
+
+			// Generate inline registrations for dispatch methods
+
+			for (const SignalInterface &isignal : itype.signals_) {
+				output << INDENT2 << ".Register(SignalName." << isignal.proxy_name << ", " << itos(isignal.arguments.size()) << ",\n";
+
+				// Generate actual dispatch method
+				output << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
+					   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
+					   << INDENT3 << "{\n"
+					   << INDENT4 << "throw new InvalidOperationException(\"Signal script dispatcher should not be called for built-in types!\");\n"
+					   << INDENT4 << "//Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).backing_" << isignal.proxy_name << "?.Invoke(";
+
+				auto &imethod = isignal;
+
+				int idx = 0;
+				for (const ArgumentInterface &iarg : imethod.arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+					ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+					if (idx != 0) {
+						output << ", ";
+					}
+
+					if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+						String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+						String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
+													.replacen("params ", "");
+						output << "new " << arg_cs_type << "(" << to_managed << ")";
+					} else {
+						output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
+										  .replacen("params ", "");
+					}
+
+					idx++;
+				}
+
+				output.append(");\n");
+
+				output << INDENT3 << "})\n";
+			}
+
+			// Generate alias names for signals
+
+			for (const SignalInterface &isignal : itype.signals_) {
+				output << INDENT2 ".AddAlias("
+					   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name << ", " << itos(isignal.arguments.size()) << ", SignalName." << isignal.proxy_name
+					   << ")\n";
+			}
+
+			output << INDENT2 << ".Build();\n";
+
+			output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
+			output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
+		}
 	}
 
 	//Generate StringName for all class members
@@ -2654,6 +2884,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << "readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
+
 	//MethodName
 	output << MEMBER_BEGIN "/// <summary>\n"
 		   << INDENT1 "/// Cached StringNames for the methods contained in this class, for fast lookup.\n"
@@ -2680,6 +2911,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << "readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
+
 	//SignalName
 	output << MEMBER_BEGIN "/// <summary>\n"
 		   << INDENT1 "/// Cached StringNames for the signals contained in this class, for fast lookup.\n"

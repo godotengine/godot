@@ -551,6 +551,9 @@ namespace Godot.NativeInterop
 
         private IntPtr _data;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal IntPtr GetIntPtr() => _data;
+
         public void Dispose()
         {
             if (_data == IntPtr.Zero)
@@ -603,6 +606,9 @@ namespace Godot.NativeInterop
 #pragma warning restore CS8981
         {
             private IntPtr _data;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal IntPtr GetIntPtr() => _data;
 
             public static unsafe explicit operator movable(in godot_string_name value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
