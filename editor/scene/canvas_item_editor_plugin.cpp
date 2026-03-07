@@ -5179,14 +5179,14 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
 			for (Node2D *n2d : nodes) {
-				// Capture the original transform explicitly before creating the bone.
-				Transform2D original_transform = n2d->get_transform();
+				// Capture the node's transform explicitly before creating the bone.
+				Transform2D n2d_transform = n2d->get_transform();
 
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
 				new_bone_name += "Bone2D";
 				new_bone->set_name(new_bone_name);
-				new_bone->set_transform(original_transform);
+				new_bone->set_transform(n2d_transform);
 
 				Node *n2d_parent = n2d->get_parent();
 				if (!n2d_parent) {
@@ -5210,7 +5210,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(new_bone, "remove_child", n2d);
 				undo_redo->add_undo_method(n2d_parent, "add_child", n2d);
 				undo_redo->add_undo_method(parent_for_bone, "remove_child", new_bone);
-				undo_redo->add_undo_method(n2d, "set_transform", original_transform);
+				undo_redo->add_undo_method(n2d, "set_transform", n2d_transform);
 
 				node_to_bone[n2d] = new_bone;
 			}
