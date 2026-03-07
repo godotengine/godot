@@ -1973,26 +1973,35 @@ void EditorFileSystem::_file_info_update(EditorFileInfo *p_file, const String &p
 	// all files may have the same timestamp. Swapping directory structures may not change file timestamps.
 	// It is still necessary to compare the modified time, type, and uid.
 	const uint64_t mt = FileAccess::get_modified_time(p_path);
-	if (!first_scan || !(p_file->status & EditorFileInfo::IS_SCRIPT)) {
-		_type_analysis(p_file, ResourceLoader::get_resource_type(p_path));
-	}
 	const ResourceUID::ID old_uid = p_file->uid;
-	if ((p_file->status & EditorFileInfo::AS_RESOURCE)) {
-		p_file->uid = ResourceLoader::get_resource_uid(p_path);
+
+	if (force_detect || first_scan || mt != p_file->modified_time) {
+		if (!first_scan || !(p_file->status & EditorFileInfo::IS_SCRIPT)) {
+			_type_analysis(p_file, ResourceLoader::get_resource_type(p_path));
+		}
+		if ((p_file->status & EditorFileInfo::AS_RESOURCE)) {
+			p_file->uid = ResourceLoader::get_resource_uid(p_path);
+		}
 	}
 
-	if (mt == p_file->modified_time && !(p_file->status & EditorFileInfo::TYPE_CHANGED)) {
-		if (!(p_file->status & EditorFileInfo::AS_RESOURCE)) {
-			return; // No uid, no internal files.
+	if (mt == p_file->modified_time) {
+		if (!force_detect && !first_scan) {
+			return; // When the file timestamp accuracy is high enough.
 		}
 
-		if (old_uid == p_file->uid) {
-			// The UID is not changed, but prevents invalidation of the UID cache on editor startup.
-			if (first_scan && !(p_file->status & EditorFileInfo::IS_SCRIPT)) {
-				_create_actions_from_uid_change(p_file, p_path, old_uid);
-				_create_action(nullptr, p_file, p_path, ItemAction::ACTION_FILE_UPDATE);
+		if (!(p_file->status & EditorFileInfo::TYPE_CHANGED)) {
+			if (!(p_file->status & EditorFileInfo::AS_RESOURCE)) {
+				return; // No uid, no internal files.
 			}
-			return;
+
+			if (old_uid == p_file->uid) {
+				// The UID is not changed, but prevents invalidation of the UID cache on editor startup.
+				if (first_scan && !(p_file->status & EditorFileInfo::IS_SCRIPT)) {
+					_create_actions_from_uid_change(p_file, p_path, old_uid);
+					_create_action(nullptr, p_file, p_path, ItemAction::ACTION_FILE_UPDATE);
+				}
+				return;
+			}
 		}
 	}
 
@@ -4233,7 +4242,14 @@ EditorFileSystem::EditorFileSystem() {
 	if (!force_detect) {
 		// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		force_detect = da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "EXFAT" || DirAccess::exists("res://.git");
+		force_detect = da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "EXFAT";
+		// Projects managed by version control systems may update file timestamps in batches. If the
+		// timestamp precision is insufficient, it is also necessary to compare the UID.
+		// FIXME: If a more accurate file timestamp is implemented, the following code can be removed.
+		force_detect |= DirAccess::exists("res://.git") ||
+				DirAccess::exists("res://.svn") ||
+				DirAccess::exists("res://CVS") ||
+				DirAccess::exists("res://.conf"); // For Unity Version Control.
 	}
 
 	scan_total = 0;
