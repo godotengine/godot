@@ -71,15 +71,7 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	} else {
 		get_recognized_extensions_for_type(p_for_type, &extensions);
 	}
-
-	for (const String &E : extensions) {
-		const String ext = !E.begins_with(".") ? "." + E : E;
-		if (p_path.right(ext.length()).nocasecmp_to(ext) == 0) {
-			return true;
-		}
-	}
-
-	return false;
+	return p_path.validate_extension(extensions);
 }
 
 bool ResourceFormatLoader::handles_type(const String &p_type) const {
@@ -1217,15 +1209,14 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ResourceUID::INVALID_ID;
 }
 
-bool ResourceLoader::should_create_uid_file(const String &p_path) {
+bool ResourceLoader::has_custom_uid_support(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
-	if (FileAccess::exists(local_path + ".uid")) {
-		return false;
-	}
-
 	for (int i = 0; i < loader_count; i++) {
-		if (loader[i]->recognize_path(local_path)) {
-			return !loader[i]->has_custom_uid_support();
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_custom_uid_support()) {
+			return true;
 		}
 	}
 	return false;

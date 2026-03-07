@@ -5031,6 +5031,42 @@ String String::get_extension() const {
 	return substr(pos + 1, length());
 }
 
+String String::_get_longest_suffix_with_dot() const {
+	String file = get_file().trim_prefix(".");
+	int pos = file.find_char('.');
+	if (pos < 0) {
+		return "";
+	}
+
+	return file.substr(pos);
+}
+
+bool String::validate_extension(const HashSet<String> &p_extensions) const {
+	String longest_suffix_with_dot = _get_longest_suffix_with_dot();
+	if (longest_suffix_with_dot.is_empty()) {
+		return false;
+	}
+	for (const String &E : p_extensions) {
+		if (longest_suffix_with_dot.right(E.length() + 1).nocasecmp_to("." + E) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool String::validate_extension(const List<String> &p_extensions) const {
+	String longest_suffix_with_dot = _get_longest_suffix_with_dot();
+	if (longest_suffix_with_dot.is_empty()) {
+		return false;
+	}
+	for (const String &E : p_extensions) {
+		if (longest_suffix_with_dot.right(E.length() + 1).nocasecmp_to("." + E) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 String String::path_join(const String &p_file) const {
 	if (is_empty()) {
 		return p_file;

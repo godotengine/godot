@@ -1318,19 +1318,9 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
 		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
-			bool is_imported = false;
-			{
-				List<String> importer_exts;
-				ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
-				String extension = fpath.get_extension();
-				for (const String &E : importer_exts) {
-					if (extension.nocasecmp_to(E) == 0) {
-						is_imported = true;
-						break;
-					}
-				}
-			}
-
+			List<String> importer_exts;
+			ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
+			const bool is_imported = fpath.validate_extension(importer_exts);
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type);
 			} else {
@@ -1687,7 +1677,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 	}
 }
 
-void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
+void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames) {
 	// Find all project settings of type FILE and replace them if needed.
 	const HashMap<StringName, PropertyInfo> prop_info(ProjectSettings::get_singleton()->get_custom_property_info());
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
@@ -1716,7 +1706,10 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 		}
 	}
 
-	// Update folder colors.
+	ProjectSettings::get_singleton()->save();
+}
+
+void FileSystemDock::_update_folder_colors_after_move(const HashMap<String, String> &p_folders_renames) {
 	for (const KeyValue<String, String> &rename : p_folders_renames) {
 		if (assigned_folder_colors.has(rename.key)) {
 			assigned_folder_colors[rename.value] = assigned_folder_colors[rename.key];
@@ -1858,7 +1851,7 @@ void FileSystemDock::_rename_operation_confirm() {
 		EditorNode::get_singleton()->show_warning(TTRC("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
 		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
-		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
+		if (!new_name.validate_extension(EditorFileSystem::get_singleton()->get_valid_extensions())) {
 			unrecognized_ext_dialog->popup_centered_clamped();
 			rename_error = true;
 		}
@@ -1906,9 +1899,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-	_update_resource_paths_after_move(file_renames, uids);
-	_update_dependencies_after_move(file_renames, file_owners);
-	_update_project_settings_after_move(file_renames, folder_renames);
+	_update_folder_colors_after_move(folder_renames);
 	_update_favorites_after_move(file_renames, folder_renames);
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
@@ -1919,7 +1910,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	print_verbose("FileSystem: calling rescan.");
-	_rescan();
+	_rescan(old_path.get_base_dir(), !to_rename.is_file);
 }
 
 void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
@@ -2063,6 +2054,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			if (to_move[i].path != new_paths[i]) {
 				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
+				EditorFileSystem::get_singleton()->pending_scan_fs_changes(to_move[i].is_file ? to_move[i].path.get_base_dir() : to_move[i].path.left(-1).get_base_dir(), !to_move[i].is_file);
 			}
 		}
 
@@ -2080,15 +2072,13 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			EditorFileSystem::get_singleton()->update_files(files_to_update);
 
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-			_update_resource_paths_after_move(file_renames, uids);
-			_update_dependencies_after_move(file_renames, file_owners);
-			_update_project_settings_after_move(file_renames, folder_renames);
+			_update_folder_colors_after_move(folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
 
 			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
 			print_verbose("FileSystem: calling rescan.");
-			_rescan();
+			_rescan(p_to_path, true);
 
 			current_path = p_to_path;
 			current_path_line_edit->set_text(current_path);
@@ -2883,7 +2873,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	return true;
 }
 
-void FileSystemDock::_rescan() {
+void FileSystemDock::_rescan(const String &p_dir, bool p_recursive) {
 	if (tree->has_focus()) {
 		had_focus = tree;
 	} else if (files->has_focus()) {
@@ -2891,7 +2881,7 @@ void FileSystemDock::_rescan() {
 	}
 
 	_set_scanning_mode();
-	EditorFileSystem::get_singleton()->scan();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(p_dir, p_recursive);
 }
 
 void FileSystemDock::_change_split_mode() {
@@ -3582,25 +3572,26 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		{
 			List<String> resource_extensions;
 			ResourceFormatImporter::get_singleton()->get_recognized_extensions_for_type("Resource", &resource_extensions);
-			HashSet<String> extension_list;
-			for (const String &extension : resource_extensions) {
-				extension_list.insert(extension);
-			}
 
 			bool resource_valid = true;
 			String main_extension;
 
-			for (int i = 0; i != p_paths.size(); ++i) {
-				String extension = p_paths[i].get_extension();
-				if (extension_list.has(extension)) {
-					if (main_extension.is_empty()) {
-						main_extension = extension;
-					} else if (extension != main_extension) {
-						resource_valid = false;
-						break;
+			for (const String &file_path : p_paths) {
+				resource_valid = false;
+				const String file = file_path.get_file();
+				for (const String &ext : resource_extensions) {
+					if (file.right(ext.length() + 1).nocasecmp_to("." + ext) != 0) {
+						continue;
 					}
-				} else {
-					resource_valid = false;
+					if (main_extension.is_empty()) {
+						main_extension = ext;
+						resource_valid = true;
+					} else if (ext != main_extension) {
+						resource_valid = false;
+					}
+					break;
+				}
+				if (!resource_valid) {
 					break;
 				}
 			}
