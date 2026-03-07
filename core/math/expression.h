@@ -35,7 +35,7 @@
 class Expression : public RefCounted {
 	GDCLASS(Expression, RefCounted);
 
-private:
+protected:
 	String expression;
 
 	int str_ofs = 0;
@@ -100,7 +100,7 @@ private:
 		error_set = true;
 	}
 
-	Error _get_token(Token &r_token);
+	virtual Error _get_token(Token &r_token);
 
 	String error_str;
 	bool error_set = true;
