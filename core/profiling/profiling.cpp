@@ -35,6 +35,13 @@
 
 #include "core/os/mutex.h"
 #include "core/templates/paged_allocator.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "core/io/file_access.h"
+#include "editor/settings/project_settings_editor.h"
+#include "modules/modules_enabled.gen.h" // For mono.
+#endif // TOOLS_ENABLED
+
 
 namespace tracy {
 static bool configured = false;
@@ -112,10 +119,8 @@ const StringInternData *_intern_name(const StringName &p_name) {
 	return _data;
 }
 
-const tracy::SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script) {
-	ERR_FAIL_COND_V(!configured, &dummy_source_location);
-
-	const uint32_t hash = HashMapHasherDefault::hash(p_function_ptr);
+_ALWAYS_INLINE_ const tracy::SourceLocationData *intern_source_location_build_data(const uint32_t hash, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script)
+{
 	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
 
 	MutexLock lock(TracyInternTable::mutex);
@@ -151,7 +156,164 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 	TracyInternTable::source_location_table[idx] = _data;
 
 	return &_data->source_location_data;
+
 }
+
+
+const tracy::SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script) {
+	ERR_FAIL_COND_V(!configured, &dummy_source_location);
+
+	const uint32_t hash = HashMapHasherDefault::hash(p_function_ptr);
+	
+	return intern_source_location_build_data(hash, p_file, p_function, p_name, p_line, p_is_script);
+
+}
+
+const tracy::SourceLocationData *intern_source_location_use_foramt_str(const StringName &p_location_format_str ,const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script) {
+	ERR_FAIL_COND_V(!configured, &dummy_source_location);
+
+	const uint32_t hash = HashMapHasherDefault::hash(p_location_format_str);
+	
+	return intern_source_location_build_data(hash, p_file, p_function, p_name, p_line, p_is_script);
+}
+
+
+tracy::TracyCZoneCtxA::TracyCZoneCtxA()
+{
+
+}
+
+
+tracy::TracyCZoneCtxA::~TracyCZoneCtxA()
+{
+
+
+}
+
+tracy::TracyCZoneCtxA *tracy::ProFileEmitZoneBegin(const StringName &p_location_format_str, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script)
+{
+	
+	const tracy::SourceLocationData *locationdata = intern_source_location_use_foramt_str(p_location_format_str, p_file, p_function, p_name, p_line, p_is_script);
+	
+	tracy::TracyCZoneCtxA *ctx_ptr = memnew(tracy::TracyCZoneCtxA);
+	
+	uint64_t srcloc_alloc = ___tracy_alloc_srcloc_name(
+		locationdata->line,
+		locationdata->file,
+		strlen(locationdata->file),
+		locationdata->function,
+		strlen(locationdata->function),
+		locationdata->name,
+		strlen(locationdata->name),
+		locationdata->color
+	);
+	
+	TracyCZoneCtx ctx = ___tracy_emit_zone_begin_alloc(srcloc_alloc, p_is_script);
+
+	ctx_ptr->tracyCZoneCtx = ctx;
+
+	return ctx_ptr;
+}
+
+
+void tracy::ProFileEmitZoneEnd(tracy::TracyCZoneCtxA *ctx){
+
+	___tracy_emit_zone_end(ctx->tracyCZoneCtx); 
+
+	memdelete_notnull(ctx);
+}
+
+#ifdef TOOLS_ENABLED
+Dictionary tracy::ProFileEditorPlugin::get_state() const { 
+	
+	Dictionary d;
+
+
+#if defined(MODULE_MONO_ENABLED) 
+		
+	String path = String("res://CSProFilingMain.cs");
+
+	if(!FileAccess::exists(path))
+	{
+
+		Ref<FileAccess> opf = FileAccess::open(path,FileAccess::ModeFlags::WRITE);
+
+		opf->store_line("using Godot;\n");
+		opf->store_line("using System;\n");
+		opf->store_line("using Godot.NativeInterop;");
+		opf->store_line("using HarmonyLib;\n");
+		opf->store_line("\n");
+		opf->store_line("namespace ProFiling\n");
+		opf->store_line("{\n");
+		opf->store_line("	public partial class CSProFilingMain:Node\n");
+		opf->store_line("	{\n");
+		opf->store_line("		public static Harmony hook {  get; private set; }\n");
+				
+		opf->store_line("		public static CSProFilingMain ProFilingInstance {get; private set;}\n");
+		opf->store_line("		public override void _Ready()\n");
+		opf->store_line("		{\n");
+				
+		opf->store_line("			ProFilingInstance = this;\n");
+		opf->store_line("			hook = new Harmony(\"https://godotengine.org\");\n");
+		opf->store_line("			hook.PatchAll();\n");
+
+		opf->store_line("		}\n");
+
+		opf->store_line("	}\n");
+				
+		opf->store_line("	// If a method uses the OverName attribute, the name");
+		opf->store_line("	//  of the zone in Tracy will be changed to the name specified in the OverName attribute.\n");
+		
+		opf->store_line("	[AttributeUsage(AttributeTargets.Method)]\n");
+
+		opf->store_line("	public class OverNameAttribute : Attribute");
+
+		opf->store_line("	{\n");
+
+		opf->store_line("		public string name;\n");
+
+		opf->store_line("		public OverNameAttribute(string overrideName)\n");
+
+		opf->store_line("		{\n");
+
+		opf->store_line("			name = overrideName;\n");
+
+		opf->store_line("		}\n");
+
+		opf->store_line("	}\n");
+
+
+
+		opf->store_line("}\n");
+
+		opf->flush();
+		opf->close();
+	
+	}
+		
+#endif
+
+	d["is_build_proFile_CSFile"] = true;
+	return d;
+	
+}
+
+void tracy::ProFileEditorPlugin::set_state(const Dictionary &p_state){
+
+#if defined(MODULE_MONO_ENABLED) 
+		
+	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add("CSProFilingMain", "res://CSProFilingMain.cs");
+		
+#endif
+
+}
+
+#endif
+
+tracy::ProFileEditorPlugin::ProFileEditorPlugin() {}
+
+
+
 } // namespace tracy
 
 void godot_init_profiler() {

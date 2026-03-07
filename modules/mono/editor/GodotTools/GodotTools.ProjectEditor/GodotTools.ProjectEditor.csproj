@@ -5,6 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
+    <DefineConstants Condition="'$(UseTracyOnCs)'== 'true'">USE_TRACY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

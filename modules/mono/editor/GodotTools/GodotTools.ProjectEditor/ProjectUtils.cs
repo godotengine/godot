@@ -54,6 +54,26 @@ namespace GodotTools.ProjectEditor
         public static MSBuildProject? Open(string path)
         {
             var root = ProjectRootElement.Open(path, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
+#if USE_TRACY
+            if (!root.AllChildren.Where(e =>
+                {
+                    if (e is not ProjectItemGroupElement itemGroup) return false;
+                    var child = itemGroup.Children;
+                    return child.Any(i => (i is ProjectItemElement
+                    {
+                        ItemType: "PackageReference", Include: "Lib.Harmony"
+                    } itemElement));
+
+                }).Any())
+            {
+                var itemGroup = root.AddItemGroup();
+
+                itemGroup.AddItem("PackageReference", "Lib.Harmony", [new KeyValuePair<string, string>("Version","2.4.2")]);
+            }
+
+#endif
+           
+
             return root != null ? new MSBuildProject(root) : null;
         }
 

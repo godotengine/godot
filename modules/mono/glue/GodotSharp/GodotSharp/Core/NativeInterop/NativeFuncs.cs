@@ -608,5 +608,11 @@ namespace Godot.NativeInterop
         // Object
 
         public static partial void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
+
+        //profile
+        public static partial IntPtr godotsharp_godot_profile_zone_script_begin(in godot_string p_location_format_str, in godot_string p_file, in godot_string p_function, in godot_string p_name, uint p_line);
+
+        public static partial void godotsharp_godot_profile_zone_script_end(IntPtr ctx);
+
     }
 }

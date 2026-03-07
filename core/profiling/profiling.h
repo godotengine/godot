@@ -32,6 +32,10 @@
 
 #include "core/profiling/profiling.gen.h" // IWYU pragma: keep.
 
+#ifdef TOOLS_ENABLED
+#include "core/object/object.h"
+#include "editor/plugins/editor_plugin.h"
+#endif
 // This header provides profiling primitives (implemented as macros) for various backends.
 // See the "No profiling" branch at the bottom for a short description of the functions.
 
@@ -50,12 +54,53 @@
 #define TRACY_ENABLE
 
 GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4366) // The result of the unary operator may be unaligned.
+#include <tracy/TracyC.h>
 #include <tracy/Tracy.hpp>
 GODOT_MSVC_WARNING_POP
+
+#include "core/object/object.h"
 
 // Hijacking the tracy namespace so we can use their macros.
 namespace tracy {
 const SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script);
+
+class TracyCZoneCtxA : public Object {
+	GDCLASS(TracyCZoneCtxA, Object);
+
+public:
+	TracyCZoneCtx tracyCZoneCtx;
+
+	TracyCZoneCtxA();
+
+	~TracyCZoneCtxA();
+};
+
+// When manually marking positions in tracy, you need to provide a hash value that won't repeat.
+TracyCZoneCtxA *ProFileEmitZoneBegin(const StringName &p_location_format_str, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script);
+
+void ProFileEmitZoneEnd(TracyCZoneCtxA *ctx);
+
+class ProFileEditorPlugin
+#ifdef TOOLS_ENABLED
+		: public EditorPlugin {
+	GDCLASS(ProFileEditorPlugin, EditorPlugin);
+
+public:
+	virtual String get_plugin_name() const override { return "ProFile"; }
+	virtual Dictionary get_state() const override;
+
+	bool has_main_screen() const override { return false; }
+
+	virtual void set_state(const Dictionary &p_state) override;
+
+#else
+{
+public:
+
+#endif
+	ProFileEditorPlugin();
+};
+
 } //namespace tracy
 
 // Define tracing macros.
@@ -79,6 +124,11 @@ const SourceLocationData *intern_source_location(const void *p_function_ptr, con
 	tracy::ScopedZone __godot_tracy_script(tracy::intern_source_location(m_ptr, m_file, m_function, m_name, m_line, true))
 #define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line) \
 	tracy::ScopedZone __godot_tracy_zone_system_call(tracy::intern_source_location(m_ptr, m_file, m_function, m_name, m_line, false))
+
+#define GodotProFileEmitZoneBegin(m_location_format_str, m_file, m_function, m_name, m_line) \
+	tracy::ProFileEmitZoneBegin(m_location_format_str, m_file, m_function, m_name, m_line, true)
+#define GodotProFileEmitZoneEnd(ctx) \
+	tracy::ProFileEmitZoneEnd(ctx)
 
 // Memory allocation
 #ifdef GODOT_PROFILER_TRACK_MEMORY
@@ -172,6 +222,9 @@ struct PerfettoScriptTracer {
 #define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line) PerfettoScriptTracer __godot_perfetto_script_tracer(m_file, m_function, m_name, m_line, false);
 #define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line) PerfettoScriptTracer __godot_perfetto_script_system_call_tracer(m_file, m_function, m_name, m_line, true);
 
+#define GodotProFileEmitZoneBegin(m_location_format_str, m_file, m_function, m_name, m_line)
+#define GodotProFileEmitZoneEnd(ctx)
+
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
 
@@ -227,6 +280,9 @@ public:
 #define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
 #define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line)
 
+#define GodotProFileEmitZoneBegin(m_location_format_str, m_file, m_function, m_name, m_line)
+#define GodotProFileEmitZoneEnd(ctx)
+
 // Instruments has its own memory profiling, so these are no-ops.
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
@@ -264,5 +320,9 @@ void godot_cleanup_profiler();
 #define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
 // Define a zone for a system call from a script (dynamic source location).
 #define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line)
+
+//Define a zone that manually sets the source location and doesn't use RAII
+#define GodotProFileEmitZoneBegin(m_location_format_str, m_file, m_function, m_name, m_line) nullptr
+#define GodotProFileEmitZoneEnd(ctx)
 
 #endif

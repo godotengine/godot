@@ -92,17 +92,13 @@ namespace Godot.SourceGenerators
             return godotClassName ?? nativeType.Name;
         }
 
-        private static bool TryGetGodotScriptClass(
-            this ClassDeclarationSyntax cds, Compilation compilation,
-            out INamedTypeSymbol? symbol
-        )
+        private static bool TryGetCSScriptClass(this ClassDeclarationSyntax cds, Compilation compilation, Func<INamedTypeSymbol?,bool> condition, out INamedTypeSymbol? symbol)
         {
             var sm = compilation.GetSemanticModel(cds.SyntaxTree);
 
             var classTypeSymbol = sm.GetDeclaredSymbol(cds);
 
-            if (classTypeSymbol?.BaseType == null
-                || !classTypeSymbol.BaseType.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+            if (condition(classTypeSymbol))
             {
                 symbol = null;
                 return false;
@@ -110,6 +106,32 @@ namespace Godot.SourceGenerators
 
             symbol = classTypeSymbol;
             return true;
+
+        }
+
+
+        private static bool TryGetGodotScriptClass(this ClassDeclarationSyntax cds, Compilation compilation, out INamedTypeSymbol? symbol)
+        {
+            bool GodotScriptCondition(INamedTypeSymbol? classTypeSymbol)
+            {
+                return classTypeSymbol?.BaseType == null || !classTypeSymbol.BaseType.InheritsFrom("GodotSharp", GodotClasses.GodotObject);
+
+            }
+
+            return TryGetCSScriptClass(cds,compilation, GodotScriptCondition,out symbol);
+
+        }
+
+        public static IEnumerable<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> SelectCSharpScriptClasses(
+            this IEnumerable<ClassDeclarationSyntax> source,
+            Compilation compilation
+        )
+        {
+            foreach (var cds in source)
+            {
+                if (cds.TryGetCSScriptClass(compilation,(n) => false, out var symbol))
+                    yield return (cds, symbol!);
+            }
         }
 
         public static IEnumerable<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> SelectGodotScriptClasses(
@@ -123,6 +145,7 @@ namespace Godot.SourceGenerators
                     yield return (cds, symbol!);
             }
         }
+
 
         public static bool IsNested(this TypeDeclarationSyntax cds)
             => cds.Parent is TypeDeclarationSyntax;

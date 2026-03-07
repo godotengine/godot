@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+
 
 namespace Godot.SourceGenerators
 {
@@ -18,7 +21,22 @@ namespace Godot.SourceGenerators
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
+#if USE_TRACY
+            var allClassesData = context
+                .Compilation.SyntaxTrees
+                .SelectMany(tree =>
+                    tree.GetRoot().DescendantNodes()
+                        .OfType<ClassDeclarationSyntax>()
+                        .SelectCSharpScriptClasses(context.Compilation)
+                        .Where(x => true)
+                        .Select(x => new Tuple<INamedTypeSymbol,SyntaxTree>(x.symbol,tree))
+                ).ToLookup(t => t.Item1, t => t.Item2)
+                .ToDictionary(t => t.Key, t => t.First());
 
+                var allClasses = allClassesData.Keys
+                .Distinct<INamedTypeSymbol>( SymbolEqualityComparer.Default)
+                .ToArray();
+#endif
             INamedTypeSymbol[] godotClasses = context
                 .Compilation.SyntaxTrees
                 .SelectMany(tree =>
@@ -45,9 +63,21 @@ namespace Godot.SourceGenerators
                 .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                 .ToArray();
 
+            var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+#if USE_TRACY
+
+            if (allClasses.Length > 0)
+            {
+
+                foreach (var iNamedTypeSymbol in allClasses)
+                {
+                    VisitCSharpClass(context, allClassesData[iNamedTypeSymbol], iNamedTypeSymbol);
+                }
+            }
+#endif
+
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
 
                 foreach (var godotClass in godotClasses)
                 {
@@ -68,6 +98,205 @@ namespace Godot.SourceGenerators
                     return (obj.ParamTypes.Length.GetHashCode() * 397) ^ obj.Method.Name.GetHashCode();
                 }
             }
+        }
+
+
+    
+
+        private static void VisitCSharpClass(GeneratorExecutionContext context,
+            SyntaxTree tree,
+            INamedTypeSymbol symbol)
+        {
+            INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
+                string.Empty;
+            bool hasNamespace = classNs.Length != 0;
+
+            if (classNs.Contains("Godot.") | classNs == "Godot" |
+            classNs.Contains("GodotTools.") | classNs == "GodotTools")
+            {
+                return;
+            }
+
+            
+
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
+                                + "_ProFileMethod.generated";
+
+            var source = new StringBuilder();
+
+            source.Append("using Godot;\n");
+            source.Append("using Godot.NativeInterop;\n");
+            source.Append("using System;\n");
+            source.Append("using System.Linq;\n");
+            source.Append("using System.Collections.Generic;\n");
+            source.Append("using HarmonyLib;\n");
+
+           
+            source.Append("\n");
+
+            if (hasNamespace)
+            {
+                source.Append("namespace ");
+                source.Append(classNs);
+                source.Append(" {\n\n");
+            }
+
+            var classNa = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+            var members = symbol.GetMembers();
+
+            var methodSymbols = members
+                .Where(s => s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
+                .Cast<IMethodSymbol>()
+                .Where(m => m.MethodKind == MethodKind.Ordinary);
+
+
+
+
+            source.Append("        public class ");
+            source.Append("ProFilePatchClass");
+            source.Append(classNa);
+            //class
+            source.Append("\n        {\n");
+
+            foreach (var methodSymbol in methodSymbols)
+            {
+
+                var methodName = methodSymbol.Name;
+
+                source.Append("         [HarmonyPatch(typeof(");
+                source.Append(classNa);
+                source.Append(")");
+                source.Append(")]\n");
+                source.Append("        class ");
+                source.Append("ProFilePatchMethodClass");
+                source.Append(methodName);
+                //sub class
+                source.Append("\n        {\n");
+
+
+                source.Append("        // Patch");
+                source.Append(methodName);
+                source.Append("//\n");
+
+                //HarmonyPrefix//
+
+                var definedLocation = methodSymbol.Locations.First();
+                var defineLine = definedLocation.StartLine() + 1;
+                var definePath = definedLocation.Path();
+
+                var formatStr = string.Intern(string.Join("#", definePath, methodName, defineLine));
+
+                var methodArgs = methodSymbol.Parameters.Length != 0? String.Join(",", methodSymbol.Parameters.Select(t => "typeof(" + t.Type.Name + ")")) : null;
+
+                source.Append("           [HarmonyPatch(\"");
+                source.Append(methodName);
+                source.Append("\"");
+
+                if (methodArgs != null)
+                {
+                    source.Append(",");
+                    source.Append(methodArgs);
+
+                }
+                source.Append(")]\n");
+
+                source.Append("           [HarmonyPrefix]\n");
+                source.Append("           static void ");
+                source.Append(methodName);
+                source.Append("Prefix(");
+                source.Append("out IntPtr __state)");
+
+                //method
+                source.Append("\n         {\n");
+
+                source.Append("                 var filePath = ");
+                source.Append("@\"");
+                source.Append(definePath);
+                source.Append("\"");
+                source.Append(";\n");
+
+
+                source.Append("                 var methodLine = ");
+                source.Append(defineLine.ToString());
+                source.Append(";\n");
+
+
+                source.Append("                 var memberName = ");
+                source.Append("\"");
+                source.Append(methodName);
+                source.Append("\"");
+                source.Append(";\n");
+
+                source.Append("                 var locationFormatStr = ");
+                source.Append("@\"");
+                source.Append(formatStr);
+                source.Append("\"");
+                source.Append(";\n");
+
+
+                source.Append("			        using var memberNameNativeStr = Marshaling.ConvertStringToNative(memberName);\n");
+
+                source.Append("			        using var fileNameNativeStr = Marshaling.ConvertStringToNative(filePath.Replace(\".cs\",\"\").Split(filePath.Contains(System.IO.Path.DirectorySeparatorChar) ? System.IO.Path.DirectorySeparatorChar : System.IO.Path.AltDirectorySeparatorChar)[^1]);\n");
+
+                source.Append("			        using var filePathNativeStr = Marshaling.ConvertStringToNative(filePath);\n");
+
+                source.Append("			        using var locationFormatNativeStr = Marshaling.ConvertStringToNative(locationFormatStr);\n");
+
+                source.Append("			        __state = NativeFuncs.godotsharp_godot_profile_zone_script_begin(locationFormatNativeStr, filePathNativeStr, memberNameNativeStr, fileNameNativeStr, (uint)methodLine);\n");
+
+
+
+                //method
+                source.Append("\n         }\n");
+
+                //HarmonyPostfix//
+
+                source.Append("         [HarmonyPatch(\"");
+                source.Append(methodName);
+                source.Append("\"");
+                if (methodArgs != null)
+                {
+                    source.Append(",");
+                    source.Append(methodArgs);
+
+                }
+                source.Append(")]\n");
+
+                source.Append("           [HarmonyPostfix]\n");
+                source.Append("           static void ");
+                source.Append(methodName);
+                source.Append("Postfix(");
+                source.Append("IntPtr __state)");
+
+                //method
+                source.Append("\n         {\n");
+
+
+
+                source.Append("                 NativeFuncs.godotsharp_godot_profile_zone_script_end(__state);\n");
+
+
+                //method
+                source.Append("\n         }\n");
+
+                //sub class
+                source.Append("\n        }\n");
+
+            }
+
+            //class
+            source.Append("\n        }\n");
+
+            if (hasNamespace)
+            {
+                source.Append("\n}\n");
+            }
+
+            context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+
         }
 
         private static void VisitGodotScriptClass(
@@ -120,8 +349,10 @@ namespace Godot.SourceGenerators
                 }
             }
 
+            var classNa = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
             source.Append("partial class ");
-            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+            source.Append(classNa);
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();

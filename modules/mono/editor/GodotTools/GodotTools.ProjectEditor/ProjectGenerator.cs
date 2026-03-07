@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.Build.Construction;
@@ -37,6 +37,13 @@ namespace GodotTools.ProjectEditor
             // If the name is not a valid namespace, manually set RootNamespace to a sanitized one.
             if (sanitizedName != name)
                 mainGroup.AddProperty("RootNamespace", sanitizedName);
+#if USE_TRACY
+            var itemGroup = root.AddItemGroup();
+
+            itemGroup.AddItem("PackageReference", "Lib.Harmony", [
+                new KeyValuePair<string, string>("Version","2.4.2")
+            ]);
+#endif
 
             return root;
         }

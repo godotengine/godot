@@ -364,7 +364,7 @@ def generate_sdk_package_versions():
 
 
 def build_all(
-    msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision, no_deprecated, werror
+    msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision, no_deprecated, werror, use_tracy_on_cs
 ):
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
@@ -385,6 +385,9 @@ def build_all(
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
+    if use_tracy_on_cs:
+        args += ["/p:UseTracyOnCs=true"]
+    
     exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
@@ -397,6 +400,8 @@ def build_all(
         args += ["/p:GodotFloat64=true"]
     if no_deprecated:
         args += ["/p:GodotNoDeprecated=true"]
+    if use_tracy_on_cs:
+        args += ["/p:UseTracyOnCs=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
     exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
@@ -430,6 +435,7 @@ def main():
         help="Build GodotSharp without using deprecated features. This is required, if the engine was built with 'deprecated=no'.",
     )
     parser.add_argument("--werror", action="store_true", default=False, help="Treat compiler warnings as errors.")
+    parser.add_argument("--use-tracy-on-cs",action="store_true",default=False,help="use tracy on csharp project")
 
     args = parser.parse_args()
 
@@ -456,6 +462,7 @@ def main():
         args.precision,
         args.no_deprecated,
         args.werror,
+        args.use_tracy_on_cs
     )
     sys.exit(exit_code)
 

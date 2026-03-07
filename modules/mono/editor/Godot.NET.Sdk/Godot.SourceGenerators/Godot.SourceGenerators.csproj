@@ -21,6 +21,7 @@
     <!-- Do not include the generator as a lib dependency -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DefineConstants Condition="'$(UseTracyOnCs)'== 'true'">USE_TRACY</DefineConstants>
   </PropertyGroup>
   <!-- Analyzer release tracking -->
   <ItemGroup>

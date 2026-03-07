@@ -49,6 +49,7 @@
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 #include "core/variant/variant_parser.h"
+#include "core/profiling/profiling.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
@@ -1570,12 +1571,32 @@ void godotsharp_initialize_marshaling_information(size_t *r_ref_count_offset, si
 	static constexpr size_t capacity_offset = Memory::get_aligned_address(ref_count_offset + sizeof(SafeNumeric<uint64_t>), alignof(uint64_t));
 	static constexpr size_t size_offset = Memory::get_aligned_address(capacity_offset + sizeof(uint64_t), alignof(uint64_t));
 	static constexpr size_t data_offset = Memory::get_aligned_address(size_offset + sizeof(uint64_t), Memory::MAX_ALIGN);
-
 	*r_ref_count_offset = ref_count_offset;
 	*r_capacity_offset = capacity_offset;
 	*r_size_offset = size_offset;
 	*r_data_offset = data_offset;
 }
+
+Object* godotsharp_godot_profile_zone_script_begin(const String *p_location_format_str, const String *p_file, const String *p_function, const String *p_name, uint32_t p_line)
+{
+	return GodotProFileEmitZoneBegin(
+			StringName(*p_location_format_str),
+			StringName(*p_file),
+			StringName(*p_function),
+			StringName(*p_name),
+			p_line);	
+	
+	
+
+}
+
+void godotsharp_godot_profile_zone_script_end(Object* ctx)
+{
+
+	GodotProFileEmitZoneEnd(Object::cast_to<tracy::TracyCZoneCtxA>(ctx));
+
+}
+
 
 #ifdef __cplusplus
 }
@@ -1810,6 +1831,10 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
+	(void *)godotsharp_godot_profile_zone_script_begin,
+	(void *)godotsharp_godot_profile_zone_script_end
+
+
 };
 
 const void **godotsharp::get_runtime_interop_funcs(int32_t &r_size) {

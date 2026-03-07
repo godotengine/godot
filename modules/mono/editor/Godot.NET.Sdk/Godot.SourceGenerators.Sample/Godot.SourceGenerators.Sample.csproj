@@ -28,6 +28,8 @@
     <ProjectReference Include="..\Godot.SourceGenerators\Godot.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+
+
   <!-- This file is imported automatically when using PackageReference to
   reference Godot.SourceGenerators, but not when using ProjectReference -->
   <Import Project="..\Godot.SourceGenerators\Godot.SourceGenerators.props" />

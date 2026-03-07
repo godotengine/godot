@@ -49,6 +49,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
+#include "core/profiling/profiling.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
@@ -9608,6 +9609,11 @@ EditorNode::EditorNode() {
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
+
+#ifdef TRACY_ENABLE
+
+	add_editor_plugin(memnew(tracy::ProFileEditorPlugin));
+#endif
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));
