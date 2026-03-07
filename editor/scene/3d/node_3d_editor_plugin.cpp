@@ -43,6 +43,7 @@
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -2685,6 +2686,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			_init_gizmo_instance(index);
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
 			_update_navigation_controls_visibility();
 		} break;
@@ -3022,21 +3024,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 				set_message("");
 			}
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
-			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
-			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
-			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-			surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-			surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
-
-			_init_gizmo_instance(index);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_gizmo_instances();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4043,7 +4030,7 @@ void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
-	if (!is_visible_in_tree()) {
+	if (!is_visible_in_tree() || !camera->is_inside_tree()) {
 		return;
 	}
 
@@ -5747,15 +5734,23 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
-	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
+	surface->set_focus_mode(FOCUS_ALL);
+	add_child(surface);
+
+	surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
+	surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
+	surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+	surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+	surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+	surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
+
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmos(true);
 	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
 	viewport->add_child(camera);
 	camera->make_current();
-	surface->set_focus_mode(FOCUS_ALL);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -6122,6 +6117,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	_finish_gizmo_instances();
 	memdelete(ruler);
 	memdelete(frame_time_gradient);
 }
@@ -9432,6 +9428,12 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 }
 
 Node3DEditor::Node3DEditor() {
+	set_title(TTRC("3D"));
+	set_icon_name("3D");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_3d"));
+
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 	float vp_radius = (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
@@ -9439,7 +9441,8 @@ Node3DEditor::Node3DEditor() {
 	gizmo_view_rotation_shrink = 1.0 / vp_radius;
 
 	viewport_environment.instantiate();
-	VBoxContainer *vbc = this;
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
 
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
 	singleton = this;
@@ -10111,12 +10114,12 @@ Node3DEditor::~Node3DEditor() {
 
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		spatial_editor->show();
+		spatial_editor->make_visible();
 		spatial_editor->set_process(true);
 		spatial_editor->set_physics_process(true);
 		spatial_editor->refresh_dirty_gizmos();
 	} else {
-		spatial_editor->hide();
+		spatial_editor->hide(); //try_hide()
 		spatial_editor->set_process(false);
 		spatial_editor->set_physics_process(false);
 	}
@@ -10127,7 +10130,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	return Object::cast_to<Node3D>(p_object);
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {
@@ -10274,7 +10277,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_fr
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(spatial_editor);
+	EditorDockManager::get_singleton()->add_dock(spatial_editor);
 
 	spatial_editor->hide();
 }

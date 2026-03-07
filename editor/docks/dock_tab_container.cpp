@@ -46,7 +46,7 @@ bool EditorDockDragHint::can_drop_data(const Point2 &p_point, const Variant &p_d
 void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data) {
 	// Drop dock into last spot if not over tabbar.
 	if (drop_tabbar_parent->get_rect().has_point(p_point)) {
-		drop_tabbar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
+		drop_tabbar->_handle_drop_data("tab_container_tab", p_point - (drop_tabbar->get_global_position() - get_global_position()), p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
 	} else {
 		EditorDockManager *dock_manager = EditorDockManager::get_singleton();
 		dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_container, drop_tabbar->get_tab_count());
@@ -133,7 +133,7 @@ void EditorDockDragHint::_notification(int p_what) {
 
 			// Only display tabbar hint if the mouse is over the tabbar.
 			if (drop_tabbar_parent->get_global_rect().has_point(get_global_mouse_position())) {
-				draw_set_transform(drop_tabbar_parent->get_position()); // The TabBar isn't always on top.
+				draw_set_transform(Vector2(drop_tabbar->get_global_position().x - get_global_position().x, drop_tabbar_parent->get_position().y)); // The TabBar isn't always on top.
 				drop_tabbar->_draw_tab_drop(get_canvas_item());
 			}
 		} break;
@@ -239,11 +239,22 @@ EditorDock *DockTabContainer::get_dock(int p_idx) const {
 	return Object::cast_to<EditorDock>(get_tab_control(p_idx));
 }
 
+EditorDock *DockTabContainer::get_dock_by_name(const String &p_name) const {
+	for (int i = 0; i < get_tab_count(); i++) {
+		EditorDock *dock = get_dock(i);
+		ERR_CONTINUE(!dock);
+		if (dock->get_display_title() == p_name) {
+			return dock;
+		}
+	}
+	return nullptr;
+}
+
 void DockTabContainer::show_drag_hint() {
 	if (!is_visible_in_tree()) {
 		return;
 	}
-	drag_hint->set_rect(get_global_rect());
+	drag_hint->set_rect(get_drag_hint_rect());
 	drag_hint->show();
 }
 

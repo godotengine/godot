@@ -1007,6 +1007,9 @@
 		<member name="interface/editor/docks/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks, except bottom docks.
 		</member>
+		<member name="interface/editor/docks/main_screen_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the editor's main screen.
+		</member>
 		<member name="interface/editor/fonts/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 		</member>
