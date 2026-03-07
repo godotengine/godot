@@ -5143,20 +5143,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				return;
 			}
 
-			// Collect selected Node2Ds and sort by depth so parent is always before child.
-			struct Node2DDepthComparator {
-				_FORCE_INLINE_ bool operator()(const Node2D *a, const Node2D *b) const {
-					int depth_a = 0;
-					for (const Node *p = a; p; p = p->get_parent()) {
-						depth_a++;
-					}
-					int depth_b = 0;
-					for (const Node *p = b; p; p = p->get_parent()) {
-						depth_b++;
-					}
-					return depth_a < depth_b;
-				}
-			};
+			// Collect selected Node2Ds.
 			Vector<Node2D *> nodes;
 			for (const KeyValue<ObjectID, Object *> &E : selection) {
 				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.key);
@@ -5164,17 +5151,42 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					nodes.push_back(n2d);
 				}
 			}
-			nodes.sort_custom<Node2DDepthComparator>();
+
+			if (nodes.is_empty()) {
+				return;
+			}
+
+			// Precompute depths once, then sort shallowest-first so a parent bone is always created before its child's bone.
+			HashMap<const Node2D *, int> depth_cache;
+			for (Node2D *n2d : nodes) {
+				int d = 0;
+				for (const Node *p = n2d; p; p = p->get_parent()) {
+					d++;
+				}
+				depth_cache[n2d] = d;
+			}
+			struct Node2DDepthComparator {
+				const HashMap<const Node2D *, int> *cache;
+				_FORCE_INLINE_ bool operator()(const Node2D *a, const Node2D *b) const {
+					return cache->get(a) < cache->get(b);
+				}
+			};
+			Node2DDepthComparator depth_cmp;
+			depth_cmp.cache = &depth_cache;
+			nodes.sort_custom<Node2DDepthComparator>(depth_cmp);
 
 			HashMap<Node *, Bone2D *> node_to_bone;
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
 			for (Node2D *n2d : nodes) {
+				// Capture the original transform explicitly before creating the bone.
+				Transform2D original_transform = n2d->get_transform();
+
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
 				new_bone_name += "Bone2D";
 				new_bone->set_name(new_bone_name);
-				new_bone->set_transform(n2d->get_transform());
+				new_bone->set_transform(original_transform);
 
 				Node *n2d_parent = n2d->get_parent();
 				if (!n2d_parent) {
@@ -5198,10 +5210,16 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(new_bone, "remove_child", n2d);
 				undo_redo->add_undo_method(n2d_parent, "add_child", n2d);
 				undo_redo->add_undo_method(parent_for_bone, "remove_child", new_bone);
-				undo_redo->add_undo_method(n2d, "set_transform", new_bone->get_transform());
-				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
+				undo_redo->add_undo_method(n2d, "set_transform", original_transform);
 
 				node_to_bone[n2d] = new_bone;
+			}
+			// Defer all ownership restoration to after all structural undo ops complete, so no node's
+			// children are still attached to intermediate bones when _set_owner_for_node_and_children recurses.
+			for (Node2D *n2d : nodes) {
+				if (node_to_bone.has(n2d)) {
+					undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
+				}
 			}
 			undo_redo->commit_action();
 
