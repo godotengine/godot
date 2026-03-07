@@ -1780,6 +1780,11 @@ void SceneTreeDock::_notification(int p_what) {
 				scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 				scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
 				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
+				bool show_row_stripes = EDITOR_GET("docks/scene_tree/show_row_stripes");
+				scene_tree->get_scene_tree()->set_row_stripes_visible(show_row_stripes);
+				if (remote_tree) {
+					remote_tree->set_row_stripes_visible(show_row_stripes);
+				}
 			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/timers")) {
 				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
@@ -4607,6 +4612,7 @@ void SceneTreeDock::add_remote_tree_editor(Tree *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
 	main_mc->add_child(p_remote);
 	remote_tree = p_remote;
+	remote_tree->set_row_stripes_visible(EDITOR_GET("docks/scene_tree/show_row_stripes"));
 	remote_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	remote_tree->hide();
 	remote_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
@@ -5081,6 +5087,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_root_dialog->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
+	scene_tree->get_scene_tree()->set_row_stripes_visible(EDITOR_GET("docks/scene_tree/show_row_stripes"));
 	main_mc->add_child(scene_tree);
 	scene_tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));

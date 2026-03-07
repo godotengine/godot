@@ -393,6 +393,9 @@
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
 		</member>
+		<member name="row_stripes_visible" type="bool" setter="set_row_stripes_visible" getter="are_row_stripes_visible" default="false">
+			If [code]true[/code], draws the [theme_item row_stripes] style box behind every second row to improve readability. Useful when the [Tree] has multiple columns.
+		</member>
 		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="Tree.ScrollHintMode" default="0">
 			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
 		</member>
@@ -760,6 +763,9 @@
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background style for the [Tree].
+		</theme_item>
+		<theme_item name="row_stripes" data_type="style" type="StyleBox">
+			[StyleBox] drawn behind every second row when [member row_stripes_visible] is [code]true[/code].
 		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is not being focused.
