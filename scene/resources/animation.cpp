@@ -1069,7 +1069,7 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-Animation::TypeTrackId Animation::track_get_unique_id(int p_track) const {
+Animation::TrackCacheID Animation::track_get_unique_id(int p_track) const {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
 	return tracks[p_track]->get_unique_id();
 }

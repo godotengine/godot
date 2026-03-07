@@ -41,7 +41,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint64_t TypeTrackId;
+	typedef uint64_t TrackCacheID;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -113,8 +113,8 @@ public:
 		StringName stringname_path; // Path + SubPath combination instead of hash
 		bool imported = false;
 		bool enabled = true;
-		TypeTrackId get_unique_id() const {
-			return (TypeTrackId)(stringname_path.data_unique_pointer()) + get_cache_type(type);
+		TrackCacheID get_unique_id() const {
+			return (TrackCacheID)(stringname_path.data_unique_pointer()) + get_cache_type(type);
 		}
 		virtual ~Track() {}
 	};
@@ -428,7 +428,7 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
-	TypeTrackId track_get_unique_id(int p_track) const;
+	TrackCacheID track_get_unique_id(int p_track) const;
 	void generate_unique_ids();
 
 	void track_move_up(int p_track);
