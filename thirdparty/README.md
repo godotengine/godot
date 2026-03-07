@@ -524,6 +524,7 @@ Patches:
 - `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
 - `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
 - `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
+- `0005-backport-upstream-commit-449b645.patch` (GH-117194)
 
 
 ## libbacktrace

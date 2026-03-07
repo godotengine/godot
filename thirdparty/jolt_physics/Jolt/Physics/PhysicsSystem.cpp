@@ -1096,6 +1096,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 		settings.mActiveEdgeMode = mPhysicsSettings.mCheckActiveEdges? EActiveEdgeMode::CollideOnlyWithActive : EActiveEdgeMode::CollideWithAll;
 		settings.mMaxSeparationDistance = body1->IsSensor() || body2->IsSensor()? 0.0f : mPhysicsSettings.mSpeculativeContactDistance;
 		settings.mActiveEdgeMovementDirection = body1->GetLinearVelocity() - body2->GetLinearVelocity();
+		settings.mInternalEdgeRemovalVertexToleranceSq = mPhysicsSettings.mInternalEdgeRemovalVertexToleranceSq;
 
 		// Create shape filter
 		SimShapeFilterWrapper shape_filter(mSimShapeFilter, body1);
