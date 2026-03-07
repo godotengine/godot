@@ -554,7 +554,8 @@ void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
 			// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
-	} else if (p_property.name == "light_size" || p_property.name == "light_projector") {
+	}
+	if (p_property.name == "light_size" || p_property.name == "light_projector") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "distance_fade_enabled" || p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length") {
