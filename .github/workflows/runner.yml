@@ -32,7 +32,8 @@ jobs:
  #   needs: static-checks
   #  if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
     uses: ./.github/workflows/linux_builds.yml
-   # with:
+    with:
+      changed-files: ""
    #   changed-files: ${{ needs.static-checks.outputs.changed-files }}
 
   macos-build:
