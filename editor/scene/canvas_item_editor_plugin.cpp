@@ -5143,13 +5143,33 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				return;
 			}
 
-			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
+			// Collect selected Node2Ds and sort by depth so parent is always before child.
+			struct Node2DDepthComparator {
+				_FORCE_INLINE_ bool operator()(const Node2D *a, const Node2D *b) const {
+					int depth_a = 0;
+					for (const Node *p = a; p; p = p->get_parent()) {
+						depth_a++;
+					}
+					int depth_b = 0;
+					for (const Node *p = b; p; p = p->get_parent()) {
+						depth_b++;
+					}
+					return depth_a < depth_b;
+				}
+			};
+			Vector<Node2D *> nodes;
 			for (const KeyValue<ObjectID, Object *> &E : selection) {
 				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.key);
-				if (!n2d) {
-					continue;
+				if (n2d) {
+					nodes.push_back(n2d);
 				}
+			}
+			nodes.sort_custom<Node2DDepthComparator>();
 
+			HashMap<Node *, Bone2D *> node_to_bone;
+
+			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
+			for (Node2D *n2d : nodes) {
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
 				new_bone_name += "Bone2D";
@@ -5158,10 +5178,17 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				Node *n2d_parent = n2d->get_parent();
 				if (!n2d_parent) {
+					memdelete(new_bone);
 					continue;
 				}
 
-				undo_redo->add_do_method(n2d_parent, "add_child", new_bone);
+				// Parent the new bone under the bone we created for this node's parent (if any), so bones form a chain.
+				Node *parent_for_bone = n2d_parent;
+				if (node_to_bone.has(n2d_parent)) {
+					parent_for_bone = node_to_bone[n2d_parent];
+				}
+
+				undo_redo->add_do_method(parent_for_bone, "add_child", new_bone);
 				undo_redo->add_do_method(n2d_parent, "remove_child", n2d);
 				undo_redo->add_do_method(new_bone, "add_child", n2d);
 				undo_redo->add_do_method(n2d, "set_transform", Transform2D());
@@ -5170,9 +5197,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				undo_redo->add_undo_method(new_bone, "remove_child", n2d);
 				undo_redo->add_undo_method(n2d_parent, "add_child", n2d);
-				undo_redo->add_undo_method(n2d_parent, "remove_child", new_bone);
+				undo_redo->add_undo_method(parent_for_bone, "remove_child", new_bone);
 				undo_redo->add_undo_method(n2d, "set_transform", new_bone->get_transform());
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
+
+				node_to_bone[n2d] = new_bone;
 			}
 			undo_redo->commit_action();
 
