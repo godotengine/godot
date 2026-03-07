@@ -32,6 +32,8 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -40,6 +42,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
 
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
@@ -576,6 +579,7 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
+	path->connect("curve_changed", callable_mp(Path3DEditorPlugin::singleton, &Path3DEditorPlugin::_update_toolbar));
 	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));

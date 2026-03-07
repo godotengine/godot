@@ -68,6 +68,15 @@
 				This is called when the customization process for scenes ends.
 			</description>
 		</method>
+		<method name="_end_generate_apple_embedded_project" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="will_build_archive" type="bool" />
+			<description>
+				This is called after Xcode project generation, but before it is built.
+				[b]Note:[/b] Only supported on iOS and visionOS.
+			</description>
+		</method>
 		<method name="_export_begin" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="features" type="PackedStringArray" />

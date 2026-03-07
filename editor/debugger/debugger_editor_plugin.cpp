@@ -30,6 +30,7 @@
 
 #include "debugger_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"

@@ -71,7 +71,7 @@ void MotionVectorsStore::process(Ref<RenderSceneBuffersRD> p_render_buffers,
 		RendererRD::MaterialStorage::store_camera(reprojection, push_constant.reprojection_matrix);
 	}
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::get_singleton()->draw_command_begin_label("Motion Vector Store");
 

@@ -38,10 +38,9 @@
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
-#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
-#include "shader_warnings.h"
+#include "servers/rendering/shader_warnings.h"
 #endif // DEBUG_ENABLED
 
 class ShaderLanguage {
@@ -1275,6 +1274,7 @@ public:
 
 	String get_error_text();
 	Vector<FilePosition> get_include_positions();
+	CompletionType get_completion_type() const { return completion_type; }
 	int get_error_line();
 
 	ShaderNode *get_shader();

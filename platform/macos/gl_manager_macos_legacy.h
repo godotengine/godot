@@ -32,8 +32,9 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include "core/error/error_list.h"
 #include "core/templates/rb_map.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
@@ -51,10 +52,10 @@ class GLManagerLegacy_MacOS {
 		NSOpenGLContext *context = nullptr;
 	};
 
-	RBMap<DisplayServer::WindowID, GLWindow> windows;
+	RBMap<DisplayServerEnums::WindowID, GLWindow> windows;
 
 	NSOpenGLContext *shared_context = nullptr;
-	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	Error create_context(GLWindow &win);
 
@@ -65,23 +66,23 @@ class GLManagerLegacy_MacOS {
 	CGLGetCurrentContextPtr CGLGetCurrentContext = nullptr;
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	Error window_create(DisplayServerEnums::WindowID p_window_id, id p_view, int p_width, int p_height);
+	void window_destroy(DisplayServerEnums::WindowID p_window_id);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
 	void swap_buffers();
 
-	void window_make_current(DisplayServer::WindowID p_window_id);
+	void window_make_current(DisplayServerEnums::WindowID p_window_id);
 
-	void window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled);
+	void window_set_per_pixel_transparency_enabled(DisplayServerEnums::WindowID p_window_id, bool p_enabled);
 
 	Error initialize();
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
 
-	NSOpenGLContext *get_context(DisplayServer::WindowID p_window_id);
+	NSOpenGLContext *get_context(DisplayServerEnums::WindowID p_window_id);
 
 	GLManagerLegacy_MacOS();
 	~GLManagerLegacy_MacOS();

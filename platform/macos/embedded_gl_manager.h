@@ -32,8 +32,10 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include "core/error/error_list.h"
+#include "core/math/vector2i.h"
 #include "core/templates/rb_map.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
@@ -75,11 +77,11 @@ class GLManagerEmbedded {
 		~GLWindow() { destroy_framebuffers(); }
 	};
 
-	RBMap<DisplayServer::WindowID, GLWindow> windows;
-	typedef RBMap<DisplayServer::WindowID, GLWindow>::Element GLWindowElement;
+	RBMap<DisplayServerEnums::WindowID, GLWindow> windows;
+	typedef RBMap<DisplayServerEnums::WindowID, GLWindow>::Element GLWindowElement;
 
 	NSOpenGLContext *shared_context = nullptr;
-	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	Error create_context(GLWindow &p_win);
 
@@ -98,10 +100,10 @@ class GLManagerEmbedded {
 	void release_display_link();
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
-	Size2i window_get_size(DisplayServer::WindowID p_window_id) const;
+	Error window_create(DisplayServerEnums::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height);
+	void window_destroy(DisplayServerEnums::WindowID p_window_id);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height);
+	Size2i window_get_size(DisplayServerEnums::WindowID p_window_id) const;
 
 	void set_display_id(uint32_t p_display_id);
 	void set_vsync_enabled(bool p_enabled);
@@ -110,7 +112,7 @@ public:
 	void release_current();
 	void swap_buffers();
 
-	void window_make_current(DisplayServer::WindowID p_window_id);
+	void window_make_current(DisplayServerEnums::WindowID p_window_id);
 
 	Error initialize();
 

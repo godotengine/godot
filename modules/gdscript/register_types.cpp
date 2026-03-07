@@ -52,6 +52,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"

@@ -32,7 +32,13 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "scene/main/node.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+
+class Node;
+class Script;
 
 class SceneDebuggerObject {
 private:

@@ -4,10 +4,12 @@
 		MP3 audio stream driver.
 	</brief_description>
 	<description>
-		MP3 audio stream driver. See [member data] if you want to load an MP3 file at run-time.
+		MP3 audio stream driver. See [member data] if you want to load an MP3 file at run-time. More info can be found in [ResourceImporterMP3].
 		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default.
 	</description>
 	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="load_from_buffer" qualifiers="static">
@@ -27,10 +29,13 @@
 	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
+			The number of beats within a single bar in the audio track.
 		</member>
 		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+			The length of the audio track, in beats. The actual duration of the audio file might be longer than what is indicated by this property. It defines the end of the audio for looping, [AudioStreamPlaylist], and [AudioStreamInteractive].
 		</member>
 		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
+			The tempo of the audio track, measured in beats per minute.
 		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
@@ -55,7 +60,7 @@
 			[/codeblocks]
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			If [code]true[/code], the stream will automatically loop when it reaches the end.
+			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the audio track, or once it reaches the end of the last beat according to the amount specified in [member beat_count]. Useful for ambient sounds and background music.
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
 			Time in seconds at which the stream starts after being looped.

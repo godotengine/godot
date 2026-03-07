@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
@@ -1598,7 +1599,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 							}
 						}
-						if (!mat_id.is_empty() && extract_mat != 0) {
+						if (!mat_id.is_empty() && p_material_data.has(mat_id) && extract_mat != 0) {
 							String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
 							String path = spath.path_join(mat_id.validate_filename() + ext);
 							String uid_path = ResourceUID::path_to_uid(path);

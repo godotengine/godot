@@ -30,7 +30,9 @@
 
 #include "check_button.h"
 
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 Size2 CheckButton::get_icon_size() const {
 	Ref<Texture2D> on_tex;
@@ -89,7 +91,7 @@ void CheckButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CHECK_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CHECK_BUTTON);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:

@@ -30,6 +30,8 @@
 
 #include "enet_packet_peer.h"
 
+#include "core/object/class_db.h"
+
 void ENetPacketPeer::peer_disconnect(int p_data) {
 	ERR_FAIL_NULL(peer);
 	enet_peer_disconnect(peer, p_data);

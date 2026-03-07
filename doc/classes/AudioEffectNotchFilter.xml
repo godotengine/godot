@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectNotchFilter" inherits="AudioEffectFilter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a notch filter to the Audio bus.
+		Adds a notch filter to an audio bus.
 	</brief_description>
 	<description>
-		Attenuates frequencies in a narrow band around the [member AudioEffectFilter.cutoff_hz] and cuts frequencies outside of this range.
+		A "notch" filter attenuates frequencies at [member AudioEffectFilter.cutoff_hz] and allows frequencies outside the frequency threshold to pass unchanged. It is a narrower and stronger version of [AudioEffectBandLimitFilter], and is the opposite of [AudioEffectBandPassFilter].
+		This filter can be used to give more room for other sounds to play at that frequency. Because of how much it attenuates frequencies, it can also be used to completely remove undesired frequencies.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 	</tutorials>
 </class>

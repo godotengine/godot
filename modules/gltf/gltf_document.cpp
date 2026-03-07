@@ -36,6 +36,7 @@
 #include "gltf_template_convert.h"
 #include "skin_tool.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
@@ -44,6 +45,7 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer.h"
+#include "core/object/class_db.h"
 #include "core/object/object_id.h"
 #include "core/version.h"
 #include "scene/2d/node_2d.h"
@@ -1436,7 +1438,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		TypedArray<Material> instance_materials;
 
 		for (int j = 0; j < primitives.size(); j++) {
-			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
 			Array array;
@@ -1745,7 +1747,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 
 			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
-				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			Ref<SurfaceTool> mesh_surface_tool;
@@ -1761,19 +1763,19 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 			array = mesh_surface_tool->commit_to_arrays();
 
-			if ((flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
+			if ((flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
 				if (unlikely(tangents.size() < normals.size() * 4)) {
 					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
-					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 				} else {
 					for (int vert = 0; vert < normals.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
-							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+							flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
 					}
 				}
@@ -5949,6 +5951,16 @@ GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> 
 	ERR_FAIL_V_MSG(-1, vformat("glTF: A node was animated, but it wasn't found in the GLTFState. Ensure that all nodes referenced by the AnimationPlayer are in the scene you are exporting."));
 }
 
+template <typename T>
+static inline Error _try_interpolate_value_track(const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, double p_time, T &r_value) {
+	Variant val = p_godot_animation->value_track_interpolate(p_godot_anim_track_index, p_time, false);
+	if (val.get_type() != GetTypeInfo<T>::VARIANT_TYPE) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_value = val;
+	return OK;
+}
+
 bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAnimation::NodeTrack &p_gltf_node_track, const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, Vector<double> &p_times) {
 	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(p_godot_animation, p_godot_anim_track_index);
 	const Animation::TrackType track_type = p_godot_animation->track_get_type(p_godot_anim_track_index);
@@ -6088,7 +6100,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 position;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, position);
 						if (err == OK) {
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
@@ -6124,7 +6136,17 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Quaternion rotation;
-						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+						Error err;
+						if (node_prop == "quaternion") {
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation);
+						} else {
+							Vector3 rotation_euler;
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation_euler);
+							if (node_prop == "rotation_degrees") {
+								rotation_euler *= Math::TAU / 360.0;
+							}
+							rotation = Quaternion::from_euler(rotation_euler);
+						}
 						if (err == OK) {
 							p_gltf_node_track.rotation_track.values.push_back(rotation);
 							p_gltf_node_track.rotation_track.times.push_back(time);
@@ -6170,7 +6192,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 scale;
-						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, scale);
 						if (err == OK) {
 							p_gltf_node_track.scale_track.values.push_back(scale);
 							p_gltf_node_track.scale_track.times.push_back(time);
@@ -6215,17 +6237,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					double time = 0.0;
 					bool last = false;
 					while (true) {
-						Vector3 position;
-						Quaternion rotation;
-						Vector3 scale;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Transform3D transform;
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, transform);
 						if (err == OK) {
-							err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-							if (err == OK) {
-								err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-							}
-						}
-						if (err == OK) {
+							Vector3 position = transform.get_origin();
+							Quaternion rotation = transform.basis.get_rotation_quaternion();
+							Vector3 scale = transform.basis.get_scale();
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
 							p_gltf_node_track.rotation_track.values.push_back(rotation);

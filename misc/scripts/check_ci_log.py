@@ -46,7 +46,10 @@ if file_contents.find("ERROR: LeakSanitizer:") != -1:
 # this possibility should also be handled as a potential error, even if
 # LeakSanitizer doesn't report anything
 
-if file_contents.find("ObjectDB instances leaked at exit") != -1:
+if (
+    file_contents.find("ObjectDB instance was leaked at exit") != -1
+    or file_contents.find("ObjectDB instances were leaked at exit") != -1
+):
     print("ERROR: Memory leak was found")
     sys.exit(54)
 

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectHighShelfFilter" inherits="AudioEffectFilter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a high-shelf filter to the audio bus.
+		Adds a high-shelf filter to an audio bus.
 	</brief_description>
 	<description>
-		Reduces all frequencies above the [member AudioEffectFilter.cutoff_hz].
+		A "high-shelf" filter controls the gain of all frequencies above [member AudioEffectFilter.cutoff_hz].
+		This filter can be used to increase or decrease clarity of a sound.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 	</tutorials>
 </class>

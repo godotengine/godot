@@ -34,6 +34,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "scene/main/node.h"
 
 SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	if (!p_obj) {
@@ -158,10 +159,12 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
 			if (E.value.get_type() == Variant::OBJECT) {
 				Variant inst_id = ((Object *)E.value)->get_instance_id();
-				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
+				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
 				properties.push_back(SceneDebuggerProperty(pi, inst_id));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
+				pi.usage |= PROPERTY_USAGE_READ_ONLY;
+
 				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			}
 		}
@@ -180,6 +183,10 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
 		if (res.is_valid() && !res->get_path().is_empty()) {
+			// HACK: Overwrite `PropertyInfo` with the current runtime type.
+			// This allows untyped variables to be displayed correctly.
+			prop[1] = Variant::OBJECT;
+
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode

@@ -120,6 +120,8 @@ protected:
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 
+		EDIT_JOIN_LINES,
+
 		BASE_ENUM_COUNT,
 	};
 
@@ -161,7 +163,6 @@ protected:
 
 	bool editor_enabled = false;
 	CodeTextEditor *code_editor = nullptr;
-	HBoxContainer *edit_hb = nullptr;
 
 	GotoLinePopup *goto_line_popup = nullptr;
 

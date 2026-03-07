@@ -33,6 +33,8 @@
 #include "webxr_interface.h"
 #include "webxr_interface_js.h"
 
+#include "core/object/class_db.h"
+
 #ifdef WEB_ENABLED
 Ref<WebXRInterfaceJS> webxr;
 #endif

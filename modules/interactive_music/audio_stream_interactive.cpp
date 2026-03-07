@@ -30,7 +30,9 @@
 
 #include "audio_stream_interactive.h"
 
+#include "core/config/engine.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 
 AudioStreamInteractive::AudioStreamInteractive() {
 }
@@ -437,7 +439,7 @@ void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const 
 			r_property.usage = PROPERTY_USAGE_INTERNAL;
 		} else if (prop == "clip_" + itos(clip) + "/next_clip") {
 			if (clips[clip].auto_advance != AUTO_ADVANCE_ENABLED) {
-				r_property.usage = 0;
+				r_property.usage = PROPERTY_USAGE_NONE;
 			} else if (Engine::get_singleton()->is_editor_hint()) {
 #ifdef TOOLS_ENABLED
 				r_property.hint_string = _get_streams_hint();

@@ -30,6 +30,9 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "openxr_api_extension.h"
+
+#include "core/object/class_db.h"
 #include "extensions/openxr_extension_wrapper_extension.h"
 
 void OpenXRAPIExtension::_register_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension) {

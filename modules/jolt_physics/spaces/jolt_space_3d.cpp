@@ -42,7 +42,6 @@
 #include "jolt_contact_listener_3d.h"
 #include "jolt_layers.h"
 #include "jolt_physics_direct_space_state_3d.h"
-#include "jolt_temp_allocator.h"
 
 #include "core/io/file_access.h"
 #include "core/os/time.h"
@@ -94,9 +93,14 @@ void JoltSpace3D::_pre_step(float p_step) {
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step, *jolt_body);
 	}
+
+	physics_system->SetBodyActivationListener(body_activation_listener);
 }
 
 void JoltSpace3D::_post_step(float p_step) {
+	// We only want a listener during the step, as it will otherwise be called when pending bodies are flushed, which causes issues (e.g. GH-115322).
+	physics_system->SetBodyActivationListener(nullptr);
+
 	contact_listener->post_step();
 
 	while (shapes_changed_list.first()) {
@@ -106,9 +110,9 @@ void JoltSpace3D::_post_step(float p_step) {
 	}
 }
 
-JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
+JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_temp_allocator) :
 		job_system(p_job_system),
-		temp_allocator(new JoltTempAllocator()),
+		temp_allocator(p_temp_allocator),
 		layers(new JoltLayers()),
 		contact_listener(new JoltContactListener3D(this)),
 		body_activation_listener(new JoltBodyActivationListener3D()),
@@ -182,11 +186,6 @@ JoltSpace3D::~JoltSpace3D() {
 		delete layers;
 		layers = nullptr;
 	}
-
-	if (temp_allocator != nullptr) {
-		delete temp_allocator;
-		temp_allocator = nullptr;
-	}
 }
 
 void JoltSpace3D::step(float p_step) {
@@ -194,8 +193,6 @@ void JoltSpace3D::step(float p_step) {
 	last_step = p_step;
 
 	_pre_step(p_step);
-
-	physics_system->SetBodyActivationListener(body_activation_listener);
 
 	const JPH::EPhysicsUpdateError update_error = physics_system->Update(p_step, 1, temp_allocator, job_system);
 
@@ -219,9 +216,6 @@ void JoltSpace3D::step(float p_step) {
 								"Maximum number of contact constraints is currently set to %d.",
 				JoltProjectSettings::max_contact_constraints));
 	}
-
-	// We only want a listener during the step, as it will otherwise be called when pending bodies are flushed, which causes issues (e.g. GH-115322).
-	physics_system->SetBodyActivationListener(nullptr);
 
 	_post_step(p_step);
 

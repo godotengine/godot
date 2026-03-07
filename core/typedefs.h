@@ -56,6 +56,32 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 
 // IWYU pragma: end_exports
 
+#if defined(__has_feature)
+#define GD_HAS_FEATURE(m_feature) __has_feature(m_feature)
+#else
+#define GD_HAS_FEATURE(m_feature) 0
+#endif
+
+#if (GD_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && !defined(ASAN_ENABLED)
+#error Address sanitizer was enabled without defining `ASAN_ENABLED`
+#endif
+
+#if (GD_HAS_FEATURE(leak_sanitizer) || defined(__SANITIZE_LEAKS__)) && !defined(LSAN_ENABLED)
+#error Leak sanitizer was enabled without defining `LSAN_ENABLED`
+#endif
+
+#if (GD_HAS_FEATURE(memory_sanitizer) || defined(__SANITIZE_MEMORY__)) && !defined(MSAN_ENABLED)
+#error Memory sanitizer was enabled without defining `MSAN_ENABLED`
+#endif
+
+#if (GD_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && !defined(TSAN_ENABLED)
+#error Thread sanitizer was enabled without defining `TSAN_ENABLED`
+#endif
+
+#if (GD_HAS_FEATURE(undefined_behavior_sanitizer) || defined(__UNDEFINED_SANITIZER__)) && !defined(UBSAN_ENABLED)
+#error Undefined behavior sanitizer was enabled without defining `UBSAN_ENABLED`
+#endif
+
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
 #ifndef _STR
@@ -99,19 +125,6 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
 #define _ALLOW_DISCARD_ (void)
-#endif
-
-// Windows badly defines a lot of stuff we'll never use. Undefine it.
-#ifdef _WIN32
-#undef min // override standard definition
-#undef max // override standard definition
-#undef ERROR // override (really stupid) wingdi.h standard definition
-#undef DELETE // override (another really stupid) winnt.h standard definition
-#undef MessageBox // override winuser.h standard definition
-#undef Error
-#undef OK
-#undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
-#undef MONO_FONT
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.

@@ -31,6 +31,7 @@
 #include "voxelizer.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/image.h"
 #include "core/math/geometry_3d.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/texture.h"

@@ -30,6 +30,8 @@
 
 #include "style_box_flat.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server.h"

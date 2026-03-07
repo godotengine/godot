@@ -5,10 +5,11 @@
 	</brief_description>
 	<description>
 		The base [Resource] for every audio effect. In the editor, an audio effect can be added to the current bus layout through the Audio panel. At run-time, it is also possible to manipulate audio effects through [method AudioServer.add_bus_effect], [method AudioServer.remove_bus_effect], and [method AudioServer.get_bus_effect].
-		When applied on a bus, an audio effect creates a corresponding [AudioEffectInstance]. The instance is directly responsible for manipulating the sound, based on the original audio effect's properties.
+		When applied on a bus, an audio effect creates a corresponding [AudioEffectInstance]. The instance is directly responsible for manipulating sound, based on the original audio effect's properties.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
 		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>

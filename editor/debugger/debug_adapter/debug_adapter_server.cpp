@@ -80,11 +80,14 @@ void DebugAdapterServer::_notification(int p_what) {
 
 void DebugAdapterServer::start() {
 	remote_port = (DebugAdapterServer::port_override > -1) ? DebugAdapterServer::port_override : (int)_EDITOR_GET("network/debug_adapter/remote_port");
-	if (protocol.start(remote_port, IPAddress("127.0.0.1")) == OK) {
-		EditorNode::get_log()->add_message("--- Debug adapter server started on port " + itos(remote_port) + " ---", EditorLog::MSG_TYPE_EDITOR);
-		set_process_internal(true);
-		started = true;
+	const Error status = protocol.start(remote_port, IPAddress("127.0.0.1"));
+	if (status != OK) {
+		EditorNode::get_log()->add_message("--- Failed to start Debug adapter server on port " + itos(remote_port) + ": " + error_names[status] + " ---", EditorLog::MSG_TYPE_EDITOR);
+		return;
 	}
+	EditorNode::get_log()->add_message("--- Debug adapter server started on port " + itos(remote_port) + " ---", EditorLog::MSG_TYPE_EDITOR);
+	set_process_internal(true);
+	started = true;
 }
 
 void DebugAdapterServer::stop() {

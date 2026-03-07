@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/io/http_client.h"
-#include "core/io/stream_peer_gzip.h"
-#include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class Thread;
 class Timer;
+class StreamPeerGZIP;
 
 class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);
@@ -105,6 +105,7 @@ private:
 	bool _is_content_header(const String &p_header) const;
 	bool _is_method_safe() const;
 	Error _get_redirect_headers(Vector<String> *r_headers);
+	bool _is_automatic_redirect() const;
 
 	bool _handle_response(bool *ret_value);
 

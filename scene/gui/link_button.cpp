@@ -30,7 +30,10 @@
 
 #include "link_button.h"
 
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 void LinkButton::_shape() {
 	Ref<Font> font = theme_cache.font;
@@ -209,16 +212,16 @@ void LinkButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LINK);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LINK);
 			const String &ac_name = get_accessibility_name();
 			if (!xl_text.is_empty() && ac_name.is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+				AccessibilityServer::get_singleton()->update_set_name(ae, xl_text);
 			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
+				AccessibilityServer::get_singleton()->update_set_name(ae, ac_name + ": " + xl_text);
 			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
+				AccessibilityServer::get_singleton()->update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_url(ae, uri);
+			AccessibilityServer::get_singleton()->update_set_url(ae, uri);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {

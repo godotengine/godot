@@ -61,8 +61,6 @@ public:
 	};
 
 protected:
-	LocalVector<JoltShapeInstance3D> shapes;
-
 	RID rid;
 	ObjectID instance_id;
 	JoltSpace3D *space = nullptr;

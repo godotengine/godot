@@ -183,7 +183,7 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 	smaa.blend_push_constant.inv_size[1] = inv_size.y;
 	smaa.blend_push_constant.use_debanding = p_use_debanding;
 
-	RID linear_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	allocate_render_targets(p_render_buffers);
 	RID edges_tex = p_render_buffers->get_texture(RB_SCOPE_SMAA, RB_EDGES);

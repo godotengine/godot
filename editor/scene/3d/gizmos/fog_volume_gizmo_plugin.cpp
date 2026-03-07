@@ -94,7 +94,7 @@ void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	if (fog_volume->get_shape() != RS::FOG_VOLUME_SHAPE_WORLD) {
+	if (fog_volume->get_shape() != RSE::FOG_VOLUME_SHAPE_WORLD) {
 		const Ref<Material> material =
 				get_material("shape_material", p_gizmo);
 		const Ref<Material> material_internal =

@@ -31,6 +31,8 @@
 #include "text_paragraph.h"
 #include "text_paragraph.compat.inc"
 
+#include "core/object/class_db.h"
+
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
 	ClassDB::bind_method(D_METHOD("duplicate"), &TextParagraph::duplicate);

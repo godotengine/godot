@@ -34,6 +34,7 @@
 
 #include <os/signpost.h>
 #include <simd/simd.h>
+#include <shared_mutex>
 #include <string>
 
 #pragma mark - Resource Factory

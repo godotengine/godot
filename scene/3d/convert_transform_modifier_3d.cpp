@@ -30,6 +30,8 @@
 
 #include "convert_transform_modifier_3d.h"
 
+#include "core/object/class_db.h"
+
 constexpr const char *HINT_POSITION = "-10,10,0.01,or_greater,or_less,suffix:m";
 constexpr const char *HINT_ROTATION = "-180,180,0.01,radians_as_degrees";
 constexpr const char *HINT_SCALE = "0,10,0.01,or_greater";

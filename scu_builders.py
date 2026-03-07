@@ -390,6 +390,28 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["servers/navigation_3d"])
     process_folder(["servers/xr"])
 
+    # NOTE: Tests previously compiled as one large unit. We replicate this behavior in SCU builds.
+    process_folder(
+        [
+            "tests",
+            "/core",
+            "/core/config",
+            "/core/input",
+            "/core/io",
+            "/core/math",
+            "/core/object",
+            "/core/os",
+            "/core/string",
+            "/core/templates",
+            "/core/threads",
+            "/core/variant",
+            "/scene",
+            "/servers",
+            "/servers/rendering",
+        ],
+        ["test_macros", "test_main"],
+    )
+
     # Finally change back the path to the calling folder
     os.chdir(curr_folder)
 

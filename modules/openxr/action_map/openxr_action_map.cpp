@@ -30,6 +30,8 @@
 
 #include "openxr_action_map.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action_sets", "action_sets"), &OpenXRActionMap::set_action_sets);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRActionMap::get_action_sets);

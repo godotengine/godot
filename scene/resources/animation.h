@@ -251,6 +251,10 @@ private:
 
 	LocalVector<Track *> tracks;
 
+#ifdef TOOLS_ENABLED
+	HashSet<StringName> folded_groups;
+#endif // TOOLS_ENABLED
+
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
@@ -538,6 +542,21 @@ public:
 
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
+
+#ifdef TOOLS_ENABLED
+	const HashSet<StringName> &editor_get_folded_groups() const { return folded_groups; }
+	void editor_clear_folded_groups() { folded_groups.clear(); }
+	void editor_add_folded_group(const StringName &p_group_name) { folded_groups.insert(p_group_name); }
+	void editor_remove_folded_group(const StringName &p_group_name) { folded_groups.erase(p_group_name); }
+	bool editor_is_group_folded(const StringName &p_group_name) const { return folded_groups.has(p_group_name); }
+	void editor_set_group_folded(const StringName &p_group_name, bool p_folded) {
+		if (p_folded) {
+			editor_add_folded_group(p_group_name);
+		} else {
+			editor_remove_folded_group(p_group_name);
+		}
+	}
+#endif // TOOLS_ENABLED
 
 	// Helper functions for Rotation.
 	static double interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest = 0.0); // Deterministic slerp to prevent to cross the inverted rest axis.

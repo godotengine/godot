@@ -30,6 +30,8 @@
 
 #include "animation_bezier_editor.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"

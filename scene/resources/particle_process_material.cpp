@@ -30,7 +30,10 @@
 
 #include "particle_process_material.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 Mutex ParticleProcessMaterial::dirty_materials_mutex;
 SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
@@ -897,7 +900,9 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 	code += "	}\n";
 	code += "	if (RESTART_VELOCITY) {\n";
-	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
+	code += "		// We use USERDATA to accumulate our velocities. That way, we can pass both animated velocities and accumulated velocities from\n";
+	code += "		// acceleration in VELOCITY, allowing for proper interpolation of animated velocities as well. \n";
+	code += "		USERDATA1.xyz = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
 	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "		int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
 		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
@@ -907,7 +912,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			mat2 rotm;\n";
 			code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
 			code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
-			code += "			VELOCITY.xy = rotm * VELOCITY.xy;\n";
+			code += "			USERDATA1.xy = rotm * USERDATA1.xy;\n";
 			code += "		}\n";
 		} else {
 			code += "		{\n";
@@ -915,16 +920,16 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
 			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
 			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
-			code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+			code += "			USERDATA1.xyz = mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
 			code += "		}\n";
 		}
 	}
 	code += "	}\n\n";
 	code += "	process_display_param(params, 0.0);\n\n";
-	code += "	VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
-	code += "	VELOCITY += EMITTER_VELOCITY * inherit_emitter_velocity_ratio;\n";
+	code += "	USERDATA1.xyz = (EMISSION_TRANSFORM * vec4(USERDATA1.xyz, 0.0)).xyz;\n";
+	code += "	USERDATA1.xyz += EMITTER_VELOCITY * inherit_emitter_velocity_ratio;\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		code += "	VELOCITY.z = 0.0;\n";
+		code += "	USERDATA1.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 	code += "}\n\n";
@@ -974,7 +979,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		vec3 pos = TRANSFORM[3].xyz;\n";
 	code += "		force = gravity;\n";
 	code += "		// Apply linear acceleration.\n";
-	code += "		force += length(VELOCITY) > 0.0 ? normalize(VELOCITY) * physics_params.linear_accel : vec3(0.0);\n";
+	code += "		force += length(USERDATA1.xyz) > 0.0 ? normalize(USERDATA1.xyz) * physics_params.linear_accel : vec3(0.0);\n";
 	code += "		// Apply radial acceleration.\n";
 	code += "		vec3 org = EMISSION_TRANSFORM[3].xyz;\n";
 	code += "		vec3 diff = pos - org;\n";
@@ -994,12 +999,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		force.z = 0.0;\n";
 	}
 	code += "		// Apply attractor forces.\n";
-	code += "		VELOCITY += force * DELTA;\n";
+	code += "		USERDATA1.xyz += force * DELTA;\n";
 	code += "	}\n";
 	code += "	{\n";
 	code += "		// Copied from previous version.\n";
 	code += "		if (physics_params.damping > 0.0) {\n";
-	code += "			float v = length(VELOCITY);\n";
+	code += "			float v = length(USERDATA1.xyz);\n";
 	if (!particle_flags[PARTICLE_FLAG_DAMPING_AS_FRICTION]) {
 		code += "			v -= physics_params.damping * DELTA;\n";
 	} else {
@@ -1010,24 +1015,24 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "			}\n";
 	}
 	code += "			if (v < 0.0) {\n";
-	code += "				VELOCITY = vec3(0.0);\n";
+	code += "				USERDATA1.xyz = vec3(0.0);\n";
 	code += "			} else {\n";
-	code += "				VELOCITY = normalize(VELOCITY) * v;\n";
+	code += "				USERDATA1.xyz = normalize(USERDATA1.xyz) * v;\n";
 	code += "			}\n";
 	code += "		}\n";
 	code += "	}\n\n";
 
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
-		code += "		float collision_response = dot(COLLISION_NORMAL, VELOCITY);\n";
+		code += "		float collision_response = dot(COLLISION_NORMAL, USERDATA1.xyz);\n";
 		code += "		float slide_to_bounce_trigger = step(2.0 / clamp(collision_bounce + 1.0, 1.0, 2.0), abs(collision_response));\n";
 		code += "		TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		// Remove all components of VELOCITY that are not tangential to COLLISION_NORMAL.\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * collision_response;\n";
-		code += "		// Apply friction only to VELOCITY across the surface (effectively decouples friction and bounce behavior).\n";
-		code += "		VELOCITY = mix(VELOCITY, vec3(0.0), clamp(collision_friction, 0.0, 1.0));\n";
-		code += "		// Add bounce velocity to VELOCITY.\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * collision_response * (collision_bounce * slide_to_bounce_trigger);\n";
+		code += "		// Remove all components that are not tangential to COLLISION_NORMAL.\n";
+		code += "		USERDATA1.xyz -= COLLISION_NORMAL * collision_response;\n";
+		code += "		// Apply friction only across the surface (effectively decouples friction and bounce behavior).\n";
+		code += "		USERDATA1.xyz = mix(USERDATA1.xyz, vec3(0.0), clamp(collision_friction, 0.0, 1.0));\n";
+		code += "		// Add bounce velocity.\n";
+		code += "		USERDATA1.xyz -= COLLISION_NORMAL * collision_response * (collision_bounce * slide_to_bounce_trigger);\n";
 		code += "	}\n\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";
@@ -1052,14 +1057,14 @@ void ParticleProcessMaterial::_update_shader() {
 		} else {
 			code += "	{\n";
 		}
-		code += "		float vel_mag = length(VELOCITY);\n";
+		code += "		float vel_mag = length(USERDATA1.xyz);\n";
 		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0) * (DELTA <= 0.0 ? 0.0 : 1.0);\n";
-		code += "		VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+		code += "		USERDATA1.xyz = mix(USERDATA1.xyz, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "		vel_mag = length(controlled_displacement);\n";
 		code += "		controlled_displacement = mix(controlled_displacement, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "	}\n";
 	}
-	code += "	vec3 final_velocity = controlled_displacement + VELOCITY;\n\n";
+	code += "	vec3 final_velocity = controlled_displacement + USERDATA1.xyz;\n\n";
 
 	if (velocity_limit_curve.is_valid()) {
 		code += "	// Limit velocity.\n";
@@ -1072,6 +1077,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	final_velocity.z = 0.0;\n\n";
 	}
 
+	code += "	VELOCITY = final_velocity;\n";
 	code += "	TRANSFORM[3].xyz += final_velocity * DELTA;\n\n";
 
 	code += "	process_display_param(params, lifetime_percent);\n\n";
@@ -1882,66 +1888,68 @@ RID ParticleProcessMaterial::get_shader_rid() const {
 }
 
 void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normal_texture" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_frequency" && sub_emitter_mode != SUB_EMITTER_CONSTANT) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_end" && sub_emitter_mode != SUB_EMITTER_AT_END) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_collision" && sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "sub_emitter_amount_at_start" && sub_emitter_mode != SUB_EMITTER_AT_START) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") && !tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-		if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "emission_box_extents") {
+		if (emission_shape != EMISSION_SHAPE_BOX) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-
-		if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normal_texture") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_count") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("emission_ring_")) {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_frequency") {
+		if (sub_emitter_mode != SUB_EMITTER_CONSTANT) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_end") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_END) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_collision") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "sub_emitter_amount_at_start") {
+		if (sub_emitter_mode != SUB_EMITTER_AT_START) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "collision_friction") {
+		if (collision_mode != COLLISION_RIGID) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "collision_bounce") {
+		if (collision_mode != COLLISION_RIGID) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") {
+		if (!tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") {
+			if (!tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") {
+			if (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
 		}
 	}

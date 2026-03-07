@@ -1,3 +1,6 @@
+# If you change this file, please format all files of the codebase as part of your PR:
+# pre-commit run clang-format --all
+
 # Commented out parameters are those with the same value as base LLVM style.
 # We can uncomment them if we want to change their value, or enforce the
 # chosen value in case the base style changes (last sync: Clang 18.1.8).

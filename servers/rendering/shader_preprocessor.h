@@ -161,6 +161,7 @@ private:
 		bool disabled = false;
 		CompletionType completion_type = COMPLETION_TYPE_NONE;
 		HashSet<Ref<ShaderInclude>> shader_includes;
+		bool completion_show_defines = false;
 	};
 
 private:

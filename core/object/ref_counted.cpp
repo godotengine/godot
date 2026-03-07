@@ -30,6 +30,7 @@
 
 #include "ref_counted.h"
 
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
 bool RefCounted::init_ref() {

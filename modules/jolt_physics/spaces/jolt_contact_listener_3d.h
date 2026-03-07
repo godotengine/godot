@@ -88,9 +88,9 @@ class JoltContactListener3D final
 
 	HashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher> manifolds_by_shape_pair;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_overlaps;
-	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_soft_body_overlaps;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_enters;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_exits;
+	LocalVector<JPH::SubShapeIDPair> area_soft_body_overlaps;
 	Mutex write_mutex;
 	JoltSpace3D *space = nullptr;
 

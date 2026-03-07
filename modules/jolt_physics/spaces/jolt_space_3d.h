@@ -85,7 +85,7 @@ class JoltSpace3D {
 	void _post_step(float p_step);
 
 public:
-	explicit JoltSpace3D(JPH::JobSystem *p_job_system);
+	explicit JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_temp_allocator);
 	~JoltSpace3D();
 
 	void step(float p_step);

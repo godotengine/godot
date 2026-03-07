@@ -31,6 +31,7 @@
 #include "audio_stream_ogg_vorbis.h"
 #include "core/io/file_access.h"
 
+#include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
 
 #include <ogg/ogg.h>

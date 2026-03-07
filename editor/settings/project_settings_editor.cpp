@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -411,8 +413,6 @@ void ProjectSettingsEditor::_focus_current_path_box() {
 		current_path_box = property_box;
 	} else if (tab == action_map_editor) {
 		current_path_box = action_map_editor->get_path_box();
-	} else if (tab == autoload_settings) {
-		current_path_box = autoload_settings->get_path_box();
 	} else if (tab == shaders_global_shader_uniforms_editor) {
 		current_path_box = shaders_global_shader_uniforms_editor->get_name_box();
 	} else if (tab == group_settings) {

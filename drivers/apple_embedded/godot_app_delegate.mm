@@ -109,17 +109,68 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 	return result;
 }
 
-/* Can be handled by Info.plist. Not yet supported by Godot.
-
 // MARK: Scene
 
-- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {}
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+	config.delegateClass = [GDTApplicationDelegate class];
+	return config;
+}
 
-- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions {}
-
-*/
+- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+}
 
 // MARK: Life-Cycle
+
+- (void)sceneDidDisconnect:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidDisconnect:scene];
+	}
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidBecomeActive:scene];
+	}
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneWillResignActive:scene];
+	}
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidEnterBackground:scene];
+	}
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneWillEnterForeground:scene];
+	}
+}
 
 // UIApplication lifecycle has become deprecated in favor of UIScene lifecycle
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")

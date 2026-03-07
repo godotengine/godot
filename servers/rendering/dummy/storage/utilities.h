@@ -46,7 +46,7 @@ public:
 
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const override;
+	virtual RSE::InstanceType get_base_type(RID p_rid) const override;
 	virtual bool free(RID p_rid) override;
 
 	/* DEPENDENCIES */
@@ -86,7 +86,7 @@ public:
 
 	virtual void update_memory_info() override {}
 
-	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override { return 0; }
+	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override { return 0; }
 	virtual String get_video_adapter_name() const override { return String(); }
 	virtual String get_video_adapter_vendor() const override { return String(); }
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override { return RenderingDeviceEnums::DeviceType::DEVICE_TYPE_OTHER; }

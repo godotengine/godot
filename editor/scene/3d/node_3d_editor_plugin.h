@@ -34,6 +34,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
@@ -56,6 +57,7 @@ class Node3DEditorViewport;
 class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
+class RichTextLabel;
 class SubViewport;
 class SubViewportContainer;
 class VSeparator;
@@ -173,16 +175,6 @@ class Node3DEditorViewport : public Control {
 		VIEW_MAX
 	};
 
-	enum ViewType {
-		VIEW_TYPE_USER,
-		VIEW_TYPE_TOP,
-		VIEW_TYPE_BOTTOM,
-		VIEW_TYPE_LEFT,
-		VIEW_TYPE_RIGHT,
-		VIEW_TYPE_FRONT,
-		VIEW_TYPE_REAR,
-	};
-
 public:
 	static constexpr int32_t GIZMO_BASE_LAYER = 27;
 	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
@@ -190,28 +182,6 @@ public:
 	static constexpr int32_t MISC_TOOL_LAYER = 24;
 
 	static constexpr int32_t FRAME_TIME_HISTORY = 20;
-
-	enum NavigationScheme {
-		NAVIGATION_GODOT = 0,
-		NAVIGATION_MAYA = 1,
-		NAVIGATION_MODO = 2,
-		NAVIGATION_CUSTOM = 3,
-		NAVIGATION_TABLET = 4,
-	};
-
-	enum FreelookNavigationScheme {
-		FREELOOK_DEFAULT,
-		FREELOOK_PARTIALLY_AXIS_LOCKED,
-		FREELOOK_FULLY_AXIS_LOCKED,
-	};
-
-	enum ViewportNavMouseButton {
-		NAVIGATION_LEFT_MOUSE,
-		NAVIGATION_MIDDLE_MOUSE,
-		NAVIGATION_RIGHT_MOUSE,
-		NAVIGATION_MOUSE_4,
-		NAVIGATION_MOUSE_5,
-	};
 
 private:
 	double cpu_time_history[FRAME_TIME_HISTORY];
@@ -230,9 +200,7 @@ private:
 	Ref<StandardMaterial3D> ruler_material_xray;
 
 	int index;
-	ViewType view_type;
 	void _menu_option(int p_option);
-	void _set_auto_orthogonal();
 	Node3D *preview_node = nullptr;
 	bool update_preview_node = false;
 	Point2 preview_node_viewport_pos;
@@ -244,9 +212,12 @@ private:
 	Node *target_node = nullptr;
 	Point2 drop_pos;
 
+	ObjectID focused_node_id;
+
 	EditorSelection *editor_selection = nullptr;
 
 	Button *translation_preview_button = nullptr;
+	Button *follow_mode = nullptr;
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
@@ -257,9 +228,6 @@ private:
 	SubViewport *viewport = nullptr;
 	Camera3D *camera = nullptr;
 	bool transforming = false;
-	bool orthogonal;
-	bool auto_orthogonal;
-	bool lock_rotation;
 	bool transform_gizmo_visible = true;
 	bool collision_reposition = false;
 	real_t gizmo_scale;
@@ -275,8 +243,7 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
-	Label *preview_material_label = nullptr;
-	Label *preview_material_label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
 	VBoxContainer *bottom_center_vbox = nullptr;
@@ -295,6 +262,8 @@ private:
 		real_t depth = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
+
+	void _view_state_changed();
 
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
@@ -317,18 +286,14 @@ private:
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
 	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
 
-	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
-	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
-	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
-	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
-
 	bool _is_shortcut_empty(const String &p_name);
 	bool _is_nav_modifier_pressed(const String &p_name);
-	int _get_shortcut_input_count(const String &p_name);
 
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 	ObjectID clicked;
 	ObjectID material_target;
@@ -340,19 +305,6 @@ private:
 
 	PopupMenu *selection_menu = nullptr;
 
-	enum NavigationZoomStyle {
-		NAVIGATION_ZOOM_VERTICAL,
-		NAVIGATION_ZOOM_HORIZONTAL
-	};
-
-	enum NavigationMode {
-		NAVIGATION_NONE,
-		NAVIGATION_PAN,
-		NAVIGATION_ZOOM,
-		NAVIGATION_ORBIT,
-		NAVIGATION_LOOK,
-		NAVIGATION_MOVE
-	};
 	enum TransformMode {
 		TRANSFORM_NONE,
 		TRANSFORM_ROTATE,
@@ -411,34 +363,13 @@ private:
 		bool gizmo_initiated = false;
 	} _edit;
 
-	struct Cursor {
-		Vector3 pos;
-		real_t x_rot, y_rot, distance, fov_scale;
-		real_t unsnapped_x_rot, unsnapped_y_rot;
-		Vector3 eye_pos; // Used in freelook mode
-		bool region_select;
-		Point2 region_begin, region_end;
+	Ref<View3DController> view_3d_controller;
+	void _update_view_3d_controller(bool p_update_all = true);
 
-		Cursor() {
-			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
-			x_rot = 0.5;
-			y_rot = -0.5;
-			unsnapped_x_rot = x_rot;
-			unsnapped_y_rot = y_rot;
-			distance = 4;
-			fov_scale = 1.0;
-			region_select = false;
-		}
-	};
-	// Viewport camera supports movement smoothing,
-	// so one cursor is the real cursor, while the other can be an interpolated version.
-	Cursor cursor; // Immediate cursor
-	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
-	Cursor previous_cursor; // Storing previous cursor state for canceling purposes
+	void _cursor_interpolated();
 
-	void scale_fov(real_t p_fov_offset);
-	void reset_fov();
-	void scale_cursor_distance(real_t scale);
+	void _freelook_changed();
+	void _freelook_speed_scaled();
 
 	struct ShortcutCheckSet {
 		bool mod_pressed = false;
@@ -479,9 +410,7 @@ private:
 	void set_message(const String &p_message, float p_time = 5);
 
 	void _view_settings_confirmed(real_t p_interp_delta);
-	void _update_camera(real_t p_interp_delta);
 	void _update_navigation_controls_visibility();
-	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
 	// These allow tool scripts to set the 3D cursor location by updating the camera transform.
@@ -496,7 +425,6 @@ private:
 
 	void input(const Ref<InputEvent> &p_event) override;
 	void _sinput(const Ref<InputEvent> &p_event);
-	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
 
 	Camera3D *previewing = nullptr;
@@ -504,10 +432,12 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
+	int times_focused_consecutively = 0;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
 	void _update_centered_labels();
+	void _disable_follow_mode();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
@@ -515,7 +445,6 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _list_select(Ref<InputEventMouseButton> b);
-	Point2 _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos, Node3D *p_node) const;
 	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level = false, const Transform3D *p_bounds_orientation = nullptr);
@@ -575,7 +504,6 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();
-	bool is_freelook_active() const { return freelook_active; }
 
 	Vector3 get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 get_ray(const Vector2 &p_pos) const;
@@ -740,9 +668,9 @@ private:
 
 	DynamicBVH gizmo_bvh;
 
-	real_t snap_translate_value;
-	real_t snap_rotate_value;
-	real_t snap_scale_value;
+	real_t snap_translate_value = 0;
+	real_t snap_rotate_value = 0;
+	real_t snap_scale_value = 0;
 
 	Ref<ArrayMesh> active_selection_box_xray;
 	Ref<ArrayMesh> active_selection_box;
@@ -1130,7 +1058,7 @@ class ViewportNavigationControl : public Control {
 	Vector2 focused_pos;
 	bool hovered = false;
 	int focused_index = -1;
-	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
+	View3DController::NavigationMode nav_mode = View3DController::NavigationMode::NAV_MODE_NONE;
 
 	const float AXIS_CIRCLE_RADIUS = 30.0f * EDSCALE;
 
@@ -1143,6 +1071,6 @@ protected:
 	void _update_navigation();
 
 public:
-	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
+	void set_navigation_mode(View3DController::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };

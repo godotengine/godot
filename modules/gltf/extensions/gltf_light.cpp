@@ -31,6 +31,8 @@
 #include "gltf_light.h"
 
 #include "../structures/gltf_object_model_property.h"
+
+#include "core/object/class_db.h"
 #include "scene/3d/light_3d.h"
 
 void GLTFLight::_bind_methods() {

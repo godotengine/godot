@@ -37,6 +37,7 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export_platform.h"

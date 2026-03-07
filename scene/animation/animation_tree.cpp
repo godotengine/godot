@@ -31,7 +31,10 @@
 #include "animation_tree.h"
 #include "animation_tree.compat.inc"
 
-#include "animation_blend_tree.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -845,7 +848,7 @@ void AnimationTree::_notification(int p_what) {
 void AnimationTree::set_animation_player(const NodePath &p_path) {
 	animation_player = p_path;
 	if (p_path.is_empty()) {
-		set_root_node(SceneStringName(path_pp));
+		set_root_node(NodePath(".."));
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
 		}

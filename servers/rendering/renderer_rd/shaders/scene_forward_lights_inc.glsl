@@ -665,6 +665,10 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		local_v.xy = local_v.xy * 0.5 + 0.5;
 		vec2 proj_uv = local_v.xy * atlas_rect.zw;
 
+		// Clamp the uv coordinates to prevent bleeding from neighboring decals.
+		vec2 texel_size = 1.0 / vec2(textureSize(sampler2D(decal_atlas_srgb, light_projector_sampler), 0));
+		proj_uv = clamp(proj_uv, texel_size * 0.5, atlas_rect.zw - texel_size * 0.5);
+
 		if (sc_projector_use_mipmaps()) {
 			vec2 proj_uv_ddx;
 			vec2 proj_uv_ddy;

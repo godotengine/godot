@@ -32,6 +32,8 @@
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_action_map_editor.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/themes/editor_scale.h"
 
 void OpenXRBindingModifiersDialog::_bind_methods() {

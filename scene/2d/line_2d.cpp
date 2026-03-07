@@ -31,7 +31,10 @@
 #include "line_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "line_builder.h"
+#include "servers/rendering/rendering_server.h"
 
 Line2D::Line2D() {
 }
@@ -293,7 +296,7 @@ void Line2D::_draw() {
 
 	RID texture_rid;
 	if (_texture.is_valid()) {
-		texture_rid = _texture->get_rid();
+		texture_rid = _texture->get_scaled_rid();
 
 		lb.tile_aspect = _texture->get_size().aspect();
 	}

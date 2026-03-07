@@ -30,22 +30,24 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
-#include "utilities.h"
+#include "core/object/object.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/utilities.h"
 
 class RendererMaterialStorage {
 public:
 	virtual ~RendererMaterialStorage() {}
 
 	/* GLOBAL SHADER UNIFORM API */
-	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_remove(const StringName &p_name) = 0;
 	virtual Vector<StringName> global_shader_parameter_get_list() const = 0;
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const = 0;
-	virtual RS::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
+	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) = 0;
 	virtual void global_shader_parameters_clear() = 0;
@@ -68,7 +70,7 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_parameter_default(RID p_material, const StringName &p_param) const = 0;
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
 	virtual void shader_embedded_set_lock() = 0;
 	virtual const HashSet<RID> &shader_embedded_set_get() const = 0;
 	virtual void shader_embedded_set_unlock() = 0;
@@ -89,7 +91,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
-	virtual RS::CullMode material_get_cull_mode(RID p_material) const = 0;
+	virtual RSE::CullMode material_get_cull_mode(RID p_material) const = 0;
 
 	struct InstanceShaderParam {
 		PropertyInfo info;

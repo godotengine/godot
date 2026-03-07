@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="accessibility_create_element">
+		<method name="accessibility_create_element" deprecated="Use [AccessibilityServer] instead.">
 			<return type="RID" />
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="role" type="int" enum="DisplayServer.AccessibilityRole" />
@@ -19,7 +19,7 @@
 				[b]Note:[/b] An accessibility element is created and freed automatically for each [Node]. In general, this function should not be called manually.
 			</description>
 		</method>
-		<method name="accessibility_create_sub_element">
+		<method name="accessibility_create_sub_element" deprecated="Use [AccessibilityServer] instead.">
 			<return type="RID" />
 			<param index="0" name="parent_rid" type="RID" />
 			<param index="1" name="role" type="int" enum="DisplayServer.AccessibilityRole" />
@@ -28,7 +28,7 @@
 				Creates a new, empty accessibility sub-element resource. Sub-elements can be used to provide accessibility information for objects which are not [Node]s, such as list items, table cells, or menu items. Sub-elements are freed automatically when the parent element is freed, or can be freed early using the [method accessibility_free_element] method.
 			</description>
 		</method>
-		<method name="accessibility_create_sub_text_edit_elements">
+		<method name="accessibility_create_sub_text_edit_elements" deprecated="Use [AccessibilityServer] instead.">
 			<return type="RID" />
 			<param index="0" name="parent_rid" type="RID" />
 			<param index="1" name="shaped_text" type="RID" />
@@ -40,14 +40,14 @@
 				If [param is_last_line] is [code]true[/code], no trailing newline is appended to the text content. Set to [code]true[/code] for the last line in multi-line text fields and for single-line text fields.
 			</description>
 		</method>
-		<method name="accessibility_element_get_meta" qualifiers="const">
+		<method name="accessibility_element_get_meta" qualifiers="const" deprecated="Use [AccessibilityServer] instead.">
 			<return type="Variant" />
 			<param index="0" name="id" type="RID" />
 			<description>
 				Returns the metadata of the accessibility element [param id].
 			</description>
 		</method>
-		<method name="accessibility_element_set_meta">
+		<method name="accessibility_element_set_meta" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="meta" type="Variant" />
@@ -55,21 +55,21 @@
 				Sets the metadata of the accessibility element [param id] to [param meta].
 			</description>
 		</method>
-		<method name="accessibility_free_element">
+		<method name="accessibility_free_element" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<description>
 				Frees the accessibility element [param id] created by [method accessibility_create_element], [method accessibility_create_sub_element], or [method accessibility_create_sub_text_edit_elements].
 			</description>
 		</method>
-		<method name="accessibility_get_window_root" qualifiers="const">
+		<method name="accessibility_get_window_root" qualifiers="const" deprecated="Use [AccessibilityServer] instead.">
 			<return type="RID" />
 			<param index="0" name="window_id" type="int" />
 			<description>
 				Returns the main accessibility element of the OS native window.
 			</description>
 		</method>
-		<method name="accessibility_has_element" qualifiers="const">
+		<method name="accessibility_has_element" qualifiers="const" deprecated="Use [AccessibilityServer] instead.">
 			<return type="bool" />
 			<param index="0" name="id" type="RID" />
 			<description>
@@ -84,7 +84,7 @@
 				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps and will not affect this value. To test your project with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
 			</description>
 		</method>
-		<method name="accessibility_set_window_focused">
+		<method name="accessibility_set_window_focused" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="focused" type="bool" />
@@ -94,7 +94,7 @@
 				[b]Note:[/b] Advanced users only! [Window] objects call this method automatically.
 			</description>
 		</method>
-		<method name="accessibility_set_window_rect">
+		<method name="accessibility_set_window_rect" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="rect_out" type="Rect2" />
@@ -126,7 +126,7 @@
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
-		<method name="accessibility_update_add_action">
+		<method name="accessibility_update_add_action" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="action" type="int" enum="DisplayServer.AccessibilityAction" />
@@ -135,7 +135,7 @@
 				Adds a callback for the accessibility action (action which can be performed by using a special screen reader command or buttons on the Braille display), and marks this action as supported. The action callback receives one [Variant] argument, which value depends on action type.
 			</description>
 		</method>
-		<method name="accessibility_update_add_child">
+		<method name="accessibility_update_add_child" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="child_id" type="RID" />
@@ -144,7 +144,7 @@
 				[b]Note:[/b] [Node] children and sub-elements are added to the child list automatically.
 			</description>
 		</method>
-		<method name="accessibility_update_add_custom_action">
+		<method name="accessibility_update_add_custom_action" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="action_id" type="int" />
@@ -153,7 +153,7 @@
 				Adds support for a custom accessibility action. [param action_id] is passed as an argument to the callback of [constant ACTION_CUSTOM] action.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_controls">
+		<method name="accessibility_update_add_related_controls" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -161,7 +161,7 @@
 				Adds an element that is controlled by this element.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_described_by">
+		<method name="accessibility_update_add_related_described_by" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -169,7 +169,7 @@
 				Adds an element that describes this element.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_details">
+		<method name="accessibility_update_add_related_details" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -177,7 +177,7 @@
 				Adds an element that details this element.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_flow_to">
+		<method name="accessibility_update_add_related_flow_to" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -185,7 +185,7 @@
 				Adds an element that this element flow into.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_labeled_by">
+		<method name="accessibility_update_add_related_labeled_by" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -193,7 +193,7 @@
 				Adds an element that labels this element.
 			</description>
 		</method>
-		<method name="accessibility_update_add_related_radio_group">
+		<method name="accessibility_update_add_related_radio_group" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="related_id" type="RID" />
@@ -202,7 +202,7 @@
 				[b]Note:[/b] This method should be called on each element of the group, using all other elements as [param related_id].
 			</description>
 		</method>
-		<method name="accessibility_update_set_active_descendant">
+		<method name="accessibility_update_set_active_descendant" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="other_id" type="RID" />
@@ -210,7 +210,7 @@
 				Adds an element that is an active descendant of this element.
 			</description>
 		</method>
-		<method name="accessibility_update_set_background_color">
+		<method name="accessibility_update_set_background_color" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="color" type="Color" />
@@ -218,7 +218,7 @@
 				Sets element background color.
 			</description>
 		</method>
-		<method name="accessibility_update_set_bounds">
+		<method name="accessibility_update_set_bounds" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="p_rect" type="Rect2" />
@@ -226,7 +226,7 @@
 				Sets element bounding box, relative to the node position.
 			</description>
 		</method>
-		<method name="accessibility_update_set_checked">
+		<method name="accessibility_update_set_checked" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="checekd" type="bool" />
@@ -234,7 +234,7 @@
 				Sets element checked state.
 			</description>
 		</method>
-		<method name="accessibility_update_set_classname">
+		<method name="accessibility_update_set_classname" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="classname" type="String" />
@@ -242,7 +242,7 @@
 				Sets element class name.
 			</description>
 		</method>
-		<method name="accessibility_update_set_color_value">
+		<method name="accessibility_update_set_color_value" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="color" type="Color" />
@@ -250,7 +250,7 @@
 				Sets element color value.
 			</description>
 		</method>
-		<method name="accessibility_update_set_description">
+		<method name="accessibility_update_set_description" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="description" type="String" />
@@ -258,7 +258,7 @@
 				Sets element accessibility description.
 			</description>
 		</method>
-		<method name="accessibility_update_set_error_message">
+		<method name="accessibility_update_set_error_message" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="other_id" type="RID" />
@@ -266,7 +266,7 @@
 				Sets an element which contains an error message for this element.
 			</description>
 		</method>
-		<method name="accessibility_update_set_extra_info">
+		<method name="accessibility_update_set_extra_info" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="name" type="String" />
@@ -274,7 +274,7 @@
 				Sets element accessibility extra information added to the element name.
 			</description>
 		</method>
-		<method name="accessibility_update_set_flag">
+		<method name="accessibility_update_set_flag" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="flag" type="int" enum="DisplayServer.AccessibilityFlags" />
@@ -283,14 +283,14 @@
 				Sets element flag.
 			</description>
 		</method>
-		<method name="accessibility_update_set_focus">
+		<method name="accessibility_update_set_focus" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<description>
 				Sets currently focused element.
 			</description>
 		</method>
-		<method name="accessibility_update_set_foreground_color">
+		<method name="accessibility_update_set_foreground_color" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="color" type="Color" />
@@ -298,7 +298,7 @@
 				Sets element foreground color.
 			</description>
 		</method>
-		<method name="accessibility_update_set_in_page_link_target">
+		<method name="accessibility_update_set_in_page_link_target" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="other_id" type="RID" />
@@ -306,7 +306,7 @@
 				Sets target element for the link.
 			</description>
 		</method>
-		<method name="accessibility_update_set_language">
+		<method name="accessibility_update_set_language" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="language" type="String" />
@@ -314,7 +314,7 @@
 				Sets element text language.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_item_count">
+		<method name="accessibility_update_set_list_item_count" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="size" type="int" />
@@ -322,7 +322,7 @@
 				Sets number of items in the list.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_item_expanded">
+		<method name="accessibility_update_set_list_item_expanded" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="expanded" type="bool" />
@@ -330,7 +330,7 @@
 				Sets list/tree item expanded status.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_item_index">
+		<method name="accessibility_update_set_list_item_index" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="index" type="int" />
@@ -338,7 +338,7 @@
 				Sets the position of the element in the list.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_item_level">
+		<method name="accessibility_update_set_list_item_level" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="level" type="int" />
@@ -346,7 +346,7 @@
 				Sets the hierarchical level of the element in the list.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_item_selected">
+		<method name="accessibility_update_set_list_item_selected" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="selected" type="bool" />
@@ -354,7 +354,7 @@
 				Sets list/tree item selected status.
 			</description>
 		</method>
-		<method name="accessibility_update_set_list_orientation">
+		<method name="accessibility_update_set_list_orientation" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="vertical" type="bool" />
@@ -362,7 +362,7 @@
 				Sets the orientation of the list elements.
 			</description>
 		</method>
-		<method name="accessibility_update_set_live">
+		<method name="accessibility_update_set_live" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="live" type="int" enum="DisplayServer.AccessibilityLiveMode" />
@@ -370,7 +370,7 @@
 				Sets the priority of the live region updates.
 			</description>
 		</method>
-		<method name="accessibility_update_set_member_of">
+		<method name="accessibility_update_set_member_of" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="group_id" type="RID" />
@@ -378,7 +378,7 @@
 				Sets the element to be a member of the group.
 			</description>
 		</method>
-		<method name="accessibility_update_set_name">
+		<method name="accessibility_update_set_name" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="name" type="String" />
@@ -386,7 +386,7 @@
 				Sets element accessibility name.
 			</description>
 		</method>
-		<method name="accessibility_update_set_next_on_line">
+		<method name="accessibility_update_set_next_on_line" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="other_id" type="RID" />
@@ -394,7 +394,7 @@
 				Sets next element on the line.
 			</description>
 		</method>
-		<method name="accessibility_update_set_num_jump">
+		<method name="accessibility_update_set_num_jump" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="jump" type="float" />
@@ -402,7 +402,7 @@
 				Sets numeric value jump.
 			</description>
 		</method>
-		<method name="accessibility_update_set_num_range">
+		<method name="accessibility_update_set_num_range" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="min" type="float" />
@@ -411,7 +411,7 @@
 				Sets numeric value range.
 			</description>
 		</method>
-		<method name="accessibility_update_set_num_step">
+		<method name="accessibility_update_set_num_step" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="step" type="float" />
@@ -419,7 +419,7 @@
 				Sets numeric value step.
 			</description>
 		</method>
-		<method name="accessibility_update_set_num_value">
+		<method name="accessibility_update_set_num_value" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="position" type="float" />
@@ -427,7 +427,7 @@
 				Sets numeric value.
 			</description>
 		</method>
-		<method name="accessibility_update_set_placeholder">
+		<method name="accessibility_update_set_placeholder" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="placeholder" type="String" />
@@ -435,7 +435,7 @@
 				Sets placeholder text.
 			</description>
 		</method>
-		<method name="accessibility_update_set_popup_type">
+		<method name="accessibility_update_set_popup_type" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="popup" type="int" enum="DisplayServer.AccessibilityPopupType" />
@@ -443,7 +443,7 @@
 				Sets popup type for popup buttons.
 			</description>
 		</method>
-		<method name="accessibility_update_set_previous_on_line">
+		<method name="accessibility_update_set_previous_on_line" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="other_id" type="RID" />
@@ -451,7 +451,7 @@
 				Sets previous element on the line.
 			</description>
 		</method>
-		<method name="accessibility_update_set_role">
+		<method name="accessibility_update_set_role" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="role" type="int" enum="DisplayServer.AccessibilityRole" />
@@ -459,7 +459,7 @@
 				Sets element accessibility role.
 			</description>
 		</method>
-		<method name="accessibility_update_set_role_description">
+		<method name="accessibility_update_set_role_description" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="description" type="String" />
@@ -467,7 +467,7 @@
 				Sets element accessibility role description text.
 			</description>
 		</method>
-		<method name="accessibility_update_set_scroll_x">
+		<method name="accessibility_update_set_scroll_x" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="position" type="float" />
@@ -475,7 +475,7 @@
 				Sets scroll bar x position.
 			</description>
 		</method>
-		<method name="accessibility_update_set_scroll_x_range">
+		<method name="accessibility_update_set_scroll_x_range" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="min" type="float" />
@@ -484,7 +484,7 @@
 				Sets scroll bar x range.
 			</description>
 		</method>
-		<method name="accessibility_update_set_scroll_y">
+		<method name="accessibility_update_set_scroll_y" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="position" type="float" />
@@ -492,7 +492,7 @@
 				Sets scroll bar y position.
 			</description>
 		</method>
-		<method name="accessibility_update_set_scroll_y_range">
+		<method name="accessibility_update_set_scroll_y_range" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="min" type="float" />
@@ -501,7 +501,7 @@
 				Sets scroll bar y range.
 			</description>
 		</method>
-		<method name="accessibility_update_set_shortcut">
+		<method name="accessibility_update_set_shortcut" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="shortcut" type="String" />
@@ -509,7 +509,7 @@
 				Sets the list of keyboard shortcuts used by element.
 			</description>
 		</method>
-		<method name="accessibility_update_set_state_description">
+		<method name="accessibility_update_set_state_description" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="description" type="String" />
@@ -517,7 +517,7 @@
 				Sets human-readable description of the current checked state.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_cell_position">
+		<method name="accessibility_update_set_table_cell_position" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="row_index" type="int" />
@@ -526,7 +526,7 @@
 				Sets cell position in the table.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_cell_span">
+		<method name="accessibility_update_set_table_cell_span" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="row_span" type="int" />
@@ -535,7 +535,7 @@
 				Sets cell row/column span.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_column_count">
+		<method name="accessibility_update_set_table_column_count" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="count" type="int" />
@@ -543,7 +543,7 @@
 				Sets number of columns in the table.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_column_index">
+		<method name="accessibility_update_set_table_column_index" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="index" type="int" />
@@ -551,7 +551,7 @@
 				Sets position of the column.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_row_count">
+		<method name="accessibility_update_set_table_row_count" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="count" type="int" />
@@ -559,7 +559,7 @@
 				Sets number of rows in the table.
 			</description>
 		</method>
-		<method name="accessibility_update_set_table_row_index">
+		<method name="accessibility_update_set_table_row_index" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="index" type="int" />
@@ -567,7 +567,7 @@
 				Sets position of the row in the table.
 			</description>
 		</method>
-		<method name="accessibility_update_set_text_align">
+		<method name="accessibility_update_set_text_align" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="align" type="int" enum="HorizontalAlignment" />
@@ -575,7 +575,7 @@
 				Sets element text alignment.
 			</description>
 		</method>
-		<method name="accessibility_update_set_text_decorations">
+		<method name="accessibility_update_set_text_decorations" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="underline" type="bool" />
@@ -585,7 +585,7 @@
 				Sets text underline/overline/strikethrough.
 			</description>
 		</method>
-		<method name="accessibility_update_set_text_orientation">
+		<method name="accessibility_update_set_text_orientation" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="vertical" type="bool" />
@@ -593,7 +593,7 @@
 				Sets text orientation.
 			</description>
 		</method>
-		<method name="accessibility_update_set_text_selection">
+		<method name="accessibility_update_set_text_selection" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="text_start_id" type="RID" />
@@ -604,7 +604,7 @@
 				Sets text selection to the text field. [param text_start_id] and [param text_end_id] should be elements created by [method accessibility_create_sub_text_edit_elements]. Character offsets are relative to the corresponding element.
 			</description>
 		</method>
-		<method name="accessibility_update_set_tooltip">
+		<method name="accessibility_update_set_tooltip" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="tooltip" type="String" />
@@ -612,7 +612,7 @@
 				Sets tooltip text.
 			</description>
 		</method>
-		<method name="accessibility_update_set_transform">
+		<method name="accessibility_update_set_transform" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
@@ -620,7 +620,7 @@
 				Sets element 2D transform.
 			</description>
 		</method>
-		<method name="accessibility_update_set_url">
+		<method name="accessibility_update_set_url" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="url" type="String" />
@@ -628,7 +628,7 @@
 				Sets link URL.
 			</description>
 		</method>
-		<method name="accessibility_update_set_value">
+		<method name="accessibility_update_set_value" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="value" type="String" />
@@ -2751,295 +2751,299 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
-			Display server supports HDR output. [b]Windows[/b]
+			Display server supports HDR output. [b]macOS, iOS, visionOS, Windows[/b]
 		</constant>
-		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
+		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Unknown or custom role.
 		</constant>
-		<constant name="ROLE_DEFAULT_BUTTON" value="1" enum="AccessibilityRole">
+		<constant name="ROLE_DEFAULT_BUTTON" value="1" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Default dialog button element.
 		</constant>
-		<constant name="ROLE_AUDIO" value="2" enum="AccessibilityRole">
+		<constant name="ROLE_AUDIO" value="2" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Audio player element.
 		</constant>
-		<constant name="ROLE_VIDEO" value="3" enum="AccessibilityRole">
+		<constant name="ROLE_VIDEO" value="3" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Video player element.
 		</constant>
-		<constant name="ROLE_STATIC_TEXT" value="4" enum="AccessibilityRole">
+		<constant name="ROLE_STATIC_TEXT" value="4" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Non-editable text label.
 		</constant>
-		<constant name="ROLE_CONTAINER" value="5" enum="AccessibilityRole">
+		<constant name="ROLE_CONTAINER" value="5" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Container element. Elements with this role are used for internal structure and ignored by screen readers.
 		</constant>
-		<constant name="ROLE_PANEL" value="6" enum="AccessibilityRole">
+		<constant name="ROLE_PANEL" value="6" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Panel container element.
 		</constant>
-		<constant name="ROLE_BUTTON" value="7" enum="AccessibilityRole">
+		<constant name="ROLE_BUTTON" value="7" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Button element.
 		</constant>
-		<constant name="ROLE_LINK" value="8" enum="AccessibilityRole">
+		<constant name="ROLE_LINK" value="8" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Link element.
 		</constant>
-		<constant name="ROLE_CHECK_BOX" value="9" enum="AccessibilityRole">
+		<constant name="ROLE_CHECK_BOX" value="9" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Check box element.
 		</constant>
-		<constant name="ROLE_RADIO_BUTTON" value="10" enum="AccessibilityRole">
+		<constant name="ROLE_RADIO_BUTTON" value="10" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Radio button element.
 		</constant>
-		<constant name="ROLE_CHECK_BUTTON" value="11" enum="AccessibilityRole">
+		<constant name="ROLE_CHECK_BUTTON" value="11" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Check button element.
 		</constant>
-		<constant name="ROLE_SCROLL_BAR" value="12" enum="AccessibilityRole">
+		<constant name="ROLE_SCROLL_BAR" value="12" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Scroll bar element.
 		</constant>
-		<constant name="ROLE_SCROLL_VIEW" value="13" enum="AccessibilityRole">
+		<constant name="ROLE_SCROLL_VIEW" value="13" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Scroll container element.
 		</constant>
-		<constant name="ROLE_SPLITTER" value="14" enum="AccessibilityRole">
+		<constant name="ROLE_SPLITTER" value="14" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Container splitter handle element.
 		</constant>
-		<constant name="ROLE_SLIDER" value="15" enum="AccessibilityRole">
+		<constant name="ROLE_SLIDER" value="15" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Slider element.
 		</constant>
-		<constant name="ROLE_SPIN_BUTTON" value="16" enum="AccessibilityRole">
+		<constant name="ROLE_SPIN_BUTTON" value="16" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Spin box element.
 		</constant>
-		<constant name="ROLE_PROGRESS_INDICATOR" value="17" enum="AccessibilityRole">
+		<constant name="ROLE_PROGRESS_INDICATOR" value="17" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Progress indicator element.
 		</constant>
-		<constant name="ROLE_TEXT_FIELD" value="18" enum="AccessibilityRole">
+		<constant name="ROLE_TEXT_FIELD" value="18" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Editable text field element.
 		</constant>
-		<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19" enum="AccessibilityRole">
+		<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Multiline editable text field element.
 		</constant>
-		<constant name="ROLE_COLOR_PICKER" value="20" enum="AccessibilityRole">
+		<constant name="ROLE_COLOR_PICKER" value="20" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Color picker element.
 		</constant>
-		<constant name="ROLE_TABLE" value="21" enum="AccessibilityRole">
+		<constant name="ROLE_TABLE" value="21" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table element.
 		</constant>
-		<constant name="ROLE_CELL" value="22" enum="AccessibilityRole">
+		<constant name="ROLE_CELL" value="22" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table/tree cell element.
 		</constant>
-		<constant name="ROLE_ROW" value="23" enum="AccessibilityRole">
+		<constant name="ROLE_ROW" value="23" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table/tree row element.
 		</constant>
-		<constant name="ROLE_ROW_GROUP" value="24" enum="AccessibilityRole">
+		<constant name="ROLE_ROW_GROUP" value="24" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table/tree row group element.
 		</constant>
-		<constant name="ROLE_ROW_HEADER" value="25" enum="AccessibilityRole">
+		<constant name="ROLE_ROW_HEADER" value="25" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table/tree row header element.
 		</constant>
-		<constant name="ROLE_COLUMN_HEADER" value="26" enum="AccessibilityRole">
+		<constant name="ROLE_COLUMN_HEADER" value="26" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Table/tree column header element.
 		</constant>
-		<constant name="ROLE_TREE" value="27" enum="AccessibilityRole">
+		<constant name="ROLE_TREE" value="27" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tree view element.
 		</constant>
-		<constant name="ROLE_TREE_ITEM" value="28" enum="AccessibilityRole">
+		<constant name="ROLE_TREE_ITEM" value="28" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tree view item element.
 		</constant>
-		<constant name="ROLE_LIST" value="29" enum="AccessibilityRole">
+		<constant name="ROLE_LIST" value="29" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			List element.
 		</constant>
-		<constant name="ROLE_LIST_ITEM" value="30" enum="AccessibilityRole">
+		<constant name="ROLE_LIST_ITEM" value="30" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			List item element.
 		</constant>
-		<constant name="ROLE_LIST_BOX" value="31" enum="AccessibilityRole">
+		<constant name="ROLE_LIST_BOX" value="31" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			List view element.
 		</constant>
-		<constant name="ROLE_LIST_BOX_OPTION" value="32" enum="AccessibilityRole">
+		<constant name="ROLE_LIST_BOX_OPTION" value="32" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			List view item element.
 		</constant>
-		<constant name="ROLE_TAB_BAR" value="33" enum="AccessibilityRole">
+		<constant name="ROLE_TAB_BAR" value="33" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tab bar element.
 		</constant>
-		<constant name="ROLE_TAB" value="34" enum="AccessibilityRole">
+		<constant name="ROLE_TAB" value="34" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tab bar item element.
 		</constant>
-		<constant name="ROLE_TAB_PANEL" value="35" enum="AccessibilityRole">
+		<constant name="ROLE_TAB_PANEL" value="35" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tab panel element.
 		</constant>
-		<constant name="ROLE_MENU_BAR" value="36" enum="AccessibilityRole">
+		<constant name="ROLE_MENU_BAR" value="36" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Menu bar element.
 		</constant>
-		<constant name="ROLE_MENU" value="37" enum="AccessibilityRole">
+		<constant name="ROLE_MENU" value="37" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu element.
 		</constant>
-		<constant name="ROLE_MENU_ITEM" value="38" enum="AccessibilityRole">
+		<constant name="ROLE_MENU_ITEM" value="38" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu item element.
 		</constant>
-		<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39" enum="AccessibilityRole">
+		<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu check button item element.
 		</constant>
-		<constant name="ROLE_MENU_ITEM_RADIO" value="40" enum="AccessibilityRole">
+		<constant name="ROLE_MENU_ITEM_RADIO" value="40" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu radio button item element.
 		</constant>
-		<constant name="ROLE_IMAGE" value="41" enum="AccessibilityRole">
+		<constant name="ROLE_IMAGE" value="41" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Image element.
 		</constant>
-		<constant name="ROLE_WINDOW" value="42" enum="AccessibilityRole">
+		<constant name="ROLE_WINDOW" value="42" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Window element.
 		</constant>
-		<constant name="ROLE_TITLE_BAR" value="43" enum="AccessibilityRole">
+		<constant name="ROLE_TITLE_BAR" value="43" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Embedded window title bar element.
 		</constant>
-		<constant name="ROLE_DIALOG" value="44" enum="AccessibilityRole">
+		<constant name="ROLE_DIALOG" value="44" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Dialog window element.
 		</constant>
-		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
+		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Tooltip element.
 		</constant>
-		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole">
+		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
 		</constant>
-		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
+		<constant name="ROLE_TEXT_RUN" value="47" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
+			Unifor text run.
+			Note: This role is used for internal text elements, and should not be assigned to nodes.
+		</constant>
+		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu.
 		</constant>
-		<constant name="POPUP_LIST" value="1" enum="AccessibilityPopupType">
+		<constant name="POPUP_LIST" value="1" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			Popup list.
 		</constant>
-		<constant name="POPUP_TREE" value="2" enum="AccessibilityPopupType">
+		<constant name="POPUP_TREE" value="2" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			Popup tree view.
 		</constant>
-		<constant name="POPUP_DIALOG" value="3" enum="AccessibilityPopupType">
+		<constant name="POPUP_DIALOG" value="3" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			Popup dialog.
 		</constant>
-		<constant name="FLAG_HIDDEN" value="0" enum="AccessibilityFlags">
+		<constant name="FLAG_HIDDEN" value="0" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is hidden for accessibility tools.
 		</constant>
-		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags">
+		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element supports multiple item selection.
 		</constant>
-		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
+		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element require user input.
 		</constant>
-		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags">
+		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is a visited link.
 		</constant>
-		<constant name="FLAG_BUSY" value="4" enum="AccessibilityFlags">
+		<constant name="FLAG_BUSY" value="4" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element content is not ready (e.g. loading).
 		</constant>
-		<constant name="FLAG_MODAL" value="5" enum="AccessibilityFlags">
+		<constant name="FLAG_MODAL" value="5" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is modal window.
 		</constant>
-		<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" enum="AccessibilityFlags">
+		<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element allows touches to be passed through when a screen reader is in touch exploration mode.
 		</constant>
-		<constant name="FLAG_READONLY" value="7" enum="AccessibilityFlags">
+		<constant name="FLAG_READONLY" value="7" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is text field with selectable but read-only text.
 		</constant>
-		<constant name="FLAG_DISABLED" value="8" enum="AccessibilityFlags">
+		<constant name="FLAG_DISABLED" value="8" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is disabled.
 		</constant>
-		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags">
+		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element clips children.
 		</constant>
-		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction">
+		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Single click action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_FOCUS" value="1" enum="AccessibilityAction">
+		<constant name="ACTION_FOCUS" value="1" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Focus action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_BLUR" value="2" enum="AccessibilityAction">
+		<constant name="ACTION_BLUR" value="2" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Blur action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_COLLAPSE" value="3" enum="AccessibilityAction">
+		<constant name="ACTION_COLLAPSE" value="3" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Collapse action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_EXPAND" value="4" enum="AccessibilityAction">
+		<constant name="ACTION_EXPAND" value="4" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Expand action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_DECREMENT" value="5" enum="AccessibilityAction">
+		<constant name="ACTION_DECREMENT" value="5" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Decrement action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_INCREMENT" value="6" enum="AccessibilityAction">
+		<constant name="ACTION_INCREMENT" value="6" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Increment action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_HIDE_TOOLTIP" value="7" enum="AccessibilityAction">
+		<constant name="ACTION_HIDE_TOOLTIP" value="7" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Hide tooltip action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_SHOW_TOOLTIP" value="8" enum="AccessibilityAction">
+		<constant name="ACTION_SHOW_TOOLTIP" value="8" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Show tooltip action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_SET_TEXT_SELECTION" value="9" enum="AccessibilityAction">
+		<constant name="ACTION_SET_TEXT_SELECTION" value="9" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Set text selection action, callback argument is set to [Dictionary] with the following keys:
 			- [code]"start_element"[/code] accessibility element of the selection start.
 			- [code]"start_char"[/code] character offset relative to the accessibility element of the selection start.
 			- [code]"end_element"[/code] accessibility element of the selection end.
 			- [code]"end_char"[/code] character offset relative to the accessibility element of the selection end.
 		</constant>
-		<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10" enum="AccessibilityAction">
+		<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Replace text action, callback argument is set to [String] with the replacement text.
 		</constant>
-		<constant name="ACTION_SCROLL_BACKWARD" value="11" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_BACKWARD" value="11" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll backward action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
-		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll forward action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
-		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
-		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
-		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
 		</constant>
-		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction">
+		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
 		</constant>
-		<constant name="ACTION_SET_SCROLL_OFFSET" value="19" enum="AccessibilityAction">
+		<constant name="ACTION_SET_SCROLL_OFFSET" value="19" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
 		</constant>
-		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction">
+		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Set value action, callback argument is set to [String] or number with the new value.
 		</constant>
-		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction">
+		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Show context menu action, callback argument is not set.
 		</constant>
-		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction">
+		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			Custom action, callback argument is set to the integer action ID.
 		</constant>
-		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode">
+		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
 			Indicates that updates to the live region should not be presented.
 		</constant>
-		<constant name="LIVE_POLITE" value="1" enum="AccessibilityLiveMode">
+		<constant name="LIVE_POLITE" value="1" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
 			Indicates that updates to the live region should be presented at the next opportunity (for example at the end of speaking the current sentence).
 		</constant>
-		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode">
+		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
 			Indicates that updates to the live region have the highest priority and should be presented immediately.
 		</constant>
-		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit">
+		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit" deprecated="Use [AccessibilityServer] instead.">
 			The amount by which to scroll. A single item of a list, line of text.
 		</constant>
-		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit">
+		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit" deprecated="Use [AccessibilityServer] instead.">
 			The amount by which to scroll. A single page.
 		</constant>
-		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
 		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
 		</constant>
-		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Top edge of the scroll container.
 		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
 		</constant>
-		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Left edge of the scroll container.
 		</constant>
-		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint">
+		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			A preferred position for the node scrolled into view. Right edge of the scroll container.
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">

@@ -34,10 +34,16 @@
 
 #include "upnp_device_miniupnp.h"
 
+#include "core/object/class_db.h"
+
 #include <miniupnpc/miniwget.h>
 #include <miniupnpc/upnpcommands.h>
 
 #include <cstdlib>
+
+UPNP *UPNPMiniUPNP::_create(bool p_notify_postinitialize) {
+	return static_cast<UPNP *>(ClassDB::creator<UPNPMiniUPNP>(p_notify_postinitialize));
+}
 
 void UPNPMiniUPNP::make_default() {
 	UPNP::_create = UPNPMiniUPNP::_create;

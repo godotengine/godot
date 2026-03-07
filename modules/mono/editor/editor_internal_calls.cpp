@@ -38,6 +38,7 @@
 #include "code_completion.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"

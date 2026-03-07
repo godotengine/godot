@@ -33,7 +33,10 @@
 #ifdef MODULE_GLTF_ENABLED
 
 #include "../extensions/openxr_render_model_extension.h"
+
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/xr/xr_nodes.h"
 #include "scene/resources/3d/primitive_meshes.h"

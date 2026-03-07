@@ -37,50 +37,6 @@
 
 #include "script_iterator.h"
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/godot.hpp>
-
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/ext_wrappers.gen.inc>
-#include <godot_cpp/core/mutex_lock.hpp>
-
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/packed_int32_array.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/packed_vector2_array.hpp>
-#include <godot_cpp/variant/rect2.hpp>
-#include <godot_cpp/variant/rid.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/vector2.hpp>
-#include <godot_cpp/variant/vector2i.hpp>
-
-#include <godot_cpp/classes/text_server.hpp>
-#include <godot_cpp/classes/text_server_extension.hpp>
-#include <godot_cpp/classes/text_server_manager.hpp>
-
-#include <godot_cpp/classes/caret_info.hpp>
-#include <godot_cpp/classes/global_constants_binds.hpp>
-#include <godot_cpp/classes/glyph.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/classes/worker_thread_pool.hpp>
-
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
-#include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/safe_refcount.hpp>
-#include <godot_cpp/templates/vector.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/extension/ext_wrappers.gen.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -89,8 +45,6 @@ using namespace godot;
 #include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Thirdparty headers.
 

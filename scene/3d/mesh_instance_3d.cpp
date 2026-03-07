@@ -30,7 +30,10 @@
 
 #include "mesh_instance_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/main/scene_tree.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -43,6 +46,7 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
@@ -134,6 +138,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	notify_property_list_changed();
+	update_configuration_warnings();
 }
 
 Ref<Mesh> MeshInstance3D::get_mesh() const {
@@ -562,7 +567,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
 
-		ERR_FAIL_COND_V(source_mesh_arrays.size() != RS::ARRAY_MAX, Ref<ArrayMesh>());
+		ERR_FAIL_COND_V(source_mesh_arrays.size() != RSE::ARRAY_MAX, Ref<ArrayMesh>());
 
 		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
 		const Vector<Vector3> &source_mesh_normal_array = source_mesh_arrays[Mesh::ARRAY_NORMAL];
@@ -739,7 +744,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 
 		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
 
-		ERR_FAIL_COND_V(source_mesh_arrays.size() != RS::ARRAY_MAX, Ref<ArrayMesh>());
+		ERR_FAIL_COND_V(source_mesh_arrays.size() != RSE::ARRAY_MAX, Ref<ArrayMesh>());
 
 		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
 		const Vector<Vector3> &source_mesh_normal_array = source_mesh_arrays[Mesh::ARRAY_NORMAL];
@@ -931,6 +936,14 @@ void MeshInstance3D::_bind_methods() {
 	ADD_GROUP("", "");
 }
 
+PackedStringArray MeshInstance3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
+	if (mesh.is_null()) {
+		warnings.push_back(RTR("MeshInstance3D requires a Mesh to render anything. Please add a mesh resource for it!"));
+	}
+	return warnings;
+}
+
 MeshInstance3D::MeshInstance3D() {
 	_define_ancestry(AncestralClass::MESH_INSTANCE_3D);
 #ifndef DISABLE_DEPRECATED
@@ -938,7 +951,4 @@ MeshInstance3D::MeshInstance3D() {
 		skeleton_path = NodePath("..");
 	}
 #endif
-}
-
-MeshInstance3D::~MeshInstance3D() {
 }

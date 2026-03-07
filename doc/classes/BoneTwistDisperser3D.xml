@@ -7,6 +7,7 @@
 		This [BoneTwistDisperser3D] allows for smooth twist interpolation between multiple bones by dispersing the end bone's twist to the parents. This only changes the twist without changing the global position of each joint.
 		This is useful for smoothly twisting bones in combination with [CopyTransformModifier3D] and IK.
 		[b]Note:[/b] If an extracted twist is greater than 180 degrees, flipping occurs. This is similar to [ConvertTransformModifier3D].
+		[b]Note:[/b] Most methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/root_bone_name[/code]).
 	</description>
 	<tutorials>
 	</tutorials>

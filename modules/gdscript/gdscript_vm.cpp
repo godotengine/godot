@@ -32,6 +32,7 @@
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 

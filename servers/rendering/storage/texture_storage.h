@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
 
 class RendererTextureStorage {
 private:
@@ -51,11 +52,11 @@ public:
 	virtual void canvas_texture_initialize(RID p_rid) = 0;
 	virtual void canvas_texture_free(RID p_rid) = 0;
 
-	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) = 0;
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RSE::CanvasTextureChannel p_channel, RID p_texture) = 0;
 	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
 
-	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) = 0;
-	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) = 0;
+	virtual void canvas_texture_set_texture_filter(RID p_item, RSE::CanvasItemTextureFilter p_filter) = 0;
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RSE::CanvasItemTextureRepeat p_repeat) = 0;
 
 	/* Texture API */
 
@@ -65,13 +66,13 @@ public:
 	virtual void texture_free(RID p_rid) = 0;
 
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) = 0;
-	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
+	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RSE::TextureLayeredType p_layered_type) = 0;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) = 0;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
-	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) = 0;
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RSE::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) = 0;
 
-	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) = 0;
+	virtual RID texture_create_from_native_handle(RSE::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RSE::TextureLayeredType p_layered_type = RSE::TEXTURE_LAYERED_2D_ARRAY) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
@@ -82,7 +83,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) = 0;
-	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) = 0;
+	virtual void texture_2d_layered_placeholder_initialize(RID p_texture, RSE::TextureLayeredType p_layered_type) = 0;
 	virtual void texture_3d_placeholder_initialize(RID p_texture) = 0;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
@@ -100,17 +101,17 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 
-	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
-	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
-	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) = 0;
+	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
-	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) = 0;
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY) = 0;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
@@ -120,7 +121,7 @@ public:
 	virtual void decal_free(RID p_rid) = 0;
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) = 0;
-	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
+	virtual void decal_set_texture(RID p_decal, RSE::DecalTexture p_type, RID p_texture) = 0;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
 	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) = 0;
@@ -157,8 +158,8 @@ public:
 	virtual bool render_target_get_direct_to_screen(RID p_render_target) const = 0;
 	virtual bool render_target_was_used(RID p_render_target) const = 0;
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
-	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
-	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
+	virtual void render_target_set_msaa(RID p_render_target, RSE::ViewportMSAA p_msaa) = 0;
+	virtual RSE::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) = 0;
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const = 0;
 	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
@@ -173,14 +174,14 @@ public:
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 	virtual void render_target_do_clear_request(RID p_render_target) = 0;
 
-	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) = 0;
+	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) = 0;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) = 0;
 
-	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
-	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
-	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) = 0;
-	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const = 0;
+	virtual void render_target_set_vrs_mode(RID p_render_target, RSE::ViewportVRSMode p_mode) = 0;
+	virtual RSE::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RSE::ViewportVRSUpdateMode p_mode) = 0;
+	virtual RSE::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const = 0;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
 

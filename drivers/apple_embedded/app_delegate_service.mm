@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 
@@ -158,6 +159,26 @@ static GDTViewController *mainViewController = nil;
 // sequence is called without the app going to background. For example, that happens
 // if you open the app list without switching to another app or open/close the
 // notification panel by swiping from the upper part of the screen.
+
+- (void)sceneDidDisconnect:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_in();
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_enter_background();
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_exit_background();
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 	OS_AppleEmbedded::get_singleton()->on_focus_out();

@@ -45,6 +45,7 @@ static const float earth_gravity = 9.80665;
 
 @interface GDTView () {
 	UITouch *godot_touches[max_touches];
+	CGFloat last_edr_headroom;
 }
 
 @property(assign, nonatomic) BOOL isActive;
@@ -121,6 +122,7 @@ static const float earth_gravity = 9.80665;
 - (void)godot_commonInit {
 	self.preferredFrameRate = 60;
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
+	last_edr_headroom = 0.0;
 
 #if !defined(VISIONOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
@@ -249,6 +251,20 @@ static const float earth_gravity = 9.80665;
 	}
 
 	[self handleMotion];
+
+#if !defined(VISIONOS_ENABLED)
+	if (@available(iOS 16.0, *)) {
+		CGFloat edr_headroom = UIScreen.mainScreen.currentEDRHeadroom;
+		if (last_edr_headroom != edr_headroom) {
+			last_edr_headroom = edr_headroom;
+			if (DisplayServerAppleEmbedded::get_singleton()) {
+				DisplayServerAppleEmbedded::get_singleton()->current_edr_headroom_changed();
+			}
+		}
+	}
+
+#endif
+
 	[self.renderer renderOnView:self];
 
 	[self.renderingLayer stopRenderDisplayLayer];

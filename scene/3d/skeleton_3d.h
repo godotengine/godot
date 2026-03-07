@@ -54,7 +54,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _skin_changed();
 
 	RID get_skeleton() const;

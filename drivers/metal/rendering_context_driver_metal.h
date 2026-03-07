@@ -58,8 +58,8 @@ public:
 	void driver_free(RenderingDeviceDriver *p_driver) final override;
 	SurfaceID surface_create(const void *p_platform_data) final override;
 	void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) final override;
-	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) final override;
-	DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
+	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) final override;
+	DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) final override;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const final override;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) final override;
@@ -90,23 +90,33 @@ public:
 	public:
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
-		bool needs_resize = false;
+		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		double present_minimum_duration = 0.0;
+		MTL::PixelFormat pixel_format = MTL::PixelFormatBGRA8Unorm;
 
-		bool hdr_output = false;
 		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
 		// to be a more pleasant player-facing value.
 		float hdr_reference_luminance = 200.0f;
 		float hdr_max_luminance = 1000.0f;
-		float hdr_linear_luminance_scale = 100.0f;
+		bool needs_resize = false;
+		bool hdr_output = false;
 
 		Surface(MTL::Device *p_device) :
 				device(p_device) {}
 		virtual ~Surface() = default;
 
-		MTL::PixelFormat get_pixel_format() const { return MTL::PixelFormatBGRA8Unorm; }
-		virtual Error resize(uint32_t p_desired_framebuffer_count) = 0;
+		MTL::PixelFormat get_pixel_format() const { return pixel_format; }
+		void set_hdr_output_enabled(bool p_enabled) {
+			if (hdr_output != p_enabled) {
+				hdr_output = p_enabled;
+				needs_resize = true;
+			}
+		}
+
+		bool is_hdr_output_enabled() const {
+			return hdr_output;
+		}
+		virtual Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) = 0;
 		virtual RDD::FramebufferID acquire_next_frame_buffer() = 0;
 		virtual void present(MTL3::MDCommandBuffer *p_cmd_buffer) = 0;
 		virtual MTL::Drawable *next_drawable() = 0;

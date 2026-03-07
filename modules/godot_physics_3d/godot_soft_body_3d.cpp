@@ -143,8 +143,8 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
-	const Vector<int> &indices = arrays[RenderingServer::ARRAY_INDEX];
-	const Vector<Vector3> &vertices = arrays[RenderingServer::ARRAY_VERTEX];
+	const Vector<int> &indices = arrays[RSE::ARRAY_INDEX];
+	const Vector<Vector3> &vertices = arrays[RSE::ARRAY_VERTEX];
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
 	ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
 

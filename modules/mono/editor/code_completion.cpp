@@ -31,11 +31,13 @@
 #include "code_completion.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
 
 namespace gdmono {

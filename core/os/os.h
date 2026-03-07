@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
+#include "core/os/process_id.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -66,6 +67,11 @@ public:
 		RENDERING_SOURCE_PROJECT_SETTING,
 		RENDERING_SOURCE_COMMANDLINE,
 		RENDERING_SOURCE_FALLBACK
+	};
+
+	enum PlatformString {
+		PLATFORM_STRING_FILE_MANAGER_OPEN,
+		PLATFORM_STRING_FILE_MANAGER_SHOW,
 	};
 
 private:
@@ -137,8 +143,6 @@ protected:
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
-	typedef int64_t ProcessID;
-
 	static OS *get_singleton();
 
 	static bool prefer_meta_over_ctrl();
@@ -391,6 +395,17 @@ public:
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
+
+	virtual String get_platform_string(PlatformString p_platform_string) const {
+		switch (p_platform_string) {
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in File Manager");
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in File Manager");
+			default:
+				ERR_FAIL_V_MSG("", vformat("Couldn't find a string for platform string: %d.", p_platform_string));
+		}
+	}
 
 #ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.

@@ -31,6 +31,8 @@
 #include "editor_debugger_tree.h"
 
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"

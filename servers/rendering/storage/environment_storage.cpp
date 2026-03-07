@@ -30,6 +30,10 @@
 
 #include "environment_storage.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
+
 // Storage
 
 RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
@@ -58,7 +62,7 @@ void RendererEnvironmentStorage::environment_free(RID p_rid) {
 
 // Background
 
-void RendererEnvironmentStorage::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
+void RendererEnvironmentStorage::environment_set_background(RID p_env, RSE::EnvironmentBG p_bg) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->background = p_bg;
@@ -101,7 +105,7 @@ void RendererEnvironmentStorage::environment_set_canvas_max_layer(RID p_env, int
 	env->canvas_max_layer = p_max_layer;
 }
 
-void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
+void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const Color &p_color, RSE::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RSE::EnvironmentReflectionSource p_reflection_source) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->ambient_light = p_color;
@@ -111,9 +115,9 @@ void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const 
 	env->reflection_source = p_reflection_source;
 }
 
-RS::EnvironmentBG RendererEnvironmentStorage::environment_get_background(RID p_env) const {
+RSE::EnvironmentBG RendererEnvironmentStorage::environment_get_background(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_BG_CLEAR_COLOR);
+	ERR_FAIL_NULL_V(env, RSE::ENV_BG_CLEAR_COLOR);
 	return env->background;
 }
 
@@ -159,9 +163,9 @@ int RendererEnvironmentStorage::environment_get_canvas_max_layer(RID p_env) cons
 	return env->canvas_max_layer;
 }
 
-RS::EnvironmentAmbientSource RendererEnvironmentStorage::environment_get_ambient_source(RID p_env) const {
+RSE::EnvironmentAmbientSource RendererEnvironmentStorage::environment_get_ambient_source(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_AMBIENT_SOURCE_BG);
+	ERR_FAIL_NULL_V(env, RSE::ENV_AMBIENT_SOURCE_BG);
 	return env->ambient_source;
 }
 
@@ -183,9 +187,9 @@ float RendererEnvironmentStorage::environment_get_ambient_sky_contribution(RID p
 	return env->ambient_sky_contribution;
 }
 
-RS::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_reflection_source(RID p_env) const {
+RSE::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_reflection_source(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_REFLECTION_SOURCE_BG);
+	ERR_FAIL_NULL_V(env, RSE::ENV_REFLECTION_SOURCE_BG);
 	return env->reflection_source;
 }
 
@@ -203,7 +207,7 @@ int RendererEnvironmentStorage::environment_get_camera_feed_id(RID p_env) const 
 
 // Tonemap
 
-void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
+void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RSE::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
@@ -211,9 +215,9 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	env->white = p_white;
 }
 
-RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
+RSE::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_TONE_MAPPER_LINEAR);
+	ERR_FAIL_NULL_V(env, RSE::ENV_TONE_MAPPER_LINEAR);
 	return env->tone_mapper;
 }
 
@@ -229,13 +233,13 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_
 
 	// Glow with screen blend mode does not work when white < 1.0, so make sure
 	// it is at least 1.0 for all tonemappers:
-	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+	if (env->tone_mapper == RSE::ENV_TONE_MAPPER_LINEAR) {
 		return p_output_max_value;
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC || env->tone_mapper == RS::ENV_TONE_MAPPER_ACES) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_FILMIC || env->tone_mapper == RSE::ENV_TONE_MAPPER_ACES) {
 		// Filmic and ACES only support SDR; their white is stable regardless
 		// of output_max_value.
 		return MAX(1.0, env->white);
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_AGX) {
 		// AgX works best with a high white. 2.0 is the minimum required for
 		// good behavior with Mobile rendering method.
 		if (p_limit_agx_white) {
@@ -276,11 +280,11 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 	float white = environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
 	TonemapParameters tonemap_parameters = TonemapParameters();
 
-	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+	if (env->tone_mapper == RSE::ENV_TONE_MAPPER_LINEAR) {
 		// Linear has no tonemapping parameters
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_REINHARD) {
 		tonemap_parameters.white_squared = (white * white) / p_output_max_value;
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_FILMIC) {
 		// These constants must match those in the shader code.
 		// exposure_bias: Input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
 		// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values).
@@ -294,7 +298,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 		const float F = 0.30f;
 
 		tonemap_parameters.white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ACES) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_ACES) {
 		// These constants must match those in the shader code.
 		const float exposure_bias = 1.8f;
 		const float A = 0.0245786f;
@@ -306,7 +310,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 		white *= exposure_bias;
 		float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
 		tonemap_parameters.white_tonemapped = white_tonemapped;
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_AGX) {
 		// Calculate allenwp tonemapping curve parameters on the CPU to improve shader performance.
 		// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
 
@@ -341,7 +345,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 
 // Fog
 
-void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
+void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect, RSE::EnvironmentFogMode p_mode) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->fog_enabled = p_enable;
@@ -362,9 +366,9 @@ bool RendererEnvironmentStorage::environment_get_fog_enabled(RID p_env) const {
 	return env->fog_enabled;
 }
 
-RS::EnvironmentFogMode RendererEnvironmentStorage::environment_get_fog_mode(RID p_env) const {
+RSE::EnvironmentFogMode RendererEnvironmentStorage::environment_get_fog_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_FOG_MODE_EXPONENTIAL);
+	ERR_FAIL_NULL_V(env, RSE::ENV_FOG_MODE_EXPONENTIAL);
 	return env->fog_mode;
 }
 
@@ -549,7 +553,7 @@ float RendererEnvironmentStorage::environment_get_volumetric_fog_ambient_inject(
 
 // GLOW
 
-void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
+void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RSE::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
@@ -603,9 +607,9 @@ float RendererEnvironmentStorage::environment_get_glow_mix(RID p_env) const {
 	return env->glow_mix;
 }
 
-RS::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
+RSE::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SCREEN);
+	ERR_FAIL_NULL_V(env, RSE::ENV_GLOW_BLEND_MODE_SCREEN);
 	return env->glow_blend_mode;
 }
 
@@ -810,7 +814,7 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 
 // SDFGI
 
-void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
@@ -884,9 +888,9 @@ float RendererEnvironmentStorage::environment_get_sdfgi_probe_bias(RID p_env) co
 	return env->sdfgi_probe_bias;
 }
 
-RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_scale(RID p_env) const {
+RSE::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_scale(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_SDFGI_Y_SCALE_75_PERCENT);
+	ERR_FAIL_NULL_V(env, RSE::ENV_SDFGI_Y_SCALE_75_PERCENT);
 	return env->sdfgi_y_scale;
 }
 

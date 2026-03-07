@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Base class of [SkeletonModifier3D] that modifies the bone set in [method set_apply_bone] based on the transform of the bone retrieved by [method get_reference_bone].
+		[b]Note:[/b] Most methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/amount[/code]).
 	</description>
 	<tutorials>
 	</tutorials>

@@ -32,6 +32,7 @@
 
 #include "../gltf_template_convert.h"
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/3d/skin.h"
 

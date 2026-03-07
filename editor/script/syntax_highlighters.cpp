@@ -31,6 +31,7 @@
 #include "syntax_highlighters.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/settings/editor_settings.h"
 

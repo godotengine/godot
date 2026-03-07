@@ -101,6 +101,8 @@ public:
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
 
+	void report_window_focused(bool p_focused);
+
 	void reset_camera_2d_position();
 	void reset_camera_3d_position();
 

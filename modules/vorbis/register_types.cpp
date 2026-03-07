@@ -32,6 +32,8 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
+#include "core/object/class_db.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "resource_importer_ogg_vorbis.h"

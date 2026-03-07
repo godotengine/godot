@@ -31,10 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -316,7 +318,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;
@@ -476,6 +478,7 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
+	LocalVector<ObjectID> hdr_viewports;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -497,8 +500,6 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
-
-	bool _should_display_update_spinner() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
@@ -641,7 +642,6 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
-	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -734,9 +734,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
-	void init_plugins();
+	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void init_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
@@ -943,6 +944,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void register_hdr_viewport(Viewport *p_viewport);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -951,8 +953,8 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
-	void stop_child_process(OS::ProcessID p_pid);
+	ProcessID has_child_process(ProcessID p_pid) const;
+	void stop_child_process(ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	void update_preview_themes(int p_mode);
@@ -1045,6 +1047,7 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
+	bool is_scene_unsaved(int p_idx);
 };
 
 struct EditorProgressBG {

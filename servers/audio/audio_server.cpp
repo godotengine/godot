@@ -35,6 +35,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "core/math/audio_frame.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
@@ -57,6 +58,16 @@ AudioDriver *AudioDriver::get_singleton() {
 void AudioDriver::set_singleton() {
 	singleton = this;
 }
+
+#ifdef DEBUG_ENABLED
+void AudioDriver::start_counting_ticks() {
+	prof_ticks.set(OS::get_singleton()->get_ticks_usec());
+}
+
+void AudioDriver::stop_counting_ticks() {
+	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get());
+}
+#endif // DEBUG_ENABLED
 
 void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time) {
 	if (p_update_mix_time) {

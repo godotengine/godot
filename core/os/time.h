@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/binder_common.h"
 #include "time_enums.h"
 
 // This Time class conforms with as many of the ISO 8601 standards as possible.

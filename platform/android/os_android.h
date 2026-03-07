@@ -106,8 +106,6 @@ public:
 
 	virtual void finalize() override;
 
-	typedef int64_t ProcessID;
-
 	static OS_Android *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
@@ -191,5 +189,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	static void _on_main_screen_changed(const String &p_screen_name);
+	static void _on_distraction_free_mode_changed(bool p_enable);
 #endif
 };

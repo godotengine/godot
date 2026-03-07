@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/missing_resource.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "scene/property_utils.h"

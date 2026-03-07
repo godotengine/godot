@@ -30,9 +30,8 @@
 
 #pragma once
 
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
-
-#include "core/object/class_db.h"
 
 template <typename T>
 struct VariantDestruct {};

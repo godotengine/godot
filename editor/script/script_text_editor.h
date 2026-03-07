@@ -94,7 +94,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	Color marked_line_color = Color(1, 1, 1);
 	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
-	int previous_line = 0;
+	int previous_line = -1; // Previous caret line number when user continuously operates in this editor. Affects history state. Reset to -1 on editor switch.
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;

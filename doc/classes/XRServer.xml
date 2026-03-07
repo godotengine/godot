@@ -165,6 +165,11 @@
 				Emitted when an existing tracker has been updated. This can happen if the user switches controllers.
 			</description>
 		</signal>
+		<signal name="world_origin_changed">
+			<description>
+				Emitted when the world origin transform changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">

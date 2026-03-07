@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"

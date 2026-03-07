@@ -134,6 +134,7 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;

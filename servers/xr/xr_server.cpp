@@ -32,6 +32,9 @@
 #include "xr_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -107,6 +110,8 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
+
+	ADD_SIGNAL(MethodInfo("world_origin_changed"));
 }
 
 double XRServer::get_world_scale() const {
@@ -157,6 +162,7 @@ Transform3D XRServer::get_world_origin() const {
 
 void XRServer::set_world_origin(const Transform3D &p_world_origin) {
 	world_origin = p_world_origin;
+	emit_signal(SNAME("world_origin_changed"));
 	set_render_world_origin(world_origin);
 }
 
@@ -232,6 +238,30 @@ void XRServer::_set_render_reference_frame(const Transform3D &p_reference_frame)
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 	xr_server->render_state.reference_frame = p_reference_frame;
+}
+
+void XRServer::set_render_world_scale(double p_world_scale) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_scale).bind(p_world_scale));
+}
+
+void XRServer::set_render_world_origin(const Transform3D &p_world_origin) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_origin).bind(p_world_origin));
+}
+
+void XRServer::set_render_reference_frame(const Transform3D &p_reference_frame) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_reference_frame).bind(p_reference_frame));
 }
 
 Transform3D XRServer::get_hmd_transform() {

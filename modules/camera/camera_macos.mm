@@ -63,7 +63,21 @@
 		width[1] = 0;
 		height[1] = 0;
 
+#ifdef APPLE_EMBEDDED_ENABLED
+		[p_device lockForConfiguration:&error];
+
+		[p_device setFocusMode:AVCaptureFocusModeLocked];
+		[p_device setExposureMode:AVCaptureExposureModeLocked];
+		[p_device setWhiteBalanceMode:AVCaptureWhiteBalanceModeLocked];
+
+		[p_device unlockForConfiguration];
+#endif // APPLE_EMBEDDED_ENABLED
+
 		[self beginConfiguration];
+
+#ifdef APPLE_EMBEDDED_ENABLED
+		self.sessionPreset = AVCaptureSessionPreset1280x720;
+#endif // APPLE_EMBEDDED_ENABLED
 
 		input = [AVCaptureDeviceInput deviceInputWithDevice:p_device error:&error];
 		if (!input) {

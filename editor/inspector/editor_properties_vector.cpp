@@ -30,6 +30,7 @@
 
 #include "editor_properties_vector.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/settings/editor_settings.h"
@@ -236,6 +237,14 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin_sliders[0]); // Show text and buttons around this.
+	}
+}
+
+void EditorPropertyVectorN::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	for (int i = 0; i < component_count; i++) {
+		spin_sliders[i]->set_deferred_drag_mode_enabled(p_enabled);
 	}
 }
 

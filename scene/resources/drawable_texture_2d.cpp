@@ -30,6 +30,9 @@
 
 #include "drawable_texture_2d.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 DrawableTexture2D::DrawableTexture2D() {
 	default_material = RS::get_singleton()->texture_drawable_get_default_material();
 }
@@ -44,10 +47,10 @@ DrawableTexture2D::~DrawableTexture2D() {
 // Initialize Texture Resource with a call to rendering server. Overwrite existing.
 void DrawableTexture2D::_initialize() {
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_drawable_create(width, height, (RS::TextureDrawableFormat)format, base_color, mipmaps);
+		RID new_texture = RS::get_singleton()->texture_drawable_create(width, height, (RSE::TextureDrawableFormat)format, base_color, mipmaps);
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_drawable_create(width, height, (RS::TextureDrawableFormat)format, base_color, mipmaps);
+		texture = RS::get_singleton()->texture_drawable_create(width, height, (RSE::TextureDrawableFormat)format, base_color, mipmaps);
 	}
 }
 
@@ -93,7 +96,7 @@ int DrawableTexture2D::get_height() const {
 	return height;
 }
 
-void DrawableTexture2D::set_format(DrawableFormat p_format) {
+void DrawableTexture2D::set_drawable_format(DrawableFormat p_format) {
 	if (format == p_format) {
 		return;
 	}
@@ -102,8 +105,23 @@ void DrawableTexture2D::set_format(DrawableFormat p_format) {
 	emit_changed();
 }
 
-DrawableTexture2D::DrawableFormat DrawableTexture2D::get_format() const {
+DrawableTexture2D::DrawableFormat DrawableTexture2D::get_drawable_format() const {
 	return format;
+}
+
+Image::Format DrawableTexture2D::get_format() const {
+	switch (format) {
+		case DRAWABLE_FORMAT_RGBA8:
+			return Image::FORMAT_RGBA8;
+		case DRAWABLE_FORMAT_RGBA8_SRGB:
+			return Image::FORMAT_RGBA8;
+		case DRAWABLE_FORMAT_RGBAH:
+			return Image::FORMAT_RGBAH;
+		case DRAWABLE_FORMAT_RGBAF:
+			return Image::FORMAT_RGBAF;
+		default:
+			return Image::FORMAT_RGBA8;
+	}
 }
 
 void DrawableTexture2D::set_use_mipmaps(bool p_mipmaps) {
@@ -229,6 +247,12 @@ void DrawableTexture2D::generate_mipmaps() {
 }
 
 void DrawableTexture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &DrawableTexture2D::set_width);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &DrawableTexture2D::set_height);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &DrawableTexture2D::set_drawable_format);
+	ClassDB::bind_method(D_METHOD("set_use_mipmaps", "mipmaps"), &DrawableTexture2D::set_use_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_use_mipmaps"), &DrawableTexture2D::get_use_mipmaps);
+
 	ClassDB::bind_method(D_METHOD("setup", "width", "height", "format", "color", "use_mipmaps"), &DrawableTexture2D::setup, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blit_rect", "rect", "source", "modulate", "mipmap", "material"), &DrawableTexture2D::blit_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0), DEFVAL(Ref<Material>()));
 	ClassDB::bind_method(D_METHOD("blit_rect_multi", "rect", "sources", "extra_targets", "modulate", "mipmap", "material"), &DrawableTexture2D::blit_rect_multi, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0), DEFVAL(Ref<Material>()));
