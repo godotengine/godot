@@ -2673,9 +2673,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// We only need the alias registrations (from C++ names to C# proxy names) and not the method registrations, as all methods are just wrappers
 		// of the native API which should directly call from C++ to C++ and not via .NET first.
-		
+
 		// Generate alias names for methods
-		
+
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
