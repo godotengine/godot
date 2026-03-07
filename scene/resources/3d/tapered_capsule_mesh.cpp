@@ -31,8 +31,7 @@
 #include "tapered_capsule_mesh.h"
 
 #include "core/config/project_settings.h"
-#include "core/math/math_funcs.h"
-#include "scene/resources/theme.h"
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"
 #include "thirdparty/misc/polypartition.h"
@@ -62,203 +61,133 @@ void TaperedCapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	create_mesh_array(p_arr, radius_top, radius_bottom, mid_height, radial_segments, rings, _add_uv2, _uv2_padding);
 }
 
+bool TaperedCapsuleMesh::is_sphere(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height) {
+	return Math::abs(p_radius_top - p_radius_bottom) < p_mid_height;
+}
+
+real_t TaperedCapsuleMesh::get_tangent_angle(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height) {
+	return Math::asin((p_radius_bottom - p_radius_top) / p_mid_height);
+}
+
 void TaperedCapsuleMesh::create_mesh_array(Array &p_arr, real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height, int p_radial_segments, int p_rings, bool p_add_uv2, const real_t p_uv2_padding) {
-	int i, j, prevrow, thisrow, point;
-	real_t x, y, z, u, v, w;
-
-	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
-	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (p_rings + 2) * (p_radial_segments + 1) * 2 + (p_rings + 2) * (p_radial_segments + 1);
-	LocalVector<Vector3> points;
-	points.reserve(num_points);
-	LocalVector<Vector3> normals;
-	normals.reserve(num_points);
-	LocalVector<float> tangents;
-	tangents.reserve(num_points * 4);
-	LocalVector<Vector2> uvs;
-	uvs.reserve(num_points);
-	LocalVector<Vector2> uv2s;
-	if (p_add_uv2) {
-		uv2s.reserve(num_points);
-	}
-	LocalVector<int> indices;
-	indices.reserve((p_rings + 1) * (p_radial_segments) * 6 * 2 + (p_rings + 1) * (p_radial_segments) * 6);
-	point = 0;
-
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
-	// Calculate UV2 parameters
-	real_t total_height = p_mid_height + p_radius_top + p_radius_bottom;
-	real_t total_vertical_length = total_height + p_uv2_padding;
+	const bool has_tangent = is_sphere(p_radius_top, p_radius_bottom, p_mid_height);
 
-	real_t uv2_v_top = p_radius_top / total_vertical_length;
-	real_t uv2_v_cylinder = p_mid_height / total_vertical_length;
-	real_t uv2_v_bottom = p_radius_bottom / total_vertical_length;
-
-	real_t max_circumference = MAX(p_radius_top, p_radius_bottom) * Math::TAU;
-	real_t uv2_h_scale = max_circumference / (max_circumference + p_uv2_padding);
-
-	/* top hemisphere */
-	thisrow = 0;
-	prevrow = 0;
-	for (j = 0; j <= (p_rings + 1); j++) {
-		v = j;
-		v /= (p_rings + 1);
-		if (j == (p_rings + 1)) {
-			w = 1.0;
-			y = 0.0;
+	//angle of the tangent of the two circles
+	const real_t angle = get_tangent_angle(p_radius_top, p_radius_bottom, p_mid_height);
+	const real_t angle_per_ring = Math::PI / p_rings;
+	const real_t top_arc_length = Math::PI / 2.0 - angle;
+	const real_t bottom_arc_length = Math::PI / 2.0 + angle;
+	int top_rings = Math::ceil(top_arc_length / angle_per_ring);
+	int bottom_rings = Math::ceil(bottom_arc_length / angle_per_ring);
+	while (top_rings + bottom_rings > p_rings) {
+		if (top_rings > bottom_rings) {
+			top_rings--;
 		} else {
-			w = Math::sin(0.5 * Math::PI * v);
-			y = Math::cos(0.5 * Math::PI * v);
+			bottom_rings--;
 		}
-
-		for (i = 0; i <= p_radial_segments; i++) {
-			u = i;
-			u /= p_radial_segments;
-
-			if (i == p_radial_segments) {
-				x = 0.0;
-				z = 1.0;
-			} else {
-				x = -Math::sin(u * Math::TAU);
-				z = Math::cos(u * Math::TAU);
-			}
-
-			Vector3 p = Vector3(x * w, y, -z * w);
-			points.push_back(p * p_radius_top + Vector3(0.0, total_height * 0.5 - p_radius_top, 0.0));
-			normals.push_back(p);
-			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, v * 0.5)); // UV for top hemisphere
-			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * uv2_h_scale, v * uv2_v_top));
-			}
-			point++;
-
-			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
-			}
-		}
-
-		prevrow = thisrow;
-		thisrow = point;
 	}
+	const int num_columns = p_radial_segments + 1;
+	const int num_rows = top_rings + bottom_rings + 2;
+	const int num_vertices = (num_columns) * (num_rows);
 
-	/* cylinder */
-	thisrow = point;
-	prevrow = point - (p_radial_segments + 1); // Start from the last row of the top hemisphere
-	for (j = 0; j <= (p_rings + 1); j++) { // Use rings for cylinder segments too for consistency
-		v = j;
-		v /= (p_rings + 1);
-
-		real_t current_radius = p_radius_top + (p_radius_bottom - p_radius_top) * v;
-		y = (total_height * 0.5 - p_radius_top) - (p_mid_height * v);
-
-		for (i = 0; i <= p_radial_segments; i++) {
-			u = i;
-			u /= p_radial_segments;
-
-			if (i == p_radial_segments) {
-				x = 0.0;
-				z = 1.0;
-			} else {
-				x = -Math::sin(u * Math::TAU);
-				z = Math::cos(u * Math::TAU);
-			}
-
-			Vector3 p = Vector3(x * current_radius, y, -z * current_radius);
-			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, -z).normalized()); // Normal points outwards
-			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, 0.5 + v * 0.5)); // UV for cylinder
-			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * uv2_h_scale, uv2_v_top + v * uv2_v_cylinder));
-			}
-			point++;
-
-			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
-			}
-		}
-
-		prevrow = thisrow;
-		thisrow = point;
-	}
-
-	/* bottom hemisphere */
-	thisrow = point;
-	prevrow = point - (p_radial_segments + 1); // Start from the last row of the cylinder
-	for (j = 0; j <= (p_rings + 1); j++) {
-		v = j;
-		v /= (p_rings + 1);
-		if (j == (p_rings + 1)) {
-			w = 0.0;
-			y = -1.0;
-		} else {
-			w = Math::cos(0.5 * Math::PI * v);
-			y = -Math::sin(0.5 * Math::PI * v);
-		}
-
-		for (i = 0; i <= p_radial_segments; i++) {
-			u = i;
-			u /= p_radial_segments;
-
-			if (i == p_radial_segments) {
-				x = 0.0;
-				z = 1.0;
-			} else {
-				x = -Math::sin(u * Math::TAU);
-				z = Math::cos(u * Math::TAU);
-			}
-
-			Vector3 p = Vector3(x * w, y, -z * w);
-			points.push_back(p * p_radius_bottom + Vector3(0.0, -total_height * 0.5 + p_radius_bottom, 0.0));
-			normals.push_back(p);
-			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, 0.5 + v * 0.5)); // UV for bottom hemisphere (can reuse cylinder UV space)
-			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * uv2_h_scale, uv2_v_top + uv2_v_cylinder + v * uv2_v_bottom));
-			}
-			point++;
-
-			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
-			}
-		}
-
-		prevrow = thisrow;
-		thisrow = point;
-	}
-
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	LocalVector<Vector3> positions, normals;
+	positions.reserve(num_vertices);
+	normals.reserve(num_vertices);
+	LocalVector<float> tangents;
+	tangents.reserve(num_vertices * 4);
+	LocalVector<Vector2> uvs, uv2s;
+	uvs.reserve(num_vertices);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		uv2s.reserve(num_vertices);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	const real_t top_perimeter = p_radius_top * (Math::PI / 2 - angle);
+	const real_t bottom_perimeter = p_radius_bottom * (angle + Math::PI / 2);
+	//cos angle = mid height / tangent
+	const real_t tangent_perimeter = has_tangent ? Math::sqrt(Math::pow(p_mid_height, 2) - Math::pow(p_radius_bottom - p_radius_top, 2)) : 0;
+	const real_t total_perimeter_vertical_slice = top_perimeter + bottom_perimeter + tangent_perimeter;
+
+	for (int r = 0; r < num_columns; r++) {
+		const real_t u = (real_t)r / p_radial_segments;
+		const real_t phi = u * Math::TAU;
+		const real_t xsin = -Math::sin(phi);
+		const real_t zcos = -Math::cos(phi);
+		for (int t = 0; t < num_rows; t++) {
+			real_t theta;
+			real_t radius;
+			bool istop = t <= top_rings;
+			if (istop) {
+				if (top_rings == 0) {
+					theta = Math::PI / 2;
+				} else {
+					theta = Math::lerp((real_t)Math::PI / 2, angle, (real_t)t / top_rings);
+				}
+				radius = p_radius_top;
+			} else {
+				if (bottom_rings == 0) {
+					theta = -Math::PI / 2;
+				} else {
+					theta = Math::lerp(angle, (real_t)-Math::PI / 2, (real_t)(t - top_rings - 1) / bottom_rings);
+				}
+				radius = p_radius_bottom;
+			}
+
+			const real_t perimeter_from_top = istop ? (Math::PI / 2 - theta) * radius : total_perimeter_vertical_slice - (Math::PI / 2 + theta) * radius;
+			const real_t v = perimeter_from_top / total_perimeter_vertical_slice;
+			const real_t y = Math::sin(theta);
+			const real_t rxz = Math::cos(theta);
+			const real_t x = xsin * rxz;
+			const real_t z = zcos * rxz;
+
+			const Vector3 p = Vector3(x, y, z);
+			positions.push_back(p * radius + Vector3(0, istop ? p_mid_height / 2 : -p_mid_height / 2, 0));
+			normals.push_back(p);
+			ADD_TANGENT(zcos, 0.0, -xsin, 1.0)
+			uvs.push_back(Vector2(u, v));
+			if (p_add_uv2) {
+				uv2s.push_back(Vector2(u * (1 - p_uv2_padding * 2) + p_uv2_padding, v * (1 - p_uv2_padding * 2) + p_uv2_padding));
+			}
+		}
+	}
+#undef ADD_TANGENT
+
+	LocalVector<int> indices;
+	indices.reserve(p_radial_segments * (p_rings + 1) * 6);
+	//Vertices go from top to bottom, then towards the right
+	//There are num_rows vertices vertically, and num_columns vertices horizontally
+	//clockwise winding order
+	for (int i = 0; i < p_radial_segments; i++) //left to right
+	{
+		for (int j = 0; j < p_rings + 1; j++) //up to down
+		{
+			int tlvidx = i * num_rows + j; //top left vertex
+			int blvidx = tlvidx + 1; //bottom left vertex
+			int trvidx = tlvidx + num_rows; //top right vertex
+			int brvidx = trvidx + 1; //bottom left vertex
+			//top and left tris
+			indices.push_back(blvidx);
+			indices.push_back(tlvidx);
+			indices.push_back(trvidx);
+			//bottom and right tris
+			indices.push_back(blvidx);
+			indices.push_back(trvidx);
+			indices.push_back(brvidx);
+		}
+	}
+
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(positions);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	if (p_add_uv2) {
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+	}
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void TaperedCapsuleMesh::_bind_methods() {
@@ -266,6 +195,8 @@ void TaperedCapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_radius_top"), &TaperedCapsuleMesh::get_radius_top);
 	ClassDB::bind_method(D_METHOD("set_radius_bottom", "radius_bottom"), &TaperedCapsuleMesh::set_radius_bottom);
 	ClassDB::bind_method(D_METHOD("get_radius_bottom"), &TaperedCapsuleMesh::get_radius_bottom);
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &TaperedCapsuleMesh::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &TaperedCapsuleMesh::get_radius);
 	ClassDB::bind_method(D_METHOD("set_mid_height", "mid_height"), &TaperedCapsuleMesh::set_mid_height);
 	ClassDB::bind_method(D_METHOD("get_mid_height"), &TaperedCapsuleMesh::get_mid_height);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &TaperedCapsuleMesh::set_height);
@@ -278,14 +209,21 @@ void TaperedCapsuleMesh::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_top", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_radius_top", "get_radius_top");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_bottom", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_radius_bottom", "get_radius_bottom");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_radius_top", "get_radius_top");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_radius_bottom", "get_radius_bottom");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
+
+	ADD_LINKED_PROPERTY("radius", "radius_top");
+	ADD_LINKED_PROPERTY("radius", "radius_bottom");
 
 	ADD_LINKED_PROPERTY("radius_top", "height");
 	ADD_LINKED_PROPERTY("radius_bottom", "height");
 	ADD_LINKED_PROPERTY("mid_height", "height");
+
 	ADD_LINKED_PROPERTY("height", "radius_top");
 	ADD_LINKED_PROPERTY("height", "radius_bottom");
 	ADD_LINKED_PROPERTY("height", "mid_height");
@@ -296,7 +234,7 @@ void TaperedCapsuleMesh::set_radius_top(const real_t p_radius_top) {
 		return;
 	}
 
-	radius_top = p_radius_top;
+	radius_top = p_radius_top > 0.f ? p_radius_top : 0.f;
 	_update_lightmap_size();
 	request_update();
 }
@@ -310,7 +248,7 @@ void TaperedCapsuleMesh::set_radius_bottom(const real_t p_radius_bottom) {
 		return;
 	}
 
-	radius_bottom = p_radius_bottom;
+	radius_bottom = p_radius_bottom > 0.f ? p_radius_bottom : 0.f;
 	_update_lightmap_size();
 	request_update();
 }
@@ -319,13 +257,21 @@ real_t TaperedCapsuleMesh::get_radius_bottom() const {
 	return radius_bottom;
 }
 
+void TaperedCapsuleMesh::set_radius(const real_t p_radius) {
+	set_radius_top(p_radius);
+	set_radius_bottom(p_radius);
+}
+
+real_t TaperedCapsuleMesh::get_radius() const {
+	return (get_radius_top() + get_radius_bottom()) / 2;
+}
+
 void TaperedCapsuleMesh::set_mid_height(const real_t p_mid_height) {
-	ERR_FAIL_COND(p_mid_height <= 0);
 	if (Math::is_equal_approx(mid_height, p_mid_height)) {
 		return;
 	}
 
-	mid_height = p_mid_height;
+	mid_height = p_mid_height > 0.f ? p_mid_height : 0.f;
 	_update_lightmap_size();
 	request_update();
 }
@@ -337,7 +283,7 @@ real_t TaperedCapsuleMesh::get_mid_height() const {
 void TaperedCapsuleMesh::set_height(const real_t p_height) {
 	real_t new_mid_height = p_height - radius_top - radius_bottom;
 	if (new_mid_height <= 0) {
-		new_mid_height = 0.001f; // Minimum to avoid invalid mesh
+		new_mid_height = 0.f; // Minimum to avoid invalid mesh
 	}
 	set_mid_height(new_mid_height);
 }
@@ -364,8 +310,7 @@ void TaperedCapsuleMesh::set_rings(const int p_rings) {
 		return;
 	}
 
-	ERR_FAIL_COND(p_rings < 0);
-	rings = p_rings;
+	rings = p_rings > 4 ? p_rings : 4;
 	request_update();
 }
 

@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/resources/3d/primitive_meshes.h"
-#include "scene/resources/mesh.h"
 
 class TaperedCapsuleMesh : public PrimitiveMesh {
 	GDCLASS(TaperedCapsuleMesh, PrimitiveMesh);
@@ -40,7 +39,9 @@ private:
 	real_t radius_top = 0.5;
 	real_t radius_bottom = 0.5;
 	real_t mid_height = 1.0;
+	//number of points in the X-Z plane
 	int radial_segments = 64;
+	//number of rings in the Y axis
 	int rings = 8;
 
 protected:
@@ -50,6 +51,11 @@ protected:
 	virtual void _update_lightmap_size() override;
 
 public:
+	static bool is_sphere(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height);
+
+	//Return the angle of the tangent to the two circles. 0 when both circles have the same radius, positive when the bottom is bigger than the top, -pi/2 to pi/2
+	static real_t get_tangent_angle(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height);
+
 	static void create_mesh_array(Array &p_arr, real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height, int p_radial_segments = 64, int p_rings = 8, bool p_add_uv2 = false, const real_t p_uv2_padding = 1.0);
 
 	void set_radius_top(const real_t p_radius_top);
@@ -57,6 +63,9 @@ public:
 
 	void set_radius_bottom(const real_t p_radius_bottom);
 	real_t get_radius_bottom() const;
+
+	void set_radius(const real_t p_radius);
+	real_t get_radius() const;
 
 	void set_mid_height(const real_t p_mid_height);
 	real_t get_mid_height() const;

@@ -12,7 +12,7 @@
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
 	</tutorials>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+		<member name="height" type="float" setter="set_height" getter="get_height">
 			The total height of the tapered capsule, calculated as [member mid_height] + [member radius_top] + [member radius_bottom]. This is the full extent from the bottom of the lower hemisphere to the top of the upper hemisphere. Setting this property adjusts [member mid_height] while keeping the radii unchanged.
 		</member>
 		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
