@@ -545,6 +545,7 @@ private:
 	};
 
 	bool show_column_titles = false;
+	bool show_alternate_rows = false;
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;
@@ -577,7 +578,7 @@ private:
 	void update_item_cell(TreeItem *p_item, int p_col) const;
 	void update_item_cache(TreeItem *p_item) const;
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color) const;
-	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
+	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, int &r_row_idx);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void _line_editor_submit(String p_text);
@@ -623,6 +624,7 @@ private:
 		Ref<StyleBox> custom_button;
 		Ref<StyleBox> custom_button_hover;
 		Ref<StyleBox> custom_button_pressed;
+		Ref<StyleBox> alternate_rows;
 
 		Color title_button_color;
 
@@ -891,6 +893,9 @@ public:
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;
+
+	void set_alternate_rows_visible(bool p_show);
+	bool are_alternate_rows_visible() const;
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;

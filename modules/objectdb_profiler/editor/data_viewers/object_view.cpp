@@ -109,6 +109,7 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list->set_column_title_tooltip_text(offset + 3, TTRC("Number of outbound references"));
 	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
 	object_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_object_selected));
+	object_list->set_alternate_rows_visible(true);
 	object_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	object_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
@@ -258,6 +259,7 @@ Tree *SnapshotObjectView::_make_references_list(Control *p_container, const Stri
 	tree->set_column_clip_content(1, false);
 	tree->set_column_title_tooltip_text(1, p_col_2_tooltip);
 	tree->set_v_scroll_enabled(false);
+	tree->set_alternate_rows_visible(true);
 	tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
 	return tree;

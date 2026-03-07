@@ -358,6 +358,9 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating the [Tree] with letter keys through incremental search.
 		</member>
+		<member name="alternate_rows_visible" type="bool" setter="set_alternate_rows_visible" getter="are_alternate_rows_visible" default="false">
+			If [code]true[/code], draws a stylebox behind every second row to improve readability, especially when the [Tree] has multiple columns.
+		</member>
 		<member name="auto_tooltip" type="bool" setter="set_auto_tooltip" getter="is_auto_tooltip_enabled" default="true">
 			If [code]true[/code], tree items with no tooltip assigned display their text as their tooltip. See also [method TreeItem.get_tooltip_text] and [method TreeItem.get_button_tooltip_text].
 		</member>
@@ -711,6 +714,9 @@
 		</theme_item>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
+		</theme_item>
+		<theme_item name="alternate_rows" data_type="style" type="StyleBox">
+			StyleBox drawn behind every second row when [member alternate_rows_visible] is [code]true[/code].
 		</theme_item>
 		<theme_item name="button_hover" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is hovered.
