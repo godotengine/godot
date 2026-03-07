@@ -32,6 +32,7 @@
 #include "animation.compat.inc"
 
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
@@ -1034,7 +1035,13 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 	tracks[p_track]->path = p_path;
-	_track_update_hash(p_track);
+
+	dirty_tracks.insert(p_track);
+	if (unique_ids_dirty) {
+		unique_ids_dirty = false;
+		callable_mp(this, &Animation::generate_unique_ids).call_deferred();
+	}
+
 	emit_changed();
 }
 
@@ -1062,15 +1069,22 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-void Animation::_track_update_hash(int p_track) {
-	const NodePath &track_path = tracks[p_track]->path;
-	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
+Animation::TrackCacheID Animation::track_get_unique_id(int p_track) const {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
+	return tracks[p_track]->get_unique_id();
 }
 
-Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
-	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
-	return tracks[p_track]->thash;
+void Animation::generate_unique_ids() {
+	if (unique_ids_dirty) {
+		return;
+	}
+
+	for (int track : dirty_tracks) {
+		tracks[track]->stringname_path = StringName(String(tracks[track]->path));
+	}
+
+	unique_ids_dirty = true;
+	dirty_tracks.clear();
 }
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {

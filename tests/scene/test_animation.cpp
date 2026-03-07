@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_animation)
 
+#include "core/object/message_queue.h"
 #include "scene/resources/animation.h"
 
 namespace TestAnimation {
@@ -46,6 +47,7 @@ TEST_CASE("[Animation] Empty animation getters") {
 TEST_CASE("[Animation] Create value track") {
 	// This creates an animation that makes the node "Enemy" move to the right by
 	// 100 pixels in 0.5 seconds.
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_VALUE);
 	CHECK(track_index == 0);
@@ -87,9 +89,15 @@ TEST_CASE("[Animation] Create value track") {
 	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 TEST_CASE("[Animation] Create 3D position track") {
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_POSITION_3D);
 	animation->track_set_path(track_index, NodePath("Enemy:position"));
@@ -133,9 +141,15 @@ TEST_CASE("[Animation] Create 3D position track") {
 	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 TEST_CASE("[Animation] Create 3D rotation track") {
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_ROTATION_3D);
 	animation->track_set_path(track_index, NodePath("Enemy:rotation"));
@@ -179,9 +193,15 @@ TEST_CASE("[Animation] Create 3D rotation track") {
 	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(real_t(0.0)));
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 TEST_CASE("[Animation] Create 3D scale track") {
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_SCALE_3D);
 	animation->track_set_path(track_index, NodePath("Enemy:scale"));
@@ -225,9 +245,15 @@ TEST_CASE("[Animation] Create 3D scale track") {
 	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 TEST_CASE("[Animation] Create blend shape track") {
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_BLEND_SHAPE);
 	animation->track_set_path(track_index, NodePath("Enemy:scale"));
@@ -276,9 +302,15 @@ TEST_CASE("[Animation] Create blend shape track") {
 	CHECK(animation->try_scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->bezier_track_interpolate(0, 0.0) == doctest::Approx(0.0));
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 TEST_CASE("[Animation] Create Bezier track") {
+	memnew(MessageQueue);
 	Ref<Animation> animation = memnew(Animation);
 	const int track_index = animation->add_track(Animation::TYPE_BEZIER);
 	animation->track_set_path(track_index, NodePath("Enemy:scale"));
@@ -306,6 +338,11 @@ TEST_CASE("[Animation] Create Bezier track") {
 	CHECK(animation->try_scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+
+	if (MessageQueue::get_singleton()) {
+		MessageQueue::get_singleton()->flush();
+		memdelete(MessageQueue::get_singleton());
+	}
 }
 
 } // namespace TestAnimation
