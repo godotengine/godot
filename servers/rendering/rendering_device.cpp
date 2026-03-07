@@ -4283,9 +4283,9 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				ERR_FAIL_COND_V_MSG(uniform.get_id_count() == 0, RID(),
 						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
-				for (uint32_t i = 0; i < uniform.get_id_count(); i++) {
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					Buffer *buffer = nullptr;
-					RID buffer_id = uniform.get_id(i);
+					RID buffer_id = uniform.get_id(j);
 					if (storage_buffer_owner.owns(buffer_id)) {
 						buffer = storage_buffer_owner.get_or_null(buffer_id);
 					} else if (vertex_buffer_owner.owns(buffer_id)) {
