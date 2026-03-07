@@ -161,7 +161,7 @@ void AnimationMixer::_animation_set_cache_update() {
 		for (const KeyValue<StringName, Ref<Animation>> &K : lib.library->animations) {
 			StringName key = lib.name == StringName() ? K.key : StringName(String(lib.name) + "/" + String(K.key));
 			if (!animation_set.has(key)) {
-				K.value->ensure_unique_ids();
+				K.value->generate_unique_ids();
 				AnimationData ad;
 				ad.animation = K.value;
 				ad.animation_library = lib.name;
@@ -630,7 +630,7 @@ void AnimationMixer::_create_track_num_to_track_cache_for_animation(Ref<Animatio
 
 	track_num_to_track_cache.resize(tracks.size());
 	for (uint32_t i = 0; i < tracks.size(); i++) {
-		TrackCache **track_ptr = track_cache.getptr(tracks[i]->unique_id);
+		TrackCache **track_ptr = track_cache.getptr(tracks[i]->get_unique_id());
 		if (track_ptr == nullptr) {
 			track_num_to_track_cache[i] = nullptr;
 		} else {
@@ -957,9 +957,9 @@ bool AnimationMixer::_update_caches() {
 	}
 
 	while (to_delete.front()) {
-		Animation::TypeTrackId thash = to_delete.front()->get();
-		memdelete(track_cache[thash]);
-		track_cache.erase(thash);
+		Animation::TypeTrackId unique_id = to_delete.front()->get();
+		memdelete(track_cache[unique_id]);
+		track_cache.erase(unique_id);
 		to_delete.pop_front();
 	}
 
@@ -1160,7 +1160,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 			if (!animation_track->enabled) {
 				continue;
 			}
-			Animation::TypeTrackId track_unique_id = animation_track->unique_id;
+			Animation::TypeTrackId track_unique_id = animation_track->get_unique_id();
 			TrackCache *track = track_num_to_track_cache[i];
 			if (track == nullptr || processed_ids.has(track_unique_id)) {
 				// No path, but avoid error spamming.

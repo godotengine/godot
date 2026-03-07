@@ -1000,8 +1000,6 @@ void Animation::remove_track(int p_track) {
 		} break;
 	}
 
-	_track_cache_unref_or_erase(tracks[p_track], track_cache_id_map.get_index(tracks[p_track]->track_cache_id));
-
 	memdelete(t);
 	tracks.remove_at(p_track);
 	emit_changed();
@@ -1037,7 +1035,13 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 	tracks[p_track]->path = p_path;
-	_track_update_unique_ids(p_track);
+
+	dirty_tracks.insert(p_track);
+	if (unique_ids_dirty) {
+		unique_ids_dirty = false;
+		callable_mp(this, &Animation::generate_unique_ids).call_deferred();
+	}
+
 	emit_changed();
 }
 
@@ -1065,86 +1069,22 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-void Animation::_track_update_unique_ids(int p_track) {
-	dirty_tracks.insert(p_track);
-	if (update_track_cache_ids) {
-		return;
-	}
-	update_track_cache_ids = true;
-	callable_mp(this, &Animation::ensure_unique_ids).call_deferred();
-}
-
-void Animation::_track_cache_unref_or_erase(Track *p_track, const int &p_track_cache_index) {
-	if (p_track_cache_index == -1) {
-		return;
-	}
-
-	LocalVector<Track *> *references = track_cache_id_map.get_by_index(p_track_cache_index).value;
-	TrackCacheId key = track_cache_id_map.get_by_index(p_track_cache_index).key;
-	if (references->size() == 1) {
-		memdelete(references);
-		// When erased, AHashMap moves the last item to the erased location.
-		// We will use this property to reassign the id in order to keep id range minimum
-		TypeTrackId removed_id = p_track_cache_index + 1;
-		track_cache_id_map.erase(key);
-
-		if ((uint32_t)p_track_cache_index == track_cache_id_map.size()) {
-			// Removed the last item, no need to re-assign item id
-			return;
-		}
-
-		// Update the moved tracks' ids
-		references = track_cache_id_map.get_by_index(p_track_cache_index).value;
-		for (Track *track : *references) {
-			track->unique_id = removed_id;
-		}
-	} else {
-		references->erase(p_track);
-	}
-}
-
-void Animation::ensure_unique_ids() {
-	if (!update_track_cache_ids) {
-		return;
-	}
-
-	// From NodePath and TrackCacheId, derive a unique ID
-	for (int track : dirty_tracks) {
-		const NodePath &track_path = tracks[track]->path;
-		const TrackType &track_cache_type = get_cache_type(tracks[track]->type);
-		const TrackCacheId new_track_cache_id = TrackCacheId(track_path, track_cache_type);
-		const TrackCacheId &old_track_cache_id = tracks[track]->track_cache_id;
-
-		TypeTrackId &unique_id = tracks[track]->unique_id;
-		if (unique_id != 0) {
-			// Updating because of a path or type change.
-			const int &index = track_cache_id_map.get_index(old_track_cache_id);
-			_track_cache_unref_or_erase(tracks[track], index);
-		}
-
-		// New entry for this animation. Check if there was a duplicate added from other animations.
-		LocalVector<Track *> *references;
-		const int &index = track_cache_id_map.get_index(new_track_cache_id);
-		if (index == -1) {
-			unique_id = track_cache_id_map.size() + 1; // +1 to prevent id = 0.
-			references = memnew(LocalVector<Track *>());
-			references->push_back(tracks[track]);
-			track_cache_id_map.insert(new_track_cache_id, references);
-		} else {
-			unique_id = index + 1; // +1 to prevent id = 0.
-			references = track_cache_id_map.get_by_index(index).value;
-			references->push_back(tracks[track]);
-		}
-		tracks[track]->track_cache_id = new_track_cache_id;
-	}
-
-	dirty_tracks.clear();
-	update_track_cache_ids = false;
-}
-
 Animation::TypeTrackId Animation::track_get_unique_id(int p_track) const {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
-	return tracks[p_track]->unique_id;
+	return tracks[p_track]->get_unique_id();
+}
+
+void Animation::generate_unique_ids() {
+	if (unique_ids_dirty) {
+		return;
+	}
+
+	for (int track : dirty_tracks) {
+		tracks[track]->stringname_path = StringName(String(tracks[track]->path));
+	}
+
+	unique_ids_dirty = true;
+	dirty_tracks.clear();
 }
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
@@ -6622,7 +6562,6 @@ Animation::Animation() {
 
 Animation::~Animation() {
 	for (uint32_t i = 0; i < tracks.size(); i++) {
-		_track_cache_unref_or_erase(tracks[i], track_cache_id_map.get_index(tracks[i]->track_cache_id));
 		memdelete(tracks[i]);
 	}
 }

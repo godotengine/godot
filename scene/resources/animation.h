@@ -41,7 +41,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint32_t TypeTrackId;
+	typedef uint64_t TypeTrackId;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -105,16 +105,17 @@ public:
 	};
 #endif // TOOLS_ENABLED
 
-	typedef Pair<NodePath, TrackType> TrackCacheId;
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
-		TypeTrackId unique_id = 0; // Unique id for each Path + SubPath + TrackType combo.
-		TrackCacheId track_cache_id; // Path + SubPath + TrackType combination instead of hash
+		StringName stringname_path; // Path + SubPath combination instead of hash
 		bool imported = false;
 		bool enabled = true;
+		TypeTrackId get_unique_id() const {
+			return (TypeTrackId)(stringname_path.data_unique_pointer()) + get_cache_type(type);
+		}
 		virtual ~Track() {}
 	};
 
@@ -253,11 +254,8 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
-
-	static inline AHashMap<TrackCacheId, LocalVector<Track *> *> track_cache_id_map; // common list for track cache ids among all animations
-	void _track_cache_unref_or_erase(Track *p_track, const int &p_track_cache_index);
 	HashSet<int> dirty_tracks;
-	bool update_track_cache_ids = false;
+	bool unique_ids_dirty = false;
 
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
@@ -295,8 +293,6 @@ private:
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
-
-	void _track_update_unique_ids(int p_track);
 
 	/* Animation compression page format (version 1):
 	 *
@@ -433,7 +429,7 @@ public:
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
 	TypeTrackId track_get_unique_id(int p_track) const;
-	void ensure_unique_ids();
+	void generate_unique_ids();
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
