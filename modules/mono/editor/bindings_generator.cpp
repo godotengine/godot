@@ -2671,31 +2671,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate Method registrations
 
-		// already_registered prevents methods which have the same argument-count
-		// to be registered twice (undefined behavior)
-		LocalVector<String> already_registered;
-
-		for (const MethodInterface &imethod : itype.methods) {
-			const String method_name_with_argc = imethod.proxy_name + itos(imethod.arguments.size());
-			if (imethod.is_virtual ||
-					itype.is_singleton ||
-					itype.is_singleton_instance ||
-					already_registered.find(method_name_with_argc) != -1) {
-				continue;
-			}
-
-			already_registered.push_back(method_name_with_argc);
-
-			output << INDENT2 ".Register("
-				   << "global::Godot." << itype.proxy_name + ".MethodName." + imethod.proxy_name
-				   << ", "
-				   << itos(imethod.arguments.size())
-				   << ", "
-				   << "ScriptMethodDispatchHelper.CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "())\n";
-		}
-
+		// We only need the alias registrations (from C++ names to C# proxy names) and not the method registrations, as all methods are just wrappers
+		// of the native API which should directly call from C++ to C++ and not via .NET first.
+		
 		// Generate alias names for methods
-
+		
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
@@ -2708,93 +2688,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << "#pragma warning restore CS0618 // Type or member is obsolete\n";
 		output << "#pragma warning restore CS0628 // new protected member declared in sealed class\n";
-
-		already_registered.clear();
-
-		// Generate ScriptMethodDispatchHelper
-		output << INDENT1 << "\n";
-		output << "#pragma warning disable CS0618 // Type or member is obsolete\n";
-		output << INDENT1 << "private sealed class ScriptMethodDispatchHelper\n";
-		output << INDENT1 << "{\n";
-		for (const MethodInterface &imethod : itype.methods) {
-			const String method_name = imethod.proxy_name + itos(imethod.arguments.size());
-			if (imethod.is_virtual ||
-					itype.is_singleton ||
-					itype.is_singleton_instance ||
-					already_registered.find(method_name) != -1) {
-				continue;
-			}
-
-			already_registered.push_back(method_name);
-
-			// Generate CreateScriptMethod factory method that creates the actual dispatch method
-
-			output << INDENT2 "public static ScriptMethod CreateScriptMethod_" << imethod.proxy_name << itos(imethod.arguments.size()) << "()\n"
-				   << INDENT2 << "{\n";
-
-			// Generate the actual dispatch method
-
-			output << INDENT3 << "return [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
-				   << INDENT3 << "static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n"
-				   << INDENT3 << "{\n";
-
-			output << INDENT4;
-
-			if (imethod.return_type.cname != name_cache.type_void) {
-				output << "var callRet = ";
-			}
-
-			if (!imethod.is_static) {
-				output << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).";
-			} else {
-				output << itype.proxy_name << ".";
-			}
-
-			output << imethod.proxy_name << "(";
-
-			int idx = 0;
-			for (const ArgumentInterface &iarg : imethod.arguments) {
-				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
-
-				if (idx != 0) {
-					output << ", ";
-				}
-
-				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
-					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-					String to_managed = sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_cs_type, arg_type->name)
-												.replacen("params ", "");
-					output << "new " << arg_cs_type << "(" << to_managed << ")";
-				} else {
-					output << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name)
-									  .replacen("params ", "");
-				}
-
-				idx++;
-			}
-
-			output.append(");\n");
-
-			if (imethod.return_type.cname != name_cache.type_void) {
-				const TypeInterface *return_interface = _get_type_or_null(imethod.return_type);
-				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name)
-											.replacen("params ", "");
-				output << INDENT4 << "var ret = " + to_managed;
-				output << ";\n";
-			} else {
-				output << INDENT4 << "godot_variant ret = default;\n";
-			}
-
-			output << INDENT4 << "return ret;\n";
-
-			output << INDENT3 << "};\n"
-				   << INDENT2 << "}\n";
-		}
-		output << INDENT1;
-		output << "}\n";
-
-		output << "#pragma warning restore CS0618 // Type or member is obsolete\n\n";
 
 		// Generate GetGodotClassMethodOrNullRef
 
