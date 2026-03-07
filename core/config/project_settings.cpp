@@ -241,6 +241,21 @@ void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
 	props[p_name].internal = p_internal;
 }
 
+void ProjectSettings::set_array_format(const String &p_prefix, const Vector<ArrayElementFormat> &p_format) {
+	ArrayFormat format = ArrayFormat(p_prefix, p_format, array_formats.size());
+
+	if (array_format_map.has(p_prefix)) {
+		format.array_index = array_format_map.get(p_prefix).array_index;
+		array_formats.write[format.array_index] = format;
+
+		array_format_map[p_prefix] = format;
+		return;
+	}
+
+	array_format_map.insert(p_prefix, format);
+	array_formats.push_back(format);
+}
+
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 #ifdef DEBUG_ENABLED
@@ -255,6 +270,10 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 #else
 	return false;
 #endif // DEBUG_ENABLED
+}
+
+bool ProjectSettings::get_is_array_internal(const String &p_name) const {
+	return _get_array_count_variable(p_name, nullptr) || _get_array_variable(p_name, nullptr, nullptr, nullptr);
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
@@ -338,6 +357,27 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 
+		{
+			// Because of how EditorInspectorArray is implemented, this needs to pretend that
+			// each element of each array (and their counts) exist as separate variables that
+			// can be modified by calling get() and set().
+
+			String array_prefix;
+			if (_get_array_count_variable(p_name, &array_prefix)) {
+				_set_array_length(array_prefix, p_value);
+				_queue_changed(p_name);
+				return true;
+			}
+
+			String array_key;
+			int array_index;
+			if (_get_array_variable(p_name, &array_prefix, &array_key, &array_index)) {
+				_set_array_value(array_prefix, array_index, array_key, p_value);
+				_queue_changed(p_name);
+				return true;
+			}
+		}
+
 		if (props.has(p_name)) {
 			props[p_name].variant = p_value;
 		} else {
@@ -382,10 +422,112 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
 	if (!props.has(p_name)) {
+		String array_prefix;
+		if (_get_array_count_variable(p_name, &array_prefix)) {
+			r_ret = _get_array_length(array_prefix);
+			return true;
+		}
+
+		String array_key;
+		int array_index;
+		if (_get_array_variable(p_name, &array_prefix, &array_key, &array_index)) {
+			r_ret = _get_array_value(array_prefix, array_index, array_key);
+			return true;
+		}
+
 		return false;
 	}
 	r_ret = props[p_name].variant;
 	return true;
+}
+
+int ProjectSettings::_get_array_length(const String &p_prefix) const {
+	Array array = get(p_prefix);
+	return array.size();
+}
+
+void ProjectSettings::_set_array_length(const String &p_prefix, const int p_length) {
+	if (!props.has(p_prefix)) {
+		set(p_prefix, Array());
+	}
+
+	Array array = get_setting(p_prefix);
+	int old_size = array.size();
+	array.resize(p_length);
+
+	const ArrayFormat &format = array_format_map[p_prefix];
+	for (int i = old_size; i < p_length; i++) {
+		Dictionary dict;
+		for (const ArrayElementFormat &elem_format : format.format) {
+			dict.set(elem_format.info.name, elem_format.v_default);
+		}
+
+		array[i] = dict;
+	}
+
+	// Need to notify property list changed here, as EditorInspectorArray will not update the GUI
+	// otherwise.
+	notify_property_list_changed();
+}
+
+void ProjectSettings::_set_array_value(const String &p_prefix, const int p_index, const String &p_key, const Variant &p_value) {
+	Array array = get(p_prefix);
+	Dictionary value = array[p_index];
+	value.set(p_key, p_value);
+}
+
+Variant ProjectSettings::_get_array_value(const String &p_prefix, const int p_index, const String &p_key) const {
+	Array array = get(p_prefix);
+	Dictionary value = array[p_index];
+	return value.get(p_key, Variant());
+}
+
+bool ProjectSettings::_get_array_count_variable(const StringName &p_name, String *r_prefix) const {
+	if (p_name.operator String().ends_with("_count")) {
+		String prefix = p_name.operator String().trim_suffix("_count");
+		if (array_format_map.has(prefix)) {
+			if (r_prefix != nullptr) {
+				*r_prefix = prefix;
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ProjectSettings::_get_array_variable(const StringName &p_name, String *r_prefix, String *r_variable, int *r_index) const {
+	const Vector<String> components = p_name.operator String().rsplit("/", true, 1);
+	if (components.size() >= 2) {
+		String prefix = components[0];
+		String stripped_prefix;
+		for (int i = prefix.length() - 1; i >= 0; i--) {
+			// Strip numbers from the end to get the actual prefix for a fast lookup.
+			if (!is_digit(prefix[i])) {
+				stripped_prefix = prefix.substr(0, i + 1);
+				break;
+			}
+		}
+		if (!stripped_prefix.is_empty() && array_format_map.has(stripped_prefix)) {
+			String index_string = prefix.trim_prefix(stripped_prefix);
+			if (r_index != nullptr) {
+				if (index_string.is_valid_int()) {
+					*r_index = index_string.to_int();
+				} else {
+					*r_index = -1;
+				}
+			}
+			if (r_prefix != nullptr) {
+				*r_prefix = stripped_prefix;
+			}
+			if (r_variable != nullptr) {
+				*r_variable = components[1];
+			}
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
@@ -510,8 +652,8 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const _VCSort &base : vclist) {
 		if (custom_prop_info.has(base.name)) {
 			PropertyInfo pi = custom_prop_info[base.name];
-			pi.name = base.name;
-			pi.usage = base.flags;
+			pi.name = pi.usage & PROPERTY_USAGE_ARRAY ? pi.name : base.name;
+			pi.usage = base.flags | (pi.usage & PROPERTY_USAGE_ARRAY);
 			p_list->push_back(pi);
 #ifdef TOOLS_ENABLED
 		} else if (base.name.begins_with(EDITOR_SETTING_OVERRIDE_PREFIX)) {
@@ -545,6 +687,32 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 				} else {
 					p_list->push_back(PropertyInfo(over.type, over.name, PROPERTY_HINT_NONE, "", over.flags));
 				}
+			}
+		}
+	}
+
+	for (const ArrayFormat &format : array_formats) {
+		const VariantContainer *v = &props[format.prefix];
+		int flags = 0;
+
+		// Not handling internal flags here because the whole point of PROPERTY_USAGE_ARRAY is
+		// for the GUI.
+		if (v->basic) {
+			flags |= PROPERTY_USAGE_EDITOR_BASIC_SETTING;
+		}
+
+		if (v->restart_if_changed) {
+			flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
+		}
+
+		for (const ArrayElementFormat &element_format : format.format) {
+			int count = _get_array_length(format.prefix);
+			PropertyInfo pi = element_format.info;
+			pi.usage |= flags;
+
+			for (int j = 0; j < count; j++) {
+				pi.name = vformat("%s%d/%s", format.prefix, j, element_format.info.name);
+				p_list->push_back(pi);
 			}
 		}
 	}
@@ -1345,6 +1513,23 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 	return ret;
 }
 
+Variant _GLOBAL_DEF_ARRAY(const String &p_var, const Vector<ProjectSettings::ArrayElementFormat> &p_format, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
+	return _GLOBAL_DEF_ARRAY(PropertyInfo(Variant::INT, p_var), p_format, p_restart_if_changed, p_ignore_value_in_docs, p_basic, p_internal);
+}
+
+Variant _GLOBAL_DEF_ARRAY(const PropertyInfo &p_info, const Vector<ProjectSettings::ArrayElementFormat> &p_format, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
+	PropertyInfo info = p_info;
+	info.type = Variant::INT;
+	info.usage |= PROPERTY_USAGE_ARRAY;
+	int name_index = p_info.name.rfind_char('/');
+	String label_name = name_index == -1 ? p_info.name : p_info.name.substr(name_index + 1);
+	info.class_name = vformat("%s,%s", label_name.capitalize(), label_name);
+
+	Variant ret = _GLOBAL_DEF(info, Array(), p_restart_if_changed, p_ignore_value_in_docs, p_basic, p_internal);
+	ProjectSettings::get_singleton()->set_array_format(p_info.name, p_format);
+	return ret;
+}
+
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
 	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");
@@ -1372,7 +1557,11 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 void ProjectSettings::set_custom_property_info(const PropertyInfo &p_info) {
 	const String &prop_name = p_info.name;
 	ERR_FAIL_COND(!props.has(prop_name));
-	custom_prop_info[prop_name] = p_info;
+	PropertyInfo info = p_info;
+	if (p_info.usage & PROPERTY_USAGE_ARRAY) {
+		info.name += "_count";
+	}
+	custom_prop_info[prop_name] = info;
 }
 
 const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
