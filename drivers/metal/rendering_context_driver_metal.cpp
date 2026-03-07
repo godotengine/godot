@@ -277,6 +277,11 @@ public:
 
 	~SurfaceOffscreen() override {
 		memdelete_arr(frame_buffers);
+		for (MTL::Texture *texture : textures) {
+			if (texture) {
+				texture->release();
+			}
+		}
 	}
 
 	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
@@ -289,6 +294,28 @@ public:
 		CGSize current = layer->drawableSize();
 		if (!CGSizeEqualToSize(current, drawableSize)) {
 			layer->setDrawableSize(drawableSize);
+		}
+
+		if (hdr_output) {
+			layer->setWantsExtendedDynamicRangeContent(true);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatRGBA16Float);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
+			r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			pixel_format = MTL::PixelFormatRGBA16Float;
+		} else {
+			layer->setWantsExtendedDynamicRangeContent(false);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
+			pixel_format = MTL::PixelFormatBGRA8Unorm;
 		}
 
 		return OK;
@@ -305,12 +332,17 @@ public:
 
 		MDFrameBuffer &frame_buffer = frame_buffers[rear];
 
-		if (textures[rear] == nullptr || textures[rear]->width() != width || textures[rear]->height() != height) {
+		MTL::Texture *texture = textures[rear];
+		if (texture == nullptr || texture->width() != width || texture->height() != height || texture->pixelFormat() != pixel_format) {
 			MTL::TextureDescriptor *texture_descriptor = MTL::TextureDescriptor::texture2DDescriptor(get_pixel_format(), width, height, false);
 			texture_descriptor->setUsage(MTL::TextureUsageRenderTarget);
 			texture_descriptor->setHazardTrackingMode(MTL::HazardTrackingModeUntracked);
 			texture_descriptor->setStorageMode(MTL::StorageModePrivate);
-			textures[rear] = device->newTexture(texture_descriptor);
+			if (texture) {
+				texture->release();
+			}
+			texture = device->newTexture(texture_descriptor);
+			textures[rear] = texture;
 		}
 
 		frame_buffer.size = Size2i(width, height);
@@ -322,7 +354,7 @@ public:
 			drawables[rear] = drawable;
 			frame_buffer.set_texture(0, drawable->texture());
 		} else {
-			frame_buffer.set_texture(0, textures[rear]);
+			frame_buffer.set_texture(0, texture);
 		}
 
 		return RDD::FramebufferID(&frame_buffers[rear]);
