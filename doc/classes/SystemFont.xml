@@ -61,6 +61,9 @@
 		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
 			If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods.
 		</member>
+		<member name="prefer_colr" type="bool" setter="set_prefer_colr" getter="is_prefer_colr" default="true">
+			If set to [code]true[/code], uses experimental `hb-raster` API to rasterize glyphs from COLRv0 / COLRv1, otherwise ThorVG SVG rasterizer is preferred.
+		</member>
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
 			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
 		</member>

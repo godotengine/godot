@@ -1084,6 +1084,68 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
+#if HB_VERSION_ATLEAST(13, 0, 0)
+_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance) const {
+	FontGlyph chr;
+	chr.advance = p_advance * p_data->scale;
+	chr.found = true;
+
+	int w = p_ext.width;
+	int h = p_ext.height;
+
+	if (w == 0 || h == 0 || p_image == nullptr) {
+		chr.texture_idx = -1;
+		chr.uv_rect = Rect2();
+		chr.rect = Rect2();
+		return chr;
+	}
+
+	int color_size = 4;
+
+	int mw = w + p_rect_margin * 4;
+	int mh = h + p_rect_margin * 4;
+
+	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
+	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
+
+	Image::Format require_format = Image::FORMAT_RGBA8;
+
+	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh, false);
+	ERR_FAIL_COND_V(tex_pos.index < 0, FontGlyph());
+
+	const uint8_t *img_src = hb_raster_image_get_buffer(p_image);
+
+	// Fit character in char texture.
+	ShelfPackTexture &tex = p_data->textures.write[tex_pos.index];
+
+	{
+		uint8_t *wr = tex.image->ptrw();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
+				ERR_FAIL_COND_V(ofs >= tex.image->get_data_size(), FontGlyph());
+
+				int ofs_color = i * p_ext.stride + (j << 2);
+				wr[ofs + 2] = img_src[ofs_color + 0];
+				wr[ofs + 1] = img_src[ofs_color + 1];
+				wr[ofs + 0] = img_src[ofs_color + 2];
+				wr[ofs + 3] = img_src[ofs_color + 3];
+			}
+		}
+	}
+
+	tex.dirty = true;
+
+	chr.texture_idx = tex_pos.index;
+
+	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
+	chr.rect.position = Vector2(p_ext.x_origin - p_rect_margin, p_ext.y_origin - p_rect_margin) * p_data->scale;
+	chr.rect.size = chr.uv_rect.size * p_data->scale;
+	return chr;
+}
+#endif
+
 _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const {
 	FontGlyph chr;
 	chr.advance = p_advance * p_data->scale;
@@ -1336,7 +1398,11 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 		FT_GlyphSlot slot = p_font_data->face->glyph;
 		bool from_svg = (slot->format == FT_GLYPH_FORMAT_SVG); // Need to check before FT_Render_Glyph as it will change format to bitmap.
 		if (!outline) {
+#if HB_VERSION_ATLEAST(13, 0, 0)
+			if (!p_font_data->msdf && !fd->color_paint) {
+#else
 			if (!p_font_data->msdf) {
+#endif
 				error = FT_Render_Glyph(slot, aa_mode);
 			}
 			if (!error) {
@@ -1348,7 +1414,39 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 					ERR_FAIL_V_MSG(false, "Compiled without MSDFGEN support!");
 #endif
 				} else {
-					gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
+#if HB_VERSION_ATLEAST(13, 0, 0)
+					if (fd->color_paint) {
+						from_svg = false;
+
+						hb_raster_paint_reset(hb_rdr);
+						if (p_font_data->transform != Transform2D()) {
+							hb_raster_paint_set_transform(hb_rdr, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
+						} else {
+							hb_raster_paint_set_transform(hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+						}
+						hb_raster_paint_set_scale_factor(hb_rdr, 64, 64);
+						hb_raster_paint_clear_custom_palette_colors(hb_rdr);
+						if (!p_font_data->palette_custom_colors_hb.is_empty()) {
+							for (int col = 0; col < p_font_data->palette_custom_colors_hb.size(); col++) {
+								hb_raster_paint_set_custom_palette_color(hb_rdr, col, p_font_data->palette_custom_colors_hb[col]);
+							}
+						}
+						hb_raster_paint_glyph(hb_rdr, fd->hb_handle, (hb_codepoint_t)p_glyph, 0, 0, p_font_data->palette_index, (hb_color_t)0xFFFFFFFF);
+						hb_raster_image_t *img = hb_raster_paint_render(hb_rdr);
+						hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
+						if (img) {
+							hb_raster_image_get_extents(img, &ext);
+							gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+							hb_raster_paint_recycle_image(hb_rdr, img);
+						} else {
+							gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+						}
+					} else {
+#else
+					{
+#endif
+						gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
+					}
 				}
 			}
 		} else {
@@ -1512,15 +1610,59 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 #warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
 #endif
 #endif
+#if HB_VERSION_ATLEAST(13, 0, 0)
+		fd->hb_face = hb_font_get_face(fd->hb_handle);
+		if (p_font_data->prefer_colr) {
+			fd->color_paint = (hb_ot_color_has_paint(fd->hb_face) || hb_ot_color_has_layers(fd->hb_face));
+		} else {
+			fd->color_paint = false;
+		}
+#endif
 
 		if (!p_font_data->face_init) {
+			const static hb_language_t english = hb_language_from_string("en", -1);
+#if HB_VERSION_ATLEAST(13, 0, 0)
+			hb_face_t *hb_face = fd->hb_face;
+			if (p_font_data->prefer_colr) {
+				unsigned int pal_count = hb_ot_color_palette_get_count(hb_face);
+				for (unsigned int pal = 0; pal < pal_count; pal++) {
+					String pal_name;
+					Vector<Color> pal_colors;
+					// Get name.
+					hb_ot_name_id_t name_id = hb_ot_color_palette_get_name_id(hb_face, pal);
+					if (name_id == HB_OT_NAME_ID_INVALID) {
+						pal_name = vformat("Palette %d", pal + 1);
+					} else {
+						unsigned int text_size = hb_ot_name_get_utf32(hb_face, name_id, english, nullptr, nullptr) + 1;
+						pal_name.resize_uninitialized(text_size);
+						hb_ot_name_get_utf32(hb_face, name_id, english, &text_size, (uint32_t *)pal_name.ptrw());
+					}
+					// Get colors.
+					unsigned int color_count = 0;
+					hb_ot_color_palette_get_colors(hb_face, pal, 0, &color_count, nullptr);
+					Vector<hb_color_t> pal_colors_hb;
+					pal_colors_hb.resize_uninitialized(color_count);
+					hb_ot_color_palette_get_colors(hb_face, pal, 0, &color_count, pal_colors_hb.ptrw());
+					for (unsigned int col = 0; col < color_count; col++) {
+						Color c = Color::from_rgba8(hb_color_get_red(pal_colors_hb[col]), hb_color_get_green(pal_colors_hb[col]), hb_color_get_blue(pal_colors_hb[col]), hb_color_get_alpha(pal_colors_hb[col]));
+						pal_colors.push_back(c);
+					}
+
+					p_font_data->palette_names.push_back(pal_name);
+					p_font_data->palette_colors.push_back(pal_colors);
+				}
+				p_font_data->palette_custom_colors.clear();
+				p_font_data->palette_custom_colors_hb.clear();
+			}
+#else
+			hb_face_t *hb_face = hb_font_get_face(fd->hb_handle);
+#endif
 			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
 			// FreeType automatically converts non-ASCII characters to "?" in the synthesized name.
 			// To avoid that behavior, use the format-specific name directly if available.
-			hb_face_t *hb_face = hb_font_get_face(fd->hb_handle);
+
 			unsigned int num_entries = 0;
 			const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
-			const hb_language_t english = hb_language_from_string("en", -1);
 			for (unsigned int i = 0; i < num_entries; i++) {
 				if (names[i].name_id != HB_OT_NAME_ID_FONT_FAMILY) {
 					continue;
@@ -2600,6 +2742,109 @@ bool TextServerAdvanced::_font_is_modulate_color_glyphs(const RID &p_font_rid) c
 
 	MutexLock lock(fd->mutex);
 	return fd->modulate_color_glyphs;
+}
+
+void TextServerAdvanced::_font_set_prefer_colr(const RID &p_font_rid, bool p_prefer_colr) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->prefer_colr != p_prefer_colr) {
+		_font_clear_cache(fd);
+		fd->prefer_colr = p_prefer_colr;
+	}
+}
+
+bool TextServerAdvanced::_font_is_prefer_colr(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->prefer_colr;
+}
+
+int64_t TextServerAdvanced::_font_get_palette_count(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	return fd->palette_names.size();
+#else
+	return 0;
+#endif
+}
+
+String TextServerAdvanced::_font_get_palette_name(const RID &p_font_rid, int64_t p_index) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, String());
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	ERR_FAIL_INDEX_V(p_index, fd->palette_names.size(), String());
+	return fd->palette_names[p_index];
+#else
+	return String();
+#endif
+}
+
+Vector<Color> TextServerAdvanced::_font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	ERR_FAIL_INDEX_V(p_index, fd->palette_names.size(), Vector<Color>());
+	return fd->palette_colors[p_index];
+#else
+	return Vector<Color>();
+#endif
+}
+
+void TextServerAdvanced::_font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	if (fd->palette_custom_colors != p_colors) {
+		fd->palette_custom_colors = p_colors;
+		fd->palette_custom_colors_hb.resize_uninitialized(p_colors.size());
+		for (int col = 0; col < fd->palette_custom_colors.size(); col++) {
+			const Color &c = fd->palette_custom_colors[col];
+			fd->palette_custom_colors_hb.write[col] = HB_COLOR(c.get_b8(), c.get_g8(), c.get_r8(), c.get_a8());
+		}
+		_font_clear_cache(fd);
+	}
+#endif
+}
+
+Vector<Color> TextServerAdvanced::_font_get_palette_custom_colors(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	return fd->palette_custom_colors;
+#else
+	return Vector<Color>();
+#endif
+}
+
+int64_t TextServerAdvanced::_font_get_used_palette(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	return fd->palette_index;
+#else
+	return 0;
+#endif
+}
+
+void TextServerAdvanced::_font_set_used_palette(const RID &p_font_rid, int64_t p_index) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	if (fd->palette_index != p_index) {
+		fd->palette_index = p_index;
+		_font_clear_cache(fd);
+	}
+#endif
 }
 
 void TextServerAdvanced::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
@@ -8101,7 +8346,9 @@ void TextServerAdvanced::_update_settings() {
 
 TextServerAdvanced::TextServerAdvanced() {
 	os_locale = OS::get_singleton()->get_locale();
-
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	hb_rdr = hb_raster_paint_create_or_fail();
+#endif
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
 	_update_settings();
@@ -8126,6 +8373,11 @@ void TextServerAdvanced::_cleanup() {
 
 TextServerAdvanced::~TextServerAdvanced() {
 	_bmp_free_font_funcs();
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	if (hb_rdr != nullptr) {
+		hb_raster_paint_destroy(hb_rdr);
+	}
+#endif
 #ifdef MODULE_FREETYPE_ENABLED
 	if (ft_library != nullptr) {
 		FT_Done_FreeType(ft_library);

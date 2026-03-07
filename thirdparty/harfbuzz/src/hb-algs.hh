@@ -1664,6 +1664,13 @@ double solve_itp (func_t f,
 		  double min_y, double max_y,
 		  double &ya, double &yb, double &y)
 {
+  // Guard against degenerate interval
+  if (b - a <= 0.0)
+  {
+    y = ya;
+    return a;
+  }
+
   unsigned n1_2 = (unsigned) (hb_max (ceil (log2 ((b - a) / epsilon)) - 1.0, 0.0));
   const unsigned n0 = 1; // Hardwired
   const double k1 = 0.2 / (b - a); // Hardwired.
@@ -1674,7 +1681,8 @@ double solve_itp (func_t f,
   {
     double x1_2 = 0.5 * (a + b);
     double r = scaled_epsilon - 0.5 * (b - a);
-    double xf = (yb * a - ya * b) / (yb - ya);
+    // Guard against yb == ya to prevent division by zero
+    double xf = (yb != ya) ? (yb * a - ya * b) / (yb - ya) : x1_2;
     double sigma = x1_2 - xf;
     double b_a = b - a;
     // This has k2 = 2 hardwired for efficiency.
