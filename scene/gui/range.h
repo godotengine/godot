@@ -60,6 +60,7 @@ class Range : public Control {
 	void _value_changed_notify();
 	void _changed_notify();
 	void _set_value_no_signal(double p_val);
+	void _set_as_ratio(double p_value, bool emit_signal);
 
 protected:
 	static double _snapped_r128(double p_value, double p_step);
@@ -86,6 +87,7 @@ public:
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_as_ratio(double p_value);
+	void set_as_ratio_no_signal(double p_value);
 
 	double get_value() const;
 	double get_min() const;
