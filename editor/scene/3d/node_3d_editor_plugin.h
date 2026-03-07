@@ -232,6 +232,11 @@ private:
 	bool collision_reposition = false;
 	real_t gizmo_scale;
 
+	bool freelook_active;
+	real_t freelook_speed;
+	Vector2 previous_mouse_position;
+	bool emulated_nav_mouse_captured = false;
+
 	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
 	Label *cinema_label = nullptr;
@@ -366,7 +371,31 @@ private:
 	void _freelook_changed();
 	void _freelook_speed_scaled();
 
-	View3DController::Cursor previous_cursor; // Storing previous cursor state for canceling purposes.
+	struct ShortcutCheckSet {
+		bool mod_pressed = false;
+		bool shortcut_not_empty = true;
+		int input_count = 0;
+		ViewportNavMouseButton mouse_preference = NAVIGATION_LEFT_MOUSE;
+		NavigationMode result_nav_mode = NAVIGATION_NONE;
+
+		ShortcutCheckSet() {}
+
+		ShortcutCheckSet(bool p_mod_pressed, bool p_shortcut_not_empty, int p_input_count, const ViewportNavMouseButton &p_mouse_preference, const NavigationMode &p_result_nav_mode) :
+				mod_pressed(p_mod_pressed), shortcut_not_empty(p_shortcut_not_empty), input_count(p_input_count), mouse_preference(p_mouse_preference), result_nav_mode(p_result_nav_mode) {
+		}
+	};
+
+	struct ShortcutCheckSetComparator {
+		_FORCE_INLINE_ bool operator()(const ShortcutCheckSet &A, const ShortcutCheckSet &B) const {
+			return A.input_count > B.input_count;
+		}
+	};
+
+	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
+	NavigationMode _get_emulated_nav_mode();
+
+	void set_freelook_active(bool active_now);
+	void scale_freelook_speed(real_t scale);
 
 	real_t zoom_indicator_delay;
 	int zoom_failed_attempts_count = 0;
