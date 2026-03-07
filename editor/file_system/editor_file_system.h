@@ -347,13 +347,9 @@ class EditorFileSystem : public Node {
 		String target;
 	};
 
-	HashMap<ResourceUID::ID, String> untracks;
 	HashSet<String> untrack_paths;
 	HashMap<ResourceUID::ID, MoveItems> moves;
 	HashMap<String, String> move_paths;
-	HashMap<ResourceUID::ID, Vector<String>> duplicates;
-	HashMap<String, ResourceUID::ID> tracks;
-	HashMap<ResourceUID::ID, String> retracks;
 
 	void _update_dependencies_after_scan();
 	void _update_resource_paths_after_scan();

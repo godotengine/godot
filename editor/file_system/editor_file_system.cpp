@@ -1239,13 +1239,14 @@ void EditorFileSystem::_update_project_settings_after_scan() {
 bool EditorFileSystem::_update_scan_uid_actions() {
 	bool fs_changed = false;
 
-	untracks.clear();
+	HashMap<ResourceUID::ID, String> untracks;
+	HashMap<ResourceUID::ID, Vector<String>> duplicates;
+	HashMap<String, ResourceUID::ID> tracks;
+	HashMap<ResourceUID::ID, String> retracks;
+
 	untrack_paths.clear();
 	moves.clear();
 	move_paths.clear();
-	duplicates.clear();
-	tracks.clear();
-	retracks.clear();
 
 	EditorProgress *ep = nullptr;
 	if (scan_uid_actions.size() > (EditorFileSystem::ItemUIDAction::STEP_UID_MAX / 2 + 1)) {
