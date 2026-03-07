@@ -401,6 +401,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	submenu_popup->set_position(submenu_pos);
 	submenu_popup->activated_by_keyboard = p_by_keyboard;
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
+	submenu_popup->popup();
 	if (p_by_keyboard) {
 		for (int i = 0; i < submenu_popup->get_item_count(); i++) {
 			if (!submenu_popup->is_item_disabled(i)) {
@@ -409,7 +410,6 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 			}
 		}
 	}
-	submenu_popup->popup();
 	// The autohide areas are set on the submenu, but are aligned over the parent menu,
 	// so we spoof `this_rect` position as the negative relative offset of the parent from the submenu.
 	this_rect.position = -(submenu_popup->get_position() - this_pos);
