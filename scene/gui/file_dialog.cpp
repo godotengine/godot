@@ -686,7 +686,7 @@ void FileDialog::update_file_name() {
 			base_name = file_str.substr(0, file_str.length() - ext_filter.length());
 		}
 		const String filter_str = filters[idx].get_slicec(';', 0).strip_edges();
-		ext_filter = filter_str.substr(filter_str.find_char('.'));
+		ext_filter = filter_str.substr(filter_str.find_char('.')).to_lower();
 		file_str = base_name + ext_filter;
 		filename_edit->set_text(file_str);
 	}

@@ -1898,9 +1898,6 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-	// _update_resource_paths_after_move(file_renames, uids);
-	// _update_dependencies_after_move(file_renames, file_owners);
-	// _update_project_settings_after_move(file_renames);
 	_update_folder_colors_after_move(folder_renames);
 	_update_favorites_after_move(file_renames, folder_renames);
 
@@ -2074,9 +2071,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			EditorFileSystem::get_singleton()->update_files(files_to_update);
 
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-			// _update_resource_paths_after_move(file_renames, uids);
-			// _update_dependencies_after_move(file_renames, file_owners);
-			// _update_project_settings_after_move(file_renames);
 			_update_folder_colors_after_move(folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
 

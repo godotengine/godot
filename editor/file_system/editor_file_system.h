@@ -94,7 +94,6 @@ class EditorFileSystemDirectory : public Object {
 
 			IS_SCRIPT = 1 << 16,
 			IS_PACKEDSCENE = 1 << 17,
-			SPECIAL_TYPE = IS_SCRIPT | IS_PACKEDSCENE,
 			IS_GLOBAL_CLASS_ALTERNATIVE = 1 << 18,
 			IS_ACTIVE_GLOBAL_CLASS_ALTERNATIVE = 1 << 19,
 			GLOBAL_CLASS_MASK = IS_GLOBAL_CLASS_ALTERNATIVE | IS_ACTIVE_GLOBAL_CLASS_ALTERNATIVE,
@@ -449,7 +448,7 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
-	bool _import_support_abort_scan(const Vector<String> &reimports);
+	bool _import_support_abort_scan(const Vector<String> &p_reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 

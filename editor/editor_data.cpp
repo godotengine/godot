@@ -1039,9 +1039,7 @@ void EditorData::script_class_set_icon_path(const String &p_class, const String 
 }
 
 void EditorData::script_class_clear_icon_path(const StringName &p_class) {
-	if (_script_class_icon_paths.has(p_class)) {
-		_script_class_icon_paths.erase(p_class);
-	}
+	_script_class_icon_paths.erase(p_class);
 }
 
 String EditorData::script_class_get_icon_path(const String &p_class, bool *r_valid) const {

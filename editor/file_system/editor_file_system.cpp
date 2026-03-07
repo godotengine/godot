@@ -898,7 +898,7 @@ Vector<String> EditorFileSystem::_get_import_dest_paths(const String &p_path) {
 	return dest_paths;
 }
 
-bool EditorFileSystem::_import_support_abort_scan(const Vector<String> &reimports) {
+bool EditorFileSystem::_import_support_abort_scan(const Vector<String> &p_reimports) {
 	if (import_support_queries.is_empty()) {
 		return false;
 	}
@@ -919,8 +919,8 @@ bool EditorFileSystem::_import_support_abort_scan(const Vector<String> &reimport
 		return false; //well nothing to do
 	}
 
-	for (int i = 0; i < reimports.size(); i++) {
-		const String file = reimports[i].get_file();
+	for (int i = 0; i < p_reimports.size(); i++) {
+		const String file = p_reimports[i].get_file();
 		for (KeyValue<String, int> &E : import_support_test) {
 			if (file.right(E.key.length() + 1).nocasecmp_to("." + E.key) == 0) {
 				import_support_tested.write[E.value] = true;
@@ -1198,12 +1198,15 @@ void EditorFileSystem::_update_resource_paths_after_scan() {
 }
 
 void EditorFileSystem::_update_project_settings_after_scan() {
+	bool need_save = false;
+
 	// Find all project settings of type FILE and replace them if needed.
 	const HashMap<StringName, PropertyInfo> &prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
 		if (E.value.hint == PROPERTY_HINT_FILE || E.value.hint == PROPERTY_HINT_FILE_PATH) {
 			const String old_path = GLOBAL_GET(E.key);
 			if (move_paths.has(old_path)) {
+				need_save = true;
 				ProjectSettings::get_singleton()->set_setting(E.key, move_paths[old_path]);
 			}
 		}
@@ -1219,14 +1222,18 @@ void EditorFileSystem::_update_project_settings_after_scan() {
 			const String autoload = GLOBAL_GET(E.name);
 			const String autoload_singleton = autoload.substr(1);
 			if (move_paths.has(autoload)) {
+				need_save = true;
 				ProjectSettings::get_singleton()->set_setting(E.name, move_paths[autoload]);
 			} else if (autoload.begins_with("*") && move_paths.has(autoload_singleton)) {
+				need_save = true;
 				ProjectSettings::get_singleton()->set_setting(E.name, "*" + move_paths[autoload_singleton]);
 			}
 		}
 	}
 
-	ProjectSettings::get_singleton()->save();
+	if (need_save) {
+		ProjectSettings::get_singleton()->save();
+	}
 }
 
 bool EditorFileSystem::_update_scan_uid_actions() {
@@ -1418,7 +1425,6 @@ bool EditorFileSystem::_update_scan_actions() {
 				continue;
 			} break;
 			case ItemAction::ACTION_DIR_ADD: {
-				// ERR_CONTINUE(!ia.dir);
 				fs_changed = true;
 			} break;
 			case ItemAction::ACTION_DIR_REMOVE: {
@@ -1870,7 +1876,6 @@ void EditorFileSystem::_file_info_add(EditorFileSystemDirectory *p_dir, const St
 		p_dir->files.push_back(fi);
 	}
 	fi->status &= ~EditorFileInfo::IS_ORPHAN;
-	// fi->status |= EditorFileInfo::FILE_ADD;
 	_create_action(p_dir, fi, path, ItemAction::ACTION_FILE_ADD);
 
 	fi->file = p_file;
@@ -1947,18 +1952,20 @@ void EditorFileSystem::_file_info_update(EditorFileInfo *p_file, const String &p
 	}
 
 	if (p_file->status & EditorFileInfo::IS_IMPORTABLE) {
-		// TODO: Clean up the previous state.
-		// if (old_status & EditorFileInfo::IS_PACKEDSCENE) {
-		// 	_queue_update_scene_groups(p_path);
-		// }
-		// if (old_status & EditorFileInfo::IS_GLOBAL_CLASS_ALTERNATIVE) {
-		// 	_global_script_class_info_remove(p_file, p_path);
-		// }
+		if (!(old_status & EditorFileInfo::IS_IMPORTABLE)) {
+			_delete_internal_files(p_path);
+			if (old_status & EditorFileInfo::IS_PACKEDSCENE) {
+				_scene_info_update(p_file, p_path);
+			} else if (old_status & EditorFileInfo::IS_SCRIPT) {
+				ScriptClassInfo sci;
+				_script_class_info_update(p_file, p_path, &sci);
+			}
+		}
 
 		_import_validate(p_file, p_path);
 		return;
 	} else if (old_status & EditorFileInfo::IS_IMPORTABLE) {
-		// TODO: Clear code.
+		_delete_internal_files(p_path);
 	}
 
 	// Since the timestamp obtained is accurate to 1 second, so in projects using Git for version control,
