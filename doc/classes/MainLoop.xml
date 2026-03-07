@@ -143,5 +143,11 @@
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.
 		</constant>
+		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_ENTERED" value="2019">
+			Notification received when the application enters picture-in-picture mode.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_EXITED" value="2020">
+			Notification received when the application exits picture-in-picture mode.
+		</constant>
 	</constants>
 </class>

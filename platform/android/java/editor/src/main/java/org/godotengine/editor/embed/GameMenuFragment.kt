@@ -47,6 +47,7 @@ import androidx.fragment.app.Fragment
 import org.godotengine.editor.BaseGodotEditor
 import org.godotengine.editor.BaseGodotEditor.Companion.SNACKBAR_SHOW_DURATION_MS
 import org.godotengine.editor.R
+import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.utils.DialogUtils
 
 /**
@@ -65,7 +66,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	/**
 	 * Used to be notified of events fired when interacting with the game menu.
 	 */
-	interface GameMenuListener {
+	interface GameMenuListener : PictureInPictureProvider {
 
 		/**
 		 * Kotlin representation of the RuntimeNodeSelect::SelectMode enum in 'scene/debugger/scene_debugger.h'.
@@ -109,7 +110,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		fun isGameEmbeddingSupported(): Boolean
 		fun embedGameOnPlay(embedded: Boolean)
 
-		fun enterPiPMode() {}
 		fun minimizeGameWindow() {}
 		fun closeGameWindow() {}
 
