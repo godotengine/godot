@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "shader_preprocessor.h"
-#include "core/math/expression.h"
 #include "core/os/os.h"
+#include "shader_expression.h"
 
 const char32_t CURSOR = 0xFFFF;
 
@@ -492,7 +492,7 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
+	ShaderExpression expression;
 	Vector<String> names;
 	error = expression.parse(body, names);
 	if (error != OK) {
@@ -613,7 +613,7 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
+	ShaderExpression expression;
 	Vector<String> names;
 	error = expression.parse(body, names);
 	if (error != OK) {
