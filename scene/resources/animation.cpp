@@ -1034,7 +1034,7 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 	tracks[p_track]->path = p_path;
-	_track_update_hash(p_track);
+	tracks[p_track]->concatenated_path = StringName(String(tracks[p_track]->path));
 	emit_changed();
 }
 
@@ -1062,15 +1062,9 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-void Animation::_track_update_hash(int p_track) {
-	const NodePath &track_path = tracks[p_track]->path;
-	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
-}
-
-Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
+Animation::TrackCacheID Animation::track_get_unique_id(int p_track) const {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
-	return tracks[p_track]->thash;
+	return tracks[p_track]->get_unique_id();
 }
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
