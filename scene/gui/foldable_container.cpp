@@ -56,12 +56,10 @@ Size2 FoldableContainer::get_minimum_size() const {
 
 void FoldableContainer::fold() {
 	set_folded(true);
-	emit_signal(SNAME("folding_changed"), folded);
 }
 
 void FoldableContainer::expand() {
 	set_folded(false);
-	emit_signal(SNAME("folding_changed"), folded);
 }
 
 void FoldableContainer::set_folded(bool p_folded) {
@@ -79,6 +77,8 @@ void FoldableContainer::set_folded(bool p_folded) {
 		update_minimum_size();
 		queue_sort();
 		queue_redraw();
+		
+		emit_signal(SNAME("folding_changed"), folded);
 	}
 }
 
@@ -234,7 +234,6 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
 		set_folded(!folded);
-		emit_signal(SNAME("folding_changed"), folded);
 		accept_event();
 		return;
 	}
@@ -243,7 +242,6 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	if (b.is_valid()) {
 		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && _get_title_rect().has_point(b->get_position())) {
 			set_folded(!folded);
-			emit_signal(SNAME("folding_changed"), folded);
 			accept_event();
 		}
 	}
