@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/property_utils.h"
 
@@ -204,6 +205,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("parent")) {
 				NodePath np = next_tag.fields["parent"];
+				np.prepend_period();
 				PackedInt32Array np_id;
 				if (next_tag.fields.has("parent_id_path")) {
 					np_id = next_tag.fields["parent_id_path"];

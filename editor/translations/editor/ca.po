@@ -36,13 +36,14 @@
 # Santiago Peralta <speralta.dev@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # marc-marcos <marcmarcosmadruga@gmail.com>, 2026.
+# "Drussentis@gmail.com" <drussentis@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-08 18:01+0000\n"
-"Last-Translator: marc-marcos <marcmarcosmadruga@gmail.com>\n"
+"PO-Revision-Date: 2026-01-25 00:39+0000\n"
+"Last-Translator: \"Drussentis@gmail.com\" <drussentis@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -50,13 +51,100 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "D'acord"
 
+msgid "Unconfigured"
+msgstr "Desconfigurat"
+
+msgid "File not found"
+msgstr "Fitxer no trobat"
+
+msgid "File: Permission denied"
+msgstr "Fitxer: Permís denegat"
+
+msgid "Can't open file"
+msgstr "No s'ha pogut obrir el fitxer:"
+
+msgid "Can't write file"
+msgstr "No es pot escriure al fitxer"
+
+msgid "Can't read file"
+msgstr "No es pot llegir el fitxer"
+
+msgid "File unrecognized"
+msgstr "Fitxer no reconegut"
+
+msgid "Missing dependencies for file"
+msgstr "Manquen dependències per al fitxer"
+
+msgid "End of file"
+msgstr "Fi del fitxer"
+
+msgid "Can't open"
+msgstr "No es pot obrir"
+
+msgid "Can't create"
+msgstr "No es pot crear"
+
+msgid "Query failed"
+msgstr "Ha fallat la consulta"
+
+msgid "Locked"
+msgstr "Bloquejat"
+
+msgid "Timeout"
+msgstr "Temps d'espera"
+
+msgid "Can't connect"
+msgstr "No es pot connectar"
+
+msgid "Can't resolve"
+msgstr "No es pot resoldre"
+
+msgid "Connection error"
+msgstr "Error de connexió"
+
+msgid "Invalid data"
+msgstr "Dades invàlides"
+
+msgid "Invalid parameter"
+msgstr "Paràmetre no vàlid"
+
+msgid "Already exists"
+msgstr "Ja existeix"
+
+msgid "Does not exist"
+msgstr "No existeix"
+
+msgid "Can't read database"
+msgstr "No es pot llegir la base de dades"
+
+msgid "Compilation failed"
+msgstr "Compilació fallada"
+
+msgid "Method not found"
+msgstr "Mètode no trobat"
+
+msgid "Cyclic link detected"
+msgstr "Enllaç cíclic detectat"
+
+msgid "Invalid declaration"
+msgstr "Declaració invàlida"
+
+msgid "Busy"
+msgstr "Ocupat"
+
 msgid "Help"
 msgstr "Ajuda"
+
+msgid "Bug"
+msgstr "Error"
+
+msgid "Printer on fire"
+msgstr "Impressora en flames"
 
 msgid "unset"
 msgstr "Sense establir"

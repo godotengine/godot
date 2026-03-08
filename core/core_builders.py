@@ -41,7 +41,7 @@ def version_hash_builder(target, source, env):
 #include "core/version.h"
 
 const char *const GODOT_VERSION_HASH = "{git_hash}";
-const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
+const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
 """.format(**source[0].read())
         )
 
@@ -78,7 +78,7 @@ def make_certs_header(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
-        file.write(f'#define _SYSTEM_CERTS_PATH "{source[2]}"\n')
+        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2].read() or ""))
         if source[1].read():
             # Defined here and not in env so changing it does not trigger a full rebuild.
             file.write(f"""\

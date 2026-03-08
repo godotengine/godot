@@ -3,6 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+# If we're using Metal, we need metal-cpp.
+env.Prepend(CPPPATH=["#thirdparty/metal-cpp/"])
+
 env_metal = env.Clone()
 
 # Thirdparty source files
@@ -19,8 +22,14 @@ thirdparty_sources = [
     "spirv_reflect.cpp",
     "spirv_glsl.cpp",
     "spirv_cross_parsed_ir.cpp",
+    "spirv_cross_util.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+# Include metal-cpp
+thirdparty_sources += [
+    "#thirdparty/metal-cpp/metal_cpp.cpp",
+]
 
 env_metal.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 env_metal.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
@@ -47,7 +56,6 @@ env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 driver_obj = []
 
-env_metal.add_source_files(driver_obj, "*.mm")
 env_metal.add_source_files(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
 

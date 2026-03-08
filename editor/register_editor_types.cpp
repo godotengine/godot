@@ -30,7 +30,10 @@
 
 #include "register_editor_types.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_randomizer_editor_plugin.h"
@@ -83,6 +86,7 @@
 #include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
 #include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
 #include "editor/scene/2d/polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/scene_paint_2d_editor_plugin.h"
 #include "editor/scene/2d/skeleton_2d_editor_plugin.h"
 #include "editor/scene/2d/sprite_2d_editor_plugin.h"
 #include "editor/scene/2d/tiles/tiles_editor_plugin.h"
@@ -109,6 +113,7 @@
 #include "editor/scene/gui/margin_container_editor_plugin.h"
 #include "editor/scene/gui/style_box_editor_plugin.h"
 #include "editor/scene/gui/theme_editor_plugin.h"
+#include "editor/scene/gui/virtual_joystick_editor_plugin.h"
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/scene/packed_scene_editor_plugin.h"
 #include "editor/scene/resource_preloader_editor_plugin.h"
@@ -122,6 +127,7 @@
 #include "editor/script/editor_script.h"
 #include "editor/script/editor_script_plugin.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
@@ -129,6 +135,8 @@
 #include "editor/shader/shader_file_editor_plugin.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/version_control/editor_vcs_interface.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "editor/scene/2d/parallax_background_editor_plugin.h"
 #include "editor/scene/3d/skeleton_ik_3d_editor_plugin.h"
@@ -256,6 +264,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<TextureRegionEditorPlugin>();
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
 	EditorPlugins::add_by_type<ToolButtonEditorPlugin>();
+	EditorPlugins::add_by_type<VirtualJoystickEditorPlugin>();
 	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
@@ -276,6 +285,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	EditorPlugins::add_by_type<ScenePaint2DEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif

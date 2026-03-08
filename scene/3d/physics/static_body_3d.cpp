@@ -30,6 +30,9 @@
 
 #include "static_body_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "core/math/convex_hull.h"
 #include "scene/resources/3d/box_shape_3d.h"
@@ -136,7 +139,7 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 				BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 				if (box) {
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					BoxMesh::create_mesh_array(arr, box->get_size());
 					p_source_geometry_data->add_mesh_array(arr, transform);
 				}
@@ -144,7 +147,7 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 				CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
 				if (capsule) {
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CapsuleMesh::create_mesh_array(arr, capsule->get_radius(), capsule->get_height());
 					p_source_geometry_data->add_mesh_array(arr, transform);
 				}
@@ -152,7 +155,7 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 				CylinderShape3D *cylinder = Object::cast_to<CylinderShape3D>(*s);
 				if (cylinder) {
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CylinderMesh::create_mesh_array(arr, cylinder->get_radius(), cylinder->get_radius(), cylinder->get_height());
 					p_source_geometry_data->add_mesh_array(arr, transform);
 				}
@@ -160,7 +163,7 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 				SphereShape3D *sphere = Object::cast_to<SphereShape3D>(*s);
 				if (sphere) {
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					SphereMesh::create_mesh_array(arr, sphere->get_radius(), sphere->get_radius() * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, transform);
 				}
@@ -240,7 +243,7 @@ void StaticBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody3D::get_physics_material_override);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_linear_velocity", PROPERTY_HINT_NONE, "suffix:m/s"), "set_constant_linear_velocity", "get_constant_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_angular_velocity", PROPERTY_HINT_NONE, U"radians_as_degrees,suffix:\u00B0/s"), "set_constant_angular_velocity", "get_constant_angular_velocity");
 }

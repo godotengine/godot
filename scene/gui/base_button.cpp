@@ -31,9 +31,11 @@
 #include "base_button.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
-#include "scene/main/window.h"
+#include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
 	if (button_group.is_null()) {
@@ -111,19 +113,19 @@ void BaseButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &BaseButton::_accessibility_action_click));
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_DISABLED, status.disabled);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &BaseButton::_accessibility_action_click));
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, status.disabled);
 			if (toggle_mode) {
-				DisplayServer::get_singleton()->accessibility_update_set_checked(ae, status.pressed);
+				AccessibilityServer::get_singleton()->update_set_checked(ae, status.pressed);
 			}
 			if (button_group.is_valid()) {
 				for (const BaseButton *btn : button_group->buttons) {
 					if (btn->is_part_of_edited_scene()) {
 						continue;
 					}
-					DisplayServer::get_singleton()->accessibility_update_add_related_radio_group(ae, btn->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_related_radio_group(ae, btn->get_accessibility_element());
 				}
 			}
 			if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
@@ -132,7 +134,7 @@ void BaseButton::_notification(int p_what) {
 				if (!tooltip.is_empty() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 					text += "\n" + atr(tooltip);
 				}
-				DisplayServer::get_singleton()->accessibility_update_set_tooltip(ae, text);
+				AccessibilityServer::get_singleton()->update_set_tooltip(ae, text);
 			}
 		} break;
 
@@ -473,11 +475,21 @@ Control *BaseButton::make_custom_tooltip(const String &p_text) const {
 	if (control) {
 		return control;
 	}
-	if (!shortcut_in_tooltip || shortcut.is_null() || !shortcut->has_valid_event()) {
+
+	if (!shortcut_in_tooltip || shortcut.is_null()) {
 		return nullptr; // Use the default tooltip label.
 	}
 
-	String text = atr(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	bool shortcut_has_events = shortcut->has_valid_event();
+	if (!shortcut_has_events && shortcut->get_name().is_empty()) {
+		return nullptr;
+	}
+
+	String text = atr(shortcut->get_name());
+	if (shortcut_has_events) {
+		text += " (" + shortcut->get_as_text() + ")";
+	}
+
 	if (!p_text.is_empty() && shortcut->get_name().nocasecmp_to(p_text) != 0) {
 		text += "\n" + atr(p_text);
 	}
@@ -570,10 +582,10 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
 	ADD_GROUP("Shortcut", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
 
@@ -639,7 +651,7 @@ void ButtonGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, BaseButton::get_class_static())));
 }
 
 ButtonGroup::ButtonGroup() {

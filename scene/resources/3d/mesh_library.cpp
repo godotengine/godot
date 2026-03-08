@@ -30,6 +30,10 @@
 
 #include "mesh_library.h"
 
+#include "core/object/class_db.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
+
 #ifndef PHYSICS_3D_DISABLED
 #include "box_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
@@ -52,19 +56,19 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "mesh_cast_shadow") {
 			switch ((int)p_value) {
 				case 0: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+					set_item_mesh_cast_shadow(idx, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
 				} break;
 				case 1: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+					set_item_mesh_cast_shadow(idx, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
 				} break;
 				case 2: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+					set_item_mesh_cast_shadow(idx, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 				} break;
 				case 3: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+					set_item_mesh_cast_shadow(idx, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 				} break;
 				default: {
-					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+					set_item_mesh_cast_shadow(idx, RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
 				} break;
 			}
 #ifndef PHYSICS_3D_DISABLED
@@ -144,14 +148,14 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
 		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static()));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT));
 	}
 }
 
@@ -181,7 +185,7 @@ void MeshLibrary::set_item_mesh_transform(int p_item, const Transform3D &p_trans
 	emit_changed();
 }
 
-void MeshLibrary::set_item_mesh_cast_shadow(int p_item, RS::ShadowCastingSetting p_shadow_casting_setting) {
+void MeshLibrary::set_item_mesh_cast_shadow(int p_item, RSE::ShadowCastingSetting p_shadow_casting_setting) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].mesh_cast_shadow = p_shadow_casting_setting;
 	emit_changed();
@@ -235,8 +239,8 @@ Transform3D MeshLibrary::get_item_mesh_transform(int p_item) const {
 	return item_map[p_item].mesh_transform;
 }
 
-RS::ShadowCastingSetting MeshLibrary::get_item_mesh_cast_shadow(int p_item) const {
-	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+RSE::ShadowCastingSetting MeshLibrary::get_item_mesh_cast_shadow(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), RSE::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].mesh_cast_shadow;
 }
 

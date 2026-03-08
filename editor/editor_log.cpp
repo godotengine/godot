@@ -30,8 +30,12 @@
 
 #include "editor_log.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -47,6 +51,7 @@
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
+#include "servers/display/display_server.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
@@ -413,7 +418,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" ERROR: ");
+			log->add_text(U" ERROR: ");
 			log->pop(); // bold
 			_set_dock_tab_icon(icon);
 		} break;
@@ -422,7 +427,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" WARNING: ");
+			log->add_text(U" WARNING: ");
 			log->pop(); // bold
 			_set_dock_tab_icon(icon);
 		} break;

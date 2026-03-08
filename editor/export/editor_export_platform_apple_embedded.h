@@ -39,7 +39,6 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
-#include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/settings/editor_settings.h"

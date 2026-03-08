@@ -38,6 +38,43 @@
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 
+class GamepadMotion;
+
+namespace InputClassEnums {
+// Keep synced with DisplayServerEnums::MouseMode enum.
+enum MouseMode : int {
+	MOUSE_MODE_VISIBLE,
+	MOUSE_MODE_HIDDEN,
+	MOUSE_MODE_CAPTURED,
+	MOUSE_MODE_CONFINED,
+	MOUSE_MODE_CONFINED_HIDDEN,
+	MOUSE_MODE_MAX,
+};
+
+// Keep synced with DisplayServerEnums and Control enums.
+#undef CursorShape
+enum CursorShape : int {
+	CURSOR_ARROW,
+	CURSOR_IBEAM,
+	CURSOR_POINTING_HAND,
+	CURSOR_CROSS,
+	CURSOR_WAIT,
+	CURSOR_BUSY,
+	CURSOR_DRAG,
+	CURSOR_CAN_DROP,
+	CURSOR_FORBIDDEN,
+	CURSOR_VSIZE,
+	CURSOR_HSIZE,
+	CURSOR_BDIAGSIZE,
+	CURSOR_FDIAGSIZE,
+	CURSOR_MOVE,
+	CURSOR_VSPLIT,
+	CURSOR_HSPLIT,
+	CURSOR_HELP,
+	CURSOR_MAX
+};
+} //namespace InputClassEnums
+
 class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
@@ -47,44 +84,21 @@ class Input : public Object {
 	static constexpr uint64_t MAX_EVENT = 32;
 
 public:
-	// Keep synced with "DisplayServer::MouseMode" enum.
-	enum MouseMode {
-		MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_MAX,
-	};
-
-#undef CursorShape
-	enum CursorShape {
-		CURSOR_ARROW,
-		CURSOR_IBEAM,
-		CURSOR_POINTING_HAND,
-		CURSOR_CROSS,
-		CURSOR_WAIT,
-		CURSOR_BUSY,
-		CURSOR_DRAG,
-		CURSOR_CAN_DROP,
-		CURSOR_FORBIDDEN,
-		CURSOR_VSIZE,
-		CURSOR_HSIZE,
-		CURSOR_BDIAGSIZE,
-		CURSOR_FDIAGSIZE,
-		CURSOR_MOVE,
-		CURSOR_VSPLIT,
-		CURSOR_HSPLIT,
-		CURSOR_HELP,
-		CURSOR_MAX
-	};
+	// TODO: When we migrate to C++20, replace these with "using enum" and skip prefixing MouseMode and CursorShape in other files.
+	using MouseMode = InputClassEnums::MouseMode;
+	using CursorShape = InputClassEnums::CursorShape;
 
 	class JoypadFeatures {
 	public:
 		virtual ~JoypadFeatures() {}
 
+		virtual bool has_joy_vibration() const { return false; }
+
 		virtual bool has_joy_light() const { return false; }
 		virtual void set_joy_light(const Color &p_color) {}
+
+		virtual bool has_joy_motion_sensors() const { return false; }
+		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -112,6 +126,9 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+	bool ignore_joypad_on_unfocused_application = false;
+	bool application_focused = true;
+	bool embedder_focused = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -126,6 +143,7 @@ private:
 			bool pressed[MAX_EVENT] = { false };
 			float strength[MAX_EVENT] = { 0.0 };
 			float raw_strength[MAX_EVENT] = { 0.0 };
+			InputEventType event_type[MAX_EVENT] = { InputEventType::INVALID };
 		};
 		bool api_pressed = false;
 		float api_strength = 0.0;
@@ -157,6 +175,23 @@ private:
 
 	HashMap<int, VibrationInfo> joy_vibration;
 
+	struct MotionInfo {
+		bool sensors_enabled : 1;
+		bool calibrating : 1;
+		bool calibrated : 1;
+		float sensor_data_rate = 0.0f;
+		uint64_t last_timestamp = 0;
+		GamepadMotion *gamepad_motion = nullptr;
+
+		MotionInfo() {
+			sensors_enabled = false;
+			calibrating = false;
+			calibrated = false;
+		}
+	};
+
+	HashMap<int, MotionInfo> joy_motion;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -184,6 +219,7 @@ private:
 		int hat_current = 0;
 		Dictionary info;
 		bool has_light = false;
+		bool has_vibration = false;
 		Input::JoypadFeatures *features = nullptr;
 	};
 
@@ -195,7 +231,7 @@ private:
 
 	int fallback_mapping = -1; // Index of the guid in map_db.
 
-	CursorShape default_shape = CURSOR_ARROW;
+	CursorShape default_shape = CursorShape::CURSOR_ARROW;
 
 	enum JoyType {
 		TYPE_BUTTON,
@@ -275,6 +311,8 @@ private:
 #endif
 
 	friend class DisplayServer;
+	friend class SceneTree;
+	friend class SceneDebugger;
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
@@ -288,6 +326,8 @@ private:
 	static void (*set_custom_mouse_cursor_func)(const Ref<Resource> &, CursorShape, const Vector2 &);
 
 	EventDispatchFunc event_dispatch_function = nullptr;
+
+	bool _should_ignore_joypad_events() const;
 
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
@@ -312,7 +352,7 @@ public:
 	static Input *get_singleton();
 
 	bool is_anything_pressed() const;
-	bool is_anything_pressed_except_mouse() const;
+	bool is_any_key_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_key_label_pressed(Key p_keycode) const;
@@ -334,7 +374,10 @@ public:
 	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
+	float get_joy_vibration_remaining_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
+	bool is_joy_vibrating(int p_device);
+	bool has_joy_vibration(int p_device) const;
 	void joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid = "", const Dictionary &p_joypad_info = Dictionary());
 
 	Vector3 get_gravity() const;
@@ -363,9 +406,34 @@ public:
 	void set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
 
+	Vector3 get_joy_accelerometer(int p_device) const;
+	Vector3 get_joy_gravity(int p_device) const;
+	Vector3 get_joy_gyroscope(int p_device) const;
+
+	void set_joy_motion_sensors_enabled(int p_device, bool p_enable);
+	bool is_joy_motion_sensors_enabled(int p_device) const;
+
+	bool has_joy_motion_sensors(int p_device) const;
+	float get_joy_motion_sensors_rate(int p_device) const;
+
+	void start_joy_motion_sensors_calibration(int p_device);
+	void stop_joy_motion_sensors_calibration(int p_device);
+	void clear_joy_motion_sensors_calibration(int p_device);
+
+	Dictionary get_joy_motion_sensors_calibration(int p_device) const;
+	void set_joy_motion_sensors_calibration(int p_device, const Dictionary &p_calibration_info);
+
+	bool is_joy_motion_sensors_calibrating(int p_device) const;
+	bool is_joy_motion_sensors_calibrated(int p_device) const;
+
+	void set_joy_motion_sensors_rate(int p_device, float p_rate);
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	void set_ignore_joypad_on_unfocused_application(bool p_ignore);
+	bool is_ignoring_joypad_on_unfocused_application() const;
 
 	void set_mouse_position(const Point2 &p_posf);
 
@@ -382,12 +450,13 @@ public:
 	CursorShape get_default_cursor_shape() const;
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_current_cursor_shape() const;
-	void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape = Input::CursorShape::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	void parse_mapping(const String &p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
+	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);

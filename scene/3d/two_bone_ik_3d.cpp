@@ -30,6 +30,8 @@
 
 #include "two_bone_ik_3d.h"
 
+#include "core/object/class_db.h"
+
 bool TwoBoneIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -770,7 +772,6 @@ void TwoBoneIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 }
 
 void TwoBoneIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, TwoBoneIK3DSetting *p_setting, const Vector3 &p_destination, const Vector3 &p_pole_destination) {
-	// Solve the IK for this iteration.
 	Vector3 destination = p_destination;
 
 	// Make vector from root to destination.

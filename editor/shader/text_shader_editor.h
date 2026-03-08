@@ -134,6 +134,7 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
@@ -155,7 +156,6 @@ class TextShaderEditor : public ShaderEditor {
 	mutable Ref<Shader> shader;
 	mutable Ref<ShaderInclude> shader_inc;
 
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _project_settings_changed();
 

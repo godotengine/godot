@@ -34,6 +34,7 @@
 #include "core/donors.gen.h"
 #include "core/input/input.h"
 #include "core/license.gen.h"
+#include "core/object/callable_mp.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -42,6 +43,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 Label *CreditsRoll::_create_label(const String &p_with_text, LabelSize p_size) {

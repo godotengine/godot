@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_set.h"
 #include "core/templates/rid.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/curve_texture.h"

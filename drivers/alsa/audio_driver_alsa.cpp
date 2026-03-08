@@ -32,7 +32,9 @@
 
 #ifdef ALSA_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 
 #include <cerrno>
@@ -62,14 +64,14 @@ Error AudioDriverALSA::init_output_device() {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
 
-#define CHECK_FAIL(m_cond)                                       \
-	if (m_cond) {                                                \
+#define CHECK_FAIL(m_cond) \
+	if (m_cond) { \
 		fprintf(stderr, "ALSA ERR: %s\n", snd_strerror(status)); \
-		if (pcm_handle) {                                        \
-			snd_pcm_close(pcm_handle);                           \
-			pcm_handle = nullptr;                                \
-		}                                                        \
-		ERR_FAIL_COND_V(m_cond, ERR_CANT_OPEN);                  \
+		if (pcm_handle) { \
+			snd_pcm_close(pcm_handle); \
+			pcm_handle = nullptr; \
+		} \
+		ERR_FAIL_COND_V(m_cond, ERR_CANT_OPEN); \
 	}
 
 	//todo, add
@@ -112,7 +114,7 @@ Error AudioDriverALSA::init_output_device() {
 	// Ref: https://www.alsa-project.org/main/index.php/FramesPeriods
 	unsigned int periods = 2;
 	int latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	buffer_frames = Math::closest_power_of_2(latency * mix_rate / 1000);
 	buffer_size = buffer_frames * periods;
 	period_size = buffer_frames;
 

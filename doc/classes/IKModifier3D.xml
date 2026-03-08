@@ -7,6 +7,7 @@
 		Base class of [SkeletonModifier3D]s that has some joint lists and applies inverse kinematics. This class has some structs, enums, and helper methods which are useful to solve inverse kinematics.
 	</description>
 	<tutorials>
+		<link title="Inverse Kinematics Returns to Godot 4.6 - IKModifier3D">https://godotengine.org/article/inverse-kinematics-returns-to-godot-4-6/#ikmodifier3d-and-7-child-classes</link>
 	</tutorials>
 	<methods>
 		<method name="clear_settings">

@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+# ruff: noqa: F821
+
+env = Environment()
+
+env.Append(CPPPATH=["src"])
+env.Append(CFLAGS=["-O0", "-g"])
+
+library = env.SharedLibrary(
+    target="#godot/compatibility_test",
+    source="#src/compat_checker.c",
+)
+
+env.Default(library)

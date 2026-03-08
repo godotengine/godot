@@ -30,6 +30,7 @@
 
 #include "shader_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -46,6 +47,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
+#include "servers/display/display_server.h"
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {
 	int index = shader_tabs->get_current_tab();
@@ -669,6 +671,12 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	drag_data["type"] = "shader_list_element";
 	drag_data["shader_list_element"] = idx;
 
+	Ref<Resource> shader = edited_shaders[idx].shader;
+	if (shader.is_null()) {
+		shader = edited_shaders[idx].shader_inc;
+	}
+	drag_data["file_path"] = shader->get_path();
+
 	return drag_data;
 }
 
@@ -843,7 +851,7 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (make_floating_shortcut.is_valid() && make_floating_shortcut->matches_event(p_event)) {
-		EditorDockManager::get_singleton()->make_dock_floating(shader_dock);
+		shader_dock->make_floating();
 	}
 }
 
@@ -872,6 +880,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split = memnew(HSplitContainer);
 	files_split->set_split_offset(200 * EDSCALE);
 	files_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files_split->set_drag_nested_intersections(true);
 	shader_dock->add_child(files_split);
 
 	context_menu = memnew(PopupMenu);

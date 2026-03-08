@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 

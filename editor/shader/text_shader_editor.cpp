@@ -31,6 +31,9 @@
 #include "text_shader_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -39,6 +42,8 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/split_container.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
@@ -261,15 +266,15 @@ void ShaderTextEditor::_load_theme_settings() {
 	List<String> built_ins;
 
 	if (shader_inc.is_valid()) {
-		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i))) {
 				for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 					built_ins.push_back(F.key);
 				}
 			}
 
 			{
-				const Vector<ShaderLanguage::ModeInfo> &render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+				const Vector<ShaderLanguage::ModeInfo> &render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
 
 				for (const ShaderLanguage::ModeInfo &mode_info : render_modes) {
 					if (!mode_info.options.is_empty()) {
@@ -283,7 +288,7 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 
 			{
-				const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i));
+				const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i));
 
 				for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
 					if (!mode_info.options.is_empty()) {
@@ -297,14 +302,14 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 	} else if (shader.is_valid()) {
-		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()))) {
+		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(shader->get_mode()))) {
 			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 				built_ins.push_back(F.key);
 			}
 		}
 
 		{
-			const Vector<ShaderLanguage::ModeInfo> &shader_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+			const Vector<ShaderLanguage::ModeInfo> &shader_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader->get_mode()));
 
 			for (const ShaderLanguage::ModeInfo &mode_info : shader_modes) {
 				if (!mode_info.options.is_empty()) {
@@ -318,7 +323,7 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 
 		{
-			const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader->get_mode()));
+			const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
 
 			for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
 				if (!mode_info.options.is_empty()) {
@@ -379,6 +384,8 @@ void ShaderTextEditor::_check_shader_mode() {
 		mode = Shader::MODE_SKY;
 	} else if (type == "fog") {
 		mode = Shader::MODE_FOG;
+	} else if (type == "texture_blit") {
+		mode = Shader::MODE_TEXTURE_BLIT;
 	} else {
 		mode = Shader::MODE_SPATIAL;
 	}
@@ -392,7 +399,7 @@ void ShaderTextEditor::_check_shader_mode() {
 }
 
 static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
-	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
+	RSE::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
@@ -438,9 +445,6 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		}
 		return;
 	}
-	for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
-		r_options->push_back(E);
-	}
 
 	ShaderLanguage sl;
 	String calltip;
@@ -451,16 +455,28 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		comp_info.is_include = true;
 
 		sl.complete(code, comp_info, r_options, calltip);
+		if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+			for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+				r_options->push_back(E);
+			}
+		}
+
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
 	_check_shader_mode();
-	comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
-	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
-	comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader->get_mode()));
+	comp_info.functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(shader->get_mode()));
+	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader->get_mode()));
+	comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
 	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 
 	sl.complete(code, comp_info, r_options, calltip);
+	if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
+		for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+			r_options->push_back(E);
+		}
+	}
+
 	get_text_editor()->set_code_hint(calltip);
 }
 
@@ -567,9 +583,9 @@ void ShaderTextEditor::_validate_script() {
 			comp_info.is_include = true;
 		} else {
 			Shader::Mode mode = shader->get_mode();
-			comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(mode));
-			comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(mode));
-			comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(mode));
+			comp_info.functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(mode));
+			comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(mode));
+			comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(mode));
 			comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 		}
 
@@ -777,6 +793,9 @@ void TextShaderEditor::_menu_option(int p_option) {
 		case EDIT_EMOJI_AND_SYMBOL: {
 			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
 		} break;
+		case EDIT_JOIN_LINES: {
+			code_editor->get_text_editor()->join_lines();
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred(false);
@@ -792,6 +811,14 @@ void TextShaderEditor::_prepare_edit_menu() {
 
 void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorThemeManager::is_generated_theme_outdated() ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
+				_apply_editor_settings();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
@@ -800,16 +827,6 @@ void TextShaderEditor::_notification(int p_what) {
 			_check_for_external_edit();
 		} break;
 	}
-}
-
-void TextShaderEditor::_editor_settings_changed() {
-	if (!EditorThemeManager::is_generated_theme_outdated() &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
-		return;
-	}
-
-	_apply_editor_settings();
 }
 
 void TextShaderEditor::_apply_editor_settings() {
@@ -1147,7 +1164,7 @@ void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 
 void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
@@ -1188,7 +1205,6 @@ TextShaderEditor::TextShaderEditor() {
 
 	code_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
 	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &TextShaderEditor::apply_shaders));
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
@@ -1229,6 +1245,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_lines"), EDIT_JOIN_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
@@ -1308,6 +1325,7 @@ TextShaderEditor::TextShaderEditor() {
 
 	goto_line_popup = memnew(GotoLinePopup);
 	add_child(goto_line_popup);
+	code_editor->connect("show_goto_popup", callable_mp(this, &TextShaderEditor::_menu_option).bind(SEARCH_GOTO_LINE));
 
 	disk_changed = memnew(ConfirmationDialog);
 
@@ -1327,6 +1345,6 @@ TextShaderEditor::TextShaderEditor() {
 
 	add_child(disk_changed);
 
-	_editor_settings_changed();
+	_apply_editor_settings();
 	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.
 }

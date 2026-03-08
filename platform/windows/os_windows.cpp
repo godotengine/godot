@@ -35,6 +35,7 @@
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -49,6 +50,7 @@
 #include "drivers/windows/thread_windows.h"
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
 
@@ -1285,23 +1287,23 @@ Dictionary OS_Windows::get_memory_info() const {
 }
 
 Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
-#define CLEAN_PIPES               \
-	if (pipe_in[0] != 0) {        \
-		CloseHandle(pipe_in[0]);  \
-	}                             \
-	if (pipe_in[1] != 0) {        \
-		CloseHandle(pipe_in[1]);  \
-	}                             \
-	if (pipe_out[0] != 0) {       \
+#define CLEAN_PIPES \
+	if (pipe_in[0] != 0) { \
+		CloseHandle(pipe_in[0]); \
+	} \
+	if (pipe_in[1] != 0) { \
+		CloseHandle(pipe_in[1]); \
+	} \
+	if (pipe_out[0] != 0) { \
 		CloseHandle(pipe_out[0]); \
-	}                             \
-	if (pipe_out[1] != 0) {       \
+	} \
+	if (pipe_out[1] != 0) { \
 		CloseHandle(pipe_out[1]); \
-	}                             \
-	if (pipe_err[0] != 0) {       \
+	} \
+	if (pipe_err[0] != 0) { \
 		CloseHandle(pipe_err[0]); \
-	}                             \
-	if (pipe_err[1] != 0) {       \
+	} \
+	if (pipe_err[1] != 0) { \
 		CloseHandle(pipe_err[1]); \
 	}
 
@@ -2729,7 +2731,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	bool ok = true;
 #ifdef GLES3_ENABLED
 	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+	if (test_gl_manager_native->window_create(DisplayServerEnums::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
 		RasterizerGLES3::make_current(true);
 	} else {
 		ok = false;
@@ -2756,6 +2758,12 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
+#endif
+
+#ifdef _MSC_VER
+#define IAT_HOOK_CALL __declspec(guard(nocf))
+#else
+#define IAT_HOOK_CALL
 #endif
 
 using GetProcAddressType = FARPROC(__stdcall *)(HMODULE, LPCSTR);
@@ -2793,7 +2801,7 @@ bool _hid_is_controller(HANDLE p_hid_handle) {
 	return false;
 }
 
-BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
+IAT_HOOK_CALL BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
 	constexpr const wchar_t unknown_product_string[] = L"Unknown HID Device";
 	constexpr size_t unknown_product_length = sizeof(unknown_product_string);
 
@@ -2811,7 +2819,7 @@ BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, UL
 	return FALSE;
 }
 
-FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
+IAT_HOOK_CALL FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
 	if (String(p_name) == "HidD_GetProductString") {
 		return (FARPROC)(LPVOID)Hook_HidD_GetProductString;
 	}

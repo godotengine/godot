@@ -31,7 +31,11 @@
 #include "render_scene_buffers_rd.h"
 #include "render_scene_buffers_rd.compat.inc"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
+#include "servers/rendering/rendering_server_enums.h"
 
 RenderSceneBuffersRD::RenderSceneBuffersRD() {
 }
@@ -102,14 +106,14 @@ void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 void RenderSceneBuffersRD::update_samplers() {
 	float computed_mipmap_bias = texture_mipmap_bias;
 
-	if (use_taa || (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
+	if (use_taa || (RSE::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
 		// Use negative mipmap LOD bias when TAA or FSR2 is enabled to compensate for loss of sharpness.
 		// This restores sharpness in still images to be roughly at the same level as without TAA,
 		// but moving scenes will still be blurrier.
 		computed_mipmap_bias -= 0.5;
 	}
 
-	if (screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+	if (screen_space_aa == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
 		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
 		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
 		computed_mipmap_bias -= 0.25;
@@ -178,17 +182,17 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	cleanup();
 
 	// Create our color buffer.
-	const bool resolve_target = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, get_base_data_format(), get_color_usage_bits(resolve_target, false, can_be_storage));
+	const bool resolve_target = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, get_base_data_format(), get_color_usage_bits(resolve_target, false, can_be_storage), RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 
 	// TODO: Detect when it is safe to use RD::TEXTURE_USAGE_TRANSIENT_BIT for RB_TEX_DEPTH, RB_TEX_COLOR_MSAA and/or RB_TEX_DEPTH_MSAA.
 	// (it means we cannot sample from it, we cannot copy from/to it) to save VRAM (and maybe performance too).
 
 	// Create our depth buffer.
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, get_depth_format(resolve_target, false, can_be_storage), get_depth_usage_bits(resolve_target, false, can_be_storage));
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, get_depth_format(resolve_target, false, can_be_storage), get_depth_usage_bits(resolve_target, false, can_be_storage), RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 
 	// Create our MSAA buffers.
-	if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
+	if (msaa_3d == RSE::VIEWPORT_MSAA_DISABLED) {
 		texture_samples = RD::TEXTURE_SAMPLES_1;
 	} else {
 		texture_samples = msaa_to_samples(msaa_3d);
@@ -198,8 +202,8 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
-		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
+	if (vrs && vrs_mode != RSE::VIEWPORT_VRS_DISABLED) {
+		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size), 0, 1, true, true);
 	}
 
 	// (re-)configure any named buffers
@@ -215,10 +219,10 @@ void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_s
 	target_size = p_reflection_size;
 	internal_size = p_reflection_size;
 	render_target = RID();
-	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 	fsr_sharpness = 0.0;
-	msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
-	screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+	msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
+	screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	use_taa = false;
 	use_debanding = false;
 	view_count = 1;
@@ -242,7 +246,7 @@ void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) 
 	update_samplers();
 }
 
-void RenderSceneBuffersRD::set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
+void RenderSceneBuffersRD::set_anisotropic_filtering_level(RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
 	anisotropic_filtering_level = p_anisotropic_filtering_level;
 
 	update_samplers();
@@ -513,7 +517,7 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 	}
 
 	Size2i blur_size = internal_size;
-	if (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
+	if (RSE::scaling_3d_mode_type(scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 		// The blur texture should be as big as the target size when using an upscaler.
 		blur_size = target_size;
 	}
@@ -527,8 +531,8 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 		usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
 
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required);
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1);
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required, true, true);
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1, true, true);
 
 	// TODO redo this:
 	if (!can_be_storage) {
@@ -643,7 +647,7 @@ void RenderSceneBuffersRD::ensure_upscaled() {
 	if (!has_upscaled_texture()) {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, target_size);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, target_size, 0, 1, true, true);
 	}
 }
 
@@ -651,11 +655,11 @@ void RenderSceneBuffersRD::ensure_upscaled() {
 
 void RenderSceneBuffersRD::ensure_velocity() {
 	if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY)) {
-		const bool msaa = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, get_velocity_format(), get_velocity_usage_bits(msaa, false, can_be_storage));
+		const bool msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, get_velocity_format(), get_velocity_usage_bits(msaa, false, can_be_storage), RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 
 		if (msaa) {
-			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, get_velocity_format(), get_velocity_usage_bits(false, msaa, can_be_storage), texture_samples);
+			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, get_velocity_format(), get_velocity_usage_bits(false, msaa, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
 		}
 	}
 }

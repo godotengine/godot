@@ -31,7 +31,11 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/gui/dialogs.h"
+#include "servers/display/accessibility_server.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
@@ -233,7 +237,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
+			AccessibilityServer::get_singleton()->update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -268,7 +272,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 
 void EventListenerLineEdit::_bind_methods() {
 	// `event` is either null or a valid InputEvent that is pressed and non-echo.
-	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
 }
 
 EventListenerLineEdit::EventListenerLineEdit() {

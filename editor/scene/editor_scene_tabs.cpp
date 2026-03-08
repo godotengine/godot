@@ -31,6 +31,10 @@
 #include "editor_scene_tabs.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -165,8 +169,8 @@ void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 }
 
 void EditorSceneTabs::_update_context_menu() {
-#define DISABLE_LAST_OPTION_IF(m_condition)                   \
-	if (m_condition) {                                        \
+#define DISABLE_LAST_OPTION_IF(m_condition) \
+	if (m_condition) { \
 		scene_tabs_context_menu->set_item_disabled(-1, true); \
 	}
 
