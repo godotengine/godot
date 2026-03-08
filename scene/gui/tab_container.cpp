@@ -505,7 +505,7 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
-	_repaint_call_deferred();
+	_repaint();
 	queue_redraw();
 	queue_accessibility_update();
 
