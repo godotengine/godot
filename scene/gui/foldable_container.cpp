@@ -77,7 +77,7 @@ void FoldableContainer::set_folded(bool p_folded) {
 		update_minimum_size();
 		queue_sort();
 		queue_redraw();
-		
+
 		emit_signal(SNAME("folding_changed"), folded);
 	}
 }
