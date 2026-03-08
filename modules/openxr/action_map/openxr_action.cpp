@@ -50,6 +50,8 @@ void OpenXRAction::_bind_methods() {
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_FLOAT);
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_VECTOR2);
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_POSE);
+	BIND_ENUM_CONSTANT(OPENXR_ACTION_HAPTIC);
+	BIND_ENUM_CONSTANT(OPENXR_ACTION_MAX);
 }
 
 Ref<OpenXRAction> OpenXRAction::new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths) {
