@@ -56,6 +56,24 @@ EditorProfiler::Metric EditorProfiler::_get_frame_metric(int index) {
 }
 
 void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
+	if (total_metrics > 0) {
+		int last_frame_num = frame_metrics[last_metric].frame_number;
+		if (p_metric.frame_number == last_frame_num + 2) {
+			++last_metric;
+			if (last_metric >= frame_metrics.size()) {
+				last_metric = 0;
+			}
+			total_metrics++;
+			if (total_metrics > frame_metrics.size()) {
+				total_metrics = frame_metrics.size();
+			}
+			Metric empty_metric;
+			empty_metric.frame_number = last_frame_num + 1;
+			frame_metrics.write[last_metric] = empty_metric;
+			_make_metric_ptrs(frame_metrics.write[last_metric]);
+		}
+	}
+
 	++last_metric;
 	if (last_metric >= frame_metrics.size()) {
 		last_metric = 0;
