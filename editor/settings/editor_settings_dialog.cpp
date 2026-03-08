@@ -304,6 +304,10 @@ void EditorSettingsDialog::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
 			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
 		} break;
 	}
 }
