@@ -29,10 +29,9 @@
 /**************************************************************************/
 
 #include "vehicle_body_3d.h"
-
 #include "core/config/engine.h"
-#include "core/object/class_db.h"
 
+#include "core/object/class_db.h"
 #define ROLLING_INFLUENCE_FIX
 
 class btVehicleJacobianEntry {
@@ -948,20 +947,39 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 	_update_suspension(p_state);
 
+	// Slope static friction:
+	// When the vehicle is on a slope, it causes a suspension force to be applied along the normal of the contact
+	// This creates a component that pushes the vehicle away.
+	// i.e, if gravity is (0, -9.8, 0) the resulting suspension force will have an xz component.
+	// This is what causes sliding. By accumulating the sum of those components and applying them 
+	// on the vehicle body in the opposite direction we cancel out the sliding.
+	// The slope variables are used as a threshold plus blend
+
+	const real_t slope_hold_cos = Math::cos(slope_hold_angle);
+	const real_t slope_slide_cos = Math::cos(slope_slide_angle);
+	Vector3 slope_counter_impulse;
+
 	for (int i = 0; i < wheels.size(); i++) {
 		//apply suspension force
 		VehicleWheel3D &wheel = *wheels[i];
 
-		real_t suspensionForce = wheel.m_wheelsSuspensionForce;
+		real_t suspension_force = wheel.m_wheelsSuspensionForce;
 
-		if (suspensionForce > wheel.m_maxSuspensionForce) {
-			suspensionForce = wheel.m_maxSuspensionForce;
+		if (suspension_force > wheel.m_maxSuspensionForce) {
+			suspension_force = wheel.m_maxSuspensionForce;
 		}
-		Vector3 impulse = wheel.m_raycastInfo.m_contactNormalWS * suspensionForce * step;
+		Vector3 contact_normal = wheel.m_raycastInfo.m_contactNormalWS;
 		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - p_state->get_transform().origin;
 
-		p_state->apply_impulse(impulse, relative_position);
+		p_state->apply_impulse(contact_normal * suspension_force * step, relative_position);
+
+		// Accumulate the horizontal counter that will be applied centrally to counter act sliding.
+		real_t static_blend = CLAMP((contact_normal.y - slope_slide_cos) / (slope_hold_cos - slope_slide_cos), 0.0f, 1.0f);
+		slope_counter_impulse -= Vector3(contact_normal.x * suspension_force, 0.0f, contact_normal.z * suspension_force) * (static_blend * step);
 	}
+
+	// Cancel out sliding
+	p_state->apply_impulse(slope_counter_impulse, Vector3());
 
 	_update_friction(p_state);
 
@@ -1044,6 +1062,33 @@ real_t VehicleBody3D::get_steering() const {
 	return m_steeringValue;
 }
 
+void VehicleBody3D::set_slope_hold_angle(real_t p_radians) {
+	slope_hold_angle = MIN(p_radians, slope_slide_angle - Math::deg_to_rad(1.0f));
+}
+
+real_t VehicleBody3D::get_slope_hold_angle() const {
+	return slope_hold_angle;
+}
+
+void VehicleBody3D::set_slope_slide_angle(real_t p_radians) {
+	slope_slide_angle = MAX(p_radians, slope_hold_angle + Math::deg_to_rad(1.0f));
+}
+
+real_t VehicleBody3D::get_slope_slide_angle() const {
+	return slope_slide_angle;
+}
+
+void VehicleBody3D::_validate_property(PropertyInfo &p_property) const {
+	// Keep each angle's editor range on the correct side of the other.
+	if (p_property.name == StringName("slope_hold_angle")) {
+		real_t max_deg = Math::rad_to_deg(slope_slide_angle) - 1.0f;
+		p_property.hint_string = vformat("0,%s,0.1,radians_as_degrees", String::num(max_deg, 1));
+	} else if (p_property.name == StringName("slope_slide_angle")) {
+		real_t min_deg = Math::rad_to_deg(slope_hold_angle) + 1.0f;
+		p_property.hint_string = vformat("%s,90,0.1,radians_as_degrees", String::num(min_deg, 1));
+	}
+}
+
 void VehicleBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_engine_force", "engine_force"), &VehicleBody3D::set_engine_force);
 	ClassDB::bind_method(D_METHOD("get_engine_force"), &VehicleBody3D::get_engine_force);
@@ -1054,10 +1099,22 @@ void VehicleBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_steering", "steering"), &VehicleBody3D::set_steering);
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleBody3D::get_steering);
 
+	ClassDB::bind_method(D_METHOD("set_slope_hold_angle", "radians"), &VehicleBody3D::set_slope_hold_angle);
+	ClassDB::bind_method(D_METHOD("get_slope_hold_angle"), &VehicleBody3D::get_slope_hold_angle);
+
+	ClassDB::bind_method(D_METHOD("set_slope_slide_angle", "radians"), &VehicleBody3D::set_slope_slide_angle);
+	ClassDB::bind_method(D_METHOD("get_slope_slide_angle"), &VehicleBody3D::get_slope_slide_angle);
+
 	ADD_GROUP("Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, U"-1024,1024,0.01,or_less,or_greater,suffix:kg\u22C5m/s\u00B2 (N)"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, U"-128,128,0.01,or_less,or_greater,suffix:kg\u22C5m/s\u00B2 (N)"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180,0.01,radians_as_degrees"), "set_steering", "get_steering");
+
+	ADD_GROUP("Slope Friction", "slope_");
+	// Hint ranges are in degrees (radians_as_degrees convention); _validate_property tightens
+	// them dynamically so hold_angle is always at least 1° below slide_angle.
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "slope_hold_angle", PROPERTY_HINT_RANGE, "0,89,0.1,radians_as_degrees"), "set_slope_hold_angle", "get_slope_hold_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "slope_slide_angle", PROPERTY_HINT_RANGE, "1,90,0.1,radians_as_degrees"), "set_slope_slide_angle", "get_slope_slide_angle");
 }
 
 VehicleBody3D::VehicleBody3D() {
