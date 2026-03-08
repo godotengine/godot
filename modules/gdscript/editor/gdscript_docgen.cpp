@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/gdtype.h"
 
 HashMap<String, String> GDScriptDocGen::singletons;
 
@@ -146,6 +147,9 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					r_enum = _get_script_name(r_enum);
 				}
 			}
+			return;
+		case GDType::GENERIC_TYPE:
+			r_type = "Generic parameter";
 			return;
 		case GDType::VARIANT:
 		case GDType::RESOLVING:

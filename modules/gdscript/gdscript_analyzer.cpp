@@ -45,6 +45,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
+#include "modules/gdscript/gdscript_cache.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "scene/main/node.h"
 #include <cstddef>
@@ -432,6 +433,25 @@ static bool param_type_still_has_open_generics(const GDScriptParser::DataType &p
     return false;
 }
 
+static bool is_class_type_fully_resolved(const GDScriptParser::DataType& p_type) {
+	if (p_type.kind != GDScriptParser::DataType::CLASS) {
+		return true;
+	}
+
+	const GDScriptParser::ClassNode* base = p_type.class_type;
+	if (base == nullptr) {
+		return false;
+	}
+
+	while (base->base_type.kind == GDScriptParser::DataType::CLASS) {
+		if (base->base_type.class_type == nullptr) {
+			return false;
+		}
+		base = base->base_type.class_type;
+	}
+	return base->base_type.kind != GDScriptParser::DataType::UNRESOLVED &&
+		   base->base_type.kind != GDScriptParser::DataType::RESOLVING;
+}
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
@@ -4043,7 +4063,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			/// [Monarch] if param_type is now fully concrete (no longer an open generic),
 			/// actually validate the argument type, infer_generic_bindings_from_types only
 			/// catches inference conflicts, not type mismatches against resolved concrete types
-			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE && !param_type_still_has_open_generics(param_type)) {
+			if (param_type.kind != GDScriptParser::DataType::GENERIC_TYPE && 
+				!param_type_still_has_open_generics(param_type) &&
+				!arg_type.is_variant() &&
+				arg_type.is_hard_type() &&
+				is_class_type_fully_resolved(arg_type)
+			) {
 				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i])) {
 					push_error(vformat(
 							R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
