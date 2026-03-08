@@ -1818,6 +1818,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
+		float inc_uv = 4.0 / sides; //We tile the textures 4 times around the cylinder.
+		float h_inc = inc_uv / 2.0;
 
 		{
 			for (int i = 0; i < sides; i++) {
@@ -1840,12 +1842,18 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					face_base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
 				};
 
+				int inverse_i = sides - i; //Flip UVs horizontally.
+
 				Vector2 u[4] = {
-					Vector2(inc, 0),
-					Vector2(inc_n, 0),
-					Vector2(inc_n, 1),
-					Vector2(inc, 1),
+					Vector2(inc_uv * inverse_i, 0),
+					Vector2(inc_uv * (inverse_i - 1), 0),
+					Vector2(inc_uv * (inverse_i - 1), -1),
+					Vector2(inc_uv * inverse_i, -1),
 				};
+
+				if (cone) {
+					u[2].x -= h_inc;
+				}
 
 				//side face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
@@ -1883,8 +1891,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
+				uvsw[face * 3 + 0] = Vector2(-face_points[1].x * 0.5 + 0.5, face_points[1].z * 0.5 + 0.5);
+				uvsw[face * 3 + 1] = Vector2(-face_points[0].x * 0.5 + 0.5, face_points[0].z * 0.5 + 0.5);
 				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 
 				smoothw[face] = false;
@@ -1898,8 +1906,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
+					uvsw[face * 3 + 0] = Vector2(face_points[3].x * 0.5 + 0.5, face_points[3].z * 0.5 + 0.5);
+					uvsw[face * 3 + 1] = Vector2(face_points[2].x * 0.5 + 0.5, face_points[2].z * 0.5 + 0.5);
 					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
 
 					smoothw[face] = false;
@@ -2062,6 +2070,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 		int face = 0;
 
+		float inc_uv = 8.0 / sides;
+		float inci_uv = 4.0 / ring_sides;
+
 		{
 			for (int i = 0; i < sides; i++) {
 				float inci = float(i) / sides;
@@ -2097,10 +2108,10 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					};
 
 					Vector2 u[4] = {
-						Vector2(inci, incj),
-						Vector2(inci, incj_n),
-						Vector2(inci_n, incj_n),
-						Vector2(inci_n, incj),
+						Vector2(inc_uv * i, inci_uv * j),
+						Vector2(inc_uv * i, inci_uv * (j + 1)),
+						Vector2(inc_uv * (i + 1), inci_uv * (j + 1)),
+						Vector2(inc_uv * (i + 1), inci_uv * j),
 					};
 
 					// face 1
