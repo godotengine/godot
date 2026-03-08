@@ -2107,13 +2107,13 @@ CSGBrush *CSGTorus3D::_build_brush() {
 						Vector3(normali_n.x * normalj.x, normalj.y, normali_n.z * normalj.x)
 					};
 
-					int inverse_i = sides - i; //Flip UVs horizontally;
+					int inverse_j = ring_sides - j;
 
 					Vector2 u[4] = {
-						Vector2(inc_uv * inverse_i, inci_uv * (j - 1)),
-						Vector2(inc_uv * inverse_i, inci_uv * j),
-						Vector2(inc_uv * (inverse_i - 1), inci_uv * j),
-						Vector2(inc_uv * (inverse_i - 1), inci_uv * (j - 1)),
+						Vector2(inc_uv * i, inci_uv * (inverse_j - 1)),
+						Vector2(inc_uv * i, inci_uv * inverse_j),
+						Vector2(inc_uv * (i + 1), inci_uv * inverse_j),
+						Vector2(inc_uv * (i + 1), inci_uv * (inverse_j - 1)),
 					};
 
 					// face 1
@@ -2145,10 +2145,6 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					materialsw[face] = base_material;
 					face++;
 				}
-			}
-
-			for (int i = 0; i < face_count; i++) {
-				uvsw[i].x *= -1;
 			}
 		}
 
