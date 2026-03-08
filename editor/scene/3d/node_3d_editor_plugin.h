@@ -409,6 +409,7 @@ private:
 	void _preview_camera_property_changed();
 	void _update_centered_labels();
 	void _disable_follow_mode();
+	void _reset_follow_mode_count();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
