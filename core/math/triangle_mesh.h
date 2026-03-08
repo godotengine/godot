@@ -43,21 +43,20 @@ public:
 		int32_t surface_index = 0;
 	};
 
+	struct BVH {
+		AABB aabb;
+		Vector3 center; //used for sorting
+		int left = -1;
+		int right = -1;
+		int32_t face_index = -1;
+	};
+
 protected:
 	static void _bind_methods();
 
 private:
 	Vector<Triangle> triangles;
 	Vector<Vector3> vertices;
-
-	struct BVH {
-		AABB aabb;
-		Vector3 center; //used for sorting
-		int left = -1;
-		int right = -1;
-
-		int32_t face_index = -1;
-	};
 
 	struct BVHCmpX {
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
@@ -91,6 +90,7 @@ public:
 
 	const Vector<Triangle> &get_triangles() const { return triangles; }
 	const Vector<Vector3> &get_vertices() const { return vertices; }
+	const Vector<BVH> &get_bvh() const { return bvh; }
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
 	void create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices = Vector<int32_t>());
