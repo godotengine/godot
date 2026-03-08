@@ -1392,6 +1392,9 @@ private:
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
+	bool record_binary_ops = false;
+	List<BinaryOpNode *> binary_op_buffer;
+
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
 	LambdaNode *current_lambda = nullptr;
@@ -1455,6 +1458,7 @@ private:
 		ParseFunction prefix = nullptr;
 		ParseFunction infix = nullptr;
 		Precedence precedence = PREC_NONE;
+		bool right_to_left = false;
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
@@ -1613,6 +1617,7 @@ private:
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
+	BinaryOpNode *flush_binary_op_buffer();
 
 #ifdef TOOLS_ENABLED
 	int max_script_doc_line = INT_MAX;

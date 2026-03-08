@@ -1069,10 +1069,12 @@ Expression::ENode *Expression::_parse_expression() {
 			int priority;
 
 			bool unary = false;
+			bool right_to_left = false;
 
 			switch (expression_nodes[i].op) {
 				case Variant::OP_POWER:
 					priority = 0;
+					right_to_left = true;
 					break;
 				case Variant::OP_BIT_NEGATE:
 					priority = 1;
@@ -1131,7 +1133,7 @@ Expression::ENode *Expression::_parse_expression() {
 				}
 			}
 
-			if (priority < min_priority) {
+			if (priority < min_priority || (right_to_left && priority <= min_priority)) {
 				// < is used for left to right (default)
 				// <= is used for right to left
 

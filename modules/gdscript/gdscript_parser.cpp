@@ -2773,6 +2773,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 		make_completion_context(COMPLETION_IDENTIFIER, previous_operand);
 	}
 #endif
+	bool first_recording_iteration = false;
+
+	if (get_rule(current.type)->right_to_left && !record_binary_ops) {
+		record_binary_ops = true;
+		first_recording_iteration = true;
+	}
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
 		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
@@ -2793,7 +2799,26 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 		previous_operand = (this->*infix_rule)(previous_operand, p_can_assign);
 	}
 
+	if (first_recording_iteration && record_binary_ops) {
+		record_binary_ops = false;
+		return flush_binary_op_buffer();
+	}
+
 	return previous_operand;
+}
+
+GDScriptParser::BinaryOpNode *GDScriptParser::flush_binary_op_buffer() {
+	BinaryOpNode *first = binary_op_buffer.get(0);
+
+	for (int i = binary_op_buffer.size() - 1; i > 0; i--) {
+		BinaryOpNode *node = binary_op_buffer.get(i);
+		BinaryOpNode *prev = binary_op_buffer.get(i - 1);
+
+		node->left_operand = prev->right_operand;
+		prev->right_operand = node;
+	}
+	binary_op_buffer.clear();
+	return first;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assign, bool p_stop_on_assign) {
@@ -2982,8 +3007,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 	reset_extents(operation, p_previous_operand);
 	update_extents(operation);
 
+	ExpressionNode *left_operand = p_previous_operand;
+	if (record_binary_ops) {
+		if (get_rule(op.type)->right_to_left) {
+			binary_op_buffer.push_back(operation);
+		} else {
+			record_binary_ops = false;
+			left_operand = flush_binary_op_buffer();
+		}
+	}
+
 	Precedence precedence = (Precedence)(get_rule(op.type)->precedence + 1);
-	operation->left_operand = p_previous_operand;
+	operation->left_operand = left_operand;
 	operation->right_operand = parse_precedence(precedence, false);
 	complete_extents(operation);
 
@@ -4233,119 +4268,119 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 	/* clang-format off */
 	static ParseRule rules[] = {
 		// PREFIX                                           INFIX                                           PRECEDENCE (for infix)
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EMPTY,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // EMPTY,
 		// Basic
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ANNOTATION,
-		{ &GDScriptParser::parse_identifier,             	nullptr,                                        PREC_NONE }, // IDENTIFIER,
-		{ &GDScriptParser::parse_literal,                	nullptr,                                        PREC_NONE }, // LITERAL,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ANNOTATION,
+		{ &GDScriptParser::parse_identifier,             	nullptr,                                        PREC_NONE, false }, // IDENTIFIER,
+		{ &GDScriptParser::parse_literal,                	nullptr,                                        PREC_NONE, false }, // LITERAL,
 		// Comparison
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // LESS,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // LESS_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // GREATER,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // GREATER_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // EQUAL_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // BANG_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // LESS,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // LESS_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // GREATER,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // GREATER_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // EQUAL_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON, false }, // BANG_EQUAL,
 		// Logical
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND }, // AND,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR }, // OR,
-		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_not_in_operator,	PREC_CONTENT_TEST }, // NOT,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_AND }, // AMPERSAND_AMPERSAND,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_OR }, // PIPE_PIPE,
-		{ &GDScriptParser::parse_unary_operator,			nullptr,                                        PREC_NONE }, // BANG,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND, false }, // AND,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR, false }, // OR,
+		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_not_in_operator,	PREC_CONTENT_TEST, false }, // NOT,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_AND, false }, // AMPERSAND_AMPERSAND,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_OR, false }, // PIPE_PIPE,
+		{ &GDScriptParser::parse_unary_operator,			nullptr,                                        PREC_NONE, false }, // BANG,
 		// Bitwise
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_AND }, // AMPERSAND,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_OR }, // PIPE,
-		{ &GDScriptParser::parse_unary_operator,         	nullptr,                                        PREC_NONE }, // TILDE,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_XOR }, // CARET,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT }, // LESS_LESS,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT }, // GREATER_GREATER,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_AND, false }, // AMPERSAND,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_OR, false }, // PIPE,
+		{ &GDScriptParser::parse_unary_operator,         	nullptr,                                        PREC_NONE, false }, // TILDE,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_XOR, false }, // CARET,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT, false }, // LESS_LESS,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_SHIFT, false }, // GREATER_GREATER,
 		// Math
-		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // PLUS,
-		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // MINUS,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER }, // STAR_STAR,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
-		{ &GDScriptParser::parse_get_node,                  &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
+		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION, false }, // PLUS,
+		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION, false }, // MINUS,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR, false }, // STAR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER, true }, // STAR_STAR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR, false }, // SLASH,
+		{ &GDScriptParser::parse_get_node,                  &GDScriptParser::parse_binary_operator,      	PREC_FACTOR, false }, // PERCENT,
 		// Assignment
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PLUS_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // MINUS_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_STAR_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // SLASH_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PERCENT_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // LESS_LESS_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // GREATER_GREATER_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // AMPERSAND_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PIPE_EQUAL,
-		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // CARET_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // PLUS_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // MINUS_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // STAR_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // STAR_STAR_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // SLASH_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // PERCENT_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // LESS_LESS_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // GREATER_GREATER_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // AMPERSAND_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // PIPE_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT, false }, // CARET_EQUAL,
 		// Control flow
-		{ nullptr,                                          &GDScriptParser::parse_ternary_operator,     	PREC_TERNARY }, // IF,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ELIF,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ELSE,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FOR,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // WHILE,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BREAK,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // CONTINUE,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PASS,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // RETURN,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // MATCH,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // WHEN,
+		{ nullptr,                                          &GDScriptParser::parse_ternary_operator,     	PREC_TERNARY, false }, // IF,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ELIF,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ELSE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // FOR,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // WHILE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // BREAK,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // CONTINUE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // PASS,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // RETURN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // MATCH,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // WHEN,
 		// Keywords
-		{ nullptr,                                          &GDScriptParser::parse_cast,                 	PREC_CAST }, // AS,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ASSERT,
-		{ &GDScriptParser::parse_await,                  	nullptr,                                        PREC_NONE }, // AWAIT,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BREAKPOINT,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // CLASS,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // CLASS_NAME,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_CONST,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ENUM,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EXTENDS,
-		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE }, // FUNC,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST }, // TK_IN,
-		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,
-		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
-		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // SIGNAL,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // STATIC,
-		{ &GDScriptParser::parse_call,						nullptr,                                        PREC_NONE }, // SUPER,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TRAIT,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VAR,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_VOID,
-		{ &GDScriptParser::parse_yield,                     nullptr,                                        PREC_NONE }, // YIELD,
+		{ nullptr,                                          &GDScriptParser::parse_cast,                 	PREC_CAST, false }, // AS,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ASSERT,
+		{ &GDScriptParser::parse_await,                  	nullptr,                                        PREC_NONE, false }, // AWAIT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // BREAKPOINT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // CLASS,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // CLASS_NAME,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // TK_CONST,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ENUM,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // EXTENDS,
+		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE, false }, // FUNC,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST, false }, // TK_IN,
+		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST, false }, // IS,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // NAMESPACE,
+		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE, false }, // PRELOAD,
+		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE, false }, // SELF,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // SIGNAL,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // STATIC,
+		{ &GDScriptParser::parse_call,						nullptr,                                        PREC_NONE, false }, // SUPER,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // TRAIT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // VAR,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // TK_VOID,
+		{ &GDScriptParser::parse_yield,                     nullptr,                                        PREC_NONE, false }, // YIELD,
 		// Punctuation
-		{ &GDScriptParser::parse_array,                  	&GDScriptParser::parse_subscript,            	PREC_SUBSCRIPT }, // BRACKET_OPEN,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BRACKET_CLOSE,
-		{ &GDScriptParser::parse_dictionary,             	nullptr,                                        PREC_NONE }, // BRACE_OPEN,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BRACE_CLOSE,
-		{ &GDScriptParser::parse_grouping,               	&GDScriptParser::parse_call,                 	PREC_CALL }, // PARENTHESIS_OPEN,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PARENTHESIS_CLOSE,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // COMMA,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // SEMICOLON,
-		{ nullptr,                                          &GDScriptParser::parse_attribute,            	PREC_ATTRIBUTE }, // PERIOD,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD_PERIOD,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // COLON,
-		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,
+		{ &GDScriptParser::parse_array,                  	&GDScriptParser::parse_subscript,            	PREC_SUBSCRIPT, false }, // BRACKET_OPEN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // BRACKET_CLOSE,
+		{ &GDScriptParser::parse_dictionary,             	nullptr,                                        PREC_NONE, false }, // BRACE_OPEN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // BRACE_CLOSE,
+		{ &GDScriptParser::parse_grouping,               	&GDScriptParser::parse_call,                 	PREC_CALL, false }, // PARENTHESIS_OPEN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // PARENTHESIS_CLOSE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // COMMA,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // SEMICOLON,
+		{ nullptr,                                          &GDScriptParser::parse_attribute,            	PREC_ATTRIBUTE, false }, // PERIOD,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // PERIOD_PERIOD,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // PERIOD_PERIOD_PERIOD,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // COLON,
+		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE, false }, // DOLLAR,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // FORWARD_ARROW,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // UNDERSCORE,
 		// Whitespace
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NEWLINE,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // INDENT,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // DEDENT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // NEWLINE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // INDENT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // DEDENT,
 		// Constants
-		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_PI,
-		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_TAU,
-		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INF,
-		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_NAN,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE, false }, // CONST_PI,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE, false }, // CONST_TAU,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE, false }, // CONST_INF,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE, false }, // CONST_NAN,
 		// Error message improvement
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VCS_CONFLICT_MARKER,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BACKTICK,
-		{ nullptr,                                          &GDScriptParser::parse_invalid_token,        	PREC_CAST }, // QUESTION_MARK,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // VCS_CONFLICT_MARKER,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // BACKTICK,
+		{ nullptr,                                          &GDScriptParser::parse_invalid_token,        	PREC_CAST, false }, // QUESTION_MARK,
 		// Special
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ERROR,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_EOF,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // ERROR,
+		{ nullptr,                                          nullptr,                                        PREC_NONE, false }, // TK_EOF,
 	};
 	/* clang-format on */
 	// Avoid desync.
