@@ -2817,6 +2817,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					selection.click_char = c_index;
 
 					selection.double_click = true;
+					is_selecting_text = true;
+					click_select_held->start();
 				}
 			} else if (!b->is_pressed()) {
 				if (selection.enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
