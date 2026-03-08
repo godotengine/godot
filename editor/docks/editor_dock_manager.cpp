@@ -50,6 +50,17 @@
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
+void DockSplitContainer::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				return;
+			}
+			set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+		} break;
+	}
+}
+
 void DockSplitContainer::_update_visibility() {
 	if (is_updating) {
 		return;

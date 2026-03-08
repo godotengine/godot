@@ -52,6 +52,7 @@ private:
 	bool is_updating = false;
 
 protected:
+	void _notification(int p_what);
 	void _update_visibility();
 
 	virtual void add_child_notify(Node *p_child) override;
