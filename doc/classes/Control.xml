@@ -469,6 +469,13 @@
 				Returns the offset for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
+		<method name="get_offset_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the applied offset transform.
+				[b]Note:[/b] If [member offset_transform_visual_only] is [code]false[/code], the offset transform is already included in the values returned by getters related to the transform such as [method CanvasItem.get_transform], [method CanvasItem.get_global_transform], [method CanvasItem.get_global_transform_with_canvas], and [method CanvasItem.get_screen_transform].
+			</description>
+		</method>
 		<method name="get_parent_area_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -1132,6 +1139,7 @@
 			If [code]true[/code], the offset transforms is only applied visually and does not affect input. In other words, this Control will still receive input events at its original location before the offset transform is applied.
 			If [code]false[/code], the entire transform of this Control is affected and input events will register where the Control is visually.
 			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+			[b]Note:[/b] If [member offset_transform_visual_only] is [code]false[/code], the offset transform is already included in the values returned by getters related to the transform such as [method CanvasItem.get_transform], [method CanvasItem.get_global_transform], [method CanvasItem.get_global_transform_with_canvas], and [method CanvasItem.get_screen_transform].
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
