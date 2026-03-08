@@ -741,6 +741,13 @@ String EditorResourcePicker::_get_owner_path() const {
 		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+			// If the owner is not the currently edited scene root, the node is an editable
+			// child from another scene. Use the edited scene's path so the new resource is
+			// not treated as foreign (belonging to the external scene).
+			if (node && p_edited_scene_root != nullptr && node != p_edited_scene_root &&
+					!p_edited_scene_root->get_scene_file_path().is_empty()) {
+				return p_edited_scene_root->get_scene_file_path();
+			}
 		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
 			// PackedScene should use root scene path.
 			return p_edited_scene_root->get_scene_file_path();
