@@ -35,6 +35,7 @@
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
 #include "scene/gui/spin_box.h"
@@ -113,6 +114,10 @@ void TexturePreview::_notification(int p_what) {
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
+			}
+
+			if (metadata_toggle) {
+				metadata_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
 			}
 
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
@@ -236,6 +241,11 @@ void TexturePreview::_update_metadata_label_text() {
 	}
 }
 
+void TexturePreview::_toggle_metadata_label() {
+	metadata_label->set_visible(!metadata_label->is_visible());
+	metadata_toggle->set_modulate(Color(1, 1, 1, metadata_label->is_visible() ? 0.8 : 0.4));
+}
+
 void TexturePreview::on_selected_channels_changed() {
 	texture_display->set_instance_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
 }
@@ -337,6 +347,16 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 
 		add_child(metadata_label);
+
+		metadata_toggle = memnew(Button);
+		metadata_toggle->set_flat(true);
+		metadata_toggle->set_tooltip_text(TTRC("Toggle metadata overlay."));
+		metadata_toggle->set_theme_type_variation("PreviewLightButton");
+		metadata_toggle->set_modulate(Color(1, 1, 1, 0.8));
+		metadata_toggle->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		metadata_toggle->set_v_size_flags(Control::SIZE_SHRINK_END);
+		metadata_toggle->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_toggle_metadata_label));
+		add_child(metadata_toggle);
 	}
 }
 

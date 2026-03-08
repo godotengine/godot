@@ -39,6 +39,7 @@ class AspectRatioContainer;
 class ColorRect;
 class TextureRect;
 class ShaderMaterial;
+class Button;
 class ColorChannelSelector;
 class SpinBox;
 
@@ -58,6 +59,7 @@ private:
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
+	Button *metadata_toggle = nullptr;
 
 	static inline Ref<ShaderMaterial> texture_material;
 
@@ -66,6 +68,7 @@ private:
 
 	void _draw_outline();
 	void _update_metadata_label_text();
+	void _toggle_metadata_label();
 
 protected:
 	void _notification(int p_what);
