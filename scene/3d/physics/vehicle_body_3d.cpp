@@ -963,19 +963,19 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		//apply suspension force
 		VehicleWheel3D &wheel = *wheels[i];
 
-		real_t suspensionForce = wheel.m_wheelsSuspensionForce;
+		real_t suspension_force = wheel.m_wheelsSuspensionForce;
 
-		if (suspensionForce > wheel.m_maxSuspensionForce) {
-			suspensionForce = wheel.m_maxSuspensionForce;
+		if (suspension_force > wheel.m_maxSuspensionForce) {
+			suspension_force = wheel.m_maxSuspensionForce;
 		}
 		Vector3 contact_normal = wheel.m_raycastInfo.m_contactNormalWS;
 		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - p_state->get_transform().origin;
 
-		p_state->apply_impulse(contact_normal * suspensionForce * step, relative_position);
+		p_state->apply_impulse(contact_normal * suspension_force * step, relative_position);
 
 		// Accumulate the horizontal counter that will be applied centrally to counter act sliding.
 		real_t static_blend = CLAMP((contact_normal.y - slope_slide_cos) / (slope_hold_cos - slope_slide_cos), 0.0f, 1.0f);
-		slope_counter_impulse -= Vector3(contact_normal.x * suspensionForce, 0.0f, contact_normal.z * suspensionForce) * (static_blend * step);
+		slope_counter_impulse -= Vector3(contact_normal.x * suspension_force, 0.0f, contact_normal.z * suspension_force) * (static_blend * step);
 	}
 
 	// Cancel out sliding
