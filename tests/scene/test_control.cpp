@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/os/memory.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/container.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_control)
@@ -1215,6 +1219,17 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 	}
 
 	memdelete(test_control);
+}
+
+TEST_CASE("[SceneTree][Control] VBoxConatiner child ordering") {
+	VBoxContainer *container = memnew(VBoxContainer);
+	Button *b1 = memnew(Button);
+	Button *b2 = memnew(Button);
+	container->add_child(b1);
+	container->add_child(b2);
+	container->notification(Container::NOTIFICATION_SORT_CHILDREN);
+	CHECK(b1->get_position().y <= b2->get_position().y);
+	memdelete(container);
 }
 
 } // namespace TestControl
