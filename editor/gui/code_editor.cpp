@@ -1894,7 +1894,8 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	zoom_factor = CLAMP(p_zoom_factor, 0.25f, 3.0f);
-	int neutral_font_size = int(EDITOR_GET("interface/editor/fonts/code_font_size")) * EDSCALE;
+	const float custom_font_scale = EDITOR_GET("interface/editor/fonts/custom_font_scale");
+	int neutral_font_size = Math::round(int(EDITOR_GET("interface/editor/fonts/code_font_size")) * custom_font_scale) * EDSCALE;
 	int new_font_size = Math::round(zoom_factor * neutral_font_size);
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
