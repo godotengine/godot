@@ -651,10 +651,10 @@ Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Cal
 
 	for (int i = 0; i < p_argcount; i++) {
 		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+		if (arg_type != Variant::INT && arg_type != Variant::FLOAT && arg_type != Variant::BOOL) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = Variant::FLOAT;
+			r_error.expected = Variant::FLOAT; // TODO maybe this should be p_args[0]->get_type() instead.
 			return Variant();
 		}
 		if (i == 0) {
@@ -695,10 +695,10 @@ Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Cal
 
 	for (int i = 0; i < p_argcount; i++) {
 		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+		if (arg_type != Variant::INT && arg_type != Variant::FLOAT && arg_type != Variant::BOOL) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = Variant::FLOAT;
+			r_error.expected = Variant::FLOAT; // TODO maybe this should be p_args[0]->get_type() instead.
 			return Variant();
 		}
 		if (i == 0) {
