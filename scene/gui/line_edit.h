@@ -297,6 +297,8 @@ protected:
 	void _accessibility_action_set_value(const Variant &p_data);
 	void _accessibility_action_menu(const Variant &p_data);
 
+	virtual String _get_accessibility_name() const override;
+
 public:
 	void edit(bool p_hide_focus = false);
 	void unedit();

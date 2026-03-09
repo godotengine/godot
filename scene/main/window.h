@@ -288,6 +288,8 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	virtual String _get_accessibility_name() const;
+
 	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
 
 public:
@@ -296,6 +298,8 @@ public:
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32
 	};
+
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 
 	static void set_root_layout_direction(int p_root_dir);
 	static Window *get_from_id(DisplayServerEnums::WindowID p_window_id);
