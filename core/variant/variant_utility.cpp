@@ -641,39 +641,32 @@ double VariantUtilityFunctions::pingpong(double value, double length) {
 }
 
 Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	// NOTE: This should be consistent with Array::max() .
+
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 2;
 		return Variant();
 	}
-	Variant base = *p_args[0];
-	Variant ret;
 
-	for (int i = 0; i < p_argcount; i++) {
-		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT && arg_type != Variant::BOOL) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = i;
-			r_error.expected = Variant::FLOAT; // TODO maybe this should be p_args[0]->get_type() instead.
-			return Variant();
-		}
-		if (i == 0) {
-			continue;
-		}
+	int max_index = 0;
+	Variant is_greater;
+	for (int i = 1; i < p_argcount; i++) {
 		bool valid;
-		Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+		Variant::evaluate(Variant::OP_GREATER, *p_args[i], *p_args[max_index], is_greater, valid);
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = base.get_type();
+			r_error.expected = p_args[max_index]->get_type();
 			return Variant();
 		}
-		if (ret.booleanize()) {
-			base = *p_args[i];
+		if (is_greater.booleanize()) {
+			max_index = i;
 		}
 	}
+
 	r_error.error = Callable::CallError::CALL_OK;
-	return base;
+	return *p_args[max_index];
 }
 
 double VariantUtilityFunctions::maxf(double x, double y) {
@@ -685,39 +678,32 @@ int64_t VariantUtilityFunctions::maxi(int64_t x, int64_t y) {
 }
 
 Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	// NOTE: This should be consistent with Array::min() .
+
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 2;
 		return Variant();
 	}
-	Variant base = *p_args[0];
-	Variant ret;
 
-	for (int i = 0; i < p_argcount; i++) {
-		Variant::Type arg_type = p_args[i]->get_type();
-		if (arg_type != Variant::INT && arg_type != Variant::FLOAT && arg_type != Variant::BOOL) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = i;
-			r_error.expected = Variant::FLOAT; // TODO maybe this should be p_args[0]->get_type() instead.
-			return Variant();
-		}
-		if (i == 0) {
-			continue;
-		}
+	int min_index = 0;
+	Variant is_less;
+	for (int i = 1; i < p_argcount; i++) {
 		bool valid;
-		Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+		Variant::evaluate(Variant::OP_LESS, *p_args[i], *p_args[min_index], is_less, valid);
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = i;
-			r_error.expected = base.get_type();
+			r_error.expected = p_args[min_index]->get_type();
 			return Variant();
 		}
-		if (ret.booleanize()) {
-			base = *p_args[i];
+		if (is_less.booleanize()) {
+			min_index = i;
 		}
 	}
+
 	r_error.error = Callable::CallError::CALL_OK;
-	return base;
+	return *p_args[min_index];
 }
 
 double VariantUtilityFunctions::minf(double x, double y) {
