@@ -1619,19 +1619,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	}
 }
 
-void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
-	for (const KeyValue<String, String> &pair : p_renames) {
-		// Update UID path.
-		const String &old_path = pair.key;
-		const String &new_path = pair.value;
-
-		const HashMap<String, ResourceUID::ID>::ConstIterator I = p_uids.find(old_path);
-		if (I) {
-			ResourceUID::get_singleton()->set_id(I->value, new_path);
-		}
-		EditorFileSystem::get_singleton()->register_global_class_script(old_path, new_path);
-	}
-
+void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames) const {
 	// Rename all resources loaded, be it subresources or actual resources.
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
@@ -1651,8 +1639,17 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		}
 	}
 
-	EditorNode::get_editor_data().script_class_save_global_classes();
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
+	Vector<String> files_to_update;
+	for (const KeyValue<String, String> &E : p_renames) {
+		if (!files_to_update.has(E.key)) {
+			files_to_update.push_back(E.key);
+		}
+		if (!files_to_update.has(E.value)) {
+			files_to_update.push_back(E.value);
+		}
+	}
+	print_verbose("FileSystem: updating file infos.");
+	EditorFileSystem::get_singleton()->update_files(files_to_update);
 }
 
 void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
@@ -1897,16 +1894,15 @@ void FileSystemDock::_rename_operation_confirm() {
 		return;
 	}
 
-	HashMap<String, ResourceUID::ID> uids;
 	HashSet<String> file_owners; // The files that use these moved/renamed resource files.
-	_before_move(uids, file_owners);
+	_before_move(file_owners);
 
 	HashMap<String, String> file_renames;
 	HashMap<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-	_update_resource_paths_after_move(file_renames, uids);
+	_update_resource_paths_after_move(file_renames);
 	_update_dependencies_after_move(file_renames, file_owners);
 	_update_project_settings_after_move(file_renames, folder_renames);
 	_update_favorites_after_move(file_renames, folder_renames);
@@ -2051,9 +2047,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			}
 		}
 
-		HashMap<String, ResourceUID::ID> uids;
 		HashSet<String> file_owners; // The files that use these moved/renamed resource files.
-		_before_move(uids, file_owners);
+		_before_move(file_owners);
 
 		bool is_moved = false;
 		HashMap<String, String> file_renames;
@@ -2067,20 +2062,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		if (is_moved) {
-			Vector<String> files_to_update;
-			for (KeyValue<String, String> &E : file_renames) {
-				if (!files_to_update.has(E.key)) {
-					files_to_update.push_back(E.key);
-				}
-				if (!files_to_update.has(E.value)) {
-					files_to_update.push_back(E.value);
-				}
-			}
-			print_verbose("FileSystem: updating file infos.");
-			EditorFileSystem::get_singleton()->update_files(files_to_update);
-
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-			_update_resource_paths_after_move(file_renames, uids);
+			_update_resource_paths_after_move(file_renames);
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
@@ -2096,15 +2079,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const {
+void FileSystemDock::_before_move(HashSet<String> &r_file_owners) const {
 	HashSet<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file) {
 			renamed_files.insert(to_move[i].path);
-			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
-			if (uid != ResourceUID::INVALID_ID) {
-				r_uids[to_move[i].path] = uid;
-			}
 		} else {
 			EditorFileSystemDirectory *current_folder = EditorFileSystem::get_singleton()->get_filesystem_path(to_move[i].path);
 			ERR_CONTINUE(current_folder == nullptr);
@@ -2115,10 +2094,6 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Hash
 				for (int j = 0; j < current_folder->get_file_count(); j++) {
 					const String file_path = current_folder->get_file_path(j);
 					renamed_files.insert(file_path);
-					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
-					if (uid != ResourceUID::INVALID_ID) {
-						r_uids[file_path] = uid;
-					}
 				}
 				for (int j = 0; j < current_folder->get_subdir_count(); j++) {
 					folders.push_back(current_folder->get_subdir(j));
