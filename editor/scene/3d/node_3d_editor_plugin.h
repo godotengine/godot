@@ -37,6 +37,7 @@
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -58,6 +59,7 @@ class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
 class RichTextLabel;
+class SplitContainer;
 class SubViewport;
 class SubViewportContainer;
 class VSeparator;
@@ -519,8 +521,8 @@ public:
 	~Node3DEditorSelectedItem();
 };
 
-class Node3DEditorViewportContainer : public Container {
-	GDCLASS(Node3DEditorViewportContainer, Container);
+class Node3DEditorViewportContainer : public MarginContainer {
+	GDCLASS(Node3DEditorViewportContainer, MarginContainer);
 
 public:
 	enum View {
@@ -533,20 +535,12 @@ public:
 	};
 
 private:
-	View view;
-	bool mouseover;
-	real_t ratio_h;
-	real_t ratio_v;
+	View view = VIEW_USE_1_VIEWPORT;
+	SplitContainer *main_split = nullptr;
+	SplitContainer *first_split = nullptr;
+	SplitContainer *second_split = nullptr;
 
-	bool hovering_v;
-	bool hovering_h;
-
-	bool dragging_v;
-	bool dragging_h;
-	Vector2 drag_begin_pos;
-	Vector2 drag_begin_ratio;
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _update_split_drag_margin();
 
 protected:
 	void _notification(int p_what);
@@ -554,6 +548,8 @@ protected:
 public:
 	void set_view(View p_view);
 	View get_view();
+
+	void add_viewport(Node3DEditorViewport *p_viewport, int p_index);
 
 	Node3DEditorViewportContainer();
 };
