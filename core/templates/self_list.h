@@ -110,19 +110,7 @@ public:
 		}
 
 		template <typename C>
-		void sort_custom() {
-			if (_first == _last) {
-				return;
-			}
-
-			struct PtrComparator {
-				C compare;
-				_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
-			};
-			using Element = SelfList<T>;
-			SortList<Element, T *, &Element::_self, &Element::_prev, &Element::_next, PtrComparator> sorter;
-			sorter.sort(_first, _last);
-		}
+		void sort_custom();
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
@@ -141,6 +129,9 @@ private:
 	T *_self = nullptr;
 	SelfList<T> *_next = nullptr;
 	SelfList<T> *_prev = nullptr;
+	static constexpr T *SelfList<T>::*VALUE_PTR = &SelfList<T>::_self;
+	static constexpr SelfList<T> *SelfList<T>::*PREV_PTR = &SelfList<T>::_prev;
+	static constexpr SelfList<T> *SelfList<T>::*NEXT_PTR = &SelfList<T>::_next;
 
 public:
 	_FORCE_INLINE_ bool in_list() const { return _root; }
@@ -168,3 +159,19 @@ public:
 		}
 	}
 };
+
+template <typename T>
+template <typename C>
+void SelfList<T>::List::sort_custom() {
+	if (_first == _last) {
+		return;
+	}
+
+	struct PtrComparator {
+		C compare;
+		_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
+	};
+
+	SortList<SelfList<T>, T *, SelfList<T>::VALUE_PTR, SelfList<T>::PREV_PTR, SelfList<T>::NEXT_PTR, PtrComparator> sorter;
+	sorter.sort(_first, _last);
+}
