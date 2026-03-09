@@ -49,6 +49,8 @@ private:
 	jmethodID _configure_pointer_icon = 0;
 	jmethodID _set_pointer_icon = 0;
 
+	jmethodID _request_max_hdr_headroom = 0;
+
 public:
 	GodotJavaViewWrapper(jobject godot_view);
 
@@ -60,6 +62,8 @@ public:
 
 	void configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot);
 	void set_pointer_icon(int pointer_type);
+
+	void request_max_hdr_headroom(float p_desired_headroom);
 
 	~GodotJavaViewWrapper();
 };

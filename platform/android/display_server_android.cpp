@@ -465,16 +465,30 @@ void DisplayServerAndroid::_update_hdr_output(const AndroidHdrCapabilities &p_hd
 	if (rendering_context_global) {
 		bool current_hdr_enabled = rendering_context_global->window_get_hdr_output_enabled(p_window);
 		bool desired_hdr_enabled = hdr_output_requested && p_hdr_capabilities.hdr_supported;
+		const float hdr_ratio_limit = MAX(float(GLOBAL_GET("display/window/hdr/max_output_value")), 0.0f);
 
 		float sdr_reference = 100.0f;
+		float max_reference = p_hdr_capabilities.max_luminance;
 		if (p_hdr_capabilities.hdr_sdr_ratio > 1.0f) {
 			// hdr_sdr_ratio is defined as targetHdrPeakBrightnessInNits / targetSdrWhitePointInNits
 			sdr_reference = p_hdr_capabilities.max_luminance / p_hdr_capabilities.hdr_sdr_ratio;
+
+			// Recompute max limit based on current HDR ratio.
+			max_reference = sdr_reference * MAX(p_hdr_capabilities.hdr_sdr_ratio, hdr_ratio_limit);
 		}
 
 		if (current_hdr_enabled != desired_hdr_enabled) {
 			rendering_context_global->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
 			rendering_context_global->window_set_hdr_output_linear_luminance_scale(p_window, sdr_reference);
+
+			GodotJavaViewWrapper *view = OS_Android::get_singleton()->get_godot_java()->get_godot_view();
+			if (view) {
+				if (desired_hdr_enabled) {
+					view->request_max_hdr_headroom(hdr_ratio_limit);
+				} else {
+					view->request_max_hdr_headroom(1.0f);
+				}
+			}
 		}
 
 		// If auto reference luminance is enabled, update it based on the current SDR white level.
@@ -487,8 +501,8 @@ void DisplayServerAndroid::_update_hdr_output(const AndroidHdrCapabilities &p_hd
 
 		// If auto max luminance is enabled, update it based on the screen's max luminance.
 		if (hdr_output_max_luminance < 0.0f) {
-			if (p_hdr_capabilities.max_luminance > 0.0f) {
-				rendering_context_global->window_set_hdr_output_max_luminance(p_window, p_hdr_capabilities.max_luminance);
+			if (max_reference > 0.0f) {
+				rendering_context_global->window_set_hdr_output_max_luminance(p_window, max_reference);
 			}
 			// If we cannot get the screen's max luminance, leave the previous value unchanged.
 		}
