@@ -6940,50 +6940,8 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 	if (to_path.is_empty()) {
 		to_path = FileSystemDock::get_singleton()->get_current_directory();
 	}
-	to_path = ProjectSettings::get_singleton()->globalize_path(to_path);
 
-	_add_dropped_files_recursive(p_files, to_path);
-
-	EditorFileSystem::get_singleton()->scan_changes();
-}
-
-void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND(dir.is_null());
-
-	for (int i = 0; i < p_files.size(); i++) {
-		const String &from = p_files[i];
-		String to = to_path.path_join(from.get_file());
-
-		if (dir->dir_exists(from)) {
-			Vector<String> sub_files;
-
-			Ref<DirAccess> sub_dir = DirAccess::open(from);
-			ERR_FAIL_COND(sub_dir.is_null());
-
-			sub_dir->list_dir_begin();
-
-			String next_file = sub_dir->get_next();
-			while (!next_file.is_empty()) {
-				if (next_file == "." || next_file == "..") {
-					next_file = sub_dir->get_next();
-					continue;
-				}
-
-				sub_files.push_back(from.path_join(next_file));
-				next_file = sub_dir->get_next();
-			}
-
-			if (!sub_files.is_empty()) {
-				dir->make_dir(to);
-				_add_dropped_files_recursive(sub_files, to);
-			}
-
-			continue;
-		}
-
-		dir->copy(from, to);
-	}
+	FileSystemDock::get_singleton()->handle_external_files_drop(p_files, to_path);
 }
 
 void EditorNode::_file_access_close_error_notify(const String &p_str) {

@@ -1734,8 +1734,9 @@ String FileSystemDock::_get_unique_name(const FileOrFolder &p_entry, const Strin
 		new_path = p_at_path.path_join(p_entry.path.get_file());
 		new_path_base = new_path.get_basename() + " (%d)." + new_path.get_extension();
 	} else {
-		PackedStringArray path_split = p_entry.path.split("/");
-		new_path = p_at_path.path_join(path_split[path_split.size() - 2]);
+		String trimmed_path = p_entry.path.trim_suffix("/");
+		PackedStringArray path_split = trimmed_path.split("/");
+		new_path = p_at_path.path_join(path_split[path_split.size() - 1]);
 		new_path_base = new_path + " (%d)";
 	}
 
@@ -2925,6 +2926,67 @@ void FileSystemDock::update_all() {
 
 	if (file_list_vb->is_visible()) {
 		_update_file_list(true);
+	}
+}
+
+void FileSystemDock::handle_external_files_drop(const Vector<String> &p_files, const String &p_to_path) {
+	String to_path_global = ProjectSettings::get_singleton()->globalize_path(p_to_path);
+	_add_dropped_files_recursive(p_files, to_path_global);
+
+	EditorFileSystem::get_singleton()->scan_changes();
+}
+
+void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, const String &p_to_path) {
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND(dir.is_null());
+
+	String to_path_res = ProjectSettings::get_singleton()->localize_path(p_to_path);
+
+	for (int i = 0; i < p_files.size(); i++) {
+		const String &from = p_files[i];
+		String to = p_to_path.path_join(from.get_file());
+
+		if (dir->dir_exists(from)) {
+			FileOrFolder entry(from, false);
+			String unique_res = _get_unique_name(entry, to_path_res);
+			to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+
+			Vector<String> sub_files;
+
+			Ref<DirAccess> sub_dir = DirAccess::open(from);
+			ERR_FAIL_COND(sub_dir.is_null());
+
+			sub_dir->list_dir_begin();
+
+			String next_file = sub_dir->get_next();
+			while (!next_file.is_empty()) {
+				if (next_file == "." || next_file == "..") {
+					next_file = sub_dir->get_next();
+					continue;
+				}
+
+				sub_files.push_back(from.path_join(next_file));
+				next_file = sub_dir->get_next();
+			}
+
+			sub_dir->list_dir_end();
+
+			if (!dir->dir_exists(to)) {
+				dir->make_dir(to);
+			}
+
+			if (!sub_files.is_empty()) {
+				_add_dropped_files_recursive(sub_files, to);
+			}
+
+			continue;
+		}
+
+		FileOrFolder entry(from, true);
+		String unique_res = _get_unique_name(entry, to_path_res);
+		to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+
+		dir->copy(from, to);
 	}
 }
 
