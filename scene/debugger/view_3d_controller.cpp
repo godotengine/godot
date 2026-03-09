@@ -681,10 +681,11 @@ void View3DController::set_freelook_enabled(const bool p_enabled) {
 	}
 
 	freelook = p_enabled;
-	if (freelook) {
-		// Sync interpolated cursor to cursor to "cut" interpolation jumps due to changing referential.
-		cursor = cursor_interp;
 
+	// Sync interpolated cursor to cursor to "cut" interpolation jumps due to changing referential.
+	cursor = cursor_interp;
+
+	if (freelook) {
 		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos.
 		Vector3 forward = to_camera_transform().basis.xform(Vector3(0, 0, -1));
 		cursor.eye_pos = cursor.pos - cursor.distance * forward;
