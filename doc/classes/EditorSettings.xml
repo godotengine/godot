@@ -352,8 +352,14 @@
 		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
 			The guides color to use in the 2D editor. Guides can be created by dragging the mouse cursor from the rulers.
 		</member>
+		<member name="editors/2d/locked_selection_rectangle_color" type="Color" setter="" getter="">
+			The color to use for the selection rectangle that surrounds selected locked nodes in the 2D editor viewport.
+		</member>
 		<member name="editors/2d/ruler_width" type="float" setter="" getter="">
 			The thickness of the coordinate ruler in the 2D editor. Increasing this will also increase the size of the ruler font, improving readability when using a lower editor scale. The editor may force a minimum size to keep the ruler numbers legible.
+		</member>
+		<member name="editors/2d/selection_rectangle_color" type="Color" setter="" getter="">
+			The color to use for the selection rectangle outlines that surrounds selected nodes in the 2D editor viewport.
 		</member>
 		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
@@ -368,7 +374,7 @@
 			The factor to use when zooming in or out in the 2D editor. For example, [code]1.1[/code] will zoom in by 10% with every step. If set to [code]2.0[/code], zooming will only cycle through powers of two.
 		</member>
 		<member name="editors/3d/active_selection_box_color" type="Color" setter="" getter="">
-			The color to use for the active selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
+			The color to use for the active selection box that surrounds selected nodes in the 3D editor viewport.
 			[b]Note:[/b] The term "active" indicates that this object is the primary selection used as the basis for certain operations. This is the last selected [Node3D], which can be reordered with [kbd]Shift + Left mouse button[/kbd].
 		</member>
 		<member name="editors/3d/default_fov" type="float" setter="" getter="">
@@ -507,7 +513,7 @@
 			The color to use for the secondary 3D grid. This is generally a less visible color than [member editors/3d/primary_grid_color]. The color's alpha channel affects the grid's opacity.
 		</member>
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
-			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
+			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/show_gizmo_during_rotation" type="int" setter="" getter="">
 			If checked, the transform gizmo remains visible during rotation in that transform mode.
