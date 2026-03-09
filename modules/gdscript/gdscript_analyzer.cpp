@@ -5620,10 +5620,14 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 	Variant result = Variant();
 
 	if (p_variable->initializer) {
-		bool is_initializer_value_reduced = false;
-		Variant initializer_value = make_expression_reduced_value(p_variable->initializer, is_initializer_value_reduced);
-		if (is_initializer_value_reduced) {
-			result = initializer_value;
+		if (p_variable->initializer->is_constant) {
+			result = p_variable->initializer->reduced_value;
+		} else {
+			bool is_initializer_value_reduced = false;
+			Variant initializer_value = make_expression_reduced_value(p_variable->initializer, is_initializer_value_reduced);
+			if (is_initializer_value_reduced) {
+				result = initializer_value;
+			}
 		}
 	} else {
 		GDScriptParser::DataType datatype = p_variable->get_datatype();
