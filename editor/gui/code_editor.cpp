@@ -217,7 +217,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		if (!preserve_cursor && !is_selection_only()) {
 			text_editor->unfold_line(pos.y);
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
-			text_editor->center_viewport_to_caret(0);
+			base_text_editor->center_viewport_to_caret();
 			text_editor->set_code_hint("");
 			text_editor->cancel_code_completion();
 
