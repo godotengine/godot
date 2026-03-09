@@ -54,6 +54,15 @@ void SpinBoxLineEdit::_accessibility_action_dec(const Variant &p_data) {
 	}
 }
 
+String SpinBoxLineEdit::_get_accessibility_name() const {
+	SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
+	if (parent_sb) {
+		return parent_sb->_get_accessibility_name();
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void SpinBoxLineEdit::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -64,7 +73,6 @@ void SpinBoxLineEdit::_notification(int p_what) {
 			SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
 			if (parent_sb) {
 				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SPIN_BUTTON);
-				AccessibilityServer::get_singleton()->update_set_name(ae, parent_sb->get_accessibility_name());
 				AccessibilityServer::get_singleton()->update_set_description(ae, parent_sb->get_accessibility_description());
 				AccessibilityServer::get_singleton()->update_set_live(ae, parent_sb->get_accessibility_live());
 				AccessibilityServer::get_singleton()->update_set_num_value(ae, parent_sb->get_value());

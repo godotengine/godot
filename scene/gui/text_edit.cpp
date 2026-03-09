@@ -742,6 +742,14 @@ Ref<StyleBox> TextEdit::_get_current_stylebox() const {
 	return editable ? theme_cache.style_normal : theme_cache.style_readonly;
 }
 
+String TextEdit::_get_accessibility_name() const {
+	if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
+		return atr(placeholder_text);
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -757,9 +765,7 @@ void TextEdit::_notification(int p_what) {
 			if (text.size() == 1 && text[0].is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder_text));
 			}
-			if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder_text));
-			}
+
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
@@ -4057,6 +4063,7 @@ void TextEdit::set_placeholder(const String &p_text) {
 
 	placeholder_text = p_text;
 	_update_placeholder();
+	update_configuration_warnings();
 	queue_accessibility_update();
 	queue_redraw();
 }

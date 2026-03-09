@@ -1303,6 +1303,14 @@ RID PopupMenu::get_focused_accessibility_element() const {
 	}
 }
 
+String PopupMenu::_get_accessibility_name() const {
+	if (has_meta("_menu_name")) {
+		return get_meta("_menu_name", get_name());
+	} else {
+		return Window::_get_accessibility_name();
+	}
+}
+
 void PopupMenu::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE: {
@@ -1323,9 +1331,6 @@ void PopupMenu::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			if (has_meta("_menu_name")) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, get_meta("_menu_name", get_name()));
-			}
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU);
 			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, items.size());
 
