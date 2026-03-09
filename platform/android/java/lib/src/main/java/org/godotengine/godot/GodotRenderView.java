@@ -67,4 +67,6 @@ public interface GodotRenderView {
 	 * @return true if pointer capture is supported.
 	 */
 	boolean canCapturePointer();
+
+	void requestMaxHdrHeadroom(float desiredHeadroom);
 }
