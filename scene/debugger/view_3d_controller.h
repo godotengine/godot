@@ -171,6 +171,10 @@ public:
 
 private:
 	Cursor cursor_interp; // That one may be interpolated (don't modify this one except for smoothing purposes).
+	Cursor previous_cursor; // Storing previous cursor state for canceling purposes.
+	bool navigating = false;
+	bool navigation_cancelled = false;
+	void cancel_navigation();
 
 protected:
 	static void _bind_methods();
@@ -249,6 +253,7 @@ private:
 
 public:
 	bool gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_surface_rect);
+	bool is_navigating() const { return navigating; }
 
 	void cursor_pan(const Ref<InputEventWithModifiers> &p_event, const Vector2 &p_relative);
 	void cursor_look(const Ref<InputEventWithModifiers> &p_event, const Vector2 &p_relative);
