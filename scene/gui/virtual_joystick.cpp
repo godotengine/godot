@@ -358,7 +358,11 @@ StringName VirtualJoystick::get_action_down() const {
 }
 
 void VirtualJoystick::set_visibility_mode(VisibilityMode p_mode) {
+	if (visibility == p_mode) {
+		return;
+	}
 	visibility = p_mode;
+	queue_redraw();
 }
 
 VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
