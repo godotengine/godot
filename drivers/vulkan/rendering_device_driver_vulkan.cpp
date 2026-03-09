@@ -4074,9 +4074,16 @@ static VkShaderStageFlagBits RD_STAGE_TO_VK_SHADER_STAGE_BITS[RDD::SHADER_STAGE_
 };
 
 RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
+	// Non-uniform indexing is only used in ray tracing.
+	// Choose a larger number to ensure it is difficult to reach the limit, and use reasonable memory.
+	static const uint32_t BIG_NUMBER_FOR_NON_UNIFORM_INDEXING = 16384;
+	static const BitField<ShaderStage> RAY_TRACING_STAGE_BITFIELDS = SHADER_STAGE_RAYGEN_BIT | SHADER_STAGE_ANY_HIT_BIT | SHADER_STAGE_CLOSEST_HIT_BIT | SHADER_STAGE_MISS_BIT | SHADER_STAGE_INTERSECTION_BIT;
+
 	ShaderReflection shader_refl = p_shader_container->get_shader_reflection();
 	ShaderInfo shader_info;
 	shader_info.name = p_shader_container->shader_name.get_data();
+
+	bool is_ray_tracing_shader = shader_refl.stages_bits.has_flag(RAY_TRACING_STAGE_BITFIELDS);
 
 	for (uint32_t i = 0; i < SHADER_STAGE_MAX; i++) {
 		if (shader_refl.push_constant_stages.has_flag((ShaderStage)(1 << i))) {
@@ -4119,11 +4126,11 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					layout_binding.descriptorCount = uniform.length;
+					layout_binding.descriptorCount = (uniform.length == 0 && is_ray_tracing_shader) ? BIG_NUMBER_FOR_NON_UNIFORM_INDEXING : uniform.length;
 				} break;
 				case UNIFORM_TYPE_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-					layout_binding.descriptorCount = uniform.length;
+					layout_binding.descriptorCount = (uniform.length == 0 && is_ray_tracing_shader) ? BIG_NUMBER_FOR_NON_UNIFORM_INDEXING : uniform.length;
 				} break;
 				case UNIFORM_TYPE_IMAGE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -4144,6 +4151,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+					layout_binding.descriptorCount = (uniform.length == 0 && is_ray_tracing_shader) ? BIG_NUMBER_FOR_NON_UNIFORM_INDEXING : 1;
 				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -4324,6 +4332,14 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		placeholder_binding.descriptorCount = 1;
 		placeholder_binding.stageFlags = VK_SHADER_STAGE_ALL;
 
+		const VkDescriptorBindingFlagsEXT flags =
+				VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT |
+				VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT;
+		VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags{};
+		binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
+		binding_flags.bindingCount = 1;
+		binding_flags.pBindingFlags = &flags;
+
 		for (uint32_t i = 0; i < shader_refl.uniform_sets.size(); i++) {
 			// Empty ones are fine if they were not used according to spec (binding count will be 0).
 			VkDescriptorSetLayoutCreateInfo layout_create_info = {};
@@ -4331,6 +4347,9 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 			layout_create_info.bindingCount = vk_set_bindings[i].size();
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
 
+			if (is_ray_tracing_shader) {
+				layout_create_info.pNext = &binding_flags;
+			}
 			// ...not so fine on Adreno 5XX.
 			if (adreno_5xx_empty_descriptor_set_layout_workaround && layout_create_info.bindingCount == 0) {
 				layout_create_info.bindingCount = 1;
@@ -4743,17 +4762,22 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
-				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
-				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
-				*vk_buf_info = {};
-				vk_buf_info->buffer = buf_info->vk_buffer;
-				vk_buf_info->range = buf_info->size;
+				num_descriptors = uniform.ids.size();
+				VkDescriptorBufferInfo *vk_buf_infos = ALLOCA_ARRAY(VkDescriptorBufferInfo, num_descriptors);
 
-				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
-						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				for (uint32_t j = 0; j < num_descriptors; j++) {
+					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j].id;
+
+					vk_buf_infos[j] = {};
+					vk_buf_infos[j].buffer = buf_info->vk_buffer;
+					vk_buf_infos[j].range = buf_info->size;
+
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				}
 
 				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_infos;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;

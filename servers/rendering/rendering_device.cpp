@@ -4098,8 +4098,6 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				if (uniform.get_id_count() != (uint32_t)set_uniform.length) {
 					if (set_uniform.length > 1) {
 						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.get_id_count()) + ").");
-					} else {
-						ERR_FAIL_V_MSG(RID(), "Texture (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.get_id_count()) + ").");
 					}
 				}
 
@@ -4282,44 +4280,48 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER:
 			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
-				ERR_FAIL_COND_V_MSG(uniform.get_id_count() != 1, RID(),
+				ERR_FAIL_COND_V_MSG(uniform.get_id_count() == 0, RID(),
 						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
-				Buffer *buffer = nullptr;
-
-				RID buffer_id = uniform.get_id(0);
-				if (storage_buffer_owner.owns(buffer_id)) {
-					buffer = storage_buffer_owner.get_or_null(buffer_id);
-				} else if (vertex_buffer_owner.owns(buffer_id)) {
-					buffer = vertex_buffer_owner.get_or_null(buffer_id);
-
-					ERR_FAIL_COND_V_MSG(!(buffer->usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
-				}
-				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
-
-				// If 0, then it's sized on link time.
-				ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
-						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
-
-				if (set_uniform.writable && _buffer_make_mutable(buffer, buffer_id)) {
-					// The buffer must be mutable if it's used for writing.
-					draw_graph.add_synchronization();
-				}
-
-				if (buffer->draw_tracker != nullptr) {
-					draw_trackers.push_back(buffer->draw_tracker);
-
-					if (set_uniform.writable) {
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE);
-					} else {
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ);
+				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
+					Buffer *buffer = nullptr;
+					RID buffer_id = uniform.get_id(j);
+					if (storage_buffer_owner.owns(buffer_id)) {
+						buffer = storage_buffer_owner.get_or_null(buffer_id);
+					} else if (vertex_buffer_owner.owns(buffer_id)) {
+						buffer = vertex_buffer_owner.get_or_null(buffer_id);
+						ERR_FAIL_COND_V_MSG(!(buffer->usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
+					} else if (index_buffer_owner.owns(buffer_id)) {
+						buffer = index_buffer_owner.get_or_null(buffer_id);
+						ERR_FAIL_COND_V_MSG(!(buffer->usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)), RID(), "Index buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
 					}
-				} else {
-					untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ;
-				}
 
-				driver_uniform.ids.push_back(buffer->driver_id);
-				_check_transfer_worker_buffer(buffer);
+					ERR_FAIL_NULL_V_MSG(buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
+
+					// If 0, then it's sized on link time.
+					ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
+							"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+
+					if (set_uniform.writable && _buffer_make_mutable(buffer, buffer_id)) {
+						// The buffer must be mutable if it's used for writing.
+						draw_graph.add_synchronization();
+					}
+
+					if (buffer->draw_tracker != nullptr) {
+						draw_trackers.push_back(buffer->draw_tracker);
+
+						if (set_uniform.writable) {
+							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE);
+						} else {
+							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ);
+						}
+					} else {
+						untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ;
+					}
+
+					driver_uniform.ids.push_back(buffer->driver_id);
+					_check_transfer_worker_buffer(buffer);
+				}
 			} break;
 			case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				ERR_FAIL_COND_V_MSG(shader->pipeline_type != PIPELINE_TYPE_RASTERIZATION, RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") supplied for non-render shader (this is not allowed).");
