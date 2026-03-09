@@ -32,6 +32,8 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/object/ref_counted.h"
+
 #ifndef _3D_DISABLED
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/resources/mesh.h"
