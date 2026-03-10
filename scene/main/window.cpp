@@ -582,7 +582,7 @@ bool Window::get_flag(Flags p_flag) const {
 }
 
 bool Window::is_popup() const {
-	return get_flag(Window::FLAG_POPUP) || get_flag(Window::FLAG_NO_FOCUS);
+	return (get_flag(Window::FLAG_POPUP) && get_flag(Window::FLAG_NO_FOCUS)) || get_flag(Window::FLAG_MOUSE_PASSTHROUGH);
 }
 
 void Window::set_hdr_output_requested(bool p_requested) {
