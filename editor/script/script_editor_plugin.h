@@ -161,6 +161,8 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
+	HBoxContainer *search_buttons_hb = nullptr;
+	Control *search_buttons_ph = nullptr;
 	Button *make_floating = nullptr;
 	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
@@ -236,6 +238,8 @@ class ScriptEditor : public PanelContainer {
 	bool _has_script_tab() const;
 	void _prepare_file_menu();
 	void _file_menu_closed();
+
+	void _update_search_docs_buttons();
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;

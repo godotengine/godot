@@ -480,20 +480,23 @@ Size2 Button::_fit_icon_size(const Size2 &p_size) const {
 	return icon_size;
 }
 
-Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
+Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon, bool p_ignore_text) const {
 	// Do not include `_internal_margin`, it's already added in the `get_minimum_size` overrides.
 
-	Ref<TextParagraph> paragraph;
-	if (p_text.is_empty()) {
-		paragraph = text_buf;
-	} else {
-		paragraph.instantiate();
-		_shape(paragraph, p_text);
-	}
+	Size2 minsize = Size2(0, 0);
+	if (!p_ignore_text) {
+		Ref<TextParagraph> paragraph;
+		if (p_text.is_empty()) {
+			paragraph = text_buf;
+		} else {
+			paragraph.instantiate();
+			_shape(paragraph, p_text);
+		}
+		minsize = paragraph->get_size();
 
-	Size2 minsize = paragraph->get_size();
-	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF) {
-		minsize.width = 0;
+		if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF) {
+			minsize.width = 0;
+		}
 	}
 
 	if (!expand_icon && p_icon.is_valid()) {
@@ -506,7 +509,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 
 		if (horizontal_icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 			minsize.width += icon_size.width;
-			if (!xl_text.is_empty() || !p_text.is_empty()) {
+			if (!p_ignore_text && (!xl_text.is_empty() || !p_text.is_empty())) {
 				minsize.width += MAX(0, theme_cache.h_separation);
 			}
 		} else {
@@ -514,7 +517,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		}
 	}
 
-	if (!xl_text.is_empty() || !p_text.is_empty()) {
+	if (!p_ignore_text && (!xl_text.is_empty() || !p_text.is_empty())) {
 		Ref<Font> font = theme_cache.font;
 		float font_height = font->get_height(theme_cache.font_size);
 		if (vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {

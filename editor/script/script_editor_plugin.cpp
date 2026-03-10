@@ -1422,6 +1422,12 @@ void ScriptEditor::_file_menu_closed() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), false);
 }
 
+void ScriptEditor::_update_search_docs_buttons() {
+	bool should_clip = search_buttons_ph->get_size().x <= (int)search_buttons_ph->get_meta("collapse_size");
+	help_search->set_clip_text(should_clip);
+	site_search->set_clip_text(should_clip);
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 	ensure_select_current();
 }
@@ -1444,6 +1450,23 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
+
+			const Ref<Texture> icon_help_search = get_editor_theme_icon(SNAME("HelpSearch"));
+			const Ref<Texture> icon_site_search = get_editor_theme_icon(SNAME("ExternalLink"));
+
+			help_search->set_button_icon(icon_help_search);
+			site_search->set_button_icon(icon_site_search);
+
+			int search_width = help_search->get_minimum_size_for_text_and_icon("", icon_help_search, true).x;
+			search_width += search_buttons_hb->get_theme_constant(SNAME("separation"), SNAME("HBoxContainer"));
+			search_width += site_search->get_minimum_size_for_text_and_icon("", icon_site_search, true).x;
+			search_buttons_ph->set_custom_minimum_size(Vector2(search_width, 0));
+
+			int collapse_size = help_search->get_minimum_size_for_text_and_icon("", help_search->get_button_icon()).x;
+			collapse_size += search_buttons_hb->get_theme_constant(SNAME("separation"), SNAME("HBoxContainer"));
+			collapse_size += site_search->get_minimum_size_for_text_and_icon("", site_search->get_button_icon()).x;
+			search_buttons_ph->set_meta("collapse_size", collapse_size);
+			_update_search_docs_buttons();
 
 			_calculate_script_name_button_size();
 
@@ -1857,6 +1880,13 @@ void ScriptEditor::_update_online_doc() {
 		site_search->set_text(TTRC("Online Docs"));
 		site_search->set_tooltip_text(TTRC("Open Godot online documentation."));
 	}
+
+	int collapse_size = help_search->get_minimum_size_for_text_and_icon("", help_search->get_button_icon()).x;
+	collapse_size += search_buttons_hb->get_theme_constant(SNAME("separation"), SNAME("HBoxContainer"));
+	collapse_size += site_search->get_minimum_size_for_text_and_icon("", site_search->get_button_icon()).x;
+	search_buttons_ph->set_meta("collapse_size", collapse_size);
+
+	_update_search_docs_buttons();
 }
 
 void ScriptEditor::_update_script_colors() {
@@ -4025,17 +4055,28 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_button_right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	script_name_button_hbox->add_child(script_name_button_right_spacer);
 
+	search_buttons_ph = memnew(Control);
+	search_buttons_ph->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_buttons_ph->connect(SceneStringName(resized), callable_mp(this, &ScriptEditor::_update_search_docs_buttons));
+	menu_hb->add_child(search_buttons_ph);
+
+	search_buttons_hb = memnew(HBoxContainer);
+	search_buttons_ph->add_child(search_buttons_hb);
+	search_buttons_hb->set_alignment(BoxContainer::ALIGNMENT_END);
+	search_buttons_hb->set_anchors_preset(PRESET_RIGHT_WIDE);
+	search_buttons_hb->set_grow_direction_preset(PRESET_RIGHT_WIDE);
+
 	site_search = memnew(Button);
 	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->set_accessibility_name(TTRC("Site Search"));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
-	menu_hb->add_child(site_search);
+	search_buttons_hb->add_child(site_search);
 
 	help_search = memnew(Button);
 	help_search->set_theme_type_variation(SceneStringName(FlatButton));
 	help_search->set_text(TTRC("Search Help"));
 	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
-	menu_hb->add_child(help_search);
+	search_buttons_hb->add_child(help_search);
 	help_search->set_tooltip_text(TTRC("Search the reference documentation."));
 
 	menu_hb->add_child(memnew(VSeparator));

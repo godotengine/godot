@@ -123,7 +123,7 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const;
+	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon, bool p_ignore_text = false) const;
 
 	void set_text(const String &p_text);
 	String get_text() const;
