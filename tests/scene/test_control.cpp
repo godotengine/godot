@@ -1221,34 +1221,48 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 	memdelete(test_control);
 }
 
-TEST_CASE("[SceneTree][Control] Container layout ordering") {
+TEST_CASE("[SceneTree][Control] Container layout") {
 	Window *root = SceneTree::get_singleton()->get_root();
 
-	SUBCASE("[SceneTree][Control] VBoxContainer ordering") {
+	SUBCASE("VBoxContainer ordering") {
 		VBoxContainer *container = memnew(VBoxContainer);
 		Button *b1 = memnew(Button);
 		Button *b2 = memnew(Button);
+		Button *b3 = memnew(Button);
 		root->add_child(container);
 		container->add_child(b1);
 		container->add_child(b2);
+		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
-		CHECK_MESSAGE(b1->get_position().y <= b2->get_position().y, 
-			"lay out children in vertical order");
+		CHECK_MESSAGE(b1->get_position().y < b2->get_position().y, 
+			"first child above second child");
+		CHECK_MESSAGE(b2->get_position().y < b3->get_position().y, 
+			"second child above third child");
 		root->remove_child(container);
+		memdelete(b1);
+		memdelete(b2);
+		memdelete(b3);
 		memdelete(container);
 	}
 	
-	SUBCASE("[SceneTree][Control] HBoxContainer ordering") {
+	SUBCASE("HBoxContainer ordering") {
 		HBoxContainer *container = memnew(HBoxContainer);
 		Button *b1 = memnew(Button);
 		Button *b2 = memnew(Button);
+		Button *b3 = memnew(Button);
 		root->add_child(container);
 		container->add_child(b1);
 		container->add_child(b2);
+		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
-		CHECK_MESSAGE(b1->get_position().x <= b2->get_position().x, 
-			"lay out children in horizontal order");
+		CHECK_MESSAGE(b1->get_position().x < b2->get_position().x, 
+			"first child left of second child");
+		CHECK_MESSAGE(b2->get_position().x < b3->get_position().x, 
+			"second child left of third child");
 		root->remove_child(container);
+		memdelete(b1);
+		memdelete(b2);
+		memdelete(b3);
 		memdelete(container);
 	}
 }
