@@ -1128,6 +1128,7 @@ public:
 		Vector3 camera_position;
 		uint32_t cull_offset;
 		uint32_t cull_count;
+		bool is_orthogonal;
 	};
 
 	void _visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data);
@@ -1145,6 +1146,7 @@ public:
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
 		const Projection *camera_matrix;
 		uint64_t visibility_viewport_mask;
+		bool is_orthogonal;
 	};
 
 	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
