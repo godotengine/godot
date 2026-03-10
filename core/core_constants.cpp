@@ -30,10 +30,13 @@
 
 #include "core_constants.h"
 
-#include "core/input/input_event.h"
-#include "core/object/class_db.h"
+#include "core/input/input_enums.h"
+#include "core/object/method_bind.h" // IWYU pragma: keep. To bind `MethodFlags`.
+#include "core/object/object.h"
 #include "core/os/keyboard.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
+#include "core/variant/variant_caster.h"
 
 struct _CoreConstant {
 #ifdef DEBUG_ENABLED

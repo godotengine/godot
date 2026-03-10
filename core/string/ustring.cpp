@@ -39,7 +39,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
