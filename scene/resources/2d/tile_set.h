@@ -317,6 +317,7 @@ private:
 	TileLayout tile_layout = TILE_LAYOUT_STACKED;
 	TileOffsetAxis tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
 	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
+	float hexagon_tile_overlap = 0.25;
 
 	// Rendering.
 	bool uv_clipping = false;
@@ -421,6 +422,8 @@ public:
 	TileOffsetAxis get_tile_offset_axis() const;
 	void set_tile_size(Size2i p_size);
 	Size2i get_tile_size() const;
+	void set_hexagon_tile_overlap(float p_overlap);
+	float get_hexagon_tile_overlap() const;
 
 	// -- Sources management --
 	int get_next_source_id() const;

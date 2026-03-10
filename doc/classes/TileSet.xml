@@ -631,6 +631,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="hexagon_tile_overlap" type="float" setter="set_hexagon_tile_overlap" getter="get_hexagon_tile_overlap" default="0.25">
+			For the Hexagonal shape, determines the fraction of the bounding rectangle that overlaps with adjacent tiles. Defines the length of the hexagon's flat side.
+		</member>
 		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
 			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), changes the way tiles are indexed in the [TileMapLayer] grid.
 		</member>
