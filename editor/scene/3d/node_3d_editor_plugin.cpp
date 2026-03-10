@@ -5233,6 +5233,7 @@ void Node3DEditorViewport::commit_transform() {
 
 	collision_reposition = false;
 	finish_transform();
+	_reset_follow_mode_count();
 	set_message("");
 }
 
