@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_list.h"

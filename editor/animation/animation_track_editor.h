@@ -41,6 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
 
+#include <cfloat> // FLT_MAX
+
 class AnimationMarkerEdit;
 class AnimationTrackEditor;
 class AnimationTrackEdit;

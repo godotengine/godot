@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "core/io/stream_peer_tcp.h"
-#include "core/io/stream_peer_uds.h"
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
+
+class StreamPeerSocket;
 
 class RemoteDebuggerPeer : public RefCounted {
 	GDSOFTCLASS(RemoteDebuggerPeer, RefCounted);

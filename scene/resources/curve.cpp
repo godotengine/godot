@@ -33,6 +33,8 @@
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 
+#include <cfloat> // FLT_EPSILON
+
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";
 

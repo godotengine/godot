@@ -30,8 +30,8 @@
 
 #include "project_settings.h"
 
-#include "core/core_bind.h" // For Compression enum.
 #include "core/input/input_map.h"
+#include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -50,7 +50,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
 ProjectSettings *ProjectSettings::get_singleton() {

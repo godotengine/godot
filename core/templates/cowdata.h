@@ -32,7 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 

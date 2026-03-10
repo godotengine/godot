@@ -32,6 +32,7 @@
 
 #include "http_client_tcp.h"
 
+#include "core/io/stream_peer_tcp.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"

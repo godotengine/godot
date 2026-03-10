@@ -35,7 +35,7 @@
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant/container_type_validate.h"
+#include "core/variant/container_type_validate.h" // IWYU pragma: keep.
 #include "scene/main/node.h" //only so casting works
 
 void Resource::register_custom_data_to_otdb() {

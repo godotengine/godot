@@ -32,6 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_socket.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_uds.h"
 #include "core/os/os.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
