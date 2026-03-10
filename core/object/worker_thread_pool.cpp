@@ -68,17 +68,6 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		set_current_thread_safe_for_nodes(false);
 		MessageQueue::set_thread_singleton_override(nullptr);
 
-		// Since the WorkerThreadPool is started before the script server,
-		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
-		// Therefore, we do it late at the first opportunity, so in case the task
-		// about to be run uses scripting, guarantees are held.
-		// Vice versa, the WorkerThreadPool is destroyed after the script server.
-		// Therefore, we must also protect the thread against calling enter again
-		// after ScriptServer::thread_exit() has been called.
-		if (!curr_thread.exited_languages) {
-			ScriptServer::thread_enter();
-		}
-
 		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
@@ -87,7 +76,19 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		if (p_task->pending_notify_yield_over) {
 			curr_thread.yield_is_over = true;
 		}
+		bool enter_script_server = runlevel < RUNLEVEL_EXIT_LANGUAGES;
 		task_mutex.unlock();
+
+		// Since the WorkerThreadPool is started before the script server,
+		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
+		// Therefore, we do it late at the first opportunity, so in case the task
+		// about to be run uses scripting, guarantees are held.
+		// Vice versa, the WorkerThreadPool is destroyed after the script server.
+		// Therefore, we must not enter the thread again when the language server
+		// is shutting down.
+		if (enter_script_server) {
+			ScriptServer::thread_enter();
+		}
 	}
 #endif
 
