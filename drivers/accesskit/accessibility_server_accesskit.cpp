@@ -131,7 +131,7 @@ void AccessibilityServerAccessKit::_accessibility_action_callback(struct accessk
 	DisplayServerEnums::WindowID window_id = (DisplayServerEnums::WindowID)(size_t)p_user_data;
 	ERR_FAIL_COND(!static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.has(window_id));
 
-	RID rid = RID::from_uint64(p_request->target);
+	RID rid = RID::from_uint64(p_request->target_node);
 	AccessibilityElement *ae = static_cast<AccessibilityServerAccessKit *>(get_singleton())->rid_owner.get_or_null(rid);
 	ERR_FAIL_NULL(ae);
 
@@ -345,8 +345,6 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 	Vector<int32_t> words;
 	int64_t run_count = 0; // Note: runs in visual order.
 	const Glyph *gl = nullptr;
-	int64_t gl_count = 0;
-	int64_t gl_index = 0;
 	float run_off_x = 0.0;
 	Vector2i full_range;
 
@@ -356,7 +354,6 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 		words = TS->shaped_text_get_word_breaks(p_shaped_text);
 		run_count = TS->shaped_get_run_count(p_shaped_text);
 		gl = TS->shaped_text_get_glyphs(p_shaped_text);
-		gl_count = TS->shaped_text_get_glyph_count(p_shaped_text);
 		full_range = TS->shaped_text_get_range(p_shaped_text);
 	}
 
@@ -371,126 +368,157 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 	Vector<AccessibilityElement *> text_elements;
 	for (int64_t i = 0; i < run_count; i++) {
 		const Vector2i range = TS->shaped_get_run_range(p_shaped_text, i);
-		String t = TS->shaped_get_run_text(p_shaped_text, i);
+		const Vector2i gl_range = TS->shaped_get_run_glyph_range(p_shaped_text, i);
+		String run_t = TS->shaped_get_run_text(p_shaped_text, i);
+		TextServer::Direction dir = TS->shaped_get_run_direction(p_shaped_text, i);
 
-		if (t.is_empty()) {
+		if (run_t.is_empty()) {
 			continue;
 		}
 
-		AccessibilityElement *ae = memnew(AccessibilityElement);
-		ae->role = ACCESSKIT_ROLE_TEXT_RUN;
-		ae->window_id = parent_ae->window_id;
-		ae->parent = root_rid;
-		ae->run = Vector3i(range.x, range.y, i);
-		ae->node = accesskit_node_new(ae->role);
+		// Split long runs in to < 254 char subruns due to AccessKit limitation.
+		Vector<Vector2i> subrun_ranges;
+		Vector<Vector<uint8_t>> subrun_word_starts;
+		{
+			Vector2i cur_range = range;
+			bool slice = false;
+			do {
+				// Word starts.
+				Vector<uint8_t> word_starts;
+				word_starts.push_back(0);
 
-		text_elements.push_back(ae);
+				slice = false;
+				for (int j = 0; j < words.size(); j += 2) {
+					if (words[j] <= cur_range.x) {
+						continue;
+					}
+					if (words[j] >= cur_range.y) {
+						break;
+					}
+					int32_t wstart = words[j] - cur_range.x;
+					int32_t wend = words[j + 1] - cur_range.x;
+					if (wend >= 254) {
+						cur_range.y = words[j];
+						slice = true;
+						break;
+					}
+					word_starts.push_back(wstart);
+				}
+				subrun_ranges.push_back(cur_range);
+				subrun_word_starts.push_back(word_starts);
 
-		// UTF-8 text and char lengths.
-		Vector<uint8_t> char_lengths;
-		CharString text = t.utf8(&char_lengths);
+				if (slice) {
+					cur_range.x = cur_range.y;
+					cur_range.y = range.y;
+				}
+			} while (slice);
+		}
 
-		ae->value = t;
-		accesskit_node_set_value(ae->node, text.ptr());
-		accesskit_node_set_character_lengths(ae->node, char_lengths.size(), char_lengths.ptr());
+		// Process subruns.
+		int start, end, delta;
+		if (dir == TextServer::DIRECTION_LTR) {
+			start = 0;
+			end = subrun_ranges.size();
+			delta = +1;
+		} else {
+			start = subrun_ranges.size() - 1;
+			end = -1;
+			delta = -1;
+		}
+		for (int rr = start; rr != end; rr += delta) {
+			// Word starts.
+			const Vector<uint8_t> &word_starts = subrun_word_starts[rr];
+			const Vector2i &cur_range = subrun_ranges[rr];
 
-		// Word sizes.
-		Vector<uint8_t> word_lengths;
+			AccessibilityElement *ae = memnew(AccessibilityElement);
+			ae->role = ACCESSKIT_ROLE_TEXT_RUN;
+			ae->window_id = parent_ae->window_id;
+			ae->parent = root_rid;
+			ae->run = Vector3i(cur_range.x, cur_range.y, i);
+			ae->node = accesskit_node_new(ae->role);
 
-		int32_t prev = ae->run.x;
-		int32_t total = 0;
-		for (int j = 0; j < words.size(); j += 2) {
-			if (words[j] < ae->run.x) {
+			text_elements.push_back(ae);
+
+			String sub_t = run_t.substr(cur_range.x - range.x, cur_range.y - cur_range.x);
+			if (sub_t.is_empty()) {
 				continue;
 			}
-			if (words[j] >= ae->run.y) {
-				break;
+
+			// UTF-8 text and char lengths.
+			Vector<uint8_t> char_lengths;
+			CharString text = sub_t.utf8(&char_lengths);
+
+			ae->value = sub_t;
+			accesskit_node_set_value(ae->node, text.ptr());
+			accesskit_node_set_character_lengths(ae->node, char_lengths.size(), char_lengths.ptr());
+
+			accesskit_node_set_word_starts(ae->node, word_starts.size(), word_starts.ptr());
+
+			// Char widths and positions.
+			Vector<float> char_positions;
+			Vector<float> char_widths;
+
+			char_positions.resize_initialized(sub_t.length());
+			float *positions_ptr = char_positions.ptrw();
+
+			char_widths.resize_initialized(sub_t.length());
+			float *widths_ptr = char_widths.ptrw();
+
+			float size_x = 0.0;
+			for (int j = gl_range.x; j <= gl_range.y; j += gl[j].count) {
+				if (gl[j].start >= ae->run.y || gl[j].start < ae->run.x) {
+					continue;
+				}
+
+				float advance = 0.0; // Graphame advance.
+				for (int k = 0; k < gl[j].count; k++) {
+					advance += gl[j + k].advance;
+				}
+				int chars = gl[j].end - gl[j].start;
+				float adv_per_char = advance / (float)chars;
+
+				for (int k = 0; k < chars; k++) {
+					int index = gl[j].start + k - ae->run.x;
+					ERR_CONTINUE(index < 0 || index >= sub_t.length());
+					positions_ptr[index] = size_x + adv_per_char * k;
+					widths_ptr[index] = adv_per_char;
+				}
+				size_x += advance * gl[j].repeat;
 			}
-			int32_t wlen = words[j] - prev;
-			while (wlen > 255) {
-				word_lengths.push_back(255);
-				wlen -= 255;
-				total += 255;
+			positions_ptr[sub_t.length() - 1] = size_x;
+			widths_ptr[sub_t.length() - 1] = 1.0;
+
+			accesskit_node_set_character_positions(ae->node, char_positions.size(), char_positions.ptr());
+			accesskit_node_set_character_widths(ae->node, char_widths.size(), char_widths.ptr());
+
+			RID font_rid = TS->shaped_get_run_font_rid(p_shaped_text, i);
+			if (font_rid != RID()) {
+				CharString font_name = TS->font_get_name(font_rid).utf8();
+				if (font_name.length() > 0) {
+					accesskit_node_set_font_family(ae->node, font_name.ptr());
+				}
+				if (TS->font_get_style(font_rid).has_flag(TextServer::FONT_ITALIC)) {
+					accesskit_node_set_italic(ae->node);
+				}
+				accesskit_node_set_font_weight(ae->node, TS->font_get_weight(font_rid));
 			}
-			if (wlen > 0) {
-				word_lengths.push_back(wlen);
-				total += wlen;
+			accesskit_node_set_font_size(ae->node, TS->shaped_get_run_font_size(p_shaped_text, i));
+			CharString language = TS->shaped_get_run_language(p_shaped_text, i).utf8();
+			if (language.length() > 0) {
+				accesskit_node_set_language(ae->node, language.ptr());
 			}
-			prev = words[j];
+			accesskit_node_set_text_direction(ae->node, ACCESSKIT_TEXT_DIRECTION_LEFT_TO_RIGHT);
+
+			accesskit_rect rect;
+			rect.x0 = run_off_x;
+			rect.y0 = 0;
+			rect.x1 = run_off_x + size_x;
+			rect.y1 = text_height;
+			accesskit_node_set_bounds(ae->node, rect);
+			accesskit_node_add_action(ae->node, ACCESSKIT_ACTION_SCROLL_INTO_VIEW);
+
+			run_off_x += size_x;
 		}
-		if (total < t.length()) {
-			word_lengths.push_back(t.length() - total);
-		}
-		accesskit_node_set_word_lengths(ae->node, word_lengths.size(), word_lengths.ptr());
-
-		// Char widths and positions.
-		Vector<float> char_positions;
-		Vector<float> char_widths;
-
-		char_positions.resize_initialized(t.length());
-		float *positions_ptr = char_positions.ptrw();
-
-		char_widths.resize_initialized(t.length());
-		float *widths_ptr = char_widths.ptrw();
-
-		float size_x = 0.0;
-		for (int j = gl_index; j < gl_count; j += gl[j].count) {
-			if (gl[j].start >= ae->run.y) {
-				gl_index = j;
-				break;
-			}
-
-			float advance = 0.0; // Graphame advance.
-			for (int k = 0; k < gl[j].count; k++) {
-				advance += gl[j + k].advance;
-			}
-			int chars = gl[j].end - gl[j].start;
-			float adv_per_char = advance / (float)chars;
-
-			for (int k = 0; k < chars; k++) {
-				int index = gl[j].start + k - ae->run.x;
-				ERR_CONTINUE(index < 0 || index >= t.length());
-				positions_ptr[index] = size_x + adv_per_char * k;
-				widths_ptr[index] = adv_per_char;
-			}
-			size_x += advance * gl[j].repeat;
-		}
-		positions_ptr[t.length() - 1] = size_x;
-		widths_ptr[t.length() - 1] = 1.0;
-
-		accesskit_node_set_character_positions(ae->node, char_positions.size(), char_positions.ptr());
-		accesskit_node_set_character_widths(ae->node, char_widths.size(), char_widths.ptr());
-
-		RID font_rid = TS->shaped_get_run_font_rid(p_shaped_text, i);
-		if (font_rid != RID()) {
-			CharString font_name = TS->font_get_name(font_rid).utf8();
-			if (font_name.length() > 0) {
-				accesskit_node_set_font_family(ae->node, font_name.ptr());
-			}
-			if (TS->font_get_style(font_rid).has_flag(TextServer::FONT_BOLD)) {
-				accesskit_node_set_bold(ae->node);
-			}
-			if (TS->font_get_style(font_rid).has_flag(TextServer::FONT_ITALIC)) {
-				accesskit_node_set_italic(ae->node);
-			}
-			accesskit_node_set_font_weight(ae->node, TS->font_get_weight(font_rid));
-		}
-		accesskit_node_set_font_size(ae->node, TS->shaped_get_run_font_size(p_shaped_text, i));
-		CharString language = TS->shaped_get_run_language(p_shaped_text, i).utf8();
-		if (language.length() > 0) {
-			accesskit_node_set_language(ae->node, language.ptr());
-		}
-		accesskit_node_set_text_direction(ae->node, ACCESSKIT_TEXT_DIRECTION_LEFT_TO_RIGHT);
-
-		accesskit_rect rect;
-		rect.x0 = run_off_x;
-		rect.y0 = 0;
-		rect.x1 = run_off_x + size_x;
-		rect.y1 = text_height;
-		accesskit_node_set_bounds(ae->node, rect);
-		accesskit_node_add_action(ae->node, ACCESSKIT_ACTION_SCROLL_INTO_VIEW);
-
-		run_off_x += size_x;
 	}
 	if (!p_is_last_line || text_elements.is_empty()) {
 		// Add "\n" at the end.
@@ -756,6 +784,12 @@ void AccessibilityServerAccessKit::update_set_braille_label(const RID &p_id, con
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
+
+	if (!p_name.is_empty()) {
+		accesskit_node_set_braille_label(ae->node, p_name.utf8().ptr());
+	} else {
+		accesskit_node_clear_braille_label(ae->node);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_braille_role_description(const RID &p_id, const String &p_description) {
@@ -764,6 +798,12 @@ void AccessibilityServerAccessKit::update_set_braille_role_description(const RID
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
+
+	if (!p_description.is_empty()) {
+		accesskit_node_set_braille_role_description(ae->node, p_description.utf8().ptr());
+	} else {
+		accesskit_node_clear_braille_role_description(ae->node);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_extra_info(const RID &p_id, const String &p_name_extra_info) {
@@ -1315,18 +1355,24 @@ void AccessibilityServerAccessKit::update_set_text_decorations(const RID &p_id, 
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
 	if (p_underline) {
-		accesskit_node_set_underline(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_underline(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_underline(ae->node);
 	}
 	if (p_overline) {
-		accesskit_node_set_overline(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_overline(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_overline(ae->node);
 	}
 	if (p_strikethrough) {
-		accesskit_node_set_strikethrough(ae->node, ACCESSKIT_TEXT_DECORATION_SOLID);
+		accesskit_node_set_strikethrough(ae->node, { ACCESSKIT_TEXT_DECORATION_STYLE_SOLID, color });
 	} else {
 		accesskit_node_clear_strikethrough(ae->node);
 	}
@@ -1617,8 +1663,15 @@ void AccessibilityServerAccessKit::update_set_color_value(const RID &p_id, const
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_color_value(ae->node, p_color.to_rgba32());
 	ae->value = p_color;
+
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_color_value(ae->node, color);
 }
 
 void AccessibilityServerAccessKit::update_set_background_color(const RID &p_id, const Color &p_color) {
@@ -1628,7 +1681,13 @@ void AccessibilityServerAccessKit::update_set_background_color(const RID &p_id, 
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_background_color(ae->node, p_color.to_rgba32());
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_background_color(ae->node, color);
 }
 
 void AccessibilityServerAccessKit::update_set_foreground_color(const RID &p_id, const Color &p_color) {
@@ -1638,7 +1697,13 @@ void AccessibilityServerAccessKit::update_set_foreground_color(const RID &p_id, 
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_foreground_color(ae->node, p_color.to_rgba32());
+	accesskit_color color;
+	color.red = p_color.get_r8();
+	color.blue = p_color.get_b8();
+	color.green = p_color.get_g8();
+	color.alpha = p_color.get_a8();
+
+	accesskit_node_set_foreground_color(ae->node, color);
 }
 
 AccessibilityServer *AccessibilityServerAccessKit::create_func(Error &r_error) {
