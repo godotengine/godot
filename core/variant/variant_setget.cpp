@@ -258,6 +258,14 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary &dict = VariantInternalAccessor<Dictionary>::get(this);
 		r_valid = dict.set(p_member, p_value);
+	} else if (type == Variant::ARRAY) {
+		Array &arr = VariantInternalAccessor<Array>::get(this);
+		if (arr.is_struct()) {
+			arr.set_named(p_member, p_value);
+			r_valid = true;
+			return;
+		}
+		r_valid = false;
 	} else {
 		r_valid = false;
 	}
@@ -291,6 +299,19 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			if (v) {
 				r_valid = true;
 				return *v;
+			}
+		} break;
+		case Variant::ARRAY: {
+			const Array &arr = VariantInternalAccessor<Array>::get(this);
+			if (arr.is_struct()) {
+				r_valid = true;
+				return arr.get_named(p_member);
+			}
+
+			// Fallback in case of a normal array.
+			if (Variant::has_builtin_method(type, p_member)) {
+				r_valid = true;
+				return Callable(memnew(VariantCallable(*this, p_member)));
 			}
 		} break;
 		default: {

@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 6: Too many arguments for "Point()" constructor. Expected at most 2 but received 3.

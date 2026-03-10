@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/span.h"
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
 
@@ -195,9 +196,20 @@ public:
 		return this->span();
 	}
 
+	bool is_struct() const;
+	Variant get_named(const StringName &p_member) const;
+	void set_named(const StringName &p_member, const Variant &p_value);
+
+	void set_as_struct(const Vector<StringName> &p_names, const Vector<Variant> &p_default_values);
+
+	Variant get_struct_member_by_offset(uint32_t p_offset) const;
+	void set_struct_member_by_offset(uint32_t p_offset, const Variant &p_value);
+
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);
+	Array(uint32_t p_member_count, const struct StructMember &(*p_get_member)(uint32_t));
+	Array(uint32_t p_member_count, const struct StructMember &(*p_get_member)(uint32_t), const Array &p_from);
 	Array();
 	~Array();
 };

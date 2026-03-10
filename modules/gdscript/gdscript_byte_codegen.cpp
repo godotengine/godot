@@ -911,6 +911,7 @@ void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_targe
 
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {
 	switch (p_target.type.kind) {
+		case GDScriptDataType::STRUCT:
 		case GDScriptDataType::BUILTIN: {
 			if (p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type(0)) {
 				const GDScriptDataType &element_type = p_target.type.get_container_element_type(0);
@@ -1474,6 +1475,18 @@ void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_tar
 	append(p_arguments.size());
 	append(p_element_type.builtin_type);
 	append(p_element_type.native_type);
+	ct.cleanup();
+}
+
+void GDScriptByteCodeGenerator::write_construct_struct(const Address &p_target, const GDScriptDataType &p_struct_type, const Vector<Address> &p_arguments) {
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_STRUCT, 2 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(get_constant_pos(p_struct_type.struct_def_variant) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+	append(p_arguments.size());
 	ct.cleanup();
 }
 

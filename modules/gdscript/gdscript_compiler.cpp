@@ -183,6 +183,14 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				result.native_type = p_datatype.native_type;
 			}
 		} break;
+		case GDScriptParser::DataType::STRUCT: {
+			result.kind = GDScriptDataType::STRUCT;
+			result.builtin_type = Variant::ARRAY;
+			result.native_type = StringName();
+			result.script_type_ref = Ref<Script>();
+			result.script_type = nullptr;
+			result.struct_def_variant = p_datatype.struct_type ? p_datatype.struct_type->struct_def_variant : Variant();
+		} break;
 		case GDScriptParser::DataType::ENUM:
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::BUILTIN;
@@ -359,7 +367,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 				} break;
 				case GDScriptParser::IdentifierNode::MEMBER_CONSTANT:
-				case GDScriptParser::IdentifierNode::MEMBER_CLASS: {
+				case GDScriptParser::IdentifierNode::MEMBER_CLASS:
+				case GDScriptParser::IdentifierNode::MEMBER_STRUCT: {
 					// Try class constants.
 					GDScript *owner = codegen.script;
 					while (owner) {
@@ -368,7 +377,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 						while (scr) {
 							if (scr->constants.has(identifier)) {
-								return codegen.add_constant(scr->constants[identifier]); // TODO: Get type here.
+								return codegen.add_constant(scr->constants[identifier]);
 							}
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
@@ -623,6 +632,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
 				gen->write_construct(result, GDScriptParser::get_builtin_type(call->function_name), arguments);
+			} else if (!call->is_super && call->callee->get_datatype().kind == GDScriptParser::DataType::STRUCT && call->callee->get_datatype().is_meta_type) {
+				gen->write_construct_struct(result, _gdtype_from_datatype(call->callee->get_datatype(), codegen.script), arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && Variant::has_utility_function(call->function_name)) {
 				// Variant utility function.
 				gen->write_call_utility(result, call->function_name, arguments);
@@ -818,6 +829,25 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				name = subscript->attribute->name;
 				named = true;
+
+				GDScriptParser::DataType base_type = subscript->base->get_datatype();
+				if (base_type.kind == GDScriptParser::DataType::STRUCT && !base_type.is_meta_type) {
+					named = false;
+					int field_idx = -1;
+					for (int i = 0; i < base_type.struct_type->members.size(); i++) {
+						if (base_type.struct_type->members[i]->identifier->name == name) {
+							field_idx = i;
+							break;
+						}
+					}
+					if (field_idx != -1) {
+						index = codegen.add_constant(field_idx);
+					} else {
+						_set_error(vformat(R"(Cannot find member "%s" in struct "%s".)", name, base_type.native_type), subscript);
+						r_error = ERR_COMPILATION_FAILED;
+						return GDScriptCodeGenerator::Address();
+					}
+				}
 			} else {
 				if (subscript->index->is_constant && subscript->index->reduced_value.get_type() == Variant::STRING_NAME) {
 					// Also, somehow, named (speed up anyway).
@@ -1107,7 +1137,26 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 					if (subscript_elem->is_attribute) {
 						name = subscript_elem->attribute->name;
-						gen->write_get_named(value, name, prev_base);
+						GDScriptParser::DataType base_type = subscript_elem->base->get_datatype();
+						if (base_type.kind == GDScriptParser::DataType::STRUCT && !base_type.is_meta_type) {
+							int field_idx = -1;
+							for (int i = 0; i < base_type.struct_type->members.size(); i++) {
+								if (base_type.struct_type->members[i]->identifier->name == name) {
+									field_idx = i;
+									break;
+								}
+							}
+							if (field_idx != -1) {
+								key = codegen.add_constant(field_idx);
+							} else {
+								_set_error(vformat(R"(Cannot find member "%s" in struct "%s".)", name, base_type.native_type), subscript_elem);
+								r_error = ERR_COMPILATION_FAILED;
+								return GDScriptCodeGenerator::Address();
+							}
+							gen->write_get(value, key, prev_base);
+						} else {
+							gen->write_get_named(value, name, prev_base);
+						}
 					} else {
 						key = _parse_expression(codegen, r_error, subscript_elem->index);
 						if (r_error) {
@@ -1129,8 +1178,27 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				// Get the key if needed.
 				GDScriptCodeGenerator::Address key;
 				StringName name;
+				bool is_struct = false;
 				if (subscript->is_attribute) {
 					name = subscript->attribute->name;
+					GDScriptParser::DataType base_type = subscript->base->get_datatype();
+					if (base_type.kind == GDScriptParser::DataType::STRUCT && !base_type.is_meta_type) {
+						is_struct = true;
+						int field_idx = -1;
+						for (int i = 0; i < base_type.struct_type->members.size(); i++) {
+							if (base_type.struct_type->members[i]->identifier->name == name) {
+								field_idx = i;
+								break;
+							}
+						}
+						if (field_idx != -1) {
+							key = codegen.add_constant(field_idx);
+						} else {
+							_set_error(vformat(R"(Cannot find member "%s" in struct "%s".)", name, base_type.native_type), subscript);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
+					}
 				} else {
 					key = _parse_expression(codegen, r_error, subscript->index);
 					if (r_error) {
@@ -1142,7 +1210,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
 					GDScriptCodeGenerator::Address op_result = codegen.add_temporary(_gdtype_from_datatype(assignment->get_datatype(), codegen.script));
 					GDScriptCodeGenerator::Address value = codegen.add_temporary(_gdtype_from_datatype(subscript->get_datatype(), codegen.script));
-					if (subscript->is_attribute) {
+					if (subscript->is_attribute && !is_struct) {
 						gen->write_get_named(value, name, prev_base);
 					} else {
 						gen->write_get(value, key, prev_base);
@@ -1156,7 +1224,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				// Perform assignment.
-				if (subscript->is_attribute) {
+				if (subscript->is_attribute && !is_struct) {
 					gen->write_set_named(prev_base, name, assigned);
 				} else {
 					gen->write_set(prev_base, key, assigned);
@@ -2947,6 +3015,35 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				StringName name = enum_n->identifier->name;
 
 				p_script->constants.insert(name, enum_n->dictionary);
+			} break;
+
+			case GDScriptParser::ClassNode::Member::STRUCT: {
+				const GDScriptParser::StructNode *struct_node = member.m_struct;
+				StringName name = struct_node->identifier->name;
+				Ref<GDScriptStruct> struct_def = struct_node->struct_def_variant;
+				if (struct_def.is_null()) {
+					struct_def.instantiate();
+					struct_def->name = name;
+				}
+				struct_def->fields.clear();
+
+				for (int j = 0; j < struct_node->members.size(); j++) {
+					const GDScriptParser::VariableNode *var_node = struct_node->members[j];
+					GDScriptStruct::Field field;
+					field.name = var_node->identifier->name;
+					field.data_type = _gdtype_from_datatype(var_node->get_datatype(), p_script);
+
+					if (var_node->initializer != nullptr && var_node->initializer->is_constant) {
+						field.default_value = var_node->initializer->reduced_value;
+						GDScriptCompiler::convert_to_initializer_type(field.default_value, var_node);
+					} else if (field.data_type.has_type() && field.data_type.kind == GDScriptDataType::BUILTIN) {
+						// Otherwise initialize with standard 0/false/null depending on type
+						Callable::CallError err;
+						Variant::construct(field.data_type.builtin_type, field.default_value, nullptr, 0, err);
+					}
+					struct_def->fields.push_back(field);
+				}
+				p_script->constants.insert(name, struct_def);
 			} break;
 
 			case GDScriptParser::ClassNode::Member::GROUP: {

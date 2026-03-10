@@ -131,6 +131,9 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			}
 			r_type = _get_class_name(*p_gdtype.class_type);
 			return;
+		case GDType::STRUCT:
+			r_type = p_gdtype.native_type;
+			return;
 		case GDType::ENUM:
 			if (p_gdtype.is_meta_type) {
 				r_type = "Dictionary";

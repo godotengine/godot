@@ -145,6 +145,12 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 			}
 			return valid;
 		} break;
+		case STRUCT: {
+			if (p_variant.get_type() == Variant::NIL) {
+				return true;
+			}
+			return p_variant.get_type() == Variant::ARRAY;
+		} break;
 	}
 	return false;
 }

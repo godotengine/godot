@@ -38,9 +38,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 #include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/struct.h"
 
 struct ArrayPrivate {
 	SafeRefCount refcount;
@@ -48,9 +48,32 @@ struct ArrayPrivate {
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
+	uint32_t struct_size = 0;
+	StringName *struct_member_names = nullptr;
+
 	ArrayPrivate() {}
 	ArrayPrivate(std::initializer_list<Variant> p_init) :
 			array(p_init) {}
+
+	~ArrayPrivate() {
+		if (struct_member_names) {
+			memdelete_arr(struct_member_names);
+		}
+	}
+
+	_FORCE_INLINE_ bool is_struct() const { return struct_size > 0; }
+
+	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
+		if (!struct_member_names) {
+			return -1;
+		}
+		for (uint32_t i = 0; i < struct_size; i++) {
+			if (p_member == struct_member_names[i]) {
+				return (int32_t)i;
+			}
+		}
+		return -1;
+	}
 };
 
 void Array::_ref(const Array &p_from) const {
@@ -949,6 +972,59 @@ Span<Variant> Array::span() const {
 	return _p->array.span();
 }
 
+bool Array::is_struct() const {
+	return _p && _p->is_struct();
+}
+
+Variant Array::get_named(const StringName &p_member) const {
+	ERR_FAIL_COND_V(!_p->is_struct(), Variant());
+	int32_t offset = _p->find_member_index(p_member);
+	ERR_FAIL_COND_V(offset == -1, Variant());
+	ERR_FAIL_INDEX_V(offset, _p->array.size(), Variant());
+	return _p->array[offset];
+}
+
+void Array::set_named(const StringName &p_member, const Variant &p_value) {
+	ERR_FAIL_COND(!_p->is_struct());
+	int32_t offset = _p->find_member_index(p_member);
+	ERR_FAIL_COND(offset == -1);
+	ERR_FAIL_INDEX(offset, _p->array.size());
+	_p->array.write[offset] = p_value;
+}
+
+void Array::set_as_struct(const Vector<StringName> &p_names, const Vector<Variant> &p_default_values) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL || is_struct(), "Type can only be set once.");
+
+	uint32_t p_member_count = p_names.size();
+	ERR_FAIL_COND_MSG(p_default_values.size() != p_member_count, "Struct member vectors must have the same size.");
+
+	_p->struct_size = p_member_count;
+	if (p_member_count > 0) {
+		_p->struct_member_names = memnew_arr(StringName, p_member_count);
+		_p->array.resize(p_member_count);
+
+		for (uint32_t i = 0; i < p_member_count; i++) {
+			_p->struct_member_names[i] = p_names[i];
+			_p->array.write[i] = p_default_values[i];
+		}
+	}
+}
+
+Variant Array::get_struct_member_by_offset(uint32_t p_offset) const {
+	ERR_FAIL_COND_V(!_p->is_struct(), Variant());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_offset, (uint32_t)_p->array.size(), Variant());
+	return _p->array[p_offset];
+}
+
+void Array::set_struct_member_by_offset(uint32_t p_offset, const Variant &p_value) {
+	ERR_FAIL_COND(!_p->is_struct());
+	ERR_FAIL_UNSIGNED_INDEX(p_offset, (uint32_t)_p->array.size());
+	_p->array.write[p_offset] = p_value;
+}
+
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
@@ -958,6 +1034,24 @@ Array::Array(std::initializer_list<Variant> p_init) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 	_p->array = Vector<Variant>(p_init);
+}
+
+Array::Array(uint32_t p_member_count, const StructMember &(*p_get_member)(uint32_t)) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->struct_size = p_member_count;
+	_p->struct_member_names = memnew_arr(StringName, p_member_count);
+	_p->array.resize(p_member_count);
+
+	for (uint32_t i = 0; i < p_member_count; i++) {
+		const StructMember &m = p_get_member(i);
+		_p->struct_member_names[i] = m.name;
+		_p->array.write[i] = m.default_value;
+	}
+}
+
+Array::Array(uint32_t p_member_count, const StructMember &(*p_get_member)(uint32_t), const Array &p_from) : Array(p_member_count, p_get_member) {
+	assign(p_from);
 }
 
 Array::Array() {

@@ -53,6 +53,7 @@ public:
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
+		STRUCT,
 	};
 
 	Kind kind = VARIANT;
@@ -61,6 +62,7 @@ public:
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
+	Variant struct_def_variant;
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
@@ -124,7 +126,8 @@ public:
 				builtin_type == p_other.builtin_type &&
 				native_type == p_other.native_type &&
 				(script_type == p_other.script_type || script_type_ref == p_other.script_type_ref) &&
-				container_element_types == p_other.container_element_types;
+				container_element_types == p_other.container_element_types &&
+				struct_def_variant == p_other.struct_def_variant;
 	}
 
 	bool operator!=(const GDScriptDataType &p_other) const {
@@ -138,6 +141,7 @@ public:
 		script_type = p_other.script_type;
 		script_type_ref = p_other.script_type_ref;
 		container_element_types = p_other.container_element_types;
+		struct_def_variant = p_other.struct_def_variant;
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {
@@ -187,6 +191,7 @@ public:
 		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
+		OPCODE_CONSTRUCT_STRUCT,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CONSTRUCT_TYPED_DICTIONARY,
 		OPCODE_CALL,

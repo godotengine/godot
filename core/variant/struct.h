@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_tokenizer_buffer.h                                           */
+/*  struct.h                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,60 +30,53 @@
 
 #pragma once
 
-#include "gdscript_tokenizer.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 
-class GDScriptTokenizerBuffer : public GDScriptTokenizer {
-public:
-	enum CompressMode {
-		COMPRESS_NONE,
-		COMPRESS_ZSTD,
+struct StructMember {
+	StringName name;
+	StringName class_name;
+	Variant::Type type;
+	Variant default_value;
+	Variant script;
+
+	StructMember(const StringName &p_name, Variant::Type p_type, const Variant &p_default_value = Variant(), const StringName &p_class_name = StringName(), const Variant &p_script = Variant()) {
+		name = p_name;
+		type = p_type;
+		default_value = p_default_value;
+		class_name = p_class_name;
+		script = p_script;
+	}
+};
+
+#define STRUCT_MEMBER(m_name, m_type, ...) StructMember(SNAME(m_name), m_type, ##__VA_ARGS__)
+#define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, Variant(), m_class)
+
+#define STRUCT_LAYOUT(m_class, m_name, ...) \
+	struct m_name { \
+		_FORCE_INLINE_ static StringName get_class() { return SNAME(#m_class); } \
+		_FORCE_INLINE_ static StringName get_name() { return SNAME(#m_name); } \
+		_FORCE_INLINE_ static uint32_t get_member_count() { \
+			static const StructMember members[] = { __VA_ARGS__ }; \
+			return std_size(members); \
+		} \
+		_FORCE_INLINE_ static const StructMember *get_members() { \
+			static const StructMember members[] = { __VA_ARGS__ }; \
+			return members; \
+		} \
+		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) { \
+			CRASH_BAD_INDEX(p_index, get_member_count()); \
+			return get_members()[p_index]; \
+		} \
 	};
 
-	static constexpr uint32_t TOKENIZER_VERSION = 102;
-	static constexpr uint32_t TOKEN_BYTE_MASK = 0x80;
-	static constexpr uint32_t TOKEN_BITS = 8;
-	static constexpr uint32_t TOKEN_MASK = (1 << (TOKEN_BITS - 1)) - 1;
-
-	Vector<StringName> identifiers;
-	Vector<Variant> constants;
-	Vector<int> continuation_lines;
-	HashMap<int, int> token_lines;
-	HashMap<int, int> token_columns;
-	Vector<Token> tokens;
-	int current = 0;
-	uint32_t current_line = 1;
-
-	bool multiline_mode = false;
-	List<int> indent_stack;
-	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
-	int pending_indents = 0;
-	bool last_token_was_newline = false;
-
-#ifdef TOOLS_ENABLED
-	HashMap<int, CommentData> dummy;
-#endif // TOOLS_ENABLED
-
-	static int _token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t> &r_constants_map);
-	Token _binary_to_token(const uint8_t *p_buffer);
-
+template <class T>
+class Struct : public Array {
 public:
-	Error set_code_buffer(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> parse_code_string(const String &p_code, CompressMode p_compress_mode);
+	typedef T Layout;
 
-	virtual int get_cursor_line() const override;
-	virtual int get_cursor_column() const override;
-	virtual void set_cursor_position(int p_line, int p_column) override;
-	virtual void set_multiline_mode(bool p_state) override;
-	virtual bool is_past_cursor() const override;
-	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
-	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
-	virtual bool is_text() override { return false; }
-
-#ifdef TOOLS_ENABLED
-	virtual const HashMap<int, CommentData> &get_comments() const override {
-		return dummy;
-	}
-#endif // TOOLS_ENABLED
-
-	virtual Token scan() override;
+	_FORCE_INLINE_ void operator=(const Array &p_array) { Array::operator=(p_array); }
+	_FORCE_INLINE_ Struct(const Variant &p_variant) : Array(T::get_member_count(), T::get_member, Array(p_variant)) {}
+	_FORCE_INLINE_ Struct(const Array &p_array) : Array(T::get_member_count(), T::get_member, p_array) {}
+	_FORCE_INLINE_ Struct() : Array(T::get_member_count(), T::get_member) {}
 };

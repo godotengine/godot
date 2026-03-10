@@ -604,6 +604,27 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 6 + argc;
 			} break;
+			case OPCODE_CONSTRUCT_STRUCT: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				text += "make_struct (";
+				text += DADDR(2 + argc);
+				text += ") ";
+				text += DADDR(1 + argc);
+				text += " = {";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+
+				text += "}";
+
+				incr += 3 + instr_var_args;
+			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];

@@ -1133,6 +1133,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::ENUM:
 				parse_class_member(&GDScriptParser::parse_enum, AnnotationInfo::NONE, "enum");
 				break;
+			case GDScriptTokenizer::Token::STRUCT:
+				parse_class_member(&GDScriptParser::parse_struct, AnnotationInfo::CLASS, "struct");
+				break;
 			case GDScriptTokenizer::Token::STATIC: {
 				advance();
 				next_is_static = true;
@@ -1669,6 +1672,44 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	end_statement("enum");
 
 	return enum_node;
+}
+
+GDScriptParser::StructNode *GDScriptParser::parse_struct(bool p_is_static) {
+	StructNode *struct_node = alloc_node<StructNode>();
+
+	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the struct name after "struct".)")) {
+		complete_extents(struct_node);
+		return nullptr;
+	}
+	struct_node->identifier = parse_identifier();
+	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after struct name.)");
+
+	if (match(GDScriptTokenizer::Token::NEWLINE)) {
+		if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block for struct members.)")) {
+			complete_extents(struct_node);
+			return struct_node;
+		}
+
+		while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
+			if (match(GDScriptTokenizer::Token::VAR)) {
+				VariableNode *var = parse_variable(false, false);
+				if (var) {
+					struct_node->members.push_back(var);
+				}
+			} else if (match(GDScriptTokenizer::Token::PASS)) {
+				advance();
+				end_statement(R"("pass")");
+			} else {
+				push_error(R"(Expected "var" or "pass" in struct body.)");
+				advance();
+			}
+		}
+		consume(GDScriptTokenizer::Token::DEDENT, R"(Expected unindent after struct body.)");
+	} else {
+		push_error(R"(Expected newline after struct declaration.)");
+	}
+	complete_extents(struct_node);
+	return struct_node;
 }
 
 bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start) {
@@ -4309,6 +4350,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // SIGNAL,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // STATIC,
+		{ nullptr,											nullptr,										PREC_NONE }, // STRUCT,
 		{ &GDScriptParser::parse_call,						nullptr,                                        PREC_NONE }, // SUPER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TRAIT,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VAR,
@@ -5361,6 +5403,11 @@ String GDScriptParser::DataType::to_string() const {
 			// or the fully qualified class name of the script defining the enum
 			return String(native_type).get_file(); // Remove path, keep filename
 		}
+		case STRUCT:
+			if (struct_type && struct_type->identifier) {
+				return struct_type->identifier->name.operator String();
+			}
+			return "struct";
 		case RESOLVING:
 		case UNRESOLVED:
 			return "<unresolved type>";
@@ -5412,6 +5459,11 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 					case ENUM:
 						result.hint = PROPERTY_HINT_ARRAY_TYPE;
 						result.hint_string = String(elem_type.native_type).replace("::", ".");
+						break;
+					case STRUCT:
+						result.type = Variant::ARRAY; // Structs are Arrays under the hood.
+						result.hint = PROPERTY_HINT_TYPE_STRING;
+						result.hint_string = native_type;
 						break;
 					case VARIANT:
 					case RESOLVING:
@@ -5522,6 +5574,11 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 				result.class_name = String(native_type).replace("::", ".");
 			}
+			break;
+		case STRUCT:
+			result.type = Variant::ARRAY; // Structs are Arrays under the hood.
+			result.hint = PROPERTY_HINT_TYPE_STRING;
+			result.hint_string = native_type;
 			break;
 		case VARIANT:
 		case RESOLVING:
@@ -5934,6 +5991,9 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 				break; // Nothing. Will be printed by enum.
 			case ClassNode::Member::GROUP:
 				break; // Nothing. Groups are only used by inspector.
+			case ClassNode::Member::STRUCT:
+				push_line("Struct");
+				break;
 			case ClassNode::Member::UNDEFINED:
 				push_line("<unknown member>");
 				break;

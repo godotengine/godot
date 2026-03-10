@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: Invalid argument for "MyStruct()" constructor: argument 1 should be "int" but is "String".
