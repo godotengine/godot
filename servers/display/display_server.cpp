@@ -1722,6 +1722,11 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
 	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
 
+	ClassDB::bind_method(D_METHOD("is_in_pip_mode", "window_id"), &DisplayServer::is_in_pip_mode, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("pip_mode_enter", "window_id"), &DisplayServer::pip_mode_enter, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("pip_mode_set_aspect_ratio", "numerator", "denominator", "window_id"), &DisplayServer::pip_mode_set_aspect_ratio, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("pip_mode_set_auto_enter_on_background", "auto_enter_on_background", "window_id"), &DisplayServer::pip_mode_set_auto_enter_on_background, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_GLOBAL_MENU);
 #endif // DISABLE_DEPRECATED
@@ -1759,6 +1764,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_HDR_OUTPUT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_PIP_MODE);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(DisplayServerEnums::ROLE_UNKNOWN);
