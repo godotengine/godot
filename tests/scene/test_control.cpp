@@ -1223,12 +1223,11 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 
 TEST_CASE("[SceneTree][Control] Container layout ordering") {
 	Window *root = SceneTree::get_singleton()->get_root();
-	Control *container = nullptr;
-	Button *b1 = memnew(Button);
-	Button *b2 = memnew(Button);
 
 	SUBCASE("VBoxContainer ordering") {
-		container = memnew(VBoxContainer);
+		VBoxContainer *container = memnew(VBoxContainer);
+		Button *b1 = memnew(Button);
+		Button *b2 = memnew(Button);
 		root->add_child(container);
 		container->add_child(b1);
 		container->add_child(b2);
@@ -1236,10 +1235,14 @@ TEST_CASE("[SceneTree][Control] Container layout ordering") {
 		CHECK(b1->get_position().y <= b2->get_position().y);
 		root->remove_child(container);
 		memdelete(container);
+		memdelete(b1);
+    	memdelete(b2);
 	}
 	
 	SUBCASE("HBoxContainer ordering") {
-		container = memnew(HBoxContainer);
+		HBoxContainer *container = memnew(HBoxContainer);
+		Button *b1 = memnew(Button);
+		Button *b2 = memnew(Button);
 		root->add_child(container);
 		container->add_child(b1);
 		container->add_child(b2);
@@ -1247,9 +1250,9 @@ TEST_CASE("[SceneTree][Control] Container layout ordering") {
 		CHECK(b1->get_position().x <= b2->get_position().x);
 		root->remove_child(container);
 		memdelete(container);
+		memdelete(b1);
+    	memdelete(b2);
 	}
-	memdelete(b1);
-	memdelete(b2);
 }
 
 } // namespace TestControl
