@@ -30,7 +30,6 @@
 
 #include "panel_container.h"
 
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 PanelContainer::get_minimum_size() const {

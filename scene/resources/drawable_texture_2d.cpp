@@ -31,6 +31,8 @@
 #include "drawable_texture_2d.h"
 
 #include "core/object/class_db.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 
 DrawableTexture2D::DrawableTexture2D() {

@@ -32,9 +32,8 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
-#include "scene/main/canvas_item.h"
-#include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
