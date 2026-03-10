@@ -76,7 +76,6 @@ public:
 	};
 
 	struct AnimationData {
-		StringName name;
 		Ref<Animation> animation;
 		StringName animation_library;
 		uint64_t last_update = 0;
@@ -91,14 +90,11 @@ public:
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
-		// HACK: For now this will still have to be a copy, since we don't have AnimationNodeInstance yet...
-		Vector<real_t> track_weights;
-		// TODO: When rebasing https://github.com/godotengine/godot/pull/113444, update this to use LocalVector instead.
-		// LocalVector<real_t> *track_weights = nullptr;
+		LocalVector<real_t> *track_weights = nullptr;
 	};
 
 	struct AnimationInstance {
-		AnimationData animation_data;
+		Ref<Animation> animation;
 		PlaybackInfo playback_info;
 	};
 
@@ -328,6 +324,7 @@ protected:
 	LocalVector<AnimationInstance> animation_instances;
 	uint64_t animation_instance_weight_pass_counter = 0;
 	AHashMap<NodePath, int> track_map;
+	uint64_t track_map_version = 1;
 	int track_count = 0;
 	bool deterministic = false;
 

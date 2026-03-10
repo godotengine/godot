@@ -3285,6 +3285,7 @@ double Animation::get_marker_time(const StringName &p_name) const {
 	return marker_times.get(p_name);
 }
 
+// TODO: This needs to be a TypedArray<StringName> see this PR for rationale https://github.com/godotengine/godot/pull/110767/
 PackedStringArray Animation::get_marker_names() const {
 	PackedStringArray names;
 	// We iterate on marker_names so the result is sorted by time.
@@ -5703,6 +5704,24 @@ Quaternion Animation::interpolate_via_rest(const Quaternion &p_from, const Quate
 bool Animation::is_variant_interpolatable(const Variant p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type >= Variant::BOOL && type <= Variant::STRING_NAME) || type == Variant::ARRAY || type >= Variant::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
+}
+
+bool Animation::needs_type_cast(const Variant &p_from, const Variant &p_to) {
+	Variant::Type from_type = p_from.get_type();
+	Variant::Type to_type = p_to.get_type();
+
+	if (from_type == to_type) {
+		return false;
+	}
+
+	// Cast between double and int to avoid minor annoyances.
+	if (from_type == Variant::FLOAT && to_type == Variant::INT) {
+		return true;
+	} else if (from_type == Variant::INT && to_type == Variant::FLOAT) {
+		return true;
+	}
+
+	return false;
 }
 
 bool Animation::validate_type_match(const Variant &p_from, Variant &r_to) {

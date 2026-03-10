@@ -36,7 +36,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
-void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
+void AnimationNodeBlendSpace1D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -73,6 +73,14 @@ void AnimationNodeBlendSpace1D::_animation_node_renamed(const ObjectID &p_oid, c
 
 void AnimationNodeBlendSpace1D::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
+}
+
+void AnimationNodeBlendSpace1D::validate_node(const AnimationTree *p_tree, const StringName &p_path) const {
+	AnimationRootNode::validate_node(p_tree, p_path);
+
+	if (get_blend_point_count() == 0) {
+		add_validation_error(p_tree, p_path, RTR("No blend points exist, so blending cannot take place."));
+	}
 }
 
 void AnimationNodeBlendSpace1D::_bind_methods() {
@@ -118,7 +126,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE_CARRY);
 }
 
-void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNodeBlendSpace1D::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 	for (int i = 0; i < blend_points_used; i++) {
 		ChildNode cn;
 		cn.name = blend_points[i].name;
@@ -152,12 +160,10 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].position = p_position;
 	blend_points[p_at_index].name = p_name;
 
-	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), CONNECT_REFERENCE_COUNTED);
-	blend_points[p_at_index].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
-	blend_points[p_at_index].node->connect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed), CONNECT_REFERENCE_COUNTED);
+	_add_node(blend_points[p_at_index].node);
 
 	blend_points_used++;
-	emit_signal(SNAME("tree_changed"));
+	_tree_changed();
 }
 
 void AnimationNodeBlendSpace1D::set_blend_point_position(int p_point, float p_position) {
@@ -171,17 +177,13 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 	ERR_FAIL_COND(p_node.is_null());
 
 	if (blend_points[p_point].node.is_valid()) {
-		blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed));
-		blend_points[p_point].node->disconnect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed));
-		blend_points[p_point].node->disconnect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed));
+		_remove_node(blend_points[p_point].node);
 	}
 
 	blend_points[p_point].node = p_node;
-	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), CONNECT_REFERENCE_COUNTED);
-	blend_points[p_point].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
-	blend_points[p_point].node->connect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed), CONNECT_REFERENCE_COUNTED);
+	_add_node(blend_points[p_point].node);
 
-	emit_signal(SNAME("tree_changed"));
+	_tree_changed();
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
@@ -206,8 +208,9 @@ void AnimationNodeBlendSpace1D::set_blend_point_name(int p_point, const StringNa
 	}
 }
 
-StringName AnimationNodeBlendSpace1D::get_blend_point_name(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, StringName());
+const StringName &AnimationNodeBlendSpace1D::get_blend_point_name(int p_point) const {
+	const static StringName empty = StringName();
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, empty);
 	return blend_points[p_point].name;
 }
 
@@ -224,9 +227,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
-	blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed));
-	blend_points[p_point].node->disconnect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed));
-	blend_points[p_point].node->disconnect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed));
+	_remove_node(blend_points[p_point].node);
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
 		blend_points[i] = blend_points[i + 1];
@@ -237,7 +238,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	blend_points[blend_points_used].name = StringName();
 
 	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
-	emit_signal(SNAME("tree_changed"));
+	_tree_changed();
 }
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
@@ -375,7 +376,7 @@ void AnimationNodeBlendSpace1D::_get_property_list(List<PropertyInfo> *p_list) c
 	}
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}
@@ -385,11 +386,12 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
 		pi.weight = 1.0;
-		return blend_node(blend_points[0].node, get_blend_point_name(0), pi, FILTER_IGNORE, true, p_test_only);
+		AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(0));
+		return blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 	}
 
-	double blend_pos = get_parameter(blend_position);
-	int cur_closest = get_parameter(closest);
+	double blend_pos = p_instance.get_parameter(blend_position);
+	int cur_closest = p_instance.get_parameter_closest();
 	NodeTimeInfo mind;
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
@@ -448,7 +450,8 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		for (int i = 0; i < blend_points_used; i++) {
 			if (i == point_lower || i == point_higher) {
 				pi.weight = weights[i];
-				NodeTimeInfo t = blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
+				AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(i));
+				NodeTimeInfo t = blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 				if (first || pi.weight > max_weight) {
 					max_weight = pi.weight;
 					mind = t;
@@ -456,7 +459,8 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 				}
 			} else if (sync) {
 				pi.weight = 0;
-				blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
+				AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(i));
+				blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 			}
 		}
 	} else {
@@ -471,34 +475,33 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 			}
 		}
 
+		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 		if (new_closest != cur_closest && new_closest != -1) {
+			AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
+
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
 				NodeTimeInfo from;
 				// For ping-pong loop.
 				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
 				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (na_c.is_valid() && na_n.is_valid()) {
-					na_n->process_state = process_state;
-					na_c->process_state = process_state;
-
-					na_n->set_backward(na_c->is_backward());
-
+				if (na_c.is_valid() && na_n.is_valid() && instance_current_closest && instance_new_closest) {
+					na_n->set_backward(*instance_new_closest, p_process_state, na_c->is_backward(*instance_current_closest, p_process_state));
 					na_n = nullptr;
 					na_c = nullptr;
 				}
 				// See how much animation remains.
 				pi.seeked = false;
 				pi.weight = 0;
-				from = blend_node(blend_points[cur_closest].node, get_blend_point_name(cur_closest), pi, FILTER_IGNORE, true, true);
+				from = blend_node(p_process_state, p_instance, instance_current_closest, pi, FILTER_IGNORE, true, true);
 				pi.time = from.position;
 			}
 			pi.seeked = true;
 			pi.weight = 1.0;
-			mind = blend_node(blend_points[new_closest].node, get_blend_point_name(new_closest), pi, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
 			cur_closest = new_closest;
 		} else {
 			pi.weight = 1.0;
-			mind = blend_node(blend_points[cur_closest].node, get_blend_point_name(cur_closest), pi, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(p_process_state, p_instance, instance_current_closest, pi, FILTER_IGNORE, true, p_test_only);
 		}
 
 		if (sync) {
@@ -506,13 +509,14 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 			pi.weight = 0;
 			for (int i = 0; i < blend_points_used; i++) {
 				if (i != cur_closest) {
-					blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
+					AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(i));
+					blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 				}
 			}
 		}
 	}
 
-	set_parameter(closest, cur_closest);
+	p_instance.set_parameter_closest(cur_closest, p_process_state.is_testing);
 	return mind;
 }
 
