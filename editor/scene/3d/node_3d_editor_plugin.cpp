@@ -33,9 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/math/frustum.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
-#include "core/math/projection.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -876,13 +876,13 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 }
 
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
-	Projection cm;
+	Frustum fm;
 	if (view_3d_controller->is_orthogonal()) {
-		cm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+		fm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	} else {
-		cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+		fm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	}
-	Vector2 screen_he = cm.get_viewport_half_extents();
+	Vector2 screen_he = fm.get_viewport_half_extents();
 
 	Transform3D camera_transform;
 	camera_transform.translate_local(view_3d_controller->cursor.pos);

@@ -67,6 +67,7 @@ void RenderSceneBuffersExtension::set_use_debanding(bool p_use_debanding) {
 // RenderSceneDataExtension
 
 void RenderSceneDataExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_cam_frustum_plane, "plane");
 	GDVIRTUAL_BIND(_get_cam_transform);
 	GDVIRTUAL_BIND(_get_cam_projection);
 	GDVIRTUAL_BIND(_get_view_count);
@@ -74,6 +75,12 @@ void RenderSceneDataExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_view_projection, "view");
 
 	GDVIRTUAL_BIND(_get_uniform_buffer);
+}
+
+Plane RenderSceneDataExtension::get_cam_frustum_plane(Projection::Planes p_plane) const {
+	Plane ret;
+	GDVIRTUAL_CALL(_get_cam_frustum_plane, p_plane, ret);
+	return ret;
 }
 
 Transform3D RenderSceneDataExtension::get_cam_transform() const {
