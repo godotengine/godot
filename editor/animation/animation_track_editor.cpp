@@ -3244,51 +3244,13 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// Can do something with menu too! show insert key.
 			float offset = (pos.x - timeline->get_name_limit()) / timeline->get_zoom_scale();
 			if (!read_only) {
-				if (!menu) {
-					menu = memnew(PopupMenu);
-					add_child(menu);
-					menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
-				}
-
-				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
+				_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 				moving_selection_attempt = false;
 
-				menu->clear();
-				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-					if (hovering_key_idx != -1) {
-						lookup_key_idx = hovering_key_idx;
-						menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), vformat("%s (%s)", TTR("Go to Definition"), animation->method_track_get_name(track, lookup_key_idx)), MENU_KEY_LOOKUP);
-						menu->add_separator();
-					}
-				}
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
-				if (selected || editor->is_selection_active()) {
-					menu->add_separator();
-					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
-					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCut")), TTR("Cut Key(s)"), MENU_KEY_CUT);
-					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Key(s)"), MENU_KEY_COPY);
-				}
-				if (editor->is_key_clipboard_active()) {
-					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTR("Paste Key(s)"), MENU_KEY_PASTE);
-				}
-				if (selected || editor->is_selection_active()) {
-					AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
-					if (ape) {
-						AnimationPlayer *ap = ape->get_player();
-						if (ap && editor->can_add_reset_key() && animation != ap->get_animation(SceneStringName(RESET))) {
-							menu->add_separator();
-							menu->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTR("Send Key(s) to RESET"), MENU_KEY_ADD_RESET);
-						}
-					}
-					menu->add_separator();
-					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Key(s)"), MENU_KEY_DELETE);
-				}
-				menu->reset_size();
-
-				menu->set_position(get_screen_position() + get_local_mouse_position());
-				menu->popup();
-
 				insert_at_pos = offset + timeline->get_value();
+				Vector2 popup_pos = get_screen_position() + get_local_mouse_position();
+				// Use call_deferred to wait for the selected keys being updated.
+				callable_mp(this, &AnimationTrackEdit::_popup_key_context_menu).call_deferred(hovering_key_idx, popup_pos);
 				accept_event();
 			}
 		}
@@ -3613,6 +3575,49 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 	} else {
 		emit_signal(SNAME("dropped"), from_track, track + 1);
 	}
+}
+
+void AnimationTrackEdit::_popup_key_context_menu(int p_hovering_key_idx, Vector2 p_popup_pos) {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
+	}
+
+	menu->clear();
+	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+		if (p_hovering_key_idx != -1) {
+			lookup_key_idx = p_hovering_key_idx;
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), vformat("%s (%s)", TTR("Go to Definition"), animation->method_track_get_name(track, lookup_key_idx)), MENU_KEY_LOOKUP);
+			menu->add_separator();
+		}
+	}
+	menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
+	if (editor->is_selection_active()) {
+		menu->add_separator();
+		menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCut")), TTR("Cut Key(s)"), MENU_KEY_CUT);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Key(s)"), MENU_KEY_COPY);
+	}
+	if (editor->is_key_clipboard_active()) {
+		menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTR("Paste Key(s)"), MENU_KEY_PASTE);
+	}
+	if (editor->is_selection_active()) {
+		AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+		if (ape) {
+			AnimationPlayer *ap = ape->get_player();
+			if (ap && editor->can_add_reset_key() && animation != ap->get_animation(SceneStringName(RESET))) {
+				menu->add_separator();
+				menu->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTR("Send Key(s) to RESET"), MENU_KEY_ADD_RESET);
+			}
+		}
+		menu->add_separator();
+		menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Key(s)"), MENU_KEY_DELETE);
+	}
+	menu->reset_size();
+
+	menu->set_position(p_popup_pos);
+	menu->popup();
 }
 
 void AnimationTrackEdit::_menu_selected(int p_index) {
