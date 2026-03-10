@@ -1236,8 +1236,6 @@ TEST_CASE("[SceneTree][Control] Container layout ordering") {
 			"lay out children in vertical order");
 		root->remove_child(container);
 		memdelete(container);
-		memdelete(b1);
-    	memdelete(b2);
 	}
 	
 	SUBCASE("[SceneTree][Control] HBoxContainer ordering") {
@@ -1252,8 +1250,6 @@ TEST_CASE("[SceneTree][Control] Container layout ordering") {
 			"lay out children in horizontal order");
 		root->remove_child(container);
 		memdelete(container);
-		memdelete(b1);
-    	memdelete(b2);
 	}
 }
 
