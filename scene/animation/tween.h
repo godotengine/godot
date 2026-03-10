@@ -70,6 +70,8 @@ class Tween : public RefCounted {
 	friend class PropertyTweener;
 
 public:
+	static inline constexpr int PARAM_COUNT = 2;
+
 	enum TweenProcessMode {
 		TWEEN_PROCESS_PHYSICS,
 		TWEEN_PROCESS_IDLE,
@@ -109,6 +111,7 @@ private:
 	TweenProcessMode process_mode = TweenProcessMode::TWEEN_PROCESS_IDLE;
 	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_BOUND;
 	TransitionType default_transition = TransitionType::TRANS_LINEAR;
+	double default_trans_params[PARAM_COUNT] = { Math::INF, Math::INF };
 	EaseType default_ease = EaseType::EASE_IN_OUT;
 	ObjectID bound_node;
 
@@ -134,7 +137,7 @@ private:
 	bool is_infinite = false;
 #endif
 
-	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
+	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d, real_t p1, real_t p2);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
 
 	void _start_tweeners();
@@ -143,6 +146,12 @@ private:
 protected:
 	static void _bind_methods();
 	virtual String _to_string() override;
+
+#ifndef DISABLE_DEPRECATED
+	static Variant _interpolate_variant_bind_compat_82155(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, TransitionType p_trans, EaseType p_ease);
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	RequiredResult<PropertyTweener> tween_property(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_to, double p_duration);
@@ -176,15 +185,17 @@ public:
 	int get_loops_left() const;
 	RequiredResult<Tween> set_speed_scale(float p_speed);
 	RequiredResult<Tween> set_trans(TransitionType p_trans);
+	RequiredResult<Tween> set_trans_params(double p_param1, double p_param2 = Math::INF);
 	TransitionType get_trans() const;
 	RequiredResult<Tween> set_ease(EaseType p_ease);
 	EaseType get_ease() const;
+	void get_transition_parameters(TransitionType p_trans, double *r_params) const;
 
 	RequiredResult<Tween> parallel();
 	RequiredResult<Tween> chain();
 
-	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
-	static Variant interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d, double p_param1 = Math::INF, double p_param2 = Math::INF);
+	static Variant interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease, double p_param1 = Math::INF, double p_param2 = Math::INF);
 
 	bool step(double p_delta);
 	bool can_process(bool p_tree_paused) const;
@@ -210,6 +221,7 @@ public:
 	RequiredResult<PropertyTweener> from_current();
 	RequiredResult<PropertyTweener> as_relative();
 	RequiredResult<PropertyTweener> set_trans(Tween::TransitionType p_trans);
+	RequiredResult<PropertyTweener> set_trans_params(double p_param1, double p_param2 = Math::INF);
 	RequiredResult<PropertyTweener> set_ease(Tween::EaseType p_ease);
 	RequiredResult<PropertyTweener> set_custom_interpolator(const Callable &p_method);
 	RequiredResult<PropertyTweener> set_delay(double p_delay);
@@ -237,6 +249,7 @@ private:
 	double duration = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX; // This is set inside set_tween();
 	Tween::EaseType ease_type = Tween::EASE_MAX;
+	double trans_params[Tween::PARAM_COUNT] = { Math::INF, Math::INF };
 	Callable custom_method;
 
 	double delay = 0;
@@ -284,10 +297,12 @@ class MethodTweener : public Tweener {
 
 public:
 	RequiredResult<MethodTweener> set_trans(Tween::TransitionType p_trans);
+	RequiredResult<MethodTweener> set_trans_params(double p_param1, double p_param2 = Math::INF);
 	RequiredResult<MethodTweener> set_ease(Tween::EaseType p_ease);
 	RequiredResult<MethodTweener> set_delay(double p_delay);
 
 	void set_tween(const Ref<Tween> &p_tween) override;
+	void start() override;
 	bool step(double &r_delta) override;
 
 	MethodTweener(const Callable &p_callback, const Variant &p_from, const Variant &p_to, double p_duration);
@@ -301,6 +316,7 @@ private:
 	double delay = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX;
 	Tween::EaseType ease_type = Tween::EASE_MAX;
+	double trans_params[Tween::PARAM_COUNT] = { Math::INF, Math::INF };
 
 	Variant initial_val;
 	Variant delta_val;
