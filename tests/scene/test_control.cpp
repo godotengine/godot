@@ -1226,6 +1226,7 @@ TEST_CASE("[SceneTree][Control] Container layout") {
 
 	SUBCASE("VBoxContainer ordering") {
 		VBoxContainer *container = memnew(VBoxContainer);
+		container->add_theme_constant_override("separation", 0);
 		Button *b1 = memnew(Button);
 		Button *b2 = memnew(Button);
 		Button *b3 = memnew(Button);
@@ -1234,19 +1235,22 @@ TEST_CASE("[SceneTree][Control] Container layout") {
 		container->add_child(b2);
 		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
-		CHECK_MESSAGE(b1->get_position().y < b2->get_position().y, 
-			"first child above second child");
-		CHECK_MESSAGE(b2->get_position().y < b3->get_position().y, 
-			"second child above third child");
+		CHECK_MESSAGE(
+			b1->get_position().y == 0,
+			"First child at top of container");
+		CHECK_MESSAGE(
+			Math::is_equal_approx(b2->get_position().y, b1->get_size().y),
+			"Second child after first child's height");
+		CHECK_MESSAGE(
+			Math::is_equal_approx(b3->get_position().y, b1->get_size().y + b2->get_size().y),
+			"Third child after sum of other children's heights");
 		root->remove_child(container);
-		memdelete(b1);
-		memdelete(b2);
-		memdelete(b3);
 		memdelete(container);
 	}
 	
 	SUBCASE("HBoxContainer ordering") {
 		HBoxContainer *container = memnew(HBoxContainer);
+		container->add_theme_constant_override("separation", 0);
 		Button *b1 = memnew(Button);
 		Button *b2 = memnew(Button);
 		Button *b3 = memnew(Button);
@@ -1255,14 +1259,16 @@ TEST_CASE("[SceneTree][Control] Container layout") {
 		container->add_child(b2);
 		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
-		CHECK_MESSAGE(b1->get_position().x < b2->get_position().x, 
-			"first child left of second child");
-		CHECK_MESSAGE(b2->get_position().x < b3->get_position().x, 
-			"second child left of third child");
+		CHECK_MESSAGE(
+			b1->get_position().x == 0,
+			"First child left side of container");
+		CHECK_MESSAGE(
+			Math::is_equal_approx(b2->get_position().x, b1->get_size().x),
+			"Second child after first child's length");
+		CHECK_MESSAGE(
+			Math::is_equal_approx(b3->get_position().x, b1->get_size().x + b2->get_size().x),
+			"Third child after sum of other children's lengths");
 		root->remove_child(container);
-		memdelete(b1);
-		memdelete(b2);
-		memdelete(b3);
 		memdelete(container);
 	}
 }
