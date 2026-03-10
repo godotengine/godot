@@ -91,6 +91,13 @@
 				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
 			</description>
 		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]false[/code], or if both operands are [code]true[/code].
+			</description>
+		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
@@ -103,6 +110,13 @@
 			<param index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]true[/code], or if both operands are [code]false[/code].
 			</description>
 		</operator>
 	</operators>
