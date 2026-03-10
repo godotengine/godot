@@ -39,6 +39,7 @@
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
