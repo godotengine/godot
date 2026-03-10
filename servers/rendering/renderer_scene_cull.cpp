@@ -35,19 +35,18 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/os.h"
 #include "servers/rendering/rendering_light_culler.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-// This is used only to obtain node paths for user-friendly physics interpolation warnings.
-#include "scene/main/node.h"
-#endif
-
 #ifndef XR_DISABLED
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_server.h"
+#endif
+
+//#define DEBUG_CULL_TIME
+#ifdef DEBUG_CULL_TIME
+#include "core/os/os.h"
 #endif
 
 /* HALTON SEQUENCE */
@@ -3334,7 +3333,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		cull_data.occlusion_buffer = RendererSceneOcclusionCull::get_singleton()->buffer_get_ptr(p_viewport);
 		cull_data.camera_matrix = &p_camera_data->main_projection;
 		cull_data.visibility_viewport_mask = scenario->viewport_visibility_masks.has(p_viewport) ? scenario->viewport_visibility_masks[p_viewport] : 0;
-//#define DEBUG_CULL_TIME
 #ifdef DEBUG_CULL_TIME
 		uint64_t time_from = OS::get_singleton()->get_ticks_usec();
 #endif

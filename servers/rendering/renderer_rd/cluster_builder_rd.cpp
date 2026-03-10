@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #include "cluster_builder_rd.h"
+
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h" // IWYU pragma: keep. RENDER_TIMESTAMP macro uses RSG.
 
 ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	RD::VertexFormatID vertex_format;

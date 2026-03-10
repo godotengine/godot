@@ -30,7 +30,17 @@
 
 #pragma once
 
+#include "core/math/math_defs.h" // real_t
 #include "servers/rendering/rendering_server_enums.h"
+
+class RID;
+struct AABB;
+struct Color;
+struct Transform3D;
+struct Vector3;
+
+template <typename T>
+class Vector;
 
 class RendererParticlesStorage {
 public:
