@@ -31,11 +31,12 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
 #include "servers/navigation_2d/navigation_path_query_result_2d.h"
+
+class Node;
 
 #ifdef CLIPPER2_ENABLED
 class NavMeshGenerator2D;

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/math/transform_3d.h"
+#include "core/templates/rid.h"
 #include "servers/rendering/storage/particles_storage.h"
 
 namespace RendererDummy {

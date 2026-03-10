@@ -30,10 +30,13 @@
 
 #include "rendering_light_culler.h"
 
-#include "core/config/engine.h"
 #include "core/math/plane.h"
 #include "core/math/projection.h"
 #include "rendering_server_globals.h"
+
+#ifdef LIGHT_CULLER_DEBUG_FLASH
+#include "core/config/engine.h"
+#endif
 
 #ifdef RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 const char *RenderingLightCuller::Data::string_planes[] = {
