@@ -3251,6 +3251,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
+				moving_selection_attempt = false;
 
 				menu->clear();
 				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
