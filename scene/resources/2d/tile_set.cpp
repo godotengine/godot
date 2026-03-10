@@ -43,10 +43,6 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_2d/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
-
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 
 void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {

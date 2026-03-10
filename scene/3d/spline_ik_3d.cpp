@@ -31,6 +31,7 @@
 #include "spline_ik_3d.h"
 
 #include "core/object/class_db.h"
+#include "scene/3d/path_3d.h"
 
 bool SplineIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

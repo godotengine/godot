@@ -37,7 +37,6 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/hashfuncs.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"

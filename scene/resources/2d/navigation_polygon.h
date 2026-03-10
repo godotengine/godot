@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_2d/navigation_constants_2d.h"
 

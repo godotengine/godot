@@ -39,7 +39,6 @@
 #include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
-#include "thirdparty/misc/polypartition.h"
 #endif // NAVIGATION_2D_DISABLED
 
 Callable MultiMeshInstance2D::_navmesh_source_geometry_parsing_callback;

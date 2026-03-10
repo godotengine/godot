@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 
 class BitMap;

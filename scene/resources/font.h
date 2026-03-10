@@ -32,7 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "scene/resources/texture.h"
+#include "core/variant/typed_array.h"
 #include "servers/text/text_server.h"
 
 class TextLine;
