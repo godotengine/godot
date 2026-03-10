@@ -56,6 +56,7 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/physics_material.h"
 #include "scene/resources/resource_format_text.h"
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {

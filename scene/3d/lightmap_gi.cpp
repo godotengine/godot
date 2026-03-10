@@ -37,7 +37,6 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
-#include "core/os/os.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -49,6 +48,10 @@
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+
+#if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#include "core/os/os.h"
+#endif
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;
