@@ -406,10 +406,11 @@
 			[b]Note:[/b] This setting is implemented on macOS for non-sandboxed applications only.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
+			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. The framerate is also automatically limited by the [member application/run/low_processor_mode_sleep_usec] setting. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
+			[b]Note:[/b] Low processor mode is always enabled in [url=$DOCS_URL/tutorials/export/exporting_for_dedicated_servers.html]dedicated server mode[/url] or when using the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], regardless of the value of [member application/run/low_processor_mode], as dedicated servers don't perform any rendering.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
-			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage. The default value limits framerate to roughly 145 FPS.
 		</member>
 		<member name="application/run/main_loop_type" type="String" setter="" getter="" default="&quot;SceneTree&quot;">
 			The name of the type implementing the engine's main loop.
