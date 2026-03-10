@@ -32,7 +32,7 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
-Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
+Quaternion JointLimitation3D::_make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
 	const double ALMOST_ONE = 1.0 - CMP_EPSILON;
 	// The default is to interpret the forward vector as the +Y axis.
 	Vector3 axis_y = p_local_forward_vector.normalized();
@@ -48,14 +48,29 @@ Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, 
 	return (Basis(axis_x, axis_y, axis_z).get_rotation_quaternion() * p_rotation_offset.normalized()).normalized();
 }
 
+Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
+	Quaternion space;
+	if (GDVIRTUAL_CALL(_make_space, p_local_forward_vector, p_local_right_vector, p_rotation_offset, space)) {
+		return space;
+	}
+	return _make_space(p_local_forward_vector, p_local_right_vector, p_rotation_offset);
+}
+
 Vector3 JointLimitation3D::_solve(const Vector3 &p_direction) const {
-	return p_direction;
+	Vector3 direction = p_direction;
+	GDVIRTUAL_CALL(_solve, p_direction, direction);
+	return direction;
 }
 
 Vector3 JointLimitation3D::solve(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset, const Vector3 &p_local_current_vector) const {
 	Quaternion space = make_space(p_local_forward_vector, p_local_right_vector, p_rotation_offset);
 	Vector3 dir = p_local_current_vector.normalized();
 	return space.xform(_solve(space.xform_inv(dir)));
+}
+
+void JointLimitation3D::_bind_methods() {
+	GDVIRTUAL_BIND(_make_space, "local_forward_vector", "local_right_vector", "rotation_offset");
+	GDVIRTUAL_BIND(_solve, "direction");
 }
 
 #ifdef TOOLS_ENABLED

@@ -8,4 +8,25 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="_make_space" qualifiers="virtual const">
+			<return type="Quaternion" />
+			<param index="0" name="local_forward_vector" type="Vector3" />
+			<param index="1" name="local_right_vector" type="Vector3" />
+			<param index="2" name="rotation_offset" type="Quaternion" />
+			<description>
+				This method receives several vectors and a rotation offset as arguments and returns a space.
+				The [param local_forward_vector] is usually the vector pointing from the parent to the child. For the bone which is end of the chain, any axis may be selected by enum. The [param local_right_vector] is the +X vector of the bone rest.
+				If this method is not implemented, the space is determined by the default implementation. By default, a space is defined where the normalized [param local_forward_vector] is +Y, the normalized [param local_right_vector] vector projected onto the plane with the +Y axis as its normal is +X, and the cross product of these is +Z.
+			</description>
+		</method>
+		<method name="_solve" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="direction" type="Vector3" />
+			<description>
+				This method returns a vector that has been applied limitation for the input vector.
+				The [param direction] is a normalized vector and the space is defined by [method _make_space], must return a normalized vector.
+			</description>
+		</method>
+	</methods>
 </class>
