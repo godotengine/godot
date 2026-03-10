@@ -50,6 +50,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 #include "thirdparty/grisu2/grisu2.h"
 
+#include <cstdio>
+
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
 #endif
