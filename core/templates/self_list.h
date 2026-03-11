@@ -120,7 +120,7 @@ public:
 				_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
 			};
 			using Element = SelfList<T>;
-			SortList<Element, T *, &Element::_self, &Element::_prev, &Element::_next, PtrComparator> sorter;
+			SortList<Element, T *, _self_ref, _prev_ref, _next_ref, PtrComparator> sorter;
 			sorter.sort(_first, _last);
 		}
 
@@ -141,6 +141,10 @@ private:
 	T *_self = nullptr;
 	SelfList<T> *_next = nullptr;
 	SelfList<T> *_prev = nullptr;
+	// Specify pointers in variables to work around a VS 2022 bug (GH-121326).
+	static constexpr T *SelfList<T>::*_self_ref = &SelfList<T>::_self;
+	static constexpr SelfList<T> *SelfList<T>::*_prev_ref = &SelfList<T>::_prev;
+	static constexpr SelfList<T> *SelfList<T>::*_next_ref = &SelfList<T>::_next;
 
 public:
 	_FORCE_INLINE_ bool in_list() const { return _root; }
