@@ -3087,6 +3087,9 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
+		if (EditorNode::is_cmdline_mode()) {
+			err += TTR("ETC2/ASTC texture compression is required for Android export. In Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
+		}
 	}
 
 	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
