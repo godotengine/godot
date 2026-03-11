@@ -279,6 +279,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	main_vbox_container->add_child(memnew(HSeparator));
 
 	editor_base = memnew(MarginContainer);
+	editor_base->set_custom_minimum_size(Size2(220, 165) * EDSCALE);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vbox_container->add_child(editor_base);
 
@@ -308,7 +309,6 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 
 AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
-	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	EditorDockManager::get_singleton()->add_dock(anim_tree_editor);
 	anim_tree_editor->close();
 }

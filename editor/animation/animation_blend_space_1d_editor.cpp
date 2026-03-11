@@ -42,6 +42,7 @@
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -613,6 +614,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
+				error_label->set_tooltip_text(error);
 				if (!error.is_empty()) {
 					error_panel->show();
 				} else {
@@ -663,8 +665,11 @@ AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nu
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;
 
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	FlowContainer *top_fc = memnew(FlowContainer);
+	add_child(top_fc);
+
+	HBoxContainer *left_hb = memnew(HBoxContainer);
+	top_fc->add_child(left_hb);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
@@ -673,7 +678,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
-	top_hb->add_child(tool_select);
+	left_hb->add_child(tool_select);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move points.\nRMB: Create point at position clicked.\nShift+LMB+Drag: Set the blending position within the space."));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
@@ -682,7 +687,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
-	top_hb->add_child(tool_create);
+	left_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(1));
 
@@ -690,50 +695,56 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
-	top_hb->add_child(tool_blend);
+	left_hb->add_child(tool_blend);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
+	left_hb->add_child(tool_erase_sep);
+
 	tool_erase = memnew(Button);
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
+	left_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
 
-	top_hb->add_child(memnew(VSeparator));
+	left_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
 	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
-	top_hb->add_child(snap);
+	left_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_snap_toggled));
 
 	snap_value = memnew(SpinBox);
-	top_hb->add_child(snap_value);
+	left_hb->add_child(snap_value);
 	snap_value->set_min(0.01);
 	snap_value->set_step(0.01);
 	snap_value->set_max(1000);
+	snap_value->set_tooltip_text(TTRC("Grid Step"));
 	snap_value->set_accessibility_name(TTRC("Grid Step"));
 
-	top_hb->add_child(memnew(VSeparator));
-	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	left_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *center_hb = memnew(HBoxContainer);
+	top_fc->add_child(center_hb);
+
 	sync = memnew(CheckBox);
-	top_hb->add_child(sync);
+	sync->set_text(TTRC("Sync"));
+	center_hb->add_child(sync);
 	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
-	top_hb->add_child(memnew(VSeparator));
+	center_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	center_hb->add_child(memnew(Label(TTRC("Blend:"))));
 	interpolation = memnew(OptionButton);
-	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	center_hb->add_child(interpolation);
 
 	edit_hb = memnew(HBoxContainer);
-	top_hb->add_child(edit_hb);
+	top_fc->add_child(edit_hb);
 	edit_hb->add_child(memnew(VSeparator));
 	edit_hb->add_child(memnew(Label(TTR("Point"))));
 
@@ -810,6 +821,10 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	error_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	error_panel->add_child(error_label);
 	error_panel->hide();
 
@@ -827,6 +842,4 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_file_opened));
-
-	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 }

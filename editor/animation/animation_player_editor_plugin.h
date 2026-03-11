@@ -103,7 +103,6 @@ class AnimationPlayerEditor : public EditorDock {
 	MenuButton *onion_skinning = nullptr;
 	Button *pin = nullptr;
 	SpinBox *frame = nullptr;
-	LineEdit *scale = nullptr;
 	LineEdit *name = nullptr;
 	OptionButton *library = nullptr;
 	Label *name_title = nullptr;
@@ -198,7 +197,6 @@ class AnimationPlayerEditor : public EditorDock {
 	void _animation_duplicate();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
-	void _scale_changed(const String &p_scale);
 	void _seek_value_changed(float p_value, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
