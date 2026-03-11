@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/math/random_number_generator.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/templates/a_hash_map.h"
@@ -2692,7 +2693,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, erase, sarray("value"), varray());
 	bind_method(Array, front, sarray(), varray());
 	bind_method(Array, back, sarray(), varray());
-	bind_method(Array, pick_random, sarray(), varray());
+	bind_method(Array, pick_random, sarray("rng"), varray(Variant()));
 	bind_method(Array, find, sarray("what", "from"), varray(0));
 	bind_method(Array, find_custom, sarray("method", "from"), varray(0));
 	bind_method(Array, rfind, sarray("what", "from"), varray(-1));
@@ -2702,6 +2703,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, pop_back, sarray(), varray());
 	bind_method(Array, pop_front, sarray(), varray());
 	bind_method(Array, pop_at, sarray("position"), varray());
+	bind_method(Array, pop_random, sarray("rng"), varray(Variant()));
 	bind_method(Array, sort, sarray(), varray());
 	bind_method(Array, sort_custom, sarray("func"), varray());
 	bind_method(Array, shuffle, sarray(), varray());

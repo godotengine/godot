@@ -414,7 +414,9 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_array_min(scoped ref godot_array p_self, out godot_variant r_value);
 
-        public static partial void godotsharp_array_pick_random(scoped ref godot_array p_self, out godot_variant r_value);
+        public static partial void godotsharp_array_pick_random(scoped ref godot_array p_self, IntPtr p_rng, out godot_variant r_value);
+
+        public static partial void godotsharp_array_pop_random(scoped ref godot_array p_self, IntPtr p_rng, out godot_variant r_value);
 
         public static partial godot_bool godotsharp_array_recursive_equal(ref godot_array p_self, in godot_array p_other);
 

@@ -1137,8 +1137,12 @@ void godotsharp_array_min(const Array *p_self, Variant *r_value) {
 	*r_value = p_self->min();
 }
 
-void godotsharp_array_pick_random(const Array *p_self, Variant *r_value) {
-	*r_value = p_self->pick_random();
+void godotsharp_array_pick_random(const Array *p_self, const Ref<RandomNumberGenerator> *p_rng, Variant *r_value) {
+	*r_value = p_self->pick_random(*p_rng);
+}
+
+void godotsharp_array_pop_random(Array *p_self, const Ref<RandomNumberGenerator> *p_rng, Variant *r_value) {
+	*r_value = p_self->pop_random(*p_rng);
 }
 
 bool godotsharp_array_recursive_equal(const Array *p_self, const Array *p_other) {
@@ -1769,6 +1773,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_max,
 	(void *)godotsharp_array_min,
 	(void *)godotsharp_array_pick_random,
+	(void *)godotsharp_array_pop_random,
 	(void *)godotsharp_array_recursive_equal,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
