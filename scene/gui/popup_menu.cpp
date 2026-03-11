@@ -232,7 +232,19 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!items.empty()) {
+		Input *input = Input::get_singleton();
+		Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+		Ref<InputEventJoypadButton> joypadbutton_event = p_event;
+		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
+
 		if (p_event->is_action("ui_down") && p_event->is_pressed() && mouse_over != items.size() - 1) {
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_down")) {
+					return;
+				}
+				set_process_internal(true);
+			}
+
 			int search_from = mouse_over + 1;
 			if (search_from >= items.size()) {
 				search_from = 0;
@@ -265,6 +277,13 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (p_event->is_action("ui_up") && p_event->is_pressed() && mouse_over != 0) {
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_up")) {
+					return;
+				}
+				set_process_internal(true);
+			}
+
 			int search_from = mouse_over - 1;
 			if (search_from < 0) {
 				search_from = items.size() - 1;
@@ -638,6 +657,83 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_POST_POPUP: {
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Input *input = Input::get_singleton();
+
+			if (input->is_action_just_released("ui_up") || input->is_action_just_released("ui_down")) {
+				gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+				set_process_internal(false);
+				return;
+			}
+			gamepad_event_delay_ms -= get_process_delta_time();
+			if (gamepad_event_delay_ms <= 0) {
+				if (input->is_action_pressed("ui_down")) {
+					gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+					int search_from = mouse_over + 1;
+					if (search_from >= items.size()) {
+						search_from = 0;
+					}
+
+					bool match_found = false;
+					for (int i = search_from; i < items.size(); i++) {
+						if (!items[i].separator && !items[i].disabled) {
+							mouse_over = i;
+							emit_signal("id_focused", i);
+							_scroll_to_item(i);
+							control->update();
+							match_found = true;
+							break;
+						}
+					}
+
+					if (!match_found) {
+						// If the last item is not selectable, try re-searching from the start.
+						for (int i = 0; i < search_from; i++) {
+							if (!items[i].separator && !items[i].disabled) {
+								mouse_over = i;
+								emit_signal("id_focused", i);
+								_scroll_to_item(i);
+								control->update();
+								break;
+							}
+						}
+					}
+				}
+
+				if (input->is_action_pressed("ui_up")) {
+					gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+					int search_from = mouse_over - 1;
+					if (search_from < 0) {
+						search_from = items.size() - 1;
+					}
+
+					bool match_found = false;
+					for (int i = search_from; i >= 0; i--) {
+						if (!items[i].separator && !items[i].disabled) {
+							mouse_over = i;
+							emit_signal("id_focused", i);
+							_scroll_to_item(i);
+							control->update();
+							match_found = true;
+							break;
+						}
+					}
+
+					if (!match_found) {
+						// If the first item is not selectable, try re-searching from the end.
+						for (int i = items.size() - 1; i >= search_from; i--) {
+							if (!items[i].separator && !items[i].disabled) {
+								mouse_over = i;
+								emit_signal("id_focused", i);
+								_scroll_to_item(i);
+								control->update();
+								break;
+							}
+						}
+					}
+				}
+			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Set margin on the margin container
