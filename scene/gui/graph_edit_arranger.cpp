@@ -32,6 +32,354 @@
 
 #include "scene/gui/graph_edit.h"
 
+// How this arranger works:
+// 1. Data is taken from the GraphEdit and formed into a useful tree-like datastructure for arranging.
+// 2. The graph is split into connected chunks, and an ideal start node is found in each one.
+// 3. From the start node, every node in each chunk chooses a particular node to be arranged by.
+//    Nodes attempt to place themselves the most connections away from the start node as possible,
+//    with the least number of 'turns' as possible (turns being a change in the direction of connection
+//    being traversed)
+// 4. Nodes are arranged based on the node they chose to be arranged by. To avoid overlaps, nodes are
+//	  'bumped' out of each-other's way.
+// 5. A final pass is taken that bumps nodes off of connections, which can seriously impact readability
+//    otherwise.
+
+constexpr Vector2 node_padding = Vector2(200, 100);
+
+enum Direction {
+	DIRECTION_LEFT,
+	DIRECTION_RIGHT,
+};
+
+struct GraphNodeData;
+struct GraphConnection {
+	GraphNodeData *node;
+	int index;
+
+	int find_sorted_index(const Vector<GraphConnection> &p_connections) {
+		int connection_count = p_connections.size();
+		int dest_index = connection_count;
+		for (int i = 0; i < connection_count; i++) {
+			const GraphConnection &connection = p_connections[i];
+			if (connection.index > index) {
+				dest_index = i;
+				break;
+			}
+		}
+
+		return dest_index;
+	}
+};
+
+static void _bump_rect(const Vector<GraphNodeData *> &p_nodes, const GraphNodeData *p_bumper, const Rect2 &p_check_rect, const Vector2 &p_offset, bool p_bump_siblings);
+struct GraphNodeData {
+	GraphNode *node;
+	GraphNodeData *queued_by;
+	// The direction this node is relative to the node it was queued by.
+	Direction queued_direction;
+	Rect2 rect;
+	int turn_distance;
+	int distance;
+	bool scanned;
+	bool arranged;
+	bool bumping;
+	Vector<GraphConnection> left_connections;
+	Vector<GraphConnection> right_connections;
+
+	int connection_count() const {
+		return left_connections.size() + right_connections.size();
+	}
+
+	// Finds if the given node is connected to the callee. Useful to avoid scanning through loops forever.
+	bool is_connected_recursive(GraphNodeData *p_check, Direction p_scan_direction, HashSet<GraphNodeData *> &p_avoid_loop_set) {
+		if (p_avoid_loop_set.has(this)) {
+			return false;
+		} else if (this == p_check) {
+			return true;
+		}
+
+		p_avoid_loop_set.insert(this);
+
+		Vector<GraphConnection> to_check = p_scan_direction == DIRECTION_RIGHT ? right_connections : left_connections;
+		for (const GraphConnection &connection : to_check) {
+			if (connection.node->is_connected_recursive(p_check, p_scan_direction, p_avoid_loop_set)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	GraphNodeData *get_overlapping(const Rect2 &p_check_rect, const Vector<GraphNodeData *> &p_nodes) {
+		for (GraphNodeData *overlapping : p_nodes) {
+			if (overlapping != this && overlapping->rect.intersects(p_check_rect)) {
+				return overlapping;
+			}
+		}
+
+		return nullptr;
+	}
+
+	// Returns false if testing was inconclusive.
+	bool should_be_above(const GraphNodeData *p_node, bool *r_should_be_above) {
+		const GraphNodeData *previous_this_ancestor = this;
+		const GraphNodeData *this_ancestor = queued_by;
+
+		while (this_ancestor != nullptr) {
+			const GraphNodeData *previous_check_ancestor = p_node;
+			const GraphNodeData *check_ancestor = p_node->queued_by;
+			while (check_ancestor != nullptr) {
+				// In this case, the node we've found must be the nearest common ancestor.
+				if (this_ancestor == check_ancestor) {
+					// There's no easy way to compare them if they were arranged in different directions here.
+					if (previous_this_ancestor->queued_direction != previous_check_ancestor->queued_direction) {
+						return false;
+					}
+
+					const Vector<GraphConnection> siblings = previous_this_ancestor->queued_direction == DIRECTION_LEFT ? this_ancestor->left_connections : this_ancestor->right_connections;
+					int this_port = -1;
+					int check_port = -1;
+					// Connections are organized from highest to lowest, so the first one found must be
+					// organized above.
+					for (GraphConnection connection : siblings) {
+						if (connection.node == previous_this_ancestor) {
+							this_port = connection.index;
+						} else if (connection.node == previous_check_ancestor) {
+							check_port = connection.index;
+						}
+					}
+
+					if (this_port == check_port || this_port == -1 || check_port == -1) {
+						return false;
+					}
+
+					*r_should_be_above = this_port < check_port;
+					return true;
+				}
+
+				previous_check_ancestor = check_ancestor;
+				check_ancestor = check_ancestor->queued_by;
+			}
+
+			previous_this_ancestor = this_ancestor;
+			this_ancestor = this_ancestor->queued_by;
+		}
+
+		// This should never be able to happen, as all nodes should share at least one common ancestor.
+		return false;
+	}
+
+	// Moves the node to the given y position, and bumps all contacted nodes recursively.
+	void bump(const Vector<GraphNodeData *> &p_nodes, const Vector2 &p_new_position, bool p_bump_siblings) {
+		if (!bumping) {
+			bumping = true;
+		} else {
+			return;
+		}
+
+		Vector2 offset = p_new_position - rect.position;
+		Rect2 check_rect = rect;
+
+		bool bump_siblings = p_bump_siblings;
+		// If p_bump_siblings is true, then all siblings of this node should be bumped along with this
+		// one. This fixes a lot of strange overlapping behavior.
+		if (queued_by != nullptr && p_bump_siblings) {
+			const Vector<GraphConnection> siblings = queued_direction == DIRECTION_LEFT ? queued_by->left_connections : queued_by->right_connections;
+			for (GraphConnection connection : siblings) {
+				if (connection.node != this && (connection.node->queued_by == queued_by || connection.node == queued_by->queued_by) && connection.node->bumping) {
+					bump_siblings = false;
+				}
+			}
+
+			if (bump_siblings) {
+				for (GraphConnection connection : siblings) {
+					if (connection.node == this || (connection.node->queued_by != queued_by && connection.node != queued_by->queued_by)) {
+						continue;
+					}
+
+					check_rect = check_rect.merge(connection.node->rect);
+					connection.node->bumping = true;
+				}
+			}
+		}
+
+		bool offset_x = true;
+		bool offset_y = true;
+
+		// When siblings are bumped, we need to increase the offset to account for siblings that
+		// may be further within the rect we're being bumped by. The outer and inner corners below
+		// refer to the corner of the current rect that siblings all take up and the corner of
+		// the rect that they should take up to avoid any overlapping respectively.
+
+		Vector2 outer_corner;
+		Vector2 inner_corner;
+		if (offset.x > 0.1) {
+			outer_corner.x = check_rect.position.x;
+			inner_corner.x = rect.position.x;
+		} else if (offset.x < -0.1) {
+			outer_corner.x = check_rect.position.x + check_rect.size.x;
+			inner_corner.x = rect.position.x + rect.size.x;
+		} else {
+			offset_x = false;
+		}
+
+		if (offset.y > 0.1) {
+			outer_corner.y = check_rect.position.y;
+			inner_corner.y = rect.position.y;
+		} else if (offset.y < -0.1) {
+			outer_corner.y = check_rect.position.y + check_rect.size.y;
+			inner_corner.y = rect.position.y + rect.size.y;
+		} else {
+			offset_y = false;
+		}
+
+		if (offset_x) {
+			offset.x += inner_corner.x - outer_corner.x;
+		}
+		if (offset_y) {
+			offset.y += inner_corner.y - outer_corner.y;
+		}
+
+		check_rect = check_rect.merge(Rect2(check_rect.position + offset, check_rect.size));
+		_bump_rect(p_nodes, this, check_rect, offset, p_bump_siblings);
+
+		rect.position += offset;
+
+		if (queued_by != nullptr && bump_siblings) {
+			const Vector<GraphConnection> siblings = queued_direction == DIRECTION_LEFT ? queued_by->left_connections : queued_by->right_connections;
+			for (GraphConnection connection : siblings) {
+				if (connection.node == this || (connection.node->queued_by != queued_by && connection.node != queued_by->queued_by)) {
+					continue;
+				}
+
+				connection.node->bumping = false;
+				connection.node->rect.position += offset;
+			}
+		}
+		bumping = false;
+	}
+
+	void get_connected_recursive(Vector<GraphNodeData *> &p_dest) {
+		if (scanned) {
+			return;
+		}
+		scanned = true;
+		p_dest.push_back(this);
+		for (const GraphConnection &connection : left_connections) {
+			connection.node->get_connected_recursive(p_dest);
+		}
+		for (const GraphConnection &connection : right_connections) {
+			connection.node->get_connected_recursive(p_dest);
+		}
+	}
+
+	void determine_max_depth_recursive(Direction p_direction) {
+		for (int i = 0; i < 2; i++) {
+			Direction search_direction = i == 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+			Vector<GraphConnection> connections = search_direction == DIRECTION_LEFT ? left_connections : right_connections;
+
+			for (GraphConnection connection : connections) {
+				if (connection.node->queued_by != this) {
+					continue;
+				}
+
+				connection.node->determine_max_depth_recursive(search_direction);
+
+				if (search_direction == p_direction && connection.node->distance >= distance) {
+					distance = connection.node->distance + 1;
+				}
+			}
+		}
+	}
+};
+
+static void _bump_rect(const Vector<GraphNodeData *> &p_nodes, const GraphNodeData *p_bumper, const Rect2 &p_check_rect, const Vector2 &p_offset, bool p_bump_siblings) {
+	for (GraphNodeData *node : p_nodes) {
+		if (!node->arranged || node->bumping || !node->rect.intersects(p_check_rect)) {
+			continue;
+		}
+
+		Rect2 overlap = node->rect.intersection(p_check_rect);
+		int axis = overlap.size.x < overlap.size.y ? 0 : 1;
+		Vector2 bump_amount;
+		int alt_axis = (axis + 1) % 2;
+		bump_amount[alt_axis] = node->rect.position[alt_axis];
+
+		Direction bump_direction;
+
+		if (Math::abs(p_offset[axis]) < 0.1f) {
+			bool should_be_above;
+			if (axis == 1 && node->should_be_above(p_bumper, &should_be_above)) {
+				bump_direction = should_be_above ? DIRECTION_LEFT : DIRECTION_RIGHT;
+			} else {
+				int cutoff = p_check_rect.position[axis] + p_check_rect.size[axis] / 2 - node->rect.size[axis] / 2;
+				bump_direction = node->rect.position[axis] > cutoff ? DIRECTION_RIGHT : DIRECTION_LEFT;
+			}
+		} else {
+			bump_direction = p_offset[axis] > 0 ? DIRECTION_RIGHT : DIRECTION_LEFT;
+		}
+
+		if (bump_direction == DIRECTION_RIGHT) {
+			bump_amount[axis] = p_check_rect.position[axis] + p_check_rect.size[axis] + 1.0f;
+			node->bump(p_nodes, bump_amount, p_bump_siblings);
+		} else {
+			bump_amount[axis] = p_check_rect.position[axis] - node->rect.size[axis] - 1.0f;
+			node->bump(p_nodes, bump_amount, p_bump_siblings);
+		}
+	}
+}
+
+// Finds the corresponding y coordinate of an x coordinate along a line segment. Returns false if the x
+// coordinate is not on the line segment.
+static bool _get_line_point_y(const Vector2 &p_start, const Vector2 &p_end, float p_x, float *r_y) {
+	float x_distance = p_start.x - p_end.x;
+	float x_offset = p_start.x - p_x;
+	float fraction = x_offset / x_distance;
+	if (fraction < 0.0 || fraction > 1.0) {
+		return false;
+	}
+	*r_y = p_start.y * (1.0f - fraction) + p_end.y * fraction;
+	return true;
+}
+
+static bool _rect_has_y(const Rect2 &p_rect, float p_y) {
+	return p_y > p_rect.position.y && p_y < p_rect.position.y + p_rect.size.y;
+}
+
+static void _bump_line(const Vector<GraphNodeData *> &p_nodes, const Vector2 &p_start, const Vector2 &p_end) {
+	for (GraphNodeData *node : p_nodes) {
+		float y;
+		bool contacted = false;
+		float furthest_contact = 0;
+
+		Rect2 node_rect = node->rect;
+		node_rect.size -= Vector2(node_padding.x, 0);
+		node_rect.position += Vector2(node_padding.x / 2, 0);
+
+		if (_get_line_point_y(p_start, p_end, node_rect.position.x + node_rect.size.x, &y) && _rect_has_y(node_rect, y)) {
+			float ratio = (y - node_rect.position.y) / node_rect.size.y - 0.5f;
+			furthest_contact = ratio;
+			contacted = true;
+		}
+		if (_get_line_point_y(p_start, p_end, node_rect.position.x, &y) && _rect_has_y(node_rect, y)) {
+			float ratio = (y - node_rect.position.y) / node_rect.size.y - 0.5f;
+			if (contacted == false || Math::abs(ratio) < Math::abs(furthest_contact)) {
+				furthest_contact = ratio;
+			}
+
+			contacted = true;
+		}
+
+		// We actually don't want to bump siblings here, as it prevents many cases from being improved.
+		const float padding = 50.0f;
+		if (contacted && furthest_contact < 0) {
+			node->bump(p_nodes, node->rect.position + Vector2(0, padding + (furthest_contact + 0.5f) * node_rect.size.y), false);
+		} else if (contacted) {
+			node->bump(p_nodes, node->rect.position - Vector2(0, padding + (0.5f - furthest_contact) * node_rect.size.y), false);
+		}
+	}
+}
+
 void GraphEditArranger::arrange_nodes() {
 	ERR_FAIL_NULL(graph_edit);
 
@@ -41,145 +389,369 @@ void GraphEditArranger::arrange_nodes() {
 		return;
 	}
 
-	Dictionary node_names;
-	HashSet<StringName> selected_nodes;
+	Vector<GraphNodeData> nodes;
+	int child_count = graph_edit->get_child_count();
 
-	bool arrange_entire_graph = true;
-	for (int i = graph_edit->get_child_count() - 1; i >= 0; i--) {
+	bool arrange_all = true;
+	for (int i = 0; i < child_count; i++) {
 		GraphNode *graph_element = Object::cast_to<GraphNode>(graph_edit->get_child(i));
-		if (!graph_element) {
-			continue;
-		}
-
-		node_names[graph_element->get_name()] = graph_element;
-
-		if (graph_element->is_selected()) {
-			arrange_entire_graph = false;
+		if (graph_element && graph_element->is_selected()) {
+			arrange_all = false;
 		}
 	}
 
-	HashMap<StringName, HashSet<StringName>> upper_neighbours;
-	HashMap<StringName, Pair<int, int>> port_info;
-	Vector2 origin(FLT_MAX, FLT_MAX);
-
-	float gap_v = 100.0f;
-	float gap_h = 100.0f;
-
-	const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
-
-	for (int i = graph_edit->get_child_count() - 1; i >= 0; i--) {
+	for (int i = 0; i < child_count; i++) {
 		GraphNode *graph_element = Object::cast_to<GraphNode>(graph_edit->get_child(i));
-		if (!graph_element) {
+		if (!graph_element || (!graph_element->is_selected() && !arrange_all)) {
 			continue;
 		}
 
-		if (graph_element->is_selected() || arrange_entire_graph) {
-			selected_nodes.insert(graph_element->get_name());
-			HashSet<StringName> s;
+		GraphNodeData data;
+		data.node = graph_element;
+		data.scanned = false;
+		data.arranged = false;
+		data.bumping = false;
+		data.queued_by = nullptr;
+		data.queued_direction = DIRECTION_LEFT;
+		data.distance = 0;
+		data.turn_distance = -1;
+		// The position set here should never get used in the ideal case, but if any bugs occur it's best to leave
+		// things where they are.
+		data.rect = Rect2(data.node->get_position_offset() - node_padding / 2, data.node->get_size() + node_padding);
 
-			for (const Ref<GraphEdit::Connection> &connection : connection_list) {
-				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[connection->from_node]);
-				if (!p_from) {
-					continue;
-				}
-				if (connection->to_node == graph_element->get_name() && (p_from->is_selected() || arrange_entire_graph) && connection->to_node != connection->from_node) {
-					if (!s.has(p_from->get_name())) {
-						s.insert(p_from->get_name());
-					}
-					String s_connection = String(p_from->get_name()) + " " + String(connection->to_node);
-					StringName _connection(s_connection);
-					Pair<int, int> ports(connection->from_port, connection->to_port);
-					port_info.insert(_connection, ports);
-				}
-			}
-			upper_neighbours.insert(graph_element->get_name(), s);
-		}
+		nodes.push_back(data);
 	}
 
-	if (!selected_nodes.size()) {
+	if (nodes.is_empty()) {
 		arranging_graph = false;
 		return;
 	}
 
-	HashMap<int, Vector<StringName>> layers = _layering(selected_nodes, upper_neighbours);
-	_crossing_minimisation(layers, upper_neighbours);
+	GraphNodeData *writeable_nodes = nodes.ptrw();
 
-	Dictionary root, align, sink, shift;
-	_horizontal_alignment(root, align, layers, upper_neighbours, selected_nodes);
+	// Converting connections into a much more useful data format for arranging.
+	const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
+	for (const Ref<GraphEdit::Connection> &connection : connection_list) {
+		int from_port = 0;
+		int from = -1;
+		int to_port = 0;
+		int to = -1;
 
-	HashMap<StringName, Vector2> new_positions;
-	Vector2 default_position(FLT_MAX, FLT_MAX);
-	Dictionary inner_shift;
-	HashSet<StringName> block_heads;
-
-	for (const StringName &E : selected_nodes) {
-		inner_shift[E] = 0.0f;
-		sink[E] = E;
-		shift[E] = FLT_MAX;
-		new_positions.insert(E, default_position);
-		if ((StringName)root[E] == E) {
-			block_heads.insert(E);
-		}
-	}
-
-	_calculate_inner_shifts(inner_shift, root, node_names, align, block_heads, port_info);
-
-	for (const StringName &E : block_heads) {
-		_place_block(E, gap_v, layers, root, align, node_names, inner_shift, sink, shift, new_positions);
-	}
-	origin.y = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().y - (new_positions[layers[0][0]].y + (float)inner_shift[layers[0][0]]);
-	origin.x = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().x;
-
-	for (const StringName &E : block_heads) {
-		StringName u = E;
-		float start_from = origin.y + new_positions[E].y;
-		do {
-			Vector2 cal_pos;
-			cal_pos.y = start_from + (real_t)inner_shift[u];
-			new_positions.insert(u, cal_pos);
-			u = align[u];
-		} while (u != E);
-	}
-
-	// Compute horizontal coordinates individually for layers to get uniform gap.
-	float start_from = origin.x;
-	float largest_node_size = 0.0f;
-
-	for (unsigned int i = 0; i < layers.size(); i++) {
-		Vector<StringName> layer = layers[i];
-		for (int j = 0; j < layer.size(); j++) {
-			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
-			largest_node_size = MAX(largest_node_size, current_node_size);
-		}
-
-		for (int j = 0; j < layer.size(); j++) {
-			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
-			Vector2 cal_pos = new_positions[layer[j]];
-
-			if (current_node_size == largest_node_size) {
-				cal_pos.x = start_from;
-			} else {
-				float current_node_start_pos = start_from;
-				if (current_node_size < largest_node_size / 2) {
-					if (!(i || j)) {
-						start_from -= (largest_node_size - current_node_size);
-					}
-					current_node_start_pos = start_from + largest_node_size - current_node_size;
-				}
-				cal_pos.x = current_node_start_pos;
+		int node_count = nodes.size();
+		for (int j = 0; j < node_count; j++) {
+			const GraphNodeData *node = &nodes[j];
+			if (from == -1 && node->node->get_name() == connection->from_node) {
+				from_port = connection->from_port;
+				from = j;
+			} else if (to == -1 && node->node->get_name() == connection->to_node) {
+				to_port = connection->to_port;
+				to = j;
 			}
-			new_positions.insert(layer[j], cal_pos);
+
+			if (from != -1 && to != -1) {
+				break;
+			}
 		}
 
-		start_from += largest_node_size + gap_h;
-		largest_node_size = 0.0f;
+		// In this case, the connection connects to nodes that are not being arranged.
+		if (from == -1 || to == -1) {
+			continue;
+		}
+
+		// Sorting connections as they are inserted in order to avoid crossings later.
+		GraphConnection from_connection = { &writeable_nodes[to], from_port };
+		writeable_nodes[from].right_connections.insert(from_connection.find_sorted_index(writeable_nodes[from].right_connections), from_connection);
+		GraphConnection to_connection = { &writeable_nodes[from], to_port };
+		writeable_nodes[to].left_connections.insert(to_connection.find_sorted_index(writeable_nodes[to].left_connections), to_connection);
 	}
 
+	// Keeping this set out here to avoid reallocating it all the time.
+	HashSet<GraphNodeData *> avoid_loop_set;
+
+	// Breaking up nodes into connected groups and figuring out the order in which they should be sorted.
+	int node_count = nodes.size();
+	for (int j = 0; j < node_count; j++) {
+		GraphNodeData *arranging = writeable_nodes + j;
+		if (arranging->scanned) {
+			continue;
+		}
+
+		// I would keep these vectors outside the for loop and clear them every iteration to avoid
+		// extra allocations, but Vector::clear() frees the vector's memory anyways.
+
+		Vector<GraphNodeData *> queued_nodes;
+
+		// We keep track of all possible 'queuers' so that when a turn happens and their true depths can be calculated,
+		// each queued node can choose the right node to be queued by.
+		struct QueuedNode {
+			GraphNodeData *node;
+			Vector<GraphNodeData *> queued_by;
+		};
+
+		Vector<QueuedNode> turn_queued_nodes;
+		Vector<GraphNodeData *> node_group;
+
+		// This has the side effect of marking all found nodes as scanned.
+		arranging->get_connected_recursive(node_group);
+
+		// Finding the nodes with the fewest connections, as those are almost certainly the best points
+		// to start arranging from.
+		GraphNodeData *start_node = nullptr;
+		int least_dependencies = -1;
+
+		for (GraphNodeData *node : node_group) {
+			int dependencies = node->connection_count();
+
+			if (least_dependencies == -1 || least_dependencies > dependencies) {
+				least_dependencies = dependencies;
+				start_node = node;
+			}
+		}
+
+		// The direction we start scanning from doesn't affect anything.
+		Direction scan_direction = DIRECTION_RIGHT;
+
+		// If the start node moves, then the entire graph will move every time it is arranged! This accounts for that by
+		// shifting everything back into place.
+		Vector2 start_node_start_position = start_node->rect.position;
+
+		start_node->turn_distance = 0;
+		queued_nodes.push_back(start_node);
+
+		// Figures out the order in which nodes should be sorted.
+		while (true) {
+			if (queued_nodes.is_empty()) {
+				if (turn_queued_nodes.is_empty()) {
+					break;
+				}
+
+				// The direction passed here doesn't really matter.
+				start_node->determine_max_depth_recursive(DIRECTION_RIGHT);
+				scan_direction = scan_direction == DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT;
+
+				// When a turn occurs, turn queued nodes need to determine the best (most distant)
+				// node to be arranged by, which can only be found at this point by determine_max_depth_recursive,
+				// hence the need to store all possible queuers.
+				int turn_queue_count = turn_queued_nodes.size();
+				for (int i = 0; i < turn_queue_count; i++) {
+					const QueuedNode *queued = &turn_queued_nodes[i];
+					bool successful = false;
+					for (GraphNodeData *node : queued->queued_by) {
+						if (node->distance >= queued->node->distance) {
+							queued->node->distance = node->distance + 1;
+							queued->node->queued_by = node;
+							queued->node->queued_direction = scan_direction;
+							successful = true;
+						}
+					}
+					if (successful) {
+						queued_nodes.push_back(queued->node);
+					}
+				}
+
+				turn_queued_nodes.clear();
+				continue;
+			}
+
+			GraphNodeData *to_arrange = queued_nodes[queued_nodes.size() - 1];
+			queued_nodes.resize(queued_nodes.size() - 1);
+			int distance = to_arrange->distance + 1;
+
+			// Using a for loop here instead of a function, as I have absolutely no idea what I would
+			// name it otherwise.
+			for (int i = 0; i < 2; i++) {
+				Direction direction = i == 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+				Vector<GraphConnection> side_connections = direction == DIRECTION_LEFT ? to_arrange->left_connections : to_arrange->right_connections;
+				for (GraphConnection connection : side_connections) {
+					GraphNodeData *node = connection.node;
+					if (scan_direction != direction && (node->turn_distance == -1 || node->turn_distance > to_arrange->turn_distance)) {
+						int turn_queue_count = turn_queued_nodes.size();
+						QueuedNode *queued = nullptr;
+						// If a QueuedNode already exists, we should find and add to that rather than
+						// creating a new one.
+						for (int k = 0; k < turn_queue_count; k++) {
+							if (turn_queued_nodes[k].node == node) {
+								queued = &turn_queued_nodes.ptrw()[k];
+							}
+						}
+						if (queued == nullptr) {
+							QueuedNode new_queued;
+							new_queued.node = node;
+
+							turn_queued_nodes.push_back(new_queued);
+							queued = &turn_queued_nodes.ptrw()[turn_queue_count];
+						}
+
+						queued->queued_by.push_back(to_arrange);
+
+						node->distance = distance - 1;
+						node->turn_distance = to_arrange->turn_distance + 1;
+						node->queued_by = to_arrange;
+					} else if (scan_direction == direction && (node->turn_distance == -1 || node->turn_distance > to_arrange->turn_distance || (node->distance < distance && node->turn_distance == to_arrange->turn_distance)) && !node->is_connected_recursive(to_arrange, scan_direction, avoid_loop_set)) {
+						queued_nodes.push_back(node);
+
+						// I mistakenly placed this here, which should break things, but it turns out that circular connection arrangement
+						// actually breaks if I move it to the 'correct' place outside of this if statement.
+						avoid_loop_set.clear();
+
+						// If this is not removed here, there can be some weird overwriting issues.
+						int turn_queue_count = turn_queued_nodes.size();
+						for (int k = 0; k < turn_queue_count; k++) {
+							if (turn_queued_nodes[k].node == node) {
+								turn_queued_nodes.set(k, turn_queued_nodes[turn_queue_count - 1]);
+								turn_queued_nodes.remove_at(turn_queue_count - 1);
+								k -= 1;
+								turn_queue_count -= 1;
+							}
+						}
+						node->distance = distance;
+						node->turn_distance = to_arrange->turn_distance;
+						node->queued_by = to_arrange;
+						node->queued_direction = scan_direction;
+					}
+				}
+			}
+		}
+
+		queued_nodes.push_back(start_node);
+		start_node->arranged = true;
+
+		// Arrange nodes based on the order we just determined.
+		while (queued_nodes.size() != 0) {
+			int controlling_node_index = -1;
+			GraphNodeData *controlling_node = nullptr;
+
+			// Finding the lowest distance node to organize next, as this tends to yield the best results.
+			int queued_nodes_count = queued_nodes.size();
+			for (int i = 0; i < queued_nodes_count; i++) {
+				GraphNodeData *node = queued_nodes[i];
+				if (controlling_node == nullptr || node->distance < controlling_node->distance) {
+					controlling_node = node;
+					controlling_node_index = i;
+				}
+			}
+
+			controlling_node->bumping = true;
+
+			queued_nodes.set(controlling_node_index, queued_nodes[queued_nodes.size() - 1]);
+			queued_nodes.resize(queued_nodes.size() - 1);
+
+			Vector<GraphNodeData *> node_connections;
+
+			for (int i = 0; i < 2; i++) {
+				Direction side = i == 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+				Vector<GraphConnection> side_connections = side == DIRECTION_LEFT ? controlling_node->left_connections : controlling_node->right_connections;
+				int side_connections_count = side_connections.size();
+
+				// This rect represents the total area that all the nodes on this side will take up when organized.
+				Rect2 side_rect;
+				for (int k = 0; k < side_connections_count; k++) {
+					GraphConnection connection = side_connections[k];
+					if (connection.node->bumping) {
+						continue;
+					}
+
+					bool should_organize = false;
+					if (connection.node->queued_by == controlling_node) {
+						queued_nodes.push_back(connection.node);
+						should_organize = true;
+					}
+
+					// This handles the case where a single node queues a node with lots of connections back
+					// in the direction of the first node, so that the single node is organized correctly
+					// with the rest of the nodes.
+					if (connection.node == controlling_node->queued_by) {
+						should_organize = true;
+					}
+
+					if (should_organize) {
+						node_connections.push_back(connection.node);
+						// These nodes really shouldn't be bumped during this process, so we're disabling them here.
+						connection.node->bumping = true;
+						side_rect.size = Vector2(MAX(side_rect.size.x, connection.node->rect.size.x), connection.node->rect.size.y + side_rect.size.y);
+					}
+				}
+
+				// If the only connection is the node that organized this one, then it we'd be doing more harm than good by trying to
+				// organize it again.
+				if (node_connections.size() != 0 && (node_connections.size() != 1 || node_connections[0] != controlling_node->queued_by)) {
+					if (side == DIRECTION_LEFT) {
+						if (node_connections.size() == 1) {
+							side_rect.position = controlling_node->rect.position - Vector2(side_rect.size.x + 1, 0);
+						} else {
+							side_rect.position = controlling_node->rect.position - Vector2(side_rect.size.x + 1, (side_rect.size.y - controlling_node->rect.size.y) / 2);
+						}
+					} else {
+						if (node_connections.size() == 1) {
+							side_rect.position = controlling_node->rect.position + Vector2(controlling_node->rect.size.x + 1, 0);
+						} else {
+							side_rect.position = controlling_node->rect.position + Vector2(controlling_node->rect.size.x + 1, -(side_rect.size.y - controlling_node->rect.size.y) / 2);
+						}
+					}
+
+					// Moving any existing nodes out of the way.
+					// The 'offset' is being passed based on the direction, in order to prevent existing nodes from bumping back into
+					// the controlling node, which is almost certainly undesirable.
+					_bump_rect(node_group, controlling_node, side_rect, Vector2(side == DIRECTION_LEFT ? -1 : 1, 0), true);
+
+					int side_rect_offset = 0;
+					int connection_count = node_connections.size();
+					for (int k = 0; k < connection_count; k++) {
+						GraphNodeData *node = node_connections[k];
+						// This ensures that nodes can be bumped after being organized.
+						node->arranged = true;
+						node->rect.position = side_rect.position + Vector2(0, side_rect_offset);
+						side_rect_offset += node->rect.size.y + 1;
+					}
+				}
+
+				for (GraphConnection connection : side_connections) {
+					connection.node->bumping = false;
+				}
+
+				node_connections.clear();
+			}
+
+			controlling_node->bumping = false;
+		}
+
+		// Performing three separate passes of line bumping, as bumping one line can cause other lines to overlap!
+		for (int i = 0; i < 3; i++) {
+			for (GraphNodeData *node : node_group) {
+				for (GraphConnection connection : node->right_connections) {
+					// Padding is added to avoid connections bumping their own nodes!
+					float padding = 5.0f;
+
+					// Currently assuming that all connections come from a point in the middle of each node,
+					// as it is surprisingly difficult to calculate their actual positions, and this tends
+					// to work well anyways.
+					Vector2 start = node->rect.position + Vector2(node->rect.size.x - node_padding.x / 2 + padding, node->rect.size.y / 2);
+					Vector2 end = connection.node->rect.position + Vector2(-padding + node_padding.x / 2, connection.node->rect.size.y / 2);
+
+					// Looping / switchback connections should be ignored for somewhat obvious reasons.
+					if (end.x < start.x) {
+						continue;
+					}
+
+					_bump_line(node_group, start, end);
+				}
+			}
+		}
+
+		// Moving all nodes so that the start_node is in its original position, which prevents
+		// the graph from sliding when arranged multiple times.
+		Vector2 start_node_offset = start_node->rect.position - start_node_start_position;
+		for (GraphNodeData *node : node_group) {
+			node->rect.position -= start_node_offset;
+		}
+	}
+
+	// Finally moving the nodes themselves to their final positions.
 	graph_edit->emit_signal(SNAME("begin_node_move"));
-	for (const StringName &E : selected_nodes) {
-		GraphNode *graph_node = Object::cast_to<GraphNode>(node_names[E]);
+	for (const GraphNodeData &node : nodes) {
+		GraphNode *graph_node = node.node;
 		graph_node->set_drag(true);
-		Vector2 pos = (new_positions[E]);
+		Vector2 pos = node.rect.position + node_padding / 2;
 
 		if (graph_edit->is_snapping_enabled()) {
 			float snapping_distance = graph_edit->get_snapping_distance();
@@ -190,374 +762,4 @@ void GraphEditArranger::arrange_nodes() {
 	}
 	graph_edit->emit_signal(SNAME("end_node_move"));
 	arranging_graph = false;
-}
-
-int GraphEditArranger::_set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v) {
-	switch (p_operation) {
-		case GraphEditArranger::IS_EQUAL: {
-			for (const StringName &E : r_u) {
-				if (!r_v.has(E)) {
-					return 0;
-				}
-			}
-			return r_u.size() == r_v.size();
-		} break;
-		case GraphEditArranger::IS_SUBSET: {
-			if (r_u.size() == r_v.size() && !r_u.size()) {
-				return 1;
-			}
-			for (const StringName &E : r_u) {
-				if (!r_v.has(E)) {
-					return 0;
-				}
-			}
-			return 1;
-		} break;
-		case GraphEditArranger::DIFFERENCE: {
-			Vector<StringName> common;
-			for (const StringName &E : r_u) {
-				if (r_v.has(E)) {
-					common.append(E);
-				}
-			}
-			for (const StringName &E : common) {
-				r_u.erase(E);
-			}
-			return r_u.size();
-		} break;
-		case GraphEditArranger::UNION: {
-			for (const StringName &E : r_v) {
-				if (!r_u.has(E)) {
-					r_u.insert(E);
-				}
-			}
-			return r_u.size();
-		} break;
-		default:
-			break;
-	}
-	return -1;
-}
-
-HashMap<int, Vector<StringName>> GraphEditArranger::_layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours) {
-	HashMap<int, Vector<StringName>> l;
-
-	HashSet<StringName> p(r_selected_nodes);
-	HashSet<StringName> q(r_selected_nodes);
-	HashSet<StringName> u;
-	HashSet<StringName> z;
-	int current_layer = 0;
-	bool selected = false;
-
-	while (!_set_operations(GraphEditArranger::IS_EQUAL, q, u)) {
-		_set_operations(GraphEditArranger::DIFFERENCE, p, u);
-		for (const StringName &E : p) {
-			HashSet<StringName> n(r_upper_neighbours[E]);
-			if (_set_operations(GraphEditArranger::IS_SUBSET, n, z)) {
-				Vector<StringName> t;
-				t.push_back(E);
-				if (!l.has(current_layer)) {
-					l.insert(current_layer, Vector<StringName>{});
-				}
-				selected = true;
-				t.append_array(l[current_layer]);
-				l.insert(current_layer, t);
-				u.insert(E);
-			}
-		}
-		if (!selected) {
-			current_layer++;
-			uint32_t previous_size_z = z.size();
-			_set_operations(GraphEditArranger::UNION, z, u);
-			if (z.size() == previous_size_z) {
-				WARN_PRINT("Graph contains cycle(s). The cycle(s) will not be rearranged accurately.");
-				Vector<StringName> t;
-				if (l.has(0)) {
-					t.append_array(l[0]);
-				}
-				for (const StringName &E : p) {
-					t.push_back(E);
-				}
-				l.insert(0, t);
-				break;
-			}
-		}
-		selected = false;
-	}
-
-	return l;
-}
-
-Vector<StringName> GraphEditArranger::_split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings) {
-	if (!r_layer.size()) {
-		return Vector<StringName>();
-	}
-
-	const StringName &p = r_layer[Math::random(0, r_layer.size() - 1)];
-	Vector<StringName> left;
-	Vector<StringName> right;
-
-	for (int i = 0; i < r_layer.size(); i++) {
-		if (p != r_layer[i]) {
-			const StringName &q = r_layer[i];
-			int cross_pq = r_crossings[p][q];
-			int cross_qp = r_crossings[q][p];
-			if (cross_pq > cross_qp) {
-				left.push_back(q);
-			} else {
-				right.push_back(q);
-			}
-		}
-	}
-
-	left.push_back(p);
-	left.append_array(right);
-	return left;
-}
-
-void GraphEditArranger::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes) {
-	for (const StringName &E : r_selected_nodes) {
-		r_root[E] = E;
-		r_align[E] = E;
-	}
-
-	if (r_layers.size() == 1) {
-		return;
-	}
-
-	for (unsigned int i = 1; i < r_layers.size(); i++) {
-		Vector<StringName> lower_layer = r_layers[i];
-		Vector<StringName> upper_layer = r_layers[i - 1];
-		int r = -1;
-
-		for (int j = 0; j < lower_layer.size(); j++) {
-			Vector<Pair<int, StringName>> up;
-			const StringName &current_node = lower_layer[j];
-			for (int k = 0; k < upper_layer.size(); k++) {
-				const StringName &adjacent_neighbour = upper_layer[k];
-				if (r_upper_neighbours[current_node].has(adjacent_neighbour)) {
-					up.push_back(Pair<int, StringName>(k, adjacent_neighbour));
-				}
-			}
-
-			int start = (up.size() - 1) / 2;
-			int end = (up.size() - 1) % 2 ? start + 1 : start;
-			for (int p = start; p <= end; p++) {
-				StringName Align = r_align[current_node];
-				if (Align == current_node && r < up[p].first) {
-					r_align[up[p].second] = lower_layer[j];
-					r_root[current_node] = r_root[up[p].second];
-					r_align[current_node] = r_root[up[p].second];
-					r = up[p].first;
-				}
-			}
-		}
-	}
-}
-
-void GraphEditArranger::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours) {
-	if (r_layers.size() == 1) {
-		return;
-	}
-
-	for (unsigned int i = 1; i < r_layers.size(); i++) {
-		Vector<StringName> upper_layer = r_layers[i - 1];
-		Vector<StringName> lower_layer = r_layers[i];
-		HashMap<StringName, Dictionary> c;
-
-		for (int j = 0; j < lower_layer.size(); j++) {
-			const StringName &p = lower_layer[j];
-			Dictionary d;
-
-			for (int k = 0; k < lower_layer.size(); k++) {
-				unsigned int crossings = 0;
-				const StringName &q = lower_layer[k];
-
-				if (j != k) {
-					for (int h = 1; h < upper_layer.size(); h++) {
-						if (r_upper_neighbours[p].has(upper_layer[h])) {
-							for (int g = 0; g < h; g++) {
-								if (r_upper_neighbours[q].has(upper_layer[g])) {
-									crossings++;
-								}
-							}
-						}
-					}
-				}
-				d[q] = crossings;
-			}
-			c.insert(p, d);
-		}
-
-		r_layers.insert(i, _split(lower_layer, c));
-	}
-}
-
-void GraphEditArranger::_calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info) {
-	for (const StringName &E : r_block_heads) {
-		real_t left = 0;
-		StringName u = E;
-		StringName v = r_align[u];
-		while (u != v && (StringName)r_root[u] != v) {
-			String _connection = String(u) + " " + String(v);
-
-			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[u]);
-			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[v]);
-
-			Pair<int, int> ports = r_port_info[_connection];
-			int port_from = ports.first;
-			int port_to = ports.second;
-
-			Vector2 pos_from = gnode_from->get_output_port_position(port_from) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_input_port_position(port_to) * graph_edit->get_zoom();
-
-			real_t s = (real_t)r_inner_shifts[u] + (pos_from.y - pos_to.y) / graph_edit->get_zoom();
-			r_inner_shifts[v] = s;
-			left = MIN(left, s);
-
-			u = v;
-			v = (StringName)r_align[v];
-		}
-
-		u = E;
-		do {
-			r_inner_shifts[u] = (real_t)r_inner_shifts[u] - left;
-			u = (StringName)r_align[u];
-		} while (u != E);
-	}
-}
-
-float GraphEditArranger::_calculate_threshold(const StringName &p_v, const StringName &p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
-#define MAX_ORDER 2147483647
-#define ORDER(node, layers) \
-	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node); \
-		if (index > 0) { \
-			order = index; \
-			break; \
-		} \
-		order = MAX_ORDER; \
-	}
-
-	int order = MAX_ORDER;
-	float threshold = p_current_threshold;
-	if (p_v == p_w) {
-		int min_order = MAX_ORDER;
-		Ref<GraphEdit::Connection> incoming;
-		const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
-		for (const Ref<GraphEdit::Connection> &connection : connection_list) {
-			if (connection->to_node == p_w) {
-				ORDER(connection->from_node, r_layers);
-				if (min_order > order) {
-					min_order = order;
-					incoming = connection;
-				}
-			}
-		}
-
-		if (incoming.is_valid()) {
-			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[incoming->from_node]);
-			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[p_w]);
-			Vector2 pos_from = gnode_from->get_output_port_position(incoming->from_port) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_input_port_position(incoming->to_port) * graph_edit->get_zoom();
-
-			// If connected block node is selected, calculate threshold or add current block to list.
-			if (gnode_from->is_selected()) {
-				Vector2 connected_block_pos = r_node_positions[r_root[incoming->from_node]];
-				if (connected_block_pos.y != FLT_MAX) {
-					//Connected block is placed, calculate threshold.
-					threshold = connected_block_pos.y + (real_t)r_inner_shift[incoming->from_node] - (real_t)r_inner_shift[p_w] + pos_from.y - pos_to.y;
-				}
-			}
-		}
-	}
-	if (threshold == FLT_MIN && (StringName)r_align[p_w] == p_v) {
-		// This time, pick an outgoing edge and repeat as above!
-		int min_order = MAX_ORDER;
-		Ref<GraphEdit::Connection> outgoing;
-		const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
-		for (const Ref<GraphEdit::Connection> &connection : connection_list) {
-			if (connection->from_node == p_w) {
-				ORDER(connection->to_node, r_layers);
-				if (min_order > order) {
-					min_order = order;
-					outgoing = connection;
-				}
-			}
-		}
-
-		if (outgoing.is_valid()) {
-			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[p_w]);
-			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[outgoing->to_node]);
-			Vector2 pos_from = gnode_from->get_output_port_position(outgoing->from_port) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_input_port_position(outgoing->to_port) * graph_edit->get_zoom();
-
-			// If connected block node is selected, calculate threshold or add current block to list.
-			if (gnode_to->is_selected()) {
-				Vector2 connected_block_pos = r_node_positions[r_root[outgoing->to_node]];
-				if (connected_block_pos.y != FLT_MAX) {
-					//Connected block is placed. Calculate threshold
-					threshold = connected_block_pos.y + (real_t)r_inner_shift[outgoing->to_node] - (real_t)r_inner_shift[p_w] + pos_from.y - pos_to.y;
-				}
-			}
-		}
-	}
-#undef MAX_ORDER
-#undef ORDER
-	return threshold;
-}
-
-void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions) {
-#define PRED(node, layers) \
-	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node); \
-		if (index > 0) { \
-			predecessor = layers[i][index - 1]; \
-			break; \
-		} \
-		predecessor = StringName(); \
-	}
-
-	StringName predecessor;
-	StringName successor;
-	Vector2 pos = r_node_positions[p_v];
-
-	if (pos.y == FLT_MAX) {
-		pos.y = 0;
-		bool initial = false;
-		StringName w = p_v;
-		real_t threshold = FLT_MIN;
-		do {
-			PRED(w, r_layers);
-			if (predecessor != StringName()) {
-				StringName u = r_root[predecessor];
-				_place_block(u, p_delta, r_layers, r_root, r_align, r_node_name, r_inner_shift, r_sink, r_shift, r_node_positions);
-				threshold = _calculate_threshold(p_v, w, r_node_name, r_layers, r_root, r_align, r_inner_shift, threshold, r_node_positions);
-				if ((StringName)r_sink[p_v] == p_v) {
-					r_sink[p_v] = r_sink[u];
-				}
-
-				Vector2 predecessor_root_pos = r_node_positions[u];
-				Vector2 predecessor_node_size = Object::cast_to<GraphNode>(r_node_name[predecessor])->get_size();
-				if (r_sink[p_v] != r_sink[u]) {
-					real_t sc = pos.y + (real_t)r_inner_shift[w] - predecessor_root_pos.y - (real_t)r_inner_shift[predecessor] - predecessor_node_size.y - p_delta;
-					r_shift[r_sink[u]] = MIN(sc, (real_t)r_shift[r_sink[u]]);
-				} else {
-					real_t sb = predecessor_root_pos.y + (real_t)r_inner_shift[predecessor] + predecessor_node_size.y - (real_t)r_inner_shift[w] + p_delta;
-					sb = MAX(sb, threshold);
-					if (initial) {
-						pos.y = sb;
-					} else {
-						pos.y = MAX(pos.y, sb);
-					}
-					initial = false;
-				}
-			}
-			threshold = _calculate_threshold(p_v, w, r_node_name, r_layers, r_root, r_align, r_inner_shift, threshold, r_node_positions);
-			w = r_align[w];
-		} while (w != p_v);
-		r_node_positions.insert(p_v, pos);
-	}
-
-#undef PRED
 }
