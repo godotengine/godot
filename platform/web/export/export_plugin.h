@@ -32,11 +32,6 @@
 
 #include "editor_http_server.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
-#include "core/io/stream_peer_tls.h"
-#include "core/io/tcp_server.h"
-#include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_platform.h"

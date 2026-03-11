@@ -35,9 +35,8 @@
 #include "core/os/midi_driver.h"
 #include "core/templates/vector.h"
 
-#include <cstdio>
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <cstdio>
 
 #include <mmsystem.h>
 

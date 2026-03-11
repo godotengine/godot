@@ -31,8 +31,10 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "key_mapping_windows.h"
 #include "native_menu_windows.h"
 #include "os_windows.h"
+#include "tts_windows.h"
 #include "wgl_detect_version.h"
 
 #include "core/config/engine.h"
@@ -48,10 +50,10 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/main/window.h"
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"

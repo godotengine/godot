@@ -32,9 +32,6 @@
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include <cstdio>
-#include <cstdlib>
-
 #include <EGL/eglext_angle.h>
 
 const char *GLManagerANGLE_Windows::_get_platform_extension_name() const {

@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "jni_utils.h"
-
 #include "core/math/vector2.h"
 
 #include <android/log.h>

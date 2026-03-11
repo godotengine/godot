@@ -30,22 +30,14 @@
 
 #pragma once
 
-#include "crash_handler_windows.h"
-#include "key_mapping_windows.h"
-#include "tts_windows.h"
-
 #include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/os/process_id.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/rb_map.h"
-#include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -61,9 +53,7 @@
 #endif // GLES3_ENABLED
 
 #include <io.h>
-#include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
 #include <shobjidl.h>
 #include <windows.h>
 #include <windowsx.h>
@@ -191,6 +181,7 @@ typedef struct {
 
 class DropTargetWindows;
 class NativeMenuWindows;
+class TTS_Windows;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011

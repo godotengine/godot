@@ -33,10 +33,8 @@
 #include "godot_audio.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/math/math_funcs_binary.h"
 #include "core/object/object.h"
-#include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
 #include <emscripten.h>

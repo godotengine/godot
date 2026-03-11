@@ -30,10 +30,8 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
 #include "core/os/process_id.h"
 #include "editor/export/editor_export_platform_pc.h"
-#include "editor/settings/editor_settings.h"
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.

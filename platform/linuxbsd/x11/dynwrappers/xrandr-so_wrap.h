@@ -77,7 +77,7 @@
 #define XRRSetMonitor XRRSetMonitor_dylibloader_orig_xrandr
 #define XRRDeleteMonitor XRRDeleteMonitor_dylibloader_orig_xrandr
 #define XRRFreeMonitors XRRFreeMonitors_dylibloader_orig_xrandr
-#include "thirdparty/linuxbsd_headers/X11/extensions/Xrandr.h"
+#include "thirdparty/linuxbsd_headers/X11/extensions/Xrandr.h" // IWYU pragma: export.
 #undef XRRQueryExtension
 #undef XRRQueryVersion
 #undef XRRGetScreenInfo

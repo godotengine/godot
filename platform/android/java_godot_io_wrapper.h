@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "jni_utils.h"
-
 #include "core/math/rect2i.h"
 #include "core/variant/typed_array.h"
 

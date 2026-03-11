@@ -35,9 +35,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"

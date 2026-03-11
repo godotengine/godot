@@ -32,7 +32,6 @@
 
 #include "core/os/keyboard.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winuser.h>
 

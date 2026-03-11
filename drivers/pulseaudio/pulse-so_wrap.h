@@ -358,7 +358,7 @@
 #define pa_timeval_store pa_timeval_store_dylibloader_orig_pulse
 #define pa_timeval_load pa_timeval_load_dylibloader_orig_pulse
 #define pa_rtclock_now pa_rtclock_now_dylibloader_orig_pulse
-#include "thirdparty/linuxbsd_headers/pulse/pulseaudio.h"
+#include "thirdparty/linuxbsd_headers/pulse/pulseaudio.h" // IWYU pragma: export.
 #undef pa_get_library_version
 #undef pa_bytes_per_second
 #undef pa_frame_size

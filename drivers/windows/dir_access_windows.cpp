@@ -38,10 +38,9 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <windows.h>
 #include <cstdio>
 #include <cwchar>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 typedef struct _NT_IO_STATUS_BLOCK {
 	union {
