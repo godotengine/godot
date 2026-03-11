@@ -820,6 +820,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
+			[configuration setEnvironment:[[NSProcessInfo processInfo] environment]];
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
@@ -849,7 +850,11 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
-			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
+			NSDictionary *config = @{
+				NSWorkspaceLaunchConfigurationArguments : arguments,
+				NSWorkspaceLaunchConfigurationEnvironment : [[NSProcessInfo processInfo] environment]
+			};
+			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:config error:&error];
 			if (error) {
 				err = ERR_CANT_FORK;
 				NSLog(@"Failed to execute: %@", error.localizedDescription);
