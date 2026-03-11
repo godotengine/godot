@@ -293,6 +293,11 @@ void Light::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_visibility();
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (blob_light.is_valid()) {
+				VS::get_singleton()->blob_light_set_visible(blob_light, false);
+			}
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (blob_light.is_valid() && is_visible_in_tree() && !is_physics_interpolated_and_enabled()) {
