@@ -45,6 +45,7 @@
 #include "visual_server_blob_shadows.h"
 
 class VisualServerLightCuller;
+class FTIHelper;
 
 class VisualServerScene {
 public:
@@ -59,6 +60,7 @@ public:
 
 	uint64_t render_pass;
 	static VisualServerScene *singleton;
+	FTIHelper *_fti_helper;
 
 	/* EVENT QUEUING */
 
@@ -675,6 +677,17 @@ public:
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled);
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin);
+
+	/* FTI HELPER API */
+	struct FTIInstance : RID_Data {
+		uint64_t handle = UINT64_MAX;
+	};
+	RID_Owner<FTIInstance> fti_instance_owner;
+
+	RID fti_instance_create();
+	RID fti_instance_get_instance(RID p_fti_instance);
+	void fti_instance_set_transform(RID p_fti_instance, const Transform &p_transform);
+	void fti_instance_reset(RID p_fti_instance);
 
 	// Portals
 	virtual void instance_set_portal_mode(RID p_instance, VisualServer::InstancePortalMode p_mode);
