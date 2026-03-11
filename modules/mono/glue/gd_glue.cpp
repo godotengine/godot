@@ -67,7 +67,7 @@ int godot_icall_GD_hash(MonoObject *p_var) {
 }
 
 MonoObject *godot_icall_GD_instance_from_id(uint64_t p_instance_id) {
-	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(p_instance_id));
+	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(ObjectID(p_instance_id)));
 }
 
 void godot_icall_GD_print(MonoArray *p_what) {

@@ -633,7 +633,7 @@ void SpatialEditorViewport::_clear_selected() {
 }
 
 void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_allow_locked) {
-	if (!clicked) {
+	if (!clicked.is_valid()) {
 		return;
 	}
 
@@ -691,7 +691,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 	Set<Ref<EditorSpatialGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
-	ObjectID closest = 0;
+	ObjectID closest;
 	Node *item = nullptr;
 	float closest_dist = 1e20;
 	int selected_handle = -1;
@@ -739,7 +739,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 	}
 
 	if (!item) {
-		return 0;
+		return ObjectID();
 	}
 
 	if (!editor_selection->is_selected(item) || (r_gizmo_handle && selected_handle >= 0)) {
@@ -1293,9 +1293,9 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		clicked = selection_results[0].item->get_instance_id();
 		selection_results.clear();
 
-		if (clicked) {
+		if (clicked.is_valid()) {
 			_select_clicked(clicked_wants_append, true, allow_locked);
-			clicked = 0;
+			clicked = ObjectID();
 		}
 
 	} else if (!selection_results.empty()) {
@@ -1535,7 +1535,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					clicked = 0;
+					clicked = ObjectID();
 					clicked_includes_current = false;
 
 					if ((spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT && b->get_command()) || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_ROTATE) {
@@ -1580,7 +1580,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					clicked_wants_append = b->get_shift();
 
-					if (!clicked) {
+					if (!clicked.is_valid()) {
 						if (!clicked_wants_append) {
 							_clear_selected();
 						}
@@ -1591,7 +1591,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						cursor.region_end = b->get_position();
 					}
 
-					if (clicked && gizmo_handle >= 0) {
+					if (clicked.is_valid() && gizmo_handle >= 0) {
 						Spatial *spa = ObjectDB::get_instance<Spatial>(clicked);
 						if (spa) {
 							Ref<EditorSpatialGizmo> seg = spa->get_gizmo();
@@ -1611,10 +1611,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						_edit.gizmo = Ref<EditorSpatialGizmo>();
 						break;
 					}
-					if (clicked) {
+					if (clicked.is_valid()) {
 						_select_clicked(clicked_wants_append, true);
 						// Processing was deferred.
-						clicked = 0;
+						clicked = ObjectID();
 					}
 
 					if (cursor.region_select) {
@@ -1722,7 +1722,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (get_selected_count() == 0 || clicked_wants_append) {
 						cursor.region_select = true;
 						cursor.region_begin = _edit.original_mouse_pos;
-						clicked = 0;
+						clicked = ObjectID();
 					}
 				}
 
@@ -1732,9 +1732,9 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked && movement_threshold_passed) {
+				if (clicked.is_valid() && movement_threshold_passed) {
 					_compute_edit(_edit.mouse_pos);
-					clicked = 0;
+					clicked = ObjectID();
 					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
@@ -3667,9 +3667,9 @@ void SpatialEditorViewport::_selection_result_pressed(int p_result) {
 
 	clicked = selection_results[p_result].item->get_instance_id();
 
-	if (clicked) {
+	if (clicked.is_valid()) {
 		_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != SpatialEditor::TOOL_MODE_LIST_SELECT);
-		clicked = 0;
+		clicked = ObjectID();
 	}
 }
 
@@ -4379,7 +4379,6 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	editor_selection = editor->get_editor_selection();
 	undo_redo = editor->get_undo_redo();
-	clicked = 0;
 	clicked_includes_current = false;
 	orthogonal = false;
 	auto_orthogonal = false;
