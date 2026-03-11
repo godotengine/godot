@@ -141,6 +141,7 @@ private:
 		// Extra shortcuts that don't exist in the menu.
 		EXTRA_FOCUS_PATH,
 		EXTRA_FOCUS_FILTER,
+		EXTRA_REVEAL_IN_TREE,
 
 		CONVERT_BASE_ID = 1000,
 	};

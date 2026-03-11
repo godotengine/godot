@@ -2691,6 +2691,15 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case EXTRA_FOCUS_FILTER: {
 			focus_on_filter();
 		} break;
+		case EXTRA_REVEAL_IN_TREE: {
+			if (searched_tokens.is_empty()) {
+				break;
+			}
+			Vector<String> selected = get_selected_paths();
+			String reveal_path = !selected.is_empty() ? selected[0] : current_path;
+			tree_search_box->clear();
+			_navigate_to_path(reveal_path);
+		} break;
 
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
@@ -2759,6 +2768,8 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return EXTRA_FOCUS_PATH;
 	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
 		return EXTRA_FOCUS_FILTER;
+	} else if (!searched_tokens.is_empty() && ED_IS_SHORTCUT("filesystem_dock/reveal_in_tree", p_key)) {
+		return EXTRA_REVEAL_IN_TREE;
 	}
 	return -1;
 }
@@ -3390,6 +3401,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		} else {
 			all_favorites = false;
 		}
+	}
+
+	if (!searched_tokens.is_empty()) {
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Search")), ED_GET_SHORTCUT("filesystem_dock/reveal_in_tree"), EXTRA_REVEAL_IN_TREE);
+		p_popup->add_separator();
 	}
 
 	if (all_files) {
@@ -4321,6 +4337,7 @@ FileSystemDock::FileSystemDock() {
 	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
 	ED_SHORTCUT_OVERRIDE_ARRAY("filesystem_dock/focus_path", "macos",
 			{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
+	ED_SHORTCUT("filesystem_dock/reveal_in_tree", TTRC("Reveal in Tree"), Key::F);
 
 	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
 	folder_colors["red"] = Color(1.0, 0.271, 0.271); // TTR("Red")

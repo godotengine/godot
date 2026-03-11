@@ -242,6 +242,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/show_in_file_system", p_event)) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
+	} else if (ED_IS_SHORTCUT("scene_tree/reveal_in_tree", p_event)) {
+		_tool_selected(TOOL_REVEAL_IN_TREE);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
@@ -276,6 +278,9 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 		accept_event();
 	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
 		_tool_selected(TOOL_SCENE_OPEN);
+		accept_event();
+	} else if (!filter->get_text().is_empty() && ED_IS_SHORTCUT("scene_tree/reveal_in_tree", p_event)) {
+		_tool_selected(TOOL_REVEAL_IN_TREE);
 		accept_event();
 	}
 }
@@ -1297,6 +1302,22 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					FileSystemDock::get_singleton()->navigate_to_path(node->get_scene_file_path());
 				}
+			}
+		} break;
+		case TOOL_REVEAL_IN_TREE: {
+			if (!filter->get_text().is_empty()) {
+				filter->set_text("");
+				_filter_changed("");
+			}
+			// Expand parents and scroll to the selected item.
+			TreeItem *selected_item = scene_tree->get_scene_tree()->get_selected();
+			if (selected_item) {
+				TreeItem *parent = selected_item->get_parent();
+				while (parent) {
+					parent->set_collapsed(false);
+					parent = parent->get_parent();
+				}
+				scene_tree->get_scene_tree()->scroll_to_item(selected_item);
 			}
 		} break;
 		case TOOL_OPEN_DOCUMENTATION: {
@@ -4106,6 +4127,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (full_selection.size() == 1 && selection.front()->get()->is_instance()) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ShowInFileSystem")), ED_GET_SHORTCUT("scene_tree/show_in_file_system"), TOOL_SHOW_IN_FILE_SYSTEM);
 	}
+	if (!filter->get_text().is_empty()) {
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Search")), ED_GET_SHORTCUT("scene_tree/reveal_in_tree"), TOOL_REVEAL_IN_TREE);
+	}
 
 	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
 
@@ -4962,6 +4986,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTRC("Save Branch as Scene..."));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTRC("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
+	ED_SHORTCUT("scene_tree/reveal_in_tree", TTRC("Reveal in Tree"), Key::F);
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"));
 	ED_SHORTCUT("scene_tree/toggle_editable_children", TTRC("Toggle Editable Children"));
 	ED_SHORTCUT_ARRAY("scene_tree/open_scene_in_editor", TTRC("Open Scene in Editor"), { int32_t(Key::SLASH), int32_t(KeyModifierMask::SHIFT | Key::COLON) });
