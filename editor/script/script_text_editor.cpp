@@ -221,6 +221,12 @@ Vector<String> ScriptTextEditor::get_functions() {
 }
 
 void ScriptTextEditor::apply_code() {
+	if (apply_code_locked) {
+		WARN_PRINT("apply_code() called twice within the same callstack!");
+		return;
+	}
+
+	apply_code_locked = true;
 	Ref<Script> script = edited_res;
 	if (script.is_valid()) {
 		script->set_source_code(code_editor->get_text_editor()->get_text());
@@ -231,6 +237,9 @@ void ScriptTextEditor::apply_code() {
 	}
 
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
+
+	_validate_script(); // Same as caling
+	apply_code_locked = false;
 }
 
 void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {

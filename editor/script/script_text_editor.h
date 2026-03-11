@@ -60,6 +60,7 @@ class ScriptTextEditor : public CodeEditorBase {
 
 	Variant pending_state;
 	bool script_is_valid = false;
+	bool apply_code_locked = false;
 
 	RichTextLabel *errors_panel = nullptr;
 	Label *drag_info_label = nullptr;

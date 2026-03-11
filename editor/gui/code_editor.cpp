@@ -1021,7 +1021,9 @@ void CodeTextEditor::_text_changed() {
 		code_complete_timer->start();
 	}
 
-	idle->start();
+	if (idle_parse_enabled) {
+		idle->start();
+	}
 
 	if (find_replace_bar) {
 		find_replace_bar->needs_to_count_results = true;
@@ -1171,6 +1173,7 @@ void CodeTextEditor::update_editor_settings() {
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
 	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
+	idle_parse_enabled = EDITOR_GET("text_editor/completion/idle_parse_enabled");
 
 	// Appearance: Guidelines
 	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
@@ -1682,12 +1685,16 @@ void CodeTextEditor::_update_font_ligatures() {
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-	_validate_script();
-	emit_signal(SNAME("validate_script"));
+	if (idle_parse_enabled) {
+		_validate_script();
+		emit_signal(SNAME("validate_script"));
+	}
 }
 
 void CodeTextEditor::validate_script() {
-	idle->start();
+	if (idle_parse_enabled) {
+		idle->start();
+	}
 }
 
 void CodeTextEditor::_error_button_pressed() {
