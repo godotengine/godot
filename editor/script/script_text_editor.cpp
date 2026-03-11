@@ -144,6 +144,24 @@ Vector<String> ScriptTextEditor::get_functions() {
 }
 
 void ScriptTextEditor::apply_code() {
+/*
+	CRE8OR: There is an infinite recursion when ctrl-clicking on a custom class inside a GDScript,
+	caused by:
+		-> ScriptTextEditor::apply_code()
+		-> ScriptTextEditor::_validate_script()
+		-> ... (?)
+		-> ScriptEditor::_update_script_names()
+		-> ScriptEditor::_go_to_tab()
+		-> ScriptTextEditor::apply_code()
+	The following bool prevents apply_code() from being executed twice within the same callstack.
+	TODO: Find a cleaner way to implement this!
+*/
+	if (apply_code_locked) {
+		WARN_PRINT("apply_code() called twice within the same callstack!");
+		return;
+	}
+	apply_code_locked = true;
+
 	if (script.is_null()) {
 		return;
 	}
@@ -154,6 +172,9 @@ void ScriptTextEditor::apply_code() {
 	}
 
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
+
+	_validate_script();
+	apply_code_locked = false;
 }
 
 Ref<Resource> ScriptTextEditor::get_edited_resource() const {

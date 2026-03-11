@@ -65,6 +65,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Variant pending_state;
 	bool script_is_valid = false;
 	bool editor_enabled = false;
+	bool apply_code_locked = false;
 
 	Vector<String> functions;
 	List<ScriptLanguage::Warning> warnings;
