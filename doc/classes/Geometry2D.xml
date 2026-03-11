@@ -190,7 +190,7 @@
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon" type="PackedVector2Array" />
 			<param index="1" name="delta" type="float" />
-			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
+			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="JOIN_SQUARE" />
 			<description>
 				Inflates or deflates [param polygon] by [param delta] units (pixels). If [param delta] is positive, makes the polygon grow outward. If [param delta] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [param delta] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [param join_type].
@@ -216,8 +216,8 @@
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polyline" type="PackedVector2Array" />
 			<param index="1" name="delta" type="float" />
-			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
-			<param index="3" name="end_type" type="int" enum="Geometry2D.PolyEndType" default="3" />
+			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="JOIN_SQUARE" />
+			<param index="3" name="end_type" type="int" enum="Geometry2D.PolyEndType" default="END_SQUARE" />
 			<description>
 				Inflates or deflates [param polyline] by [param delta] units (pixels), producing polygons. If [param delta] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [param delta] is negative, returns an empty array.
 				Each polygon's vertices will be rounded as determined by [param join_type].

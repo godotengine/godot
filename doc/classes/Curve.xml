@@ -15,8 +15,8 @@
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="left_tangent" type="float" default="0" />
 			<param index="2" name="right_tangent" type="float" default="0" />
-			<param index="3" name="left_mode" type="int" enum="Curve.TangentMode" default="0" />
-			<param index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="0" />
+			<param index="3" name="left_mode" type="int" enum="Curve.TangentMode" default="TANGENT_FREE" />
+			<param index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="TANGENT_FREE" />
 			<description>
 				Adds a point to the curve. For each side, if the [code]*_mode[/code] is [constant TANGENT_LINEAR], the [code]*_tangent[/code] angle (in degrees) uses the slope of the curve halfway to the adjacent point. Allows custom assignments to the [code]*_tangent[/code] angle if [code]*_mode[/code] is set to [constant TANGENT_FREE].
 			</description>

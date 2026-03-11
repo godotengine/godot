@@ -837,7 +837,7 @@
 		<method name="set_anchors_and_offsets_preset">
 			<return type="void" />
 			<param index="0" name="preset" type="int" enum="Control.LayoutPreset" />
-			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="PRESET_MODE_MINSIZE" />
 			<param index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets both anchor preset and offset preset. See [method set_anchors_preset] and [method set_offsets_preset].
@@ -941,7 +941,7 @@
 		<method name="set_offsets_preset">
 			<return type="void" />
 			<param index="0" name="preset" type="int" enum="Control.LayoutPreset" />
-			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="PRESET_MODE_MINSIZE" />
 			<param index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets the offsets to a [param preset] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.

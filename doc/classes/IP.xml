@@ -68,7 +68,7 @@
 		<method name="resolve_hostname" keywords="dns">
 			<return type="String" />
 			<param index="0" name="host" type="String" />
-			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="TYPE_ANY" />
 			<description>
 				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the [enum Type] constant given as [param ip_type].
 			</description>
@@ -76,7 +76,7 @@
 		<method name="resolve_hostname_addresses">
 			<return type="PackedStringArray" />
 			<param index="0" name="host" type="String" />
-			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="TYPE_ANY" />
 			<description>
 				Resolves a given hostname in a blocking way. Addresses are returned as an [Array] of IPv4 or IPv6 addresses depending on [param ip_type].
 			</description>
@@ -84,7 +84,7 @@
 		<method name="resolve_hostname_queue_item">
 			<return type="int" />
 			<param index="0" name="host" type="String" />
-			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="TYPE_ANY" />
 			<description>
 				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the [enum Type] constant given as [param ip_type]. Returns the queue ID if successful, or [constant RESOLVER_INVALID_ID] on error.
 			</description>

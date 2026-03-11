@@ -315,8 +315,8 @@
 			<param index="3" name="texture" type="RID" />
 			<param index="4" name="topleft" type="Vector2" />
 			<param index="5" name="bottomright" type="Vector2" />
-			<param index="6" name="x_axis_mode" type="int" enum="RenderingServer.NinePatchAxisMode" default="0" />
-			<param index="7" name="y_axis_mode" type="int" enum="RenderingServer.NinePatchAxisMode" default="0" />
+			<param index="6" name="x_axis_mode" type="int" enum="RenderingServer.NinePatchAxisMode" default="NINE_PATCH_STRETCH" />
+			<param index="7" name="y_axis_mode" type="int" enum="RenderingServer.NinePatchAxisMode" default="NINE_PATCH_STRETCH" />
 			<param index="8" name="draw_center" type="bool" default="true" />
 			<param index="9" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
@@ -1295,10 +1295,10 @@
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
 			<param index="1" name="color" type="Color" />
-			<param index="2" name="ambient" type="int" enum="RenderingServer.EnvironmentAmbientSource" default="0" />
+			<param index="2" name="ambient" type="int" enum="RenderingServer.EnvironmentAmbientSource" default="ENV_AMBIENT_SOURCE_BG" />
 			<param index="3" name="energy" type="float" default="1.0" />
 			<param index="4" name="sky_contribution" type="float" default="0.0" />
-			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
+			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="ENV_REFLECTION_SOURCE_BG" />
 			<description>
 				Sets the values to be used for ambient light rendering. See [Environment] for more details.
 			</description>
@@ -1356,7 +1356,7 @@
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
 			<param index="9" name="sky_affect" type="float" />
-			<param index="10" name="fog_mode" type="int" enum="RenderingServer.EnvironmentFogMode" default="0" />
+			<param index="10" name="fog_mode" type="int" enum="RenderingServer.EnvironmentFogMode" default="ENV_FOG_MODE_EXPONENTIAL" />
 			<description>
 				Configures fog for the specified environment RID. See [code]fog_*[/code] properties in [Environment] for more information.
 			</description>
@@ -3872,7 +3872,7 @@
 			<param index="4" name="height" type="int" />
 			<param index="5" name="depth" type="int" />
 			<param index="6" name="layers" type="int" default="1" />
-			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="TEXTURE_LAYERED_2D_ARRAY" />
 			<description>
 				Creates a texture based on a native handle that was created outside of Godot's renderer.
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. This way, the texture's format and usage can be controlled more effectively.
@@ -3968,7 +3968,7 @@
 		<method name="texture_rd_create">
 			<return type="RID" />
 			<param index="0" name="rd_texture" type="RID" />
-			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="TEXTURE_LAYERED_2D_ARRAY" />
 			<description>
 				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.

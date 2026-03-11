@@ -23,8 +23,8 @@
 		</method>
 		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
-			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
-			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
+			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="BARRIER_MASK_ALL_BARRIERS" />
+			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="BARRIER_MASK_ALL_BARRIERS" />
 			<description>
 				This method does nothing.
 			</description>
@@ -453,7 +453,7 @@
 		<method name="framebuffer_create_empty">
 			<return type="RID" />
 			<param index="0" name="size" type="Vector2i" />
-			<param index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<param index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="TEXTURE_SAMPLES_1" />
 			<param index="2" name="validate_with_format" type="int" default="-1" />
 			<description>
 				Creates a new empty framebuffer. It can be accessed with the RID that is returned.
@@ -483,7 +483,7 @@
 		</method>
 		<method name="framebuffer_format_create_empty">
 			<return type="int" />
-			<param index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<param index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="TEXTURE_SAMPLES_1" />
 			<description>
 				Creates a new empty framebuffer format with the specified number of [param samples] and returns its ID.
 			</description>
@@ -1085,7 +1085,7 @@
 			<param index="2" name="layer" type="int" />
 			<param index="3" name="mipmap" type="int" />
 			<param index="4" name="mipmaps" type="int" default="1" />
-			<param index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
+			<param index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="TEXTURE_SLICE_2D" />
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].

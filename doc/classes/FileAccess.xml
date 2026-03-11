@@ -365,7 +365,7 @@
 			<return type="FileAccess" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
-			<param index="2" name="compression_mode" type="int" enum="FileAccess.CompressionMode" default="0" />
+			<param index="2" name="compression_mode" type="int" enum="FileAccess.CompressionMode" default="COMPRESSION_FASTLZ" />
 			<description>
 				Creates a new [FileAccess] object and opens a compressed file for reading or writing.
 				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.

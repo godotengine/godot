@@ -34,8 +34,8 @@
 		</method>
 		<method name="create_shaped_text">
 			<return type="RID" />
-			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="DIRECTION_AUTO" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="ORIENTATION_HORIZONTAL" />
 			<description>
 				Creates a new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
 				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
@@ -1371,7 +1371,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="key" type="Variant" />
 			<param index="2" name="size" type="Vector2" />
-			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="INLINE_ALIGNMENT_CENTER" />
 			<param index="4" name="length" type="int" default="1" />
 			<param index="5" name="baseline" type="float" default="0.0" />
 			<description>
@@ -1446,7 +1446,7 @@
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA" />
 			<description>
 				Adjusts text width to fit to specified width, returns new text width.
 			</description>
@@ -1567,7 +1567,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
 			<param index="2" name="start" type="int" default="0" />
-			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="BREAK_WORD_BOUND | BREAK_MANDATORY" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 			</description>
@@ -1578,7 +1578,7 @@
 			<param index="1" name="width" type="PackedFloat32Array" />
 			<param index="2" name="start" type="int" default="0" />
 			<param index="3" name="once" type="bool" default="true" />
-			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="BREAK_WORD_BOUND | BREAK_MANDATORY" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
@@ -1705,8 +1705,8 @@
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
-			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
-			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
+			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_SPACE" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="GRAPHEME_IS_VIRTUAL" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
 			</description>
@@ -1795,7 +1795,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="key" type="Variant" />
 			<param index="2" name="size" type="Vector2" />
-			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="INLINE_ALIGNMENT_CENTER" />
 			<param index="4" name="baseline" type="float" default="0.0" />
 			<description>
 				Sets new size and alignment of embedded object.
@@ -1829,7 +1829,7 @@
 		<method name="shaped_text_set_direction">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
-			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="DIRECTION_AUTO" />
 			<description>
 				Sets desired text direction. If set to [constant DIRECTION_AUTO], direction will be detected based on the buffer contents and current locale.
 				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
@@ -1838,7 +1838,7 @@
 		<method name="shaped_text_set_orientation">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
-			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="ORIENTATION_HORIZONTAL" />
 			<description>
 				Sets desired text orientation.
 				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).

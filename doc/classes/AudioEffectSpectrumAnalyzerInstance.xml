@@ -17,7 +17,7 @@
 			<return type="Vector2" />
 			<param index="0" name="from_hz" type="float" />
 			<param index="1" name="to_hz" type="float" />
-			<param index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
+			<param index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="MAGNITUDE_MAX" />
 			<description>
 				Returns the magnitude of the frequencies from [param from_hz] to [param to_hz] in linear energy as a Vector2. The [code]x[/code] component of the return value represents the left stereo channel, and [code]y[/code] represents the right channel.
 				[param mode] determines how the frequency range will be processed.
