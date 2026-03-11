@@ -151,6 +151,10 @@ bool ShapeCast2D::is_enabled() const {
 	return enabled;
 }
 
+int ShapeCast2D::_get_draw_steps(real_t p_target_length, real_t p_shape_size) {
+	return p_shape_size > 0.0 ? MAX(2, p_target_length / p_shape_size * 4) : 2;
+}
+
 void ShapeCast2D::set_shape(const Ref<Shape2D> &p_shape) {
 	if (p_shape == shape) {
 		return;
@@ -238,7 +242,7 @@ void ShapeCast2D::_notification(int p_what) {
 				draw_col.b = g;
 			}
 			// Draw continuous chain of shapes along the cast.
-			const int steps = MAX(2, target_position.length() / shape->get_rect().get_size().length() * 4);
+			const int steps = _get_draw_steps(target_position.length(), shape->get_rect().get_size().length());
 			for (int i = 0; i <= steps; ++i) {
 				Vector2 t = (real_t(i) / steps) * target_position;
 				draw_set_transform(t, 0.0, Size2(1, 1));
