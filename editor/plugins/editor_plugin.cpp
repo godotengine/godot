@@ -92,6 +92,7 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(legacy_docks.has(p_control));
+	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	EditorDock *dock = memnew(EditorDock);
 	dock->set_title(p_control->get_name());
@@ -106,6 +107,9 @@ void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, cons
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(!legacy_docks.has(p_control));
+
+	// Ensure freeing the legacy dock won't free `p_control` (freeing it is up to the user).
+	legacy_docks[p_control]->remove_child(p_control);
 
 	EditorDockManager::get_singleton()->remove_dock(legacy_docks[p_control]);
 	legacy_docks[p_control]->queue_free();
