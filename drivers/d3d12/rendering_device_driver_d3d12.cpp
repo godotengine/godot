@@ -30,50 +30,16 @@
 
 #include "rendering_device_driver_d3d12.h"
 
-#include "d3d12_hooks.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
-
-#include "thirdparty/zlib/zlib.h"
-
-#include "d3d12_godot_nir_bridge.h"
-#include "rendering_context_driver_d3d12.h"
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
-GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
-GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
+#include "drivers/d3d12/d3d12_hooks.h"
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
 
 #include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
-
-#include <nir_spirv.h>
-#include <nir_to_dxil.h>
-#include <spirv_to_dxil.h>
-extern "C" {
-#include <dxil_spirv_nir.h>
-}
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-GODOT_MSVC_WARNING_POP
+// Ensure d3dx12 and dxgi are included first.
+#include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_nir.h>
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
