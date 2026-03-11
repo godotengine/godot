@@ -33,11 +33,24 @@
 #include "core/templates/hashfuncs.h"
 
 bool VariantCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
-	return p_a->hash() == p_b->hash();
+	if (p_a->hash() != p_b->hash()) {
+		return false;
+	}
+	const VariantCallable *vca = static_cast<const VariantCallable *>(p_a);
+	const VariantCallable *vcb = static_cast<const VariantCallable *>(p_b);
+	return vca->variant.identity_compare(vcb->variant) && vca->method == vcb->method;
 }
 
 bool VariantCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	return p_a->hash() < p_b->hash();
+	if (p_a->hash() != p_b->hash()) {
+		return p_a->hash() < p_b->hash();
+	}
+	const VariantCallable *vca = static_cast<const VariantCallable *>(p_a);
+	const VariantCallable *vcb = static_cast<const VariantCallable *>(p_b);
+	if (vca->method != vcb->method) {
+		return vca->method < vcb->method;
+	}
+	return !vca->variant.identity_compare(vcb->variant) && vca->variant.hash() < vcb->variant.hash();
 }
 
 uint32_t VariantCallable::hash() const {

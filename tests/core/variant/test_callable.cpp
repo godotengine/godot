@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_callable)
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "core/variant/variant_callable.h"
 
 namespace TestCallable {
 
@@ -193,6 +194,41 @@ TEST_CASE("[Callable] Bound and unbound argument count") {
 	CHECK(get_output(test_func.bind(1, 2, 3).unbind(1).unbind(1).unbind(1)) == "3 3 [1, 2, 3] [1, 2, 3] [1, 2, 3]");
 
 	memdelete(test_instance);
+}
+
+TEST_CASE("[Callable] VariantCallable equality") {
+	// Different arrays with same contents.
+	Array a1 = { 1 };
+	Array a2 = { 1 };
+	Callable c1 = Callable(memnew(VariantCallable(a1, "front")));
+	Callable c2 = Callable(memnew(VariantCallable(a2, "front")));
+	CHECK_NE(c1, c2);
+
+	// Different empty arrays.
+	Array empty1;
+	Array empty2;
+	Callable c3 = Callable(memnew(VariantCallable(empty1, "front")));
+	Callable c4 = Callable(memnew(VariantCallable(empty2, "front")));
+	CHECK_NE(c3, c4);
+
+	// Same array, same method.
+	Callable c5 = Callable(memnew(VariantCallable(a1, "front")));
+	Callable c6 = Callable(memnew(VariantCallable(a1, "front")));
+	CHECK_EQ(c5, c6);
+
+	// Same array, different methods.
+	Callable c7 = Callable(memnew(VariantCallable(a1, "front")));
+	Callable c8 = Callable(memnew(VariantCallable(a1, "back")));
+	CHECK_NE(c7, c8);
+
+	// Different dictionaries with same contents.
+	Dictionary d1;
+	d1["key"] = "value";
+	Dictionary d2;
+	d2["key"] = "value";
+	Callable c9 = Callable(memnew(VariantCallable(d1, "clear")));
+	Callable c10 = Callable(memnew(VariantCallable(d2, "clear")));
+	CHECK_NE(c9, c10);
 }
 
 } // namespace TestCallable
