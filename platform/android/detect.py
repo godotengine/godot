@@ -191,7 +191,7 @@ def configure(env: "SConsEnvironment"):
     has_swappy = detect_swappy()
     if not has_swappy:
         print_warning(
-            "Swappy Frame Pacing not detected! It is strongly recommended you run `python misc/scripts/install_swappy_android.py` to download and install Swappy before compiling.\n"
+            f"Swappy Frame Pacing not detected! It is strongly recommended you run `python {os.path.join('misc', 'scripts', 'install_swappy_android.py')}` to download and install Swappy before compiling.\n"
             + "Without Swappy, Godot apps on Android will inevitably suffer stutter and struggle to keep a consistent framerate. Although Swappy cannot guarantee your app will be stutter-free, not having Swappy will guarantee there will be stutter even on the best phones and the most simple of scenes."
         )
         if env["swappy"]:

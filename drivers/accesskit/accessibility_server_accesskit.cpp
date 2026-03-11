@@ -32,12 +32,6 @@
 
 #include "accessibility_server_accesskit.h"
 
-#ifdef ACCESSKIT_DYNAMIC
-#include "core/config/engine.h"
-#include "core/io/file_access.h"
-#include "core/os/os.h"
-#endif
-
 #include "servers/text/text_server.h"
 
 _FORCE_INLINE_ accesskit_role AccessibilityServerAccessKit::_accessibility_role(AccessibilityServerEnums::AccessibilityRole p_role) const {
@@ -1707,64 +1701,6 @@ void AccessibilityServerAccessKit::update_set_foreground_color(const RID &p_id, 
 }
 
 AccessibilityServer *AccessibilityServerAccessKit::create_func(Error &r_error) {
-#ifdef ACCESSKIT_DYNAMIC
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
-	void *library_handle = nullptr;
-	String path;
-	String arch = Engine::get_singleton()->get_architecture_name();
-#ifdef LINUXBSD_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit." + arch + ".so");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libaccesskit." + arch + ".so");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit.so");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libaccesskit.so");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-#ifdef MACOS_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit." + arch + ".dylib");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libaccesskit." + arch + ".dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit.dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libaccesskit.dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-#ifdef WINDOWS_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("accesskit." + arch + ".dll");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("accesskit.dll");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-
-	Error err = OS::get_singleton()->open_dynamic_library(path, library_handle);
-	if (err != OK || initialize_libaccesskit(dylibloader_verbose, library_handle) != 0) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
 	print_verbose("Accessibility: AccessKit driver loaded.");
 	r_error = OK;
 	return memnew(AccessibilityServerAccessKit);
