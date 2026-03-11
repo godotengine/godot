@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <climits>
 #include <clocale>
+#include <cstdio>
 #include <cstdlib>
 
 #if defined(ASAN_ENABLED)
