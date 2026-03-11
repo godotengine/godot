@@ -37,6 +37,8 @@
 #include "core/templates/local_vector.h"
 #include "servers/navigation_2d/navigation_constants_2d.h"
 
+#include <cfloat> // FLT_MAX
+
 class NavBaseIteration2D;
 
 namespace Nav2D {

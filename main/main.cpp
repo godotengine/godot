@@ -57,6 +57,7 @@
 #include "core/profiling/profiling.h"
 #include "core/register_core_types.h"
 #include "core/string/translation_server.h"
+#include "core/variant/variant_parser.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"

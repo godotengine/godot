@@ -49,6 +49,8 @@
 
 #include <manifold/manifold.h>
 
+#include <cfloat> // FLT_EPSILON
+
 #ifndef NAVIGATION_3D_DISABLED
 Callable CSGShape3D::_navmesh_source_geometry_parsing_callback;
 RID CSGShape3D::_navmesh_source_geometry_parser;
