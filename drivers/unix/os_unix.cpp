@@ -32,14 +32,17 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
-#include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
+
+#ifndef UNIX_SOCKET_UNAVAILABLE
+#include "drivers/unix/ip_unix.h"
+#include "drivers/unix/net_socket_unix.h"
+#endif
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -77,7 +80,6 @@
 #include <unistd.h>
 #include <cerrno>
 #include <csignal>
-#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>

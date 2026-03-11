@@ -36,7 +36,6 @@
 #include "core/templates/vector.h"
 
 #include <windows.h>
-#include <cstdio>
 
 #include <mmsystem.h>
 
