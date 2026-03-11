@@ -692,8 +692,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 		if (EditorHelpHighlighter::get_singleton()) {
 			// Update syntax colors.
-			EditorHelpHighlighter::free_singleton();
-			EditorHelpHighlighter::create_singleton();
+			EditorHelpHighlighter::get_singleton()->reset_cache();
 		}
 #endif
 	}
