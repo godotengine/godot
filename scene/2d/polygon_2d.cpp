@@ -358,7 +358,19 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
-			RS::get_singleton()->mesh_clear(mesh);
+			bool has_uv = uvs.size() == points.size();
+			bool has_color = colors.size() == points.size();
+			bool has_bones = skeleton_node != nullptr;
+
+			bool needs_clear = len != last_len;
+			needs_clear |= index_array.size() != last_index_count;
+			needs_clear |= has_uv != last_has_uv;
+			needs_clear |= has_color != last_has_color;
+			needs_clear |= has_bones || has_bones != last_has_bones;
+
+			if (needs_clear) {
+				RS::get_singleton()->mesh_clear(mesh);
+			}
 
 			if (index_array.size()) {
 				Array arr;
@@ -401,10 +413,24 @@ void Polygon2D::_notification(int p_what) {
 					return;
 				}
 
-				RS::get_singleton()->mesh_add_surface(mesh, sd);
-				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
+				if (needs_clear) {
+					RS::get_singleton()->mesh_add_surface(mesh, sd);
+				} else {
+					RS::get_singleton()->mesh_surface_update_vertex_region(mesh, 0, 0, sd.vertex_data);
+					if (has_uv || has_color) {
+						RS::get_singleton()->mesh_surface_update_attribute_region(mesh, 0, 0, sd.attribute_data);
+					}
+					RS::get_singleton()->mesh_surface_update_index_region(mesh, 0, 0, sd.index_data);
+				}
 			}
 
+			last_len = len;
+			last_index_count = index_array.size();
+			last_has_uv = has_uv;
+			last_has_color = has_color;
+			last_has_bones = has_bones;
+
+			RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
 		} break;
 	}
 }
