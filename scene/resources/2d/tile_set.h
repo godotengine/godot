@@ -392,6 +392,8 @@ private:
 	RBMap<Array, Array> alternative_level_proxies;
 
 	// Helpers
+	float _get_tile_overlap() const;
+
 	Vector<Point2> _get_square_terrain_polygon(Vector2i p_size);
 	Vector<Point2> _get_square_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
 	Vector<Point2> _get_square_corner_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
@@ -422,8 +424,8 @@ public:
 	TileOffsetAxis get_tile_offset_axis() const;
 	void set_tile_size(Size2i p_size);
 	Size2i get_tile_size() const;
-	void set_hexagon_tile_overlap(float p_overlap);
-	float get_hexagon_tile_overlap() const;
+	void set_hexagon_flat_side_ratio(float p_flat_side_ratio);
+	float get_hexagon_flat_side_ratio() const;
 
 	// -- Sources management --
 	int get_next_source_id() const;
