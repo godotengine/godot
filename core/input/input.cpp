@@ -31,9 +31,11 @@
 #include "input.h"
 #include "input.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 #ifdef DEV_ENABLED
@@ -66,6 +68,11 @@ static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"paddle3",
 	"paddle4",
 	"touchpad",
+	"misc2",
+	"misc3",
+	"misc4",
+	"misc5",
+	"misc6",
 };
 
 static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
@@ -146,9 +153,14 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
+	ClassDB::bind_method(D_METHOD("get_joy_vibration_remaining_duration", "device"), &Input::get_joy_vibration_remaining_duration);
+	ClassDB::bind_method(D_METHOD("is_joy_vibrating", "device"), &Input::is_joy_vibrating);
+	ClassDB::bind_method(D_METHOD("has_joy_vibration", "device"), &Input::has_joy_vibration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("set_ignore_joypad_on_unfocused_application", "enable"), &Input::set_ignore_joypad_on_unfocused_application);
+	ClassDB::bind_method(D_METHOD("is_ignoring_joypad_on_unfocused_application"), &Input::is_ignoring_joypad_on_unfocused_application);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -197,6 +209,7 @@ void Input::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_joypad_on_unfocused_application"), "set_ignore_joypad_on_unfocused_application", "is_ignoring_joypad_on_unfocused_application");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -316,24 +329,14 @@ bool Input::is_anything_pressed() const {
 	return false;
 }
 
-bool Input::is_anything_pressed_except_mouse() const {
+bool Input::is_any_key_pressed() const {
 	_THREAD_SAFE_METHOD_
 
 	if (disable_input) {
 		return false;
 	}
 
-	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
-		return true;
-	}
-
-	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			return true;
-		}
-	}
-
-	return false;
+	return !keys_pressed.is_empty();
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
@@ -374,6 +377,10 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	}
 
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
+}
+
+bool Input::_should_ignore_joypad_events() const {
+	return ignore_joypad_on_unfocused_application && !application_focused && !embedder_focused;
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -633,6 +640,33 @@ float Input::get_joy_vibration_duration(int p_device) {
 	} else {
 		return 0.f;
 	}
+}
+
+float Input::get_joy_vibration_remaining_duration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || !joypad->has_vibration) {
+		return 0.f;
+	}
+	const VibrationInfo *vibration = joy_vibration.getptr(p_device);
+	if (vibration == nullptr || (vibration->weak_magnitude == 0.f && vibration->strong_magnitude == 0.f) || vibration->duration < 0.f) {
+		return 0.f;
+	}
+	float vibration_duration = vibration->duration;
+	if (vibration_duration > 0xFFFF / 1000.f || vibration_duration == 0.f) {
+		vibration_duration = 0xFFFF / 1000.f; // SDL_MAX_RUMBLE_DURATION_MS / 1000.f
+	}
+	return MAX(vibration_duration - (OS::get_singleton()->get_ticks_usec() - vibration->timestamp) / 1e6, 0.f);
+}
+
+bool Input::is_joy_vibrating(int p_device) {
+	return get_joy_vibration_remaining_duration(p_device) > 0.0f;
+}
+
+bool Input::has_joy_vibration(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad != nullptr && joypad->has_vibration;
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -984,6 +1018,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		device_state.pressed[event_index] = is_pressed;
 		device_state.strength[event_index] = p_event->get_action_strength(E.key);
 		device_state.raw_strength[event_index] = p_event->get_action_raw_strength(E.key);
+		device_state.event_type[event_index] = p_event->get_type();
 
 		// Update the action's global state and cache.
 		if (!is_pressed) {
@@ -1030,6 +1065,12 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 }
 
 void Input::set_joy_light(int p_device, const Color &p_color) {
+	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
 	Joypad *joypad = joy_names.getptr(p_device);
 	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
 		return;
@@ -1045,6 +1086,11 @@ bool Input::has_joy_light(int p_device) const {
 
 Vector3 Input::get_joy_accelerometer(int p_device) const {
 	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return Vector3();
+	}
+
 	const MotionInfo *motion = joy_motion.getptr(p_device);
 	if (motion == nullptr) {
 		return Vector3();
@@ -1063,6 +1109,11 @@ Vector3 Input::get_joy_accelerometer(int p_device) const {
 
 Vector3 Input::get_joy_gravity(int p_device) const {
 	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return Vector3();
+	}
+
 	const MotionInfo *motion = joy_motion.getptr(p_device);
 	if (motion == nullptr) {
 		return Vector3();
@@ -1077,6 +1128,11 @@ Vector3 Input::get_joy_gravity(int p_device) const {
 
 Vector3 Input::get_joy_gyroscope(int p_device) const {
 	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return Vector3();
+	}
+
 	const MotionInfo *motion = joy_motion.getptr(p_device);
 	if (motion == nullptr) {
 		return Vector3();
@@ -1235,6 +1291,11 @@ void Input::set_joy_motion_sensors_rate(int p_device, float p_rate) {
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
@@ -1258,6 +1319,17 @@ void Input::stop_joy_vibration(int p_device) {
 
 void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
+}
+
+void Input::set_ignore_joypad_on_unfocused_application(bool p_ignore) {
+	ignore_joypad_on_unfocused_application = p_ignore;
+	if (_should_ignore_joypad_events()) {
+		release_pressed_events();
+	}
+}
+
+bool Input::is_ignoring_joypad_on_unfocused_application() const {
+	return ignore_joypad_on_unfocused_application;
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
@@ -1526,17 +1598,49 @@ bool Input::is_using_accumulated_input() {
 }
 
 void Input::release_pressed_events() {
+	// Don't release the events if the application (or the window it's embedded in) is still focused.
+	if (application_focused || embedder_focused) {
+		return;
+	}
+
 	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	physical_keys_pressed.clear();
 	key_label_pressed.clear();
-	joy_buttons_pressed.clear();
-	_joy_axis.clear();
+	if (ignore_joypad_on_unfocused_application) {
+		joy_buttons_pressed.clear();
+		_joy_axis.clear();
 
-	for (KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			action_release(E.key);
+		for (KeyValue<StringName, Input::ActionState> &E : action_states) {
+			if (E.value.cache.pressed) {
+				action_release(E.key);
+			}
+		}
+
+		for (int device : get_connected_joypads()) {
+			stop_joy_vibration(device);
+		}
+	} else {
+		for (KeyValue<StringName, Input::ActionState> &E : action_states) {
+			if (E.value.cache.pressed) {
+				bool is_only_joypad_pressed = true;
+				int max_event = InputMap::get_singleton()->action_get_events(E.key)->size() + 1; // +1 comes from InputEventAction.
+
+				for (const KeyValue<int, ActionState::DeviceState> &kv : E.value.device_states) {
+					const ActionState::DeviceState &device_state = kv.value;
+					for (int i = 0; i < max_event; i++) {
+						if (device_state.event_type[i] != InputEventType::JOY_MOTION && device_state.event_type[i] != InputEventType::JOY_BUTTON && device_state.strength[i] > 0.0f) {
+							is_only_joypad_pressed = false;
+							action_release(E.key);
+							break;
+						}
+					}
+					if (!is_only_joypad_pressed) {
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -1547,6 +1651,11 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
 	Joypad &joy = joy_names[p_device];
 	ERR_FAIL_INDEX((int)p_button, (int)JoyButton::MAX);
 
@@ -1574,6 +1683,10 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 
 void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_;
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
 
 	ERR_FAIL_INDEX((int)p_axis, (int)JoyAxis::MAX);
 
@@ -1644,6 +1757,11 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
 	const Joypad &joy = joy_names[p_device];
 
 	JoyEvent map[(size_t)HatDir::MAX];
@@ -1686,6 +1804,11 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 
 void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
 	// TODO: events
 	MotionInfo *motion = joy_motion.getptr(p_device);
 	if (motion == nullptr) {
@@ -1747,6 +1870,9 @@ void Input::_update_joypad_features(int p_device) {
 	Joypad *joypad = joy_names.getptr(p_device);
 	if (!joypad || joypad->features == nullptr) {
 		return;
+	}
+	if (joypad->features->has_joy_vibration()) {
+		joypad->has_vibration = true;
 	}
 	if (joypad->features->has_joy_light()) {
 		joypad->has_light = true;
@@ -2245,6 +2371,7 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+	ignore_joypad_on_unfocused_application = GLOBAL_DEF_RST_BASIC("input_devices/joypads/ignore_joypad_on_unfocused_application", false);
 }
 
 Input::~Input() {

@@ -32,6 +32,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
+#include "servers/display/accessibility_server.h"
 
 class VBoxContainer;
 class HScrollBar;
@@ -181,17 +182,17 @@ private:
 
 	_FORCE_INLINE_ void _unlink_from_tree() {
 		if (accessibility_row_element.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
+			AccessibilityServer::get_singleton()->free_element(accessibility_row_element);
 			accessibility_row_element = RID();
 		}
 		for (Cell &cell : cells) {
 			if (cell.accessibility_cell_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
+				AccessibilityServer::get_singleton()->free_element(cell.accessibility_cell_element);
 				cell.accessibility_cell_element = RID();
 			}
 			for (Cell::Button &btn : cell.buttons) {
 				if (btn.accessibility_button_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
+					AccessibilityServer::get_singleton()->free_element(btn.accessibility_button_element);
 					btn.accessibility_button_element = RID();
 				}
 			}
@@ -499,7 +500,7 @@ private:
 	bool pressing_for_editor = false;
 	Vector2 pressing_pos;
 
-	Vector2 hovered_pos;
+	Vector2 hovered_pos = Vector2(-1.0, -1.0);
 	bool is_mouse_hovering = false;
 
 	float range_drag_base = 0.0;
@@ -568,8 +569,9 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-	Point2i convert_rtl_position(const Point2i &pos, int width = 0) const;
-	Rect2i convert_rtl_rect(const Rect2i &Rect2) const;
+	Point2i convert_rtl_position(const Point2i &p_pos, int p_width = 0) const;
+	Point2 convert_rtl_position(const Point2 &p_pos, int p_width = 0) const;
+	Rect2i convert_rtl_rect(const Rect2i &p_rect) const;
 	void _update_all();
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;

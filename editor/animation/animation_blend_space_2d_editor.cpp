@@ -32,6 +32,8 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -126,9 +128,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			List<StringName> names;
-			tree->get_animation_list(&names);
-			for (const StringName &E : names) {
+			for (const StringName &E : tree->get_sorted_animation_list()) {
 				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
 				animations_to_add.push_back(E);
 			}

@@ -31,6 +31,9 @@
 #include "project_export.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -56,6 +59,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "servers/display/display_server.h"
 
 #include <zstd.h>
 
@@ -107,6 +111,12 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
@@ -151,16 +161,12 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
-	bool make_runnable = true;
 	int attempt = 1;
 	while (true) {
 		bool valid = true;
 
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
-				make_runnable = false;
-			}
 			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
@@ -176,8 +182,8 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	}
 
 	preset->set_name(preset_name);
-	if (make_runnable) {
-		preset->set_runnable(make_runnable);
+	if (EditorExport::get_singleton()->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
+		EditorExport::get_singleton()->set_runnable_preset(preset);
 	}
 	EditorExport::get_singleton()->add_export_preset(preset);
 	_update_presets();
@@ -525,14 +531,9 @@ void ProjectExportDialog::_runnable_pressed() {
 	ERR_FAIL_COND(current.is_null());
 
 	if (runnable->is_pressed()) {
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == current->get_platform()) {
-				p->set_runnable(current == p);
-			}
-		}
+		EditorExport::get_singleton()->set_runnable_preset(current);
 	} else {
-		current->set_runnable(false);
+		EditorExport::get_singleton()->unset_runnable_preset(current);
 	}
 
 	_update_presets();
@@ -726,15 +727,11 @@ void ProjectExportDialog::_duplicate_preset() {
 	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = current->get_name() + " (copy)";
-	bool make_runnable = true;
 	while (true) {
 		bool valid = true;
 
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
-				make_runnable = false;
-			}
 			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
@@ -749,8 +746,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	}
 
 	preset->set_name(preset_name);
-	if (make_runnable) {
-		preset->set_runnable(make_runnable);
+	if (EditorExport::get_singleton()->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
+		EditorExport::get_singleton()->set_runnable_preset(preset);
 	}
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
@@ -1543,19 +1540,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	HSplitContainer *hbox = memnew(HSplitContainer);
-	main_vb->add_child(hbox);
-	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
-		hbox->set_touch_dragger_enabled(true);
-	}
+	main_split = memnew(HSplitContainer);
+	main_vb->add_child(main_split);
+	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 
 	// Presets list.
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preset_vb->set_stretch_ratio(0.35);
-	hbox->add_child(preset_vb);
+	main_split->add_child(preset_vb);
 
 	Label *l = memnew(Label(TTR("Presets")));
 	l->set_theme_type_variation("HeaderSmall");
@@ -1595,7 +1590,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb = memnew(VBoxContainer);
 	settings_vb->hide();
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbox->add_child(settings_vb);
+	main_split->add_child(settings_vb);
 
 	PanelContainer *panel = memnew(PanelContainer);
 	panel->set_theme_type_variation(SNAME("PanelForeground"));
@@ -1808,6 +1803,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
+	patch_dialog->add_filter("*.aab", TTR("Android App Bundle"));
+	patch_dialog->add_filter("*.apk", TTR("Android Package"));
 	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_file_selected));
@@ -1942,7 +1939,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	empty_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->hide();
-	hbox->add_child(empty_label);
+	main_split->add_child(empty_label);
 
 	// Deletion dialog.
 

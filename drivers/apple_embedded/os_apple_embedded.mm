@@ -37,12 +37,17 @@
 #import "godot_view_apple_embedded.h"
 #import "godot_view_controller.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 #include "main/main.h"
 
 #import <AVFoundation/AVFAudio.h>
@@ -51,6 +56,7 @@
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
 #include <sys/sysctl.h>
+#include <iterator>
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -166,7 +172,14 @@ void OS_AppleEmbedded::initialize() {
 }
 
 void OS_AppleEmbedded::initialize_joypads() {
-	joypad_apple = memnew(JoypadApple);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 }
 
 void OS_AppleEmbedded::initialize_modules() {
@@ -175,9 +188,11 @@ void OS_AppleEmbedded::initialize_modules() {
 }
 
 void OS_AppleEmbedded::deinitialize_modules() {
-	if (joypad_apple) {
-		memdelete(joypad_apple);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
+#endif
 
 	if (apple_embedded) {
 		memdelete(apple_embedded);
@@ -213,7 +228,11 @@ bool OS_AppleEmbedded::iterate() {
 		DisplayServer::get_singleton()->process_events();
 	}
 
-	joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 
 	return Main::iteration();
 }
@@ -744,7 +763,7 @@ void OS_AppleEmbedded::on_focus_out() {
 		is_focused = false;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -762,7 +781,7 @@ void OS_AppleEmbedded::on_focus_in() {
 		is_focused = true;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {

@@ -1,0 +1,9 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value.gd:8 on B.return_int(): Trying to return value of type "String" from a function whose return type is "int".
+0
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value.gd:9 on B.return_int_array(): Trying to return value of type "String" from a function whose return type is "Array[int]".
+Array[int]([])
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value.gd:10 on B.return_int_dict(): Trying to return a value of type "String" where expected return type is "Dictionary[int, int]".
+Dictionary[int, int]({})
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value.gd:11 on B.return_node(): Trying to return value of type "String" from a function whose return type is "Node".
+null

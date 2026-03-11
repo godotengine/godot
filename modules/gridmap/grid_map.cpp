@@ -30,8 +30,12 @@
 
 #include "grid_map.h"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
@@ -216,6 +220,18 @@ real_t GridMap::get_collision_priority() const {
 	return collision_priority;
 }
 
+void GridMap::set_collision_visibility_mode(DebugVisibilityMode p_visibility_mode) {
+	if (collision_visibility_mode == p_visibility_mode) {
+		return;
+	}
+	collision_visibility_mode = p_visibility_mode;
+	_recreate_octant_data();
+}
+
+GridMap::DebugVisibilityMode GridMap::get_collision_visibility_mode() const {
+	return collision_visibility_mode;
+}
+
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
 	_update_physics_bodies_characteristics();
@@ -398,12 +414,23 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 #endif // PHYSICS_3D_DISABLED
-		SceneTree *st = SceneTree::get_singleton();
-
-		if (st && st->is_debugging_collisions_hint()) {
-			g->collision_debug = RenderingServer::get_singleton()->mesh_create();
-			g->collision_debug_instance = RenderingServer::get_singleton()->instance_create();
-			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
+		bool debug_collisions = false;
+		switch (collision_visibility_mode) {
+			case DEBUG_VISIBILITY_MODE_DEFAULT: {
+				SceneTree *st = SceneTree::get_singleton();
+				debug_collisions = st && !Engine::get_singleton()->is_editor_hint() && st->is_debugging_collisions_hint();
+			} break;
+			case DEBUG_VISIBILITY_MODE_FORCE_HIDE: {
+				debug_collisions = false;
+			} break;
+			case DEBUG_VISIBILITY_MODE_FORCE_SHOW: {
+				debug_collisions = true;
+			} break;
+		}
+		if (debug_collisions) {
+			g->collision_debug = RS::get_singleton()->mesh_create();
+			g->collision_debug_instance = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
 
 		octant_map[octantkey] = g;
@@ -769,7 +796,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
-			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RS::MULTIMESH_TRANSFORM_3D);
+			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RSE::MULTIMESH_TRANSFORM_3D);
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E.key)->get_rid());
 
 			int idx = 0;
@@ -796,7 +823,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
-			RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
+			RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, cast_shadows);
 
 			mmi.multimesh = mm;
@@ -817,11 +844,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = col_debug;
-		arr[RS::ARRAY_COLOR] = colors;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = col_debug;
+		arr[RSE::ARRAY_COLOR] = colors;
 
-		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RS::PRIMITIVE_LINES, arr);
+		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RSE::PRIMITIVE_LINES, arr);
 		if (st) {
 			RS::get_singleton()->mesh_surface_set_material(g.collision_debug, 0, st->get_debug_collision_material()->get_rid());
 		}
@@ -1114,7 +1141,7 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
-	HashMap<IndexKey, Cell, IndexKey> cell_copy = cell_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_copy(cell_map);
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
@@ -1187,6 +1214,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &GridMap::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &GridMap::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "visibility_mode"), &GridMap::set_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &GridMap::get_collision_visibility_mode);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 #endif // PHYSICS_3D_DISABLED
@@ -1244,9 +1274,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material", "get_physics_material");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
@@ -1260,6 +1290,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
@@ -1268,6 +1299,10 @@ void GridMap::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
+
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_SHOW);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_HIDE);
 }
 
 void GridMap::set_cell_scale(float p_scale) {
@@ -1509,14 +1544,14 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 				case PhysicsServer3D::SHAPE_SPHERE: {
 					real_t radius = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
 				case PhysicsServer3D::SHAPE_BOX: {
 					Vector3 extents = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					BoxMesh::create_mesh_array(arr, extents * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1525,7 +1560,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CapsuleMesh::create_mesh_array(arr, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1534,7 +1569,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CylinderMesh::create_mesh_array(arr, radius, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;

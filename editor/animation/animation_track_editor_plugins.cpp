@@ -30,6 +30,7 @@
 
 #include "animation_track_editor_plugins.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -40,6 +41,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/rendering/rendering_server.h"
 
 /// BOOL ///
 int AnimationTrackEditBool::get_key_height() const {
@@ -182,6 +184,9 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	if (p_selected) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect_clipped(rect, accent, false);
+		if (color.get_luminance() > 0.3) {
+			draw_rect_clipped(rect.grow(-1), Color(0.0, 0.0, 0.0, 0.5), false);
+		}
 	}
 }
 

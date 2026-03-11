@@ -33,6 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
@@ -50,6 +53,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
@@ -67,6 +72,24 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->end_bulk_theme_override();
 
 			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
+
+			switch (version_match_type) {
+				case VersionMatchType::PROJECT_USES_OLDER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgradeMajor")));
+					break;
+				case VersionMatchType::PROJECT_USES_OLDER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgrade")));
+					break;
+				case VersionMatchType::PROJECT_USES_NEWER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngradeMajor")));
+					break;
+				case VersionMatchType::PROJECT_USES_NEWER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngrade")));
+					break;
+				default:
+					break;
+			}
+
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -106,21 +129,21 @@ void ProjectListItemControl::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, TTR("Project") + " " + project_title->get_text());
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+			AccessibilityServer::get_singleton()->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_value(ae, project_title->get_text());
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
 
 			ProjectList *pl = get_list();
 			if (pl) {
-				DisplayServer::get_singleton()->accessibility_update_set_list_item_index(ae, pl->get_index(this));
+				AccessibilityServer::get_singleton()->update_set_list_item_index(ae, pl->get_index(this));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_level(ae, 0);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(ae, is_selected);
+			AccessibilityServer::get_singleton()->update_set_list_item_level(ae, 0);
+			AccessibilityServer::get_singleton()->update_set_list_item_selected(ae, is_selected);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -130,7 +153,6 @@ void ProjectListItemControl::_notification(int p_what) {
 				if (idx >= 0) {
 					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
 					pl->select_project(idx, !has_focus(true));
-					pl->ensure_project_visible(idx);
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -264,6 +286,7 @@ void ProjectListItemControl::set_project_version(const String &p_info) {
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
 	if (p_features.size() > 0) {
 		String tooltip_text = "";
+		bool unknown_version = false;
 		for (int i = 0; i < p_features.size(); i++) {
 			if (ProjectList::project_feature_looks_like_version(p_features[i])) {
 				PackedStringArray project_version_split = p_features[i].split(".");
@@ -272,18 +295,67 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
-					// Don't show a warning if the project was last edited in a previous minor version.
-					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+
+				version_match_type = VersionMatchType::PROJECT_USES_SAME;
+				if (project_version_major > GODOT_VERSION_MAJOR) {
+					version_match_type = VersionMatchType::PROJECT_USES_NEWER_MAJOR;
+				} else if (project_version_major < GODOT_VERSION_MAJOR) {
+					version_match_type = VersionMatchType::PROJECT_USES_OLDER_MAJOR;
+				} else {
+					// Project is same major version.
+					// Is it the same minor version, or an upgrade or downgrade?
+					if (project_version_minor > GODOT_VERSION_MINOR) {
+						version_match_type = VersionMatchType::PROJECT_USES_NEWER_MINOR;
+					} else if (project_version_minor < GODOT_VERSION_MINOR) {
+						version_match_type = VersionMatchType::PROJECT_USES_OLDER_MINOR;
+					}
 				}
-				p_features.remove_at(i);
-				i--;
+
+				if (version_match_type != VersionMatchType::PROJECT_USES_SAME) {
+					String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+					if (version_match_type == VersionMatchType::PROJECT_USES_OLDER_MAJOR || version_match_type == VersionMatchType::PROJECT_USES_OLDER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+					} else if (version_match_type == VersionMatchType::PROJECT_USES_NEWER_MAJOR || version_match_type == VersionMatchType::PROJECT_USES_NEWER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will downgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+						project_version_tooltip_text += TTR("Downgrading projects is not recommended.") + "\n";
+					}
+					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+					project_different_version->set_tooltip_text(project_version_tooltip_text);
+					project_different_version->show();
+				} else {
+					project_different_version->hide();
+				}
+			} else {
+				if (p_features[i] == "3.x") {
+					version_match_type = VersionMatchType::PROJECT_USES_OLDER_MAJOR;
+					String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+					project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+					project_different_version->set_tooltip_text(project_version_tooltip_text);
+					project_different_version->show();
+				} else if (p_features[i] == TTR("Unknown version")) {
+					unknown_version = true;
+					project_different_version->hide();
+				}
 			}
+
+			p_features.remove_at(i);
+			i--;
+		}
+
+		// This is actually triggered when the project.godot file's config_version
+		// is less than 4, so perhaps it'd be more accurate to say the engine configuration
+		// file's version is not supported...? If the config/features array includes
+		// a proper version number, it will be displayed alongside the "unknown version"
+		// warning otherwise.
+		if (unknown_version) {
+			tooltip_text += TTR("This project uses an unknown version of Godot.") + "\n";
 		}
 		if (p_features.size() > 0) {
 			String unsupported_features_str = String(", ").join(p_features);
 			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
 		}
+
 		if (tooltip_text.is_empty()) {
 			return;
 		}
@@ -292,6 +364,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
+		project_different_version->hide();
 		project_unsupported_features->hide();
 	}
 }
@@ -327,13 +400,13 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTRC("Error: Project is missing on the filesystem."));
 	} else {
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		explore_button->set_tooltip_text(TTRC("Show in File Manager"));
-#else
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 		// Opening the system file manager is not supported on the Android and web editors.
 		explore_button->hide();
-#endif
+#else // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+		explore_button->set_tooltip_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
+#endif // defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 	}
 }
 
@@ -436,6 +509,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		path_hb->add_child(project_unsupported_features);
 		project_unsupported_features->hide();
 
+		project_different_version = memnew(TextureRect);
+		project_different_version->set_name("ProjectDifferentVersion");
+		project_different_version->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		path_hb->add_child(project_different_version);
+		project_different_version->hide();
+
 		project_version = memnew(Label);
 		project_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_version->set_name("ProjectVersion");
@@ -489,6 +568,15 @@ struct ProjectListComparator {
 	}
 };
 
+String ProjectList::Item::get_last_edited_string() const {
+	if (missing) {
+		return TTR("Missing Date");
+	}
+
+	OS::TimeZoneInfo tz = OS::get_singleton()->get_time_zone_info();
+	return Time::get_singleton()->get_datetime_string_from_unix_time(last_edited + tz.bias * 60, true);
+}
+
 // Helpers.
 
 bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
@@ -536,9 +624,9 @@ void ProjectList::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, _projects.size());
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, _projects.size());
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
 		}
 	}
 }
@@ -1198,8 +1286,8 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->add_item(TTRC("Run Project"), MENU_RUN);
 		project_context_menu->add_separator();
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		project_context_menu->add_item(TTRC("Show in File Manager"), MENU_SHOW_IN_FILE_MANAGER);
-#endif
+		project_context_menu->add_item(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN), MENU_SHOW_IN_FILE_MANAGER);
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		project_context_menu->add_item(TTRC("Copy Path"), MENU_COPY_PATH);
 		project_context_menu->add_separator();
 		project_context_menu->add_item(TTRC("Rename"), MENU_RENAME);
@@ -1210,7 +1298,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index, true);
+	clicked_project.control->grab_focus(true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,
@@ -1296,9 +1384,6 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
-
-	Item &item = _projects.write[p_index];
-	item.control->grab_focus(p_hide_focus);
 	_select_project_nocheck(p_index, p_hide_focus);
 }
 

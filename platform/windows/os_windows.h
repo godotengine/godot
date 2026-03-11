@@ -45,10 +45,6 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
-#endif
-
 #include <io.h>
 #include <shellapi.h>
 #include <cstdio>
@@ -71,8 +67,8 @@
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
 	if (x != nullptr) { \
-		x->Release();   \
-		x = nullptr;    \
+		x->Release(); \
+		x = nullptr; \
 	}
 #endif
 
@@ -267,6 +263,17 @@ public:
 	virtual String get_system_ca_certificates() override;
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
+
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in File Explorer");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in File Explorer");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
 
 #ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;

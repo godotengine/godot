@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/variant/typed_array.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
@@ -87,13 +88,15 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<ImporterMesh> merge_importer_meshes(const TypedArray<ImporterMesh> &p_importer_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces = true);
+
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;
 
 	static String validate_blend_shape_name(const String &p_name);
 
-	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_surface_name = String(), const uint64_t p_flags = 0);
+	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = TypedArray<Array>(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_surface_name = String(), const uint64_t p_flags = 0);
 	int get_surface_count() const;
 
 	void set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode);

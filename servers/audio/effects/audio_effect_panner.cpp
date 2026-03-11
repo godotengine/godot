@@ -30,6 +30,8 @@
 
 #include "audio_effect_panner.h"
 
+#include "core/object/class_db.h"
+
 void AudioEffectPannerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float lvol = CLAMP(1.0 - base->pan, 0, 1);
 	float rvol = CLAMP(1.0 + base->pan, 0, 1);

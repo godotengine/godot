@@ -30,6 +30,9 @@
 
 #include "modifier_bone_target_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 void ModifierBoneTarget3D::_validate_bone_names() {
 	// Prior bone name.
 	if (!bone_name.is_empty()) {

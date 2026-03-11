@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/thread.h"
 #include "scene/3d/node_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 
@@ -272,7 +273,7 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 	}
 }
 
-void NavMeshGenerator3D::set_generator_parsers(LocalVector<NavMeshGeometryParser3D *> p_parsers) {
+void NavMeshGenerator3D::set_generator_parsers(const LocalVector<NavMeshGeometryParser3D *> &p_parsers) {
 	RWLockWrite write_lock(generator_parsers_rwlock);
 	generator_parsers = p_parsers;
 }

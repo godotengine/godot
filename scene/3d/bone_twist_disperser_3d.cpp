@@ -30,6 +30,9 @@
 
 #include "bone_twist_disperser_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 bool BoneTwistDisperser3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -153,7 +156,7 @@ void BoneTwistDisperser3D::_get_property_list(List<PropertyInfo> *p_list) const 
 		props.push_back(PropertyInfo(Variant::QUATERNION, path + "twist_from"));
 		props.push_back(PropertyInfo(Variant::INT, path + "disperse_mode", PROPERTY_HINT_ENUM, "Even,Weighted,Custom"));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "weight_position", PROPERTY_HINT_RANGE, "0,1,0.001"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {

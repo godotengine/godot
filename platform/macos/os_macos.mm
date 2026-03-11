@@ -31,17 +31,20 @@
 #import "os_macos.h"
 
 #import "dir_access_macos.h"
-#ifdef TOOLS_ENABLED
-#import "display_server_embedded.h"
-#endif
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 
+#ifdef TOOLS_ENABLED
+#import "display_server_macos_embedded.h"
+#endif
+
+#include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
@@ -58,7 +61,14 @@
 #include <sys/sysctl.h>
 
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
-	if (p_wake_for_events) {
+	bool wake_for_events = p_wake_for_events;
+	if (!wake_for_events) {
+		NSArray<NSRunningApplication *> *proc_array = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.crowdcafe.windowmagnet"];
+		if (proc_array && proc_array.count > 0) {
+			wake_for_events = true;
+		}
+	}
+	if (wake_for_events) {
 		uint64_t delay = get_frame_delay(p_can_draw);
 		if (delay == 0) {
 			return;
@@ -76,7 +86,7 @@ void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 		CFRunLoopAddTimer(CFRunLoopGetCurrent(), wait_timer, kCFRunLoopCommonModes);
 		return;
 	}
-	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
+	OS_Unix::add_frame_delay(p_can_draw, wake_for_events);
 }
 
 void OS_MacOS::initialize() {
@@ -274,7 +284,7 @@ void OS_MacOS::set_cmdline_platform_args(const List<String> &p_args) {
 }
 
 List<String> OS_MacOS::get_cmdline_platform_args() const {
-	return launch_service_args;
+	return List<String>(launch_service_args);
 }
 
 void OS_MacOS::load_shell_environment() const {
@@ -369,11 +379,13 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 
 	// Read framework bundle to get executable name.
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
-	NSBundle *bundle = [NSBundle bundleWithURL:url];
-	if (bundle) {
-		String exe_path = String::utf8([[bundle executablePath] UTF8String]);
-		if (da->file_exists(exe_path)) {
-			return exe_path;
+	if (url) {
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			String exe_path = String::utf8([[bundle executablePath] UTF8String]);
+			if (da->file_exists(exe_path)) {
+				return exe_path;
+			}
 		}
 	}
 
@@ -532,8 +544,11 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 
 Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 	bool open_folder = false;
-	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
-		open_folder = true;
+	if (p_open_folder) {
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (dir->dir_exists(p_path) && !dir->is_bundle(p_path)) {
+			open_folder = true;
+		}
 	}
 
 	if (!p_path.begins_with("file://")) {
@@ -869,7 +884,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 			// Project started from the editor, inject "path" argument to set instance working directory.
 			char cwd[PATH_MAX];
 			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
-				List<String> arguments = p_arguments;
+				List<String> arguments(p_arguments);
 				arguments.push_back("--path");
 				arguments.push_back(String::utf8(cwd));
 				return create_process(path, arguments, r_child_id, false);
@@ -1277,9 +1292,9 @@ void OS_MacOS_Embedded::run() {
 		ret = Main::start();
 	}
 
-	DisplayServerEmbedded *ds = Object::cast_to<DisplayServerEmbedded>(DisplayServer::get_singleton());
+	DisplayServerMacOSEmbedded *ds = Object::cast_to<DisplayServerMacOSEmbedded>(DisplayServer::get_singleton());
 	if (!ds) {
-		ERR_FAIL_MSG("DisplayServerEmbedded is not initialized.");
+		ERR_FAIL_MSG("DisplayServerMacOSEmbedded is not initialized.");
 	}
 
 	if (ds && ret == EXIT_SUCCESS && main_loop) {
@@ -1319,7 +1334,7 @@ void OS_MacOS_Embedded::run() {
 
 OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
 		OS_MacOS(p_execpath, p_argc, p_argv) {
-	DisplayServerEmbedded::register_embedded_driver();
+	DisplayServerMacOSEmbedded::register_embedded_driver();
 }
 
 #endif

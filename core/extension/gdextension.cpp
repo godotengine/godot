@@ -32,6 +32,7 @@
 #include "gdextension.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
 #include "gdextension_library_loader.h"
@@ -950,7 +951,7 @@ void GDExtension::prepare_reload() {
 				state.push_back(Pair<String, Variant>(P.name, value));
 			}
 			E.value.instance_state[obj_id] = {
-				state, // List<Pair<String, Variant>> properties;
+				std::move(state), // List<Pair<String, Variant>> properties;
 				obj->is_extension_placeholder(), // bool is_placeholder;
 			};
 		}

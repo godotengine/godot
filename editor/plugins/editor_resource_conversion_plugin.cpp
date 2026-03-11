@@ -30,6 +30,8 @@
 
 #include "editor_resource_conversion_plugin.h"
 
+#include "core/object/class_db.h"
+
 void EditorResourceConversionPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_converts_to);
 	GDVIRTUAL_BIND(_handles, "resource");

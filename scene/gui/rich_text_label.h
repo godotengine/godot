@@ -32,14 +32,17 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/resources/image_texture.h"
+#include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
 #endif
+
+class PopupMenu;
+class Texture2D;
+class Timer;
+class VScrollBar;
 
 class CharFXTransform;
 class RichTextEffect;
@@ -184,13 +187,7 @@ private:
 		Line() {
 			text_buf.instantiate();
 		}
-		~Line() {
-			if (accessibility_line_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(accessibility_line_element);
-				accessibility_line_element = RID();
-				accessibility_text_element = RID();
-			}
-		}
+		~Line();
 
 		_FORCE_INLINE_ float get_height(float p_line_separation, float p_paragraph_separation) const {
 			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * p_line_separation + p_paragraph_separation;
@@ -265,14 +262,7 @@ private:
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
-		~ItemDropcap() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemDropcap();
 	};
 
 	struct ItemImage : public Item {
@@ -289,17 +279,7 @@ private:
 		Variant key;
 		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
-		~ItemImage() {
-			if (image.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					if (owner_rtl->hr_list.has(rid)) {
-						owner_rtl->hr_list.erase((rid));
-					}
-					image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
-				}
-			}
-		}
+		~ItemImage();
 	};
 
 	struct ItemFont : public Item {
@@ -309,14 +289,7 @@ private:
 		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
-		~ItemFont() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemFont();
 	};
 
 	struct ItemFontSize : public Item {
@@ -408,13 +381,13 @@ private:
 
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
-		LocalVector<float> rows_no_padding;
 		LocalVector<float> rows_baseline;
 		String name;
 
 		int align_to_row = -1;
 		int total_width = 0;
 		int total_height = 0;
+		int char_count = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};
@@ -625,19 +598,28 @@ private:
 		int from_line = 0;
 		Item *from_item = nullptr;
 		int from_char = 0;
+		mutable bool from_line_found = false;
 
 		ItemFrame *to_frame = nullptr;
 		int to_line = 0;
 		Item *to_item = nullptr;
 		int to_char = 0;
+		mutable bool to_line_found = false;
 
-		bool double_click = false; // Selecting whole words?
+		enum SelectionMode {
+			SINGLE_CLICK,
+			DOUBLE_CLICK,
+			TRIPLE_CLICK,
+		};
+		SelectionMode selection_mode = SINGLE_CLICK;
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
 		bool drag_attempt = false;
 	};
 
 	Selection selection;
+	uint64_t last_double_click = 0;
+	Vector2 last_double_click_pos;
 	Callable selection_modifier;
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
@@ -663,7 +645,7 @@ private:
 	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
-	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
+	String _get_line_text(ItemFrame *p_frame, int p_line) const;
 	bool _search_table_cell(ItemTable *p_table, List<Item *>::Element *p_cell, const String &p_string, bool p_reverse_search, int p_from_line);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
@@ -671,7 +653,9 @@ private:
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
 
-	void _set_table_size(ItemTable *p_table, int p_available_width);
+	int _get_line_max_width(ItemFrame *p_frame, int p_line) const;
+	void _update_table_column_width(ItemTable *p_table, int p_available_width);
+	void _update_table_size(ItemTable *p_table);
 
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);

@@ -32,6 +32,7 @@
 
 #include "editor_scene_exporter_gltf_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -39,6 +40,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
+#include "scene/main/scene_tree.h"
 
 String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";

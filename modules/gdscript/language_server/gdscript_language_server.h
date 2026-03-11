@@ -37,17 +37,18 @@
 class GDScriptLanguageServer : public EditorPlugin {
 	GDCLASS(GDScriptLanguageServer, EditorPlugin);
 
-	GDScriptLanguageProtocol protocol;
-
 	Thread thread;
 	bool thread_running = false;
 	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
 	bool start_attempted = false;
 	bool started = false;
+
+	// Defaults located in editor_settings.cpp
 	bool use_thread = false;
-	String host = "127.0.0.1";
-	int port = 6005;
-	int poll_limit_usec = 100000;
+	String host;
+	int port = 0;
+	int poll_limit_usec = 0;
+
 	static void thread_main(void *p_userdata);
 
 private:

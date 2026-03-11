@@ -31,6 +31,9 @@
 #include "editor_resource_picker.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
@@ -50,6 +53,7 @@
 #include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;
@@ -336,9 +340,9 @@ void EditorResourcePicker::_update_menu_items() {
 
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
-					edit_menu->set_item_tooltip(-1, String(TTRC("This Resource is already unique.")) + "\n" + drag_and_drop_text);
+					edit_menu->set_item_tooltip(-1, TTR("This Resource is already unique.") + "\n" + drag_and_drop_text);
 				} else if (_has_parent_resource().is_valid()) {
-					edit_menu->set_item_tooltip(-1, String(TTRC("In order to duplicate it, make its parent Resource unique.")) + "\n" + drag_and_drop_text);
+					edit_menu->set_item_tooltip(-1, TTR("In order to duplicate it, make its parent Resource unique.") + "\n" + drag_and_drop_text);
 				}
 			} else {
 				edit_menu->set_item_tooltip(-1, drag_and_drop_text);
@@ -391,11 +395,11 @@ void EditorResourcePicker::_update_menu_items() {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
-			edit_menu->add_item(TTR("Copy"), OBJ_MENU_COPY);
+			edit_menu->add_item(TTRC("Copy"), OBJ_MENU_COPY);
 		}
 
 		if (paste_valid) {
-			edit_menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_item(TTRC("Paste"), OBJ_MENU_PASTE);
 			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
@@ -647,7 +651,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		int idx = 0;
 
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 		if (!allowed_types.is_empty()) {
 			edit_menu->add_separator(TTRC("New"));
 		}
@@ -906,7 +910,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	}
 
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_with_convert;
+	HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 	String res_type = _get_resource_type(res);
 
@@ -1001,7 +1005,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Ref<Resource> dropped_resource = _get_dropped_resource(p_data);
 	if (dropped_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -1071,12 +1075,12 @@ void EditorResourcePicker::_bind_methods() {
 	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
-	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
+	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 }
 
 void EditorResourcePicker::_notification(int p_what) {
@@ -1145,7 +1149,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -1167,7 +1171,7 @@ String EditorResourcePicker::get_base_type() const {
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_without_convert;
+	HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -1189,7 +1193,7 @@ bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) 
 
 	if (!base_type.is_empty()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -1434,17 +1438,17 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
-	bool internal_to_scene = edited_resource->is_built_in();
+	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
 	List<Node *> node_list = en->get_editor_selection()->get_full_selected_node_list();
 
 	// Todo: Implement a more elegant solution for multiple selected Nodes. This should suffice for the time being.
 	if (node_list.size() > 1 && !p_check_recursive) {
-		return node_list.size() != EditorNode::get_singleton()->get_resource_count(edited_resource) || !internal_to_scene;
+		return node_list.size() != en->get_resource_count(edited_resource) || !internal_to_scene;
 	}
 
 	if (!internal_to_scene) {
-		if (parent_resource.is_valid() && parent_resource->is_built_in() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
-			return false;
+		if (parent_resource.is_valid() && (!en->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
+			return !parent_resource->is_built_in();
 		} else if (!p_check_recursive) {
 			return true;
 		}
@@ -1589,7 +1593,7 @@ void EditorScriptPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_script_owner", "owner_node"), &EditorScriptPicker::set_script_owner);
 	ClassDB::bind_method(D_METHOD("get_script_owner"), &EditorScriptPicker::get_script_owner);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
 }
 
 // EditorShaderPicker

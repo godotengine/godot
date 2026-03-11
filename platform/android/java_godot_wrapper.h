@@ -83,12 +83,18 @@ private:
 	jmethodID _is_in_immersive_mode = nullptr;
 	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
+	jmethodID _on_distraction_free_mode_changed = nullptr;
 	jmethodID _get_activity = nullptr;
 	jmethodID _build_env_connect = nullptr;
 	jmethodID _build_env_disconnect = nullptr;
 	jmethodID _build_env_execute = nullptr;
 	jmethodID _build_env_cancel = nullptr;
 	jmethodID _build_env_clean_project = nullptr;
+	jmethodID _is_pip_mode_supported = nullptr;
+	jmethodID _is_in_pip_mode = nullptr;
+	jmethodID _enter_pip_mode = nullptr;
+	jmethodID _set_pip_mode_aspect_ratio = nullptr;
+	jmethodID _set_auto_enter_pip_mode_on_background = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -146,10 +152,17 @@ public:
 	void set_window_color(const Color &p_color);
 
 	void on_editor_workspace_selected(const String &p_workspace);
+	void on_distraction_free_mode_changed(bool p_enabled);
 
 	bool build_env_connect(const Callable &p_callback);
 	void build_env_disconnect();
 	int build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
 	void build_env_cancel(int p_job_id);
 	void build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
+
+	bool is_pip_mode_supported();
+	bool is_in_pip_mode();
+	void enter_pip_mode();
+	void set_pip_mode_aspect_ratio(int p_numerator, int p_denominator);
+	void set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background);
 };

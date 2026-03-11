@@ -1241,6 +1241,14 @@
 				Returns the font size of the [param index] text run (in visual order).
 			</description>
 		</method>
+		<method name="_shaped_get_run_glyph_range" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the glyph range of the [param index] text run (in visual order).
+			</description>
+		</method>
 		<method name="_shaped_get_run_language" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="shaped" type="RID" />

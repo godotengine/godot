@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
-#include "core/string/string_name.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 
 class FileAccess;

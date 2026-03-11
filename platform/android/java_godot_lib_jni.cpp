@@ -49,6 +49,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/rendering/rendering_server.h"
@@ -273,7 +274,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	}
 
 	if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
-		dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST);
 	}
 }
 
@@ -515,6 +516,22 @@ JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererIn
 		rendering_driver_chosen = RenderingServer::get_singleton()->get_current_rendering_driver_name();
 		rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
 	}
+#ifndef XR_DISABLED
+	// When running in XR mode, vulkan initialization must be done by the XR module, so we ensure that the vulkan
+	// global context is reset.
+	// Note: This is temporary workaround to address https://github.com/godotengine/godot/issues/115924
+	// A proper fix involves updating the Android init flow so that DisplayServerAndroid can update the Android surface
+	// type (vulkan or opengl) after it's initialized.
+	bool xr_enabled = false;
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+		xr_enabled = GLOBAL_GET_CACHED(bool, "xr/shaders/enabled");
+	} else {
+		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+	}
+	if (xr_enabled) {
+		DisplayServerAndroid::free_vulkan_global_context();
+	}
+#endif // XR_DISABLED
 #endif
 
 	String rendering_driver_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_driver_name_source());
@@ -713,5 +730,19 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv
 		return os->has_feature(feature);
 	}
 	return false;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onPictureInPictureModeChanged(JNIEnv *env, jclass clazz, jboolean p_is_in_picture_in_picture_mode) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+	if (os_android->get_main_loop()) {
+		if (p_is_in_picture_in_picture_mode) {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_ENTERED);
+		} else {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_EXITED);
+		}
+	}
 }
 }
