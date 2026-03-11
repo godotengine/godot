@@ -225,10 +225,9 @@ public:
 		} state = FCS_ENTERING;
 
 		uint32_t caster_id = 0;
-
-		uint32_t in_count = 0; // The fraction in is in the in_count / transition_ticks
 		uint32_t last_update_frame = UINT32_MAX;
 
+		// Fraction faded in, between 0 and 1.
 		real_t fraction = 0;
 
 		// We only need to store lighting data for casters that are IN FOCUS.
@@ -363,6 +362,7 @@ private:
 		real_t range = 6.0f;
 		real_t gamma = 1.0f;
 		real_t intensity = 1.0f;
+		real_t transition_duration = 1.0f;
 
 		uint32_t update_frame = 0;
 		uint32_t render_focus_handle = 0;
