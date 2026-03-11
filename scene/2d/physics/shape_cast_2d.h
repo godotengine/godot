@@ -119,7 +119,9 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+#ifdef TOOLS_ENABLED
 	static int _get_draw_steps(real_t p_target_length, real_t p_shape_size);
+#endif
 
 	ShapeCast2D();
 };

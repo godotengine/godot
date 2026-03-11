@@ -38,6 +38,7 @@ TEST_FORCE_LINK(test_shape_cast_2d)
 
 namespace TestShapeCast2D {
 
+#ifdef TOOLS_ENABLED
 TEST_CASE("[SceneTree][ShapeCast2D] _get_draw_steps returns 2 for zero-size shape") {
 	// Regression: empty ConvexPolygonShape2D and ConcavePolygonShape2D have a zero-size bounding rect.
 	// The step count must fall back to 2 rather than dividing by zero.
@@ -58,6 +59,7 @@ TEST_CASE("[SceneTree][ShapeCast2D] _get_draw_steps scales with target length") 
 	int long_cast = ShapeCast2D::_get_draw_steps(500.0, 10.0);
 	CHECK_LT(short_cast, long_cast);
 }
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[SceneTree][ShapeCast2D] Default shape is null") {
 	ShapeCast2D *cast = memnew(ShapeCast2D);

@@ -151,9 +151,11 @@ bool ShapeCast2D::is_enabled() const {
 	return enabled;
 }
 
+#ifdef TOOLS_ENABLED
 int ShapeCast2D::_get_draw_steps(real_t p_target_length, real_t p_shape_size) {
 	return p_shape_size > 0.0 ? MAX(2, p_target_length / p_shape_size * 4) : 2;
 }
+#endif
 
 void ShapeCast2D::set_shape(const Ref<Shape2D> &p_shape) {
 	if (p_shape == shape) {
