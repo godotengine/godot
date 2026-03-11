@@ -43,17 +43,19 @@ def get_opts():
         # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
         ("stack_size", "WASM stack size (in KiB)", 5120),
         ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
-        BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
-        BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
-        BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
-        BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
+        BoolVariable(["use_assertions", "assertions"], "Use Emscripten runtime assertions", False),
+        BoolVariable(["use_ubsan", "ubsan"], "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["use_asan", "asan"], "Use Emscripten address sanitizer (ASAN)", False),
+        BoolVariable(["use_lsan", "lsan"], "Use Emscripten leak sanitizer (LSAN)", False),
+        BoolVariable(["use_safe_heap", "safe_heap"], "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable(
             "dlink_enabled", "Enable WebAssembly dynamic linking (GDExtension support). Produces bigger binaries", False
         ),
-        BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
+        BoolVariable(
+            ["use_closure_compiler", "closure_compiler"], "Use closure compiler to minimize JavaScript code", False
+        ),
         BoolVariable(
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",

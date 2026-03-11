@@ -33,10 +33,12 @@ def get_opts():
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ["no", "5.0", "devel"], ignorecase=2),
-        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
-        BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        BoolVariable(["use_ubsan", "ubsan"], "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["use_asan", "asan"], "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable(["use_tsan", "tsan"], "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable(
+            ["use_coverage", "coverage"], "Use instrumentation codes in the binary (e.g. for code coverage)", False
+        ),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         (
             "bundle_sign_identity",
