@@ -23,13 +23,13 @@ jobs:
           - name: Editor (target=editor)
             cache-name: macos-editor
             target: editor
-            bin: ./bin/godot.macos.editor.universal
+            bin: ./godot.macos.editor.universal
 
           - name: Template (target=template_release)
             cache-name: macos-template
             target: template_release
             scons-flags: debug_symbols=no
-            bin: ./bin/godot.macos.template_release.universal
+            bin: ./godot.macos.template_release.universal
 
     steps:
       - name: Checkout
@@ -82,7 +82,7 @@ jobs:
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }} generate_bundle=yes
           platform: macos
           target: ${{ matrix.target }}
 
@@ -94,10 +94,10 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
-          rm ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64
-          strip bin/godot.*
-          chmod +x bin/godot.*
+          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ${{ matrix.bin }}
+          rm ./bin/godot.*
+          strip ${{ matrix.bin }}
+          chmod +x ${{ matrix.bin }}
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
