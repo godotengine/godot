@@ -5805,7 +5805,7 @@ String TextEdit::get_word_under_caret(int p_caret) const {
 
 		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(c))->get_rid());
 		for (int i = 0; i < words.size(); i = i + 2) {
-			if (words[i] <= get_caret_column(c) && words[i + 1] > get_caret_column(c)) {
+			if (words[i] <= get_caret_column(c) && words[i + 1] >= get_caret_column(c)) {
 				selected_text += text[get_caret_line(c)].substr(words[i], words[i + 1] - words[i]);
 				if (p_caret == -1 && c != carets.size() - 1) {
 					selected_text += "\n";

@@ -6795,7 +6795,7 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	// Should this work?
 	text_edit->set_caret_column(5);
-	CHECK(text_edit->get_word_under_caret() == "");
+	CHECK(text_edit->get_word_under_caret() == "Lorem");
 
 	text_edit->set_caret_column(6);
 	CHECK(text_edit->get_word_under_caret() == "");
