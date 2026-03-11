@@ -3926,6 +3926,25 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 				const Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 			}
+
+			if (is_group_folded) {
+				for (const AnimationTrackEdit *track_edit : track_edits) {
+					const Ref<Texture2D> &key_type_icon = track_edit->get_key_type_icon();
+					int track = track_edit->get_track();
+					for (int i = 0; i < editor->get_current_animation()->track_get_key_count(track); ++i) {
+						float key_time_offset = editor->get_current_animation()->track_get_key_time(track, i) - timeline->get_value();
+						int key_screen_pos = int(key_time_offset * timeline->get_zoom_scale() + limit);
+						int key_limit_left = timeline->get_name_limit();
+						int key_limit_right = get_size().width - timeline->get_buttons_width();
+						if (key_screen_pos >= key_limit_left && key_screen_pos <= key_limit_right) {
+							draw_texture(
+									key_type_icon,
+									Vector2(key_screen_pos - key_type_icon->get_width() / 2, (get_size().height - key_type_icon->get_height()) / 2),
+									Color(1, 1, 1, 0.3));
+						}
+					}
+				}
+			}
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {

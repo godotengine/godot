@@ -520,6 +520,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	const Ref<Texture2D> &get_key_type_icon() const { return type_icon; }
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
