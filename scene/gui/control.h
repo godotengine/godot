@@ -515,6 +515,8 @@ public:
 	Size2 get_parent_area_size() const;
 	Rect2 get_parent_anchorable_rect() const;
 
+	Size2 get_layout_size() const;
+
 	// Positioning and sizing.
 
 	virtual Transform2D get_transform() const override;

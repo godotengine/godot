@@ -694,6 +694,25 @@ Control *Control::get_root_parent_control() const {
 	return const_cast<Control *>(root);
 }
 
+Size2 Control::get_layout_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	if (!is_inside_tree()) {
+		return Size2();
+	}
+#ifdef TOOLS_ENABLED
+	Node *edited_scene_root = get_tree()->get_edited_scene_root();
+	Node *scene_root_parent = edited_scene_root ? edited_scene_root->get_parent() : nullptr;
+
+	if (scene_root_parent && get_viewport() == scene_root_parent->get_viewport()) {
+		return Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
+	} else {
+		return get_viewport()->get_visible_rect().size;
+	}
+#else
+	return get_viewport()->get_visible_rect().size;
+#endif // TOOLS_ENABLED
+}
+
 Rect2 Control::get_parent_anchorable_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
 	if (!is_inside_tree()) {
@@ -914,7 +933,11 @@ void Control::_compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (
 
 	real_t x = p_rect.position.x;
 	if (is_layout_rtl()) {
-		x = parent_rect_size.x - x - p_rect.size.x;
+		if (Math::is_zero_approx(parent_rect_size.x)) {
+			x = get_layout_size().x - x - p_rect.size.x;
+		} else {
+			x = parent_rect_size.x - x - p_rect.size.x;
+		}
 	}
 	r_anchors[0] = (x - p_offsets[0]) / parent_rect_size.x;
 	r_anchors[1] = (p_rect.position.y - p_offsets[1]) / parent_rect_size.y;
@@ -927,7 +950,11 @@ void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (
 
 	real_t x = p_rect.position.x;
 	if (is_layout_rtl()) {
-		x = parent_rect_size.x - x - p_rect.size.x;
+		if (Math::is_zero_approx(parent_rect_size.x)) {
+			x = get_layout_size().x - x - p_rect.size.x;
+		} else {
+			x = parent_rect_size.x - x - p_rect.size.x;
+		}
 	}
 	r_offsets[0] = x - (p_anchors[0] * parent_rect_size.x);
 	r_offsets[1] = p_rect.position.y - (p_anchors[1] * parent_rect_size.y);
@@ -1268,7 +1295,11 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	real_t x = parent_rect.size.x;
 	if (is_layout_rtl()) {
-		x = parent_rect.size.x - x - new_size.x;
+		if (Math::is_zero_approx(parent_rect.size.x)) {
+			x = get_layout_size().x - x - new_size.x;
+		} else {
+			x = parent_rect.size.x - x - new_size.x;
+		}
 	}
 	//Left
 	switch (p_preset) {
@@ -1855,7 +1886,11 @@ void Control::_size_changed() {
 	}
 
 	if (is_layout_rtl()) {
-		new_pos_cache.x = parent_rect.size.x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
+		if (Math::is_zero_approx(parent_rect.size.x)) {
+			new_pos_cache.x = get_layout_size().x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
+		} else {
+			new_pos_cache.x = parent_rect.size.x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
+		}
 	}
 
 	if (minimum_size.height > new_size_cache.height) {
