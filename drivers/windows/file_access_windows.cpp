@@ -38,7 +38,6 @@
 
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
-#include <windows.h>
 
 #include <io.h>
 #include <sys/stat.h>

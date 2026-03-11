@@ -33,7 +33,6 @@
 #ifdef UNIX_ENABLED
 
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 
 #if defined(__GLIBC__) || defined(WEB_ENABLED)
 #include <iconv.h>

@@ -44,7 +44,6 @@
 #include <cerrno>
 
 #if defined(TOOLS_ENABLED)
-#include <climits>
 #include <cstdlib>
 #endif
 

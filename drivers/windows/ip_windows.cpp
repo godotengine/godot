@@ -32,13 +32,10 @@
 
 #include "ip_windows.h"
 
-#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 #include <iphlpapi.h>
-
-#include <cstdio>
 
 static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {
 	IPAddress ip;

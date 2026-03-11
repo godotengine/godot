@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/input/input.h"
-#include "core/os/thread.h"
 
 typedef uint32_t SDL_JoystickID;
 typedef struct SDL_Joystick SDL_Joystick;

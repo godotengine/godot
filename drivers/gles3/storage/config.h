@@ -36,7 +36,7 @@
 
 // FIXME: platform_gl.h includes windows.h via egl.h, which defines ConnectFlags.
 // This breaks include project_settings.h in config.cpp, so we include object.h first.
-#include "core/object/object.h"
+#include "core/object/object.h" // IWYU pragma: keep.
 
 #include "platform_gl.h"
 
