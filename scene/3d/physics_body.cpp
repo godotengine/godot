@@ -383,7 +383,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		get_script_instance()->call("_integrate_forces", state);
 	}
 	set_ignore_transform_notification(false);
-	_on_transform_changed();
+	_on_transform_changed(true);
 
 	if (contact_monitor) {
 		contact_monitor->locked = true;
@@ -1451,7 +1451,7 @@ void KinematicBody::_direct_state_changed(Object *p_state) {
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
-	_on_transform_changed();
+	_on_transform_changed(true);
 }
 
 void KinematicBody::_notification(int p_what) {
@@ -1476,7 +1476,7 @@ void KinematicBody::_notification(int p_what) {
 		set_notify_local_transform(false);
 		set_global_transform(last_valid_transform);
 		set_notify_local_transform(true);
-		_on_transform_changed();
+		_on_transform_changed(false);
 	}
 }
 
@@ -2361,7 +2361,7 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
 	set_ignore_transform_notification(false);
-	_on_transform_changed();
+	_on_transform_changed(true);
 
 	// Update skeleton
 	if (parent_skeleton) {
