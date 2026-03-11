@@ -53,6 +53,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void attach_debugger(ScriptEditorDebugger *p_debugger);
 	void detach_debugger();
 
 	void add_session_tab(Control *p_tab);
@@ -81,6 +82,7 @@ protected:
 public:
 	void create_session(ScriptEditorDebugger *p_debugger);
 	void clear();
+	void attach_plugin_session_debugger(ScriptEditorDebugger *p_debugger);
 
 	virtual void setup_session(int p_idx);
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session);

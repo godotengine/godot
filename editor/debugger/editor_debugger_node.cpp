@@ -435,6 +435,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 				debugger->update_live_edit_root();
 			}
 		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			attach_plugin_session_debugger();
+		} break;
 	}
 }
 
@@ -954,4 +958,12 @@ bool EditorDebuggerNode::plugins_capture(ScriptEditorDebugger *p_debugger, const
 		}
 	}
 	return parsed;
+}
+
+void EditorDebuggerNode::attach_plugin_session_debugger() {
+	if (!debugger_plugins.is_empty()) {
+		for (Ref<EditorDebuggerPlugin> plugin : debugger_plugins) {
+			plugin->attach_plugin_session_debugger(get_debugger(0));
+		}
+	}
 }

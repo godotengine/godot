@@ -112,10 +112,18 @@ void EditorDebuggerSession::detach_debugger() {
 	if (!debugger) {
 		return;
 	}
-	debugger->disconnect("started", callable_mp(this, &EditorDebuggerSession::_started));
-	debugger->disconnect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
-	debugger->disconnect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->disconnect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
+	if (debugger->is_connected("started", callable_mp(this, &EditorDebuggerSession::_started))) {
+		debugger->disconnect("started", callable_mp(this, &EditorDebuggerSession::_started));
+	}
+	if (debugger->is_connected("stopped", callable_mp(this, &EditorDebuggerSession::_stopped))) {
+		debugger->disconnect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
+	}
+	if (debugger->is_connected("breaked", callable_mp(this, &EditorDebuggerSession::_breaked))) {
+		debugger->disconnect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
+	}
+	if (debugger->is_connected(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away))) {
+		debugger->disconnect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
+	}
 	for (Control *tab : tabs) {
 		debugger->remove_debugger_tab(tab);
 	}
@@ -123,18 +131,29 @@ void EditorDebuggerSession::detach_debugger() {
 	debugger = nullptr;
 }
 
+void EditorDebuggerSession::attach_debugger(ScriptEditorDebugger *p_debugger) {
+	ERR_FAIL_NULL(p_debugger);
+	debugger = p_debugger;
+	if (!debugger->is_connected("started", callable_mp(this, &EditorDebuggerSession::_started))) {
+		debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
+	}
+	if (!debugger->is_connected("stopped", callable_mp(this, &EditorDebuggerSession::_stopped))) {
+		debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
+	}
+	if (!debugger->is_connected("breaked", callable_mp(this, &EditorDebuggerSession::_breaked))) {
+		debugger->connect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
+	}
+	if (!debugger->is_connected(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away))) {
+		debugger->connect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
+	}
+}
+
 void EditorDebuggerSession::_debugger_gone_away() {
-	debugger = nullptr;
-	tabs.clear();
+	detach_debugger();
 }
 
 EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
-	ERR_FAIL_NULL(p_debugger);
-	debugger = p_debugger;
-	debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
-	debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
-	debugger->connect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->connect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
+	attach_debugger(p_debugger);
 }
 
 EditorDebuggerSession::~EditorDebuggerSession() {
@@ -157,6 +176,12 @@ void EditorDebuggerPlugin::clear() {
 void EditorDebuggerPlugin::create_session(ScriptEditorDebugger *p_debugger) {
 	sessions.push_back(Ref<EditorDebuggerSession>(memnew(EditorDebuggerSession(p_debugger))));
 	setup_session(sessions.size() - 1);
+}
+
+void EditorDebuggerPlugin::attach_plugin_session_debugger(ScriptEditorDebugger *p_debugger) {
+	for (const Ref<EditorDebuggerSession> &session : sessions) {
+		session->attach_debugger(p_debugger);
+	}
 }
 
 void EditorDebuggerPlugin::setup_session(int p_idx) {
