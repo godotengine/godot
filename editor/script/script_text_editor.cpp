@@ -238,7 +238,7 @@ void ScriptTextEditor::apply_code() {
 
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 
-	_validate_script(); // Same as caling
+	_validate_script();
 	apply_code_locked = false;
 }
 
