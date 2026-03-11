@@ -37,7 +37,6 @@ TEST_FORCE_LINK(test_navigation_server_3d)
 #ifdef MODULE_NAVIGATION_3D_ENABLED
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"

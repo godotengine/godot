@@ -38,7 +38,6 @@
 #include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/marshalls.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
@@ -51,7 +50,6 @@
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
 
 #include <avrt.h>
@@ -84,7 +82,7 @@ extern "C" {
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_windows.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"

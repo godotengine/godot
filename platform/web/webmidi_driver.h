@@ -33,7 +33,6 @@
 #include "core/os/midi_driver.h"
 
 #include "godot_js.h"
-#include "godot_midi.h"
 
 class MIDIDriverWebMidi : public MIDIDriver {
 private:
