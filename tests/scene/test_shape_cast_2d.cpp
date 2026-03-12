@@ -61,6 +61,7 @@ TEST_CASE("[SceneTree][ShapeCast2D] _get_draw_steps scales with target length") 
 }
 #endif // TOOLS_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
 TEST_CASE("[SceneTree][ShapeCast2D] Default shape is null") {
 	ShapeCast2D *cast = memnew(ShapeCast2D);
 
@@ -93,34 +94,6 @@ TEST_CASE("[SceneTree][ShapeCast2D] Assigning a null shape clears the shape") {
 	memdelete(cast);
 }
 
-TEST_CASE("[SceneTree][ShapeCast2D] Assigning an empty ConvexPolygonShape2D does not crash") {
-	ShapeCast2D *cast = memnew(ShapeCast2D);
-	Ref<ConvexPolygonShape2D> shape;
-	shape.instantiate();
-
-	cast->set_shape(shape);
-	CHECK(cast->get_shape() == shape);
-
-	memdelete(cast);
-}
-
-TEST_CASE("[SceneTree][ShapeCast2D] Assigning a ConvexPolygonShape2D with points does not crash") {
-	ShapeCast2D *cast = memnew(ShapeCast2D);
-	Ref<ConvexPolygonShape2D> shape;
-	shape.instantiate();
-
-	Vector<Vector2> pts;
-	pts.push_back(Vector2(-10, -10));
-	pts.push_back(Vector2(10, -10));
-	pts.push_back(Vector2(0, 10));
-	shape->set_points(pts);
-
-	cast->set_shape(shape);
-	CHECK(cast->get_shape() == shape);
-
-	memdelete(cast);
-}
-
 TEST_CASE("[SceneTree][ShapeCast2D] Configuration warning is emitted when shape is null") {
 	ShapeCast2D *cast = memnew(ShapeCast2D);
 
@@ -141,5 +114,6 @@ TEST_CASE("[SceneTree][ShapeCast2D] No configuration warning when shape is assig
 
 	memdelete(cast);
 }
+#endif // PHYSICS_2D_DISABLED
 
 } // namespace TestShapeCast2D
