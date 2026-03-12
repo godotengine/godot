@@ -2079,6 +2079,48 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
+// TODO: Add overwrite check
+void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, String p_to_path) {
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND(dir.is_null());
+
+	for (int i = 0; i < p_files.size(); i++) {
+		const String &from = p_files[i];
+		String to = p_to_path.path_join(from.get_file());
+
+		if (dir->dir_exists(from)) {
+			Vector<String> sub_files;
+
+			Ref<DirAccess> sub_dir = DirAccess::open(from);
+			ERR_FAIL_COND(sub_dir.is_null());
+
+			sub_dir->list_dir_begin();
+
+			String next_file = sub_dir->get_next();
+			while (!next_file.is_empty()) {
+				if (next_file == "." || next_file == "..") {
+					next_file = sub_dir->get_next();
+					continue;
+				}
+
+				sub_files.push_back(from.path_join(next_file));
+				next_file = sub_dir->get_next();
+			}
+
+			sub_dir->list_dir_end();
+
+			if (!sub_files.is_empty()) {
+				dir->make_dir(to);
+				_add_dropped_files_recursive(sub_files, to);
+			}
+
+			continue;
+		}
+
+		dir->copy(from, to);
+	}
+}
+
 void FileSystemDock::_before_move(HashSet<String> &r_file_owners) const {
 	HashSet<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
@@ -2964,6 +3006,10 @@ String FileSystemDock::get_folder_path_at_mouse_position() const {
 	}
 	String fpath = item->get_metadata(0);
 	return fpath.get_base_dir();
+}
+
+void FileSystemDock::handle_external_file_drop(const Vector<String> &p_files, const String &p_to_path) {
+	_add_dropped_files_recursive(p_files, p_to_path);
 }
 
 Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {

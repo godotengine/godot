@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/vector.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_file_system.h"
@@ -303,6 +304,7 @@ private:
 	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
+	void _add_dropped_files_recursive(const Vector<String> &p_files, String p_to_path);
 	void _before_move(HashSet<String> &r_file_owners) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames) const;
@@ -417,6 +419,7 @@ public:
 	String get_current_path() const;
 	String get_current_directory() const;
 	String get_folder_path_at_mouse_position() const;
+	void handle_external_file_drop(const Vector<String> &p_files, const String &p_to_path);
 
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
