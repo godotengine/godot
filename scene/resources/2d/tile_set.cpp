@@ -4245,7 +4245,7 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "suffix:px"), "set_tile_size", "get_tile_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "flat_side_ratio", PROPERTY_HINT_RANGE, "0.1,0.9,0.1,or_less,or_greater"), "set_hexagon_flat_side_ratio", "get_hexagon_flat_side_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "flat_side_ratio", PROPERTY_HINT_RANGE, "0.1,0.9,0.01,or_less,or_greater"), "set_hexagon_flat_side_ratio", "get_hexagon_flat_side_ratio");
 
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_uv_clipping", "uv_clipping"), &TileSet::set_uv_clipping);
