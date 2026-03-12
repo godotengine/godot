@@ -229,6 +229,16 @@ TEST_CASE("[Callable] VariantCallable equality") {
 	Callable c9 = Callable(memnew(VariantCallable(d1, "clear")));
 	Callable c10 = Callable(memnew(VariantCallable(d2, "clear")));
 	CHECK_NE(c9, c10);
+
+	// Ordering: same array, different methods should be ordered by method name.
+	Callable c_back = Callable(memnew(VariantCallable(a1, "back")));
+	Callable c_front = Callable(memnew(VariantCallable(a1, "front")));
+	CHECK(c_back < c_front); // "back" < "front"
+	CHECK_FALSE(c_front < c_back);
+
+	// Ordering: different arrays should have a consistent order.
+	CHECK(c1 < c2 || c2 < c1);
+	CHECK_FALSE(c1 < c2 && c2 < c1);
 }
 
 } // namespace TestCallable

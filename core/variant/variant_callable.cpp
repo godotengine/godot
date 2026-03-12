@@ -47,10 +47,10 @@ bool VariantCallable::compare_less(const CallableCustom *p_a, const CallableCust
 	}
 	const VariantCallable *vca = static_cast<const VariantCallable *>(p_a);
 	const VariantCallable *vcb = static_cast<const VariantCallable *>(p_b);
-	if (vca->method != vcb->method) {
-		return vca->method < vcb->method;
+	if (!vca->variant.identity_compare(vcb->variant)) {
+		return vca->variant.hash() < vcb->variant.hash();
 	}
-	return !vca->variant.identity_compare(vcb->variant) && vca->variant.hash() < vcb->variant.hash();
+	return vca->method < vcb->method;
 }
 
 uint32_t VariantCallable::hash() const {
