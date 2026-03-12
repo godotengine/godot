@@ -1196,6 +1196,9 @@ Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty
 	Vector<double> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1223,6 +1226,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 	Vector<float> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1255,6 +1261,9 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int end = find(p_splitter, from);
@@ -1279,6 +1288,9 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int idx = 0;
