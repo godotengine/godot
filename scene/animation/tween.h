@@ -159,6 +159,7 @@ public:
 	void play();
 	void kill();
 
+	bool has_tweeners() const;
 	bool is_running();
 	bool is_valid();
 	void clear();
