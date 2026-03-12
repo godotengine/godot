@@ -32,6 +32,12 @@
 				Returns the first item with the given name, or [code]-1[/code] if no item is found.
 			</description>
 		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of items present in the library.
+			</description>
+		</method>
 		<method name="get_item_list" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>

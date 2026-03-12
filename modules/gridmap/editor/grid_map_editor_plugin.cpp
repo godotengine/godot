@@ -42,6 +42,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/gui/filter_line_edit.h"
+#include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -1162,8 +1163,17 @@ void GridMapEditor::_update_mesh_library() {
 		return;
 	}
 
+	MeshLibraryEditorPlugin *mesh_library_editor_plugin = MeshLibraryEditorPlugin::get_singleton();
 	if (mesh_library.is_valid()) {
 		mesh_library->connect_changed(callable_mp(this, &GridMapEditor::update_palette));
+
+		if (mesh_library_editor_plugin) {
+			mesh_library_editor_plugin->edit(*mesh_library);
+			mesh_library_editor_plugin->make_visible(true);
+		}
+	} else if (mesh_library_editor_plugin) {
+		mesh_library_editor_plugin->edit(nullptr);
+		mesh_library_editor_plugin->make_visible(false);
 	}
 
 	update_palette();
@@ -2031,6 +2041,8 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 		grid_map_editor->_show_viewports_transform_gizmo(true);
 		grid_map_editor->close();
 		grid_map_editor->set_process(false);
+
+		MeshLibraryEditorPlugin::get_singleton()->make_visible(false);
 	}
 }
 

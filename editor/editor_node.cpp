@@ -166,6 +166,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
