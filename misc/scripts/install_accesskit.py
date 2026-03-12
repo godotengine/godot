@@ -20,7 +20,7 @@ else:
     deps_folder = os.path.join("bin", "build_deps")
 
 # AccessKit
-ac_version = "0.21.1"
+ac_version = "0.21.2"
 
 # Create dependencies folder
 if not os.path.exists(deps_folder):
