@@ -2954,7 +2954,7 @@ void GraphEdit::set_warped_panning(bool p_warped) {
 }
 
 void GraphEdit::update_warped_panning() {
-	panner->setup_warped_panning(get_viewport(), warped_panning);
+	panner->setup_warped_panning(this, warped_panning);
 }
 
 void GraphEdit::arrange_nodes() {
