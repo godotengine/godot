@@ -378,6 +378,8 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &SoftBody3D::get_point_count);
+
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
 
@@ -690,6 +692,19 @@ void SoftBody3D::set_drag_coefficient(real_t p_drag_coefficient) {
 
 Vector3 SoftBody3D::get_point_transform(int p_point_index) {
 	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
+}
+
+uint32_t SoftBody3D::get_point_count() const {
+	if (!mesh.is_valid()) {
+		return 0;
+	}
+
+	if (Array surface_arrays = mesh->surface_get_arrays(0); !surface_arrays.is_empty()) {
+		const Array vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+		return vertices.size();
+	}
+
+	return 0;
 }
 
 void SoftBody3D::apply_impulse(int p_point_index, const Vector3 &p_impulse) {

@@ -151,6 +151,7 @@ public:
 
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
+	uint32_t get_point_count() const;
 
 	void set_pinned_points_indices(Vector<PinnedPoint> p_pinned_points_indices);
 	Vector<PinnedPoint> get_pinned_points_indices();
