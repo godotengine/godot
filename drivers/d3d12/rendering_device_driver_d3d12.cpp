@@ -4039,18 +4039,11 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 					cmd_buf_info->uav_alloc.cpu_handle,
 					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-			UINT values[4] = {
-				(UINT)p_color.get_r8(),
-				(UINT)p_color.get_g8(),
-				(UINT)p_color.get_b8(),
-				(UINT)p_color.get_a8(),
-			};
-
-			cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
+			cmd_buf_info->cmd_list->ClearUnorderedAccessViewFloat(
 					shader_visible_descriptor_allocation.gpu_handle,
 					cmd_buf_info->uav_alloc.cpu_handle,
 					tex_info->resource,
-					values,
+					p_color.components,
 					0,
 					nullptr);
 		}
