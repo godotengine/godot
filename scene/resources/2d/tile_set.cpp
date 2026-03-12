@@ -407,21 +407,6 @@ void TileSet::set_hexagon_flat_side_ratio(float p_flat_side_ratio) {
 	float overlap = (1 - p_flat_side_ratio) / 2;
 
 	overlap = CLAMP(overlap, 0.0, 0.5);
-	if (overlap == hexagon_tile_overlap) {
-		return;
-	}
-
-	if (tile_shape == TILE_SHAPE_HEXAGON && overlap == 0.0) {
-		WARN_PRINT_ED(vformat("Flat side ratio of %.2f results in hexagons visually identical to Half-Offset Square tile shape. "
-							  "Consider using that instead.",
-				p_flat_side_ratio));
-	} else if (tile_shape == TILE_SHAPE_HEXAGON && (overlap == 0.5)) {
-		WARN_PRINT_ED(vformat("Flat side ratio of %.2f results in hexagons visually identical to Isometric tile shape. "
-							  "Working with neighboring tiles may produce unexpected results. "
-							  "Consider using Isometric tile shape instead.",
-				p_flat_side_ratio));
-	}
-
 	hexagon_tile_overlap = overlap;
 
 	terrain_bits_meshes_dirty = true;

@@ -636,6 +636,7 @@
 			A value of [code]1.0[/code] results in a shape visually identical to Half-Offset Square tiles, the length of the flat side is that of its width/height.
 			A value of [code]0.5[/code] creates a standard hexagon where the length of the flat side is half of its width/height.
 			A value of [code]0.0[/code] results in a shape visually identical to Isometric tiles, the length of the flat side is [code]0[/code].
+			Using [code]0.0[/code] or [code]1.0[/code] as a value is discouraged, use the corresponding tile shape instead.
 		</member>
 		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
 			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), changes the way tiles are indexed in the [TileMapLayer] grid.
