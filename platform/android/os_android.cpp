@@ -261,6 +261,19 @@ Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_ha
 		*p_data->r_resolved_path = path;
 	}
 
+	// If a library requests for JVM and main activity, provide it those data
+	typedef void (*RequestFunc)(JavaVM *, jobject);
+	RequestFunc request_func = (RequestFunc)dlsym(p_library_handle, "request_java_ref");
+	if (request_func) {
+		JNIEnv *env = get_jni_env();
+		JavaVM *jvm = nullptr;
+		if (godot_java && env) {
+			env->GetJavaVM(&jvm);
+			jobject activity = godot_java->get_activity();
+			request_func(jvm, activity);
+		}
+	}
+
 	return OK;
 }
 
