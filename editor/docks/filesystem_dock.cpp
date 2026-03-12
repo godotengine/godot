@@ -2038,11 +2038,27 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 
 	if (p_copy) {
+		Vector<String> external_files;
+		String to_path_global;
+
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
-				_try_duplicate_item(to_move[i], new_paths[i]);
-				select_after_scan = new_paths[i];
+				if (!to_move[i].path.begins_with("res://")) {
+					// External file
+					external_files.push_back(to_move[i].path);
+					to_path_global = ProjectSettings::get_singleton()->globalize_path(p_to_path);
+				} else {
+					// Internal file
+					_try_duplicate_item(to_move[i], new_paths[i]);
+					select_after_scan = new_paths[i];
+				}
 			}
+		}
+
+		// Copy external files
+		if (!external_files.is_empty()) {
+			_add_dropped_files_recursive(external_files, to_path_global, p_overwrite == OVERWRITE_RENAME);
+			EditorFileSystem::get_singleton()->scan_changes();
 		}
 	} else {
 		// Check groups.
@@ -2930,13 +2946,33 @@ void FileSystemDock::update_all() {
 }
 
 void FileSystemDock::handle_external_files_drop(const Vector<String> &p_files, const String &p_to_path) {
-	String to_path_global = ProjectSettings::get_singleton()->globalize_path(p_to_path);
-	_add_dropped_files_recursive(p_files, to_path_global);
+	to_move.clear();
 
-	EditorFileSystem::get_singleton()->scan_changes();
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	for (int i = 0; i < p_files.size(); i++) {
+		const String &from = p_files[i];
+		bool is_file = false;
+		if (dir->file_exists(from)) {
+			is_file = true;
+		} else if (!dir->dir_exists(from)) {
+			ERR_PRINT(vformat("Dropped item is neither file nor directory: %s", from));
+			continue;
+		}
+
+		// Fix Windows-style file path
+		String normalized_path = from.replace("\\", "/");
+		to_move.push_back(FileOrFolder(normalized_path, is_file));
+	}
+
+	if (to_move.is_empty()) {
+		return;
+	}
+
+	_move_operation_confirm(p_to_path, true, OVERWRITE_UNDECIDED);
 }
 
-void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, const String &p_to_path) {
+void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, const String &p_to_path, bool p_keep_both) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND(dir.is_null());
 
@@ -2947,9 +2983,11 @@ void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files,
 		String to = p_to_path.path_join(from.get_file());
 
 		if (dir->dir_exists(from)) {
-			FileOrFolder entry(from, false);
-			String unique_res = _get_unique_name(entry, to_path_res);
-			to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+			if (p_keep_both) {
+				FileOrFolder entry(from, false);
+				String unique_res = _get_unique_name(entry, to_path_res);
+				to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+			}
 
 			Vector<String> sub_files;
 
@@ -2976,15 +3014,17 @@ void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files,
 			}
 
 			if (!sub_files.is_empty()) {
-				_add_dropped_files_recursive(sub_files, to);
+				_add_dropped_files_recursive(sub_files, to, p_keep_both);
 			}
 
 			continue;
 		}
 
-		FileOrFolder entry(from, true);
-		String unique_res = _get_unique_name(entry, to_path_res);
-		to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+		if (p_keep_both) {
+			FileOrFolder entry(from, true);
+			String unique_res = _get_unique_name(entry, to_path_res);
+			to = ProjectSettings::get_singleton()->globalize_path(unique_res);
+		}
 
 		dir->copy(from, to);
 	}
