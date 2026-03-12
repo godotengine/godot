@@ -978,8 +978,8 @@ class Godot private constructor(val context: Context) {
 			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
 		}
 
-		// Check for api version 1.0
-		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		// Check for api version 1.1
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x401000)
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {
