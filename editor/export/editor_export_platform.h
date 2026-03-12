@@ -30,19 +30,21 @@
 
 #pragma once
 
-#include "core/io/zip_io.h"
 #include "core/os/process_id.h"
 #include "editor/export/editor_export_preset.h"
 
 class DirAccess;
 class EditorExportPlugin;
 class EditorFileSystemDirectory;
+class FileAccess;
 class Image;
 class Node;
 class RichTextLabel;
 class Texture2D;
 struct EditorProgress;
 struct SharedObject;
+
+typedef void *zipFile;
 
 const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 

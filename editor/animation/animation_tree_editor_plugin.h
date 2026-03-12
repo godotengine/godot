@@ -33,10 +33,11 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/gui/graph_edit.h"
+#include "scene/gui/box_container.h"
 
 class Button;
 class EditorFileDialog;
+class PanelContainer;
 class ScrollContainer;
 class RichTextLabel;
 
