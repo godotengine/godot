@@ -196,7 +196,7 @@ TEST_CASE("[Callable] Bound and unbound argument count") {
 	memdelete(test_instance);
 }
 
-TEST_CASE("[Callable] VariantCallable equality") {
+TEST_CASE("[Callable] VariantCallable equality and ordering") {
 	// Different arrays with same contents.
 	Array a1 = { 1 };
 	Array a2 = { 1 };
@@ -237,8 +237,9 @@ TEST_CASE("[Callable] VariantCallable equality") {
 	CHECK_FALSE(c_front < c_back);
 
 	// Ordering: different arrays should have a consistent order.
-	CHECK(c1 < c2 || c2 < c1);
-	CHECK_FALSE(c1 < c2 && c2 < c1);
+	bool c1_less = c1 < c2;
+	bool c2_less = c2 < c1;
+	CHECK_NE(c1_less, c2_less);
 }
 
 } // namespace TestCallable
