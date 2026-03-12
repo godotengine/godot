@@ -927,8 +927,8 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
 
-#define META_CONTAINS_EXPOSED_NODES "_contains_exposed_nodes"
 #define META_PROPERTY_CONTAINS_EXPOSED_NODES "metadata/_contains_exposed_nodes"
+#define META_CONTAINS_EXPOSED_NODES "_contains_exposed_nodes"
 #define META_PROPERTY_EXPOSED_IN_OWNER "metadata/_exposed_in_owner"
 #define META_EXPOSED_IN_OWNER "_exposed_in_owner"
 #define META_PROPERTY_MARKED_FOR_EXPOSURE "metadata/_marked_for_exposure"

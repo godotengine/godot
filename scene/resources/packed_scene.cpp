@@ -265,21 +265,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				if (sdata.is_valid()) {
 					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
-#ifdef TOOLS_ENABLED
-					if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
-						if (sdata->get_state()->exposed_nodes.size() > 0) {
-							node->set_meta(META_CONTAINS_EXPOSED_NODES, true);
-						}
-						for (const NodePath &e_path : sdata->get_state()->exposed_nodes) {
-							Node *ei = node->get_node_or_null(e_path);
-							if (ei) {
-								if (ei->has_meta(META_EXPOSED_IN_OWNER)) {
-									ei->set_meta(META_EXPOSED_IN_INSTANCE, true);
-								}
-							}
-						}
-					}
-#endif
 				} else if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 					missing_node = memnew(MissingNode);
 #ifdef TOOLS_ENABLED
@@ -754,7 +739,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			if (p_edit_state == GEN_EDIT_STATE_INSTANCE) {
 				if (ei->get_owner() == ret_nodes[0]) {
 					ei->set_meta(META_EXPOSED_IN_OWNER, true);
-					ei->set_meta(META_MARKED_FOR_EXPOSURE, true);
+					ei->set_meta(META_EXPOSED_IN_INSTANCE, ret_nodes[0]);
+				} else if (ei->has_meta(META_EXPOSED_IN_OWNER) && ei->has_meta(META_EXPOSED_IN_INSTANCE)) {
+					ei->set_meta(META_EXPOSED_IN_INSTANCE, ret_nodes[0]);
 				}
 			}
 			if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
@@ -866,8 +853,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// - `exposed_node`: True if the node is flagged as exposed via metadata `META_EXPOSED_IN_OWNER`.
 	bool owned_by_p_owner = p_node == p_owner || p_node->get_owner() == p_owner || p_owner->is_editable_instance(p_node->get_owner());
 	bool exposed_node = p_node->has_meta(META_EXPOSED_IN_OWNER);
+	bool marked_for_exposure = p_node->has_meta(META_MARKED_FOR_EXPOSURE);
 
-	if (!owned_by_p_owner && !exposed_node) {
+	if (!owned_by_p_owner && !exposed_node && !marked_for_exposure) {
 		if (p_node->has_exposed_nodes()) {
 			for (int i = 0; i < p_node->get_child_count(); i++) {
 				Node *c = p_node->get_child(i);

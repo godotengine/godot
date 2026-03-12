@@ -5683,7 +5683,7 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 	for (const NodePath &e_path : exposed_nodes) {
 		Node *ei = instantiated_scene->get_node_or_null(e_path);
 		if (ei) {
-			ei->set_meta(META_EXPOSED_IN_INSTANCE, true);
+			ei->set_meta(META_EXPOSED_IN_INSTANCE, instantiated_scene);
 		}
 	}
 

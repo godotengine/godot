@@ -1492,6 +1492,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	if (!isroot && node_settings.has("import/exposed")) {
 		if (bool(node_settings["import/exposed"])) {
 			p_node->set_meta(META_EXPOSED_IN_OWNER, true);
+			p_node->set_meta(META_EXPOSED_IN_INSTANCE, p_root);
 			p_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, true);
 		}
 	}

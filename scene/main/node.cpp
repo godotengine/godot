@@ -2272,13 +2272,15 @@ bool Node::is_unique_name_in_owner() const {
 
 bool Node::has_exposed_nodes(bool p_recursive) {
 	if (has_meta(META_CONTAINS_EXPOSED_NODES)) {
-		return true;
+		if (get_meta(META_CONTAINS_EXPOSED_NODES)) {
+			return true;
+		}
 	}
 	for (const KeyValue<StringName, Node *> &KV : data.children) {
 		if (!KV.value->data.owner) {
 			continue;
 		}
-		if (KV.value->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		if (KV.value->has_meta(META_EXPOSED_IN_INSTANCE) || KV.value->has_meta(META_MARKED_FOR_EXPOSURE)) {
 			set_meta(META_CONTAINS_EXPOSED_NODES, true);
 			return true;
 		}

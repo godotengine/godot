@@ -330,13 +330,23 @@ void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bo
 		Node *child = p_node->get_child(i);
 
 		bool is_exposed = child->has_meta(META_EXPOSED_IN_OWNER) && child->get_owner() == EditorNode::get_singleton()->get_edited_scene();
-		is_exposed = is_exposed || child->has_meta(META_EXPOSED_IN_INSTANCE);
+		bool exposure_is_visible = false;
+		if (child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			Node *exposed_by = Object::cast_to<Node>(child->get_meta(META_EXPOSED_IN_INSTANCE));
+			exposure_is_visible = exposed_by != nullptr && exposed_by->get_owner() != nullptr && exposed_by->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+		}
+		is_exposed = is_exposed || exposure_is_visible;
+
+		TreeItem *last_for_child = p_last_inserted;
 
 		if (is_exposed) {
 			_update_node_subtree(child, p_parent, p_force);
 
 			if (HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child)) {
 				TreeItem *ti = CI->value.item;
+				if (!ti) {
+					continue;
+				}
 
 				if (p_last_inserted) {
 					ti->move_after(p_last_inserted);
@@ -344,14 +354,21 @@ void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bo
 					ti->move_before(p_parent->get_first_child());
 				}
 
-				p_last_inserted = ti;
+				last_for_child = ti;
 			}
 
 		} else if (child->has_exposed_nodes()) {
-			_update_exposed_nodes(child, p_parent, p_force, p_last_inserted);
-
+			_update_exposed_nodes(child, p_parent, p_force, last_for_child);
 		} else {
 			_update_node_subtree(child, p_parent, p_force);
+
+			if (HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child)) {
+				last_for_child = CI->value.item;
+			}
+		}
+
+		if (last_for_child) {
+			p_last_inserted = last_for_child;
 		}
 	}
 }
@@ -368,7 +385,10 @@ int SceneTreeEditor::get_visible_exposed_node_count(Node *p_node) {
 		}
 
 		bool is_exposed = node->has_meta(META_EXPOSED_IN_OWNER) && node->get_owner() == EditorNode::get_singleton()->get_edited_scene();
-		is_exposed = is_exposed || node->has_meta(META_EXPOSED_IN_INSTANCE);
+		if (node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			Node *exposed_by = Object::cast_to<Node>(node->get_meta(META_EXPOSED_IN_INSTANCE));
+			is_exposed = is_exposed || (exposed_by != nullptr && exposed_by->get_owner() != nullptr && exposed_by->get_owner() == EditorNode::get_singleton()->get_edited_scene());
+		}
 
 		if (is_exposed) {
 			count++;
@@ -410,8 +430,15 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 
 	bool part_of_subscene = false;
 
+	// Prevent node exposure from escaping 1 level of instantiation
+	bool exposure_is_visible = false;
+	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		Node *exposed_by = Object::cast_to<Node>(p_node->get_meta(META_EXPOSED_IN_INSTANCE));
+		exposure_is_visible = exposed_by != nullptr && exposed_by->get_owner() != nullptr && exposed_by->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+	}
+
 	if (!display_foreign && p_node->get_owner() != get_scene_node() && p_node != get_scene_node()) {
-		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()) || (p_node->has_meta(META_EXPOSED_IN_INSTANCE) && p_node->has_meta(META_EXPOSED_IN_OWNER)))) {
+		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()) || exposure_is_visible)) {
 			part_of_subscene = true;
 			// Allow.
 		} else if (p_node->has_exposed_nodes()) {
@@ -452,8 +479,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			if (p_node->has_meta(META_EXPOSED_IN_OWNER)) {
 				item->set_meta(META_EXPOSED_IN_OWNER, true);
 			}
-			if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-				item->set_meta(META_EXPOSED_IN_INSTANCE, true);
+			if (exposure_is_visible) {
+				item->set_meta(META_EXPOSED_IN_INSTANCE, p_node->get_meta(META_EXPOSED_IN_INSTANCE));
 				int final_idx = 0;
 				for (int i = 0; i < p_parent->get_child_count(); i++) {
 					if (p_parent->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE) && p_parent->get_child(i) != I->value.item) {
@@ -2627,8 +2654,14 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	if (!p_node) {
 		return HashMap<Node *, CachedNode>::Iterator();
 	}
+	bool exposure_is_visible = false;
 	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-		p_item->set_meta(META_EXPOSED_IN_INSTANCE, true);
+		Node *exposed_by = Object::cast_to<Node>(p_node->get_meta(META_EXPOSED_IN_INSTANCE));
+		exposure_is_visible = exposed_by != nullptr && exposed_by->get_owner() != nullptr && exposed_by->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+	}
+
+	if (exposure_is_visible) {
+		p_item->set_meta(META_EXPOSED_IN_INSTANCE, p_node->get_meta(META_EXPOSED_IN_INSTANCE));
 	}
 	return cache.insert(p_node, CachedNode(p_node, p_item));
 }
