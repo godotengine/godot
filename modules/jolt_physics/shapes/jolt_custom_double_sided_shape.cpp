@@ -30,8 +30,6 @@
 
 #include "jolt_custom_double_sided_shape.h"
 
-#include "../jolt_project_settings.h"
-
 #include "core/error/error_macros.h"
 
 #include "Jolt/Physics/Collision/CollisionDispatch.h"

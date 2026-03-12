@@ -31,7 +31,6 @@
 #include "openxr_android_extension.h"
 
 #include "../../openxr_api.h"
-
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 #include "thread_jandroid.h"

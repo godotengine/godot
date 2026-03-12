@@ -53,7 +53,6 @@
 // As some data is setup before we start rendering, and cleaned up
 // after we've stopped, that is accessed directly from both threads.
 
-#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 

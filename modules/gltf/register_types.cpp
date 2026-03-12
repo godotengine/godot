@@ -43,6 +43,8 @@
 
 #ifndef PHYSICS_3D_DISABLED
 #include "extensions/physics/gltf_document_extension_physics.h"
+#include "extensions/physics/gltf_physics_body.h"
+#include "extensions/physics/gltf_physics_shape.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifdef TOOLS_ENABLED

@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"

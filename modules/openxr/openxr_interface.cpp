@@ -30,6 +30,7 @@
 
 #include "openxr_interface.h"
 
+#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"

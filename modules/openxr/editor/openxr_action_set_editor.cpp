@@ -40,7 +40,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionSetEditor::_do_set_name);

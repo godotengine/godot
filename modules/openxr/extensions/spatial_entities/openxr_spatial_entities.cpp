@@ -31,10 +31,12 @@
 #include "openxr_spatial_entities.h"
 
 #include "../../openxr_api.h"
+#include "../../openxr_util.h"
 
 #include "core/object/class_db.h"
-#include "core/variant/native_ptr.h"
 #include "openxr_spatial_entity_extension.h"
+
+#include <openxr/openxr.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationBaseHeader

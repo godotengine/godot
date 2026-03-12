@@ -35,7 +35,6 @@
 #include "core/math/vector3.h"
 #include "core/object/object.h"
 #include "core/string/ustring.h"
-#include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 
 #include "Jolt/Jolt.h"

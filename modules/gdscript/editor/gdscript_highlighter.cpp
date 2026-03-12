@@ -37,7 +37,6 @@
 #include "core/core_constants.h"
 #include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {

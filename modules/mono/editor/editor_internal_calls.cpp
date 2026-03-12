@@ -30,15 +30,20 @@
 
 #include "editor_internal_calls.h"
 
-#include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../interop_types.h"
-#include "../utils/macos_utils.h"
 #include "../utils/path_utils.h"
 #include "code_completion.h"
 
+#ifdef GD_MONO_HOT_RELOAD
+#include "../csharp_script.h"
+#endif
+
+#ifdef MACOS_ENABLED
+#include "../utils/macos_utils.h"
+#endif
+
 #include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -51,6 +56,10 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "core/object/callable_mp.h"
+#endif
 
 #ifdef UNIX_ENABLED
 #include <unistd.h> // access

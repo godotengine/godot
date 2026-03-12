@@ -31,7 +31,6 @@
 #pragma once
 
 #include "gdscript_function.h"
-#include "gdscript_utility_functions.h"
 
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"

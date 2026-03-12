@@ -35,6 +35,7 @@
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../gdscript_tokenizer_buffer.h"
+#include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"

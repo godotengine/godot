@@ -30,6 +30,8 @@
 
 #include "openxr_action_map.h"
 
+#include "openxr_interaction_profile_metadata.h"
+
 #include "core/object/class_db.h"
 
 void OpenXRActionMap::_bind_methods() {

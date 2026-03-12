@@ -30,7 +30,6 @@
 
 #include "image_loader_svg.h"
 
-#include "core/os/memory.h"
 #include "core/variant/variant.h"
 
 #include <thorvg.h>

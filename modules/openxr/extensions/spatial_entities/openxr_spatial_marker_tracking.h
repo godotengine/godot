@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
 
 // QrCode marker tracking capability configuration

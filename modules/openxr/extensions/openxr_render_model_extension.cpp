@@ -32,7 +32,6 @@
 
 #ifdef MODULE_GLTF_ENABLED
 #include "../openxr_api.h"
-#include "../openxr_interface.h"
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"

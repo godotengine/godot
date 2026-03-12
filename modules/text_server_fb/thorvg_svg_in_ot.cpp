@@ -45,8 +45,6 @@
 #include <freetype/otsvg.h>
 #include <ft2build.h>
 
-#include <cstdlib>
-
 FT_Error tvg_svg_in_ot_init(FT_Pointer *p_state) {
 	*p_state = memnew(TVG_State);
 
