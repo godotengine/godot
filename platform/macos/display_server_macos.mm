@@ -3785,11 +3785,19 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 #endif
 
 #if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3" && OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		WARN_PRINT("Virtual Machine detected, switching to ANGLE.");
+		rendering_driver = "opengl3_angle";
+	}
 	if (rendering_driver == "opengl3_angle") {
 		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
 		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
 			memdelete(gl_manager_angle);
 			gl_manager_angle = nullptr;
+			if (OS::get_singleton()->get_processor_name().contains("Virtual")) {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
 #ifdef EGL_STATIC
