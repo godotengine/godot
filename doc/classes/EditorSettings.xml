@@ -928,6 +928,9 @@
 			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
 			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps. To test the editor with these tools, use [b]Always Active[/b].
 		</member>
+		<member name="interface/accessibility/property_descriptions" type="bool" setter="" getter="">
+			If [code]true[/code], editor inspector uses property documentation as an accessible description of the property.
+		</member>
 		<member name="interface/editor/appearance/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog] windows. Different platforms have different conventions for this, which can be overridden through this setting to avoid accidental clicks when using Godot on multiple platforms.
 			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt; Cancel first on macOS and other Linux desktop environments.
