@@ -36,7 +36,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 

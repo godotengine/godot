@@ -35,6 +35,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/plist.h"
+#include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"

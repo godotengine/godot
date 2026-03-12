@@ -31,8 +31,7 @@
 #include "quick_settings_dialog.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "core/string/translation_server.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_properties.h"

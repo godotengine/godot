@@ -39,7 +39,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/texture_button.h"
 #include "scene/resources/bone_map.h"
-#include "scene/resources/texture.h"
 
 class AspectRatioContainer;
 

@@ -33,6 +33,13 @@
 #include "core/os/os.h"
 #include "servers/display/display_server.h"
 
+// Uncomment this define to get more debugging logs for the delta smoothing.
+// #define GODOT_DEBUG_DELTA_SMOOTHER
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+#include "core/string/print_string.h"
+#include "core/string/string.h"
+#endif
+
 void MainFrameTime::clamp_process_step(double min_process_step, double max_process_step) {
 	if (process_step < min_process_step) {
 		process_step = min_process_step;
@@ -42,6 +49,20 @@ void MainFrameTime::clamp_process_step(double min_process_step, double max_proce
 }
 
 /////////////////////////////////
+
+void MainTimerSync::DeltaSmoother::made_new_estimate() {
+	_hits_above_estimated = 0;
+	_hits_at_estimated = 0;
+	_hits_below_estimated = 0;
+	_hits_one_above_estimated = 0;
+	_hits_one_below_estimated = 0;
+
+	_estimate_complete = false;
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+	print_line("estimated fps " + itos(_estimated_fps));
+#endif
+}
 
 void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta) {
 	// the calling code should prevent 0 or negative values of delta
@@ -212,8 +233,6 @@ bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
 				double fps = 1000000.0 / time_passed;
 				double ratio = fps / (double)_estimated_fps;
 
-				//print_line("ratio : " + String(Variant(ratio)));
-
 				if ((ratio > 0.95) && (ratio < 1.05)) {
 					_measurement_allows_smoothing = true;
 				} else {
@@ -288,7 +307,6 @@ int64_t MainTimerSync::DeltaSmoother::smooth_delta(int64_t p_delta) {
 	units = MAX(units, 1);
 
 	_leftover_time -= units * _vsync_delta;
-	// print_line("units " + itos(units) + ", leftover " + itos(_leftover_time/1000) + " ms");
 
 	return units * _vsync_delta;
 }

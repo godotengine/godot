@@ -36,7 +36,6 @@
 #include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene/scene_create_dialog.h"

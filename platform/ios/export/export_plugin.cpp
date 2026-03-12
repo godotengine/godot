@@ -34,6 +34,7 @@
 #include "run_icon_svg.gen.h"
 
 #include "editor/editor_node.h"
+#include "main/splash.gen.h"
 
 Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
 

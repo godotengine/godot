@@ -31,10 +31,9 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/occluder_instance_3d.h"
-#include "scene/resources/material.h"
 
 class EditorFileDialog;
+class OccluderInstance3D;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);

@@ -36,9 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
