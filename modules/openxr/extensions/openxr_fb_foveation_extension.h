@@ -35,12 +35,12 @@
 // Other Android based devices are implementing this as well, see:
 // https://github.khronos.org/OpenXR-Inventory/extension_support.html#XR_FB_foveation
 
-#include "../openxr_api.h"
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
 #include "openxr_fb_update_swapchain_extension.h"
 
-#include "../openxr_platform_inc.h"
+// Always include this as late as possible.
+#include "../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXRFBFoveationExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRFBFoveationExtension, OpenXRExtensionWrapper);

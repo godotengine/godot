@@ -36,7 +36,6 @@
 #include "../misc/jolt_stream_wrappers.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
-#include "../shapes/jolt_custom_shape_type.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_body_activation_listener_3d.h"
 #include "jolt_contact_listener_3d.h"

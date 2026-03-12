@@ -350,8 +350,7 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 	return true;
 }
 
-CameraFeedLinux::CameraFeedLinux(const String &p_device_name) :
-		CameraFeed() {
+CameraFeedLinux::CameraFeedLinux(const String &p_device_name) {
 	device_name = p_device_name;
 	_query_device(device_name);
 }

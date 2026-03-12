@@ -32,7 +32,6 @@
 
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
-#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_space_3d.h"
 

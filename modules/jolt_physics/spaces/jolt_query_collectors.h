@@ -30,9 +30,6 @@
 
 #pragma once
 
-#include "../jolt_project_settings.h"
-#include "jolt_space_3d.h"
-
 #include "Jolt/Jolt.h"
 
 #include "Jolt/Core/STLLocalAllocator.h"

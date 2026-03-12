@@ -40,6 +40,7 @@
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
 #include "../language_server/godot_lsp.h"
+#include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
 #include "editor/file_system/editor_file_system.h"

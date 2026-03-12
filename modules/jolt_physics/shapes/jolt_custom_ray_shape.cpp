@@ -32,6 +32,8 @@
 
 #include "../spaces/jolt_query_collectors.h"
 
+#include "core/error/error_macros.h"
+
 #include "Jolt/Physics/Collision/CastResult.h"
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "Jolt/Physics/Collision/TransformedShape.h"

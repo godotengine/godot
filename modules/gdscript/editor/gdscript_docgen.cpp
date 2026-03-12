@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/doc_data.h"
 
 HashMap<String, String> GDScriptDocGen::singletons;
 
