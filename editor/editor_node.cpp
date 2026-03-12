@@ -6940,11 +6940,8 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 	if (to_path.is_empty()) {
 		to_path = FileSystemDock::get_singleton()->get_current_directory();
 	}
-	to_path = ProjectSettings::get_singleton()->globalize_path(to_path);
 
 	FileSystemDock::get_singleton()->handle_external_file_drop(p_files, to_path);
-
-	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void EditorNode::_file_access_close_error_notify(const String &p_str) {

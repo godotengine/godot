@@ -1731,8 +1731,9 @@ String FileSystemDock::_get_unique_name(const FileOrFolder &p_entry, const Strin
 		new_path = p_at_path.path_join(p_entry.path.get_file());
 		new_path_base = new_path.get_basename() + " (%d)." + new_path.get_extension();
 	} else {
-		PackedStringArray path_split = p_entry.path.split("/");
-		new_path = p_at_path.path_join(path_split[path_split.size() - 2]);
+		String trimmed_path = p_entry.path.trim_suffix("/");
+		PackedStringArray path_split = trimmed_path.split("/");
+		new_path = p_at_path.path_join(path_split[path_split.size() - 1]);
 		new_path_base = new_path + " (%d)";
 	}
 
@@ -2033,11 +2034,25 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 
 	if (p_copy) {
+		Vector<String> external_files;
+
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
-				_try_duplicate_item(to_move[i], new_paths[i]);
+				if (to_move[i].path.begins_with("res://")) {
+					// Copy a project file
+					_try_duplicate_item(to_move[i], new_paths[i]);
+				} else {
+					external_files.push_back(to_move[i].path);
+				}
+
 				select_after_scan = new_paths[i];
 			}
+		}
+
+		if (!external_files.is_empty()) {
+			// Copy external files
+			_add_dropped_files_recursive(external_files, p_to_path, p_overwrite);
+			EditorFileSystem::get_singleton()->scan_changes();
 		}
 	} else {
 		// Check groups.
@@ -2079,8 +2094,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-// TODO: Add overwrite check
-void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, String p_to_path) {
+void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files, String p_to_path, Overwrite p_overwrite) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND(dir.is_null());
 
@@ -2089,6 +2103,10 @@ void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files,
 		String to = p_to_path.path_join(from.get_file());
 
 		if (dir->dir_exists(from)) {
+			if (p_overwrite == OVERWRITE_RENAME) {
+				to = _get_unique_name(FileOrFolder(from, false), p_to_path);
+			}
+
 			Vector<String> sub_files;
 
 			Ref<DirAccess> sub_dir = DirAccess::open(from);
@@ -2109,14 +2127,21 @@ void FileSystemDock::_add_dropped_files_recursive(const Vector<String> &p_files,
 
 			sub_dir->list_dir_end();
 
+			if (!dir->dir_exists(to)) {
+				String to_path_global = ProjectSettings::get_singleton()->globalize_path(to);
+				dir->make_dir(to_path_global);
+			}
+
 			if (!sub_files.is_empty()) {
-				dir->make_dir(to);
-				_add_dropped_files_recursive(sub_files, to);
+				_add_dropped_files_recursive(sub_files, to, p_overwrite);
 			}
 
 			continue;
 		}
 
+		if (p_overwrite == OVERWRITE_RENAME) {
+			to = _get_unique_name(FileOrFolder(from, true), to.get_base_dir());
+		}
 		dir->copy(from, to);
 	}
 }
@@ -3009,7 +3034,30 @@ String FileSystemDock::get_folder_path_at_mouse_position() const {
 }
 
 void FileSystemDock::handle_external_file_drop(const Vector<String> &p_files, const String &p_to_path) {
-	_add_dropped_files_recursive(p_files, p_to_path);
+	to_move.clear();
+
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	for (int i = 0; i < p_files.size(); i++) {
+		const String &from = p_files[i];
+		bool is_file = false;
+		if (dir->file_exists(from)) {
+			is_file = true;
+		} else if (!dir->dir_exists(from)) {
+			ERR_PRINT(vformat("Unidentified entry: %s", from));
+			continue;
+		}
+
+		// Fix Windows-style file path
+		String normalized_path = from.replace("\\", "/");
+		to_move.push_back(FileOrFolder(normalized_path, is_file));
+	}
+
+	if (to_move.is_empty()) {
+		return;
+	}
+
+	_move_operation_confirm(p_to_path, true, OVERWRITE_UNDECIDED);
 }
 
 Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
