@@ -146,6 +146,9 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					r_enum = _get_script_name(r_enum);
 				}
 			}
+			if (p_gdtype.is_enum_bitfield) {
+				r_enum = vformat("BitField[%s]", r_enum);
+			}
 			return;
 		case GDType::VARIANT:
 		case GDType::RESOLVING:
@@ -553,6 +556,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.deprecated_message = val.doc_data.deprecated_message;
 					const_doc.is_experimental = val.doc_data.is_experimental;
 					const_doc.experimental_message = val.doc_data.experimental_message;
+					const_doc.is_bitfield = m_enum->is_bitfield;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -576,6 +580,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
 				const_doc.experimental_message = m_enum_val.doc_data.experimental_message;
+				const_doc.is_bitfield = m_enum_val.parent_enum->is_bitfield;
+
 				doc.constants.push_back(const_doc);
 			} break;
 

@@ -189,6 +189,8 @@ GDScriptParser::GDScriptParser() {
 		// Networking.
 		// Keep in sync with `rpc_annotation()` and `SceneRPCInterface::_parse_rpc_config()`.
 		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "reliable", 0));
+		// Enums.
+		register_annotation(MethodInfo("@bitfield"), AnnotationInfo::ENUM, &GDScriptParser::bitfield_annotation);
 	}
 
 #ifdef DEBUG_ENABLED
@@ -1131,7 +1133,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				parse_class_member(&GDScriptParser::parse_class, AnnotationInfo::CLASS, "class");
 				break;
 			case GDScriptTokenizer::Token::ENUM:
-				parse_class_member(&GDScriptParser::parse_enum, AnnotationInfo::NONE, "enum");
+				parse_class_member(&GDScriptParser::parse_enum, AnnotationInfo::ENUM, "enum");
 				break;
 			case GDScriptTokenizer::Token::STATIC: {
 				advance();
@@ -4657,8 +4659,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 	variable->exported = true;
 
+	bool is_bitfield = variable->export_info.hint == PROPERTY_HINT_FLAGS;
+
 	variable->export_info.type = t_type;
-	variable->export_info.hint = t_hint;
+	if (!is_bitfield) {
+		variable->export_info.hint = t_hint;
+	}
 
 	String hint_string;
 	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
@@ -4786,7 +4792,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		switch (export_type.kind) {
 			case GDScriptParser::DataType::BUILTIN:
 				variable->export_info.type = export_type.builtin_type;
-				variable->export_info.hint = PROPERTY_HINT_NONE;
+				// For variables with nested types
+				if (is_bitfield) {
+					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
+				} else {
+					variable->export_info.hint = PROPERTY_HINT_NONE;
+				}
 				variable->export_info.hint_string = String();
 				break;
 			case GDScriptParser::DataType::NATIVE:
@@ -4811,7 +4822,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					variable->export_info.type = Variant::DICTIONARY;
 				} else {
 					variable->export_info.type = Variant::INT;
-					variable->export_info.hint = PROPERTY_HINT_ENUM;
+					if (is_bitfield) {
+						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
+					} else {
+						variable->export_info.hint = PROPERTY_HINT_ENUM;
+						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+					}
 
 					String enum_hint_string;
 					bool first = true;
@@ -4827,7 +4843,6 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					}
 
 					variable->export_info.hint_string = enum_hint_string;
-					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 				}
 			} break;
@@ -4888,7 +4903,13 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						variable->export_info.type = Variant::DICTIONARY;
 					} else {
 						variable->export_info.type = Variant::INT;
-						variable->export_info.hint = PROPERTY_HINT_ENUM;
+						if (is_bitfield) {
+							variable->export_info.hint = PROPERTY_HINT_FLAGS;
+							variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
+						} else {
+							variable->export_info.hint = PROPERTY_HINT_ENUM;
+							variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+						}
 
 						String enum_hint_string;
 						bool first = true;
@@ -4904,7 +4925,6 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						}
 
 						variable->export_info.hint_string = enum_hint_string;
-						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 					}
 				} break;
@@ -5281,6 +5301,65 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 	return true;
 }
 
+bool GDScriptParser::bitfield_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::ENUM, false, vformat(R"("%s" annotation can only be applied to enum.)", p_annotation->name));
+	ERR_FAIL_NULL_V(p_class, false);
+
+	EnumNode *enum_node = static_cast<EnumNode *>(p_target);
+	enum_node->is_bitfield = true;
+
+	// We need to give variables of the type of the enum the hint PROPERTY_HINT_FLAGS in the editor, so we look for them
+	for (ClassNode::Member member : p_class->members) {
+		if (member.type == ClassNode::Member::VARIABLE) {
+			VariableNode *variable = member.variable;
+			bool apply_flags = false;
+
+			// If the type is specified explicitly
+			if (variable->datatype_specifier != nullptr) {
+				TypeNode *datatype_specifier = variable->datatype_specifier;
+
+				// Check if the variable type is the enum with the bitfield annotation
+				for (IdentifierNode *identifier : datatype_specifier->type_chain) {
+					if (identifier->name == enum_node->identifier->name) {
+						apply_flags = true;
+						break;
+					}
+				}
+
+				if (!apply_flags) {
+					// Check if first type of the array/dictionary is the enum with the bitfield annotation
+					TypeNode *first_container = datatype_specifier->get_container_type_or_null(0);
+					if (first_container != nullptr) {
+						for (IdentifierNode *identifier : first_container->type_chain) {
+							if (identifier->name == enum_node->identifier->name) {
+								apply_flags = true;
+								break;
+							}
+						}
+					}
+				}
+
+				if (!apply_flags) {
+					// Check if second type of the dictionary is the enum with the bitfield annotation
+					TypeNode *second_container = datatype_specifier->get_container_type_or_null(1);
+					if (second_container != nullptr) {
+						for (IdentifierNode *identifier : second_container->type_chain) {
+							if (identifier->name == enum_node->identifier->name) {
+								apply_flags = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (apply_flags) {
+				variable->export_info.hint = PROPERTY_HINT_FLAGS;
+			}
+		}
+	}
+	return true;
+}
+
 GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const {
 	switch (type) {
 		case CONSTANT:
@@ -5519,7 +5598,11 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 				result.type = Variant::DICTIONARY;
 			} else {
 				result.type = Variant::INT;
-				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+				if (is_enum_bitfield) {
+					result.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
+				} else {
+					result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+				}
 				result.class_name = String(native_type).replace("::", ".");
 			}
 			break;

@@ -416,14 +416,31 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	}
 
 	bool is_enum_type = !p_enum.is_empty();
-	bool is_bitfield = p_is_bitfield && is_enum_type;
+	bool is_bitfield = (p_is_bitfield || p_enum.begins_with("BitField[")) && is_enum_type;
 	bool can_ref = !p_type.contains_char('*') || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
 	String display_t; // For display purposes.
+
 	if (is_enum_type) {
-		link_t = p_enum; // The link for enums is always the full enum description
-		display_t = _contextualize_class_specifier(p_enum, p_class);
+		// When stringified, it's possible for enums to be BitField[EnumName] if they're a bitfield,
+		// so we need to remove BitField[], for it to show the proper BitField text and tooltip in the UI,
+		// and for the enum name to contextualize properly.
+		String enum_name = String(p_enum);
+		if (is_bitfield) {
+			// As a side effect, this also handles arrays
+			enum_name = enum_name.trim_prefix("BitField[").replace_first("]", "");
+		}
+		display_t = _contextualize_class_specifier(enum_name, p_class);
+
+		// Handle dictionaries of bitfields
+		if (link_t.begins_with("Dictionary[")) {
+			// Dictionaries get bitfield types as BitField[EnumName] to figure out which type should get the BitField text.
+			link_t = link_t.replace("int", vformat("BitField[%s]", enum_name));
+			display_t = link_t;
+		} else {
+			link_t = enum_name; // The link for enums is always the full enum description, without BitField[]
+		}
 	} else {
 		display_t = _contextualize_class_specifier(p_type, p_class);
 	}
@@ -449,14 +466,49 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 			p_rt->add_text("Dictionary");
 			p_rt->pop(); // meta
 			p_rt->add_text("[");
-			p_rt->push_meta("#" + link_t.get_slice(", ", 0), RichTextLabel::META_UNDERLINE_ON_HOVER); // class
-			p_rt->add_text(_contextualize_class_specifier(display_t.get_slice(", ", 0), p_class));
+
+			// Handle the first type of the dictionary, text for this one gets added immediately
+			is_bitfield = display_t.get_slice(", ", 0).contains("BitField[");
+
+			if (is_bitfield) {
+				String slice = display_t.get_slice(", ", 0).trim_prefix("BitField[").replace_first("]", "");
+
+				p_rt->push_color(Color(type_color, 0.5));
+				p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
+				p_rt->add_text("BitField");
+				p_rt->pop(); // hint
+				p_rt->add_text("[");
+				p_rt->pop(); // color
+
+				p_rt->push_meta("$" + slice, RichTextLabel::META_UNDERLINE_ON_HOVER); // enum
+				p_rt->add_text(_contextualize_class_specifier(slice, p_class));
+
+				p_rt->push_color(Color(type_color, 0.5));
+				p_rt->add_text("]");
+				p_rt->pop(); // color
+			} else {
+				p_rt->push_meta("#" + link_t.get_slice(", ", 0), RichTextLabel::META_UNDERLINE_ON_HOVER); // class
+				p_rt->add_text(_contextualize_class_specifier(display_t.get_slice(", ", 0), p_class));
+			}
+
 			p_rt->pop(); // meta
 			p_rt->add_text(", ");
 
-			link_t = link_t.get_slice(", ", 1);
-			display_t = _contextualize_class_specifier(display_t.get_slice(", ", 1), p_class);
-		} else if (is_bitfield) {
+			is_bitfield = display_t.get_slice(", ", 1).contains("BitField[");
+
+			// Handle second type of the dictionary, text for this one gets added later on
+			if (is_bitfield) {
+				String slice = display_t.get_slice(", ", 1).trim_prefix("BitField[").replace_first("]", "");
+				link_t = slice;
+				display_t = _contextualize_class_specifier(slice, p_class);
+			} else {
+				link_t = link_t.get_slice(", ", 1);
+				display_t = _contextualize_class_specifier(display_t.get_slice(", ", 1), p_class);
+				// If is_bitfield was ever true, then this is also true, and it will mess up the meta to link to the second type of the dict
+				is_enum_type = false;
+			}
+		}
+		if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
 			p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
 			p_rt->add_text("BitField");
@@ -474,12 +526,13 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	p_rt->add_text(display_t);
 	if (can_ref) {
 		p_rt->pop(); // meta
-		if (add_typed_container) {
-			p_rt->add_text("]");
-		} else if (is_bitfield) {
+		if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
 			p_rt->add_text("]");
 			p_rt->pop(); // color
+		}
+		if (add_typed_container) {
+			p_rt->add_text("]");
 		}
 	}
 	p_rt->pop(); // color

@@ -1153,13 +1153,19 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.m_enum->set_datatype(resolving_datatype);
 				GDScriptParser::DataType enum_type = make_class_enum_type(member.m_enum->identifier->name, p_class, parser->script_path, true);
 
+				// Annotations for enums get applied after checking for conflict and setting the datatype,
+				// but before creating enum values, as certain annotations may change them.
+				for (GDScriptParser::AnnotationNode *&E : member.m_enum->annotations) {
+					resolve_annotation(E);
+					E->apply(parser, member.m_enum, p_class);
+				}
+
 				const GDScriptParser::EnumNode *prev_enum = current_enum;
 				current_enum = member.m_enum;
 
 				Dictionary dictionary;
 				for (int j = 0; j < member.m_enum->values.size(); j++) {
 					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write[j];
-
 					if (element.custom_value) {
 						reduce_expression(element.custom_value);
 						if (!element.custom_value->is_constant) {
@@ -1170,6 +1176,10 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							element.value = element.custom_value->reduced_value;
 							element.resolved = true;
 						}
+					} else if (current_enum->is_bitfield) {
+						// Use LL explicitly to prevent compiler warning C4334
+						element.value = 1LL << j;
+						element.resolved = true;
 					} else {
 						if (element.index > 0) {
 							element.value = element.parent_enum->values[element.index - 1].value + 1;
@@ -1190,17 +1200,15 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 #endif // DEBUG_ENABLED
 				}
 
+				if (current_enum->is_bitfield) {
+					enum_type.is_enum_bitfield = true;
+				}
+
 				current_enum = prev_enum;
 
 				dictionary.make_read_only();
 				member.m_enum->set_datatype(enum_type);
 				member.m_enum->dictionary = dictionary;
-
-				// Apply annotations.
-				for (GDScriptParser::AnnotationNode *&E : member.m_enum->annotations) {
-					resolve_annotation(E);
-					E->apply(parser, member.m_enum, p_class);
-				}
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
@@ -2190,7 +2198,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		} else {
 			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, declaration_type, p_assignable->identifier->name);
 		}
-	} else if (!is_parameter && specified_type.kind == GDScriptParser::DataType::ENUM && p_assignable->initializer == nullptr) {
+	} else if (!is_parameter && specified_type.kind == GDScriptParser::DataType::ENUM && p_assignable->initializer == nullptr && !specified_type.is_enum_bitfield) {
 		// Warn about enum variables without default value. Unless the enum defines the "0" value, then it's fine.
 		bool has_zero_value = false;
 		for (const KeyValue<StringName, int64_t> &kv : specified_type.enum_values) {
@@ -2741,7 +2749,7 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 	}
 
 #ifdef DEBUG_ENABLED
-	if (p_type.kind == GDScriptParser::DataType::ENUM && value_type.builtin_type == Variant::INT && !enum_has_value(p_type, p_expression->reduced_value)) {
+	if (p_type.kind == GDScriptParser::DataType::ENUM && value_type.builtin_type == Variant::INT && !enum_has_value(p_type, p_expression->reduced_value) && !p_type.is_enum_bitfield) {
 		parser->push_warning(p_expression, GDScriptWarning::INT_AS_ENUM_WITHOUT_MATCH, p_usage, p_expression->reduced_value.stringify(), p_type.to_string());
 	}
 #endif // DEBUG_ENABLED
@@ -5884,7 +5892,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(1, value_elem_type);
 		} else if (p_property.type == Variant::INT) {
 			// Check if it's enum.
-			if ((p_property.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && p_property.class_name != StringName()) {
+			if (p_property.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD) && p_property.class_name != StringName()) {
 				if (CoreConstants::is_global_enum(p_property.class_name)) {
 					result = make_global_enum_type(p_property.class_name, StringName(), false);
 					result.is_constant = false;
@@ -5895,8 +5903,11 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 						result.is_constant = false;
 					}
 				}
+
+				if (p_property.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD) {
+					result.is_enum_bitfield = true;
+				}
 			}
-			// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
 		}
 	}
 	return result;
@@ -6282,7 +6293,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 #ifdef DEBUG_ENABLED
 	if (p_source_node) {
 		if (p_target.kind == GDScriptParser::DataType::ENUM) {
-			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
+			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT && !p_target.is_enum_bitfield) {
 				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
 			}
 		}
