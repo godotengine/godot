@@ -32,6 +32,8 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/object/ref_counted.h"
+
 #ifndef _3D_DISABLED
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/resources/mesh.h"
@@ -119,7 +121,8 @@ private:
 	real_t sel_2d_grab_dist = 0;
 	int sel_2d_scale = 1;
 
-	RID sbox_2d_ci;
+	Color srect_color;
+	RID srect_ci;
 
 #ifndef _3D_DISABLED
 	Ref<View3DController> view_3d_controller;
@@ -128,7 +131,7 @@ private:
 	real_t camera_znear = 0;
 	real_t camera_zfar = 0;
 
-	struct SelectionBox3D : public RefCounted {
+	struct SelectionBox : public RefCounted {
 		RID instance;
 		RID instance_ofs;
 		RID instance_xray;
@@ -137,17 +140,13 @@ private:
 		Transform3D transform;
 		AABB bounds;
 
-		~SelectionBox3D();
+		~SelectionBox();
 	};
-	HashMap<ObjectID, Ref<SelectionBox3D>> selected_3d_nodes;
+	HashMap<ObjectID, Ref<SelectionBox>> selected_3d_nodes;
 
-	Color sbox_3d_color;
-	Ref<ArrayMesh> sbox_3d_mesh;
-	Ref<ArrayMesh> sbox_3d_mesh_xray;
-	RID sbox_3d;
-	RID sbox_3d_ofs;
-	RID sbox_3d_xray;
-	RID sbox_3d_xray_ofs;
+	Color sbox_color;
+	Ref<ArrayMesh> sbox_mesh;
+	Ref<ArrayMesh> sbox_mesh_xray;
 #endif // _3D_DISABLED
 
 	void _setup(const Dictionary &p_settings);

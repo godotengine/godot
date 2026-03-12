@@ -30,7 +30,7 @@
 
 #include "text_server_extension.h"
 
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
 
 void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_feature, "feature");
@@ -297,6 +297,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_get_run_count, "shaped");
 	GDVIRTUAL_BIND(_shaped_get_run_text, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_get_run_range, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_glyph_range, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_get_run_font_rid, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_get_run_font_size, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_get_run_language, "shaped", "index");
@@ -1326,6 +1327,12 @@ String TextServerExtension::shaped_get_run_text(const RID &p_shaped, int64_t p_i
 Vector2i TextServerExtension::shaped_get_run_range(const RID &p_shaped, int64_t p_index) const {
 	Vector2i ret;
 	GDVIRTUAL_CALL(_shaped_get_run_range, p_shaped, p_index, ret);
+	return ret;
+}
+
+Vector2i TextServerExtension::shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const {
+	Vector2i ret;
+	GDVIRTUAL_CALL(_shaped_get_run_glyph_range, p_shaped, p_index, ret);
 	return ret;
 }
 

@@ -59,7 +59,7 @@ public:
 
 	virtual NodeTimeInfo get_node_time_info() const override; // Wrapper of get_parameter().
 
-	static Vector<String> (*get_editable_animation_list)();
+	static LocalVector<StringName> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
 	virtual NodeTimeInfo process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;

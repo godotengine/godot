@@ -464,7 +464,7 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
-			viewport->previous_cursor = viewport->view_3d_controller->cursor;
+			saved_cursor = viewport->view_3d_controller->cursor;
 		}
 		viewport->view_3d_controller->cursor_orbit(p_event, p_relative_position);
 		focused_axis = -1;
@@ -483,7 +483,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
-			viewport->view_3d_controller->cursor = viewport->previous_cursor;
+			viewport->view_3d_controller->cursor = saved_cursor;
 			gizmo_activated = false;
 		}
 	}
@@ -502,7 +502,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
-				viewport->view_3d_controller->cursor = viewport->previous_cursor;
+				viewport->view_3d_controller->cursor = saved_cursor;
 				gizmo_activated = false;
 			}
 		}
@@ -1740,7 +1740,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 
 	// Several parts of the 3D navigation are handled here.
+	bool was_navigating = view_3d_controller->is_navigating();
 	view_3d_controller->gui_input(p_event, surface->get_global_rect());
+	if (was_navigating && !view_3d_controller->is_navigating()) {
+		return;
+	}
 
 	Ref<InputEventMouseButton> b = p_event;
 
@@ -3965,6 +3969,13 @@ void Node3DEditorViewport::_disable_follow_mode() {
 	times_focused_consecutively = 0;
 }
 
+void Node3DEditorViewport::_reset_follow_mode_count() {
+	bool is_in_follow_mode = times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0;
+	if (!is_in_follow_mode) {
+		times_focused_consecutively = 0;
+	}
+}
+
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
@@ -5222,6 +5233,7 @@ void Node3DEditorViewport::commit_transform() {
 
 	collision_reposition = false;
 	finish_transform();
+	_reset_follow_mode_count();
 	set_message("");
 }
 
@@ -5731,6 +5743,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	index = p_index;
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditorViewport::_reset_follow_mode_count));
 
 	message_time = 0;
 	zoom_indicator_delay = 0.0;
@@ -6128,317 +6141,139 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 
 //////////////////////////////////////////////////////////////
 
-void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	if (_redirect_freelook_input(p_event)) {
+void Node3DEditorViewportContainer::_update_split_drag_margin() {
+	if (view != VIEW_USE_4_VIEWPORTS && view != VIEW_USE_3_VIEWPORTS) {
 		return;
 	}
+	// Also for 3 viewports view since the first split container is used to remember the offset.
+	first_split->set_split_offset(second_split->get_split_offset());
 
-	Ref<InputEventMouseButton> mb = p_event;
-
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
-		if (mb->is_pressed()) {
-			Vector2 size = get_size();
-
-			int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
-			int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
-
-			int mid_w = size.width * ratio_h;
-			int mid_h = size.height * ratio_v;
-
-			dragging_h = mb->get_position().x >= (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
-			dragging_v = mb->get_position().y >= (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
-
-			drag_begin_pos = mb->get_position();
-			drag_begin_ratio.x = ratio_h;
-			drag_begin_ratio.y = ratio_v;
-
-			switch (view) {
-				case VIEW_USE_1_VIEWPORT: {
-					dragging_h = false;
-					dragging_v = false;
-
-				} break;
-				case VIEW_USE_2_VIEWPORTS: {
-					dragging_h = false;
-
-				} break;
-				case VIEW_USE_2_VIEWPORTS_ALT: {
-					dragging_v = false;
-
-				} break;
-				case VIEW_USE_3_VIEWPORTS:
-				case VIEW_USE_3_VIEWPORTS_ALT:
-				case VIEW_USE_4_VIEWPORTS: {
-					// Do nothing.
-
-				} break;
-			}
-		} else {
-			dragging_h = false;
-			dragging_v = false;
-		}
-	}
-
-	Ref<InputEventMouseMotion> mm = p_event;
-
-	if (mm.is_valid()) {
-		if (view == VIEW_USE_3_VIEWPORTS || view == VIEW_USE_3_VIEWPORTS_ALT || view == VIEW_USE_4_VIEWPORTS) {
-			Vector2 size = get_size();
-
-			int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
-			int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
-
-			int mid_w = size.width * ratio_h;
-			int mid_h = size.height * ratio_v;
-
-			bool was_hovering_h = hovering_h;
-			bool was_hovering_v = hovering_v;
-			hovering_h = mm->get_position().x >= (mid_w - h_sep / 2) && mm->get_position().x < (mid_w + h_sep / 2);
-			hovering_v = mm->get_position().y >= (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
-
-			if (was_hovering_h != hovering_h || was_hovering_v != hovering_v) {
-				queue_redraw();
-			}
-		}
-
-		if (dragging_h) {
-			real_t new_ratio = drag_begin_ratio.x + (mm->get_position().x - drag_begin_pos.x) / get_size().width;
-			new_ratio = CLAMP(new_ratio, 40 / get_size().width, (get_size().width - 40) / get_size().width);
-			ratio_h = new_ratio;
-			queue_sort();
-			queue_redraw();
-		}
-		if (dragging_v) {
-			real_t new_ratio = drag_begin_ratio.y + (mm->get_position().y - drag_begin_pos.y) / get_size().height;
-			new_ratio = CLAMP(new_ratio, 40 / get_size().height, (get_size().height - 40) / get_size().height);
-			ratio_v = new_ratio;
-			queue_sort();
-			queue_redraw();
-		}
+	if (view == VIEW_USE_4_VIEWPORTS) {
+		// Extend to cover the first split on top.
+		second_split->set_drag_area_margin_begin(second_split->get_size().y - get_size().y);
 	}
 }
 
 void Node3DEditorViewportContainer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_MOUSE_ENTER:
-		case NOTIFICATION_MOUSE_EXIT: {
-			mouseover = (p_what == NOTIFICATION_MOUSE_ENTER);
-			queue_redraw();
-		} break;
-
-		case NOTIFICATION_DRAW: {
-			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
-				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
-				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
-
-				Ref<Texture2D> hdiag_grabber = get_editor_theme_icon(SNAME("GuiViewportHdiagsplitter"));
-				Ref<Texture2D> vdiag_grabber = get_editor_theme_icon(SNAME("GuiViewportVdiagsplitter"));
-				Ref<Texture2D> vh_grabber = get_editor_theme_icon(SNAME("GuiViewportVhsplitter"));
-
-				Vector2 size = get_size();
-
-				int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
-
-				int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
-
-				int mid_w = size.width * ratio_h;
-				int mid_h = size.height * ratio_v;
-
-				int size_left = mid_w - h_sep / 2;
-				int size_bottom = size.height - mid_h - v_sep / 2;
-
-				switch (view) {
-					case VIEW_USE_1_VIEWPORT: {
-						// Nothing to show.
-
-					} break;
-					case VIEW_USE_2_VIEWPORTS: {
-						draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-						set_default_cursor_shape(CURSOR_VSPLIT);
-
-					} break;
-					case VIEW_USE_2_VIEWPORTS_ALT: {
-						draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-						set_default_cursor_shape(CURSOR_HSPLIT);
-
-					} break;
-					case VIEW_USE_3_VIEWPORTS: {
-						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-							draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - v_grabber->get_height() / 4));
-							set_default_cursor_shape(CURSOR_DRAG);
-						} else if ((hovering_v && !dragging_h) || dragging_v) {
-							draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-							set_default_cursor_shape(CURSOR_VSPLIT);
-						} else if (hovering_h || dragging_h) {
-							draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, mid_h + v_grabber->get_height() / 2 + (size_bottom - h_grabber->get_height()) / 2));
-							set_default_cursor_shape(CURSOR_HSPLIT);
-						}
-
-					} break;
-					case VIEW_USE_3_VIEWPORTS_ALT: {
-						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-							draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() + v_grabber->get_height() / 4, mid_h - vdiag_grabber->get_height() / 2));
-							set_default_cursor_shape(CURSOR_DRAG);
-						} else if ((hovering_v && !dragging_h) || dragging_v) {
-							draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
-							set_default_cursor_shape(CURSOR_VSPLIT);
-						} else if (hovering_h || dragging_h) {
-							draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
-							set_default_cursor_shape(CURSOR_HSPLIT);
-						}
-
-					} break;
-					case VIEW_USE_4_VIEWPORTS: {
-						Vector2 half(mid_w, mid_h);
-						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-							draw_texture(vh_grabber, half - vh_grabber->get_size() / 2.0);
-							set_default_cursor_shape(CURSOR_DRAG);
-						} else if ((hovering_v && !dragging_h) || dragging_v) {
-							draw_texture(v_grabber, half - v_grabber->get_size() / 2.0);
-							set_default_cursor_shape(CURSOR_VSPLIT);
-						} else if (hovering_h || dragging_h) {
-							draw_texture(h_grabber, half - h_grabber->get_size() / 2.0);
-							set_default_cursor_shape(CURSOR_HSPLIT);
-						}
-
-					} break;
-				}
-			}
-		} break;
-
-		case NOTIFICATION_SORT_CHILDREN: {
-			Node3DEditorViewport *viewports[4];
-			int vc = 0;
-			for (int i = 0; i < get_child_count(); i++) {
-				viewports[vc] = Object::cast_to<Node3DEditorViewport>(get_child(i));
-				if (viewports[vc]) {
-					vc++;
-				}
-			}
-
-			ERR_FAIL_COND(vc != 4);
-
-			Size2 size = get_size();
-
-			if (size.x < 10 || size.y < 10) {
-				for (int i = 0; i < 4; i++) {
-					viewports[i]->hide();
-				}
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
 				return;
 			}
-			int h_sep = get_theme_constant(SNAME("separation"), SNAME("HSplitContainer"));
-
-			int v_sep = get_theme_constant(SNAME("separation"), SNAME("VSplitContainer"));
-
-			int mid_w = size.width * ratio_h;
-			int mid_h = size.height * ratio_v;
-
-			int size_left = mid_w - h_sep / 2;
-			int size_right = size.width - mid_w - h_sep / 2;
-
-			int size_top = mid_h - v_sep / 2;
-			int size_bottom = size.height - mid_h - v_sep / 2;
-
-			switch (view) {
-				case VIEW_USE_1_VIEWPORT: {
-					viewports[0]->show();
-					for (int i = 1; i < 4; i++) {
-						viewports[i]->hide();
-					}
-
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), size));
-
-				} break;
-				case VIEW_USE_2_VIEWPORTS: {
-					for (int i = 0; i < 4; i++) {
-						if (i == 1 || i == 3) {
-							viewports[i]->hide();
-						} else {
-							viewports[i]->show();
-						}
-					}
-
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
-					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size.width, size_bottom)));
-
-				} break;
-				case VIEW_USE_2_VIEWPORTS_ALT: {
-					for (int i = 0; i < 4; i++) {
-						if (i == 1 || i == 3) {
-							viewports[i]->hide();
-						} else {
-							viewports[i]->show();
-						}
-					}
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size.height)));
-					fit_child_in_rect(viewports[2], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
-
-				} break;
-				case VIEW_USE_3_VIEWPORTS: {
-					for (int i = 0; i < 4; i++) {
-						if (i == 1) {
-							viewports[i]->hide();
-						} else {
-							viewports[i]->show();
-						}
-					}
-
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
-					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
-
-				} break;
-				case VIEW_USE_3_VIEWPORTS_ALT: {
-					for (int i = 0; i < 4; i++) {
-						if (i == 1) {
-							viewports[i]->hide();
-						} else {
-							viewports[i]->show();
-						}
-					}
-
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
-					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
-
-				} break;
-				case VIEW_USE_4_VIEWPORTS: {
-					for (int i = 0; i < 4; i++) {
-						viewports[i]->show();
-					}
-
-					fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
-					fit_child_in_rect(viewports[1], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size_top)));
-					fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
-					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
-
-				} break;
-			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_READY: {
+			bool touch_optimizations = EDITOR_GET("interface/touchscreen/enable_touch_optimizations");
+			main_split->set_touch_dragger_enabled(touch_optimizations);
+			first_split->set_touch_dragger_enabled(touch_optimizations);
+			second_split->set_touch_dragger_enabled(touch_optimizations);
 		} break;
 	}
 }
 
 void Node3DEditorViewportContainer::set_view(View p_view) {
 	view = p_view;
-	queue_sort();
+
+	Node3DEditorViewport *viewports[4];
+	for (uint32_t i = 0; i < 4; i++) {
+		viewports[i] = Node3DEditor::get_singleton()->get_editor_viewport(i);
+		ERR_FAIL_NULL(viewports[i]);
+	}
+
+	const bool previous_main_vertical = !first_split->is_vertical();
+	const float horizontal_offset = previous_main_vertical ? first_split->get_split_offset() : main_split->get_split_offset();
+	const float vertical_offset = previous_main_vertical ? main_split->get_split_offset() : first_split->get_split_offset();
+
+	first_split->set_dragging_enabled(true);
+	second_split->set_drag_area_margin_begin(0);
+	viewports[0]->show();
+
+	switch (view) {
+		case VIEW_USE_1_VIEWPORT: {
+			for (int i = 1; i < 4; i++) {
+				viewports[i]->hide();
+			}
+			second_split->hide();
+		} break;
+		case VIEW_USE_2_VIEWPORTS:
+		case VIEW_USE_2_VIEWPORTS_ALT: {
+			viewports[1]->show();
+			viewports[2]->hide();
+			viewports[3]->hide();
+			second_split->hide();
+			const bool is_vertical = view == VIEW_USE_2_VIEWPORTS;
+			if (first_split->is_vertical() != is_vertical) {
+				first_split->set_vertical(is_vertical);
+				first_split->set_split_offset(is_vertical ? vertical_offset : horizontal_offset);
+				main_split->set_split_offset(is_vertical ? horizontal_offset : vertical_offset); // Store the other offset here for later.
+			}
+		} break;
+		case VIEW_USE_3_VIEWPORTS:
+		case VIEW_USE_3_VIEWPORTS_ALT: {
+			// Default mode has two on bottom (second_split). Alt mode has two on the left (first_split).
+			const bool main_vertical = view == VIEW_USE_3_VIEWPORTS;
+			viewports[1]->set_visible(!main_vertical);
+			viewports[2]->show();
+			viewports[3]->set_visible(main_vertical);
+			second_split->show();
+			main_split->set_vertical(main_vertical);
+			main_split->set_split_offset(main_vertical ? vertical_offset : horizontal_offset);
+			first_split->set_vertical(!main_vertical);
+			first_split->set_split_offset(main_vertical ? horizontal_offset : vertical_offset);
+			second_split->set_split_offset(main_vertical ? horizontal_offset : vertical_offset);
+		} break;
+		case VIEW_USE_4_VIEWPORTS: {
+			for (int i = 1; i < 4; i++) {
+				viewports[i]->show();
+			}
+			second_split->show();
+			main_split->set_vertical(true);
+			main_split->set_split_offset(vertical_offset);
+			first_split->set_vertical(false);
+			first_split->set_split_offset(horizontal_offset);
+			second_split->set_split_offset(horizontal_offset);
+
+			first_split->set_dragging_enabled(false);
+			_update_split_drag_margin();
+		} break;
+	}
 }
 
 Node3DEditorViewportContainer::View Node3DEditorViewportContainer::get_view() {
 	return view;
 }
 
+void Node3DEditorViewportContainer::add_viewport(Node3DEditorViewport *p_viewport, int p_index) {
+	if (p_index <= 1) {
+		first_split->add_child(p_viewport);
+	} else {
+		second_split->add_child(p_viewport);
+		if (p_index == 3) {
+			// Connect to the second split's child to update the drag margin immediately whenever the split offset changes.
+			p_viewport->connect(SceneStringName(resized), callable_mp(this, &Node3DEditorViewportContainer::_update_split_drag_margin));
+		}
+	}
+}
+
 Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	set_clip_contents(true);
-	view = VIEW_USE_1_VIEWPORT;
-	mouseover = false;
-	ratio_h = 0.5;
-	ratio_v = 0.5;
-	hovering_v = false;
-	hovering_h = false;
-	dragging_v = false;
-	dragging_h = false;
+
+	main_split = memnew(SplitContainer);
+	main_split->set_drag_nested_intersections(true);
+
+	first_split = memnew(SplitContainer);
+	first_split->set_h_size_flags(SIZE_EXPAND_FILL);
+	first_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	first_split->set_drag_nested_intersections(true);
+
+	second_split = memnew(SplitContainer);
+	second_split->set_h_size_flags(SIZE_EXPAND_FILL);
+	second_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	second_split->set_drag_nested_intersections(true);
+
+	main_split->add_child(first_split);
+	main_split->add_child(second_split);
+	add_child(main_split);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -9752,7 +9587,10 @@ Node3DEditor::Node3DEditor() {
 		viewports[i]->connect("toggle_maximize_view", callable_mp(this, &Node3DEditor::_toggle_maximize_view));
 		viewports[i]->connect("clicked", callable_mp(this, &Node3DEditor::_viewport_clicked).bind(i));
 		viewports[i]->assign_pending_data_pointers(preview_node, &preview_bounds, accept);
-		viewport_base->add_child(viewports[i]);
+		viewports[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		viewports[i]->set_v_size_flags(SIZE_EXPAND_FILL);
+		viewports[i]->set_custom_minimum_size(Size2(39, 39));
+		viewport_base->add_viewport(viewports[i], i);
 	}
 
 	/* SNAP DIALOG */

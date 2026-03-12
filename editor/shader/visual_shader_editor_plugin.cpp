@@ -67,6 +67,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
@@ -2564,10 +2565,6 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type->select(saved_type - default_type);
 	}
 	set_current_shader_type((VisualShader::Type)saved_type);
-}
-
-Size2 VisualShaderEditor::get_minimum_size() const {
-	return Size2(10, 200);
 }
 
 void VisualShaderEditor::update_toggle_files_button() {

@@ -35,7 +35,7 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
@@ -120,6 +120,11 @@ View3DController::NavigationMode View3DController::_get_nav_mode_from_shortcuts(
 bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_surface_rect) {
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
+		if (b->get_button_index() == MouseButton::RIGHT && b->is_pressed() && navigating) {
+			cancel_navigation();
+			return true;
+		}
+
 		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 			case MouseButton::WHEEL_UP: {
@@ -168,6 +173,18 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
+		if (m->get_button_mask() == MouseButtonMask::NONE) {
+			navigation_cancelled = false;
+		}
+
+		if (navigation_cancelled) {
+			return false;
+		}
+
+		if (!navigating) {
+			previous_cursor = cursor;
+		}
+
 		NavigationMode nav_mode = NAV_MODE_NONE;
 
 		if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
@@ -229,10 +246,14 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 			} break;
 
 			default: {
+				navigating = false;
 				return false;
 			}
 		}
 
+		if (!freelook) {
+			navigating = true;
+		}
 		return true;
 	}
 
@@ -283,6 +304,12 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 		return true;
 	}
 
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::ESCAPE && navigating) {
+		cancel_navigation();
+		return true;
+	}
+
 	bool pressed = false;
 	float old_fov_scale = cursor.fov_scale;
 
@@ -304,6 +331,12 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 	}
 
 	return pressed;
+}
+
+void View3DController::cancel_navigation() {
+	navigating = false;
+	navigation_cancelled = true;
+	cursor = previous_cursor;
 }
 
 void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, const Vector2 &p_relative) {
@@ -681,10 +714,11 @@ void View3DController::set_freelook_enabled(const bool p_enabled) {
 	}
 
 	freelook = p_enabled;
-	if (freelook) {
-		// Sync interpolated cursor to cursor to "cut" interpolation jumps due to changing referential.
-		cursor = cursor_interp;
 
+	// Sync interpolated cursor to cursor to "cut" interpolation jumps due to changing referential.
+	cursor = cursor_interp;
+
+	if (freelook) {
 		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos.
 		Vector3 forward = to_camera_transform().basis.xform(Vector3(0, 0, -1));
 		cursor.eye_pos = cursor.pos - cursor.distance * forward;

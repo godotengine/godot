@@ -41,6 +41,7 @@
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -151,7 +152,7 @@ void EditorBottomPanel::load_selected_tab(int p_idx) {
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
-		offsets[E.key] = E.value;
+		offsets[E.key] = E.value / EDSCALE;
 	}
 	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
 }
@@ -161,7 +162,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 	const LocalVector<Variant> offset_list = offsets.get_key_list();
 
 	for (const Variant &v : offset_list) {
-		dock_offsets[v] = offsets[v];
+		dock_offsets[v] = (int)offsets[v] * EDSCALE;
 	}
 	_update_center_split_offset();
 }

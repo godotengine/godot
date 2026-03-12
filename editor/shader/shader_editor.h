@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/control.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/shader.h"
 
 class Button;
 class MenuButton;
 
-class ShaderEditor : public Control {
-	GDCLASS(ShaderEditor, Control);
+class ShaderEditor : public MarginContainer {
+	GDCLASS(ShaderEditor, MarginContainer);
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) = 0;

@@ -39,7 +39,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
@@ -49,6 +48,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/version_generated.gen.h"
 
 #include "thirdparty/grisu2/grisu2.h"
+
+#include <cstdio>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy

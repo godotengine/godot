@@ -38,6 +38,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
@@ -7836,20 +7837,37 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		gl_manager_angle = memnew(GLManagerANGLE_Windows);
 		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
 
-		if (gl_manager_angle->initialize() != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
+#ifndef EGL_STATIC
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (!da->file_exists(OS::get_singleton()->get_executable_path().get_base_dir().path_join("libEGL.dll")) || !da->file_exists(OS::get_singleton()->get_executable_path().get_base_dir().path_join("libGLESv2.dll"))) {
 			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback_to_native && gl_supported) {
-#ifdef EGL_STATIC
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
-#endif
 				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
+		} else {
+#else
+		{
+#endif
+			if (gl_manager_angle->initialize() != OK) {
+				memdelete(gl_manager_angle);
+				gl_manager_angle = nullptr;
+				bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+				if (fallback_to_native && gl_supported) {
+#ifdef EGL_STATIC
+					WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+					WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
+#endif
+					rendering_driver = "opengl3";
+				} else {
+					r_error = ERR_UNAVAILABLE;
+					ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+				}
 			}
 		}
 	}

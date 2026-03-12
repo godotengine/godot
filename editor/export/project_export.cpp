@@ -111,6 +111,12 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
@@ -1534,19 +1540,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	HSplitContainer *hbox = memnew(HSplitContainer);
-	main_vb->add_child(hbox);
-	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
-		hbox->set_touch_dragger_enabled(true);
-	}
+	main_split = memnew(HSplitContainer);
+	main_vb->add_child(main_split);
+	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 
 	// Presets list.
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preset_vb->set_stretch_ratio(0.35);
-	hbox->add_child(preset_vb);
+	main_split->add_child(preset_vb);
 
 	Label *l = memnew(Label(TTR("Presets")));
 	l->set_theme_type_variation("HeaderSmall");
@@ -1586,7 +1590,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb = memnew(VBoxContainer);
 	settings_vb->hide();
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbox->add_child(settings_vb);
+	main_split->add_child(settings_vb);
 
 	PanelContainer *panel = memnew(PanelContainer);
 	panel->set_theme_type_variation(SNAME("PanelForeground"));
@@ -1935,7 +1939,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	empty_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->hide();
-	hbox->add_child(empty_label);
+	main_split->add_child(empty_label);
 
 	// Deletion dialog.
 

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/callable_mp.h"
+#include "scene/2d/node_2d.h"
 #include "scene/main/scene_tree.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"

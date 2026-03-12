@@ -684,7 +684,6 @@ public:
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
-	virtual Size2 get_minimum_size() const override;
 	virtual void update_toggle_files_button() override;
 
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }

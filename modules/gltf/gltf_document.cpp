@@ -3519,9 +3519,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 	}
 	for (int32_t player_i = 0; player_i < p_state->animation_players.size(); player_i++) {
 		AnimationPlayer *animation_player = p_state->animation_players[player_i];
-		List<StringName> animations;
-		animation_player->get_animation_list(&animations);
-		for (const StringName &animation_name : animations) {
+		for (const StringName &animation_name : animation_player->get_sorted_animation_list()) {
 			_convert_animation(p_state, animation_player, animation_name);
 		}
 	}
@@ -6552,9 +6550,13 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<Fil
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_preflight(p_state, p_state->json["extensionsUsed"]);
+		Ref<GLTFDocumentExtension> ext_dup = ext;
+		if (ClassDB::is_class_exposed(ext->get_class_name())) {
+			ext_dup = ext->duplicate();
+		}
+		err = ext_dup->import_preflight(p_state, p_state->json["extensionsUsed"]);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext_dup);
 		}
 	}
 
@@ -7118,9 +7120,13 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		Error err = ext->export_preflight(state, p_node);
+		Ref<GLTFDocumentExtension> ext_dup = ext;
+		if (ClassDB::is_class_exposed(ext->get_class_name())) {
+			ext_dup = ext->duplicate();
+		}
+		Error err = ext_dup->export_preflight(state, p_node);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext_dup);
 		}
 	}
 	// Add the root node(s) and their descendants to the state.
