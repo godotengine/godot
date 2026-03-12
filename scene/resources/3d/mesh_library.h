@@ -113,6 +113,7 @@ public:
 	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
+	int get_item_count() const { return item_map.size(); }
 	int get_last_unused_item_id() const;
 
 	MeshLibrary();
