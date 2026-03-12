@@ -92,6 +92,7 @@ class EditorSceneTabs;
 class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
+class EditorCaptionButtons;
 class ExportTemplateManager;
 class EditorQuickOpenDialog;
 class FBXImporterManager;
@@ -326,6 +327,7 @@ private:
 	Label *project_title = nullptr;
 	Control *left_menu_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
+	EditorCaptionButtons *window_buttons = nullptr;
 	EditorTitleBar *title_bar = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
 	HBoxContainer *right_menu_hb = nullptr;

@@ -33,8 +33,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/main/window.h"
 
-class EditorCaptionButtons;
-
 class EditorTitleBar : public HBoxContainer {
 	GDCLASS(EditorTitleBar, HBoxContainer);
 
@@ -42,10 +40,10 @@ class EditorTitleBar : public HBoxContainer {
 	bool moving = false;
 	bool can_move = false;
 	Control *center_control = nullptr;
-	EditorCaptionButtons *window_buttons = nullptr;
+	Control *window_buttons_spacer = nullptr;
+	int window_buttons_width = 0;
 
-	void _ensure_window_buttons();
-	void _sync_window_buttons();
+	int _get_buttons_spacer_width() const;
 	void _minimize_pressed();
 	void _maximize_pressed();
 	void _close_pressed();
@@ -59,6 +57,8 @@ protected:
 public:
 	void set_center_control(Control *p_center_control);
 	Control *get_center_control() const;
+	void set_window_buttons_spacer(Control *p_spacer);
+	void set_window_buttons_width(int p_width);
 
 	void set_can_move_window(bool p_enabled);
 	bool get_can_move_window() const;

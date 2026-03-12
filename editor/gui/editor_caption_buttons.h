@@ -46,11 +46,13 @@ class EditorCaptionButtons : public HBoxContainer {
 	void _close_pressed();
 
 protected:
+	virtual Size2 get_minimum_size() const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	void update_for_window(Window *p_window);
+	Size2 get_expected_size() const;
 
 	EditorCaptionButtons();
 };

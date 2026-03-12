@@ -32,38 +32,36 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "editor/gui/editor_caption_buttons.h"
 #include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 
-void EditorTitleBar::_ensure_window_buttons() {
-#ifdef WINDOWS_ENABLED
-	if (window_buttons || !can_move || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE)) {
-		return;
+int EditorTitleBar::_get_buttons_spacer_width() const {
+	if (!window_buttons_spacer || window_buttons_width <= 0) {
+		return 0;
 	}
 
-	Window *win = get_window();
-	if (!win || !win->get_flag(Window::FLAG_EXTEND_TO_TITLE)) {
-		return;
+	const int buttons_width = window_buttons_width;
+	const int separation = get_theme_constant(SNAME("separation"), SNAME("BoxContainer"));
+	int total_min_width = 0;
+	int visible_children = 0;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+		if (!child || child == window_buttons_spacer) {
+			continue;
+		}
+
+		total_min_width += child->get_combined_minimum_size().x;
+		visible_children++;
 	}
 
-	window_buttons = memnew(EditorCaptionButtons);
-	window_buttons->connect("minimize_requested", callable_mp(this, &EditorTitleBar::_minimize_pressed));
-	window_buttons->connect("toggle_maximize_requested", callable_mp(this, &EditorTitleBar::_maximize_pressed));
-	window_buttons->connect("close_requested", callable_mp(this, &EditorTitleBar::_close_pressed));
-
-	add_child(window_buttons);
-	move_child(window_buttons, get_child_count() - 1);
-	_sync_window_buttons();
-#endif
-}
-
-void EditorTitleBar::_sync_window_buttons() {
-	if (!window_buttons) {
-		return;
+	if (visible_children > 0) {
+		// Account for the spacer's separation gap.
+		total_min_width += separation * visible_children;
 	}
 
-	window_buttons->update_for_window(get_window());
+	const int available = get_size().x - total_min_width;
+	return CLAMP(available, 0, buttons_width);
 }
 
 void EditorTitleBar::_minimize_pressed() {
@@ -138,6 +136,14 @@ Control *EditorTitleBar::get_center_control() const {
 	return center_control;
 }
 
+void EditorTitleBar::set_window_buttons_spacer(Control *p_spacer) {
+	window_buttons_spacer = p_spacer;
+}
+
+void EditorTitleBar::set_window_buttons_width(int p_width) {
+	window_buttons_width = MAX(p_width, 0);
+}
+
 void EditorTitleBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE: {
@@ -146,17 +152,30 @@ void EditorTitleBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			SceneTree::get_singleton()->get_root()->connect(SceneStringName(nonclient_window_input), callable_mp(this, &EditorTitleBar::gui_input));
-			_ensure_window_buttons();
 			[[fallthrough]];
 		}
 		case NOTIFICATION_RESIZED: {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
-			_sync_window_buttons();
-		} break;
-		case NOTIFICATION_THEME_CHANGED: {
-			_sync_window_buttons();
+			if (window_buttons_spacer) {
+				const int target_width = _get_buttons_spacer_width();
+				const int current_width = (int)window_buttons_spacer->get_custom_minimum_size().x;
+				if (current_width != target_width) {
+					window_buttons_spacer->set_custom_minimum_size(Size2(target_width, 0));
+					queue_sort();
+				}
+			}
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
+			if (window_buttons_spacer && window_buttons_width > 0) {
+				const int target_width = _get_buttons_spacer_width();
+				const int current_width = (int)window_buttons_spacer->get_custom_minimum_size().x;
+				if (current_width != target_width) {
+					window_buttons_spacer->set_custom_minimum_size(Size2(target_width, 0));
+					call_deferred(SNAME("queue_sort"));
+					break;
+				}
+			}
+
 			if (!center_control) {
 				break;
 			}
@@ -208,7 +227,6 @@ void EditorTitleBar::_notification(int p_what) {
 				fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
 			}
-			_sync_window_buttons();
 		} break;
 	}
 }
@@ -216,8 +234,6 @@ void EditorTitleBar::_notification(int p_what) {
 void EditorTitleBar::set_can_move_window(bool p_enabled) {
 	can_move = p_enabled;
 	set_process_input(can_move);
-	_ensure_window_buttons();
-	_sync_window_buttons();
 }
 
 bool EditorTitleBar::get_can_move_window() const {

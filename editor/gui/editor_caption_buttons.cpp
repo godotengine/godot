@@ -141,6 +141,35 @@ void EditorCaptionButtons::_close_pressed() {
 	emit_signal(SNAME("close_requested"));
 }
 
+Size2 EditorCaptionButtons::get_minimum_size() const {
+	return Size2();
+}
+
+Size2 EditorCaptionButtons::get_expected_size() const {
+	int width = 0;
+	int height = 0;
+	int visible_children = 0;
+	const int separation = get_theme_constant(SNAME("separation"), SNAME("BoxContainer"));
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(get_child(i));
+		if (!child || !child->is_visible_in_tree()) {
+			continue;
+		}
+
+		const Size2 child_size = child->get_combined_minimum_size();
+		width += child_size.x;
+		height = MAX(height, (int)child_size.y);
+		visible_children++;
+	}
+
+	if (visible_children > 1) {
+		width += separation * (visible_children - 1);
+	}
+
+	return Size2(width, height);
+}
+
 void EditorCaptionButtons::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
