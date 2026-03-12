@@ -1041,6 +1041,18 @@ bool Node3DEditorViewport::_is_vertex_occluded(const Vector3 &p_world_pos, const
 	return false;
 }
 
+static bool _node_has_geometry(Node *p_node) {
+	if (Object::cast_to<GeometryInstance3D>(p_node)) {
+		return true;
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (_node_has_geometry(p_node->get_child(i))) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
@@ -1051,35 +1063,40 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 	float threshold = VERTEX_SNAP_THRESHOLD * EDSCALE;
 	Vector3 vw;
 	bool found = false;
-	bool selection_has_geometry = false;
 
-	for (Node *E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E);
-		if (!sp) {
-			continue;
-		}
-		if (Object::cast_to<GeometryInstance3D>(sp)) {
-			selection_has_geometry = true;
-		}
-		if (_find_closest_vertex_on_node(p_screen_pos, sp, threshold, vw)) {
-			found = true;
-		}
-		for (int i = 0; i < sp->get_child_count(); i++) {
-			Node3D *child = Object::cast_to<Node3D>(sp->get_child(i));
-			if (!child) {
+	if (spatial_editor->is_vertex_snap_origin_mode()) {
+		found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
+	} else {
+		bool selection_has_geometry = false;
+		for (Node *E : selection) {
+			Node3D *sp = Object::cast_to<Node3D>(E);
+			if (!sp) {
 				continue;
 			}
-			if (Object::cast_to<GeometryInstance3D>(child)) {
-				selection_has_geometry = true;
-			}
-			if (_find_closest_vertex_on_node(p_screen_pos, child, threshold, vw)) {
-				found = true;
+
+			LocalVector<Node3D *> descendants;
+			descendants.push_back(sp);
+			while (!descendants.is_empty()) {
+				Node3D *node = descendants[descendants.size() - 1];
+				descendants.resize(descendants.size() - 1);
+				if (Object::cast_to<GeometryInstance3D>(node)) {
+					selection_has_geometry = true;
+				}
+				if (_find_closest_vertex_on_node(p_screen_pos, node, threshold, vw)) {
+					found = true;
+				}
+				for (int i = 0; i < node->get_child_count(); i++) {
+					Node3D *child = Object::cast_to<Node3D>(node->get_child(i));
+					if (child) {
+						descendants.push_back(child);
+					}
+				}
 			}
 		}
-	}
 
-	if (!found && !selection_has_geometry) {
-		found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
+		if (!found && !selection_has_geometry) {
+			found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
+		}
 	}
 
 	if (found) {
@@ -2049,15 +2066,22 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (vb->get_button_index() == MouseButton::LEFT) {
 				if (vb->is_pressed()) {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-					bool has_geometry = false;
-					for (Node *E : selection) {
-						if (Object::cast_to<GeometryInstance3D>(E)) {
-							has_geometry = true;
-							break;
+					bool use_origin_snap = spatial_editor->is_vertex_snap_origin_mode();
+
+					if (!use_origin_snap) {
+						bool has_geometry = false;
+						for (Node *E : selection) {
+							if (_node_has_geometry(E)) {
+								has_geometry = true;
+								break;
+							}
+						}
+						if (!has_geometry) {
+							use_origin_snap = true;
 						}
 					}
 
-					if (!has_geometry || !vertex_snap_has_source) {
+					if (use_origin_snap || !vertex_snap_has_source) {
 						_vertex_snap_update_source(vb->get_position());
 					}
 
@@ -2070,7 +2094,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 						}
 
-						if (has_geometry) {
+						if (!use_origin_snap) {
 							vertex_snap_dragging = true;
 							Vector3 cam_normal = camera->get_global_transform().basis.get_column(2);
 							vertex_snap_drag_plane = Plane(cam_normal, vertex_snap_source);
@@ -2563,11 +2587,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					for (const KeyValue<ObjectID, Vector3> &E : vertex_snap_original_positions) {
 						Node3D *node = ObjectDB::get_instance<Node3D>(E.key);
 						if (node) {
-							if (vertex_snap_has_target && !Object::cast_to<GeometryInstance3D>(node)) {
-								node->set_global_position(vertex_snap_target);
-							} else {
-								node->set_global_position(E.value + displacement);
-							}
+							node->set_global_position(E.value + displacement);
 						}
 					}
 				}
@@ -3687,7 +3707,7 @@ void Node3DEditorViewport::_draw() {
 		if (vertex_snap_dragging) {
 			for (const KeyValue<ObjectID, Vector3> &E : vertex_snap_original_positions) {
 				Node3D *node = ObjectDB::get_instance<Node3D>(E.key);
-				if (node && Object::cast_to<GeometryInstance3D>(node)) {
+				if (node) {
 					source_display = vertex_snap_source + (node->get_global_position() - E.value);
 					break;
 				}
@@ -6490,7 +6510,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/reset_transform_position", TTRC("Reset Position"), KeyModifierMask::ALT + Key::W);
 	ED_SHORTCUT("spatial_editor/reset_transform_rotation", TTRC("Reset Rotation"), KeyModifierMask::ALT + Key::E);
 	ED_SHORTCUT("spatial_editor/reset_transform_scale", TTRC("Reset Scale"), KeyModifierMask::ALT + Key::R);
-	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
 
 	translation_preview_button = memnew(EditorTranslationPreviewButton);
 	hbox->add_child(translation_preview_button);
@@ -7137,6 +7156,7 @@ Dictionary Node3DEditor::get_state() const {
 
 	d["viewports"] = vpdata;
 
+	d["vertex_snap_origin_mode"] = vertex_snap_origin_mode;
 	d["show_grid"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
@@ -7209,6 +7229,14 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 
 	if (d.has("preserve_children_transform")) {
 		tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_pressed(d["preserve_children_transform"]);
+	}
+
+	if (d.has("vertex_snap_origin_mode")) {
+		vertex_snap_origin_mode = d["vertex_snap_origin_mode"];
+		int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+		int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+		transform_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
+		transform_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
 	}
 
 	if (d.has("local_coords")) {
@@ -7383,6 +7411,15 @@ void Node3DEditor::_snap_update() {
 	snap_scale->set_value(snap_scale_value);
 }
 
+void Node3DEditor::_update_vertex_snap_tooltips() {
+	String snap_key = ED_GET_SHORTCUT("spatial_editor/vertex_snap")->get_as_text();
+	PopupMenu *p = transform_menu->get_popup();
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX),
+			vformat(TTR("Hold %s to highlight a vertex on the currently selected node,\nthen drag to move the node and snap it to vertices on neighboring nodes.\n\nFor nodes without a vertex-based representation,\nSnap Origin to Vertex is always used instead."), snap_key));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN),
+			vformat(TTR("Hold %s to highlight another node's vertex,\nthen click to teleport the selected node to the highlighted vertex."), snap_key));
+}
+
 void Node3DEditor::_xform_dialog_action() {
 	Transform3D t;
 	//translation
@@ -7544,6 +7581,20 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
+		} break;
+		case MENU_VERTEX_SNAP_BASE_VERTEX: {
+			vertex_snap_origin_mode = false;
+			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			transform_menu->get_popup()->set_item_checked(idx_vertex, true);
+			transform_menu->get_popup()->set_item_checked(idx_origin, false);
+		} break;
+		case MENU_VERTEX_SNAP_BASE_ORIGIN: {
+			vertex_snap_origin_mode = true;
+			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
+			transform_menu->get_popup()->set_item_checked(idx_origin, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -9120,6 +9171,7 @@ void Node3DEditor::_notification(int p_what) {
 			tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + show_list_tooltip);
 			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + show_list_tooltip);
 			_update_gizmos_menu();
+			_update_vertex_snap_tooltips();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -9186,6 +9238,7 @@ void Node3DEditor::_notification(int p_what) {
 				CollisionShape3DGizmoPlugin::set_show_only_when_selected(EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected"));
 				update_all_gizmos();
 			}
+			_update_vertex_snap_tooltips();
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
@@ -10152,6 +10205,13 @@ Node3DEditor::Node3DEditor() {
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTRC("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
+
+	p->add_separator();
+	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
+	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
+	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
+	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+	_update_vertex_snap_tooltips();
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
