@@ -1087,7 +1087,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 			} break;
 			case RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD: {
 				const RecordedTopLevelAccelerationStructureBuildCommand *tlas_build_command = reinterpret_cast<const RecordedTopLevelAccelerationStructureBuildCommand *>(command);
-				driver->command_build_tlas(r_command_buffer, tlas_build_command->acceleration_structure, tlas_build_command->scratch_buffer, tlas_build_command->instance_buffer, tlas_build_command->instance_offset, tlas_build_command->instance_count);
+				driver->command_build_tlas(r_command_buffer, tlas_build_command->acceleration_structure, tlas_build_command->scratch_buffer, tlas_build_command->instance_buffer, tlas_build_command->instance_offset, tlas_build_command->instance_count, VectorView<RDD::AccelerationStructureID>(tlas_build_command->blases(), tlas_build_command->blas_count));
 			} break;
 			case RecordedCommand::TYPE_BUFFER_CLEAR: {
 				const RecordedBufferClearCommand *buffer_clear_command = reinterpret_cast<const RecordedBufferClearCommand *>(command);
@@ -1810,9 +1810,12 @@ void RenderingDeviceGraph::add_blas_build(RDD::AccelerationStructureID p_acceler
 	_add_command_to_graph(trackers.ptr(), usages.ptr(), usages.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, VectorView<RDD::AccelerationStructureID> p_blases, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+	uint32_t blases_size = sizeof(RDD::AccelerationStructureID) * p_blases.size();
+	uint32_t command_size = sizeof(RecordedTopLevelAccelerationStructureBuildCommand) + blases_size;
+
 	int32_t command_index;
-	RecordedTopLevelAccelerationStructureBuildCommand *command = static_cast<RecordedTopLevelAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedTopLevelAccelerationStructureBuildCommand), command_index));
+	RecordedTopLevelAccelerationStructureBuildCommand *command = static_cast<RecordedTopLevelAccelerationStructureBuildCommand *>(_allocate_command(command_size, command_index));
 	command->type = RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD;
 	command->self_stages = RDD::PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT;
 	command->acceleration_structure = p_acceleration_structure;
@@ -1820,6 +1823,11 @@ void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceler
 	command->instance_buffer = p_instance_buffer;
 	command->instance_offset = p_instance_offset;
 	command->instance_count = p_instance_count;
+	command->blas_count = p_blases.size();
+
+	for (uint32_t i = 0; i < p_blases.size(); i++) {
+		command->blases()[i] = p_blases[i];
+	}
 
 	thread_local LocalVector<ResourceTracker *> trackers;
 	thread_local LocalVector<ResourceUsage> usages;

@@ -529,7 +529,9 @@ Error RenderingDevice::tlas_build(RID p_tlas, Span<AccelerationStructureInstance
 
 	_tlas_remove_blas_dependencies(tlas, p_tlas);
 
+	thread_local LocalVector<RDD::AccelerationStructureID> blases;
 	thread_local LocalVector<RDG::ResourceTracker *> draw_trackers;
+	blases.clear();
 	draw_trackers.clear();
 
 	for (uint32_t i = 0; i < p_instances.size(); i++) {
@@ -555,6 +557,8 @@ Error RenderingDevice::tlas_build(RID p_tlas, Span<AccelerationStructureInstance
 				tlas->acceleration_structure_dependencies.insert(rd_instance.blas);
 				blas->acceleration_structure_dependencies.insert(p_tlas);
 
+				blases.push_back(blas->driver_id);
+
 				if (blas->draw_tracker != nullptr) {
 					draw_trackers.push_back(blas->draw_tracker);
 				}
@@ -564,7 +568,7 @@ Error RenderingDevice::tlas_build(RID p_tlas, Span<AccelerationStructureInstance
 		driver->acceleration_structure_instance_write(instance_buffer.data_ptr + instance_buffer_offset + (instance_size * i), rdd_instance);
 	}
 
-	draw_graph.add_tlas_build(tlas->driver_id, tlas->scratch_buffer, instance_buffer.driver_id, instance_buffer_offset, p_instances.size(), tlas->draw_tracker, draw_trackers);
+	draw_graph.add_tlas_build(tlas->driver_id, tlas->scratch_buffer, instance_buffer.driver_id, instance_buffer_offset, p_instances.size(), blases, tlas->draw_tracker, draw_trackers);
 
 	tlas->invalidated = false;
 

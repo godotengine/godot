@@ -33,7 +33,7 @@ else:
 # Mesa NIR
 # Sync with `drivers/d3d12/SCsub` when updating Mesa.
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "25.3.1-1"
+mesa_version = "raytracing-rel"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"
@@ -71,7 +71,7 @@ for arch in [
         os.remove(mesa_archive)
     print(f"Downloading Mesa NIR {mesa_filename} ...")
     urllib.request.urlretrieve(
-        f"https://github.com/godotengine/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
+        f"https://github.com/blueskythlikesclouds/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
         mesa_archive,
     )
     if os.path.exists(mesa_folder):
