@@ -4005,6 +4005,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			stack[i].~Variant();
 		}
+		if (p_state) {
+			// Mark the state's stack as cleared to prevent double-free
+			// in ~GDScriptFunctionState::_clear_stack().
+			p_state->stack_size = 0;
+		}
 	}
 
 	// Always free reserved addresses, since they are never copied.
