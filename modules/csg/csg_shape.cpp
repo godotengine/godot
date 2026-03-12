@@ -803,6 +803,8 @@ void CSGShape3D::update_shape() {
 
 	set_base(root_mesh->get_rid());
 
+	update_gizmos();
+
 #ifndef PHYSICS_3D_DISABLED
 	_update_collision_faces();
 #endif // PHYSICS_3D_DISABLED

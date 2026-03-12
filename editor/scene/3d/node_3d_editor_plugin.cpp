@@ -625,6 +625,10 @@ void Node3DEditorViewport::cancel_transform() {
 		sp->set_global_transform(se->original);
 	}
 
+	for (const KeyValue<Node3D *, Transform3D> &pair : _edit.children_original_globals) {
+		pair.key->set_global_transform(pair.value);
+	}
+
 	collision_reposition = false;
 	finish_transform();
 	set_message(TTRC("Transform Aborted."), 3);
@@ -1136,6 +1140,24 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 			sel_item->original = sel_item->sp->get_global_gizmo_transform();
 		}
 	}
+
+	if (spatial_editor->is_preserve_children_transform_enabled() && _edit.children_original_globals.is_empty()) {
+		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+		for (Node *E : selection) {
+			Node3D *sp = Object::cast_to<Node3D>(E);
+			if (!sp) {
+				continue;
+			}
+
+			int child_count = sp->get_child_count();
+			for (int i = 0; i < child_count; i++) {
+				Node3D *child = Object::cast_to<Node3D>(sp->get_child(i));
+				if (child) {
+					_edit.children_original_globals[child] = child->get_global_transform();
+				}
+			}
+		}
+	}
 }
 
 static Key _get_key_modifier_setting(const String &p_property) {
@@ -1437,10 +1459,32 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 		return;
 	}
 
+	bool preserve_children = spatial_editor->is_preserve_children_transform_enabled();
+
+	Vector<Transform3D> children_global_transforms;
+	Vector<Node3D *> node3d_children;
+
+	if (preserve_children) {
+		int child_count = p_node->get_child_count();
+		for (int i = 0; i < child_count; i++) {
+			Node3D *child = Object::cast_to<Node3D>(p_node->get_child(i));
+			if (child) {
+				children_global_transforms.push_back(child->get_global_transform());
+				node3d_children.push_back(child);
+			}
+		}
+	}
+
 	if (p_local) {
 		p_node->set_transform(p_transform);
 	} else {
 		p_node->set_global_transform(p_transform);
+	}
+
+	if (preserve_children) {
+		for (int i = 0; i < node3d_children.size(); i++) {
+			node3d_children[i]->set_global_transform(children_global_transforms[i]);
+		}
 	}
 }
 
@@ -5171,6 +5215,8 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 	if (get_selected_count() > 0) {
+		_edit.children_original_globals.clear();
+
 		_edit.mode = p_mode;
 		_compute_edit(_edit.mouse_pos);
 		_edit.instant = instant;
@@ -5229,6 +5275,18 @@ void Node3DEditorViewport::commit_transform() {
 		undo_redo->add_do_method(sp, "set_transform", sp->get_local_gizmo_transform());
 		undo_redo->add_undo_method(sp, "set_transform", se->original_local);
 	}
+
+	if (!_edit.children_original_globals.is_empty()) {
+		for (const KeyValue<Node3D *, Transform3D> &pair : _edit.children_original_globals) {
+			Node3D *child = pair.key;
+			Transform3D original_global = pair.value;
+			Transform3D current_global = child->get_global_transform();
+
+			undo_redo->add_do_method(child, "set_global_transform", current_global);
+			undo_redo->add_undo_method(child, "set_global_transform", original_global);
+		}
+	}
+
 	undo_redo->commit_action();
 
 	collision_reposition = false;
@@ -5658,6 +5716,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.accumulated_rotation_angle = 0.0;
 	_edit.rotation_angle = 0.0;
 	_edit.gizmo_initiated = false;
+	_edit.children_original_globals.clear();
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
@@ -6527,6 +6586,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["scale_snap"] = snap_scale_value;
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
+	d["preserve_children_transform"] = tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
 
 	int vc = 0;
 	if (view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT))) {
@@ -6620,6 +6680,10 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	}
 
 	_snap_update();
+
+	if (d.has("preserve_children_transform")) {
+		tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_pressed(d["preserve_children_transform"]);
+	}
 
 	if (d.has("local_coords")) {
 		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
@@ -6863,6 +6927,47 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 				viewports[i]->update_transform_gizmo_highlight();
 			}
 		} break;
+
+		case MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM: {
+			tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_pressed(pressed);
+			if (pressed) {
+				EditorNode::get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &Node3DEditor::_undo_redo_inspector_callback));
+			} else {
+				EditorNode::get_editor_data().remove_undo_redo_inspector_hook_callback(callable_mp(this, &Node3DEditor::_undo_redo_inspector_callback));
+			}
+		} break;
+	}
+}
+
+void Node3DEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
+	Node3D *node = Object::cast_to<Node3D>(p_edited);
+	if (!node) {
+		return;
+	}
+
+	static const char *transform_properties[] = { "position", "rotation", "scale", "quaternion", "basis", "transform", nullptr };
+	bool is_transform_prop = false;
+	for (int i = 0; transform_properties[i]; i++) {
+		if (p_property == transform_properties[i]) {
+			is_transform_prop = true;
+			break;
+		}
+	}
+	if (!is_transform_prop) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_NULL(undo_redo);
+
+	int child_count = node->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		Node3D *child = Object::cast_to<Node3D>(node->get_child(i));
+		if (child) {
+			Transform3D child_global = child->get_global_transform();
+			undo_redo->add_do_method(child, "set_global_transform", child_global);
+			undo_redo->add_undo_method(child, "set_global_transform", child_global);
+		}
 	}
 }
 
@@ -8454,6 +8559,7 @@ void Node3DEditor::_update_theme() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_button_icon(get_editor_theme_icon(SNAME("Object")));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_button_icon(get_editor_theme_icon(SNAME("Trackball")));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_editor_theme_icon(SNAME("Panels1")));
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_editor_theme_icon(SNAME("Panels2")));
@@ -9430,6 +9536,16 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_shortcut(ED_SHORTCUT("spatial_editor/trackball", TTRC("Use Trackball"), Key::U));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_accessibility_name(TTRC("Use Trackball"));
+
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM] = memnew(Button);
+	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]);
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_toggle_mode(true);
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/preserve_children_transform", TTRC("Preserve Children Transform"), Key::P));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_shortcut_context(this);
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_accessibility_name(TTRC("Preserve Children Transform"));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_tooltip_text(TTRC("When enabled, transforming a node will preserve the global transform of its children.\nThis also applies when editing transform properties in the Inspector."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 	sun_button = memnew(Button);

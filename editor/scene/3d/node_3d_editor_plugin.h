@@ -359,6 +359,8 @@ private:
 		Vector3 initial_click_vector;
 		Vector3 previous_rotation_vector;
 		bool gizmo_initiated = false;
+
+		HashMap<Node3D *, Transform3D> children_original_globals;
 	} _edit;
 
 	Ref<View3DController> view_3d_controller;
@@ -579,6 +581,7 @@ public:
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_USE_TRACKBALL,
+		TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM,
 		TOOL_OPT_MAX
 	};
 
@@ -682,6 +685,7 @@ private:
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
 		MENU_TOOL_USE_TRACKBALL,
+		MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -873,6 +877,8 @@ private:
 
 	void _update_theme();
 
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value);
+
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
@@ -897,6 +903,7 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
+	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
