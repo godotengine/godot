@@ -995,7 +995,8 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 }
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
-	int ret = ::kill(p_pid, SIGKILL);
+	// Use negative pid to kill the entire process group instead of only the parent process
+	int ret = ::kill(-p_pid, SIGKILL);
 	if (!ret) {
 		//avoid zombie process
 		int st;
