@@ -17,7 +17,7 @@ public partial class _CLASS_ : _BASE_
         }
         else
         {
-            Velocity = Velocity.move_toward(Vector2.Zero, Speed);
+            Velocity = Velocity.MoveToward(Vector2.Zero, Speed);
         }
 
         MoveAndSlide();
