@@ -193,6 +193,14 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: lis
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
+def discover_localized_doc_locales(project_dir: str):
+    localized_docs_dir = os.path.join(project_dir, "LocalizedDocs")
+    if not os.path.isdir(localized_docs_dir):
+        return []
+
+    return sorted(entry.name for entry in os.scandir(localized_docs_dir) if entry.is_dir())
+
+
 def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror):
     target_filenames = [
         "GodotSharp.dll",
@@ -212,6 +220,8 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
         targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
 
         args = ["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"]
+        if build_config != "Release":
+            args += ["/p:GeneratePackageOnBuild=false"]
         if push_nupkgs_local:
             args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
         if precision == "double":
@@ -252,6 +262,28 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         for scons_target in targets:
             copy_target(scons_target)
+
+        from shutil import copy
+
+        def copy_localized_doc(project_bin_dir, assembly_name):
+            project_dir = os.path.dirname(os.path.dirname(project_bin_dir))
+            locales_to_copy = discover_localized_doc_locales(project_dir)
+
+            for locale in locales_to_copy:
+                src_path = os.path.join(project_dir, "LocalizedDocs", locale, f"{assembly_name}.xml")
+                if not os.path.isfile(src_path):
+                    raise FileNotFoundError(
+                        f"Localized XML doc not found for locale '{locale}': {src_path}. Generate glue with --generate-localized-docs first."
+                    )
+
+                dst_dir = os.path.join(editor_api_dir, locale)
+                os.makedirs(dst_dir, exist_ok=True)
+                dst_path = os.path.join(dst_dir, f"{assembly_name}.xml")
+                print(f"Copying localized XML doc to {dst_path}...")
+                copy(src_path, dst_path)
+
+        copy_localized_doc(core_src_dir, "GodotSharp")
+        copy_localized_doc(editor_src_dir, "GodotSharpEditor")
 
     return 0
 
@@ -415,7 +447,6 @@ def main():
     output_dir = os.path.abspath(args.godot_output_dir)
 
     push_nupkgs_local = os.path.abspath(args.push_nupkgs_local) if args.push_nupkgs_local else None
-
     msbuild_tool = find_any_msbuild_tool(args.mono_prefix)
 
     if msbuild_tool is None:

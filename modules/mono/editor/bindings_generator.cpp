@@ -43,6 +43,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "core/string/translation_server.h"
+#include "editor/translations/editor_translation.h"
 #include "main/main.h"
 
 StringBuilder &operator<<(StringBuilder &r_sb, const String &p_string) {
@@ -129,6 +131,8 @@ const Vector<String> ignored_types = {};
 // Don't check against all C# reserved words, as many cases are GDScript-specific.
 const Vector<String> langword_check = { "true", "false", "null" };
 
+static constexpr const char *LOCALIZED_DOCS_DIR = "LocalizedDocs";
+
 // The following properties currently need to be defined with `new` to avoid warnings. We treat
 // them as a special case instead of silencing the warnings altogether, to be warned if more
 // shadowing appears.
@@ -175,6 +179,75 @@ static String fix_doc_description(const String &p_bbcode) {
 	return p_bbcode.dedent()
 			.remove_chars("\r")
 			.strip_edges();
+}
+
+static String _get_doc_indent(const String &p_text) {
+	String indent;
+	bool has_text = false;
+	int line_start = 0;
+
+	for (int i = 0; i < p_text.length(); i++) {
+		const char32_t c = p_text[i];
+		if (c == '\n') {
+			line_start = i + 1;
+		} else if (c > 32) {
+			has_text = true;
+			indent = p_text.substr(line_start, i - line_start);
+			break;
+		}
+	}
+
+	if (!has_text) {
+		return p_text;
+	}
+
+	return indent;
+}
+
+static void _append_localized_doc_locale(Vector<String> &r_locales, const String &p_locale) {
+	TranslationServer *translation_server = TranslationServer::get_singleton();
+	ERR_FAIL_NULL(translation_server);
+
+	String locale = p_locale.strip_edges();
+	if (locale.is_empty()) {
+		return;
+	}
+
+	locale = translation_server->standardize_locale(locale, false).replace("_", "-");
+	if (locale.is_empty()) {
+		return;
+	}
+
+	for (const String &existing_locale : r_locales) {
+		if (existing_locale == locale) {
+			return;
+		}
+	}
+
+	r_locales.push_back(locale);
+}
+
+static Vector<String> _parse_localized_doc_locales(const String &p_locales_arg) {
+	Vector<String> locales;
+	if (p_locales_arg.is_empty()) {
+		return locales;
+	}
+
+	for (const String &raw_locale : p_locales_arg.split(",", false)) {
+		_append_localized_doc_locale(locales, raw_locale);
+	}
+
+	return locales;
+}
+
+static Vector<String> _get_localized_doc_locales() {
+	Vector<String> locales;
+
+	for (const String &locale : get_doc_locales()) {
+		_append_localized_doc_locale(locales, locale);
+	}
+
+	return locales;
 }
 
 String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype) {
@@ -810,6 +883,325 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 	xml_output.append("</para>");
 
 	return xml_output.as_string();
+}
+
+String BindingsGenerator::_translate_doc_string(const String &p_text) {
+	const String indent = _get_doc_indent(p_text);
+	const String message = p_text.dedent().strip_edges();
+	const String translated = TranslationServer::get_singleton()->get_doc_domain()->translate(message, StringName());
+	return translated.indent(indent);
+}
+
+String BindingsGenerator::_get_localized_doc_summary_xml(const String &p_text, const TypeInterface *p_itype, bool p_is_signal) {
+	if (p_text.is_empty()) {
+		return String();
+	}
+
+	return bbcode_to_xml(fix_doc_description(_translate_doc_string(p_text)), p_itype, p_is_signal);
+}
+
+String BindingsGenerator::_get_xml_doc_type_name(const TypeReference &p_typeref) {
+	const TypeInterface *itype = _get_type_or_singleton_or_null(p_typeref);
+	ERR_FAIL_NULL_V_MSG(itype, String(), "Type '" + String(p_typeref.cname) + "' was not found for XML docs generation.");
+
+	String cs_type = itype->cs_type;
+	if (cs_type.ends_with("[]")) {
+		String elem_type = cs_type.substr(0, cs_type.length() - 2);
+		if (elem_type == "byte") {
+			elem_type = "System.Byte";
+		} else if (elem_type == "int") {
+			elem_type = "System.Int32";
+		} else if (elem_type == "long") {
+			elem_type = "System.Int64";
+		} else if (elem_type == "float") {
+			elem_type = "System.Single";
+		} else if (elem_type == "double") {
+			elem_type = "System.Double";
+		} else if (elem_type == "string") {
+			elem_type = "System.String";
+		} else if (!elem_type.contains(".")) {
+			elem_type = String(BINDINGS_NAMESPACE) + "." + elem_type;
+		}
+		return elem_type + "[]";
+	}
+
+	if (cs_type == "bool") {
+		cs_type = "System.Boolean";
+	} else if (cs_type == "byte") {
+		cs_type = "System.Byte";
+	} else if (cs_type == "sbyte") {
+		cs_type = "System.SByte";
+	} else if (cs_type == "short") {
+		cs_type = "System.Int16";
+	} else if (cs_type == "ushort") {
+		cs_type = "System.UInt16";
+	} else if (cs_type == "int") {
+		cs_type = "System.Int32";
+	} else if (cs_type == "uint") {
+		cs_type = "System.UInt32";
+	} else if (cs_type == "long") {
+		cs_type = "System.Int64";
+	} else if (cs_type == "ulong") {
+		cs_type = "System.UInt64";
+	} else if (cs_type == "float") {
+		cs_type = "System.Single";
+	} else if (cs_type == "double") {
+		cs_type = "System.Double";
+	} else if (cs_type == "string") {
+		cs_type = "System.String";
+	} else if (!cs_type.contains(".")) {
+		cs_type = String(BINDINGS_NAMESPACE) + "." + cs_type;
+	}
+
+	if (!p_typeref.generic_type_parameters.is_empty()) {
+		cs_type += "{";
+		bool first = true;
+		for (const TypeReference &generic_arg : p_typeref.generic_type_parameters) {
+			if (!first) {
+				cs_type += ",";
+			}
+			first = false;
+			cs_type += _get_xml_doc_type_name(generic_arg);
+		}
+		cs_type += "}";
+	}
+
+	return cs_type;
+}
+
+String BindingsGenerator::_get_xml_doc_method_name(const TypeInterface &p_itype, const MethodInterface &p_imethod) {
+	String member_name = "M:" + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + p_imethod.proxy_name;
+	if (p_imethod.arguments.is_empty()) {
+		return member_name;
+	}
+
+	member_name += "(";
+	bool first = true;
+	for (const ArgumentInterface &argument : p_imethod.arguments) {
+		if (!first) {
+			member_name += ",";
+		}
+		first = false;
+		member_name += _get_xml_doc_type_name(argument.type);
+	}
+	member_name += ")";
+
+	return member_name;
+}
+
+void BindingsGenerator::_append_xml_doc_member(StringBuilder &p_output, const String &p_member_name, const String &p_summary) {
+	if (p_summary.is_empty()) {
+		return;
+	}
+
+	const Vector<String> summary_lines = p_summary.split("\n", false);
+	if (summary_lines.is_empty()) {
+		return;
+	}
+
+	p_output.append("    <member name=\"");
+	p_output.append(p_member_name.xml_escape(true));
+	p_output.append("\">\n");
+	p_output.append("      <summary>\n");
+	for (const String &summary_line : summary_lines) {
+		p_output.append("        ");
+		p_output.append(summary_line);
+		p_output.append("\n");
+	}
+	p_output.append("      </summary>\n");
+	p_output.append("    </member>\n");
+}
+
+void BindingsGenerator::_append_xml_doc_global_members(StringBuilder &p_output) {
+	for (const ConstantInterface &iconstant : global_constants) {
+		if (!iconstant.const_doc || iconstant.const_doc->description.is_empty()) {
+			continue;
+		}
+
+		_append_xml_doc_member(
+				p_output,
+				String("F:") + String(BINDINGS_NAMESPACE) + "." + String(BINDINGS_GLOBAL_SCOPE_CLASS) + "." + iconstant.proxy_name,
+				_get_localized_doc_summary_xml(iconstant.const_doc->description, nullptr));
+	}
+
+	for (const EnumInterface &ienum : global_enums) {
+		const TypeInterface *enum_itype = enum_types.getptr(ienum.cname);
+		if (enum_itype && enum_itype->class_doc && !enum_itype->class_doc->description.is_empty()) {
+			_append_xml_doc_member(
+					p_output,
+					String("T:") + String(BINDINGS_NAMESPACE) + "." + ienum.proxy_name,
+					_get_localized_doc_summary_xml(enum_itype->class_doc->description, nullptr));
+		}
+
+		for (const ConstantInterface &iconstant : ienum.constants) {
+			if (!iconstant.const_doc || iconstant.const_doc->description.is_empty()) {
+				continue;
+			}
+
+			_append_xml_doc_member(
+					p_output,
+					String("F:") + String(BINDINGS_NAMESPACE) + "." + ienum.proxy_name + "." + iconstant.proxy_name,
+					_get_localized_doc_summary_xml(iconstant.const_doc->description, nullptr));
+		}
+	}
+}
+
+void BindingsGenerator::_append_xml_doc_type_members(StringBuilder &p_output, const TypeInterface &p_itype) {
+	if (p_itype.class_doc && !p_itype.class_doc->description.is_empty()) {
+		_append_xml_doc_member(
+				p_output,
+				String("T:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name,
+				_get_localized_doc_summary_xml(p_itype.class_doc->description, &p_itype));
+	}
+
+	for (const ConstantInterface &iconstant : p_itype.constants) {
+		if (!iconstant.const_doc || iconstant.const_doc->description.is_empty()) {
+			continue;
+		}
+
+		_append_xml_doc_member(
+				p_output,
+				String("F:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + iconstant.proxy_name,
+				_get_localized_doc_summary_xml(iconstant.const_doc->description, &p_itype));
+	}
+
+	for (const EnumInterface &ienum : p_itype.enums) {
+		const TypeInterface *enum_itype = enum_types.getptr(ienum.cname);
+		if (enum_itype && enum_itype->class_doc && !enum_itype->class_doc->description.is_empty()) {
+			_append_xml_doc_member(
+					p_output,
+					String("T:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + ienum.proxy_name,
+					_get_localized_doc_summary_xml(enum_itype->class_doc->description, &p_itype));
+		}
+
+		for (const ConstantInterface &iconstant : ienum.constants) {
+			if (!iconstant.const_doc || iconstant.const_doc->description.is_empty()) {
+				continue;
+			}
+
+			_append_xml_doc_member(
+					p_output,
+					String("F:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + ienum.proxy_name + "." + iconstant.proxy_name,
+					_get_localized_doc_summary_xml(iconstant.const_doc->description, &p_itype));
+		}
+	}
+
+	for (const PropertyInterface &iprop : p_itype.properties) {
+		if (!iprop.prop_doc || iprop.prop_doc->description.is_empty()) {
+			continue;
+		}
+
+		_append_xml_doc_member(
+				p_output,
+				String("P:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + iprop.proxy_name,
+				_get_localized_doc_summary_xml(iprop.prop_doc->description, &p_itype));
+	}
+
+	for (const MethodInterface &imethod : p_itype.methods) {
+		if (!imethod.method_doc || imethod.method_doc->description.is_empty()) {
+			continue;
+		}
+
+		_append_xml_doc_member(
+				p_output,
+				_get_xml_doc_method_name(p_itype, imethod),
+				_get_localized_doc_summary_xml(imethod.method_doc->description, &p_itype));
+	}
+
+	for (const SignalInterface &isignal : p_itype.signals_) {
+		if (!isignal.method_doc || isignal.method_doc->description.is_empty()) {
+			continue;
+		}
+
+		_append_xml_doc_member(
+				p_output,
+				String("E:") + String(BINDINGS_NAMESPACE) + "." + p_itype.proxy_name + "." + isignal.proxy_name,
+				_get_localized_doc_summary_xml(isignal.method_doc->description, &p_itype, true));
+	}
+}
+
+Error BindingsGenerator::_generate_localized_xml_doc(ClassDB::APIType p_api_type, const String &p_assembly_name, const String &p_output_file) {
+	StringBuilder output;
+	output.append("<?xml version=\"1.0\"?>\n");
+	output.append("<doc>\n");
+	output.append("  <assembly>\n");
+	output.append("    <name>");
+	output.append(p_assembly_name.xml_escape());
+	output.append("</name>\n");
+	output.append("  </assembly>\n");
+	output.append("  <members>\n");
+
+	if (p_api_type == ClassDB::API_CORE) {
+		_append_xml_doc_global_members(output);
+	}
+
+	for (const KeyValue<StringName, TypeInterface> &entry : obj_types) {
+		const TypeInterface &itype = entry.value;
+		if (itype.api_type != p_api_type) {
+			continue;
+		}
+		_append_xml_doc_type_members(output, itype);
+	}
+
+	output.append("  </members>\n");
+	output.append("</doc>\n");
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
+
+	const String base_dir = p_output_file.get_base_dir();
+	if (!DirAccess::exists(base_dir)) {
+		Error err = da->make_dir_recursive(base_dir);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + base_dir + "'.");
+	}
+
+	return _save_file(p_output_file, output);
+}
+
+Error BindingsGenerator::_generate_localized_xml_docs(const String &p_output_dir, const Vector<String> &p_locales) {
+	if (p_locales.is_empty()) {
+		return OK;
+	}
+
+	TranslationServer *translation_server = TranslationServer::get_singleton();
+	ERR_FAIL_NULL_V(translation_server, ERR_UNCONFIGURED);
+
+	const String original_locale = translation_server->get_locale();
+
+	for (const String &requested_locale : p_locales) {
+		const String standardized_locale = translation_server->standardize_locale(requested_locale, false);
+		const String nuget_locale = standardized_locale.replace("_", "-");
+		if (standardized_locale.is_empty() || nuget_locale == "en") {
+			continue;
+		}
+
+		load_doc_translations(standardized_locale);
+		translation_server->set_locale(standardized_locale);
+
+		Error err = _generate_localized_xml_doc(
+				ClassDB::API_CORE,
+				CORE_API_ASSEMBLY_NAME,
+				p_output_dir.path_join(CORE_API_ASSEMBLY_NAME).path_join(LOCALIZED_DOCS_DIR).path_join(nuget_locale).path_join(CORE_API_ASSEMBLY_NAME ".xml"));
+		if (err != OK) {
+			load_doc_translations(original_locale);
+			translation_server->set_locale(original_locale);
+			return err;
+		}
+
+		err = _generate_localized_xml_doc(
+				ClassDB::API_EDITOR,
+				EDITOR_API_ASSEMBLY_NAME,
+				p_output_dir.path_join(EDITOR_API_ASSEMBLY_NAME).path_join(LOCALIZED_DOCS_DIR).path_join(nuget_locale).path_join(EDITOR_API_ASSEMBLY_NAME ".xml"));
+		if (err != OK) {
+			load_doc_translations(original_locale);
+			translation_server->set_locale(original_locale);
+			return err;
+		}
+	}
+
+	load_doc_translations(original_locale);
+	translation_server->set_locale(original_locale);
+	return OK;
 }
 
 void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
@@ -2094,7 +2486,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
+Error BindingsGenerator::generate_cs_api(const String &p_output_dir, const Vector<String> &p_localized_doc_locales) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	String output_dir = Path::abspath(Path::realpath(p_output_dir));
@@ -2126,6 +2518,12 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 	proj_err = generate_cs_editor_project(editor_proj_dir);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Editor API C# project failed.");
+		return proj_err;
+	}
+
+	proj_err = _generate_localized_xml_docs(output_dir, p_localized_doc_locales);
+	if (proj_err != OK) {
+		ERR_PRINT("Generation of localized XML docs failed.");
 		return proj_err;
 	}
 
@@ -5254,8 +5652,9 @@ void BindingsGenerator::_initialize() {
 }
 
 static String generate_all_glue_option = "--generate-mono-glue";
+static String generate_localized_docs_option = "--generate-localized-docs";
 
-static void handle_cmdline_options(String glue_dir_path) {
+static void handle_cmdline_options(String glue_dir_path, const Vector<String> &p_localized_doc_locales) {
 	BindingsGenerator bindings_generator;
 	bindings_generator.set_log_print_enabled(true);
 
@@ -5266,7 +5665,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 
 	CRASH_COND(glue_dir_path.is_empty());
 
-	if (bindings_generator.generate_cs_api(glue_dir_path.path_join(API_SOLUTION_NAME)) != OK) {
+	if (bindings_generator.generate_cs_api(glue_dir_path.path_join(API_SOLUTION_NAME), p_localized_doc_locales) != OK) {
 		ERR_PRINT(generate_all_glue_option + ": Failed to generate the C# API.");
 	}
 }
@@ -5277,8 +5676,14 @@ static void cleanup_and_exit_godot() {
 	::exit(0);
 }
 
+static bool _is_cmdline_option(const String &p_arg) {
+	return p_arg.begins_with("-");
+}
+
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 	String glue_dir_path;
+	String localized_docs_locales_arg;
+	bool generate_localized_docs = false;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
@@ -5294,17 +5699,30 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}
+		}
 
-			break;
+		if (elem->get() == generate_localized_docs_option) {
+			generate_localized_docs = true;
+
+			const List<String>::Element *locales_elem = elem->next();
+			if (locales_elem && !_is_cmdline_option(locales_elem->get())) {
+				localized_docs_locales_arg = locales_elem->get();
+				elem = elem->next();
+			}
 		}
 
 		elem = elem->next();
 	}
 
 	if (glue_dir_path.length()) {
+		Vector<String> localized_doc_locales;
+		if (generate_localized_docs) {
+			localized_doc_locales = localized_docs_locales_arg.is_empty() ? _get_localized_doc_locales() : _parse_localized_doc_locales(localized_docs_locales_arg);
+		}
+
 		if (Engine::get_singleton()->is_editor_hint() ||
 				Engine::get_singleton()->is_project_manager_hint()) {
-			handle_cmdline_options(glue_dir_path);
+			handle_cmdline_options(glue_dir_path, localized_doc_locales);
 		} else {
 			// Running from a project folder, which doesn't make sense and crashes.
 			ERR_PRINT(generate_all_glue_option + ": Cannot generate Mono glue while running a game project. Change current directory or enable --editor.");
