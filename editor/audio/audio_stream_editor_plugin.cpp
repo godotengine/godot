@@ -298,8 +298,8 @@ bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
 	}
 	String cls = p_object->get_class();
 	return cls == "AudioStreamWAV" ||
-		   cls == "AudioStreamMP3" ||
-		   cls == "AudioStreamOggVorbis";
+			cls == "AudioStreamMP3" ||
+			cls == "AudioStreamOggVorbis";
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
