@@ -307,7 +307,6 @@ public:
 	virtual void clear() override { anim_editor->clear(); }
 
 	virtual String get_plugin_name() const override { return "Anim"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -337,7 +336,6 @@ class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
 	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
 
 public:
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "AnimationTrackKeyEdit"; }
@@ -363,7 +361,6 @@ class AnimationMarkerKeyEditEditorPlugin : public EditorPlugin {
 	EditorInspectorPluginAnimationMarkerKeyEdit *amk_plugin = nullptr;
 
 public:
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "AnimationMarkerKeyEdit"; }
