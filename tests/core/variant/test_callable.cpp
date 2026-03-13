@@ -235,7 +235,6 @@ TEST_CASE("[Callable] VariantCallable equality and ordering") {
 	Callable c_front = Callable(memnew(VariantCallable(a1, "front")));
 	CHECK(c_back < c_front); // "back" < "front"
 	CHECK_FALSE(c_front < c_back);
-
 }
 
 } // namespace TestCallable
