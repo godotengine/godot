@@ -43,6 +43,12 @@ class MenuBar : public Control {
 	bool flat = false;
 	int start_index = -1;
 
+	bool menu_action_pressed = false;
+	bool opened_by_shortcut = false;
+	bool should_return_focus = false;
+	ObjectID last_focus;
+	void _return_focus();
+
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
@@ -55,6 +61,8 @@ class MenuBar : public Control {
 		bool disabled = false;
 		RID submenu_rid;
 		NativeMenu::SystemMenus sysmenu_id = NativeMenu::INVALID_MENU_ID;
+
+		mutable RID accessibility_item_element;
 
 		Menu(const String &p_name) {
 			name = p_name;
@@ -70,6 +78,7 @@ class MenuBar : public Control {
 	int focused_menu = -1;
 	int selected_menu = -1;
 	int active_menu = -1;
+	int pending_menu = -1;
 
 	Vector2i old_mouse_pos;
 
@@ -149,6 +158,9 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
+	virtual RID get_focused_accessibility_element() const override;
 
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();
