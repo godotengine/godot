@@ -1184,7 +1184,33 @@ void ScriptTextEditor::_on_caret_moved() {
 	previous_line = current_line;
 }
 
+bool ScriptTextEditor::_should_skip_symbol(const String &p_symbol, int p_row, int p_column) const {
+	CodeEdit *te = code_editor->get_text_editor();
+	if (p_row < 0 || p_row >= te->get_line_count()) {
+		return false;
+	}
+
+	int comment_idx = te->is_in_comment(p_row, p_column);
+	if (comment_idx == -1) {
+		return false;
+	}
+
+	// Allow bracket references like in doc comments (##) e.g. [Color]
+	if (te->get_delimiter_start_key(comment_idx) == "##") {
+		const String &line = te->get_line(p_row);
+		if (line.rfind("[" + p_symbol + "]", p_column) != -1) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
+	if (_should_skip_symbol(p_symbol, p_row, p_column)) {
+		return;
+	}
+
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1304,6 +1330,12 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 
+	Point2i pos = text_edit->get_line_column_at_pos(text_edit->get_local_mouse_pos(), false, false);
+	if (_should_skip_symbol(p_symbol, pos.y, pos.x)) {
+		text_edit->set_symbol_lookup_word_as_valid(false);
+		return;
+	}
+
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1330,6 +1362,10 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
 	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
+		return;
+	}
+
+	if (_should_skip_symbol(p_symbol, p_row, p_column)) {
 		return;
 	}
 

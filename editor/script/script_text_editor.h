@@ -193,6 +193,7 @@ protected:
 
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
+	bool _should_skip_symbol(const String &p_symbol, int p_row, int p_column) const;
 
 	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut = false);
 
