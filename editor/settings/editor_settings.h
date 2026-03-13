@@ -146,6 +146,7 @@ public:
 	static String get_newest_settings_path();
 
 	static void create();
+	void init_shortcuts();
 	void setup_language(bool p_initial_setup);
 	void setup_network();
 	static void save();

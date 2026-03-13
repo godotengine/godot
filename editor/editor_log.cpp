@@ -592,8 +592,6 @@ EditorLog::EditorLog() {
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
-
-	ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 }
 
 void EditorLog::deinit() {
