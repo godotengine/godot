@@ -280,7 +280,7 @@ public:
 	Ref<Script> get_base_script() const override;
 	StringName get_global_name() const override;
 
-	bool implements_interface(const StringName &p_interface_name) const;
+	bool implements_interface(const StringName &p_interface_name) const override;
 
 	ScriptLanguage *get_language() const override;
 

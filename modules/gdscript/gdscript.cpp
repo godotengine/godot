@@ -927,6 +927,27 @@ const Variant GDScript::get_rpc_config() const {
 	return rpc_config;
 }
 
+bool GDScript::implements_interface(const StringName &p_interface_name) const {
+	// Check explicit @implements declaration.
+	for (const StringName &iface : _implemented_interfaces) {
+		if (iface == p_interface_name) {
+			return true;
+		}
+	}
+	// Check base script's declarations.
+	if (base.is_valid()) {
+		if (base->implements_interface(p_interface_name)) {
+			return true;
+		}
+	}
+	// Structural matching is handled by InterfaceDB, not here.
+	return false;
+}
+
+bool GDScript::defines_interface() const {
+	return _is_interface;
+}
+
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *top = this;
 	while (top) {

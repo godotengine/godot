@@ -63,6 +63,8 @@ class GDScript : public Script {
 	bool valid = false;
 	bool reloading = false;
 	bool _is_abstract = false;
+	bool _is_interface = false;
+	Vector<StringName> _implemented_interfaces;
 
 	struct MemberInfo {
 		int index = 0;
@@ -338,6 +340,12 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
 	virtual const Variant get_rpc_config() const override;
+
+	// Interface support.
+	virtual bool implements_interface(const StringName &p_interface_name) const override;
+	virtual bool defines_interface() const override;
+	bool is_interface_script() const { return _is_interface; }
+	const Vector<StringName> &get_implemented_interfaces() const { return _implemented_interfaces; }
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }

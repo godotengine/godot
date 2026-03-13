@@ -72,6 +72,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
+#include "core/object/interface_db.h"
 #include "core/object/script_backtrace.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
@@ -475,6 +476,8 @@ void unregister_core_types() {
 	}
 
 	ResourceLoader::finalize();
+
+	InterfaceDB::cleanup();
 
 	ClassDB::cleanup_defaults();
 	memdelete(_time);

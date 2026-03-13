@@ -736,7 +736,10 @@ namespace Godot.SourceGenerators
                 if (memberNamedType.TypeKind == TypeKind.Interface)
                 {
                     hint = PropertyHint.InterfaceType;
-                    hintString = memberNamedType.ToDisplayString();
+                    // Use fully qualified name with namespace to reduce cross-language naming conflicts.
+                    hintString = memberNamedType.ToDisplayString(
+                        SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(
+                            SymbolDisplayGlobalNamespaceStyle.Omitted));
 
                     return true;
                 }

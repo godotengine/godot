@@ -195,6 +195,10 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
+	// Interface support.
+	virtual bool implements_interface(const StringName &p_interface_name) const { return false; }
+	virtual bool defines_interface() const { return false; }
+
 	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {

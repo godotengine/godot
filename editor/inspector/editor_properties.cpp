@@ -37,11 +37,7 @@
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 
-#include "modules/modules_enabled.gen.h" // For MODULE_MONO_ENABLED
-
-#ifdef MODULE_MONO_ENABLED
-#include "modules/mono/csharp_script.h"
-#endif
+#include "core/object/interface_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -3140,24 +3136,13 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 		return true;
 	}
 
-	// If in interface mode, check if the node's script implements the interface
+	// If in interface mode, check if the node's script implements the interface.
 	if (interface_mode) {
-		Ref<Script> dropped_node_script = dropped_node->get_script();
-		if (dropped_node_script.is_null()) {
-			return false;
-		}
-
-#ifdef MODULE_MONO_ENABLED
-		Ref<CSharpScript> cs_script = dropped_node_script;
-		if (cs_script.is_valid()) {
-			// Check if the script implements the required interface
-			for (const StringName &E : valid_types) {
-				if (cs_script->implements_interface(E)) {
-					return true;
-				}
+		for (const StringName &E : valid_types) {
+			if (InterfaceDB::object_implements_interface(dropped_node, E)) {
+				return true;
 			}
 		}
-#endif
 		return false;
 	}
 

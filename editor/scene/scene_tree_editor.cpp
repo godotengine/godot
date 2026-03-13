@@ -31,14 +31,10 @@
 #include "scene_tree_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/interface_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 
-#include "modules/modules_enabled.gen.h" // For MODULE_MONO_ENABLED
-
-#ifdef MODULE_MONO_ENABLED
-#include "modules/mono/csharp_script.h"
-#endif
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/groups_dock.h"
 #include "editor/docks/signals_dock.h"
@@ -364,22 +360,13 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 	if (valid_types.size()) {
 		bool valid = false;
 
-		// If in interface mode, check if the node's script implements the interface
+		// If in interface mode, check if the node's script implements the interface.
 		if (interface_mode) {
-			Ref<Script> node_script = p_node->get_script();
-			if (node_script.is_valid()) {
-#ifdef MODULE_MONO_ENABLED
-				Ref<CSharpScript> cs_script = node_script;
-				if (cs_script.is_valid()) {
-					// Check if the script implements any of the required interfaces
-					for (const StringName &E : valid_types) {
-						if (cs_script->implements_interface(E)) {
-							valid = true;
-							break;
-						}
-					}
+			for (const StringName &E : valid_types) {
+				if (InterfaceDB::object_implements_interface(p_node, E)) {
+					valid = true;
+					break;
 				}
-#endif
 			}
 		} else {
 			// Standard type checking for non-interface mode

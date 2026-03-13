@@ -89,6 +89,7 @@
 #include "tests/core/math/test_vector4.h"
 #include "tests/core/math/test_vector4i.h"
 #include "tests/core/object/test_class_db.h"
+#include "tests/core/object/test_interface_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
 #include "tests/core/object/test_undo_redo.h"

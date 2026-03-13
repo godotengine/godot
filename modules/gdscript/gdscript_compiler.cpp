@@ -38,6 +38,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/interface_db.h"
 
 #include "scene/scene_string_names.h"
 
@@ -2755,6 +2756,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->tool = parser->is_tool();
 	p_script->_is_abstract = p_class->is_abstract;
+	p_script->_is_interface = p_class->is_interface;
+	p_script->_implemented_interfaces = p_class->implemented_interfaces;
 
 	if (p_script->local_name != StringName()) {
 		if (GDScriptAnalyzer::class_exists(p_script->local_name)) {
@@ -3136,6 +3139,36 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	p_script->_static_default_init();
 
 	p_script->valid = true;
+
+	// Register interface definitions with InterfaceDB.
+	if (p_script->_is_interface && p_script->global_name != StringName()) {
+		InterfaceInfo info;
+		info.name = p_script->global_name;
+		info.source_language = SNAME("GDScript");
+		info.script_path = p_script->get_path();
+
+		// Collect required methods from the script's functions.
+		List<MethodInfo> method_list;
+		p_script->get_script_method_list(&method_list);
+		for (const MethodInfo &mi : method_list) {
+			// Skip built-in methods (starting with _).
+			if (!String(mi.name).begins_with("_")) {
+				info.required_methods.push_back(mi);
+			}
+		}
+
+		// Collect required properties from the script's exported properties.
+		List<PropertyInfo> prop_list;
+		p_script->get_script_property_list(&prop_list);
+		for (const PropertyInfo &pi : prop_list) {
+			if (!(pi.usage & PROPERTY_USAGE_GROUP) && !(pi.usage & PROPERTY_USAGE_SUBGROUP) && !(pi.usage & PROPERTY_USAGE_CATEGORY)) {
+				info.required_properties.push_back(pi);
+			}
+		}
+
+		InterfaceDB::register_interface(info);
+	}
+
 	return OK;
 }
 

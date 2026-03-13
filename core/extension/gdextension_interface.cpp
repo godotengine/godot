@@ -37,6 +37,7 @@
 #include "core/io/image.h"
 #include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
+#include "core/object/interface_db.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
@@ -1692,6 +1693,19 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #endif
 }
 
+// Interface DB functions.
+
+static GDExtensionBool gdextension_interface_exists(GDExtensionConstStringNamePtr p_interface_name) {
+	const StringName interface_name = *reinterpret_cast<const StringName *>(p_interface_name);
+	return InterfaceDB::interface_exists(interface_name);
+}
+
+static GDExtensionBool gdextension_object_implements_interface(GDExtensionConstObjectPtr p_object, GDExtensionConstStringNamePtr p_interface_name) {
+	const Object *object = (const Object *)p_object;
+	const StringName interface_name = *reinterpret_cast<const StringName *>(p_interface_name);
+	return InterfaceDB::object_implements_interface(object, interface_name);
+}
+
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
@@ -1866,6 +1880,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(image_ptrw);
 	REGISTER_INTERFACE_FUNC(image_ptr);
+	REGISTER_INTERFACE_FUNC(interface_exists);
+	REGISTER_INTERFACE_FUNC(object_implements_interface);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

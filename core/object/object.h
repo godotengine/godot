@@ -83,7 +83,7 @@ enum PropertyHint {
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
-	PROPERTY_HINT_INTERFACE_TYPE, ///< a C# interface type implemented by nodes
+	PROPERTY_HINT_INTERFACE_TYPE, ///< an interface type implemented by objects (nodes, resources, etc.)
 	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
 	PROPERTY_HINT_PASSWORD,
 	PROPERTY_HINT_LAYERS_AVOIDANCE,

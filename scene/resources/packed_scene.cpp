@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/interface_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
@@ -634,7 +635,24 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			}
 			base->set(dnp.property, dict);
 		} else {
-			base->set(dnp.property, base->get_node_or_null(dnp.value));
+			Node *resolved = base->get_node_or_null(dnp.value);
+			if (resolved) {
+				// Validate interface compliance for interface-typed properties.
+				bool valid_prop = false;
+				List<PropertyInfo> plist;
+				base->get_property_list(&plist);
+				for (const PropertyInfo &pi : plist) {
+					if (pi.name == dnp.property && pi.hint == PROPERTY_HINT_INTERFACE_TYPE) {
+						if (!InterfaceDB::object_implements_interface(resolved, pi.hint_string)) {
+							WARN_PRINT(vformat("Node '%s' assigned to interface property '%s' does not implement '%s'.",
+									resolved->get_name(), dnp.property, pi.hint_string));
+						}
+						valid_prop = true;
+						break;
+					}
+				}
+			}
+			base->set(dnp.property, resolved);
 		}
 	}
 
@@ -881,7 +899,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Variant value = p_node->get(name);
 		bool use_deferred_node_path_bit = false;
 
-		if (E.type == Variant::OBJECT && (E.hint == PROPERTY_HINT_NODE_TYPE || E.hint == PROPERTY_HINT_INTERFACE_TYPE)) {
+		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
 			if (value.get_type() == Variant::OBJECT) {
 				if (Node *n = Object::cast_to<Node>(value)) {
 					value = p_node->get_path_to(n);
@@ -889,6 +907,23 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				use_deferred_node_path_bit = true;
 			}
 			if (value.get_type() != Variant::NODE_PATH) {
+				continue; //was never set, ignore.
+			}
+		} else if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_INTERFACE_TYPE) {
+			if (value.get_type() == Variant::OBJECT) {
+				Object *obj = value;
+				if (Node *n = Object::cast_to<Node>(obj)) {
+					// Node reference: convert to NodePath (existing behavior).
+					value = p_node->get_path_to(n);
+					use_deferred_node_path_bit = true;
+				} else if (Object::cast_to<Resource>(obj)) {
+					// Resource reference: keep as-is (resource serialization handles it).
+					// Don't set deferred bit — resources serialize normally.
+				} else {
+					continue; // Unknown object type, skip.
+				}
+			}
+			if (value.get_type() != Variant::NODE_PATH && value.get_type() != Variant::OBJECT) {
 				continue; //was never set, ignore.
 			}
 		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {

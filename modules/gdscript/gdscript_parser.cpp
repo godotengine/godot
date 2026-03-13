@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/interface_db.h"
 #include "scene/main/multiplayer_api.h"
 
 #ifdef DEBUG_ENABLED
@@ -150,6 +151,9 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		// Interface annotations.
+		register_annotation(MethodInfo("@interface"), AnnotationInfo::SCRIPT, &GDScriptParser::interface_annotation);
+		register_annotation(MethodInfo("@implements", PropertyInfo(Variant::STRING, "interface_name")), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS, &GDScriptParser::implements_annotation, varray(), true);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4507,6 +4511,39 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
 }
 
+bool GDScriptParser::interface_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, R"("@interface" annotation can only be applied to classes.)");
+
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+#ifdef DEBUG_ENABLED
+	if (class_node->is_interface) {
+		push_error(R"("@interface" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
+	class_node->is_interface = true;
+	class_node->is_abstract = true; // Interfaces are implicitly abstract.
+	return true;
+}
+
+bool GDScriptParser::implements_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, R"("@implements" annotation can only be applied to classes.)");
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
+
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	for (const Variant &v : p_annotation->resolved_arguments) {
+		StringName iface_name = v;
+#ifdef DEBUG_ENABLED
+		if (class_node->implemented_interfaces.has(iface_name)) {
+			push_error(vformat(R"(Interface "%s" is already listed in @implements.)", iface_name), p_annotation);
+			return false;
+		}
+#endif // DEBUG_ENABLED
+		class_node->implemented_interfaces.push_back(iface_name);
+	}
+	return true;
+}
+
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
@@ -4792,7 +4829,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::CLASS: {
 				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
-				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+				// Check if the type is a registered interface.
+				if (InterfaceDB::interface_exists(class_name)) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_INTERFACE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
@@ -4801,7 +4843,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = class_name;
 				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					push_error(R"(Export type can only be built-in, a resource, a node, an interface, or an enum.)", p_annotation);
 					return false;
 				}
 			} break;
@@ -4869,7 +4911,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				case GDScriptParser::DataType::SCRIPT:
 				case GDScriptParser::DataType::CLASS: {
 					const StringName class_name = _find_narrowest_native_or_global_class(export_type);
-					if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+					// Check if the type is a registered interface.
+					if (InterfaceDB::interface_exists(class_name)) {
+						variable->export_info.type = Variant::OBJECT;
+						variable->export_info.hint = PROPERTY_HINT_INTERFACE_TYPE;
+						variable->export_info.hint_string = class_name;
+					} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
 						variable->export_info.type = Variant::OBJECT;
 						variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 						variable->export_info.hint_string = class_name;
@@ -4878,7 +4925,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 						variable->export_info.hint_string = class_name;
 					} else {
-						push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+						push_error(R"(Export type can only be built-in, a resource, a node, an interface, or an enum.)", p_annotation);
 						return false;
 					}
 				} break;
@@ -4908,7 +4955,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					}
 				} break;
 				default:
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					push_error(R"(Export type can only be built-in, a resource, a node, an interface, or an enum.)", p_annotation);
 					return false;
 			}
 

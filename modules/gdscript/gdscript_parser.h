@@ -753,6 +753,8 @@ public:
 		bool extends_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
+		bool is_interface = false; // @interface: this script defines an interface.
+		Vector<StringName> implemented_interfaces; // @implements: interfaces this class implements.
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
@@ -1556,6 +1558,8 @@ private:
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool interface_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool implements_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
