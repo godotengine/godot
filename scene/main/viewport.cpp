@@ -1850,6 +1850,30 @@ Control *Viewport::gui_find_control(const Point2 &p_global) {
 	return nullptr;
 }
 
+Control *Viewport::_find_control_to_focus(Node *p_control, bool p_deep) const {
+	for (int i = 0; i < p_control->get_child_count(true); i++) {
+		Control *c = Object::cast_to<Control>(p_control->get_child(i, true));
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+			continue;
+		}
+
+		return c;
+	}
+	if (p_deep) {
+		for (int i = 0; i < p_control->get_child_count(true); i++) {
+			Node *n = p_control->get_child(i, true);
+			if (!n) {
+				continue;
+			}
+			Control *from = _find_control_to_focus(n, p_deep);
+			if (from) {
+				return from;
+			}
+		}
+	}
+	return nullptr;
+}
+
 Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform) {
 	if (!p_node->is_visible()) {
 		return nullptr; // Canvas item hidden, discard.
@@ -2331,15 +2355,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Control *from = gui.key_focus ? gui.key_focus : nullptr;
 		if (!from) {
-			for (int i = 0; i < get_child_count(true); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i, true));
-				if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
-					continue;
-				}
-
-				from = c;
-				break;
-			}
+			from = _find_control_to_focus(this, gui.deep_focus_lookup);
 		}
 
 		if (from && p_event->is_pressed()) {
@@ -3894,6 +3910,16 @@ int Viewport::get_render_info(RenderInfoType p_type, RenderInfo p_info) {
 	return RS::get_singleton()->viewport_get_render_info(viewport, RSE::ViewportRenderInfoType(p_type), RSE::ViewportRenderInfo(p_info));
 }
 
+void Viewport::set_deep_focus_lookup(bool p_enabled) {
+	ERR_MAIN_THREAD_GUARD;
+	gui.deep_focus_lookup = p_enabled;
+}
+
+bool Viewport::is_deep_focus_lookup() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return gui.deep_focus_lookup;
+}
+
 void Viewport::set_snap_controls_to_pixels(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	snap_controls_to_pixels = p_enable;
@@ -5202,6 +5228,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_16_bits", "enable"), &Viewport::set_positional_shadow_atlas_16_bits);
 	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_16_bits"), &Viewport::get_positional_shadow_atlas_16_bits);
 
+	ClassDB::bind_method(D_METHOD("set_deep_focus_lookup", "enabled"), &Viewport::set_deep_focus_lookup);
+	ClassDB::bind_method(D_METHOD("is_deep_focus_lookup"), &Viewport::is_deep_focus_lookup);
+
 	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
 	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
 
@@ -5356,6 +5385,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_drag_threshold"), "set_drag_threshold", "get_drag_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deep_focus_lookup"), "set_deep_focus_lookup", "is_deep_focus_lookup");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");

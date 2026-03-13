@@ -405,6 +405,7 @@ private:
 		bool drag_successful = false;
 		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
+		bool deep_focus_lookup = false;
 		int drag_threshold = 10;
 
 		Window *subwindow_focused = nullptr;
@@ -436,6 +437,8 @@ private:
 
 	void _gui_sort_roots();
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
+
+	Control *_find_control_to_focus(Node *p_control, bool p_deep) const;
 
 	void _gui_input_event(Ref<InputEvent> p_event);
 	void _perform_drop(Control *p_control = nullptr);
@@ -668,6 +671,9 @@ public:
 	DebugDraw get_debug_draw() const;
 
 	int get_render_info(RenderInfoType p_type, RenderInfo p_info);
+
+	void set_deep_focus_lookup(bool p_enabled);
+	bool is_deep_focus_lookup() const;
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;

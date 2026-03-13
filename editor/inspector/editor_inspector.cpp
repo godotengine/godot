@@ -5247,6 +5247,13 @@ void EditorInspector::edit(Object *p_object) {
 	// Keep it available until the end so it works with both main and sub inspectors.
 	next_object = nullptr;
 
+	// Grab keyboard focus if nothing is foucsed.
+	if (is_inside_tree() && p_object) {
+		if (get_viewport()->gui_get_focus_owner() == nullptr) {
+			grab_focus(true);
+		}
+	}
+
 	emit_signal(SNAME("edited_object_changed"));
 }
 

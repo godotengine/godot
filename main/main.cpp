@@ -4557,6 +4557,7 @@ int Main::start() {
 
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
+			sml->get_root()->set_deep_focus_lookup(true);
 
 			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_patch, patches);
