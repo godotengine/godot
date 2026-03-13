@@ -30,6 +30,7 @@
 
 #include "editor_vcs_interface.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;

@@ -34,10 +34,6 @@
 #include "core/object/object.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
-
-// Makes callable_mp readily available in all classes connecting signals.
-// Needs to come after method_bind and object have been included.
-#include "core/object/callable_method_pointer.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -59,7 +55,7 @@ inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
 
 #define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
 
-#include "core/disabled_classes.gen.h"
+#include "core/disabled_classes.gen.h" // IWYU pragma: keep.
 
 #define DEFVAL(m_defval) (m_defval)
 #define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
@@ -555,13 +551,13 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #ifdef DEBUG_ENABLED
 
@@ -574,24 +570,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)                 \
+#define GDREGISTER_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_class<m_class>();     \
+		::ClassDB::register_class<m_class>(); \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)         \
+#define GDREGISTER_VIRTUAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
-#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_ABSTRACT_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
-#define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_INTERNAL_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-#define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
+#define GDREGISTER_RUNTIME_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 

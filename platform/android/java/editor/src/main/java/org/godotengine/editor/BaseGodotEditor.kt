@@ -34,9 +34,12 @@ import android.Manifest
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.ComponentName
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Debug
@@ -71,7 +74,9 @@ import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.openxr.vendors.utils.*
+import java.io.File
 import kotlin.math.min
+import kotlin.text.indexOf
 
 /**
  * Base class for the Godot Android Editor activities.
@@ -152,6 +157,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val GAME_MENU_ACTION_SET_TIME_SCALE = "setTimeScale"
 
 		private const val GAME_WORKSPACE = "Game"
+		private const val SCRIPT_WORKSPACE = "Script"
 
 		internal const val SNACKBAR_SHOW_DURATION_MS = 5000L
 
@@ -197,6 +203,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 	protected var gameMenuFragment: GameMenuFragment? = null
 	protected val gameMenuState = Bundle()
+
+	private val updatedCommandLineParams = ArrayList<String>()
+
+	private var changingOrientationAllowed = false
+	private var distractionFreeModeEnabled = false
+	private var activeWorkspace: String? = null
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -254,7 +266,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 
-		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
+		if (BuildConfig.BUILD_TYPE == "debug" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
 		}
 
@@ -262,6 +274,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
+	}
+
+	override fun onConfigurationChanged(newConfig: Configuration) {
+		super.onConfigurationChanged(newConfig)
+
+		// Show EditorTitleBar only in landscape due to width limitations in portrait.
+		// TODO: Enable for portrait once the title bar width is optimized.
+		EditorUtils.toggleTitleBar(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
 	}
 
 	override fun onDestroy() {
@@ -317,6 +337,91 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 
 		super.onNewIntent(newIntent)
+	}
+
+	override fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
+		when (intent.action) {
+			Intent.ACTION_VIEW -> {
+				val rootDir = Environment.getExternalStorageDirectory().canonicalPath
+
+				val dataPath = when (intent.scheme) {
+					ContentResolver.SCHEME_FILE -> {
+						intent.data?.path
+					}
+
+					ContentResolver.SCHEME_CONTENT -> {
+						// This approach is not recommend with 'content' scheme, but we require the filesystem path in
+						// order to open its parent directory and load the project.
+						val uriPath = intent.data?.path
+						if (uriPath != null) {
+							// Try and see if the external storage directory is part of the uri path.
+							val rootDirIndex = uriPath.indexOf(rootDir)
+							if (rootDirIndex != -1) {
+								uriPath.substring(rootDirIndex)
+							} else {
+								// Try and see if we can retrieve an existing relative path.
+								val pathParts = uriPath.split(':', '/')
+								var currentPath = ""
+								for (index in pathParts.size -1 downTo 0) {
+									currentPath = if (currentPath == "") {
+										pathParts[index]
+									} else {
+										"${pathParts[index]}/$currentPath"
+									}
+									val currentFile = File(rootDir, currentPath)
+									if (currentFile.exists()) {
+										break
+									}
+								}
+								currentPath
+							}
+						} else {
+							null
+						}
+					}
+
+					else -> null
+				}
+
+				if (!dataPath.isNullOrBlank()) {
+					var dataFile = File(dataPath)
+					if (!dataFile.isAbsolute) {
+						dataFile = File(rootDir, dataPath)
+					}
+
+					val dataDir = dataFile.parentFile
+					if (dataDir?.isDirectory == true) {
+						val loadProjectArgs = arrayOf(EDITOR_ARG, PATH_ARG, dataDir.absolutePath)
+						if (newLaunch) {
+							// Update the command line parameters to load the specified project.
+							updatedCommandLineParams.addAll(loadProjectArgs)
+						} else {
+							// Check if we are already editing the specified directory.
+							var isEditor = false
+							var nextIsPath = false
+							var currentPath = ""
+							for (arg in commandLine) {
+								if (nextIsPath) {
+									currentPath = arg
+									nextIsPath = false
+								}
+
+								if (arg == EDITOR_ARG || arg == EDITOR_ARG_SHORT) {
+									isEditor = true
+								} else if (arg == PATH_ARG) {
+									nextIsPath = true
+								}
+							}
+							if (!isEditor || currentPath != dataDir.absolutePath) {
+								onNewGodotInstanceRequested(loadProjectArgs)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		super.handleStartIntent(intent, newLaunch)
 	}
 
 	protected open fun shouldShowGameMenuBar() = gameMenuContainer != null
@@ -404,7 +509,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun getCommandLine(): MutableList<String> {
 		val params = super.getCommandLine()
-		if (BuildConfig.BUILD_TYPE == "dev" && !params.contains("--benchmark")) {
+		if (updatedCommandLineParams.isNotEmpty()) {
+			params.addAll(updatedCommandLineParams)
+		}
+		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}
 		return params
@@ -603,7 +711,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
-	protected open fun overrideOrientationRequest() = true
+	protected open fun overrideOrientationRequest() = !changingOrientationAllowed
 
 	protected open fun overrideVolumeButtons() = false
 
@@ -801,6 +909,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onEditorWorkspaceSelected(workspace: String) {
+		activeWorkspace = workspace
+
 		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
 			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) || editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO)) {
 				return
@@ -812,6 +922,23 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				updateEmbeddedGameView(xrGameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
+		}
+
+		toggleScriptEditorOrientation()
+	}
+
+	override fun onDistractionFreeModeChanged(enabled: Boolean) {
+		distractionFreeModeEnabled = enabled
+		toggleScriptEditorOrientation()
+	}
+
+	private fun toggleScriptEditorOrientation() {
+		if (activeWorkspace == SCRIPT_WORKSPACE && distractionFreeModeEnabled) {
+			changingOrientationAllowed = true
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+		} else if (changingOrientationAllowed) {
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+			changingOrientationAllowed = false
 		}
 	}
 

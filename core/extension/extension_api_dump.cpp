@@ -35,6 +35,7 @@
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
@@ -281,59 +282,59 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// Member offsets, meta types and sizes.
 
 #define REAL_MEMBER_OFFSET(type, member) \
-	{                                    \
-		type,                            \
-		member,                          \
-		"float",                         \
-		sizeof(float),                   \
-		"float",                         \
-		sizeof(float),                   \
-		"double",                        \
-		sizeof(double),                  \
-		"double",                        \
-		sizeof(double),                  \
+	{ \
+		type, \
+		member, \
+		"float", \
+		sizeof(float), \
+		"float", \
+		sizeof(float), \
+		"double", \
+		sizeof(double), \
+		"double", \
+		sizeof(double), \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
-	{                                     \
-		type,                             \
-		member,                           \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
+	{ \
+		type, \
+		member, \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                              \
-		type,                                                                      \
-		member,                                                                    \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
+	{ \
+		type, \
+		member, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                             \
-		type,                                                                     \
-				member,                                                           \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
+	{ \
+		type, \
+				member, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
 	}
 
 		struct {

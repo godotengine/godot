@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/input/input_map.h"
@@ -40,10 +41,12 @@
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_paths.h"
@@ -59,6 +62,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
+#include "servers/display/display_server.h"
 
 // PRIVATE METHODS
 
@@ -68,6 +72,13 @@ Ref<EditorSettings> EditorSettings::singleton = nullptr;
 
 bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
+
+#ifndef DISABLE_DEPRECATED
+	const String *renamed = compat_map.getptr(p_name);
+	if (renamed) {
+		return _set(*renamed, p_value);
+	}
+#endif
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
@@ -81,7 +92,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		emit_signal(SNAME("settings_changed"));
 
-		if (p_name == SNAME("interface/editor/editor_language")) {
+		if (p_name == SNAME("interface/editor/localization/editor_language")) {
 			setup_language(false);
 		}
 	}
@@ -158,6 +169,13 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
+#ifndef DISABLE_DEPRECATED
+	const String *renamed = compat_map.getptr(p_name);
+	if (renamed) {
+		return _get(*renamed, r_ret);
+	}
+#endif
+
 	if (p_name == "shortcuts") {
 		Array save_array;
 		const HashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
@@ -203,7 +221,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				continue;
 			}
 
-			List<Ref<InputEvent>> events = action_override.value;
+			List<Ref<InputEvent>> events(action_override.value);
 
 			Dictionary action_dict;
 			action_dict["name"] = action_override.key;
@@ -390,15 +408,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
 #define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value);                                              \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_BASIC(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value, true);                                              \
+	_initial_set(m_name, m_default_value, true); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_USAGE(m_type, m_property_hint, m_name, m_default_value, m_hint_string, m_usage) \
-	_initial_set(m_name, m_default_value);                                                             \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string, m_usage);
 
 	/* Languages */
@@ -434,7 +452,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
-		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/localization/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
 	// Asset library
@@ -443,21 +461,21 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Interface */
 
 	// Editor
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localize_settings", true, "")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.
 	const String display_scale_hint_string = vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(get_auto_display_scale() * 100));
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
-	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/appearance/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 
 	String ed_screen_hints = "Auto (Remembers last position):-5,Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 		ed_screen_hints += ",Screen " + itos(i + 1) + ":" + itos(i);
 	}
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/editor_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO, ed_screen_hints)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/editor_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO, ed_screen_hints)
 
 #ifdef WINDOWS_ENABLED
 	String tablet_hints = "Use Project Settings:-1";
@@ -468,79 +486,76 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 		tablet_hints += vformat(",%s:%d", drv_name, i);
 	}
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, tablet_hints);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/input/tablet_driver", -1, tablet_hints);
 #else
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, "Default:-1");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/input/tablet_driver", -1, "Default:-1");
 #endif
 
 	String project_manager_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 		project_manager_screen_hints += ",Screen " + itos(i + 1) + ":" + itos(i);
 	}
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_PRIMARY, project_manager_screen_hints)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/project_manager_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_PRIMARY, project_manager_screen_hints)
 
 	{
-		EngineUpdateLabel::UpdateMode default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_UNSTABLE;
-		if (String(GODOT_VERSION_STATUS) == String("stable")) {
-			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
-		}
-		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
+		const String update_hint = vformat("Disable Update Checks,Auto (%s),Check Newest Preview,Check Newest Stable,Check Newest Patch", (str_compare(GODOT_VERSION_STATUS, "stable") == 0) ? "Stable" : "Preview");
+		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", EngineUpdateLabel::UpdateMode::AUTO, update_hint);
 	}
 
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/code_font_size", 14, "8,48,1")
-	_initial_set("interface/editor/main_font_custom_opentype_features", "");
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 1, "Enabled,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
-	_initial_set("interface/editor/code_font_custom_opentype_features", "");
-	_initial_set("interface/editor/code_font_custom_variations", "");
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_antialiasing", 1, "None,Grayscale,LCD Subpixel")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/main_font_size", 14, "8,48,1")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/code_font_size", 14, "8,48,1")
+	_initial_set("interface/editor/fonts/main_font_custom_opentype_features", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/fonts/code_font_contextual_ligatures", 1, "Enabled,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
+	_initial_set("interface/editor/fonts/code_font_custom_opentype_features", "");
+	_initial_set("interface/editor/fonts/code_font_custom_variations", "");
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/fonts/font_antialiasing", 1, "None,Grayscale,LCD Subpixel")
 #ifdef MACOS_ENABLED
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/fonts/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/fonts/font_hinting", 0, "Auto (Light),None,Light,Normal")
 #endif
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_subpixel_positioning", 1, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel")
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/font_disable_embedded_bitmaps", true, "");
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/font_allow_msdf", true, "")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/fonts/font_subpixel_positioning", 1, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/fonts/font_disable_embedded_bitmaps", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/fonts/font_allow_msdf", true, "")
 
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/dragging_hover_wait_seconds", 0.5, "0.01,10,0.01,or_greater,suffix:s");
-	_initial_set("interface/editor/separate_distraction_mode", false, true);
-	_initial_set("interface/editor/automatically_open_screenshots", true, true);
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
-	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
-	_initial_set("interface/editor/save_each_scene_on_quit", true, true); // Regression
-	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/save_on_focus_loss", false, "")
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/accept_dialog_cancel_ok_buttons", 0,
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/fonts/main_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/fonts/main_font_bold", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/fonts/code_font", "", "*.ttf,*.otf,*.woff,*.woff2,*.pfb,*.pfm")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/timers/dragging_hover_wait_seconds", 0.5, "0.01,10,0.01,or_greater,suffix:s");
+	_initial_set("interface/editor/behavior/separate_distraction_mode", false, true);
+	_initial_set("interface/editor/behavior/automatically_open_screenshots", true, true);
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/display/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	_initial_set("interface/editor/input/mouse_extra_buttons_navigate_history", true);
+	_initial_set("interface/editor/behavior/save_each_scene_on_quit", true, true); // Regression
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/behavior/save_on_focus_loss", false, "")
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/accept_dialog_cancel_ok_buttons", 0,
 			vformat("Auto (%s),Cancel First,OK First", DisplayServer::get_singleton()->get_swap_cancel_ok() ? "OK First" : "Cancel First"),
 			PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 #ifdef DEV_ENABLED
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_update_spinner", 0, "Auto (Enabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/behavior/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/show_update_spinner", 0, "Auto (Enabled),Enabled,Disabled")
 #else
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_update_spinner", 0, "Auto (Disabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/behavior/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/show_update_spinner", 0, "Auto (Disabled),Enabled,Disabled")
 #endif
 
-	_initial_set("interface/editor/keep_screen_on", false, true);
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("interface/editor/display/keep_screen_on", false, true);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/timers/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	// Default unfocused usec sleep is for 10 FPS. Allow an unfocused FPS limit
 	// as low as 1 FPS for those who really need low power usage (but don't need
 	// to preview particles or shaders while the editor is unfocused). With very
 	// low FPS limits, the editor can take a small while to become usable after
 	// being focused again, so this should be used at the user's discretion.
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/unfocused_low_processor_mode_sleep_usec", 100000, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/timers/unfocused_low_processor_mode_sleep_usec", 100000, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
-	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/import_resources_when_unfocused", false, "")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/behavior/import_resources_when_unfocused", false, "")
 
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/display/update_continuously", false, "")
 
 	bool is_android_editor = false;
 #ifdef ANDROID_ENABLED
@@ -548,9 +563,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		is_android_editor = true;
 	}
 #endif
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/collapse_main_menu", is_android_editor, "")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
-	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
@@ -603,6 +617,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/corner_radius", 4, "0,6,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/base_spacing", 4, "0,8,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/additional_spacing", 0, "0,8,1")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/theme/use_monospace_font_for_editor_symbols", true, "")
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/theme/custom_theme", "", "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT)
 
 	// Touchscreen
@@ -610,7 +625,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	bool is_native_touchscreen = has_touchscreen_ui && !OS::get_singleton()->has_feature("xr_editor"); // Disable some touchscreen settings by default for the XR Editor.
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_touch_optimizations", is_native_touchscreen, "")
-	set_restart_if_changed("interface/touchscreen/enable_touch_optimizations", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 
@@ -699,6 +713,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
 	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
+	_initial_set("docks/filesystem/automatically_open_created_scripts", true);
 
 	// Property editor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/auto_refresh_interval", 0.2, "0.01,1,0.001"); // Update 5 times per second by default.
@@ -778,6 +793,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/minimap/show_minimap", true, true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/minimap/minimap_width", 80, "50,250,1")
 
+	// Appearance: Drag Info Label
+	_initial_set("text_editor/appearance/drag_and_drop_info/show_drag_and_drop_info", true, true);
+
 	// Appearance: Lines
 	_initial_set("text_editor/appearance/lines/code_folding", true, true);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/lines/word_wrap", 0, "None,Boundary")
@@ -786,7 +804,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Appearance: Whitespace
 	_initial_set("text_editor/appearance/whitespace/draw_tabs", true, true);
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false, true);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "-10,50,1")
 
 	// Behavior
 	// Behavior: General
@@ -961,17 +979,21 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
+	_initial_set("editors/3d/freelook/freelook_invert_y_axis", false);
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
 	// 3D: Manipulator
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "editors/3d/show_gizmo_during_rotation", 2, "Global,Local");
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/view_plane_rotation_gizmo_scale", 1.14, "1.0,2.0,0.01,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8), true);
 	_initial_set("editors/2d/smart_snapping_line_color", Color(0.9, 0.1, 0.1), true);
+	_initial_set("editors/2d/selection_rectangle_color", Color(1, 0.6, 0.4, 0.7), true);
+	_initial_set("editors/2d/locked_selection_rectangle_color", Color(0.7, 0.7, 0.7, 0.7), true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/bone_width", 5.0, "0.01,20,0.01,or_greater")
 	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.7));
 	_initial_set("editors/2d/bone_color2", Color(0.6, 0.6, 0.6, 0.7));
@@ -1102,6 +1124,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
 
+	/* GDScript Language Server */
+	_initial_set("network/language_server/remote_host", "127.0.0.1"); // Hints provided in setup_network
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "network/language_server/remote_port", 6005, "1,65535,1");
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/enable_smart_resolve", true, String());
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/show_native_symbols_in_editor", false, String());
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/use_thread", false, String());
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_NONE, "network/language_server/poll_limit_usec", 100000, "");
+
 	/* Debugger/profiler */
 
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/auto_switch_to_remote_scene_tree", false, "")
@@ -1222,12 +1252,72 @@ const String EditorSettings::_get_project_metadata_path() const {
 }
 
 #ifndef DISABLE_DEPRECATED
-void EditorSettings::_remove_deprecated_settings() {
+void EditorSettings::_handle_setting_compatibility() {
+	// Remove deprecated settings.
 	erase("interface/theme/preset");
 	erase("network/connection/engine_version_update_mode");
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
+	erase("interface/editors/show_scene_tree_root_selection");
+
+	// Handle renamed settings.
+	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
+	_rename_setting("interface/editor/localize_settings", "interface/editor/localization/localize_settings");
+	_rename_setting("interface/editor/dock_tab_style", "interface/editor/docks/dock_tab_style");
+	_rename_setting("interface/editor/bottom_dock_tab_style", "interface/editor/docks/bottom_dock_tab_style");
+	_rename_setting("interface/editor/ui_layout_direction", "interface/editor/localization/ui_layout_direction");
+	_rename_setting("interface/editor/display_scale", "interface/editor/appearance/display_scale");
+	_rename_setting("interface/editor/custom_display_scale", "interface/editor/appearance/custom_display_scale");
+	_rename_setting("interface/editor/editor_screen", "interface/editor/appearance/editor_screen");
+	_rename_setting("interface/editor/tablet_driver", "interface/editor/input/tablet_driver");
+	_rename_setting("interface/editor/project_manager_screen", "interface/editor/appearance/project_manager_screen");
+	_rename_setting("interface/editor/use_embedded_menu", "interface/editor/appearance/use_embedded_menu");
+	_rename_setting("interface/editor/use_native_file_dialogs", "interface/editor/appearance/use_native_file_dialogs");
+	_rename_setting("interface/editor/expand_to_title", "interface/editor/appearance/expand_to_title");
+	_rename_setting("interface/editor/main_font_size", "interface/editor/fonts/main_font_size");
+	_rename_setting("interface/editor/code_font_size", "interface/editor/fonts/code_font_size");
+	_rename_setting("interface/editor/main_font_custom_opentype_features", "interface/editor/fonts/main_font_custom_opentype_features");
+	_rename_setting("interface/editor/code_font_contextual_ligatures", "interface/editor/fonts/code_font_contextual_ligatures");
+	_rename_setting("interface/editor/code_font_custom_opentype_features", "interface/editor/fonts/code_font_custom_opentype_features");
+	_rename_setting("interface/editor/code_font_custom_variations", "interface/editor/fonts/code_font_custom_variations");
+	_rename_setting("interface/editor/font_antialiasing", "interface/editor/fonts/font_antialiasing");
+	_rename_setting("interface/editor/font_hinting", "interface/editor/fonts/font_hinting");
+	_rename_setting("interface/editor/font_subpixel_positioning", "interface/editor/fonts/font_subpixel_positioning");
+	_rename_setting("interface/editor/font_disable_embedded_bitmaps", "interface/editor/fonts/font_disable_embedded_bitmaps");
+	_rename_setting("interface/editor/font_allow_msdf", "interface/editor/fonts/font_allow_msdf");
+	_rename_setting("interface/editor/main_font", "interface/editor/fonts/main_font");
+	_rename_setting("interface/editor/main_font_bold", "interface/editor/fonts/main_font_bold");
+	_rename_setting("interface/editor/code_font", "interface/editor/fonts/code_font");
+	_rename_setting("interface/editor/dragging_hover_wait_seconds", "interface/editor/timers/dragging_hover_wait_seconds");
+	_rename_setting("interface/editor/separate_distraction_mode", "interface/editor/behavior/separate_distraction_mode");
+	_rename_setting("interface/editor/automatically_open_screenshots", "interface/editor/behavior/automatically_open_screenshots");
+	_rename_setting("interface/editor/single_window_mode", "interface/editor/display/single_window_mode");
+	_rename_setting("interface/editor/mouse_extra_buttons_navigate_history", "interface/editor/input/mouse_extra_buttons_navigate_history");
+	_rename_setting("interface/editor/save_each_scene_on_quit", "interface/editor/behavior/save_each_scene_on_quit");
+	_rename_setting("interface/editor/save_on_focus_loss", "interface/editor/behavior/save_on_focus_loss");
+	_rename_setting("interface/editor/accept_dialog_cancel_ok_buttons", "interface/editor/appearance/accept_dialog_cancel_ok_buttons");
+	_rename_setting("interface/editor/show_internal_errors_in_toast_notifications", "interface/editor/behavior/show_internal_errors_in_toast_notifications");
+	_rename_setting("interface/editor/show_update_spinner", "interface/editor/appearance/show_update_spinner");
+	_rename_setting("interface/editor/keep_screen_on", "interface/editor/display/keep_screen_on");
+	_rename_setting("interface/editor/low_processor_mode_sleep_usec", "interface/editor/timers/low_processor_mode_sleep_usec");
+	_rename_setting("interface/editor/unfocused_low_processor_mode_sleep_usec", "interface/editor/timers/unfocused_low_processor_mode_sleep_usec");
+	_rename_setting("interface/editor/import_resources_when_unfocused", "interface/editor/behavior/import_resources_when_unfocused");
+	_rename_setting("interface/editor/vsync_mode", "interface/editor/display/vsync_mode");
+	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
+	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
+}
+
+void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
+	if (has_setting(p_old_name)) {
+		set_setting(p_new_name, get_setting(p_old_name));
+		erase(p_old_name);
+	}
+	if (ProjectSettings::get_singleton()->has_editor_setting_override(p_old_name)) {
+		ProjectSettings::get_singleton()->set_editor_setting_override(p_new_name, ProjectSettings::get_singleton()->get_editor_setting_override(p_old_name));
+		ProjectSettings::get_singleton()->set_editor_setting_override(p_old_name, Variant());
+	}
+	compat_map[p_old_name] = p_new_name;
 }
 #endif
 
@@ -1307,12 +1397,13 @@ void EditorSettings::create() {
 
 		print_verbose("EditorSettings: Load OK!");
 
+		singleton->init_shortcuts();
 		singleton->setup_language(true);
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
 		singleton->update_text_editor_themes_list();
 #ifndef DISABLE_DEPRECATED
-		singleton->_remove_deprecated_settings();
+		singleton->_handle_setting_compatibility();
 #endif
 
 		return;
@@ -1334,9 +1425,14 @@ fail:
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
+	singleton->init_shortcuts();
 	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
+}
+
+void EditorSettings::init_shortcuts() {
+	ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
@@ -1350,6 +1446,7 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
+		emit_signal("_translation_changed");
 		return; // Default, nothing to do.
 	}
 
@@ -1357,6 +1454,7 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 	load_doc_translations(lang);
 
 	TranslationServer::get_singleton()->set_locale(lang);
+	emit_signal("_translation_changed");
 }
 
 void EditorSettings::setup_network() {
@@ -1388,8 +1486,10 @@ void EditorSettings::setup_network() {
 
 	// Add hints with valid IP addresses to remote_host property.
 	add_property_hint(PropertyInfo(Variant::STRING, "network/debug/remote_host", PROPERTY_HINT_ENUM, hint));
+	add_property_hint(PropertyInfo(Variant::STRING, "network/language_server/remote_host", PROPERTY_HINT_ENUM, hint));
 	// Fix potentially invalid remote_host due to network change.
 	set("network/debug/remote_host", selected);
+	set("network/language_server/remote_host", selected);
 }
 
 void EditorSettings::save() {
@@ -1462,7 +1562,11 @@ Variant EditorSettings::get_setting(const String &p_setting) const {
 bool EditorSettings::has_setting(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
 
+#ifndef DISABLE_DEPRECATED
+	return props.has(p_setting) || compat_map.has(p_setting);
+#else
 	return props.has(p_setting);
+#endif
 }
 
 void EditorSettings::erase(const String &p_setting) {
@@ -1652,7 +1756,7 @@ Vector<String> EditorSettings::get_favorite_folders() const {
 }
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+	return HashMap<String, PackedStringArray>(favorite_properties);
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {
@@ -1854,12 +1958,12 @@ String EditorSettings::get_editor_layouts_config() const {
 float EditorSettings::get_auto_display_scale() {
 #ifdef LINUXBSD_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServer::SCREEN_OF_MAIN_WINDOW);
+		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 
 		if (DisplayServer::get_singleton()->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
 			// If we have a single screen or the screen of the window is fractional, all
 			// bets are off. At this point, let's just return the current's window scale,
-			// which is special-cased to the scale of `SCREEN_OF_MAIN_WINDOW`.
+			// which is special-cased to the scale of `DisplayServerEnums::SCREEN_OF_MAIN_WINDOW`.
 			return main_window_scale;
 		}
 
@@ -1905,7 +2009,7 @@ float EditorSettings::get_auto_display_scale() {
 }
 
 String EditorSettings::get_language() const {
-	const String language = has_setting("interface/editor/editor_language") ? get("interface/editor/editor_language") : "auto";
+	const String language = has_setting("interface/editor/localization/editor_language") ? get("interface/editor/localization/editor_language") : "auto";
 	if (language != "auto") {
 		return language;
 	}
@@ -2211,7 +2315,7 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 	if (AO) {
 		Array event_array;
 
-		List<Ref<InputEvent>> events_list = AO->value;
+		List<Ref<InputEvent>> events_list(AO->value);
 		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}
@@ -2295,6 +2399,7 @@ void EditorSettings::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 	ADD_SIGNAL(MethodInfo("_favorites_changed"));
+	ADD_SIGNAL(MethodInfo("_translation_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }

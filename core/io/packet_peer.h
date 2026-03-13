@@ -31,11 +31,10 @@
 #pragma once
 
 #include "core/io/stream_peer.h"
-#include "core/object/class_db.h"
 #include "core/templates/ring_buffer.h"
 
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 
 class PacketPeer : public RefCounted {

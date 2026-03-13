@@ -89,12 +89,20 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
 	_set_window_color = p_env->GetMethodID(godot_class, "setWindowColor", "(Ljava/lang/String;)V");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
 	_get_activity = p_env->GetMethodID(godot_class, "getActivity", "()Landroid/app/Activity;");
 	_build_env_connect = p_env->GetMethodID(godot_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
 	_build_env_disconnect = p_env->GetMethodID(godot_class, "nativeBuildEnvDisconnect", "()V");
 	_build_env_execute = p_env->GetMethodID(godot_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
 	_build_env_cancel = p_env->GetMethodID(godot_class, "nativeBuildEnvCancel", "(I)V");
 	_build_env_clean_project = p_env->GetMethodID(godot_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
+
+	// PiP mode method ids.
+	_is_pip_mode_supported = p_env->GetMethodID(godot_class, "nativeIsPiPModeSupported", "()Z");
+	_is_in_pip_mode = p_env->GetMethodID(godot_class, "nativeIsInPiPMode", "()Z");
+	_enter_pip_mode = p_env->GetMethodID(godot_class, "nativeEnterPiPMode", "()V");
+	_set_pip_mode_aspect_ratio = p_env->GetMethodID(godot_class, "nativeSetPiPModeAspectRatio", "(II)V");
+	_set_auto_enter_pip_mode_on_background = p_env->GetMethodID(godot_class, "nativeSetAutoEnterPiPModeOnBackground", "(Z)V");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -615,6 +623,15 @@ void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 	}
 }
 
+void GodotJavaWrapper::on_distraction_free_mode_changed(bool p_enabled) {
+	if (_on_distraction_free_mode_changed) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_instance, _on_distraction_free_mode_changed, p_enabled);
+	}
+}
+
 bool GodotJavaWrapper::build_env_connect(const Callable &p_callback) {
 	if (_build_env_connect) {
 		JNIEnv *env = get_jni_env();
@@ -693,5 +710,49 @@ void GodotJavaWrapper::build_env_clean_project(const String &p_project_path, con
 		env->DeleteLocalRef(j_project_path);
 		env->DeleteLocalRef(j_gradle_build_directory);
 		env->DeleteLocalRef(j_callback);
+	}
+}
+
+bool GodotJavaWrapper::is_pip_mode_supported() {
+	if (_is_pip_mode_supported) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_pip_mode_supported);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_in_pip_mode() {
+	if (_is_in_pip_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_in_pip_mode);
+	} else {
+		return false;
+	}
+}
+
+void GodotJavaWrapper::enter_pip_mode() {
+	if (_enter_pip_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _enter_pip_mode);
+	}
+}
+
+void GodotJavaWrapper::set_pip_mode_aspect_ratio(int p_numerator, int p_denominator) {
+	if (_set_pip_mode_aspect_ratio) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _set_pip_mode_aspect_ratio, p_numerator, p_denominator);
+	}
+}
+
+void GodotJavaWrapper::set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background) {
+	if (_set_auto_enter_pip_mode_on_background) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _set_auto_enter_pip_mode_on_background, p_auto_enter_on_background);
 	}
 }

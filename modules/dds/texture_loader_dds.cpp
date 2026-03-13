@@ -34,6 +34,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
@@ -75,7 +76,9 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R32_FLOAT: {
 			return DDS_R32F;
 		}
-		case DXGI_R8_UNORM:
+		case DXGI_R8_UNORM: {
+			return DDS_R8;
+		}
 		case DXGI_A8_UNORM: {
 			return DDS_LUMINANCE;
 		}
@@ -89,7 +92,7 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 			return DDS_R16I;
 		}
 		case DXGI_R8G8_UNORM: {
-			return DDS_LUMINANCE_ALPHA;
+			return DDS_RG8;
 		}
 		case DXGI_R9G9B9E5: {
 			return DDS_RGB9E5;
@@ -648,6 +651,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 				r_dds_format = DDS_BGRX8;
 			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
 				r_dds_format = DDS_RGBX8;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xff && format_green_mask == 0 && format_blue_mask == 0) {
+				r_dds_format = DDS_R8;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0) {
+				r_dds_format = DDS_RG8;
 			}
 		}
 

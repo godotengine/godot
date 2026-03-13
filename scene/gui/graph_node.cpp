@@ -30,10 +30,14 @@
 
 #include "graph_node.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/label.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
@@ -140,11 +144,11 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, base + "left_enabled"));
 		p_list->push_back(PropertyInfo(Variant::INT, base + "left_type"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, base + "left_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "left_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base + "right_enabled"));
 		p_list->push_back(PropertyInfo(Variant::INT, base + "right_type"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, base + "right_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base + "draw_stylebox"));
 		idx++;
 	}
@@ -606,13 +610,13 @@ void GraphNode::_notification(int p_what) {
 			} else {
 				name += ", " + vformat(ETR("has %d slots"), slot_count);
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_OUTPUT, ETR("Follow Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_slot));
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST);
+			AccessibilityServer::get_singleton()->update_set_name(ae, name);
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_OUTPUT, ETR("Follow Output Port Connection"));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_slot));
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			selected_slot = -1;

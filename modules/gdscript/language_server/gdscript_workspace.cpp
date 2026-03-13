@@ -35,25 +35,26 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
+	ClassDB::bind_method(D_METHOD("apply_new_signal", "obj", "function", "args"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
-	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
 
 #ifndef DISABLE_DEPRECATED
-	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
+	ClassDB::bind_method(D_METHOD("didDeleteFiles", "params"), &GDScriptWorkspace::didDeleteFiles);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
-	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_script);
+	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
+	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 #endif
 }
 
@@ -592,51 +593,6 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
-void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
-	if (!efsd) {
-		return;
-	}
-
-	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		_get_owners(efsd->get_subdir(i), p_path, owners);
-	}
-
-	for (int i = 0; i < efsd->get_file_count(); i++) {
-		Vector<String> deps = efsd->get_file_deps(i);
-		bool found = false;
-		for (int j = 0; j < deps.size(); j++) {
-			if (deps[j] == p_path) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			continue;
-		}
-
-		owners.push_back(efsd->get_file_path(i));
-	}
-}
-
-Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
-	Node *owner_scene_node = nullptr;
-	List<String> owners;
-
-	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
-
-	for (const String &owner : owners) {
-		NodePath owner_path = owner;
-		Ref<Resource> owner_res = ResourceLoader::load(String(owner_path));
-		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
-			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
-			owner_scene_node = owner_packed_scene->instantiate();
-			break;
-		}
-	}
-
-	return owner_scene_node;
-}
-
 void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	String path = get_file_path(p_params.textDocument.uri);
 	String call_hint;
@@ -644,7 +600,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
-		Node *owner_scene_node = _get_owner_scene_node(path);
+		Node *owner_scene_node = GDScriptLanguageProtocol::get_singleton()->get_scene_cache()->get(path);
 
 		Array stack;
 		Node *current = nullptr;
@@ -670,9 +626,6 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 
 		String code = parser->get_text_for_completion(p_params.position);
 		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
-		if (owner_scene_node) {
-			memdelete(owner_scene_node);
-		}
 	}
 }
 

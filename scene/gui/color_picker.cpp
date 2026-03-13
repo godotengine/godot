@@ -30,8 +30,12 @@
 
 #include "color_picker.h"
 
+#include "core/config/engine.h"
+#include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"
@@ -46,12 +50,19 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/color_palette.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
+
+#ifdef MACOS_ENABLED
+#include "core/os/os.h"
+#endif
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -80,8 +91,8 @@ void ColorPicker::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_COLOR_PICKER);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_COLOR_PICKER);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, color);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -97,10 +108,10 @@ void ColorPicker::_notification(int p_what) {
 #endif
 
 		case NOTIFICATION_READY: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_COLOR_PICKER)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_COLOR_PICKER)) {
 				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_native));
-			} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
+			} else if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
 				// FIXME: The embedding check is needed to fix a bug in single-window mode (GH-93718).
 				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed));
@@ -170,6 +181,8 @@ void ColorPicker::_notification(int p_what) {
 			hex_label->set_custom_minimum_size(Size2(38 * theme_cache.base_scale, 0));
 			// Adjust for the width of the "script" icon.
 			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
+			text_copy->set_button_icon(theme_cache.color_copy);
+			text_copy->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
 			_update_controls();
 			// HACK: Deferring updating presets to ensure their size is correct when creating ColorPicker at runtime.
@@ -231,13 +244,13 @@ void ColorPicker::_notification(int p_what) {
 			picker_preview_style_box_color->set_bg_color(c);
 			picker_preview_style_box->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 
-			if (ds->has_feature(DisplayServer::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE)) {
+			if (ds->has_feature(DisplayServerEnums::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE)) {
 				Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
 				picker_window->set_position(ofs - Vector2(28, 28));
 				picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_preview_img));
 			} else {
-				Size2i screen_size = ds->screen_get_size(DisplayServer::SCREEN_WITH_MOUSE_FOCUS);
-				Vector2i screen_position = ds->screen_get_position(DisplayServer::SCREEN_WITH_MOUSE_FOCUS);
+				Size2i screen_size = ds->screen_get_size(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS);
+				Vector2i screen_position = ds->screen_get_position(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS);
 
 				float ofs_decal_x = (ofs.x < screen_position.x + screen_size.width - 51) ? 8 : -36;
 				float ofs_decal_y = (ofs.y < screen_position.y + screen_size.height - 51) ? 8 : -36;
@@ -841,6 +854,10 @@ void ColorPicker::_text_type_toggled() {
 	_update_color();
 }
 #endif // TOOLS_ENABLED
+
+void ColorPicker::_text_copy_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(c_text->get_text());
+}
 
 Color ColorPicker::get_pick_color() const {
 	return color;
@@ -1525,7 +1542,7 @@ void ColorPicker::_add_preset_pressed() {
 void ColorPicker::_pick_button_pressed_native() {
 	if (!DisplayServer::get_singleton()->color_picker(callable_mp(this, &ColorPicker::_native_cb))) {
 		// Fallback to default/legacy picker.
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
 			_pick_button_pressed();
 		} else {
 			_pick_button_pressed_legacy();
@@ -1548,7 +1565,7 @@ void ColorPicker::_pick_button_pressed() {
 
 	if (!picker_window) {
 		picker_window = memnew(Popup);
-		bool has_feature_exclude_from_capture = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
+		bool has_feature_exclude_from_capture = DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
 		if (!has_feature_exclude_from_capture) {
 			picker_window->set_size(Vector2i(28, 28));
 		} else {
@@ -1803,9 +1820,9 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		DisplayServer *ds = DisplayServer::get_singleton();
 
 		// Add the Texture of each Window to the Image.
-		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
+		Vector<DisplayServerEnums::WindowID> wl = ds->get_window_list();
 		// FIXME: sort windows by visibility.
-		for (const DisplayServer::WindowID &window_id : wl) {
+		for (const DisplayServerEnums::WindowID &window_id : wl) {
 			Window *w = Window::get_from_id(window_id);
 			if (!w) {
 				continue;
@@ -2056,6 +2073,7 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_copy);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
@@ -2222,6 +2240,13 @@ ColorPicker::ColorPicker() {
 	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
+
+	text_copy = memnew(Button);
+	hex_hbc->add_child(text_copy);
+	text_copy->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	text_copy->set_tooltip_text(ETR("Copy the color value."));
+	text_type->set_accessibility_name(ETR("Copy Color"));
+	text_copy->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_copy_pressed));
 
 	_update_controls();
 	updating = false;
@@ -2418,9 +2443,9 @@ void ColorPickerButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_DIALOG);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_DIALOG);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, color);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -2559,8 +2584,8 @@ void ColorPresetButton::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, preset_color);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_color_value(ae, preset_color);
 		} break;
 
 		case NOTIFICATION_DRAW: {

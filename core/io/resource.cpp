@@ -33,9 +33,18 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant/container_type_validate.h"
+#include "core/variant/container_type_validate.h" // IWYU pragma: keep.
 #include "scene/main/node.h" //only so casting works
+
+void Resource::register_custom_data_to_otdb() {
+	ClassDB::add_resource_base_extension("res", get_class_static());
+}
+
+void Resource::_add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
 
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
@@ -373,7 +382,7 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 // These are for avoiding potential duplicates that can happen in custom code
 // from participating in the same duplication session (remap cache).
 #define BEFORE_USER_CODE thread_duplicate_remap_cache = nullptr;
-#define AFTER_USER_CODE                                \
+#define AFTER_USER_CODE \
 	thread_duplicate_remap_cache = remap_cache_backup; \
 	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 

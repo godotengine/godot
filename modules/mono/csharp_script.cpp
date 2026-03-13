@@ -48,10 +48,12 @@
 #include "editor/script_templates/templates.gen.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
@@ -400,10 +402,6 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	return "";
 }
 
-Script *CSharpLanguage::create_script() const {
-	return memnew(CSharpScript);
-}
-
 bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
@@ -538,10 +536,6 @@ void CSharpLanguage::frame() {
 	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
 		GDMonoCache::managed_callbacks.ScriptManagerBridge_FrameCallback();
 	}
-
-#ifdef TOOLS_ENABLED
-	_flush_filesystem_updates();
-#endif
 }
 
 struct CSharpScriptDepSort {
@@ -1076,47 +1070,6 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 }
 
 #ifdef TOOLS_ENABLED
-void CSharpLanguage::_queue_for_filesystem_update(String p_script_path) {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (p_script_path.is_empty()) {
-		return;
-	}
-
-	pending_file_system_update_paths.push_back(p_script_path);
-}
-
-void CSharpLanguage::_flush_filesystem_updates() {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (pending_file_system_update_paths.is_empty()) {
-		return;
-	}
-
-	// If the EditorFileSystem singleton is available, update the files;
-	// otherwise, the files will be updated when the singleton becomes available.
-	EditorFileSystem *efs = EditorFileSystem::get_singleton();
-	if (!efs) {
-		pending_file_system_update_paths.clear();
-		return;
-	}
-
-	// Required to prevent EditorProgress within EditorFileSystem from calling this while it is already flushing
-	if (is_flushing_filesystem_updates) {
-		return;
-	}
-	is_flushing_filesystem_updates = true;
-
-	efs->update_files(pending_file_system_update_paths);
-
-	is_flushing_filesystem_updates = false;
-	pending_file_system_update_paths.clear();
-}
-
 void CSharpLanguage::_editor_init_callback() {
 	// Load GodotTools and initialize GodotSharpEditor
 
@@ -2288,7 +2241,12 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	p_script->_update_exports();
 
 #ifdef TOOLS_ENABLED
-	CSharpLanguage::get_singleton()->_queue_for_filesystem_update(p_script->get_path());
+	// If the EditorFileSystem singleton is available, update the file;
+	// otherwise, the file will be updated when the singleton becomes available.
+	EditorFileSystem *efs = EditorFileSystem::get_singleton();
+	if (efs && !p_script->get_path().is_empty()) {
+		efs->update_file(p_script->get_path());
+	}
 #endif
 }
 
@@ -2661,7 +2619,12 @@ Error CSharpScript::reload(bool p_keep_state) {
 		_update_exports();
 
 #ifdef TOOLS_ENABLED
-		CSharpLanguage::get_singleton()->_queue_for_filesystem_update(script_path);
+		// If the EditorFileSystem singleton is available, update the file;
+		// otherwise, the file will be updated when the singleton becomes available.
+		EditorFileSystem *efs = EditorFileSystem::get_singleton();
+		if (efs) {
+			efs->update_file(script_path);
+		}
 #endif
 	}
 

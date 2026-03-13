@@ -255,7 +255,7 @@ void ClassDB::get_class_list(LocalVector<StringName> &p_classes) {
 		p_classes.push_back(cls.key);
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[p_classes.size() - classes.size()], classes.size());
 }
 
@@ -279,7 +279,7 @@ void ClassDB::get_extensions_class_list(LocalVector<StringName> &p_classes) {
 		return;
 	}
 
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&p_classes[original_size], p_classes.size() - original_size);
 }
 
@@ -1018,7 +1018,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 #endif // DEBUG_ENABLED
 
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
-			LocalVector<MethodBind *> compat = E.value;
+			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
 
@@ -1539,11 +1539,14 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	type->property_list.push_back(p_pinfo);
 	type->property_map[p_pinfo.name] = p_pinfo;
 #ifdef DEBUG_ENABLED
-	if (mb_get) {
-		type->methods_in_properties.insert(p_getter);
-	}
-	if (mb_set) {
-		type->methods_in_properties.insert(p_setter);
+	// Used to filter out setters and getters in the editor (e.g. autocomplete) to not clutter menus. We only want to filter methods from properties that are easily available to users.
+	if (p_index == -1 && !(p_pinfo.usage & PropertyUsageFlags::PROPERTY_USAGE_INTERNAL)) {
+		if (mb_get) {
+			type->methods_in_properties.insert(p_getter);
+		}
+		if (mb_set) {
+			type->methods_in_properties.insert(p_setter);
+		}
 	}
 #endif // DEBUG_ENABLED
 	PropertySetGet psg;

@@ -35,9 +35,12 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "openxr_platform_inc.h"
 
@@ -1273,7 +1276,7 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 		print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(color_swapchain_format));
 	}
 
-	{
+	if (submit_depth_buffer) {
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
 		depth_swapchain_format = 0;
@@ -1287,9 +1290,11 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(depth_swapchain_format == 0, false, "OpenXR: No usable depth swap chain format available!");
-
-		print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		if (depth_swapchain_format == 0) {
+			WARN_PRINT("OpenXR: No usable depth swap chain format available!");
+		} else {
+			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
+		}
 	}
 
 	return true;
@@ -1299,21 +1304,6 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
-
-	/*
-		TODO: We need to improve on this, for now we're taking our old approach of creating our main swapchains and substituting
-		those for the ones Godot normally creates.
-		This however means we can only use swapchains for our main XR view.
-
-		It would have been nicer if we could override the swapchain creation in Godot with ours but we have a timing issue here.
-		We can't create XR swapchains until after our XR session is fully instantiated, yet Godot creates its swapchain much earlier.
-
-		We only creates a swapchain for the main output here.
-		Additional swapchains may be created through our composition layer extension.
-
-		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
-		as we render 3D content into internal buffers that are copied into the swapchain, we do now have (basic) VRS support
-	*/
 
 	render_state.main_swapchain_size = p_size;
 	uint32_t sample_count = 1;
@@ -1330,19 +1320,13 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	// We create our depth swapchain if:
 	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
-	// - we have our spacewarp extension (not yet implemented)
+	// Note: Application Space Warp and Frame Synthesis use a separate lower resolution depth buffer.
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
 		set_object_name(XR_OBJECT_TYPE_SWAPCHAIN, uint64_t(render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain()), "Main depth swapchain");
-	}
-
-	// We create our velocity swapchain if:
-	// - we have our spacewarp extension (not yet implemented)
-	{
-		// TBD
 	}
 
 	for (uint32_t i = 0; i < render_state.views.size(); i++) {
@@ -1580,7 +1564,7 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
-uint32_t OpenXRAPI::get_view_count() {
+uint32_t OpenXRAPI::get_view_count() const {
 	return view_configuration_views.size();
 }
 
@@ -1737,7 +1721,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		// shouldn't be possible...
 		ERR_FAIL_V(false);
 #endif
-	} else if (p_rendering_driver == "opengl3") {
+	} else if (p_rendering_driver == "opengl3" || p_rendering_driver == "opengl3_es") {
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
@@ -2287,6 +2271,68 @@ void OpenXRAPI::_update_main_swapchain_size_rt() {
 #endif
 }
 
+void OpenXRAPI::allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers_rt).bind(p_view_count, p_submit_depth_buffer));
+}
+
+void OpenXRAPI::set_render_session_running(bool p_is_running) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running_rt).bind(p_is_running));
+}
+
+void OpenXRAPI::set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info_rt).bind(p_predicted_display_time, p_should_render));
+}
+
+void OpenXRAPI::set_render_play_space(XrSpace p_play_space) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space_rt).bind(uint64_t(p_play_space)));
+}
+
+void OpenXRAPI::set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode_rt).bind((int32_t)p_mode));
+}
+
+void OpenXRAPI::set_render_state_multiplier(double p_render_target_size_multiplier) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier_rt).bind(p_render_target_size_multiplier));
+}
+
+void OpenXRAPI::set_render_state_render_region(const Rect2i &p_render_region) {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region_rt).bind(p_render_region));
+}
+
+void OpenXRAPI::update_main_swapchain_size() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_update_main_swapchain_size_rt));
+}
+
 bool OpenXRAPI::process() {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 
@@ -2674,6 +2720,15 @@ void OpenXRAPI::end_frame() {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
+	void *projection_layer_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : projection_layer_extensions) {
+		void *np = extension->set_projection_layer_and_get_next_pointer(projection_layer_next_pointer);
+		if (np != nullptr) {
+			projection_layer_next_pointer = np;
+		}
+	}
+
+	render_state.projection_layer.next = projection_layer_next_pointer;
 	render_state.projection_layer.layerFlags = layer_flags;
 	render_state.projection_layer.space = render_state.play_space;
 	render_state.projection_layer.viewCount = (uint32_t)render_state.projection_views.size();
@@ -2924,6 +2979,7 @@ OpenXRAPI::OpenXRAPI() {
 OpenXRAPI::~OpenXRAPI() {
 	composition_layer_providers.clear();
 	frame_info_extensions.clear();
+	projection_layer_extensions.clear();
 	supported_extensions.clear();
 	layer_properties.clear();
 
@@ -3976,6 +4032,14 @@ void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extensio
 void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.erase(p_extension);
+}
+
+void OpenXRAPI::register_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.append(p_extension);
+}
+
+void OpenXRAPI::unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_layer_extensions.erase(p_extension);
 }
 
 const Vector<XrEnvironmentBlendMode> OpenXRAPI::get_supported_environment_blend_modes() {

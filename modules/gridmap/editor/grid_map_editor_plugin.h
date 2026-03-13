@@ -32,21 +32,24 @@
 
 #include "../grid_map.h"
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 
+class Button;
 class ConfirmationDialog;
+class FilterLineEdit;
+class HSlider;
+class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
 class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
+class SpinBox;
 
-class GridMapEditor : public VBoxContainer {
-	GDCLASS(GridMapEditor, VBoxContainer);
+class GridMapEditor : public EditorDock {
+	GDCLASS(GridMapEditor, EditorDock);
 
 	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
@@ -66,6 +69,7 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	InputAction input_action = INPUT_NONE;
+	bool valid_mb_press = false;
 	Panel *panel = nullptr;
 	MenuButton *options = nullptr;
 	SpinBox *floor = nullptr;
@@ -89,11 +93,12 @@ class GridMapEditor : public VBoxContainer {
 	Button *rotate_x_button = nullptr;
 	Button *rotate_y_button = nullptr;
 	Button *rotate_z_button = nullptr;
+	Button *clear_rotation_button = nullptr;
 
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	HSlider *size_slider = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
@@ -228,7 +233,6 @@ class GridMapEditor : public VBoxContainer {
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);
@@ -246,12 +250,15 @@ class GridMapEditor : public VBoxContainer {
 	bool _has_selection() const;
 	Array _get_selected_cells() const;
 
+	String _get_cursor_coordinates() const;
+
 	void _floor_changed(float p_value);
 	void _floor_mouse_exited();
 
 	void _delete_selection();
 	void _delete_selection_with_undo();
 	void _fill_selection();
+	void _clear_selection_with_undo();
 	void _setup_paste_mode();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
@@ -274,16 +281,17 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
-	Button *panel_button = nullptr;
+
+	void _overlay_update_requested();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void forward_3d_draw_over_viewport(Control *p_overlay) override;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_plugin_name() const override { return "GridMap"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

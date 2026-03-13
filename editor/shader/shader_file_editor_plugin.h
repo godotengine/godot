@@ -33,10 +33,11 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/rich_text_label.h"
-#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_device.h"
 
 class HFlowContainer;
 class ItemList;
+class RDShaderFile;
 
 class ShaderFileEditor : public EditorDock {
 	GDCLASS(ShaderFileEditor, EditorDock);
@@ -72,7 +73,6 @@ class ShaderFileEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "ShaderFile"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

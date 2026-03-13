@@ -30,6 +30,8 @@
 
 #include "look_at_modifier_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/resources/animation.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
@@ -106,7 +108,7 @@ void LookAtModifier3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Bone index '" + itos(p_bone) + "' is out of range!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);
@@ -157,6 +159,9 @@ void LookAtModifier3D::set_target_node(const NodePath &p_target_node) {
 	if (target_node != p_target_node) {
 		init_transition();
 	}
+	if (should_check_node_path() && !p_target_node.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_target_node))) {
+		WARN_PRINT_ED("Target node '" + String(p_target_node) + "' not found.");
+	}
 	target_node = p_target_node;
 }
 
@@ -192,7 +197,7 @@ void LookAtModifier3D::set_origin_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (origin_bone <= -1 || origin_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Origin bone index '" + itos(p_bone) + "' is out of range!");
 			origin_bone = -1;
 		} else {
 			origin_bone_name = sk->get_bone_name(origin_bone);
@@ -205,6 +210,9 @@ int LookAtModifier3D::get_origin_bone() const {
 }
 
 void LookAtModifier3D::set_origin_external_node(const NodePath &p_external_node) {
+	if (should_check_node_path() && !p_external_node.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_external_node))) {
+		WARN_PRINT_ED("Origin node '" + String(p_external_node) + "' not found.");
+	}
 	origin_external_node = p_external_node;
 }
 
@@ -558,6 +566,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 			forward_vector = Vector3(0, 0, 0); // The zero-vector to be used for checking in the line immediately below to avoid animation glitch.
 		} else {
 			destination = look_at_with_axes(bone_rest).basis.get_rotation_quaternion();
+			forward_vector = bone_rest.basis.xform_inv(forward_vector_nrm); // Forward vector in the "current" bone rest.
 		}
 	}
 
@@ -573,18 +582,17 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		init_transition();
 	} else if (is_flippable && std::signbit(prev_forward_vector[secondary_rotation_axis]) != std::signbit(forward_vector[secondary_rotation_axis])) {
 		// Flipping by angle_limitation can be detected by sign of secondary rotation axes during forward_vector is rotated more than 90 degree from forward_axis (means dot production is negative).
-		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
 		if (symmetry_limitation) {
 			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math::TAU)) &&
-					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
-					forward_vector_nrm.dot(rest_forward_vector) < 0) {
+					prev_forward_vector.dot(rest_forward_vector) < 0 &&
+					forward_vector.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		} else {
 			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math::TAU)) &&
-					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
-					forward_vector_nrm.dot(rest_forward_vector) < 0) {
+					prev_forward_vector.dot(rest_forward_vector) < 0 &&
+					forward_vector.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		}
@@ -595,7 +603,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		remaining = MAX(0, remaining - time_step * p_delta);
 		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
-			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
+			Quaternion rest = bone_rest.basis.get_rotation_quaternion();
 			float weight = Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0);
 			destination = Animation::interpolate_via_rest(Animation::interpolate_via_rest(rest, from_q, 1 - weight, rest), destination, weight, rest);
 		} else {

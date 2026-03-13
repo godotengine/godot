@@ -35,51 +35,7 @@
 /* BiDi, shaping and advanced font features support.                     */
 /*************************************************************************/
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/godot.hpp>
-
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/ext_wrappers.gen.inc>
-#include <godot_cpp/core/mutex_lock.hpp>
-
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/packed_int32_array.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/packed_vector2_array.hpp>
-#include <godot_cpp/variant/rect2.hpp>
-#include <godot_cpp/variant/rid.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/vector2.hpp>
-#include <godot_cpp/variant/vector2i.hpp>
-
-#include <godot_cpp/classes/text_server.hpp>
-#include <godot_cpp/classes/text_server_extension.hpp>
-#include <godot_cpp/classes/text_server_manager.hpp>
-
-#include <godot_cpp/classes/caret_info.hpp>
-#include <godot_cpp/classes/global_constants_binds.hpp>
-#include <godot_cpp/classes/glyph.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/classes/worker_thread_pool.hpp>
-
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
-#include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/safe_refcount.hpp>
-#include <godot_cpp/templates/vector.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
-#include "core/extension/ext_wrappers.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -88,8 +44,6 @@ using namespace godot;
 #include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Thirdparty headers.
 
@@ -101,6 +55,7 @@ using namespace godot;
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_BBOX_H
+#include FT_SIZES_H
 #include FT_MODULE_H
 #include FT_CONFIG_OPTIONS_H
 #if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
@@ -239,14 +194,13 @@ class TextServerFallback : public TextServerExtension {
 		HashMap<Vector2i, Vector2> kerning_map;
 
 #ifdef MODULE_FREETYPE_ENABLED
-		FT_Face face = nullptr;
-		FT_StreamRec stream;
+		FT_Size fsize = nullptr;
 #endif
 
 		~FontForSizeFallback() {
 #ifdef MODULE_FREETYPE_ENABLED
-			if (face != nullptr) {
-				FT_Done_Face(face);
+			if (fsize != nullptr) {
+				FT_Done_Size(fsize);
 			}
 #endif
 		}
@@ -310,11 +264,21 @@ class TextServerFallback : public TextServerExtension {
 		size_t data_size;
 		int face_index = 0;
 
+#ifdef MODULE_FREETYPE_ENABLED
+		FT_Face face = nullptr;
+		FT_StreamRec stream;
+#endif
+
 		~FontFallback() {
 			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
+#ifdef MODULE_FREETYPE_ENABLED
+			if (face != nullptr) {
+				FT_Done_Face(face);
+			}
+#endif
 		}
 	};
 
@@ -412,6 +376,7 @@ class TextServerFallback : public TextServerExtension {
 
 	struct TextRun {
 		Vector2i range;
+		Vector2i gl_range;
 		RID font_rid;
 		int font_size = 0;
 		int64_t span_index = -1;
@@ -854,6 +819,7 @@ public:
 	MODBIND1RC(int64_t, shaped_get_run_count, const RID &);
 	MODBIND2RC(String, shaped_get_run_text, const RID &, int64_t);
 	MODBIND2RC(Vector2i, shaped_get_run_range, const RID &, int64_t);
+	MODBIND2RC(Vector2i, shaped_get_run_glyph_range, const RID &, int64_t);
 	MODBIND2RC(RID, shaped_get_run_font_rid, const RID &, int64_t);
 	MODBIND2RC(int, shaped_get_run_font_size, const RID &, int64_t);
 	MODBIND2RC(String, shaped_get_run_language, const RID &, int64_t);

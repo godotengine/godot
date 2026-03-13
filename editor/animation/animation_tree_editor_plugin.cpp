@@ -34,6 +34,7 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
+#include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (p_tree && !p_tree->is_connected("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
@@ -236,26 +238,19 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 	return false;
 }
 
-Vector<String> AnimationTreeEditor::get_animation_list() {
+LocalVector<StringName> AnimationTreeEditor::get_animation_list() {
 	// This can be called off the main thread due to resource preview generation. Quit early in that case.
 	if (!singleton->tree || !Thread::is_main_thread() || !singleton->is_visible()) {
 		// When tree is empty, singleton not in the main thread.
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
 	AnimationTree *tree = singleton->tree;
 	if (!tree) {
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
-	List<StringName> anims;
-	tree->get_animation_list(&anims);
-	Vector<String> ret;
-	for (const StringName &E : anims) {
-		ret.push_back(E);
-	}
-
-	return ret;
+	return tree->get_sorted_animation_list();
 }
 
 AnimationTreeEditor::AnimationTreeEditor() {

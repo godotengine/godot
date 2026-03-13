@@ -67,7 +67,7 @@ class AnimationTreeEditor : public EditorDock {
 	void _path_button_pressed(int p_path);
 	void _animation_list_changed();
 
-	static Vector<String> get_animation_list();
+	static LocalVector<StringName> get_animation_list();
 
 protected:
 	void _notification(int p_what);
@@ -100,7 +100,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "AnimationTree"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

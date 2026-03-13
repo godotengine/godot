@@ -30,6 +30,7 @@
 
 #include "mesh_instance_3d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -365,10 +367,8 @@ void MeshInstance3DEditor::_create_collision_shape() {
 
 	for (Node *E : selection) {
 		if (placement_option == SHAPE_PLACEMENT_SIBLING && E == get_tree()->get_edited_scene_root()) {
-			if (verbose) {
-				err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
-				err_dialog->popup_centered();
-			}
+			err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
+			err_dialog->popup_centered();
 			continue;
 		}
 

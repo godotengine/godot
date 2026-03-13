@@ -99,6 +99,12 @@
 				[b]Note:[/b] Does not apply to scripts that are already opened.
 			</description>
 		</method>
+		<method name="reload_open_files">
+			<return type="void" />
+			<description>
+				Reloads all currently opened files. This should be used when opened files are changed outside of the script editor. The user may be prompted to resolve file conflicts, see [member EditorSettings.text_editor/behavior/files/auto_reload_scripts_on_external_change].
+			</description>
+		</method>
 		<method name="save_all_scripts">
 			<return type="void" />
 			<description>

@@ -41,6 +41,7 @@
 
 #include "thirdparty/misc/mikktspace.h"
 
+class Mesh;
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 
@@ -66,6 +67,9 @@ private:
 	bool dirty = false;
 	bool last_visible = false;
 	float snap = 0.001;
+
+	bool autosmooth = false;
+	float smoothing_angle = 50.0;
 
 #ifndef PHYSICS_3D_DISABLED
 	bool use_collision = false;
@@ -157,6 +161,12 @@ public:
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
+
+	void set_autosmooth(bool p_smooth);
+	bool is_autosmooth() const;
+
+	void set_smoothing_angle(const float p_angle);
+	float get_smoothing_angle() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);

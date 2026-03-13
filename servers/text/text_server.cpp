@@ -32,7 +32,9 @@
 #include "text_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -451,6 +453,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_get_run_count", "shaped"), &TextServer::shaped_get_run_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_text", "shaped", "index"), &TextServer::shaped_get_run_text);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_range", "shaped", "index"), &TextServer::shaped_get_run_range);
+	ClassDB::bind_method(D_METHOD("shaped_get_run_glyph_range", "shaped", "index"), &TextServer::shaped_get_run_glyph_range);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_rid", "shaped", "index"), &TextServer::shaped_get_run_font_rid);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_size", "shaped", "index"), &TextServer::shaped_get_run_font_size);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_language", "shaped", "index"), &TextServer::shaped_get_run_language);
@@ -977,7 +980,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00ad, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width[chunk]) {
+						if (width + adv + w <= p_width[chunk] || w >= p_width[chunk]) {
 							last_safe_break = i;
 							word_count++;
 						}
@@ -1161,7 +1164,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00AD, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width) {
+						if (width + adv + w <= p_width || w >= p_width) {
 							last_safe_break = i;
 							word_count++;
 						}
@@ -2310,6 +2313,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2335,6 +2339,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2360,6 +2365,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}

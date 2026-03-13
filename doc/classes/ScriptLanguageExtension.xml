@@ -47,7 +47,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_create_script" qualifiers="virtual required const">
+		<method name="_create_script" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="Object" />
 			<description>
 			</description>

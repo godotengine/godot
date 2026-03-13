@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/import/resource_importer_texture_settings.h"
@@ -175,8 +176,8 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 
 	Vector<String> godot_splash_classes;
 	godot_splash_classes.push_back("show-image--" + String(get_project_setting(p_preset, "application/boot_splash/show_image")));
-	RenderingServer::SplashStretchMode boot_splash_stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
-	godot_splash_classes.push_back("fullsize--" + String(((boot_splash_stretch_mode != RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED) ? "true" : "false")));
+	RSE::SplashStretchMode boot_splash_stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
+	godot_splash_classes.push_back("fullsize--" + String(((boot_splash_stretch_mode != RSE::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED) ? "true" : "false")));
 	godot_splash_classes.push_back("use-filter--" + String(get_project_setting(p_preset, "application/boot_splash/use_filter")));
 	replaces["$GODOT_SPLASH_CLASSES"] = String(" ").join(godot_splash_classes);
 	replaces["$GODOT_SPLASH"] = p_name + ".png";
@@ -614,15 +615,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 bool EditorExportPlatformWeb::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	RemoteDebugState prev_remote_debug_state = remote_debug_state;
 	remote_debug_state = REMOTE_DEBUG_STATE_UNAVAILABLE;
