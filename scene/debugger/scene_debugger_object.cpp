@@ -82,7 +82,7 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 			E.hint_string = _parse_type_from_remote_object(m);
 		}
 
-		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
 			properties.push_back(SceneDebuggerProperty(E, m));
 		}
 	}
