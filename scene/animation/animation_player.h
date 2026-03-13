@@ -62,8 +62,6 @@ private:
 	Tween::TransitionType auto_capture_transition_type = Tween::TRANS_LINEAR;
 	Tween::EaseType auto_capture_ease_type = Tween::EASE_IN;
 
-	bool is_stopping = false;
-
 	struct PlaybackData {
 		bool is_enabled = false;
 		String animation_name;
@@ -98,7 +96,7 @@ private:
 		bool seeked = false;
 		bool internal_seeked = false;
 		bool started = false;
-		List<Blend> blend;
+		LocalVector<Blend> blend;
 	} playback;
 
 	struct BlendKey {

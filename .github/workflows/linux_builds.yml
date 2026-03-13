@@ -1,6 +1,11 @@
 name: 🐧 Linux Builds
 on:
   workflow_call:
+    inputs:
+      changed-files:
+        description: A list of changed files.
+        required: true
+        type: string
   workflow_dispatch:
 
 # Global Settings
@@ -8,7 +13,6 @@ env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
   GODOT_CPP_BRANCH: 4.5
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -115,21 +119,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
-          fetch-depth: 2 # 2 needed for Get changed files; no trivial way to conditionally use 1
-
-      # Keep in sync with static_checks.yml
-      - name: Get changed files
-        if: matrix.clang-tidy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
-          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
-          fi
-          files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
-          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Setup dependencies
         run: |
@@ -176,15 +165,15 @@ jobs:
           dotnet-version: 8.0.100
 
       - name: Download pre-built AccessKit
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: AccessKit/accesskit-c
-          version: tags/0.18.0
-          file: accesskit-c-0.18.0.zip
-          target: accesskit-c-0.18.0/accesskit_c.zip
-
-      - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
+        shell: sh
+        id: accesskit-sdk
+        run: |
+          if python ./misc/scripts/install_accesskit.py; then
+            echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
+            echo "ACCESSKIT_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Install mold linker
         if: matrix.proj-test
@@ -193,7 +182,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }}
           platform: linuxbsd
           target: ${{ matrix.target }}
 
@@ -201,7 +190,7 @@ jobs:
         if: matrix.clang-tidy
         uses: pre-commit/action@v3.0.1
         with:
-          extra_args: --files ${{ env.CHANGED_FILES }} --hook-stage manual clang-tidy
+          extra_args: --files ${{ inputs.changed-files }} --hook-stage manual clang-tidy
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build

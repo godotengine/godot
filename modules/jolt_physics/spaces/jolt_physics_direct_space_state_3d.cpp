@@ -100,7 +100,7 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 			eier_settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 			eier_settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
 
-			JPH::InternalEdgeRemovingCollector eier_collector(collector);
+			JPH::InternalEdgeRemovingCollector eier_collector(collector, JPH::cDefaultInternalEdgeRemovalVertexToleranceSq);
 			other_shape.CollideShape(&motion_shape, scale, transform_com, eier_settings, base_offset, eier_collector, p_shape_filter);
 			eier_collector.Flush();
 		} else {

@@ -30,6 +30,8 @@
 
 #include "audio_effect_spectrum_analyzer.h"
 #include "audio_effect_spectrum_analyzer.compat.inc"
+
+#include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
 static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
@@ -47,7 +49,8 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 {
 	float wr, wi, arg, *p1, *p2, temp;
 	float tr, ti, ur, ui, *p1r, *p1i, *p2r, *p2i;
-	long i, bitm, j, le, le2, k;
+	long i, bitm, j, le, le2, k, logN;
+	logN = (long)(Math::log((double)fftFrameSize) / Math::log(2.) + .5);
 
 	for (i = 2; i < 2 * fftFrameSize - 2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2 * fftFrameSize; bitm <<= 1) {
@@ -67,7 +70,7 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 			*p2 = temp;
 		}
 	}
-	for (k = 0, le = 2; k < (long)(std::log((double)fftFrameSize) / std::log(2.) + .5); k++) {
+	for (k = 0, le = 2; k < logN; k++) {
 		le <<= 1;
 		le2 = le >> 1;
 		ur = 1.0;
@@ -109,7 +112,7 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	while (p_frame_count) {
 		int to_fill = fft_size * 2 - temporal_fft_pos;
 		to_fill = MIN(to_fill, p_frame_count);
-		const double to_fill_step = Math::TAU / (double)fft_size;
+		const double to_fill_step = Math::TAU / (double)(fft_size * 2);
 
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers

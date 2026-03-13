@@ -38,6 +38,7 @@
 #include "jolt_body_3d.h"
 #include "jolt_group_filter.h"
 
+#include "core/config/engine.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
@@ -130,10 +131,10 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
 	ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
 
-	const PackedInt32Array mesh_indices = mesh_data[RenderingServer::ARRAY_INDEX];
+	const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
 	ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
 
-	const PackedVector3Array mesh_vertices = mesh_data[RenderingServer::ARRAY_VERTEX];
+	const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
 	ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
 
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();

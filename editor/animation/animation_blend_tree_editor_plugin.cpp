@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -273,10 +275,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 			ProgressBar *pb = memnew(ProgressBar);
 
-			List<StringName> anims;
-			tree->get_animation_list(&anims);
-
-			for (const StringName &F : anims) {
+			for (const StringName &F : tree->get_sorted_animation_list()) {
 				mb->get_popup()->add_item(F);
 				options.push_back(F);
 			}
@@ -799,10 +798,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	HashSet<String> paths;
 	HashMap<String, RBSet<String>> types;
 	{
-		List<StringName> animation_list;
-		tree->get_animation_list(&animation_list);
-
-		for (const StringName &E : animation_list) {
+		for (const StringName &E : tree->get_sorted_animation_list()) {
 			Ref<Animation> anim = tree->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String track_path = String(anim->track_get_path(i));

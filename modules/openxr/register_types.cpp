@@ -38,6 +38,7 @@
 #include "action_map/openxr_haptic_feedback.h"
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_metadata.h"
+#include "core/object/class_db.h"
 #include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
@@ -70,6 +71,7 @@
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_khr_generic_controller_extension.h"
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
@@ -99,7 +101,9 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "main/main.h"
 
 #ifdef TOOLS_ENABLED
@@ -175,6 +179,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);

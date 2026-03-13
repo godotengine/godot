@@ -91,6 +91,8 @@ struct [[nodiscard]] Vector2 {
 	real_t length_squared() const;
 	Vector2 limit_length(real_t p_len = 1.0) const;
 
+	void zero() { x = y = 0; }
+
 	Vector2 min(const Vector2 &p_vector2) const {
 		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
 	}

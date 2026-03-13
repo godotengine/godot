@@ -30,7 +30,10 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -51,6 +54,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -1389,7 +1393,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			// Wait for the node to be inspected before triggering the unfolding.
-			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1464,11 +1468,10 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	if (selected == p_node) {
 		return;
 	}
+	selected = p_node;
 
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
-
 	if (item) {
-		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1497,11 +1500,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 				tree->ensure_cursor_is_visible();
 			}
 		}
-	} else {
-		if (!p_node) {
-			selected = nullptr;
-		}
-		selected = p_node;
 	}
 
 	if (p_emit_selected) {

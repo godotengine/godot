@@ -34,7 +34,9 @@
 
 #include "vk_enum_string_helper.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
 #include "rendering_device_driver_vulkan.h"
@@ -983,13 +985,13 @@ void RenderingContextDriverVulkan::surface_set_size(SurfaceID p_surface, uint32_
 	surface->needs_resize = true;
 }
 
-void RenderingContextDriverVulkan::surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriverVulkan::surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) {
 	Surface *surface = (Surface *)(p_surface);
 	surface->vsync_mode = p_vsync_mode;
 	surface->needs_resize = true;
 }
 
-DisplayServer::VSyncMode RenderingContextDriverVulkan::surface_get_vsync_mode(SurfaceID p_surface) const {
+DisplayServerEnums::VSyncMode RenderingContextDriverVulkan::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
 }

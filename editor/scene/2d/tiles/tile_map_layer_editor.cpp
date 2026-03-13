@@ -32,6 +32,13 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "core/input/input.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -44,11 +51,7 @@
 #include "scene/2d/tile_map_layer.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/split_container.h"
-
-#include "core/input/input.h"
-#include "core/math/geometry_2d.h"
-#include "core/math/random_pcg.h"
-#include "core/os/keyboard.h"
+#include "scene/main/scene_tree.h"
 
 void SwitchSeparator::set_vertical(bool p_vertical) {
 	h_separator->set_visible(p_vertical);
@@ -3701,7 +3704,10 @@ void TileMapLayerEditor::_notification(int p_what) {
 				custom_overlay->set_visible(is_visible_in_tree());
 			}
 			if (is_visible()) {
-				CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				// Fix: Don't change the tool if we are in scene paint mode.
+				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SCENE_PAINT) {
+					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				}
 			}
 		} break;
 
@@ -3737,6 +3743,14 @@ void TileMapLayerEditor::_notification(int p_what) {
 				toggle_grid_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/display_grid"));
 				toggle_highlight_selected_layer_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/highlight_selected_layer"));
 			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			// Simulate mouse released event to stop drawing when editor focus exits.
+			Ref<InputEventMouseButton> release;
+			release.instantiate();
+			release->set_button_index(MouseButton::LEFT);
+			forward_canvas_gui_input(release);
 		} break;
 	}
 }

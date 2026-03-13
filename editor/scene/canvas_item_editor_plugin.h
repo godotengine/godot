@@ -45,6 +45,7 @@ class HScrollBar;
 class HSplitContainer;
 class MenuButton;
 class PanelContainer;
+class RichTextLabel;
 class StyleBoxTexture;
 class Timer;
 class ViewPanner;
@@ -77,6 +78,7 @@ class CanvasItemEditor : public VBoxContainer {
 public:
 	enum Tool {
 		TOOL_SELECT,
+		TOOL_SCENE_PAINT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
 		TOOL_SCALE,
@@ -242,6 +244,9 @@ private:
 	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
+	Color selection_rectangle_color;
+	Color locked_selection_rectangle_color;
+
 	real_t snap_rotation_step = 0.0;
 	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.0;
@@ -277,18 +282,21 @@ private:
 	real_t grab_distance = 0.0;
 	bool simple_panning = false;
 
-	MenuOption last_option;
+	MenuOption last_option = SNAP_USE;
 
-	struct _SelectResult {
+public:
+	struct SelectResult {
 		CanvasItem *item = nullptr;
 		real_t z_index = 0;
 		bool has_z = true;
-		_FORCE_INLINE_ bool operator<(const _SelectResult &p_rr) const {
+		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
 	};
-	Vector<_SelectResult> selection_results;
-	Vector<_SelectResult> selection_results_menu;
+
+private:
+	Vector<SelectResult> selection_results;
+	Vector<SelectResult> selection_results_menu;
 
 	struct _HoverResult {
 		Point2 position;
@@ -331,6 +339,7 @@ private:
 	Button *select_button = nullptr;
 
 	Button *move_button = nullptr;
+	Button *scene_paint_button = nullptr;
 	Button *scale_button = nullptr;
 	Button *rotate_button = nullptr;
 
@@ -406,10 +415,9 @@ private:
 
 	bool _is_node_locked(const Node *p_node) const;
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
-	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
-
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items, bool p_allow_locked = false);
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+
 	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
 
 	ConfirmationDialog *snap_dialog = nullptr;
@@ -435,7 +443,6 @@ private:
 	void _adjust_new_node_position(Node *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
-	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 	void _reset_transform(TransformType p_type);
@@ -601,10 +608,15 @@ public:
 
 	Control *get_controls_container() { return controls_vb; }
 
+	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+
 	void update_viewport();
 
 	Tool get_current_tool() { return tool; }
 	void set_current_tool(Tool p_tool);
+
+	bool is_grid_visible() const;
+	Vector2 get_grid_step() const { return grid_step; }
 
 	void edit(CanvasItem *p_canvas_item);
 
@@ -660,8 +672,7 @@ class CanvasItemEditorViewport : public Control {
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *texture_node_type_selector = nullptr;
-	Label *label = nullptr;
-	Label *label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
@@ -680,6 +691,8 @@ class CanvasItemEditorViewport : public Control {
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 protected:
 	void _notification(int p_what);

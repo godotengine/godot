@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.18.0 (0c52a8ce2357bbeb927f90dc9a1c19c8ec1bd2c3, 2025)
+- Version: 0.21.2 (72460cd52d1b24492393cdf54a6f19d2fd63e258, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -153,7 +153,7 @@ Patches:
 ## d3d12ma
 
 - Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
-- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- Version: 3.1.0 (0fa62ed3a0a69b73230a8ec1faa752d4061c8dc8, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -170,7 +170,7 @@ Patches:
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.618.2 (dde59d560da2760fec612d6634124edc2a26b82f, 2025)
+- Version: main (25411c74bb9cc7c416b2ff01b3ad8a306811dfdd, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -524,6 +524,7 @@ Patches:
 - `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
 - `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
 - `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
+- `0005-backport-upstream-commit-449b645.patch` (GH-117194)
 
 
 ## libbacktrace

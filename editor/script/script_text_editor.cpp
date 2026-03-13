@@ -35,6 +35,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
@@ -54,7 +56,9 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/rendering/rendering_server.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -192,6 +196,9 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusSTE::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusSTE::_breakpoint_item_pressed));
+
+	// Update immediately for shortcuts.
+	_update_breakpoint_list();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1159,11 +1166,18 @@ void ScriptTextEditor::_on_caret_moved() {
 	if (code_editor->is_previewing_navigation_change()) {
 		return;
 	}
+	if (is_layout_pending_in_tree()) {
+		call_on_all_layout_pending_finished(callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+		return;
+	}
+	// When previous_line < 0, it means the user has just switched to this editor from a different one
+	// (which already saved a state in the history). In this case, we should not save this editor's previous state.
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (Math::abs(current_line - previous_line) >= 10) {
+	if (previous_line >= 0 && Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
+		nav_state["ensure_caret_visible"] = true;
 		emit_signal(SNAME("request_save_previous_state"), nav_state);
 		store_previous_state();
 	}
@@ -1886,6 +1900,11 @@ void ScriptTextEditor::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				previous_line = -1;
+			}
+		} break;
 	}
 }
 
@@ -2585,6 +2604,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/move_up", TTRC("Move Up"), KeyModifierMask::ALT | Key::UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTRC("Move Down"), KeyModifierMask::ALT | Key::DOWN);
 	ED_SHORTCUT("script_text_editor/delete_line", TTRC("Delete Line"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K);
+	ED_SHORTCUT("script_text_editor/join_lines", TTRC("Join Lines"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::J);
 
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.

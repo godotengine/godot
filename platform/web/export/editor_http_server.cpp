@@ -30,6 +30,8 @@
 
 #include "editor_http_server.h"
 
+#include "core/os/os.h"
+
 void EditorHTTPServer::_server_thread_poll(void *data) {
 	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);
 	while (!web_server->server_quit.is_set()) {

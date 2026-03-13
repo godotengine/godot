@@ -38,6 +38,9 @@
 #include "gltf_state.h"
 #include "structures/gltf_object_model_property.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "extensions/physics/gltf_document_extension_physics.h"
 #endif // PHYSICS_3D_DISABLED
@@ -48,6 +51,7 @@
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_gltf.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"

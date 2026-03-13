@@ -41,7 +41,7 @@ def version_hash_builder(target, source, env):
 #include "core/version.h"
 
 const char *const GODOT_VERSION_HASH = "{git_hash}";
-const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
+const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
 """.format(**source[0].read())
         )
 
@@ -63,7 +63,7 @@ def encryption_key_builder(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             f"""\
-#include "core/config/project_settings.h"
+#include <cstdint>
 
 uint8_t script_encryption_key[32] = {{
 	{methods.format_buffer(buffer, 1)}

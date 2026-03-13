@@ -30,6 +30,7 @@
 
 #include "remote_debugger.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
@@ -38,6 +39,7 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/expression.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "servers/display/display_server.h"

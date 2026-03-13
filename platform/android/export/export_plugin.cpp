@@ -40,6 +40,8 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
@@ -64,6 +66,9 @@
 #include "../java_godot_wrapper.h"
 #include "../os_android.h"
 #include "android_editor_gradle_runner.h"
+#endif
+
+#ifndef ANDROID_ENABLED
 #endif
 
 static const char *ANDROID_PERMS[] = {
@@ -469,10 +474,26 @@ void EditorExportPlatformAndroid::_update_preset_status() {
 	bool has_runnable = EditorExport::get_singleton()->get_runnable_preset_for_platform(this).is_valid();
 	if (has_runnable) {
 		has_runnable_preset.set();
+		_start_check_for_changes_poll_thread();
 	} else {
 		has_runnable_preset.clear();
+		_stop_check_for_changes_poll_thread();
 	}
 	devices_changed.set();
+}
+
+void EditorExportPlatformAndroid::_start_check_for_changes_poll_thread() {
+	quit_request.clear();
+	if (!check_for_changes_thread.is_started()) {
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+	}
+}
+
+void EditorExportPlatformAndroid::_stop_check_for_changes_poll_thread() {
+	quit_request.set();
+	if (check_for_changes_thread.is_started()) {
+		check_for_changes_thread.wait_to_finish();
+	}
 }
 #endif
 
@@ -1200,7 +1221,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	String package_name = p_preset->get("package/unique_name");
 
 	const int screen_orientation =
-			_get_android_orientation_value(DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
+			_get_android_orientation_value(DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
 
 	bool screen_support_small = p_preset->get("screen/support_small");
 	bool screen_support_normal = p_preset->get("screen/support_normal");
@@ -4427,7 +4448,6 @@ void EditorExportPlatformAndroid::initialize() {
 		devices_changed.set();
 		_create_editor_debug_keystore_if_needed();
 		_update_preset_status();
-		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 		use_scrcpy = EditorSettings::get_singleton()->get_project_metadata("android", "use_scrcpy", false);
 #else // ANDROID_ENABLED
 		android_editor_gradle_runner = memnew(AndroidEditorGradleRunner);
@@ -4437,10 +4457,7 @@ void EditorExportPlatformAndroid::initialize() {
 
 EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 #ifndef ANDROID_ENABLED
-	quit_request.set();
-	if (check_for_changes_thread.is_started()) {
-		check_for_changes_thread.wait_to_finish();
-	}
+	_stop_check_for_changes_poll_thread();
 #else
 	if (android_editor_gradle_runner) {
 		memdelete(android_editor_gradle_runner);

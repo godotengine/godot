@@ -41,6 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
 
+#include <cfloat> // FLT_MAX
+
 class AnimationMarkerEdit;
 class AnimationTrackEditor;
 class AnimationTrackEdit;
@@ -568,6 +570,8 @@ class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
+	friend class AnimationTrackEditor;
+
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
 	Vector2 icon_size;
@@ -578,7 +582,7 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTrackEditor *editor = nullptr;
 
 	bool hovered = false;
-
+	LocalVector<AnimationTrackEdit *> track_edits;
 	void _zoom_changed();
 
 protected:
@@ -907,7 +911,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _clear_selection(bool p_update = false);
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);

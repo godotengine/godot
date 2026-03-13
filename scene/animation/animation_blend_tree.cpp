@@ -30,6 +30,9 @@
 
 #include "animation_blend_tree.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/resources/animation.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
@@ -40,7 +43,7 @@ StringName AnimationNodeAnimation::get_animation() const {
 	return animation;
 }
 
-Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
+LocalVector<StringName> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
@@ -79,9 +82,9 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "animation" && get_editable_animation_list) {
-		Vector<String> names = get_editable_animation_list();
+		LocalVector<StringName> names = get_editable_animation_list();
 		String anims;
-		for (int i = 0; i < names.size(); i++) {
+		for (uint32_t i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				anims += ",";
 			}
@@ -91,9 +94,7 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 			p_property.hint = PROPERTY_HINT_ENUM;
 			p_property.hint_string = anims;
 		}
-	}
-
-	if (!use_custom_timeline) {
+	} else if (!use_custom_timeline) {
 		if (p_property.name == "timeline_length" || p_property.name == "start_offset" || p_property.name == "loop_mode" || p_property.name == "stretch_time_scale") {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -644,6 +645,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 		set_parameter(request, ONE_SHOT_REQUEST_NONE);
 		set_parameter(internal_active, true);
 		set_parameter(active, true);
+		// Clear fade-out.
+		is_fading_out = false;
+		cur_fade_out_remaining = 0;
 	}
 
 	real_t blend = 1.0;

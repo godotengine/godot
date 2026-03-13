@@ -105,6 +105,7 @@ private:
 	bool _is_content_header(const String &p_header) const;
 	bool _is_method_safe() const;
 	Error _get_redirect_headers(Vector<String> *r_headers);
+	bool _is_automatic_redirect() const;
 
 	bool _handle_response(bool *ret_value);
 

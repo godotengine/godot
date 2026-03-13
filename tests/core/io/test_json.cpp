@@ -35,6 +35,8 @@ TEST_FORCE_LINK(test_json)
 #include "core/io/json.h"
 #include "core/variant/typed_array.h"
 
+#include <cfloat> // DBL_MAX
+
 namespace TestJSON {
 
 TEST_CASE("[JSON] Stringify single data types") {

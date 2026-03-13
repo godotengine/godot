@@ -320,4 +320,6 @@ public class GodotLib {
 	static native boolean isProjectManagerHint();
 
 	static native boolean hasFeature(String feature);
+
+	static native void onPictureInPictureModeChanged(boolean isInPictureInPictureMode);
 }

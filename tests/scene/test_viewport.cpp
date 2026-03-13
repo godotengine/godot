@@ -32,10 +32,12 @@
 
 TEST_FORCE_LINK(test_viewport)
 
+#include "core/object/callable_mp.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
@@ -1170,7 +1172,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move above a Control, that is a Drop target and allows dropping at this point.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				CHECK(root->gui_is_dragging());
 				CHECK_FALSE(root->gui_is_drag_successful());
@@ -1194,11 +1196,11 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move above a Control, that is not a Drop target.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_a, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_FORBIDDEN);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_FORBIDDEN);
 
 				// Move above a Control, that is a Drop target, but has disallowed this point.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_d + Point2i(20, 0), MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_FORBIDDEN);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_FORBIDDEN);
 				CHECK(root->gui_is_dragging());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d + Point2i(20, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -1220,7 +1222,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move away from Controls.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 				CHECK(root->gui_is_dragging());
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_background, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -1237,7 +1239,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(root->gui_is_dragging());
 
 				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				// Move outside of window.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::LEFT, Key::NONE);
@@ -1444,7 +1446,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(root->gui_is_dragging());
 				CHECK(sv_b->during_drag);
 				SEND_GUI_MOUSE_MOTION_EVENT(on_svb, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_svb, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 				CHECK(sv_b->valid_drop);
@@ -1458,7 +1460,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(sv->gui_is_dragging());
 				CHECK(node_d->during_drag);
 				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 				CHECK(node_d->valid_drop);
@@ -1472,7 +1474,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(root->gui_is_dragging());
 				CHECK(ew_b->during_drag);
 				SEND_GUI_MOUSE_MOTION_EVENT(on_ewb, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_ewb, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 				CHECK(ew_b->valid_drop);
@@ -1486,7 +1488,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(ew->gui_is_dragging());
 				CHECK(node_d->during_drag);
 				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+				CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_CAN_DROP);
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 				CHECK(node_d->valid_drop);
@@ -1547,7 +1549,7 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 		Point2i on_c = Point2i(5, 5);
 
 		SEND_GUI_MOUSE_MOTION_EVENT(on_c, MouseButtonMask::NONE, Key::NONE);
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_FORBIDDEN); // GH-74805
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_FORBIDDEN); // GH-74805
 
 		memdelete(node_c);
 		memdelete(node_b);

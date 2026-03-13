@@ -30,13 +30,15 @@
 
 #include "multimesh_instance_2d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
-#include "thirdparty/misc/polypartition.h"
 #endif // NAVIGATION_2D_DISABLED
 
 Callable MultiMeshInstance2D::_navmesh_source_geometry_parsing_callback;

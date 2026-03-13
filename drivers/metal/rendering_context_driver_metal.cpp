@@ -34,6 +34,7 @@
 #include "metal_objects_shared.h"
 #include "rendering_device_driver_metal3.h"
 
+#include "core/os/os.h"
 #include "core/templates/sort_array.h"
 
 #include <os/log.h>
@@ -119,7 +120,7 @@ public:
 		layer = nullptr;
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count) override final {
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -138,12 +139,12 @@ public:
 #if TARGET_OS_OSX
 		// Display sync is only supported on macOS.
 		switch (vsync_mode) {
-			case DisplayServer::VSYNC_MAILBOX:
-			case DisplayServer::VSYNC_ADAPTIVE:
-			case DisplayServer::VSYNC_ENABLED:
+			case DisplayServerEnums::VSYNC_MAILBOX:
+			case DisplayServerEnums::VSYNC_ADAPTIVE:
+			case DisplayServerEnums::VSYNC_ENABLED:
 				layer->setDisplaySyncEnabled(true);
 				break;
-			case DisplayServer::VSYNC_DISABLED:
+			case DisplayServerEnums::VSYNC_DISABLED:
 				layer->setDisplaySyncEnabled(false);
 				break;
 		}
@@ -153,6 +154,28 @@ public:
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
 			// Reserve space for the drawable texture.
 			frame_buffers[i].set_texture_count(1);
+		}
+
+		if (hdr_output) {
+			layer->setWantsExtendedDynamicRangeContent(true);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatRGBA16Float);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
+			r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			pixel_format = MTL::PixelFormatRGBA16Float;
+		} else {
+			layer->setWantsExtendedDynamicRangeContent(false);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
+			pixel_format = MTL::PixelFormatBGRA8Unorm;
 		}
 
 		return OK;
@@ -190,7 +213,7 @@ public:
 		count--;
 		front = (front + 1) % frame_buffers.size();
 
-		if (vsync_mode != DisplayServer::VSYNC_DISABLED) {
+		if (vsync_mode != DisplayServerEnums::VSYNC_DISABLED) {
 			p_cmd_buffer->get_command_buffer()->presentDrawableAfterMinimumDuration(drawable, present_minimum_duration);
 		} else {
 			p_cmd_buffer->get_command_buffer()->presentDrawable(drawable);
@@ -254,9 +277,14 @@ public:
 
 	~SurfaceOffscreen() override {
 		memdelete_arr(frame_buffers);
+		for (MTL::Texture *texture : textures) {
+			if (texture) {
+				texture->release();
+			}
+		}
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count) override final {
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -266,6 +294,28 @@ public:
 		CGSize current = layer->drawableSize();
 		if (!CGSizeEqualToSize(current, drawableSize)) {
 			layer->setDrawableSize(drawableSize);
+		}
+
+		if (hdr_output) {
+			layer->setWantsExtendedDynamicRangeContent(true);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatRGBA16Float);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
+			r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			pixel_format = MTL::PixelFormatRGBA16Float;
+		} else {
+			layer->setWantsExtendedDynamicRangeContent(false);
+			CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+			layer->setColorspace(color_space);
+			CGColorSpaceRelease(color_space);
+			layer->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
+			pixel_format = MTL::PixelFormatBGRA8Unorm;
 		}
 
 		return OK;
@@ -282,12 +332,17 @@ public:
 
 		MDFrameBuffer &frame_buffer = frame_buffers[rear];
 
-		if (textures[rear] == nullptr || textures[rear]->width() != width || textures[rear]->height() != height) {
+		MTL::Texture *texture = textures[rear];
+		if (texture == nullptr || texture->width() != width || texture->height() != height || texture->pixelFormat() != pixel_format) {
 			MTL::TextureDescriptor *texture_descriptor = MTL::TextureDescriptor::texture2DDescriptor(get_pixel_format(), width, height, false);
 			texture_descriptor->setUsage(MTL::TextureUsageRenderTarget);
 			texture_descriptor->setHazardTrackingMode(MTL::HazardTrackingModeUntracked);
 			texture_descriptor->setStorageMode(MTL::StorageModePrivate);
-			textures[rear] = device->newTexture(texture_descriptor);
+			if (texture) {
+				texture->release();
+			}
+			texture = device->newTexture(texture_descriptor);
+			textures[rear] = texture;
 		}
 
 		frame_buffer.size = Size2i(width, height);
@@ -299,7 +354,7 @@ public:
 			drawables[rear] = drawable;
 			frame_buffer.set_texture(0, drawable->texture());
 		} else {
-			frame_buffer.set_texture(0, textures[rear]);
+			frame_buffer.set_texture(0, texture);
 		}
 
 		return RDD::FramebufferID(&frame_buffers[rear]);
@@ -363,7 +418,7 @@ void RenderingContextDriverMetal::surface_set_size(SurfaceID p_surface, uint32_t
 	surface->needs_resize = true;
 }
 
-void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) {
 	Surface *surface = (Surface *)(p_surface);
 	if (surface->vsync_mode == p_vsync_mode) {
 		return;
@@ -372,20 +427,19 @@ void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, Di
 	surface->needs_resize = true;
 }
 
-DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
+DisplayServerEnums::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
 	Surface *surface = (Surface *)(p_surface);
-	surface->hdr_output = p_enabled;
-	surface->needs_resize = true;
+	surface->set_hdr_output_enabled(p_enabled);
 }
 
 bool RenderingContextDriverMetal::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
-	return surface->hdr_output;
+	return surface->is_hdr_output_enabled();
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
@@ -394,7 +448,7 @@ void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(Sur
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
-	Surface *surface = (Surface *)(p_surface);
+	const Surface *surface = (Surface *)(p_surface);
 	return surface->hdr_reference_luminance;
 }
 
@@ -404,18 +458,16 @@ void RenderingContextDriverMetal::surface_set_hdr_output_max_luminance(SurfaceID
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
-	Surface *surface = (Surface *)(p_surface);
+	const Surface *surface = (Surface *)(p_surface);
 	return surface->hdr_max_luminance;
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
-	Surface *surface = (Surface *)(p_surface);
-	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
-	return surface->hdr_linear_luminance_scale;
+	return surface->hdr_reference_luminance;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_max_value(SurfaceID p_surface) const {

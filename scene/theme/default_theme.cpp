@@ -669,6 +669,18 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0));
 	theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0));
 
+	// Virtual Joystick
+
+	Ref<StyleBoxFlat> style_joystick = make_flat_stylebox(style_normal_color, 0, 0, 0, 0, 10000, false, 4 * scale);
+	style_joystick->set_corner_detail(24 * scale);
+	Ref<StyleBoxFlat> style_joystick_tip = make_flat_stylebox(style_normal_color, 0, 0, 0, 0, 10000);
+	style_joystick_tip->set_corner_detail(24 * scale);
+
+	theme->set_stylebox("normal_joystick", "VirtualJoystick", style_joystick);
+	theme->set_stylebox("normal_tip", "VirtualJoystick", style_joystick_tip);
+	theme->set_stylebox("pressed_joystick", "VirtualJoystick", style_joystick);
+	theme->set_stylebox("pressed_tip", "VirtualJoystick", style_joystick_tip);
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
@@ -760,6 +772,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("radio_unchecked_disabled", "PopupMenu", icons["radio_unchecked_disabled"]);
 	theme->set_icon("submenu", "PopupMenu", icons["popup_menu_arrow_right"]);
 	theme->set_icon("submenu_mirrored", "PopupMenu", icons["popup_menu_arrow_left"]);
+	theme->set_icon("search", "PopupMenu", icons["search"]);
 
 	theme->set_font(SceneStringName(font), "PopupMenu", Ref<Font>());
 	theme->set_font("font_separator", "PopupMenu", Ref<Font>());

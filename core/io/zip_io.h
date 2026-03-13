@@ -32,11 +32,9 @@
 
 #include "core/io/file_access.h"
 
-// Not directly used in this header, but assumed available in downstream users
-// like platform/*/export/export.cpp. Could be fixed, but probably better to have
-// thirdparty includes in as little headers as possible.
-#include "thirdparty/minizip/unzip.h"
-#include "thirdparty/minizip/zip.h"
+// This file serves as the Godot interface to minizip.
+#include "thirdparty/minizip/unzip.h" // IWYU pragma: export
+#include "thirdparty/minizip/zip.h" // IWYU pragma: export
 
 // Get the current file info and safely convert the full filepath to a String.
 int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_file_info, String &r_filepath);

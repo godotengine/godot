@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "scene/resources/atlas_texture.h"
-#include "scene/resources/image_texture.h"
-#include "scene/resources/material.h"
+#include "scene/resources/texture.h"
+
+class Material;
 
 class DrawableTexture2D : public Texture2D {
 	GDCLASS(DrawableTexture2D, Texture2D);
@@ -68,11 +68,12 @@ public:
 	void set_height(int p_height);
 	int get_height() const override;
 
-	void set_format(DrawableFormat p_format);
-	DrawableFormat get_format() const;
+	void set_drawable_format(DrawableFormat p_format);
+	DrawableFormat get_drawable_format() const;
 	void set_use_mipmaps(bool p_mipmaps);
 	bool get_use_mipmaps() const;
 
+	virtual Image::Format get_format() const override;
 	virtual RID get_rid() const override;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;

@@ -39,7 +39,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
@@ -49,6 +48,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/version_generated.gen.h"
 
 #include "thirdparty/grisu2/grisu2.h"
+
+#include <cstdio>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -351,7 +352,7 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return p_str == String::utf16((const char16_t *)p_chr);
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return p_str == (const char32_t *)p_chr;
 #endif
 }
@@ -365,7 +366,7 @@ bool operator!=(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return !(p_str == String::utf16((const char16_t *)p_chr));
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return !(p_str == String((const char32_t *)p_chr));
 #endif
 }
@@ -1195,6 +1196,9 @@ Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty
 	Vector<double> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1222,6 +1226,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 	Vector<float> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1254,6 +1261,9 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int end = find(p_splitter, from);
@@ -1278,6 +1288,9 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int idx = 0;
