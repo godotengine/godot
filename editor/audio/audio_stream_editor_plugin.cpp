@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_editor_plugin.h"
-
+#include "scene/resources/audio_stream_wav.h"
 #include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
@@ -293,7 +293,13 @@ AudioStreamEditor::AudioStreamEditor() {
 // EditorInspectorPluginAudioStream
 
 bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
-	return Object::cast_to<AudioStream>(p_object) != nullptr;
+	if (Object::cast_to<AudioStream>(p_object) == nullptr) {
+		return false;
+	}
+	String cls = p_object->get_class();
+	return cls == "AudioStreamWAV" ||
+		   cls == "AudioStreamMP3" ||
+		   cls == "AudioStreamOggVorbis";
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
