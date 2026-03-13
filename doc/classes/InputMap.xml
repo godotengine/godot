@@ -37,7 +37,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<description>
-				Returns the current, minimum percentage value for the analog threshold of the given [param action] in which it activates. Analog input strengths below that value will not activate.
+				Returns the current, minimum percentage value (a number between [code]0.0[/code] and [code]1.0[/code] representing between [code]0%[/code] and [code]100%[/code] respectively) for the analog threshold of the given [param action] in which it activates. Analog input strengths below that value will not activate.
 			</description>
 		</method>
 		<method name="action_get_events">
