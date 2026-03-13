@@ -45,6 +45,18 @@
 				Emitted when the [member anim_player] is changed.
 			</description>
 		</signal>
+		<signal name="animation_state_entered">
+			<param index="0" name="anim_state_name" type="StringName" />
+			<description>
+				Emitted when an animation state machine changes state. Emits the new animation state's name.
+			</description>
+		</signal>
+		<signal name="animation_state_exited">
+			<param index="0" name="anim_state_name" type="StringName" />
+			<description>
+				Emitted when an animation state machine changes state. Emits the previous animation state's name.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
