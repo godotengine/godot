@@ -97,7 +97,7 @@
 			<description>
 				Returns a list of keys bound to this action, separated by [code]" or "[/code].
 				[b]Example:[/b][br]
-				- [code]&amp;"ui_accept"[/code] turns into [code]"Enter or KP Enter or Space"[/code]
+				- [code]&amp;"ui_accept"[/code] turns into [code]"Enter or KP Enter or Space"[/code].
 				- [code]&amp;"ui_cancel"[/code] turns into [code]"Escape"[/code]
 			</description>
 		</method>
