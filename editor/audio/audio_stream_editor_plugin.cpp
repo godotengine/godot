@@ -29,12 +29,13 @@
 /**************************************************************************/
 
 #include "audio_stream_editor_plugin.h"
-#include "scene/resources/audio_stream_wav.h"
+
 #include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/audio_stream_wav.h"
 #include "servers/rendering/rendering_server.h"
 
 // AudioStreamEditor
