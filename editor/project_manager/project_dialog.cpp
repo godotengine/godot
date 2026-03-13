@@ -44,6 +44,7 @@
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/version_control/editor_vcs_interface.h"
+#include "license_generator.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
@@ -617,6 +618,8 @@ void ProjectDialog::ok_pressed() {
 		fa_icon->store_string(get_default_project_icon());
 
 		EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), path);
+
+		LicenseGenerator::generate_license(LicenseGenerator::LicenseType(license_selection->get_selected()), path);
 
 		// Ensures external editors and IDEs use UTF-8 encoding.
 		const String editor_config_path = path.path_join(".editorconfig");
@@ -1218,6 +1221,22 @@ ProjectDialog::ProjectDialog() {
 	fdialog_install = memnew(EditorFileDialog);
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
+
+	// License selection.
+	license_container = memnew(HBoxContainer);
+	vb->add_child(license_container);
+	l = memnew(Label);
+	l->set_text(TTRC("License:"));
+	license_container->add_child(l);
+	license_selection = memnew(OptionButton);
+	license_selection->set_custom_minimum_size(Size2(100, 20));
+	license_selection->add_item(TTRC("None"), (int)LicenseGenerator::LicenseType::NONE);
+	license_selection->add_item(TTRC("MIT"), (int)LicenseGenerator::LicenseType::MIT);
+	license_selection->add_item(TTRC("Apache 2.0"), (int)LicenseGenerator::LicenseType::APACHE_2_0);
+	license_selection->add_item(TTRC("GPL 3.0"), (int)LicenseGenerator::LicenseType::GPL_3_0);
+	license_selection->select(0);
+	license_selection->set_accessibility_name(TTRC("License:"));
+	license_container->add_child(license_selection);
 
 	Control *spacer2 = memnew(Control);
 	spacer2->set_v_size_flags(Control::SIZE_EXPAND_FILL);

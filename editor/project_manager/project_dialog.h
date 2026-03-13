@@ -97,6 +97,8 @@ private:
 	TextureRect *install_status_rect = nullptr;
 
 	OptionButton *vcs_metadata_selection = nullptr;
+	HBoxContainer *license_container = nullptr;
+	OptionButton *license_selection = nullptr;
 
 	CheckBox *edit_check_box = nullptr;
 
