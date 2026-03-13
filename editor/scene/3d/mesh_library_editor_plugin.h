@@ -83,7 +83,6 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "MeshLibrary"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
