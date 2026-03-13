@@ -99,6 +99,7 @@ void AudioStreamEditor::_draw_preview() {
 		return;
 	}
 
+	Rect2 rect = _preview->get_rect();
 	Vector<Vector2> points;
 	points.resize(width * 2);
 
@@ -109,8 +110,8 @@ void AudioStreamEditor::_draw_preview() {
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i;
-		points.write[idx * 2 + 0] = Vector2(i + 1, min * size.height);
-		points.write[idx * 2 + 1] = Vector2(i + 1, max * size.height);
+		points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 	}
 
 	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor)) };
@@ -168,16 +169,16 @@ void AudioStreamEditor::_on_finished() {
 }
 
 void AudioStreamEditor::_draw_indicator() {
-    if (stream.is_null()) {
-        return;
-    }
-    float len = stream->get_length();
-    if (len <= 0.0f) {
-        _current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
-        return;
-    }
-    Rect2 rect = _preview->get_rect();
-    float ofs_x = _current / len * rect.size.width;
+	if (stream.is_null()) {
+		return;
+	}
+	float len = stream->get_length();
+	if (len <= 0.0f) {
+		_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
+		return;
+	}
+	Rect2 rect = _preview->get_rect();
+	float ofs_x = _current / len * rect.size.width;
 	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
