@@ -31,6 +31,7 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/io/http_client.h"
+#include "core/io/xml_parser.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"

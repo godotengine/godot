@@ -37,6 +37,8 @@
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
+class Node;
+
 struct NavMeshGeometryParser3D {
 	RID self;
 	Callable callback;

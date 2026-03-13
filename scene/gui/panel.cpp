@@ -30,7 +30,6 @@
 
 #include "panel.h"
 
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 

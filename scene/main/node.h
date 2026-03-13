@@ -34,8 +34,9 @@
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/iterable.h"
-#include "scene/scene_string_names.h"
+#include "scene/scene_string_names.h" // IWYU pragma: export. Make available to all Nodes.
 
 class MultiplayerAPI;
 class NodePath;
@@ -498,6 +499,8 @@ public:
 		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
 		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
+		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
+		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,

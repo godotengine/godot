@@ -190,7 +190,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	accept_event();
-	if (!event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
+	if (event_to_check.is_null() || !event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
 

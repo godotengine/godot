@@ -36,7 +36,6 @@
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"
@@ -60,6 +59,10 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
+
+#ifdef MACOS_ENABLED
+#include "core/os/os.h"
+#endif
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);

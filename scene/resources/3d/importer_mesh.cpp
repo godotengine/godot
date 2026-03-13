@@ -39,6 +39,8 @@
 #include "core/math/convex_hull.h"
 #endif // PHYSICS_3D_DISABLED
 
+#include <cfloat> // FLT_EPSILON
+
 Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterMesh> &p_importer_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces) {
 	// Setup and safety checks.
 	const int mesh_count = p_importer_meshes.size();

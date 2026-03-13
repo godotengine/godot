@@ -325,7 +325,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 			return Variant();
 #endif
 		}
-		// Do these now to avoid locking again after the call
+		// Do these now to avoid locking again after the call.
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
 	}
@@ -334,25 +334,8 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	Callable::CallError err;
 	Variant ret = function->call(nullptr, nullptr, 0, err, &state);
 
-	bool completed = true;
-
-	// If the return value is a GDScriptFunctionState reference,
-	// then the function did await again after resuming.
-	if (ret.is_ref_counted()) {
-		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
-		if (gdfs && gdfs->function == function) {
-			completed = false;
-			// Keep the first state alive via reference.
-			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
-		}
-	}
-
-	function = nullptr; //cleaned up;
+	function = nullptr; // Cleaned up.
 	state.result = Variant();
-
-	if (completed) {
-		_clear_stack();
-	}
 
 	return ret;
 }

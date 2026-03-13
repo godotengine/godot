@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "platform_config.h"
+#include "platform_config.h" // IWYU pragma: keep. Can override the implementation.
 
 // Define PLATFORM_THREAD_OVERRIDE in your platform's `platform_config.h`
 // to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`.

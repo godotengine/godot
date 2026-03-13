@@ -47,7 +47,11 @@
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
+#endif // NAVIGATION_3D_DISABLED
 
+#include <cfloat> // FLT_EPSILON
+
+#ifndef NAVIGATION_3D_DISABLED
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_3D_DISABLED

@@ -35,19 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display/accessibility_server.h"
 
-#ifdef ACCESSKIT_DYNAMIC
-#ifdef LINUXBSD_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-so_wrap.h"
-#endif
-#ifdef MACOS_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-dylib_wrap.h"
-#endif
-#ifdef WINDOWS_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-dll_wrap.h"
-#endif
-#else
 #include <accesskit.h>
-#endif
 
 class AccessibilityServerAccessKit : public AccessibilityServer {
 	GDSOFTCLASS(AccessibilityServerAccessKit, AccessibilityServer);
