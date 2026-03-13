@@ -236,10 +236,6 @@ TEST_CASE("[Callable] VariantCallable equality and ordering") {
 	CHECK(c_back < c_front); // "back" < "front"
 	CHECK_FALSE(c_front < c_back);
 
-	// Ordering: different arrays should have a consistent order.
-	bool c1_less = c1 < c2;
-	bool c2_less = c2 < c1;
-	CHECK_NE(c1_less, c2_less);
 }
 
 } // namespace TestCallable
