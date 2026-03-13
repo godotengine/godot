@@ -2682,6 +2682,8 @@ void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
 	undo_redo->add_do_method(selected_shader_material.ptr(), "set_shader", p_shader);
 	undo_redo->add_undo_method(selected_shader_material.ptr(), "set_shader", existing);
 	undo_redo->commit_action();
+
+	EditorNode::get_singleton()->edit_item(p_shader.ptr(), this);
 }
 
 void SceneTreeDock::_script_creation_closed() {

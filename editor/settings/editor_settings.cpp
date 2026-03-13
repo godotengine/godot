@@ -1397,6 +1397,7 @@ void EditorSettings::create() {
 
 		print_verbose("EditorSettings: Load OK!");
 
+		singleton->init_shortcuts();
 		singleton->setup_language(true);
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
@@ -1424,9 +1425,14 @@ fail:
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
+	singleton->init_shortcuts();
 	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
+}
+
+void EditorSettings::init_shortcuts() {
+	ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
