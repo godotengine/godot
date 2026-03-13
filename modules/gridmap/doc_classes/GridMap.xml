@@ -139,7 +139,7 @@
 			<description>
 				Returns the position of a grid cell in the GridMap's local coordinate space. The returned position, for each axis, is either cell center or the cell edge closer to negative infinity, based on the values of [member cell_center_x], [member cell_center_y], [member cell_center_z]. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method local_to_map].
 				[codeblock]
-				# All examples for: cell_size = Vector2(2.0, 3.0, 4.0)
+				# All examples for: cell_size = Vector3(2.0, 3.0, 4.0)
 
 				# cell_center_x = true, cell_center_y = true, cell_center_z = true
 				map_to_local(Vector3i(0, 0, 0)) # Returns Vector3(1.0, 1.5, 2.0)
