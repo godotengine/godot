@@ -48,7 +48,7 @@ class RingBuffer {
 
 public:
 	T read() {
-		ERR_FAIL_COND_V(space_left() < 1, T());
+		ERR_FAIL_COND_V(data_left() < 1, T());
 		return data.ptr()[inc(read_pos, 1)];
 	}
 
