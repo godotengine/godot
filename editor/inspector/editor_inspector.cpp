@@ -51,6 +51,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/inspector/multi_resource_edit.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
@@ -1951,6 +1952,24 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 				}
 
 				ur->commit_action();
+			} else if (const MultiResourceEdit *multi_resource_edit = Object::cast_to<MultiResourceEdit>(object)) {
+				const String action_name = vformat(TTR("Set category %s on %d resources"), category_name, multi_resource_edit->get_resource_count());
+				ur->create_action(action_name);
+
+				for (int i = 0; i < multi_resource_edit->get_resource_count(); i++) {
+					Ref<Resource> r = multi_resource_edit->get_resource(i);
+					if (r.is_null()) {
+						continue;
+					}
+
+					for (const KeyValue<Variant, Variant> &pair : clipboard) {
+						String property_name = pair.key;
+						ur->add_do_property(r.ptr(), property_name, pair.value);
+						ur->add_undo_property(r.ptr(), property_name, r->get(property_name));
+					}
+				}
+
+				ur->commit_action();
 			} else if (EditorDebuggerRemoteObjects *remote_objects = Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
 				const int size = remote_objects->remote_object_ids.size();
 				ur->create_action(size == 1 ? vformat(TTR("Set category %s"), category_name) : vformat(TTR("Set %s on %d objects"), category_name, size), UndoRedo::MERGE_ENDS);
@@ -2805,6 +2824,23 @@ void EditorInspectorSection::menu_option(int p_option) const {
 					for (const String &property_name : properties) {
 						ur->add_do_property(n, property_name, clipboard[property_name]);
 						ur->add_undo_property(n, property_name, n->get(property_name));
+					}
+				}
+
+				ur->commit_action();
+			} else if (const MultiResourceEdit *multi_resource_edit = Object::cast_to<MultiResourceEdit>(object)) {
+				const String action_name = vformat(TTR("Set section %s on %d resources"), section_path, multi_resource_edit->get_resource_count());
+				ur->create_action(action_name);
+
+				for (int i = 0; i < multi_resource_edit->get_resource_count(); i++) {
+					Ref<Resource> r = multi_resource_edit->get_resource(i);
+					if (r.is_null()) {
+						continue;
+					}
+
+					for (const String &property_name : properties) {
+						ur->add_do_property(r.ptr(), property_name, clipboard[property_name]);
+						ur->add_undo_property(r.ptr(), property_name, r->get(property_name));
 					}
 				}
 
@@ -4343,8 +4379,9 @@ void EditorInspector::update_tree() {
 				continue;
 			}
 
-			// Hide the "MultiNodeEdit" category for MultiNodeEdit.
-			if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
+			// Hide the "MultiNodeEdit"/"MultiResourceEdit" category for multi-edit objects.
+			if ((Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") ||
+					(Object::cast_to<MultiResourceEdit>(object) && p.name == "MultiResourceEdit")) {
 				continue;
 			}
 
@@ -4698,6 +4735,8 @@ void EditorInspector::update_tree() {
 				classname = object_class;
 			} else if (Object::cast_to<MultiNodeEdit>(object)) {
 				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
+			} else if (Object::cast_to<MultiResourceEdit>(object)) {
+				classname = Object::cast_to<MultiResourceEdit>(object)->get_edited_class_name();
 			} else if (classname == "") {
 				classname = object->get_class_name();
 				Resource *res = Object::cast_to<Resource>(object);
@@ -5238,7 +5277,7 @@ void EditorInspector::edit(Object *p_object) {
 		}
 		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 
-		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object) || Object::cast_to<MultiNodeEdit>(object);
+		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object) || Object::cast_to<MultiNodeEdit>(object) || Object::cast_to<MultiResourceEdit>(object);
 		_update_current_favorites();
 
 		update_tree();
@@ -5485,6 +5524,10 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+		_edit_request_change(object, p_name);
+		emit_signal(_prop_edited, p_name);
+	} else if (Object::cast_to<MultiResourceEdit>(object)) {
+		Object::cast_to<MultiResourceEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
@@ -5835,7 +5878,9 @@ void EditorInspector::_update_current_favorites() {
 
 	// Fetch built-in properties.
 	const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object);
-	StringName class_name = multi_node_edit ? multi_node_edit->get_edited_class_name() : object->get_class_name();
+	const MultiResourceEdit *multi_resource_edit = Object::cast_to<MultiResourceEdit>(object);
+	StringName class_name = multi_node_edit ? multi_node_edit->get_edited_class_name()
+											: (multi_resource_edit ? multi_resource_edit->get_edited_class_name() : object->get_class_name());
 	for (const KeyValue<String, PackedStringArray> &KV : favorites) {
 		if (ClassDB::is_parent_class(class_name, KV.key)) {
 			current_favorites.append_array(KV.value);
@@ -5849,7 +5894,9 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 	}
 
 	const MultiNodeEdit *mne = Object::cast_to<MultiNodeEdit>(object);
-	StringName validate_name = mne ? mne->get_edited_class_name() : object->get_class_name();
+	const MultiResourceEdit *mre = Object::cast_to<MultiResourceEdit>(object);
+	StringName validate_name = mne ? mne->get_edited_class_name()
+								   : (mre ? mre->get_edited_class_name() : object->get_class_name());
 	StringName class_name;
 
 	String theme_property;

@@ -55,6 +55,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
+#include "editor/inspector/multi_resource_edit.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_create_dialog.h"
@@ -719,6 +720,8 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	// Display the current path.
 	_set_current_path_line_edit_text(current_path);
 	_push_to_history();
+
+	_try_multi_edit_resources();
 
 	// Update the file list.
 	if (!updating_tree && display_mode != DISPLAY_MODE_TREE_ONLY) {
@@ -3787,6 +3790,36 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
 	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
+
+	_try_multi_edit_resources();
+}
+
+void FileSystemDock::_try_multi_edit_resources() {
+	Vector<String> selected = get_selected_paths();
+	if (selected.size() <= 1) {
+		return;
+	}
+
+	LocalVector<String> resource_paths;
+	for (const String &path : selected) {
+		if (path.ends_with("/")) {
+			continue;
+		}
+		String type = EditorFileSystem::get_singleton()->get_file_type(path);
+		if (!ClassDB::is_parent_class(type, "Resource")) {
+			return;
+		}
+		resource_paths.push_back(path);
+	}
+
+	if (resource_paths.size() > 1) {
+		Ref<MultiResourceEdit> mre;
+		mre.instantiate();
+		for (const String &path : resource_paths) {
+			mre->add_resource(path);
+		}
+		EditorNode::get_singleton()->push_item(mre.ptr());
+	}
 }
 
 void FileSystemDock::_update_selection_changed() {
