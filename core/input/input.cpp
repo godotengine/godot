@@ -38,6 +38,10 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "scene/gui/virtual_controller.h"
+#include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 
 #ifdef DEV_ENABLED
 #include "core/os/thread.h"
@@ -1342,6 +1346,32 @@ bool Input::is_ignoring_joypad_on_unfocused_application() const {
 
 void Input::set_virtual_controller_enabled(bool p_enabled) {
 	virtual_controller_enabled = p_enabled;
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (!virtual_controller_enabled && virtual_controller != nullptr) {
+		virtual_controller->queue_free();
+		virtual_controller = nullptr;
+		if (virtual_controller_canvas_layer != nullptr) {
+			virtual_controller_canvas_layer->queue_free();
+			virtual_controller_canvas_layer = nullptr;
+		}
+	}
+
+	if (virtual_controller_enabled && virtual_controller == nullptr) {
+		if (virtual_controller_canvas_layer == nullptr) {
+			virtual_controller_canvas_layer = memnew(CanvasLayer);
+			SceneTree::get_singleton()->get_root()->add_child(virtual_controller_canvas_layer, false, Node::INTERNAL_MODE_BACK);
+			virtual_controller_canvas_layer->set_name("_VirtualControllerCanvasLayer");
+			virtual_controller_canvas_layer->set_layer(128); // Ensure the virtual controller is on top of everything else.
+		}
+
+		virtual_controller = memnew(VirtualController);
+		virtual_controller_canvas_layer->add_child(virtual_controller, false, Node::INTERNAL_MODE_BACK);
+		virtual_controller->set_name("_VirtualController");
+	}
 }
 
 bool Input::is_virtual_controller_enabled() const {

@@ -7,4 +7,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<theme_items>
+		<theme_item name="button" data_type="style" type="StyleBox">
+			The style of the virtual controller buttons.
+		</theme_item>
+	</theme_items>
 </class>

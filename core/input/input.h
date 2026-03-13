@@ -38,7 +38,9 @@
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 
+class CanvasLayer;
 class GamepadMotion;
+class VirtualController;
 
 namespace InputClassEnums {
 // Keep synced with DisplayServerEnums::MouseMode enum.
@@ -130,6 +132,8 @@ private:
 	bool application_focused = true;
 	bool embedder_focused = false;
 	bool virtual_controller_enabled = false;
+	CanvasLayer *virtual_controller_canvas_layer = nullptr;
+	VirtualController *virtual_controller = nullptr;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
