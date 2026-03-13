@@ -15,7 +15,8 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Adds an [InputEvent] to an action. This [InputEvent] will trigger the action.
+				Inserts an [InputEvent] into an action. This [InputEvent] will trigger the action.
+				For removing actions instead, see [method action_erase_event].
 			</description>
 		</method>
 		<method name="action_erase_event">
@@ -23,14 +24,17 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Removes an [InputEvent] from an action.
+				Removes an [InputEvent] from an action. This [InputEvent] will no longer trigger the action.
+				For removing all [InputEvent]s from an action, see [method action_erase_events].
+				For including actions instead, see [method action_add_event].
 			</description>
 		</method>
 		<method name="action_erase_events">
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
 			<description>
-				Removes all events from an action.
+				Removes all events from an action. With no binds to an [InputEvent], this action will no longer be able to be triggered until a new [InputEvent] is added. See [method action_add_event].
+				For removing a single [InputEvent] from an action, see [method action_erase_event].
 			</description>
 		</method>
 		<method name="action_get_deadzone">
@@ -61,7 +65,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="deadzone" type="float" />
 			<description>
-				Sets a deadzone value for the action.
+				Defines the current, minimum percentage value (a number between [code]0.0[/code] and [code]1.0[/code] representing between [code]0%[/code] and [code]100%[/code] respectively) for the analog threshold of the given [param action] in which it activates. Analog input strengths below that value will not activate.
 			</description>
 		</method>
 		<method name="add_action">
@@ -77,7 +81,7 @@
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
 			<description>
-				Removes an action from the [InputMap].
+				Removes an action from the [InputMap]. Checks for this action will no longer respond.
 			</description>
 		</method>
 		<method name="event_is_action" qualifiers="const">
@@ -103,7 +107,7 @@
 		<method name="get_actions">
 			<return type="StringName[]" />
 			<description>
-				Returns an array of all actions in the [InputMap].
+				Returns an array of the names of all actions in the [InputMap].
 			</description>
 		</method>
 		<method name="has_action" qualifiers="const">
