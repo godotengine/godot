@@ -256,6 +256,8 @@ public:
 		Rect2i rect;
 		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 
+		bool ready = false; // Is configured or otherwise ready to be mapped.
+
 		// Toplevel states.
 		bool maximized = false; // MUST obey configure size.
 		bool fullscreen = false; // Can be smaller than configure size.
@@ -1057,6 +1059,9 @@ private:
 	static Vector<uint8_t> _wl_data_offer_read(struct wl_display *wl_display, const char *p_mime, struct wl_data_offer *wl_data_offer);
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
+	// Crashes if there's an error in the display and crashes if so.
+	static void _wl_display_check_error(struct wl_display *wl_display);
+
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
@@ -1193,6 +1198,9 @@ public:
 
 	void commit_surfaces();
 
+	// Returns handled events.
+	int wait_events(int p_timeout = -1);
+
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
@@ -1201,6 +1209,8 @@ public:
 	uint64_t window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServerEnums::WindowID p_window_id) const;
 	bool is_suspended() const;
+
+	bool window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms);
 
 	struct godot_embedding_compositor *get_embedding_compositor();
 
