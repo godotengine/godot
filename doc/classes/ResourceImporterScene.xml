@@ -39,6 +39,15 @@
 		<member name="blender/animation/limit_playback" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], limits animation import to the playback range defined in Blender (the Start and End options at the right of the animation timeline in Blender). This can avoid including unused animation data, making the imported scene smaller and faster to load. However, this can also result in missing animation data if the playback range is not set correctly in Blender.
 		</member>
+		<member name="blender/materials/export_materials" type="int" setter="" getter="" default="1">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (Placeholder)[/code], does not import materials, but keeps surface slots so that separate materials can be assigned to different surfaces.
+			- [code]1 (Export)[/code], imports materials as-is (note that procedural Blender materials may not work correctly).
+			- [code]2 (Named Placeholder)[/code], imports materials, but doesn't import images that are packed into the [code].blend[/code] file. Textures will have to be reassigned manually in the imported materials.
+		</member>
+		<member name="blender/materials/unpack_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], unpacks the original images to the Godot filesystem and uses them. This allows changing image import settings like VRAM compression. If [code]false[/code], allows Blender to convert the original images, such as repacking roughness and metallic into one roughness + metallic texture. In most cases, this option should be left checked, but if the [code].blend[/code] file's images aren't in the correct format, this must be disabled for correct behavior.
+		</member>
 		<member name="blender/meshes/colors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], imports vertex colors from Blender.
 		</member>
