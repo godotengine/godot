@@ -75,6 +75,27 @@
 		<member name="blender/meshes/uvs" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], imports vertex UV1 and UV2 from Blender.
 		</member>
+		<member name="blender/nodes/active_collection_only" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], only imports nodes that are in the active collection in Blender.
+		</member>
+		<member name="blender/nodes/cameras" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports cameras from Blender.
+		</member>
+		<member name="blender/nodes/custom_properties" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports custom properties from Blender as glTF extras. This data can then be used from an editor plugin that uses [method GLTFDocument.register_gltf_document_extension], which can set node metadata on import (among other use cases).
+		</member>
+		<member name="blender/nodes/modifiers" type="int" setter="" getter="" default="1">
+			- [code]0 (No Modifiers)[/code], object modifiers are ignored on import.
+			- [code]1 (All Modifiers)[/code], object modifiers are applied on import.
+		</member>
+		<member name="blender/nodes/punctual_lights" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports lights (directional, omni, and spot) from Blender. "Punctual" is not to be confused with "positional", which is why directional lights are also included.
+		</member>
+		<member name="blender/nodes/visible" type="int" setter="" getter="" default="0">
+			- [code]0 (All)[/code], imports everything, even invisible objects.
+			- [code]1 (Visible Only)[/code], only imports visible objects.
+			- [code]2 (Renderable)[/code], only imports objects that are marked as renderable in Blender, regardless of whether they are actually visible.
+		</member>
 		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables or disables geometry helper nodes.
 		</member>
