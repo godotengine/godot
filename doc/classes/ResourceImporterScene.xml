@@ -39,6 +39,33 @@
 		<member name="blender/animation/limit_playback" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], limits animation import to the playback range defined in Blender (the Start and End options at the right of the animation timeline in Blender). This can avoid including unused animation data, making the imported scene smaller and faster to load. However, this can also result in missing animation data if the playback range is not set correctly in Blender.
 		</member>
+		<member name="blender/meshes/colors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports vertex colors from Blender.
+		</member>
+		<member name="blender/meshes/export_bones_deforming_mesh_only" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], only imports bones that deform the mesh from Blender.
+		</member>
+		<member name="blender/meshes/export_geometry_nodes_instances" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports geometry node instances from Blender.
+		</member>
+		<member name="blender/meshes/gpu_instances" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports instances and particle systems as GLTF's buffer/accessor data instead of numerous singular [Mesh] objects. This does not include Geometry Nodes instancing.
+		</member>
+		<member name="blender/meshes/normals" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex normals from Blender.
+		</member>
+		<member name="blender/meshes/skins" type="int" setter="" getter="" default="2">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (None)[/code], skips skeleton skin data import from Blender.
+			- [code]1 (4 Influences (Compatible))[/code], imports skin data to be compatible with all renderers, at the cost of lower precision for certain rigs.
+			- [code]2 (All Influences)[/code], imports skin data with all influences (up to 8 in Godot), which is more precise but may not be compatible with all renderers.
+		</member>
+		<member name="blender/meshes/tangents" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex tangents from Blender.
+		</member>
+		<member name="blender/meshes/uvs" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex UV1 and UV2 from Blender.
+		</member>
 		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables or disables geometry helper nodes.
 		</member>
