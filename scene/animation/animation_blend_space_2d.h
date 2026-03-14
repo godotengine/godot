@@ -157,9 +157,6 @@ public:
 	bool is_using_sync() const;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
-
-	AnimationNodeBlendSpace2D();
-	~AnimationNodeBlendSpace2D();
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode)

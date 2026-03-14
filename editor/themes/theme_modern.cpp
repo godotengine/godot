@@ -2836,6 +2836,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
+
+		// BlendSpace graph.
+		{
+			Ref<StyleBox> bs_panel_style = p_config.tree_panel_style->duplicate();
+			bs_panel_style->set_content_margin_all(0);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphBlendSpace", bs_panel_style);
+		}
 	}
 
 	// TileSet editor.

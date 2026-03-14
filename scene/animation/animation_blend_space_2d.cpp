@@ -840,9 +840,3 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE_CARRY);
 }
-
-AnimationNodeBlendSpace2D::AnimationNodeBlendSpace2D() {
-}
-
-AnimationNodeBlendSpace2D::~AnimationNodeBlendSpace2D() {
-}
