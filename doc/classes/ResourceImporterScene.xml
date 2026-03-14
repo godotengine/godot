@@ -30,6 +30,13 @@
 		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], trim the beginning and end of animations if there are no keyframe changes. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
+		<member name="fbx/embedded_image_handling" type="int" setter="" getter="" default="1">
+			Controls how textures embedded within fbx scenes should be handled.
+			- [code]0 (Discard All Textures)[/code], textures are not imported. This is useful if you wish to manually set up materials in Godot instead.
+			- [code]1 (Extract Textures)[/code], extracts textures to external images. This can result in smaller file sizes and more control over import options.
+			- [code]2 (Embed As Basis Universal)[/code], keeps textures embedded in the imported scene with VRAM compression.
+			- [code]3 (Embed As Uncompressed)[/code], keeps textures embedded in the imported scene without VRAM compression.
+		</member>
 		<member name="gltf/embedded_image_handling" type="int" setter="" getter="" default="1">
 			Controls how textures embedded within glTF scenes should be handled.
 			- [code]0 (Discard All Textures)[/code], textures are not imported. This is useful if you wish to manually set up materials in Godot instead.
