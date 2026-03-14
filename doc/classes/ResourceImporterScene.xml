@@ -30,6 +30,9 @@
 		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], trim the beginning and end of animations if there are no keyframe changes. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
+		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables or disables geometry helper nodes.
+		</member>
 		<member name="fbx/embedded_image_handling" type="int" setter="" getter="" default="1">
 			Controls how textures embedded within fbx scenes should be handled.
 			- [code]0 (Discard All Textures)[/code], textures are not imported. This is useful if you wish to manually set up materials in Godot instead.
