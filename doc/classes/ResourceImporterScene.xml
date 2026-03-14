@@ -30,6 +30,15 @@
 		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], trim the beginning and end of animations if there are no keyframe changes. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
+		<member name="blender/animation/always_sample" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], forces animation sampling on import to ensure consistency between how Blender and glTF perform animation interpolation, at the cost of larger file sizes. If [code]false[/code], there may be differences in how animations are interpolated between what you see in Blender and the imported scene in Godot, due to different interpolation semantics between both.
+		</member>
+		<member name="blender/animation/group_tracks" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports animations (actives and on NLA tracks) as separate tracks. If [code]false[/code], all the currently assigned actions become one glTF animation.
+		</member>
+		<member name="blender/animation/limit_playback" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], limits animation import to the playback range defined in Blender (the Start and End options at the right of the animation timeline in Blender). This can avoid including unused animation data, making the imported scene smaller and faster to load. However, this can also result in missing animation data if the playback range is not set correctly in Blender.
+		</member>
 		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables or disables geometry helper nodes.
 		</member>
