@@ -316,6 +316,10 @@ void MetalDeviceProperties::init_limits(MTL::Device *p_device) {
 	limits.maxVertexInputBindings = 31;
 	limits.maxVertexInputBindingStride = (2 * KIBI);
 	limits.maxShaderVaryings = 31; // Accurate on Apple4 and above. See: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
+	limits.minTexelOffset = -8;
+	limits.maxTexelOffset = 7;
+	limits.minTexelGatherOffset = -8;
+	limits.maxTexelGatherOffset = 7;
 
 	if (p_device->supportsFamily(MTL::GPUFamilyApple4)) {
 		limits.maxThreadGroupMemoryAllocation = 32768;

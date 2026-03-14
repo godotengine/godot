@@ -166,6 +166,10 @@ struct MetalLimits {
 	uint32_t maxDrawIndexedIndexValue;
 	uint32_t maxShaderVaryings;
 	uint32_t maxThreadGroupMemoryAllocation;
+	uint32_t minTexelOffset;
+	uint32_t maxTexelOffset;
+	uint32_t minTexelGatherOffset;
+	uint32_t maxTexelGatherOffset;
 
 	double temporalScalerInputContentMinScale;
 	double temporalScalerInputContentMaxScale;

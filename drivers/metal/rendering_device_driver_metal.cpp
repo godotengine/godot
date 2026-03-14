@@ -2616,6 +2616,14 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return limits.maxViewportDimensionX;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
 			return limits.maxViewportDimensionY;
+		case LIMIT_MIN_TEXEL_OFFSET:
+			return limits.minTexelOffset;
+		case LIMIT_MAX_TEXEL_OFFSET:
+			return limits.maxTexelOffset;
+		case LIMIT_MIN_TEXEL_GATHER_OFFSET:
+			return limits.minTexelGatherOffset;
+		case LIMIT_MAX_TEXEL_GATHER_OFFSET:
+			return limits.maxTexelGatherOffset;
 		case LIMIT_SUBGROUP_SIZE:
 			// MoltenVK sets the subgroupSize to the same as the maxSubgroupSize.
 			return limits.maxSubgroupSize;

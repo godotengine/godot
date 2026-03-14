@@ -1653,16 +1653,24 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 		internal_functions.insert(E);
 	}
 	texture_functions.insert("texture");
+	texture_functions.insert("textureOffset");
 	texture_functions.insert("textureProj");
+	texture_functions.insert("textureProjOffset");
 	texture_functions.insert("textureLod");
+	texture_functions.insert("textureLodOffset");
 	texture_functions.insert("textureProjLod");
+	texture_functions.insert("textureProjLodOffset");
 	texture_functions.insert("textureGrad");
+	texture_functions.insert("textureGradOffset");
 	texture_functions.insert("textureProjGrad");
+	texture_functions.insert("textureProjGradOffset");
 	texture_functions.insert("textureGather");
+	texture_functions.insert("textureGatherOffset");
 	texture_functions.insert("textureSize");
 	texture_functions.insert("textureQueryLod");
 	texture_functions.insert("textureQueryLevels");
 	texture_functions.insert("texelFetch");
+	texture_functions.insert("texelFetchOffset");
 }
 
 ShaderCompiler::ShaderCompiler() {

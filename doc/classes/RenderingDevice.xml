@@ -2854,6 +2854,18 @@
 		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_Y" value="36" enum="Limit">
 			Maximum viewport height (in pixels).
 		</constant>
+		<constant name="LIMIT_MIN_TEXEL_OFFSET" value="37" enum="Limit">
+			Minimum offset for texture operations in shader.
+		</constant>
+		<constant name="LIMIT_MAX_TEXEL_OFFSET" value="38" enum="Limit">
+			Maximum offset for texture operations in shader.
+		</constant>
+		<constant name="LIMIT_MIN_TEXEL_GATHER_OFFSET" value="39" enum="Limit">
+			Minimum offset for texture gather operations in shader.
+		</constant>
+		<constant name="LIMIT_MAX_TEXEL_GATHER_OFFSET" value="40" enum="Limit">
+			Maximum offset for texture gather operations in shader.
+		</constant>
 		<constant name="LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE" value="46" enum="Limit">
 			Returns the smallest value for [member ProjectSettings.rendering/scaling_3d/scale] when using the MetalFX temporal upscaler.
 			[b]Note:[/b] The returned value is multiplied by a factor of [code]1000000[/code] to preserve 6 digits of precision. It must be divided by [code]1000000.0[/code] to convert the value to a floating point number.

@@ -3226,6 +3226,27 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLEREXT, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLEREXT, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
 
+	// textureOffset
+
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+
 	// textureProj
 
 	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
@@ -3247,6 +3268,27 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
 	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
 
+	// textureProjOffset
+
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_IVEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_IVEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "offset", "bias" }, TAG_GLOBAL, false },
+
 	// textureLod
 
 	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
@@ -3261,6 +3303,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 
+	// textureLodOffset
+
+	{ "textureLodOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureLodOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+
 	// texelFetch
 
 	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
@@ -3273,6 +3327,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 
+	// texelFetchOffset
+
+	{ "texelFetchOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "texelFetchOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+
 	// textureProjLod
 
 	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
@@ -3284,6 +3350,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
 	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+
+	// textureProjLodOffset
+
+	{ "textureProjLodOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjLodOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "lod", "offset" }, TAG_GLOBAL, false },
 
 	// textureGrad
 
@@ -3299,6 +3377,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
 	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
 
+	// textureGradOffset
+
+	{ "textureGradOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureGradOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+
 	// textureProjGrad
 
 	{ "textureProjGrad", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
@@ -3310,6 +3400,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureProjGrad", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
 	{ "textureProjGrad", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
 	{ "textureProjGrad", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, false },
+
+	// textureProjGradOffset
+
+	{ "textureProjGradOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_VEC2, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
+	{ "textureProjGradOffset", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy", "offset" }, TAG_GLOBAL, false },
 
 	// textureGather
 
@@ -3327,6 +3429,21 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
 	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
 	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+
+	// textureGatherOffset
+
+	{ "textureGatherOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_VOID }, { "sampler", "coords", "offset" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
+	{ "textureGatherOffset", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "offset", "comp" }, TAG_GLOBAL, true },
 
 	// textureQueryLod
 
@@ -3576,6 +3693,19 @@ const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[]
 
 const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_args[] = {
 	{ "textureGather", 2, 0, 3 },
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	{ "textureGatherOffset", 2, -8, 7 },
+#else
+	{ "textureGatherOffset", 2, -32, 31 },
+#endif
+	{ "textureGatherOffset", 3, 0, 3 },
+	{ "textureGradOffset", 4, -8, 7 },
+	{ "textureLodOffset", 3, -8, 7 },
+	{ "textureOffset", 2, -8, 7 },
+	{ "textureProjOffset", 2, -8, 7 },
+	{ "textureProjGradOffset", 4, -8, 7 },
+	{ "textureProjLodOffset", 3, -8, 7 },
+	{ "texelFetchOffset", 3, -8, 7 },
 	{ nullptr, 0, 0, 0 }
 };
 
@@ -3647,7 +3777,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	bool unsupported_builtin = false;
 	int builtin_idx = 0;
 
-	if (argcount <= 4) {
+	if (argcount <= BuiltinFuncDef::MAX_ARGS - 1) {
 		// Test builtins.
 		int idx = 0;
 		int full_match_index = 0;
@@ -3714,15 +3844,19 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 					}
 				}
 
-				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
+				if (!fail && argcount < BuiltinFuncDef::MAX_ARGS - 1 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
 					fail = true; // Make sure the number of arguments matches.
 				}
 
 				if (!fail) {
 					{
 						int constarg_idx = 0;
+						bool found = false;
+
 						while (builtin_func_const_args[constarg_idx].name) {
 							if (String(name) == builtin_func_const_args[constarg_idx].name) {
+								found = true;
+
 								int arg = builtin_func_const_args[constarg_idx].arg + 1;
 								if (p_func->arguments.size() <= arg) {
 									break;
@@ -3733,18 +3867,37 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 								bool error = false;
 								Vector<Scalar> values = _get_node_values(p_block, p_function_info, p_func->arguments[arg]);
-								if (p_func->arguments[arg]->get_datatype() == TYPE_INT && !values.is_empty()) {
-									if (values[0].sint < min || values[0].sint > max) {
-										error = true;
+								DataType arg_datatype = p_func->arguments[arg]->get_datatype();
+
+								if (values.size() == get_datatype_component_count(arg_datatype)) {
+									for (int i = 0; i < values.size(); i++) {
+										if (values[i].sint < min || values[i].sint > max) {
+											error = true;
+											break;
+										}
 									}
 								} else {
 									error = true;
 								}
 
 								if (error) {
-									_set_error(vformat(RTR("Expected integer constant within [%d..%d] range."), min, max));
+									switch (arg_datatype) {
+										case TYPE_INT: {
+											_set_error(vformat(RTR("Expected integer constant within [%d..%d] range."), min, max));
+										} break;
+										case TYPE_IVEC2: {
+											_set_error(vformat(RTR("Expected integer 2d-vector constant within [(%d, %d)..(%d, %d)] range."), min, min, max, max));
+										} break;
+										case TYPE_IVEC3: {
+											_set_error(vformat(RTR("Expected integer 3d-vector constant within [(%d, %d, %d)..(%d, %d, %d)] range."), min, min, min, max, max, max));
+										} break;
+										default: {
+										} break;
+									}
 									return false;
 								}
+							} else if (found) {
+								break;
 							}
 							constarg_idx++;
 						}

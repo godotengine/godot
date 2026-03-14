@@ -7271,6 +7271,14 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return limits.maxViewportDimensions[0];
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
 			return limits.maxViewportDimensions[1];
+		case LIMIT_MIN_TEXEL_OFFSET:
+			return limits.minTexelOffset;
+		case LIMIT_MAX_TEXEL_OFFSET:
+			return limits.maxTexelOffset;
+		case LIMIT_MIN_TEXEL_GATHER_OFFSET:
+			return limits.minTexelGatherOffset;
+		case LIMIT_MAX_TEXEL_GATHER_OFFSET:
+			return limits.maxTexelGatherOffset;
 		case LIMIT_SUBGROUP_SIZE:
 			return subgroup_capabilities.size;
 		case LIMIT_SUBGROUP_MIN_SIZE:
