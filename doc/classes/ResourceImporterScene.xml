@@ -106,6 +106,11 @@
 			- [code]2 (Embed As Basis Universal)[/code], keeps textures embedded in the imported scene with VRAM compression.
 			- [code]3 (Embed As Uncompressed)[/code], keeps textures embedded in the imported scene without VRAM compression.
 		</member>
+		<member name="fbx/importer" type="int" setter="" getter="" default="0">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (ubfx)[/code], handles fbx files as fbx files.
+			- [code]1 (FBX2glTF)[/code], converts FBX files to glTF on import and requires additional setup. FBX2glTF is not recommended unless you have a specific reason to use it over ufbx or working with a different file format.
+		</member>
 		<member name="gltf/embedded_image_handling" type="int" setter="" getter="" default="1">
 			Controls how textures embedded within glTF scenes should be handled.
 			- [code]0 (Discard All Textures)[/code], textures are not imported. This is useful if you wish to manually set up materials in Godot instead.
