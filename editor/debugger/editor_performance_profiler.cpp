@@ -190,7 +190,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				monitor_draw->draw_line(rect.position + Point2(from, h2), rect.position + Point2(from + spacing, prev), draw_color, Math::round(EDSCALE));
 			}
 
-			if (marker_key == active[i] && count == marker_frame) {
+			if (count == marker_frame) {
 				Color line_color;
 				line_color.set_hsv(draw_color.get_h(), draw_color.get_s() * 0.8f, draw_color.get_v(), 0.5f);
 				monitor_draw->draw_line(rect.position + Point2(from, 0), rect.position + Point2(from, rect.size.y), line_color, Math::round(EDSCALE));
