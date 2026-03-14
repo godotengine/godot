@@ -1564,9 +1564,11 @@
 		</member>
 		<member name="text_editor/completion/idle_parse_delay" type="float" setter="" getter="">
 			The delay in seconds after which the script editor should check for errors when the user stops typing.
+			[b]Note:[/b] [member text_editor/completion/idle_parse_enabled] must be [code]true[/code].
 		</member>
 		<member name="text_editor/completion/idle_parse_delay_with_errors_found" type="float" setter="" getter="">
 			The delay used instead of [member text_editor/completion/idle_parse_delay], when the parser has found errors. A lower value should feel more responsive while fixing code, but may cause notable stuttering and increase CPU usage.
+			[b]Note:[/b] [member text_editor/completion/idle_parse_enabled] must be [code]true[/code].
 		</member>
 		<member name="text_editor/completion/idle_parse_enabled" type="bool" setter="" getter="">
 			If [code]true[/code], scripts are checked for errors after typing stops. The delay before this happens is determined by [member text_editor/completion/idle_parse_delay] and [member text_editor/completion/idle_parse_delay_with_errors_found]. Saving will check for errors regardless of this setting.
