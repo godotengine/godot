@@ -50,6 +50,10 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNodeBlendSpace2D> blend_space;
 	bool read_only = false;
 
+	static constexpr float POINT_MARGIN = 6.0f;
+	static constexpr double STEP_UNIT = 0.01;
+	static constexpr double ABS_MAX = 10000;
+
 	PanelContainer *panel = nullptr;
 	Button *tool_blend = nullptr;
 	Button *tool_select = nullptr;

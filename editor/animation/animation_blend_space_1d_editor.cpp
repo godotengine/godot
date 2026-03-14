@@ -81,6 +81,11 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 	}
 
+	const float pm = POINT_MARGIN * EDSCALE;
+
+	const Vector2 margin_ofs(pm, pm); // Offset all drawing into the inner area.
+	const Size2 inner_size = blend_space_draw->get_size() - margin_ofs * 2; // Inner size, for coordinate math.
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (mb->get_button_index() == MouseButton::LEFT && tool_create->is_pressed()))) {
@@ -123,7 +128,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			menu->reset_size();
 			menu->popup();
 
-			add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;
+			add_point_pos = ((mb->get_position() - margin_ofs) / inner_size).x;
 			add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 			add_point_pos += blend_space->get_min_space();
 
@@ -152,6 +157,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 
 		// Then check point positions.
+		// points[] are stored in control-local space (margin-offset included).
 		for (int i = 0; i < points.size(); i++) {
 			if (Math::abs(float(points[i] - mb->get_position().x)) < 10 * EDSCALE) {
 				_set_selected_point(i);
@@ -214,7 +220,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	// *set* the blend
 	if (mb.is_valid() && mb->is_pressed() && !dragging_selected_attempt && ((tool_select->is_pressed() && mb->is_shift_pressed()) || tool_blend->is_pressed()) && mb->get_button_index() == MouseButton::LEFT) {
-		float blend_pos = mb->get_position().x / blend_space_draw->get_size().x;
+		float blend_pos = (mb->get_position().x - pm) / inner_size.x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
@@ -232,13 +238,14 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
-		drag_ofs = ((mm->get_position() - drag_from) / blend_space_draw->get_size()) * ((blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, 0));
+		// drag_from and mm->get_position() are both in the same padded coordinate space, so their delta is unaffected by POINT_MARGIN.
+		drag_ofs = ((mm->get_position() - drag_from) / inner_size) * ((blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, 0));
 		blend_space_draw->queue_redraw();
 		_update_edited_point_pos();
 	}
 
 	if (mm.is_valid() && dragging_blend_position && !dragging_selected_attempt && ((tool_select->is_pressed() && mm->is_shift_pressed()) || tool_blend->is_pressed()) && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-		float blend_pos = mm->get_position().x / blend_space_draw->get_size().x;
+		float blend_pos = (mm->get_position().x - pm) / inner_size.x;
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
@@ -288,14 +295,10 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("KeyValue"));
 	Ref<Texture2D> icon_selected = get_editor_theme_icon(SNAME("KeySelected"));
 
-	Size2 s = blend_space_draw->get_size();
+	const float pm = POINT_MARGIN * EDSCALE;
 
-	if (blend_space_draw->has_focus()) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
-	}
-
-	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
+	const Vector2 ofs(pm, pm); // Offset all drawing into the inner area.
+	const Size2 s = blend_space_draw->get_size() - ofs * 2; // Inner size, for coordinate math.
 
 	if (blend_space->get_min_space() <= 0 && blend_space->get_max_space() >= 0) {
 		float point = 0.0;
@@ -304,9 +307,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		float x = point;
 
-		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
-		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
-		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft, Math::round(EDSCALE));
+		blend_space_draw->draw_line(ofs + Point2(x, s.height - 1), ofs + Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
+		blend_space_draw->draw_string(font, ofs + Point2(x + 4 * EDSCALE, s.height - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
+		blend_space_draw->draw_line(ofs + Point2(x, s.height - 5 * EDSCALE), ofs + Point2(x, 0), linecolor_soft, Math::round(EDSCALE));
 	}
 
 	if (snap->is_pressed()) {
@@ -320,7 +323,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 				int idx = int(v / blend_space->get_snap());
 
 				if (i > 0 && prev_idx != idx) {
-					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft, Math::round(EDSCALE));
+					blend_space_draw->draw_line(ofs + Point2(i, 0), ofs + Point2(i, s.height), linecolor_soft, Math::round(EDSCALE));
 				}
 
 				prev_idx = idx;
@@ -342,15 +345,16 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;
-		points.push_back(point);
 
-		Vector2 gui_point = (Vector2(point, s.height / 2.0) - icon->get_size() / 2.0).floor();
+		points.push_back(point + ofs.x);
+
+		Vector2 gui_point = (ofs + Vector2(point, s.height / 2.0) - icon->get_size() / 2.0).floor();
 		blend_space_draw->draw_texture(i == selected_point ? icon_selected : icon, gui_point);
 
 		if (point >= 0.0 && point <= s.width && editing_point != i) {
 			String name_text = show_indices ? itos(i) : String(blend_space->get_blend_point_name(i));
 			Vector2 text_size = font->get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-			Vector2 text_pos = Vector2(CLAMP(point - text_size.x / 2.0, 0, s.width - text_size.x), gui_point.y - 4 * EDSCALE);
+			Vector2 text_pos = ofs + Vector2(CLAMP(point - text_size.x / 2.0, 0, s.width - text_size.x), gui_point.y - ofs.y - 4 * EDSCALE);
 
 			Color name_color = i == selected_point ? get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) : linecolor;
 			blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
@@ -378,7 +382,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;
 
-		Vector2 gui_point = Vector2(point, s.height / 2.0);
+		Vector2 gui_point = ofs + Vector2(point, s.height / 2.0);
 
 		float mind = 5 * EDSCALE;
 		float maxd = 15 * EDSCALE;
@@ -418,7 +422,6 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 
 	updating = true;
 
-	constexpr double STEP_UNIT = 0.01;
 	min_value->set_max(max_value->get_value() - STEP_UNIT);
 	max_value->set_min(min_value->get_value() + STEP_UNIT);
 
@@ -741,7 +744,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("GraphBlendSpace")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 			tool_create->set_button_icon(get_editor_theme_icon(SNAME("EditKey")));
@@ -838,10 +841,11 @@ void AnimationNodeBlendSpace1DEditor::_start_inline_edit(int p_point) {
 		float editor_width = text_rect.size.x;
 		inline_editor->set_size(Vector2(editor_width, text_rect.size.y));
 
-		Size2 s = blend_space_draw->get_size();
+		const float pm = POINT_MARGIN * EDSCALE;
+		const Size2 s = blend_space_draw->get_size() - Vector2(pm * 2, pm * 2);
 
 		float editor_x = inline_editor_point_x - editor_width / 2.0;
-		editor_x = CLAMP(editor_x, 0.0f, s.width - editor_width);
+		editor_x = CLAMP(editor_x, pm, pm + s.width - editor_width);
 		inline_editor->set_position(Vector2(editor_x, text_rect.position.y - 1 * EDSCALE));
 	}
 
@@ -890,13 +894,14 @@ void AnimationNodeBlendSpace1DEditor::_inline_editor_text_changed(const String &
 		return;
 	}
 
-	inline_editor->set_size(Vector2(0, inline_editor->get_size().y));
-
 	Vector2 editor_size = inline_editor->get_size();
-	Size2 s = blend_space_draw->get_size();
+	inline_editor->set_size(Vector2(0, editor_size.y));
+
+	const float pm = POINT_MARGIN * EDSCALE;
+	const Size2 s = blend_space_draw->get_size() - Vector2(pm * 2, pm * 2);
 
 	float editor_x = inline_editor_point_x - editor_size.x / 2.0;
-	editor_x = CLAMP(editor_x, 0.0f, s.width - editor_size.x);
+	editor_x = CLAMP(editor_x, pm, pm + s.width - editor_size.x);
 
 	inline_editor->set_position(Vector2(editor_x, inline_editor->get_position().y));
 }
@@ -1032,9 +1037,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	edit_hb->add_child(memnew(VSeparator));
 
-	constexpr double STEP_UNIT = 0.01;
-	constexpr double ABS_MAX = 10000;
-
 	edit_hb->add_child(memnew(Label(TTR("Position"))));
 	edit_value = memnew(SpinBox);
 	edit_hb->add_child(edit_value);
@@ -1063,6 +1065,8 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	blend_space_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_draw));
 	blend_space_draw->set_focus_mode(FOCUS_ALL);
 
+	blend_space_draw->set_anchors_preset(PRESET_FULL_RECT);
+
 	panel->add_child(blend_space_draw);
 
 	{
@@ -1074,16 +1078,21 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		min_value->set_min(-ABS_MAX);
 		min_value->set_max(ABS_MAX - STEP_UNIT);
 		min_value->set_step(STEP_UNIT);
+		min_value->get_line_edit()->set_expand_to_text_length_enabled(true);
+		min_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 		min_value->set_accessibility_name(TTRC("Min"));
 
 		max_value = memnew(SpinBox);
 		max_value->set_min(-ABS_MAX + STEP_UNIT);
 		max_value->set_max(ABS_MAX);
 		max_value->set_step(STEP_UNIT);
+		max_value->get_line_edit()->set_expand_to_text_length_enabled(true);
+		max_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 		max_value->set_accessibility_name(TTRC("Max"));
 
 		label_value = memnew(LineEdit);
 		label_value->set_expand_to_text_length_enabled(true);
+		label_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		label_value->set_accessibility_name(TTRC("Value"));
 
 		// now add
@@ -1102,7 +1111,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-
 	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
 	error_panel->hide();
