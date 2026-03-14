@@ -306,6 +306,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 #ifdef TOOLS_ENABLED
 	virtual uint32_t hash_edited_version_for_preview() const override { return 0; } // Not using preview, so disable it for performance.
 #endif
@@ -317,7 +320,7 @@ private:
 	TileLayout tile_layout = TILE_LAYOUT_STACKED;
 	TileOffsetAxis tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
 	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
-	float hexagon_tile_overlap = 0.25;
+	float hexagon_tile_modifier = 0;
 
 	// Rendering.
 	bool uv_clipping = false;
@@ -424,8 +427,10 @@ public:
 	TileOffsetAxis get_tile_offset_axis() const;
 	void set_tile_size(Size2i p_size);
 	Size2i get_tile_size() const;
-	void set_hexagon_flat_side_ratio(float p_flat_side_ratio);
-	float get_hexagon_flat_side_ratio() const;
+	void set_hexagon_flat_side_modifier(float p_flat_side_modifier);
+	float get_hexagon_flat_side_modifier() const;
+	void set_hexagon_flat_side_length(float p_flat_side_length);
+	float get_hexagon_flat_side_length() const;
 
 	// -- Sources management --
 	int get_next_source_id() const;
