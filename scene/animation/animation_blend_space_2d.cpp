@@ -99,6 +99,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	_add_node(blend_points[p_at_index].node);
 	blend_points_used++;
 
+	lengths_dirty = true;
 	_queue_auto_triangles();
 
 	_tree_changed();
@@ -120,6 +121,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 	blend_points[p_point].node = p_node;
 	_add_node(blend_points[p_point].node);
 
+	lengths_dirty = true;
 	_tree_changed();
 }
 
@@ -189,6 +191,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	blend_points_used--;
 
 	blend_points[blend_points_used].name = StringName();
+	lengths_dirty = true;
 
 	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
 	_tree_changed();
@@ -506,7 +509,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 	return best_point;
 }
 
-void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights) {
+void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const LocalVector<Vector2> &p_points, LocalVector<float> &r_weights) {
 	if (p_pos.is_equal_approx(p_points[0])) {
 		r_weights[0] = 1;
 		r_weights[1] = 0;
@@ -551,32 +554,61 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
+void AnimationNodeBlendSpace2D::_check_can_sync() {
+	is_contain_invalid_point = false;
+	if (sync_mode < SYNC_MODE_CYCLIC_MUTABLE) {
+		return;
+	}
+	for (int i = 0; i < blend_points_used; i++) {
+		Ref<AnimationNodeAnimation> na = static_cast<Ref<AnimationNodeAnimation>>(blend_points[i].node);
+		if (na.is_null()) {
+			is_contain_invalid_point = true;
+			break;
+		}
+	}
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_triangles();
 
-	if (!blend_points_used) {
+	if (!blend_points_used || is_contain_invalid_point) {
 		return NodeTimeInfo();
 	}
 
-	Vector2 blend_pos = p_instance.get_parameter(blend_position);
-	int cur_closest = p_instance.get_parameter_closest();
-	NodeTimeInfo mind; //time of min distance point
+	constexpr int TRIANGLE_VERTS = 3;
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
+	Vector2 blend_pos = p_instance.get_parameter(blend_position);
+	int cur_closest = p_instance.get_parameter_closest();
+	NodeTimeInfo mind; // Time of closest point.
 
+	// Build weights array for all blend points.
+	LocalVector<float> weights;
+	LocalVector<double> deltas;
+	weights.resize_initialized(blend_points_used);
+	deltas.resize_initialized(blend_points_used);
+	if (sync_mode == SYNC_MODE_NONE) {
+		for (int i = 0; i < blend_points_used; i++) {
+			deltas[i] = -1; // Not process.
+		}
+	}
+
+	int new_closest = -1;
+	LocalVector<int> triangle_points;
+	LocalVector<float> blend_weights;
+	triangle_points.resize_initialized(TRIANGLE_VERTS);
+	blend_weights.resize_initialized(TRIANGLE_VERTS);
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
 		if (triangles.is_empty()) {
 			return NodeTimeInfo();
 		}
-
 		Vector2 best_point;
-		bool first = true;
 		int blend_triangle = -1;
-		float blend_weights[3] = { 0, 0, 0 };
-
+		bool first = true;
+		LocalVector<Vector2> points;
 		for (int i = 0; i < triangles.size(); i++) {
-			Vector2 points[3];
-			for (int j = 0; j < 3; j++) {
+			points.resize_initialized(TRIANGLE_VERTS);
+			for (int j = 0; j < TRIANGLE_VERTS; j++) {
 				points[j] = get_blend_point_position(get_triangle_point(i, j));
 			}
 
@@ -586,9 +618,9 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 				break;
 			}
 
-			for (int j = 0; j < 3; j++) {
+			for (int j = 0; j < TRIANGLE_VERTS; j++) {
 				const Vector2 segment_a = points[j];
-				const Vector2 segment_b = points[(j + 1) % 3];
+				const Vector2 segment_b = points[(j + 1) % TRIANGLE_VERTS];
 				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, segment_a, segment_b);
 				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
 					best_point = closest2;
@@ -597,57 +629,33 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 					const real_t d = segment_a.distance_to(segment_b);
 					if (d == 0.0) {
 						blend_weights[j] = 1.0;
-						blend_weights[(j + 1) % 3] = 0.0;
-						blend_weights[(j + 2) % 3] = 0.0;
+						blend_weights[(j + 1) % TRIANGLE_VERTS] = 0.0;
+						blend_weights[(j + 2) % TRIANGLE_VERTS] = 0.0;
 					} else {
 						const real_t c = segment_a.distance_to(closest2) / d;
-
 						blend_weights[j] = 1.0 - c;
-						blend_weights[(j + 1) % 3] = c;
-						blend_weights[(j + 2) % 3] = 0.0;
+						blend_weights[(j + 1) % TRIANGLE_VERTS] = c;
+						blend_weights[(j + 2) % TRIANGLE_VERTS] = 0.0;
 					}
 				}
 			}
 		}
+		ERR_FAIL_COND_V(blend_triangle == -1, NodeTimeInfo()); // Should never reach here.
 
-		ERR_FAIL_COND_V(blend_triangle == -1, NodeTimeInfo()); //should never reach here
-
-		int triangle_points[3];
-		for (int j = 0; j < 3; j++) {
-			triangle_points[j] = get_triangle_point(blend_triangle, j);
+		for (int i = 0; i < TRIANGLE_VERTS; i++) {
+			triangle_points[i] = get_triangle_point(blend_triangle, i);
 		}
 
-		first = true;
-
-		double max_weight = 0.0;
-		for (int i = 0; i < blend_points_used; i++) {
-			bool found = false;
-			for (int j = 0; j < 3; j++) {
-				if (i == triangle_points[j]) {
-					//blend with the given weight
-					pi.weight = blend_weights[j];
-					AnimationNodeInstance *other_instance = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(i));
-					NodeTimeInfo t = blend_node(p_process_state, p_instance, other_instance, pi, FILTER_IGNORE, true, p_test_only);
-					if (first || pi.weight > max_weight) {
-						mind = t;
-						max_weight = pi.weight;
-						first = false;
-					}
-					found = true;
-					break;
-				}
-			}
-
-			if (sync && !found) {
-				pi.weight = 0;
-				AnimationNodeInstance *other_instance = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(i));
-				blend_node(p_process_state, p_instance, other_instance, pi, FILTER_IGNORE, true, p_test_only);
+		float max_weight = 0.0;
+		for (int i = 0; i < TRIANGLE_VERTS; i++) {
+			weights[triangle_points[i]] = blend_weights[i];
+			if (blend_weights[i] >= max_weight) {
+				max_weight = blend_weights[i];
+				new_closest = triangle_points[i];
 			}
 		}
 	} else {
-		int new_closest = -1;
 		float new_closest_dist = 1e20;
-
 		for (int i = 0; i < blend_points_used; i++) {
 			float d = blend_points[i].position.distance_squared_to(blend_pos);
 			if (d < new_closest_dist) {
@@ -655,49 +663,98 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 				new_closest_dist = d;
 			}
 		}
+		weights[new_closest] = 1.0;
+	}
 
-		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
-		if (new_closest != cur_closest && new_closest != -1) {
-			AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
-
-			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
-				NodeTimeInfo from;
-				// For ping-pong loop.
-				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
-				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (na_c.is_valid() && na_n.is_valid() && instance_current_closest && instance_new_closest) {
-					na_n->set_backward(*instance_new_closest, p_process_state, na_c->is_backward(*instance_current_closest, p_process_state));
-					na_n = nullptr;
-					na_c = nullptr;
-				}
-				// See how much animation remains.
-				pi.seeked = false;
-				pi.weight = 0;
-				from = blend_node(p_process_state, p_instance, instance_current_closest, pi, FILTER_IGNORE, true, true);
-				pi.time = from.position;
-			}
-			pi.seeked = true;
-			pi.weight = 1.0;
-			mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
-			cur_closest = new_closest;
-		} else {
-			pi.weight = 1.0;
-			mind = blend_node(p_process_state, p_instance, instance_current_closest, pi, FILTER_IGNORE, true, p_test_only);
-		}
-
-		if (sync) {
-			pi = p_playback_info;
-			pi.weight = 0;
+	// Compute all deltas.
+	if (sync_mode >= SYNC_MODE_CYCLIC_MUTABLE) {
+		// Refresh cached lengths when blend points have changed.
+		if (lengths_dirty) {
+			cached_lengths.resize(blend_points_used);
 			for (int i = 0; i < blend_points_used; i++) {
-				if (i != cur_closest) {
-					AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(i));
-					blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
+				AnimationMixer::PlaybackInfo test_pi = p_playback_info;
+				test_pi.weight = 0;
+				AnimationNodeInstance &other_instance = p_instance.get_child_instance_by_path(get_blend_point_name(i));
+				NodeTimeInfo info = blend_node(p_process_state, p_instance, &other_instance, test_pi, FILTER_IGNORE, true, true);
+				cached_lengths[i] = (info.length > CMP_EPSILON) ? info.length : 0.0;
+			}
+			lengths_dirty = false;
+		}
+		double inv_target_length = 0.0;
+		if (sync_mode == SYNC_MODE_CYCLIC_MUTABLE) {
+			// Compute blended_len from active weights.
+			double target_length = 0.0;
+			double total_weight = 0.0;
+			for (int i = 0; i < blend_points_used; i++) {
+				if (weights[i] > 0.0f && cached_lengths[i] > CMP_EPSILON) {
+					target_length += weights[i] * cached_lengths[i];
+					total_weight += weights[i];
 				}
+			}
+			if (total_weight > CMP_EPSILON) {
+				target_length /= total_weight;
+			}
+			inv_target_length = (target_length > CMP_EPSILON) ? (1.0 / target_length) : 0.0;
+		} else {
+			// Use cached inverse of user-specified cyclic_length.
+			inv_target_length = inverted_cycle_length;
+		}
+		for (int i = 0; i < blend_points_used; i++) {
+			deltas[i] = pi.delta * cached_lengths[i] * inv_target_length;
+		}
+	} else if (sync_mode == SYNC_MODE_INDEPENDENT) {
+		for (int i = 0; i < blend_points_used; i++) {
+			deltas[i] = pi.delta;
+		}
+	} else {
+		// SYNC_MODE_NONE: only active points get delta.
+		for (int i = 0; i < blend_points_used; i++) {
+			if (weights[i] >= CMP_EPSILON) {
+				deltas[i] = pi.delta;
 			}
 		}
 	}
 
-	p_instance.set_parameter_closest(cur_closest, p_process_state.is_testing);
+	// Special case for discrete carry.
+	if (new_closest != cur_closest && new_closest != -1 && cur_closest != -1 && blend_mode == BLEND_MODE_DISCRETE_CARRY && sync_mode < SYNC_MODE_CYCLIC_MUTABLE) {
+		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
+		AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
+		NodeTimeInfo from;
+		// For ping-pong loop.
+		Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
+		Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
+		if (na_c.is_valid() && na_n.is_valid() && instance_current_closest && instance_new_closest) {
+			na_n->set_backward(*instance_new_closest, p_process_state, na_c->is_backward(*instance_current_closest, p_process_state));
+			na_n = nullptr;
+			na_c = nullptr;
+		}
+		// See how much animation remains.
+		pi.seeked = false;
+		pi.weight = 0;
+		from = blend_node(p_process_state, p_instance, instance_current_closest, pi, FILTER_IGNORE, true, true);
+		pi.time = from.position;
+		pi.seeked = true;
+		pi.weight = 1.0;
+		mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
+		deltas[new_closest] = -1; // No more blend new_closest point.
+	}
+
+	// Normal case, blend all points.
+	for (int i = 0; i < blend_points_used; i++) {
+		if (std::signbit(deltas[i])) {
+			continue;
+		}
+		pi = p_playback_info;
+		pi.weight = weights[i];
+		pi.delta = deltas[i];
+		AnimationNodeInstance *other_instance = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(i));
+		NodeTimeInfo t = blend_node(p_process_state, p_instance, other_instance, pi, FILTER_IGNORE, true, p_test_only);
+		if (i == new_closest) {
+			mind = t;
+		}
+	}
+
+	p_instance.set_parameter_closest(new_closest, p_process_state.is_testing);
 	return mind;
 }
 
@@ -740,16 +797,37 @@ AnimationNodeBlendSpace2D::BlendMode AnimationNodeBlendSpace2D::get_blend_mode()
 	return blend_mode;
 }
 
+#ifndef DISABLE_DEPRECATED
 void AnimationNodeBlendSpace2D::set_use_sync(bool p_sync) {
-	sync = p_sync;
+	sync_mode = p_sync ? SYNC_MODE_INDEPENDENT : SYNC_MODE_NONE;
 }
 
 bool AnimationNodeBlendSpace2D::is_using_sync() const {
-	return sync;
+	return sync_mode != SYNC_MODE_NONE;
+}
+#endif // DISABLE_DEPRECATED
+
+void AnimationNodeBlendSpace2D::set_sync_mode(SyncMode p_sync_mode) {
+	sync_mode = p_sync_mode;
+	_check_can_sync();
+}
+
+AnimationNodeBlendSpace2D::SyncMode AnimationNodeBlendSpace2D::get_sync_mode() const {
+	return sync_mode;
+}
+
+void AnimationNodeBlendSpace2D::set_cyclic_length(double p_length) {
+	cyclic_length = p_length;
+	inverted_cycle_length = (p_length > CMP_EPSILON) ? (1.0 / p_length) : 0.0;
+}
+
+double AnimationNodeBlendSpace2D::get_cyclic_length() const {
+	return cyclic_length;
 }
 
 void AnimationNodeBlendSpace2D::_tree_changed() {
 	AnimationRootNode::_tree_changed();
+	_check_can_sync();
 }
 
 void AnimationNodeBlendSpace2D::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
@@ -811,8 +889,16 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &AnimationNodeBlendSpace2D::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &AnimationNodeBlendSpace2D::get_blend_mode);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace2D::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace2D::is_using_sync);
+#endif // DISABLE_DEPRECATED
+
+	ClassDB::bind_method(D_METHOD("set_sync_mode", "sync_mode"), &AnimationNodeBlendSpace2D::set_sync_mode);
+	ClassDB::bind_method(D_METHOD("get_sync_mode"), &AnimationNodeBlendSpace2D::get_sync_mode);
+
+	ClassDB::bind_method(D_METHOD("set_cyclic_length", "length"), &AnimationNodeBlendSpace2D::set_cyclic_length);
+	ClassDB::bind_method(D_METHOD("get_cyclic_length"), &AnimationNodeBlendSpace2D::get_cyclic_length);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_triangles", "get_auto_triangles");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_triangles", "_get_triangles");
@@ -823,10 +909,19 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "x_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_x_label", "get_x_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_y_label", "get_y_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_use_sync", "is_using_sync");
+#endif // DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sync_mode", PROPERTY_HINT_ENUM, "None,Independent,Cyclic Mutable,Cyclic Constant", PROPERTY_USAGE_NO_EDITOR), "set_sync_mode", "get_sync_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cyclic_length", PROPERTY_HINT_RANGE, "0.0,99.0,0.001,or_greater", PROPERTY_USAGE_NO_EDITOR), "set_cyclic_length", "get_cyclic_length");
 
 	ADD_SIGNAL(MethodInfo("triangles_updated"));
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE_CARRY);
+
+	BIND_ENUM_CONSTANT(SYNC_MODE_NONE);
+	BIND_ENUM_CONSTANT(SYNC_MODE_INDEPENDENT);
+	BIND_ENUM_CONSTANT(SYNC_MODE_CYCLIC_MUTABLE);
+	BIND_ENUM_CONSTANT(SYNC_MODE_CYCLIC_CONSTANT);
 }

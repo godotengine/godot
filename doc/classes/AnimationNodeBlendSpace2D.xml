@@ -136,6 +136,9 @@
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace2D.BlendMode" default="0">
 			Controls the interpolation between animations.
 		</member>
+		<member name="cyclic_length" type="float" setter="set_cyclic_length" getter="get_cyclic_length" default="0.0">
+			The cycle length in seconds used by [constant SYNC_MODE_CYCLIC_CONSTANT]. All animations are time-scaled so they complete one full cycle in this duration. Must be greater than [code]0[/code] for cyclic sync to take effect.
+		</member>
 		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2(1, 1)">
 			The blend space's X and Y axes' upper limit for the points' position. See [method add_blend_point].
 		</member>
@@ -145,9 +148,11 @@
 		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0.1, 0.1)">
 			Position increment to snap to when moving a point.
 		</member>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
-			If [code]false[/code], the blended animations' frame are stopped when the blend value is [code]0[/code].
-			If [code]true[/code], forcing the blended animations to advance frame.
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" deprecated="Use [member sync_mode] instead.">
+			If [code]true[/code], sync mode is enabled (equivalent to [constant SYNC_MODE_INDEPENDENT]). This property is kept for backward compatibility.
+		</member>
+		<member name="sync_mode" type="int" setter="set_sync_mode" getter="get_sync_mode" enum="AnimationNodeBlendSpace2D.SyncMode" default="0">
+			Controls how animations are synced when blended. See [enum SyncMode] for available options.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">
 			Name of the blend space's X axis.
@@ -172,6 +177,20 @@
 		</constant>
 		<constant name="BLEND_MODE_DISCRETE_CARRY" value="2" enum="BlendMode">
 			Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.
+		</constant>
+		<constant name="SYNC_MODE_NONE" value="0" enum="SyncMode">
+			Inactive animations are frozen and do not advance.
+		</constant>
+		<constant name="SYNC_MODE_INDEPENDENT" value="1" enum="SyncMode">
+			Inactive animations advance with a weight of [code]0[/code]. This is equivalent to the previous [code]sync = true[/code] behavior.
+		</constant>
+		<constant name="SYNC_MODE_CYCLIC_MUTABLE" value="2" enum="SyncMode">
+			All animations are time-scaled so they stay in sync, with the cycle length dynamically computed from active blend weights. This is self-normalizing: a solo animation plays at normal speed.
+			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
+		</constant>
+		<constant name="SYNC_MODE_CYCLIC_CONSTANT" value="3" enum="SyncMode">
+			All animations are time-scaled so they complete one cycle in [member cyclic_length] seconds, keeping them in sync regardless of their individual lengths.
+			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
 		</constant>
 	</constants>
 </class>
