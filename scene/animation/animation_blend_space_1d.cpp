@@ -512,9 +512,3 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 String AnimationNodeBlendSpace1D::get_caption() const {
 	return "BlendSpace1D";
 }
-
-AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
-}
-
-AnimationNodeBlendSpace1D::~AnimationNodeBlendSpace1D() {
-}

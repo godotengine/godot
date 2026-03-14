@@ -129,9 +129,6 @@ public:
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
-
-	AnimationNodeBlendSpace1D();
-	~AnimationNodeBlendSpace1D();
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
