@@ -166,7 +166,6 @@ void AnimationMixer::_animation_set_cache_update() {
 				ad = &animation_set.insert(key, AnimationData())->value; // 2) Hash key and lookup again.
 				ad->animation = K.value;
 				ad->animation_library = lib.name;
-				ad->name = key;
 				ad->last_update = animation_set_update_pass;
 				cache_valid = false;
 			} else {
@@ -184,6 +183,7 @@ void AnimationMixer::_animation_set_cache_update() {
 	}
 
 	// Check removed.
+	// TODO: Can we avoid this nonsense by iterating in reverse?
 	LocalVector<StringName> to_erase;
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		if (E.value.last_update != animation_set_update_pass) {
@@ -987,6 +987,11 @@ bool AnimationMixer::_update_caches() {
 		K.value->blend_idx = track_map[K.value->path];
 	}
 
+	track_map_version++;
+	if (track_map_version == 0) {
+		track_map_version = 1;
+	}
+
 	animation_track_num_to_track_cache.clear();
 	for (const StringName &E : sname_list) {
 		const Ref<Animation> &anim = get_animation(E);
@@ -1141,14 +1146,11 @@ void AnimationMixer::blend_capture(double p_delta) {
 	}
 
 	// Build capture animation instance.
-	AnimationData ad;
-	ad.animation = capture_cache.animation;
-
 	PlaybackInfo pi;
 	pi.weight = weight;
 
 	AnimationInstance ai;
-	ai.animation_data = ad;
+	ai.animation = capture_cache.animation;
 	ai.playback_info = pi;
 
 	animation_instances.push_back(ai);
@@ -1156,12 +1158,12 @@ void AnimationMixer::blend_capture(double p_delta) {
 
 void AnimationMixer::_blend_calc_total_weight() {
 	for (const AnimationInstance &ai : animation_instances) {
-		const Ref<Animation> &a = ai.animation_data.animation;
+		const Ref<Animation> &a = ai.animation;
 		real_t weight = ai.playback_info.weight;
 		if (Math::is_zero_approx(weight)) {
 			continue;
 		}
-		Span<real_t> track_weights = ai.playback_info.track_weights;
+		Span<real_t> track_weights = ai.playback_info.track_weights != nullptr ? *ai.playback_info.track_weights : Span<real_t>();
 
 		LocalVector<TrackCache *> *t_cache = animation_track_num_to_track_cache.getptr(a);
 		ERR_CONTINUE_EDMSG(!t_cache, "No animation in cache.");
@@ -1221,7 +1223,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 #endif // TOOLS_ENABLED
 	for (const AnimationInstance &ai : animation_instances) {
-		const Ref<Animation> &a = ai.animation_data.animation;
+		const Ref<Animation> &a = ai.animation;
 		double time = ai.playback_info.time;
 		double delta = ai.playback_info.delta;
 		double start = ai.playback_info.start;
@@ -1255,7 +1257,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 			int blend_idx = track->blend_idx;
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend;
-			Span<real_t> track_weights = ai.playback_info.track_weights;
+			Span<real_t> track_weights = ai.playback_info.track_weights != nullptr ? *ai.playback_info.track_weights : Span<real_t>();
 			if (!track_weights.is_empty() && blend_idx < static_cast<int>(track_weights.size())) {
 				blend = track_weights[blend_idx] * weight;
 			} else {
@@ -1919,6 +1921,10 @@ void AnimationMixer::_blend_apply() {
 					if (!t_skeleton) {
 						return;
 					}
+
+					// TODO: Once https://github.com/godotengine/godot/pull/113441 makes it in
+					// Use set_bone_pose_components when loc_used, rot_used, and scale_used are all true.
+
 					if (t->loc_used) {
 						t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
 					}
@@ -1934,14 +1940,19 @@ void AnimationMixer::_blend_apply() {
 					if (!t_node_3d) {
 						return;
 					}
-					if (t->loc_used) {
-						t_node_3d->set_position(t->loc);
-					}
-					if (t->rot_used) {
-						t_node_3d->set_rotation(t->rot.get_euler());
-					}
-					if (t->scale_used) {
-						t_node_3d->set_scale(t->scale);
+					if (t->loc_used && t->rot_used && t->scale_used) {
+						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						t_node_3d->set_transform(transform);
+					} else {
+						if (t->loc_used) {
+							t_node_3d->set_position(t->loc);
+						}
+						if (t->rot_used) {
+							t_node_3d->set_rotation(t->rot.get_euler());
+						}
+						if (t->scale_used) {
+							t_node_3d->set_scale(t->scale);
+						}
 					}
 				}
 #endif // _3D_DISABLED
@@ -2083,13 +2094,9 @@ void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_meth
 void AnimationMixer::make_animation_instance(const StringName &p_name, const PlaybackInfo &p_playback_info) {
 	const Ref<Animation> &animation = get_animation_or_null(p_name);
 	ERR_FAIL_COND(animation.is_null());
-	AnimationData ad;
-	ad.name = p_name;
-	ad.animation = get_animation(p_name);
-	ad.animation_library = find_animation_library(ad.animation);
 
 	AnimationInstance ai;
-	ai.animation_data = std::move(ad);
+	ai.animation = animation;
 	ai.playback_info = p_playback_info;
 
 	animation_instances.push_back(std::move(ai));
