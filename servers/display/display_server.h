@@ -63,6 +63,7 @@ class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
+	static String session_path;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -370,6 +371,8 @@ protected:
 
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
+	static void set_session_path(const String &p_path);
+	static String get_session_path();
 
 	virtual Vector<DisplayServerEnums::WindowID> get_window_list() const = 0;
 
@@ -398,6 +401,7 @@ public:
 
 	virtual void window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_title_size(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const { return Size2i(); }
+	virtual void window_set_session_id(const String &p_session_id, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
 
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
 

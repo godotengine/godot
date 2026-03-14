@@ -36,6 +36,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -328,6 +329,20 @@ String Window::get_title() const {
 String Window::get_displayed_title() const {
 	ERR_READ_THREAD_GUARD_V(String());
 	return displayed_title;
+}
+
+void Window::set_session_id(const String &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	session_id = p_name;
+
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_session_id(p_name, window_id);
+	}
+}
+
+String Window::get_session_id() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	return session_id;
 }
 
 void Window::_settings_changed() {
@@ -708,23 +723,59 @@ void Window::_make_window() {
 	}
 
 	DisplayServerEnums::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
+	bool restored_window = false;
 	Rect2i window_rect;
-	if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
-		window_rect = Rect2i(position, size);
-	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_PRIMARY) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_PRIMARY) - size) / 2, size);
-	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) - size) / 2, size);
-	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(current_screen) + (DisplayServer::get_singleton()->screen_get_size(current_screen) - size) / 2, size);
-	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) - size) / 2, size);
-	} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) {
-		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
+	if (GLOBAL_GET("display/window/size/restore_window_properties") && !session_id.is_empty()) {
+		String path = DisplayServer::get_session_path();
+		Ref<ConfigFile> window_state;
+		window_state.instantiate();
+		window_state->load(path);
+
+		if (window_state->has_section(session_id)) {
+			position = window_state->get_value(session_id, "position");
+
+			String mode_str = window_state->get_value(session_id, "mode", "windowed");
+			if (mode_str == "windowed") {
+				mode = Mode::MODE_WINDOWED;
+				size = window_state->get_value(session_id, "size");
+			} else if (mode_str == "minimized") {
+				// TODO: is this correct?
+				mode = Mode::MODE_MINIMIZED;
+				size = window_state->get_value(session_id, "size");
+			} else if (mode_str == "maximized") {
+				// TODO: is this correct?
+				mode = Mode::MODE_MAXIMIZED;
+			} else if (mode_str == "fullscreen") {
+				// TODO: is this correct?
+				mode = Mode::MODE_FULLSCREEN;
+			} else {
+				mode = Mode::MODE_WINDOWED;
+			}
+
+			restored_window = true;
+			window_rect = Rect2i(position, size);
+		}
+	}
+
+	if (!restored_window) {
+		if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
+			window_rect = Rect2i(position, size);
+		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN) {
+			window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_PRIMARY) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_PRIMARY) - size) / 2, size);
+		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) {
+			window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) - size) / 2, size);
+		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+			window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(current_screen) + (DisplayServer::get_singleton()->screen_get_size(current_screen) - size) / 2, size);
+		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) {
+			window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS) - size) / 2, size);
+		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) {
+			window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
+		}
 	}
 
 	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServerEnums::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServerEnums::INVALID_WINDOW_ID);
 	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_session_id(session_id, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
@@ -782,6 +833,7 @@ void Window::_clear_window() {
 	}
 
 	_update_from_window();
+	_save_window();
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
@@ -799,11 +851,48 @@ void Window::_clear_window() {
 	}
 }
 
+void Window::_save_window() {
+	if (session_id.is_empty()) {
+		return;
+	}
+
+	String path = DisplayServer::get_session_path();
+	Ref<ConfigFile> state;
+	state.instantiate();
+	state->load(path);
+
+	state->set_value(session_id, "screen", get_current_screen());
+
+	Mode new_mode = get_mode();
+	switch (new_mode) {
+		case Window::MODE_WINDOWED:
+			state->set_value(session_id, "mode", "windowed");
+			state->set_value(session_id, "size", get_size());
+			break;
+		case Window::MODE_FULLSCREEN:
+		case Window::MODE_EXCLUSIVE_FULLSCREEN:
+			state->set_value(session_id, "mode", "fullscreen");
+			break;
+		case Window::MODE_MINIMIZED:
+			// ?????
+			break;
+		default:
+			state->set_value(session_id, "mode", "maximized");
+			break;
+	}
+
+	state->set_value(session_id, "position", get_position());
+
+	state->save(path);
+}
+
 void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	//we must always accept this as the truth
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
 	}
+
+	_save_window();
 
 	if (position != p_callback.position) {
 		position = p_callback.position;
@@ -1029,14 +1118,31 @@ void Window::set_visible(bool p_visible) {
 	} else {
 		if (visible) {
 			embedder = embedder_vp;
-			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-				if (is_in_edited_scene_root()) {
-					Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
-					position = (screen_size - size) / 2;
-				} else {
-					position = (embedder->get_visible_rect().size - size) / 2;
+
+			bool restored_window = false;
+			if (GLOBAL_GET("display/window/size/restore_window_properties") && !session_id.is_empty()) {
+				String path = DisplayServer::get_session_path();
+				Ref<ConfigFile> window_state;
+				window_state.instantiate();
+				window_state->load(path);
+
+				if (window_state->has_section(session_id)) {
+					position = window_state->get_value(session_id, "position");
+					restored_window = true;
 				}
 			}
+
+			if (!restored_window) {
+				if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+					if (is_in_edited_scene_root()) {
+						Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
+						position = (screen_size - size) / 2;
+					} else {
+						position = (embedder->get_visible_rect().size - size) / 2;
+					}
+				}
+			}
+
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 
@@ -1047,6 +1153,7 @@ void Window::set_visible(bool p_visible) {
 				_update_viewport_for_hdr_output();
 			}
 		} else {
+			_save_window();
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
@@ -1643,6 +1750,7 @@ void Window::_notification(int p_what) {
 					// It's the root window!
 					visible = true; // Always visible.
 					window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+					session_id = "MainWindow";
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
@@ -3326,6 +3434,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
 
+	ClassDB::bind_method(D_METHOD("set_session_id", "session_id"), &Window::set_session_id);
+	ClassDB::bind_method(D_METHOD("get_session_id"), &Window::get_session_id);
+
 	ClassDB::bind_method(D_METHOD("set_initial_position", "initial_position"), &Window::set_initial_position);
 	ClassDB::bind_method(D_METHOD("get_initial_position"), &Window::get_initial_position);
 
@@ -3516,6 +3627,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "session_id"), "set_session_id", "get_session_id");
 
 	// Keep the enum values in sync with the `WindowInitialPosition` enum.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");

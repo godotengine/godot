@@ -224,7 +224,6 @@ static bool recovery_mode = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 static bool wait_for_import = false;
-static bool restore_editor_window_layout = true;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
@@ -242,6 +241,9 @@ static DisplayServerEnums::VSyncMode window_vsync_mode = DisplayServerEnums::VSY
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
 
+static String session_path;
+
+static bool init_restore_window = false;
 static int init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
@@ -2674,7 +2676,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 		window_mode = (DisplayServerEnums::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
-		if (initial_position_type == Window::WINDOW_INITIAL_POSITION_ABSOLUTE) { // Absolute.
+		if (GLOBAL_GET("display/window/size/restore_window_properties")) {
+			if (!init_use_custom_pos) {
+				init_restore_window = true;
+			}
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_ABSOLUTE) { // Absolute.
 			if (!init_use_custom_pos) {
 				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
 				init_use_custom_pos = true;
@@ -3056,7 +3062,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 								screen_found = true;
 
 								if (editor) {
-									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+									init_restore_window = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
 							if (!ac_found && assign == "interface/accessibility/accessibility_support") {
@@ -3105,16 +3111,30 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
+#ifdef TOOLS_ENABLED
+		if (project_manager) {
+			session_path = EditorPaths::get_singleton()->get_data_dir() + "/window_state.cfg";
+		} else if (editor) {
+			session_path = EditorPaths::get_singleton()->get_project_data_dir() + "/window_state.cfg";
+		} else {
+			session_path = "user://godot_window_state.cfg";
+		}
+#else
+		session_path = "user://godot_window_state.cfg";
+#endif
+
+		DisplayServer::set_session_path(session_path);
+
 		bool has_command_line_window_override = init_use_custom_pos || init_use_custom_screen || init_windowed;
-		if (editor && !has_command_line_window_override && restore_editor_window_layout) {
+		if (!has_command_line_window_override && init_restore_window) {
 			Ref<ConfigFile> config;
 			config.instantiate();
 			// Load and amend existing config if it exists.
-			Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+			Error err = config->load(session_path);
 			if (err == OK) {
-				init_screen = config->get_value("EditorWindow", "screen", init_screen);
-				String mode = config->get_value("EditorWindow", "mode", "maximized");
-				window_size = config->get_value("EditorWindow", "size", window_size);
+				init_screen = config->get_value("MainWindow", "screen", init_screen);
+				String mode = config->get_value("MainWindow", "mode", "maximized");
+				window_size = config->get_value("MainWindow", "size", window_size);
 				if (mode == "windowed") {
 					window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 					init_windowed = true;
@@ -3128,7 +3148,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 				if (init_windowed) {
 					init_use_custom_pos = true;
-					init_custom_pos = config->get_value("EditorWindow", "position", Vector2i(0, 0));
+					init_custom_pos = config->get_value("MainWindow", "position", Vector2i(0, 0));
 				}
 			}
 		}
@@ -4642,7 +4662,7 @@ int Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EDITOR_GET("interface/editor/appearance/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+			init_restore_window = EDITOR_GET("interface/editor/appearance/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
