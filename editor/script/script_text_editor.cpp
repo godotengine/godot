@@ -1585,7 +1585,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				if (base_class_ptr == nullptr) {
 					break;
 				}
-				base_class = base_class_ptr->name;
+				base_class = base_class_ptr->gdtype->get_name();
 			}
 		}
 

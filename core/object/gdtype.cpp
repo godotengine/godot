@@ -30,9 +30,7 @@
 
 #include "gdtype.h"
 
-#include "core/object/class_db.h"
 #include "core/os/thread.h"
-#include "core/variant/variant.h"
 
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
