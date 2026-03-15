@@ -50,6 +50,6 @@ public:
 	real_t get_angle() const;
 
 #ifdef TOOLS_ENABLED
-	virtual void draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const override;
+	virtual void draw_shape(Ref<SurfaceTool> p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const override;
 #endif // TOOLS_ENABLED
 };

@@ -33,11 +33,22 @@
 #include "core/io/resource.h"
 
 #ifdef TOOLS_ENABLED
+#include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+
+class EditorNode3DGizmo;
+
+struct ExtraMeshEntry {
+	Ref<ArrayMesh> mesh;
+	Ref<Material> material;
+	Transform3D transform;
+};
 #endif // TOOLS_ENABLED
 
 class JointLimitation3D : public Resource {
 	GDCLASS(JointLimitation3D, Resource);
+
+	static void _bind_methods();
 
 protected:
 	// Directions are normalized vector from Vector(0, 0, 0). Space is defined by _make_space(), must return normalized vector.
@@ -47,9 +58,11 @@ public:
 	// Define temporary space based on rest and forward vector.
 	virtual Quaternion make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const;
 
+	// Stateless: output depends only on current input. Jerk when leaving allowed region is proportional to how deep we go into forbidden area.
 	Vector3 solve(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset, const Vector3 &p_local_current_vector) const;
 
 #ifdef TOOLS_ENABLED
-	virtual void draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const; // For drawing gizmo.
+	virtual void draw_shape(Ref<SurfaceTool> p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const; // For drawing gizmo.
+	virtual void append_extra_gizmo_meshes(const Transform3D &p_transform, float p_bone_length, const Color &p_color, Vector<ExtraMeshEntry> &r_extra_meshes, int p_bone_index = -1) const;
 #endif // TOOLS_ENABLED
 };
