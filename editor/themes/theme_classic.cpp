@@ -2059,6 +2059,10 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_type_variation("TreeSecondary", "Tree");
 		p_theme->set_type_variation("ItemListSecondary", "ItemList");
 
+		// EditorAudioBusEffectsTree
+		p_theme->set_type_variation("EditorAudioBusEffectsTree", "Tree");
+		p_theme->set_constant("h_separation", "EditorAudioBusEffectsTree", 0);
+
 		// ForegroundPanel.
 		p_theme->set_type_variation("PanelForeground", "Panel");
 		p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.base_empty_style);
