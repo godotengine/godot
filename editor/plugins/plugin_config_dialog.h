@@ -62,6 +62,8 @@ class PluginConfigDialog : public ConfirmationDialog {
 
 	bool _edit_mode = false;
 
+	bool is_editor_plugins;
+
 	void _clear_fields();
 	void _on_confirmed();
 	void _on_canceled();
@@ -78,5 +80,5 @@ protected:
 public:
 	void config(const String &p_config_path);
 
-	PluginConfigDialog();
+	PluginConfigDialog(bool p_is_editor_plugins);
 };

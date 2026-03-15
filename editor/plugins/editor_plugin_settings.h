@@ -53,8 +53,11 @@ class EditorPluginSettings : public VBoxContainer {
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	TextureRect *recovery_mode_icon = nullptr;
+	Label *installed_plugins_label = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
+
+	bool is_editor_plugins = false;
 
 	void _plugin_activity_changed();
 	void _create_clicked();
@@ -68,5 +71,5 @@ protected:
 public:
 	void update_plugins();
 
-	EditorPluginSettings();
+	EditorPluginSettings(bool p_editor_plugins);
 };
