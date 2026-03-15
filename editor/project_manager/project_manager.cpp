@@ -44,6 +44,7 @@
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
+#include "editor/gui/editor_caption_buttons.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
@@ -1309,11 +1310,25 @@ void ProjectManager::_titlebar_resized() {
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (right_menu_spacer) {
-		int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
-		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		if (window_buttons) {
+			right_menu_spacer->set_custom_minimum_size(Size2());
+		} else {
+			int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
+			right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		}
 	}
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+	}
+	if (window_buttons && title_bar) {
+		window_buttons->update_for_window(get_window());
+		const Size2 buttons_size = window_buttons->get_expected_size();
+		const Rect2 global_rect = title_bar->get_global_rect();
+		window_buttons->set_global_position(global_rect.position + Vector2(global_rect.size.x - buttons_size.x, 0));
+		window_buttons->set_size(Size2(buttons_size.x, global_rect.size.y));
+		title_bar->set_window_buttons_width((int)Math::ceil(buttons_size.x));
+	} else if (title_bar) {
+		title_bar->set_window_buttons_width(0);
 	}
 }
 
@@ -1534,9 +1549,24 @@ ProjectManager::ProjectManager() {
 			// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 			right_menu_spacer = memnew(Control);
 			right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			right_menu_spacer->set_h_size_flags(Control::SIZE_SHRINK_END);
 			title_bar->add_child(right_menu_spacer);
+			title_bar->set_window_buttons_spacer(right_menu_spacer);
 		}
 	}
+
+#ifdef WINDOWS_ENABLED
+	if (can_expand && !window_buttons) {
+		window_buttons = memnew(EditorCaptionButtons);
+		window_buttons->connect("minimize_requested", callable_mp(this, &ProjectManager::_titlebar_minimize_requested));
+		window_buttons->connect("toggle_maximize_requested", callable_mp(this, &ProjectManager::_titlebar_toggle_maximize_requested));
+		window_buttons->connect("close_requested", callable_mp(this, &ProjectManager::_titlebar_close_requested));
+		window_buttons->set_as_top_level(true);
+		add_child(window_buttons);
+		move_child(window_buttons, 1);
+		callable_mp(this, &ProjectManager::_titlebar_resized).call_deferred();
+	}
+#endif
 
 	main_view_container = memnew(PanelContainer);
 	main_view_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2000,6 +2030,7 @@ ProjectManager::ProjectManager() {
 		title_bar->connect("minimize_requested", callable_mp(this, &ProjectManager::_titlebar_minimize_requested));
 		title_bar->connect("toggle_maximize_requested", callable_mp(this, &ProjectManager::_titlebar_toggle_maximize_requested));
 		title_bar->connect("close_requested", callable_mp(this, &ProjectManager::_titlebar_close_requested));
+		title_bar->connect(SceneStringName(resized), callable_mp(this, &ProjectManager::_titlebar_resized));
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
