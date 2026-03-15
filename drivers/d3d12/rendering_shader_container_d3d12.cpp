@@ -33,10 +33,8 @@
 #include "core/templates/sort_array.h"
 #include "drivers/d3d12/dxil_hash.h"
 
-#include <drivers/d3d12/godot_d3dx12.h>
-#include <dxgi1_6.h>
-// Include d3dx12 and dxgi before d3d12ma.
 #include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_d3dx12.h>
 #include <drivers/d3d12/godot_nir.h>
 
 #include <wrl/client.h>
@@ -430,8 +428,8 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				shader->info.inputs_read |= VARYING_BIT_POS;
 
 				if (prev_shader) {
-					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, NULL);
-					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, NULL);
+					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, nullptr);
+					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, nullptr);
 				}
 			}
 		}

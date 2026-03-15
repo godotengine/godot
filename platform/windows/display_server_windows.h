@@ -150,7 +150,7 @@ enum PreferredAppMode {
 	APPMODE_MAX = 4
 };
 
-typedef const char *(CDECL *WineGetVersionPtr)(void);
+typedef const char *(CDECL *WineGetVersionPtr)();
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
@@ -381,7 +381,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		bool initialized = false;
 
-		HWND parent_hwnd = 0;
+		HWND parent_hwnd = nullptr;
 
 		bool no_redirection_bitmap = false;
 	};
@@ -425,7 +425,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<DisplayServerEnums::IndicatorID, IndicatorData> indicators;
 
 	struct FileDialogData {
-		HWND hwnd_owner = 0;
+		HWND hwnd_owner = nullptr;
 		Rect2i wrect;
 		String appid;
 		String title;
@@ -529,8 +529,8 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 	struct EmbeddedProcessData {
-		HWND window_handle = 0;
-		HWND parent_window_handle = 0;
+		HWND window_handle = nullptr;
+		HWND parent_window_handle = nullptr;
 		bool is_visible = false;
 	};
 	HashMap<ProcessID, EmbeddedProcessData *> embedded_processes;

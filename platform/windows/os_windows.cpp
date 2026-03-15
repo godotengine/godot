@@ -202,7 +202,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 	DWORD count = GetConsoleProcessList(&pids[0], 256);
 	for (DWORD i = 0; i < count; i++) {
 		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
-		if (process != NULL) {
+		if (process != nullptr) {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
@@ -2120,7 +2120,7 @@ PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
 
 OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2151,7 +2151,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2177,7 +2177,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
 	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);

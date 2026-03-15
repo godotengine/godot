@@ -37,7 +37,7 @@
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
 
 #include <dxgi1_6.h>
-// Ensure d3dx12 and dxgi are included first.
+
 #include <drivers/d3d12/godot_d3d12ma.h>
 #include <drivers/d3d12/godot_nir.h>
 

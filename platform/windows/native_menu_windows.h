@@ -54,11 +54,11 @@ class NativeMenuWindows : public NativeMenu {
 		int max_states = 0;
 		int state = 0;
 		Ref<Image> img;
-		HBITMAP bmp = 0;
+		HBITMAP bmp = nullptr;
 	};
 
 	struct MenuData {
-		HMENU menu = 0;
+		HMENU menu = nullptr;
 
 		Callable close_cb;
 		bool is_rtl = false;
