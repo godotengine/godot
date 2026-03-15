@@ -96,6 +96,9 @@ class GDScript : public Script {
 	// Members are just indices to the instantiated script.
 	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
 	HashSet<StringName> members; // Only members of the current class.
+#ifdef DEBUG_ENABLED
+	HashMap<StringName, MemberInfo> old_member_indices; // Used for hot reloading. Empty while not compiling.
+#endif // DEBUG_ENABLED
 
 	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
@@ -357,9 +360,6 @@ class GDScriptInstance : public ScriptInstance {
 	ObjectID owner_id;
 	Object *owner = nullptr;
 	Ref<GDScript> script;
-#ifdef DEBUG_ENABLED
-	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
-#endif
 	Vector<Variant> members;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;

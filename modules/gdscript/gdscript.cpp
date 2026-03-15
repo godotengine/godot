@@ -159,12 +159,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
 	instance->owner_id = p_owner->get_instance_id();
-#ifdef DEBUG_ENABLED
-	//needed for hot reloading
-	for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
-		instance->member_indices_cache[E.key] = E.value.index;
-	}
-#endif
 	instance->owner->set_script_instance(instance);
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
@@ -2013,8 +2007,9 @@ void GDScriptInstance::reload_members() {
 
 	//pass the values to the new indices
 	for (KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
-		if (member_indices_cache.has(E.key)) {
-			Variant value = members[member_indices_cache[E.key]];
+		const GDScript::MemberInfo *old = script->old_member_indices.getptr(E.key);
+		if (old != nullptr) {
+			Variant value = members[old->index];
 			new_members.write[E.value.index] = value;
 		}
 	}
@@ -2023,12 +2018,6 @@ void GDScriptInstance::reload_members() {
 
 	//apply
 	members = new_members;
-
-	//pass the values to the new indices
-	member_indices_cache.clear();
-	for (const KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
-		member_indices_cache[E.key] = E.value.index;
-	}
 
 #endif
 }
