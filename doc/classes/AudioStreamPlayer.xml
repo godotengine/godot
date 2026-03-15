@@ -69,7 +69,7 @@
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
 			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
 		</member>
-		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
+		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioServer.MixTarget" default="0">
 			The mix target channels. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
@@ -105,13 +105,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
+		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget" deprecated="Use [constant AudioServer.MIX_TARGET_STEREO] instead.">
 			The audio will be played only on the first channel. This is the default.
 		</constant>
-		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
+		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget" deprecated="Use [constant AudioServer.MIX_TARGET_SURROUND] instead.">
 			The audio will be played on all surround channels.
 		</constant>
-		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
+		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget" deprecated="Use [constant AudioServer.MIX_TARGET_CENTER] instead.">
 			The audio will be played on the second channel, which is usually the center.
 		</constant>
 	</constants>

@@ -1319,6 +1319,61 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 	} while (!playback_node->state.compare_exchange_strong(old_state, new_state));
 }
 
+Vector<AudioFrame> AudioServer::create_volume_vector(float p_volume_db, MixTarget p_mix_target) const {
+	Vector<AudioFrame> volume_vector;
+	// We need at most four stereo pairs (for 7.1 systems).
+	volume_vector.resize(4);
+
+	// Initialize the volume vector to zero.
+	for (AudioFrame &channel_volume_db : volume_vector) {
+		channel_volume_db = AudioFrame(0, 0);
+	}
+
+	float volume_linear = Math::db_to_linear(p_volume_db);
+
+	// Set the volume vector up according to the speaker mode and mix target.
+	// TODO do we need to scale the volume down when we output to more channels?
+	if (get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+	} else {
+		switch (p_mix_target) {
+			case MIX_TARGET_STEREO: {
+				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+			} break;
+			case MIX_TARGET_SURROUND: {
+				// TODO Make sure this is right.
+				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
+				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
+			} break;
+			case MIX_TARGET_CENTER: {
+				// TODO Make sure this is right.
+				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+			} break;
+		}
+	}
+
+	return volume_vector;
+}
+
+void AudioServer::_start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, float p_volume_db_offset, MixTarget p_mix_target, float p_start_time, float p_pitch_scale) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	Vector<AudioFrame> volume_vector = create_volume_vector(p_volume_db_offset, p_mix_target);
+	start_playback_stream(p_playback, p_bus, volume_vector, p_start_time, p_pitch_scale);
+
+	// Sample handling.
+	if (p_playback->get_is_sample() && p_playback->get_sample_playback().is_valid()) {
+		Ref<AudioSamplePlayback> sample_playback = p_playback->get_sample_playback();
+		sample_playback->offset = p_start_time;
+		sample_playback->bus = p_bus;
+		sample_playback->volume_vector = volume_vector;
+		sample_playback->pitch_scale = p_pitch_scale;
+		start_sample_playback(sample_playback);
+	}
+}
+
 void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes) {
 	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
 
@@ -2113,6 +2168,9 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_stream_registered_as_sample", "stream"), &AudioServer::is_stream_registered_as_sample);
 	ClassDB::bind_method(D_METHOD("register_stream_as_sample", "stream"), &AudioServer::register_stream_as_sample);
 
+	ClassDB::bind_method(D_METHOD("start_playback_stream", "playback", "bus", "volume_db_offset", "mix_target", "start_time", "pitch_scale"), &AudioServer::_start_playback_stream, DEFVAL(0), DEFVAL(MIX_TARGET_STEREO), DEFVAL(0), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("stop_playback_stream", "playback"), &AudioServer::stop_playback_stream);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "output_device"), "set_output_device", "get_output_device");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "input_device"), "set_input_device", "get_input_device");
@@ -2133,6 +2191,10 @@ void AudioServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLAYBACK_TYPE_STREAM);
 	BIND_ENUM_CONSTANT(PLAYBACK_TYPE_SAMPLE);
 	BIND_ENUM_CONSTANT(PLAYBACK_TYPE_MAX);
+
+	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
+	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
+	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
 }
 
 AudioServer::AudioServer() {
