@@ -36,8 +36,8 @@
 
 #include "core/config/engine.h"
 
-#include "Jolt/Physics/Constraints/FixedConstraint.h"
-#include "Jolt/Physics/Constraints/HingeConstraint.h"
+#include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 
 namespace {
 
