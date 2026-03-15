@@ -147,8 +147,6 @@ public:
 		AHashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
-		StringName inherits;
-		StringName name;
 		bool disabled = false;
 		bool exposed = false;
 		bool reloadable = false;
