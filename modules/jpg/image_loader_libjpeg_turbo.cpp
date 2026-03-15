@@ -34,7 +34,7 @@
 
 Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 	tjhandle tj_instance = tj3Init(TJINIT_DECOMPRESS);
-	if (tj_instance == NULL) {
+	if (tj_instance == nullptr) {
 		return FAILED;
 	}
 
@@ -128,7 +128,7 @@ static Vector<uint8_t> _jpeg_turbo_buffer_save_func(const Ref<Image> &p_img, flo
 	}
 
 	tjhandle tj_instance = tj3Init(TJINIT_COMPRESS);
-	ERR_FAIL_COND_V_MSG(tj_instance == NULL, output, "Couldn't create tjhandle");
+	ERR_FAIL_COND_V_MSG(tj_instance == nullptr, output, "Couldn't create tjhandle");
 
 	if (tj3Set(tj_instance, TJPARAM_QUALITY, (int)(p_quality * 100)) < 0) {
 		tj3Destroy(tj_instance);
@@ -148,7 +148,7 @@ static Vector<uint8_t> _jpeg_turbo_buffer_save_func(const Ref<Image> &p_img, flo
 	// If the godot image format is `Image::FORMAT_L8` we could set the appropriate
 	// color space here rather than defaulting to RGB.
 
-	unsigned char *jpeg_buff = NULL;
+	unsigned char *jpeg_buff = nullptr;
 	size_t jpeg_size = 0;
 	int code = tj3Compress8(
 			tj_instance,

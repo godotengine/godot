@@ -96,7 +96,7 @@ Error AudioDriverALSA::init_output_device() {
 
 	ERR_FAIL_COND_V(status < 0, ERR_CANT_OPEN);
 
-	snd_pcm_hw_params_alloca(&hwparams);
+	snd_pcm_hw_params_alloca(&hwparams); // NOLINT(modernize-use-bool-literals)
 
 	status = snd_pcm_hw_params_any(pcm_handle, hwparams);
 	CHECK_FAIL(status < 0);
@@ -140,7 +140,7 @@ Error AudioDriverALSA::init_output_device() {
 
 	//snd_pcm_hw_params_free(&hwparams);
 
-	snd_pcm_sw_params_alloca(&swparams);
+	snd_pcm_sw_params_alloca(&swparams); // NOLINT(modernize-use-bool-literals)
 
 	status = snd_pcm_sw_params_current(pcm_handle, swparams);
 	CHECK_FAIL(status < 0);

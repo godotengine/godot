@@ -44,7 +44,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is de
 
 typedef CGLError (*CGLEnablePtr)(CGLContextObj ctx, CGLContextEnable pname);
 typedef CGLError (*CGLSetParameterPtr)(CGLContextObj ctx, CGLContextParameter pname, const GLint *params);
-typedef CGLContextObj (*CGLGetCurrentContextPtr)(void);
+typedef CGLContextObj (*CGLGetCurrentContextPtr)();
 
 class GLManagerLegacy_MacOS {
 	struct GLWindow {

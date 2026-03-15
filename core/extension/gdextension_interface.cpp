@@ -77,7 +77,7 @@ class CallableCustomExtension : public CallableCustom {
 		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
 
 		if (a->call_func != b->call_func) {
-			return a->call_func < b->call_func;
+			return (uintptr_t)a->call_func < (uintptr_t)b->call_func;
 		}
 		return a->userdata < b->userdata;
 	}

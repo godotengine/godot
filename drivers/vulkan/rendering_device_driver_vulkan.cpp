@@ -38,13 +38,11 @@
 
 #include "thirdparty/misc/smolv.h"
 
-#if defined(ANDROID_ENABLED)
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
 #include "platform/android/java_godot_wrapper.h"
 #include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
-#endif
 
-#if defined(SWAPPY_FRAME_PACING_ENABLED)
 #include "thirdparty/swappy-frame-pacing/swappyVk.h"
 #endif
 
@@ -4178,7 +4176,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 	Vector<uint8_t> decompressed_code;
 	VkShaderModule vk_module;
 	PackedByteArray decoded_spirv;
-	const bool use_respv = RESPV_ENABLED && !shader_container_format.get_debug_info_enabled();
+	const bool use_respv = (RESPV_ENABLED == 1) && !shader_container_format.get_debug_info_enabled();
 	const bool store_respv = use_respv && !shader_refl.specialization_constants.is_empty();
 	const int64_t stage_count = shader_refl.stages_vector.size();
 	shader_info.vk_stages_create_info.reserve(stage_count);
@@ -4228,7 +4226,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		shader_info.original_stage_size.push_back(decoded_spirv.size());
 
 		if (use_respv) {
-			const bool inline_data = store_respv || !RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS;
+			const bool inline_data = store_respv || (RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS == 0);
 			respv::Shader respv_shader(decoded_spirv.ptr(), decoded_spirv.size(), inline_data);
 			if (respv_shader.empty()) {
 #if RESPV_VERBOSE

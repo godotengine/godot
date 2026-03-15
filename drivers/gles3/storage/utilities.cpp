@@ -34,13 +34,16 @@
 
 #include "core/config/engine.h"
 #include "core/os/os.h"
-#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/light_storage.h"
 #include "drivers/gles3/storage/material_storage.h"
 #include "drivers/gles3/storage/mesh_storage.h"
 #include "drivers/gles3/storage/particles_storage.h"
 #include "drivers/gles3/storage/texture_storage.h"
+
+#ifdef GL_API_ENABLED
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#endif
 
 using namespace GLES3;
 

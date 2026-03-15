@@ -762,7 +762,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) UniformI
 	MTL::TextureType textureType = MTL::TextureType2D;
 	uint32_t imageFormat = 0;
 	uint32_t arrayLength = 0;
-	bool isMultisampled = 0;
+	bool isMultisampled = false;
 
 	struct Indexes {
 		uint32_t buffer = UINT32_MAX;

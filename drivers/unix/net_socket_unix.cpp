@@ -189,7 +189,7 @@ bool NetSocketUnix::_can_use_ip(const IPAddress &p_ip, const bool p_for_bind) co
 
 bool NetSocketUnix::_can_use_path(const CharString &p_path) const {
 	// Path must not exceed maximum path length for Unix domain socket
-	return !p_path.is_empty() && (size_t)p_path.length() < sizeof(((sockaddr_un *)0)->sun_path);
+	return !p_path.is_empty() && (size_t)p_path.length() < sizeof(((sockaddr_un *)nullptr)->sun_path);
 }
 
 _FORCE_INLINE_ Error NetSocketUnix::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {

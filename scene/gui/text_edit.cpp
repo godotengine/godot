@@ -6655,7 +6655,7 @@ int TextEdit::get_total_visible_line_count() const {
 
 // Auto adjust.
 bool TextEdit::is_line_in_viewport(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 
 	int line_wrap = get_line_wrap_index_at_column(p_line, 0);
 

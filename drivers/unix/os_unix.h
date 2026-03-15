@@ -46,7 +46,7 @@ typedef void *gd_iconv_t;
 typedef gd_iconv_t (*PIConvOpen)(const char *, const char *);
 typedef size_t (*PIConv)(gd_iconv_t, char **, size_t *, char **, size_t *);
 typedef int (*PIConvClose)(gd_iconv_t);
-typedef const char *(*PIConvLocaleCharset)(void);
+typedef const char *(*PIConvLocaleCharset)();
 #endif
 
 class OS_Unix : public OS {
