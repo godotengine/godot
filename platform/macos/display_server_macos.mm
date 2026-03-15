@@ -207,12 +207,14 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 				gl_failed = true;
 			}
 		}
+#if defined(ANGLE_ENABLED)
 		if (gl_manager_angle) {
 			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
 			if (err != OK) {
 				gl_failed = true;
 			}
 		}
+#endif
 		if (gl_failed) {
 			AccessibilityServer::get_singleton()->window_destroy(id);
 
@@ -250,9 +252,11 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(id, wd.size.width, wd.size.height);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
 	}
+#endif
 #endif
 
 	return id;
@@ -784,9 +788,11 @@ void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, in
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(p_window, p_width, p_height);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(p_window, p_width, p_height);
 	}
+#endif
 #endif
 }
 
@@ -2747,21 +2753,27 @@ int64_t DisplayServerMacOS::window_get_native_handle(DisplayServerEnums::HandleT
 			if (gl_manager_legacy) {
 				return (int64_t)gl_manager_legacy->get_context(p_window);
 			}
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_DISPLAY: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_display(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_CONFIG: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_config(p_window);
 			}
+#endif
 			return 0;
 		}
 #endif
@@ -2790,18 +2802,22 @@ void DisplayServerMacOS::gl_window_make_current(DisplayServerEnums::WindowID p_w
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_make_current(p_window_id);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_make_current(p_window_id);
 	}
+#endif
 #endif
 }
 
 void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
@@ -2816,9 +2832,11 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_v
 DisplayServerEnums::VSyncMode DisplayServerMacOS::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		return (gl_manager_angle->is_using_vsync() ? DisplayServerEnums::VSyncMode::VSYNC_ENABLED : DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 	}
+#endif
 	if (gl_manager_legacy) {
 		return (gl_manager_legacy->is_using_vsync() ? DisplayServerEnums::VSyncMode::VSYNC_ENABLED : DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 	}
@@ -3224,9 +3242,11 @@ void DisplayServerMacOS::force_process_and_drop_events() {
 
 void DisplayServerMacOS::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->release_current();
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->release_current();
 	}
@@ -3235,9 +3255,11 @@ void DisplayServerMacOS::release_rendering_thread() {
 
 void DisplayServerMacOS::swap_buffers() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->swap_buffers();
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->swap_buffers();
 	}
@@ -3467,7 +3489,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
+#if defined(ANGLE_ENABLED)
 	drivers.push_back("opengl3_angle");
+#endif
 #endif
 	drivers.push_back("dummy");
 
@@ -3786,6 +3810,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (rendering_driver == "opengl3" && OS::get_singleton()->get_processor_name().contains("Virtual")) {
 		WARN_PRINT("Virtual Machine detected, switching to ANGLE.");
 		rendering_driver = "opengl3_angle";
@@ -3801,11 +3826,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 			}
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-#ifdef EGL_STATIC
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
-#endif
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
@@ -3814,7 +3835,12 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 			}
 		}
 	}
-
+#else
+	if (rendering_driver == "opengl3" && OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Virtual Machine detected, could not initialize OpenGL.");
+	}
+#endif
 	if (rendering_driver == "opengl3") {
 		gl_manager_legacy = memnew(GLManagerLegacy_MacOS);
 		if (gl_manager_legacy->initialize() != OK) {
@@ -3863,9 +3889,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(true);
 	}
+#if defined(ANGLE_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
 		RasterizerGLES3::make_current(false);
 	}
+#endif
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -3904,10 +3932,12 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		memdelete(gl_manager_legacy);
 		gl_manager_legacy = nullptr;
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		memdelete(gl_manager_angle);
 		gl_manager_angle = nullptr;
 	}
+#endif
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_device) {

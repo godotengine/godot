@@ -261,10 +261,12 @@ RasterizerGLES3::RasterizerGLES3() {
 		if (!glad_loaded && gladLoaderLoadGL()) {
 			glad_loaded = true;
 		}
+#ifdef GLES_API_ENABLED
 	} else {
 		if (!glad_loaded && gladLoaderLoadGLES2()) {
 			glad_loaded = true;
 		}
+#endif
 	}
 
 	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of

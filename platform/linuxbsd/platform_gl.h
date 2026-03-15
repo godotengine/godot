@@ -38,6 +38,10 @@
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
+#ifndef GLAD_GLES2
+#define GLAD_GLES2
+#endif
+
 // IWYU pragma: begin_exports.
 #include <thirdparty/glad/glad/egl.h>
 #include <thirdparty/glad/glad/gl.h>
