@@ -53,10 +53,14 @@ void PluginConfigDialog::_clear_fields() {
 }
 
 void PluginConfigDialog::_on_confirmed() {
-	String path = "res://addons/" + _get_subfolder();
-
+	String path;
+	if (is_editor_plugins) {
+		path = "editor://addons/" + _get_subfolder();
+	} else {
+		path = "res://addons/" + _get_subfolder();
+	}
 	if (!_edit_mode) {
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> d = DirAccess::create_for_path(path);
 		if (d.is_null() || d->make_dir_recursive(path) != OK) {
 			return;
 		}
@@ -115,7 +119,12 @@ void PluginConfigDialog::_on_required_text_changed() {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
 			validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
 		} else {
-			String path = "res://addons/" + _get_subfolder();
+			String path;
+			if (is_editor_plugins) {
+				path = "editor://addons/" + _get_subfolder();
+			} else {
+				path = "res://addons/" + _get_subfolder();
+			}
 			if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
 				validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
 			}
@@ -196,7 +205,9 @@ void PluginConfigDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("plugin_ready", PropertyInfo(Variant::STRING, "script_path", PROPERTY_HINT_NONE, ""), PropertyInfo(Variant::STRING, "activate_name")));
 }
 
-PluginConfigDialog::PluginConfigDialog() {
+PluginConfigDialog::PluginConfigDialog(bool p_is_editor_plugins) {
+	is_editor_plugins = p_is_editor_plugins;
+
 	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(true);
 
@@ -231,7 +242,11 @@ PluginConfigDialog::PluginConfigDialog() {
 	plugin_edit_hidden_controls.push_back(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
-	subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
+	if (is_editor_plugins) {
+		subfolder_edit->set_placeholder(U"\"my_plugin\" → editor://addons/my_plugin");
+	} else {
+		subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
+	}
 	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	subfolder_edit->set_accessibility_name(TTRC("Subfolder:"));
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -307,7 +322,11 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_edit = memnew(LineEdit);
 	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
-	script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
+	if (is_editor_plugins) {
+		script_edit->set_placeholder(U"\"plugin.gd\" → editor://addons/my_plugin/plugin.gd");
+	} else {
+		script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
+	}
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
