@@ -1029,7 +1029,7 @@ AnimationNodeTimeScale::AnimationNodeTimeScale() {
 
 void AnimationNodeTimeSeek::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
-	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos_request, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater")); // It will be reset to -1 after seeking the position immediately.
+	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_request, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater")); // It will be reset to -1 after seeking the position immediately.
 }
 
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
@@ -1054,7 +1054,7 @@ bool AnimationNodeTimeSeek::is_explicit_elapse() const {
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeTimeSeek::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
-	double cur_seek_pos = p_instance.get_parameter_seek_pos_request();
+	double cur_seek_pos = p_instance.get_parameter_seek_request();
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = 1.0;
@@ -1062,7 +1062,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTimeSeek::_process(ProcessState &p_proc
 		pi.time = cur_seek_pos;
 		pi.seeked = true;
 		pi.is_external_seeking = explicit_elapse;
-		p_instance.set_parameter_seek_pos_request(-1.0, p_process_state.is_testing); // Reset.
+		p_instance.set_parameter_seek_request(-1.0, p_process_state.is_testing); // Reset.
 	}
 
 	return blend_input(p_process_state, p_instance, 0, pi, FILTER_IGNORE, true, p_test_only);
