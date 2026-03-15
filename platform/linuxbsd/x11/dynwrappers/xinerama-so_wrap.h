@@ -11,7 +11,7 @@
 #define XineramaQueryVersion XineramaQueryVersion_dylibloader_orig_xinerama
 #define XineramaIsActive XineramaIsActive_dylibloader_orig_xinerama
 #define XineramaQueryScreens XineramaQueryScreens_dylibloader_orig_xinerama
-#include "thirdparty/linuxbsd_headers/X11/extensions/Xinerama.h"
+#include "thirdparty/linuxbsd_headers/X11/extensions/Xinerama.h" // IWYU pragma: export.
 #undef XineramaQueryExtension
 #undef XineramaQueryVersion
 #undef XineramaIsActive

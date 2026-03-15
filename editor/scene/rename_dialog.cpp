@@ -30,6 +30,7 @@
 
 #include "rename_dialog.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/scene_tree.h"
 
 #include "modules/regex/regex.h"
 

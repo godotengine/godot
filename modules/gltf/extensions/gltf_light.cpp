@@ -35,6 +35,8 @@
 #include "core/object/class_db.h"
 #include "scene/3d/light_3d.h"
 
+#include <cfloat> // FLT_MAX
+
 void GLTFLight::_bind_methods() {
 	ClassDB::bind_static_method("GLTFLight", D_METHOD("from_node", "light_node"), &GLTFLight::from_node);
 	ClassDB::bind_method(D_METHOD("to_node"), &GLTFLight::to_node);

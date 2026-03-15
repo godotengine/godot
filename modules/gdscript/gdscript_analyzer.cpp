@@ -2569,7 +2569,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 		result.is_constant = true;
 	}
 
-	if (has_expected_type && !expected_type.is_variant()) {
+	if (has_expected_type && !expected_type.is_variant() && expected_type.is_hard_type()) {
 		if (result.is_variant() || !result.is_hard_type()) {
 			mark_node_unsafe(p_return);
 			if (!is_type_compatible(expected_type, result, true, p_return)) {

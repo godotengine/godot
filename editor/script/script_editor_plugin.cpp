@@ -36,6 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -76,6 +77,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
@@ -202,12 +204,6 @@ void ScriptEditor::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
 	if (scr.is_valid() && (scr->has_source_code() || scr->get_path().is_resource_file())) {
 		if (edit(p_script, p_line, 0)) {
 			EditorNode::get_singleton()->push_item(p_script.ptr());
-
-			if (TextEditorBase *current = Object::cast_to<TextEditorBase>(_get_current_editor())) {
-				current->goto_line_centered(p_line);
-			}
-
-			_save_history();
 		}
 	}
 }
@@ -315,7 +311,9 @@ void ScriptEditor::_save_history() {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<TextEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			nav_state["ensure_caret_visible"] = true;
+			history.write[history_pos].state = nav_state;
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -374,7 +372,9 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<TextEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			nav_state["ensure_caret_visible"] = true;
+			history.write[history_pos].state = nav_state;
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -2230,7 +2230,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 					}
 
 					if (p_line >= 0) {
-						teb->goto_line(p_line, p_col);
+						teb->goto_line_centered(p_line, p_col);
 					}
 				} else if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
@@ -2357,7 +2357,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 		if (p_line >= 0) {
-			teb->goto_line(p_line, p_col);
+			teb->goto_line_centered(p_line, p_col);
 		}
 	}
 
@@ -3441,7 +3441,9 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	Node *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<TextEditorBase>(n)) {
-		history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+		Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+		nav_state["ensure_caret_visible"] = true;
+		history.write[history_pos].state = nav_state;
 	}
 	if (Object::cast_to<EditorHelp>(n)) {
 		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -3802,6 +3804,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->set_drag_nested_intersections(true);
 
 #ifdef ANDROID_ENABLED
 	virtual_keyboard_spacer = memnew(Control);
@@ -3812,6 +3815,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->set_drag_nested_intersections(true);
 
 	scripts_vbox = memnew(VBoxContainer);
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);

@@ -41,10 +41,12 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
+#include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/shared_object.h"
-#include "core/string/translation_server.h"
+#include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -2570,7 +2572,7 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 	return OK;
 }
 
-Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, OS::ProcessID *r_pid, int p_port_fwd) const {
+Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, ProcessID *r_pid, int p_port_fwd) const {
 	String ssh_path = EDITOR_GET("export/ssh/ssh");
 	if (ssh_path.is_empty()) {
 		ssh_path = "ssh";

@@ -31,8 +31,11 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
-#include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
+#include "core/os/os.h"
 #include "scene/gui/dialogs.h"
+#include "servers/display/accessibility_server.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
@@ -187,7 +190,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	accept_event();
-	if (!event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
+	if (event_to_check.is_null() || !event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
 
@@ -234,7 +237,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
+			AccessibilityServer::get_singleton()->update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

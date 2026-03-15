@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/input/input_map.h"
@@ -40,6 +41,7 @@
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -60,6 +62,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
+#include "servers/display/display_server.h"
 
 // PRIVATE METHODS
 
@@ -562,7 +565,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
-	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
@@ -623,9 +625,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	bool is_native_touchscreen = has_touchscreen_ui && !OS::get_singleton()->has_feature("xr_editor"); // Disable some touchscreen settings by default for the XR Editor.
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_touch_optimizations", is_native_touchscreen, "")
-	set_restart_if_changed("interface/touchscreen/enable_touch_optimizations", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/haptic_on_long_press", is_native_touchscreen, "")
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
@@ -978,6 +980,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
+	_initial_set("editors/3d/freelook/freelook_invert_y_axis", false);
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
 	// 3D: Manipulator
@@ -990,6 +993,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8), true);
 	_initial_set("editors/2d/smart_snapping_line_color", Color(0.9, 0.1, 0.1), true);
+	_initial_set("editors/2d/selection_rectangle_color", Color(1, 0.6, 0.4, 0.7), true);
+	_initial_set("editors/2d/locked_selection_rectangle_color", Color(0.7, 0.7, 0.7, 0.7), true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/bone_width", 5.0, "0.01,20,0.01,or_greater")
 	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.7));
 	_initial_set("editors/2d/bone_color2", Color(0.6, 0.6, 0.6, 0.7));
@@ -1255,6 +1260,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
+	erase("interface/editors/show_scene_tree_root_selection");
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
@@ -1392,6 +1398,7 @@ void EditorSettings::create() {
 
 		print_verbose("EditorSettings: Load OK!");
 
+		singleton->init_shortcuts();
 		singleton->setup_language(true);
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
@@ -1419,9 +1426,14 @@ fail:
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
+	singleton->init_shortcuts();
 	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
+}
+
+void EditorSettings::init_shortcuts() {
+	ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
@@ -1947,12 +1959,12 @@ String EditorSettings::get_editor_layouts_config() const {
 float EditorSettings::get_auto_display_scale() {
 #ifdef LINUXBSD_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServer::SCREEN_OF_MAIN_WINDOW);
+		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 
 		if (DisplayServer::get_singleton()->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
 			// If we have a single screen or the screen of the window is fractional, all
 			// bets are off. At this point, let's just return the current's window scale,
-			// which is special-cased to the scale of `SCREEN_OF_MAIN_WINDOW`.
+			// which is special-cased to the scale of `DisplayServerEnums::SCREEN_OF_MAIN_WINDOW`.
 			return main_window_scale;
 		}
 

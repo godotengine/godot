@@ -272,6 +272,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/general/accessibility_driver" type="String" setter="" getter="" default="&quot;accesskit&quot;">
+			Accessibility driver:
+			-[b]accesskit[/b] (default): AccessKit driver.
+			-[b]dummy[/b]: Dummy driver, screen reader support is disabled.
+		</member>
 		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0" keywords="screen reader">
 			Accessibility support mode:
 			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
@@ -288,6 +293,9 @@
 		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
+		</member>
+		<member name="animation/warnings/check_invalid_skeleton_modifier_node_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [SkeletonModifier3D] prints a warning if there's no matching object for the track path in the scene when assigning.
 		</member>
 		<member name="animation/warnings/check_invalid_track_paths" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of no matching object of the track path in the scene.
@@ -1657,6 +1665,9 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
@@ -2545,9 +2556,11 @@
 		</member>
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 			Threshold linear velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This project setting is ignored when using Jolt Physics.
 		</member>
 		<member name="physics/2d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.3">
 			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This project setting is ignored when using Jolt Physics.
 		</member>
 		<member name="physics/2d/solver/contact_max_separation" type="float" setter="" getter="" default="1.5">
 			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
@@ -2631,28 +2644,36 @@
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
 			Threshold linear velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.01">
 			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_max_separation" type="float" setter="" getter="" default="0.05">
 			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_recycle_radius" type="float" setter="" getter="" default="0.01">
 			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
 			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
 			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
 			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
+			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
 		</member>
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
@@ -3198,6 +3219,7 @@
 		</member>
 		<member name="rendering/mesh_lod/lod_change/threshold_pixels" type="float" setter="" getter="" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [ReflectionProbe]. Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member rendering/mesh_lod/lod_change/threshold_pixels] to improve performance at the cost of geometry detail.
+			[b]Note:[/b] Depending on the mesh's attributes (vertex colors, blend shapes, ...), a mesh may have fewer levels of LOD generated to avoid visible distortion of the mesh once it is affected by vertex colors or blend shapes. Meshes with a very low vertex count will also not have any LODs generated, which means this setting will not affect them at all. In general, this setting makes the largest impact on static meshes with a high vertex count.
 			[b]Note:[/b] [member rendering/mesh_lod/lod_change/threshold_pixels] does not affect [GeometryInstance3D] visibility ranges (also known as "manual" LOD or hierarchical LOD).
 			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>

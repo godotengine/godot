@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -452,6 +453,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_get_run_count", "shaped"), &TextServer::shaped_get_run_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_text", "shaped", "index"), &TextServer::shaped_get_run_text);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_range", "shaped", "index"), &TextServer::shaped_get_run_range);
+	ClassDB::bind_method(D_METHOD("shaped_get_run_glyph_range", "shaped", "index"), &TextServer::shaped_get_run_glyph_range);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_rid", "shaped", "index"), &TextServer::shaped_get_run_font_rid);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_size", "shaped", "index"), &TextServer::shaped_get_run_font_size);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_language", "shaped", "index"), &TextServer::shaped_get_run_language);

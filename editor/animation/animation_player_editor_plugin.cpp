@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
@@ -50,9 +52,11 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 ///////////////////////////////////
@@ -468,12 +472,12 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			Node *root = player->get_node_or_null(player->get_root_node());
 
 			// Player shouldn't access parent if it's the scene root.
-			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == SceneStringName(path_pp))) {
+			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == NodePath(".."))) {
 				NodePath cached_root_path = player->get_path_to(get_cached_root_node());
 				if (player->get_node_or_null(cached_root_path) != nullptr) {
 					player->set_root_node(cached_root_path);
 				} else {
-					player->set_root_node(SceneStringName(path_pp)); // No other choice, preventing crash.
+					player->set_root_node(NodePath("..")); // No other choice, preventing crash.
 				}
 			} else {
 				cached_root_node_id = root->get_instance_id(); // Caching as `track_editor` can lose track of player's root node.
@@ -825,10 +829,8 @@ void AnimationPlayerEditor::_update_animation_blend() {
 
 	blend_editor.tree->clear();
 
-	String current = animation->get_item_text(animation->get_selected());
+	StringName current = animation->get_item_text(animation->get_selected());
 
-	List<StringName> anims;
-	player->get_animation_list(&anims);
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends = true;
 
@@ -837,7 +839,7 @@ void AnimationPlayerEditor::_update_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (const StringName &to : anims) {
+	for (const StringName &to : player->get_sorted_animation_list()) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -1034,7 +1036,7 @@ void AnimationPlayerEditor::_update_player() {
 		return;
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
@@ -1059,7 +1061,7 @@ void AnimationPlayerEditor::_update_player() {
 			}
 		}
 
-		List<StringName> animlist;
+		LocalVector<StringName> animlist;
 		anim_library->get_animation_list(&animlist);
 
 		for (const StringName &E : animlist) {
@@ -1165,7 +1167,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 		}
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 	library->clear();
 
@@ -1507,7 +1509,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 		}
 
 		// Determine the read-only status of the animation's library and the libraries as a whole.
-		List<StringName> libraries;
+		LocalVector<StringName> libraries;
 		player->get_animation_library_list(&libraries);
 
 		bool current_animation_library_is_readonly = false;
@@ -1519,7 +1521,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 				all_animation_libraries_are_readonly = false;
 			}
 
-			List<StringName> animlist;
+			LocalVector<StringName> animlist;
 			anim_library->get_animation_list(&animlist);
 			bool animation_found = false;
 			for (const StringName &E : animlist) {
@@ -1715,7 +1717,7 @@ void AnimationPlayerEditor::_editor_visibility_changed() {
 bool AnimationPlayerEditor::_are_onion_layers_valid() {
 	ERR_FAIL_COND_V(!onion.past && !onion.future, false);
 
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 	return onion.captures.size() == onion.get_capture_count() && onion.capture_size == capture_size;
 }
 
@@ -1723,7 +1725,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 	_free_onion_layers();
 
 	int captures = onion.get_capture_count();
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID);
 
 	onion.captures.resize(captures);
 	onion.captures_valid.resize(captures);
@@ -1834,8 +1836,8 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID));
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServer::INVALID_WINDOW_ID);
+	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID));
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServerEnums::INVALID_WINDOW_ID);
 	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_ALWAYS);
 
 	RID present_rid;
@@ -1921,7 +1923,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	// Restore root viewport.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
 	RS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServer::MAIN_WINDOW_ID);
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServerEnums::MAIN_WINDOW_ID);
 	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
 	// Restore animation state.
@@ -2256,7 +2258,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->set_column_clip_content(0, true);
 	blend_editor.tree->set_column_expand_ratio(1, 3);
 	blend_editor.tree->set_column_clip_content(1, true);
-	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true);
+	blend_editor.tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true)->set_theme_type_variation("NoBorderHorizontalWindow");
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);
@@ -2459,7 +2462,13 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 	memdelete(default_node);
 
 	// Library list is dynamically added to property list, should be copied explicitly.
-	List<StringName> libraries;
+	LocalVector<StringName> existing_libs;
+	dummy_player->get_animation_library_list(&existing_libs);
+	for (const StringName &K : existing_libs) {
+		dummy_player->remove_animation_library(K);
+	}
+
+	LocalVector<StringName> libraries;
 	p_mixer->get_animation_library_list(&libraries);
 	for (const StringName &K : libraries) {
 		dummy_player->add_animation_library(K, p_mixer->get_animation_library(K));

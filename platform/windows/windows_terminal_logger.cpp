@@ -37,7 +37,6 @@
 
 #include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_err) {

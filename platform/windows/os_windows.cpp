@@ -35,9 +35,9 @@
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/marshalls.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
@@ -50,7 +50,6 @@
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
 
 #include <avrt.h>
@@ -83,7 +82,7 @@ extern "C" {
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_windows.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
@@ -2730,7 +2729,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	bool ok = true;
 #ifdef GLES3_ENABLED
 	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+	if (test_gl_manager_native->window_create(DisplayServerEnums::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
 		RasterizerGLES3::make_current(true);
 	} else {
 		ok = false;

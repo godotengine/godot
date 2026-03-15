@@ -32,14 +32,17 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/resources/image_texture.h"
+#include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
 #endif
+
+class PopupMenu;
+class Texture2D;
+class Timer;
+class VScrollBar;
 
 class CharFXTransform;
 class RichTextEffect;
@@ -184,13 +187,7 @@ private:
 		Line() {
 			text_buf.instantiate();
 		}
-		~Line() {
-			if (accessibility_line_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(accessibility_line_element);
-				accessibility_line_element = RID();
-				accessibility_text_element = RID();
-			}
-		}
+		~Line();
 
 		_FORCE_INLINE_ float get_height(float p_line_separation, float p_paragraph_separation) const {
 			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * p_line_separation + p_paragraph_separation;
@@ -265,14 +262,7 @@ private:
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
-		~ItemDropcap() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemDropcap();
 	};
 
 	struct ItemImage : public Item {
@@ -289,17 +279,7 @@ private:
 		Variant key;
 		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
-		~ItemImage() {
-			if (image.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					if (owner_rtl->hr_list.has(rid)) {
-						owner_rtl->hr_list.erase((rid));
-					}
-					image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
-				}
-			}
-		}
+		~ItemImage();
 	};
 
 	struct ItemFont : public Item {
@@ -309,14 +289,7 @@ private:
 		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
-		~ItemFont() {
-			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
-				if (owner_rtl) {
-					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
-				}
-			}
-		}
+		~ItemFont();
 	};
 
 	struct ItemFontSize : public Item {
@@ -414,6 +387,7 @@ private:
 		int align_to_row = -1;
 		int total_width = 0;
 		int total_height = 0;
+		int char_count = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
 		ItemTable() { type = ITEM_TABLE; }
 	};
@@ -605,7 +579,7 @@ private:
 
 	void _texture_changed(RID p_item);
 
-	RID_PtrOwner<Item> items;
+	static inline RID_PtrOwner<Item, true> items;
 	List<String> tag_stack;
 	HashSet<RID> hr_list;
 
@@ -632,13 +606,20 @@ private:
 		int to_char = 0;
 		mutable bool to_line_found = false;
 
-		bool double_click = false; // Selecting whole words?
+		enum SelectionMode {
+			SINGLE_CLICK,
+			DOUBLE_CLICK,
+			TRIPLE_CLICK,
+		};
+		SelectionMode selection_mode = SINGLE_CLICK;
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
 		bool drag_attempt = false;
 	};
 
 	Selection selection;
+	uint64_t last_double_click = 0;
+	Vector2 last_double_click_pos;
 	Callable selection_modifier;
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;

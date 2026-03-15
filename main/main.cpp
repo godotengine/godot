@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/crypto/crypto.h"
@@ -45,15 +46,17 @@
 #include "core/io/file_access_zip.h"
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
-#include "core/io/ip.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/time.h"
 #include "core/profiling/profiling.h"
 #include "core/register_core_types.h"
 #include "core/string/translation_server.h"
+#include "core/variant/variant_parser.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
@@ -71,6 +74,7 @@
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_server.h"
 #include "servers/camera/camera_server.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/register_server_types.h"
@@ -83,7 +87,6 @@
 // 2D
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
-#include "servers/navigation_2d/navigation_server_2d_dummy.h"
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -94,7 +97,6 @@
 // 3D
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
-#include "servers/navigation_3d/navigation_server_3d_dummy.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
@@ -175,6 +177,7 @@ static SteamTracker *steam_tracker = nullptr;
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
 static CameraServer *camera_server = nullptr;
+static AccessibilityServer *accessibility_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
@@ -203,7 +206,8 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
-static DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+static AccessibilityServerEnums::AccessibilityMode accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO;
+static String accessibility_driver_name;
 static bool accessibility_mode_set = false;
 static bool single_window = false;
 static bool editor = false;
@@ -213,7 +217,7 @@ static String locale;
 static String log_file;
 static bool show_help = false;
 static uint64_t quit_after = 0;
-static OS::ProcessID editor_pid = 0;
+static ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
 static bool recovery_mode = false;
@@ -232,13 +236,13 @@ static bool single_threaded_scene = false;
 
 // Display
 
-static DisplayServer::WindowMode window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
-static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_LANDSCAPE;
-static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED;
+static DisplayServerEnums::WindowMode window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
+static DisplayServerEnums::ScreenOrientation window_orientation = DisplayServerEnums::SCREEN_LANDSCAPE;
+static DisplayServerEnums::VSyncMode window_vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
 
-static int init_screen = DisplayServer::SCREEN_PRIMARY;
+static int init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
 static bool init_windowed = false;
@@ -408,6 +412,7 @@ void finalize_display() {
 	memdelete(rendering_server);
 
 	memdelete(display_server);
+	memdelete(accessibility_server);
 }
 
 void initialize_theme_db() {
@@ -634,6 +639,7 @@ void Main::print_help(const char *p_binary) {
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
 	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
+	print_help_option("--accessibility-driver <driver>", "Select accessibility driver ['accesskit', 'dummy'].\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1297,10 +1303,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
 			init_fullscreen = true;
-			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			window_mode = DisplayServerEnums::WINDOW_MODE_FULLSCREEN;
 		} else if (arg == "-m" || arg == "--maximized") { // force maximized window
 			init_maximized = true;
-			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			window_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 		} else if (arg == "-w" || arg == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -1364,13 +1370,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String string = N->get();
 				if (string == "auto") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO;
 					accessibility_mode_set = true;
 				} else if (string == "always") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_ALWAYS;
 					accessibility_mode_set = true;
 				} else if (string == "disabled") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED;
 					accessibility_mode_set = true;
 				} else {
 					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
@@ -1379,6 +1385,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing accessibility mode argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--accessibility-driver") {
+			if (N) {
+				String string = N->get();
+				accessibility_driver_name = string;
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing accessibility driver argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "-t" || arg == "--always-on-top") { // force always-on-top window
@@ -2160,7 +2175,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		main_args.push_back("--editor");
 		if (!init_windowed && !init_fullscreen) {
 			init_maximized = true;
-			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			window_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 		}
 	}
 
@@ -2631,33 +2646,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		if (!bool(GLOBAL_GET("display/window/size/resizable"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_RESIZE_DISABLED_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/minimize_disabled"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/maximize_disabled"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/borderless"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_BORDERLESS_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/always_on_top"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/transparent"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/extend_to_title"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/no_focus"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/sharp_corners"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_SHARP_CORNERS_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_SHARP_CORNERS_BIT;
 		}
-		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+		window_mode = (DisplayServerEnums::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
 		if (initial_position_type == Window::WINDOW_INITIAL_POSITION_ABSOLUTE) { // Absolute.
 			if (!init_use_custom_pos) {
@@ -2666,7 +2681,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN || initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) { // Center of Primary Screen.
 			if (!init_use_custom_screen) {
-				init_screen = DisplayServer::SCREEN_PRIMARY;
+				init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 				init_use_custom_screen = true;
 			}
 		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) { // Center of Other Screen.
@@ -2676,12 +2691,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) { // Center of Screen With Mouse Pointer.
 			if (!init_use_custom_screen) {
-				init_screen = DisplayServer::SCREEN_WITH_MOUSE_FOCUS;
+				init_screen = DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS;
 				init_use_custom_screen = true;
 			}
 		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) { // Center of Screen With Keyboard Focus.
 			if (!init_use_custom_screen) {
-				init_screen = DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS;
+				init_screen = DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS;
 				init_use_custom_screen = true;
 			}
 		}
@@ -2764,12 +2779,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
-		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE)));
+		window_orientation = DisplayServerEnums::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServerEnums::ScreenOrientation::SCREEN_LANDSCAPE)));
 	}
 	{
-		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF_BASIC("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
+		window_vsync_mode = DisplayServerEnums::VSyncMode(int(GLOBAL_DEF_BASIC("display/window/vsync/vsync_mode", DisplayServerEnums::VSyncMode::VSYNC_ENABLED)));
 		if (disable_vsync) {
-			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
+			window_vsync_mode = DisplayServerEnums::VSyncMode::VSYNC_DISABLED;
 		}
 	}
 
@@ -3101,13 +3116,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 				String mode = config->get_value("EditorWindow", "mode", "maximized");
 				window_size = config->get_value("EditorWindow", "size", window_size);
 				if (mode == "windowed") {
-					window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
+					window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 					init_windowed = true;
 				} else if (mode == "fullscreen") {
-					window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+					window_mode = DisplayServerEnums::WINDOW_MODE_FULLSCREEN;
 					init_fullscreen = true;
 				} else {
-					window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+					window_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 					init_maximized = true;
 				}
 
@@ -3119,7 +3134,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 
 		if (init_screen == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO) {
-			init_screen = DisplayServer::SCREEN_PRIMARY;
+			init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Initialize Early Settings");
@@ -3208,46 +3223,93 @@ Error Main::setup2(bool p_show_boot_logo) {
 		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
 
-		DisplayServer::Context context;
+		DisplayServerEnums::Context context;
 		if (editor) {
-			context = DisplayServer::CONTEXT_EDITOR;
+			context = DisplayServerEnums::CONTEXT_EDITOR;
 		} else if (project_manager) {
-			context = DisplayServer::CONTEXT_PROJECTMAN;
+			context = DisplayServerEnums::CONTEXT_PROJECTMAN;
 		} else {
-			context = DisplayServer::CONTEXT_ENGINE;
+			context = DisplayServerEnums::CONTEXT_ENGINE;
 		}
 
 		if (init_embed_parent_window_id) {
 			// Reset flags and other settings to be sure it's borderless and windowed. The position and size should have been initialized correctly
 			// from --position and --resolution parameters.
-			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
-			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+			window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
+			window_flags = DisplayServerEnums::WINDOW_FLAG_BORDERLESS_BIT;
 			if (bool(GLOBAL_GET("display/window/size/transparent"))) {
-				window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
+				window_flags |= DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT;
 			}
 		}
 
 #ifdef TOOLS_ENABLED
 		if ((project_manager || editor) && init_expand_to_title) {
-			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
+			window_flags |= DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
 		}
 #endif
 
 		if (!accessibility_mode_set) {
 #ifdef TOOLS_ENABLED
 			if (editor || project_manager || cmdline_tool) {
-				accessibility_mode = (DisplayServer::AccessibilityMode)accessibility_mode_editor;
+				accessibility_mode = (AccessibilityServerEnums::AccessibilityMode)accessibility_mode_editor;
 			} else {
 #else
 			{
 #endif
-				accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+				accessibility_mode = (AccessibilityServerEnums::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
 			}
 		}
-		DisplayServer::accessibility_set_mode(accessibility_mode);
+		if (accessibility_driver_name.is_empty()) {
+			if (!editor && !project_manager) {
+				accessibility_driver_name = GLOBAL_GET("accessibility/general/accessibility_driver");
+			} else {
+				accessibility_driver_name = "accesskit";
+			}
+		}
+		if (display_driver == NULL_DISPLAY_DRIVER || display_driver == EMBEDDED_DISPLAY_DRIVER || accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+			accessibility_driver_name = "dummy";
+		}
+		int accessibility_driver_idx = -1;
+
+		if (accessibility_driver_name.is_empty() || accessibility_driver_name == "default") {
+			accessibility_driver_idx = 0;
+		} else {
+			for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
+				String name = AccessibilityServer::get_create_function_name(i);
+				if (accessibility_driver_name == name) {
+					accessibility_driver_idx = i;
+					break;
+				}
+			}
+
+			if (accessibility_driver_idx < 0) {
+				// If the requested driver wasn't found, pick the first entry.
+				// If all else failed it would be the headless server.
+				accessibility_driver_idx = 0;
+			}
+		}
+
+		Error err;
+		accessibility_server = AccessibilityServer::create(accessibility_driver_idx, err);
+		if (err != OK || accessibility_server == nullptr) {
+			String last_name = AccessibilityServer::get_create_function_name(accessibility_driver_idx);
+
+			for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
+				if (i == accessibility_driver_idx) {
+					continue; // Don't try the same twice.
+				}
+				String name = AccessibilityServer::get_create_function_name(i);
+				WARN_VERBOSE(vformat("Accessibility driver %s failed, falling back to %s.", last_name, name));
+
+				accessibility_server = AccessibilityServer::create(i, err);
+				if (err == OK && accessibility_server != nullptr) {
+					break;
+				}
+			}
+		}
+		accessibility_server->set_mode(accessibility_mode);
 
 		String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
-		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {
 			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
@@ -3329,20 +3391,20 @@ Error Main::setup2(bool p_show_boot_logo) {
 					break;
 			}
 			if (!(force_res || use_custom_res)) {
-				display_server->window_set_size(Size2(window_size) * ui_scale, DisplayServer::MAIN_WINDOW_ID);
+				display_server->window_set_size(Size2(window_size) * ui_scale, DisplayServerEnums::MAIN_WINDOW_ID);
 			}
-			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+			if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) && !display_server->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 				Size2 real_size = DisplayServer::get_singleton()->window_get_size();
 				Rect2i scr_rect = display_server->screen_get_usable_rect(init_screen);
-				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServer::MAIN_WINDOW_ID);
+				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServerEnums::MAIN_WINDOW_ID);
 			}
 		}
 #endif
-		if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
-			display_server->show_window(DisplayServer::MAIN_WINDOW_ID);
+		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
+			display_server->show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 
-		if (display_server->has_feature(DisplayServer::FEATURE_ORIENTATION)) {
+		if (display_server->has_feature(DisplayServerEnums::FEATURE_ORIENTATION)) {
 			display_server->screen_set_orientation(window_orientation);
 		}
 
@@ -3361,7 +3423,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	if (editor && init_windowed) {
 		// We still need to check we are actually in windowed mode, because
 		// certain platform might only support one fullscreen window.
-		if (DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_WINDOWED) {
+		if (DisplayServer::get_singleton()->window_get_mode() == DisplayServerEnums::WINDOW_MODE_WINDOWED) {
 			Vector2i current_size = DisplayServer::get_singleton()->window_get_size();
 			Vector2i current_pos = DisplayServer::get_singleton()->window_get_position();
 			int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -3382,16 +3444,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
 		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
 		switch (window_vsync_mode) {
-			case DisplayServer::VSyncMode::VSYNC_DISABLED:
+			case DisplayServerEnums::VSyncMode::VSYNC_DISABLED:
 				print_line("Requested V-Sync mode: Disabled");
 				break;
-			case DisplayServer::VSyncMode::VSYNC_ENABLED:
+			case DisplayServerEnums::VSyncMode::VSYNC_ENABLED:
 				print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 				break;
-			case DisplayServer::VSyncMode::VSYNC_ADAPTIVE:
+			case DisplayServerEnums::VSyncMode::VSYNC_ADAPTIVE:
 				print_line("Requested V-Sync mode: Adaptive");
 				break;
-			case DisplayServer::VSyncMode::VSYNC_MAILBOX:
+			case DisplayServerEnums::VSyncMode::VSYNC_MAILBOX:
 				print_line("Requested V-Sync mode: Mailbox");
 				break;
 		}
@@ -3511,12 +3573,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (init_windowed) {
 				//do none..
 			} else if (init_maximized) {
-				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_MAXIMIZED);
+				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_MAXIMIZED);
 			} else if (init_fullscreen) {
-				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
+				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_FULLSCREEN);
 			}
 			if (init_always_on_top) {
-				DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
+				DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 			}
 		}
 
@@ -3873,7 +3935,7 @@ void Main::setup_boot_logo() {
 		}
 
 #if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 			Ref<Image> icon = memnew(Image(app_icon_png));
 			DisplayServer::get_singleton()->set_icon(icon);
 		}
@@ -4370,7 +4432,7 @@ int Main::start() {
 
 		bool embed_subwindows = GLOBAL_GET("display/window/subwindows/embed_subwindows");
 
-		if (single_window || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+		if (single_window || (!project_manager && !editor && embed_subwindows) || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
 
@@ -4657,7 +4719,7 @@ int Main::start() {
 				}
 #endif
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty() && !has_icon) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty() && !has_icon) {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}
@@ -4665,14 +4727,14 @@ int Main::start() {
 
 #ifdef WINDOWS_ENABLED
 				String win_icon_path = GLOBAL_GET("application/config/windows_native_icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !win_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_ICON) && !win_icon_path.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(win_icon_path);
 					has_icon = true;
 				}
 #endif
 
 				String icon_path = GLOBAL_GET("application/config/icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && !icon_path.is_empty() && !has_icon) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && !icon_path.is_empty() && !has_icon) {
 					Ref<Image> icon;
 					icon.instantiate();
 					if (ImageLoader::load_image(icon_path, icon) == OK) {
@@ -4715,7 +4777,7 @@ int Main::start() {
 #endif
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}

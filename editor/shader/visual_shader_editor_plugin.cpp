@@ -34,8 +34,10 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -65,6 +67,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
@@ -2562,10 +2565,6 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type->select(saved_type - default_type);
 	}
 	set_current_shader_type((VisualShader::Type)saved_type);
-}
-
-Size2 VisualShaderEditor::get_minimum_size() const {
-	return Size2(10, 200);
 }
 
 void VisualShaderEditor::update_toggle_files_button() {

@@ -30,7 +30,6 @@
 
 #include "lightmapper_rd.h"
 
-#include "core/string/print_string.h"
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"
@@ -39,6 +38,8 @@
 #include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/rendering/rendering_device.h"

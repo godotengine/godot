@@ -37,12 +37,6 @@
 #include "core/templates/a_hash_map.h"
 #include "core/templates/pooled_list.h"
 
-#ifdef SOWRAP_ENABLED
-#include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
-#else
-#include <wayland-client-core.h>
-#endif
-
 #include "protocol/wayland.gen.h"
 
 #include "protocol/linux_dmabuf_v1.gen.h"
@@ -61,7 +55,7 @@
 #include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
-#include "protocol/tablet.gen.h"
+// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
 #include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
@@ -74,13 +68,12 @@
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <poll.h>
 

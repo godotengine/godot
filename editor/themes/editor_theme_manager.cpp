@@ -32,6 +32,8 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
@@ -716,6 +718,7 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
 		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||

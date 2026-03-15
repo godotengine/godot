@@ -32,7 +32,8 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class AudioListener2D;
 class Camera2D;
@@ -190,6 +191,7 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX
 	};
 
@@ -197,6 +199,7 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
@@ -418,7 +421,12 @@ private:
 	} gui;
 
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	mutable RenderingServerEnums::CanvasItemTextureFilter default_canvas_item_texture_filter_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	void _refresh_texture_filter_cache() const;
+
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	mutable RenderingServerEnums::CanvasItemTextureRepeat default_canvas_item_texture_repeat_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	void _refresh_texture_repeat_cache() const;
 
 	bool disable_input = false;
 	bool disable_input_override = false;
@@ -692,8 +700,14 @@ public:
 	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
 	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
 
+	void _update_texture_filter_changed(bool p_propagate);
+	RenderingServerEnums::CanvasItemTextureFilter get_texture_filter_in_tree() const;
+
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
+
+	void _update_texture_repeat_changed(bool p_propagate);
+	RenderingServerEnums::CanvasItemTextureRepeat get_texture_repeat_in_tree() const;
 
 	// VRS
 
@@ -706,7 +720,7 @@ public:
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
 
-	virtual DisplayServer::WindowID get_window_id() const = 0;
+	virtual DisplayServerEnums::WindowID get_window_id() const = 0;
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
@@ -901,7 +915,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual DisplayServer::WindowID get_window_id() const override;
+	virtual DisplayServerEnums::WindowID get_window_id() const override;
 	void _notification(int p_what);
 
 public:

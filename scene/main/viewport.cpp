@@ -33,9 +33,11 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
@@ -45,11 +47,13 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -419,14 +423,14 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	if (p_window == nullptr) {
 		// Release current focus.
 		if (gui.subwindow_focused) {
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 			gui.subwindow_focused = nullptr;
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		}
 
 		Window *this_window = Object::cast_to<Window>(this);
 		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			this_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		return;
@@ -439,7 +443,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
 		// Release current focus.
 		if (gui.subwindow_focused) {
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 			gui.subwindow_focused = nullptr;
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		}
@@ -457,12 +461,12 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		if (gui.subwindow_focused == p_window) {
 			return; // Nothing to do.
 		}
-		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+		gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 	} else {
 		Window *this_window = Object::cast_to<Window>(this);
 		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			this_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 	}
 
@@ -470,7 +474,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 
 	gui.subwindow_focused = p_window;
 
-	gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 
 	{ // Move to foreground.
 		index = _sub_window_find(p_window);
@@ -517,7 +521,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 		Window *new_focused_window;
 		Window *parent_visible = p_window->get_parent_visible_window();
 
-		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+		gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 
 		if (parent_visible) {
 			new_focused_window = parent_visible;
@@ -533,7 +537,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 				gui.subwindow_focused = nullptr;
 			}
 
-			new_focused_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			new_focused_window->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		} else {
 			gui.subwindow_focused = nullptr;
 		}
@@ -627,6 +631,8 @@ void Viewport::_notification(int p_what) {
 				set_physics_process_internal(true);
 			}
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+			_update_texture_filter_changed(false);
+			_update_texture_repeat_changed(false);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1478,7 +1484,7 @@ Vector2 Viewport::get_mouse_position() const {
 		// Rely on the most recent mouse coordinate from an InputEventMouse in push_input.
 		// In this case get_screen_transform is not applicable, because it is ambiguous.
 		return gui.last_mouse_pos;
-	} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
+	} else if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_MOUSE)) {
 		Transform2D xform = get_screen_transform_internal(true);
 		if (xform.determinant() == 0) {
 			// Screen transform can be non-invertible when the Window is minimized.
@@ -1709,7 +1715,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	r.size = r.size.ceil();
 	r.size = r.size.min(panel->get_max_size());
 
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
 		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 			// Place it in the opposite direction. If it fails, just hug the border.
 			r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
@@ -1733,8 +1739,8 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		}
 	}
 
-	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
-	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
+	DisplayServerEnums::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
+	if (active_popup == DisplayServerEnums::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
 		gui.tooltip_popup->popup(r);
 	}
 	gui.tooltip_popup->child_controls_changed();
@@ -2102,7 +2108,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = gui_find_control(mpos);
 		}
 
-		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
+		DisplayServerEnums::CursorShape ds_cursor_shape = (DisplayServerEnums::CursorShape)Input::get_singleton()->get_default_cursor_shape();
 
 		if (over) {
 			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
@@ -2177,7 +2183,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
+			ds_cursor_shape = (DisplayServerEnums::CursorShape)cursor_shape;
 
 			if (over->can_process()) {
 				_gui_call_input(over, mm);
@@ -2199,14 +2205,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					gui.drag_mouse_over = nullptr;
 				}
 				if (gui.drag_mouse_over) {
-					ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
+					ds_cursor_shape = DisplayServerEnums::CURSOR_CAN_DROP;
 				} else {
-					ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
+					ds_cursor_shape = DisplayServerEnums::CURSOR_FORBIDDEN;
 				}
 			}
 		}
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !Object::cast_to<SubViewportContainer>(over)))) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !Object::cast_to<SubViewportContainer>(over)))) {
 			// If dragging is active, then set the cursor shape only from the Viewport where dragging started.
 			// If dragging is inactive, then set the cursor shape only when not over a SubViewportContainer.
 			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
@@ -2947,7 +2953,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
 				if (gui.subwindow_drag_close_rect.has_point(mb->get_position())) {
 					// Close window.
-					gui.currently_dragged_subwindow->_event_callback(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
+					gui.currently_dragged_subwindow->_event_callback(DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 				}
 			}
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
@@ -2969,8 +2975,8 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 				gui.currently_dragged_subwindow->_rect_changed_callback(new_rect);
 
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
-					DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_MOVE);
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CURSOR_MOVE);
 				}
 			}
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
@@ -3153,19 +3159,19 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 		if (mm.is_valid()) {
 			SubWindowResize resize = _sub_window_get_resize_margin(gui.subwindow_focused, mm->get_position());
 			if (resize != SUB_WINDOW_RESIZE_DISABLED) {
-				DisplayServer::CursorShape shapes[SUB_WINDOW_RESIZE_MAX] = {
-					DisplayServer::CURSOR_ARROW,
-					DisplayServer::CURSOR_FDIAGSIZE,
-					DisplayServer::CURSOR_VSIZE,
-					DisplayServer::CURSOR_BDIAGSIZE,
-					DisplayServer::CURSOR_HSIZE,
-					DisplayServer::CURSOR_HSIZE,
-					DisplayServer::CURSOR_BDIAGSIZE,
-					DisplayServer::CURSOR_VSIZE,
-					DisplayServer::CURSOR_FDIAGSIZE
+				DisplayServerEnums::CursorShape shapes[SUB_WINDOW_RESIZE_MAX] = {
+					DisplayServerEnums::CURSOR_ARROW,
+					DisplayServerEnums::CURSOR_FDIAGSIZE,
+					DisplayServerEnums::CURSOR_VSIZE,
+					DisplayServerEnums::CURSOR_BDIAGSIZE,
+					DisplayServerEnums::CURSOR_HSIZE,
+					DisplayServerEnums::CURSOR_HSIZE,
+					DisplayServerEnums::CURSOR_BDIAGSIZE,
+					DisplayServerEnums::CURSOR_VSIZE,
+					DisplayServerEnums::CURSOR_FDIAGSIZE
 				};
 
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
 					DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
 				}
 
@@ -3991,6 +3997,70 @@ bool Viewport::is_handling_input_locally() const {
 	return handle_input_locally;
 }
 
+void Viewport::_refresh_texture_filter_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	switch (default_canvas_item_texture_filter) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE: {
+			Node *p = get_parent();
+			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p);
+			if (parent_ci) {
+				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_ci->get_texture_filter_in_tree();
+				if (default_canvas_item_texture_filter_cache == RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
+					default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+				}
+				break;
+			}
+			Viewport *parent_vp = Object::cast_to<Viewport>(p);
+			if (parent_vp) {
+				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_vp->get_texture_filter_in_tree();
+				break;
+			}
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		} break;
+		default: {
+		}
+	}
+}
+
+void Viewport::_update_texture_filter_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_filter_cache();
+	RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, default_canvas_item_texture_filter_cache);
+
+	if (p_propagate) {
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+					child_ci->_update_texture_filter_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->default_canvas_item_texture_filter == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+				child_vp->_update_texture_filter_changed(true);
+			}
+		}
+	}
+}
+
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
@@ -3999,27 +4069,79 @@ void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFi
 		return;
 	}
 	default_canvas_item_texture_filter = p_filter;
-	switch (default_canvas_item_texture_filter) {
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
-			break;
-		default: {
-		}
-	}
+	_update_texture_filter_changed(true);
 }
 
 Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
 	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	return default_canvas_item_texture_filter;
+}
+
+RenderingServerEnums::CanvasItemTextureFilter Viewport::get_texture_filter_in_tree() const {
+	ERR_READ_THREAD_GUARD_V(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	_refresh_texture_filter_cache();
+	return default_canvas_item_texture_filter_cache;
+}
+
+void Viewport::_refresh_texture_repeat_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	switch (default_canvas_item_texture_repeat) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE: {
+			Node *p = get_parent();
+			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p);
+			if (parent_ci) {
+				default_canvas_item_texture_repeat_cache = (RenderingServerEnums::CanvasItemTextureRepeat)parent_ci->get_texture_repeat_in_tree();
+				if (default_canvas_item_texture_repeat_cache == RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) {
+					default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+				}
+				break;
+			}
+			Viewport *parent_vp = Object::cast_to<Viewport>(p);
+			if (parent_vp) {
+				default_canvas_item_texture_repeat_cache = (RenderingServerEnums::CanvasItemTextureRepeat)parent_vp->get_texture_repeat_in_tree();
+				break;
+			}
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		} break;
+		default: {
+		}
+	}
+}
+
+void Viewport::_update_texture_repeat_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_repeat_cache();
+	RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, default_canvas_item_texture_repeat_cache);
+
+	if (p_propagate) {
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_repeat == CanvasItem::TEXTURE_REPEAT_PARENT_NODE) {
+					child_ci->_update_texture_repeat_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->default_canvas_item_texture_repeat == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE) {
+				child_vp->_update_texture_repeat_changed(true);
+			}
+		}
+	}
 }
 
 void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
@@ -4031,25 +4153,18 @@ void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRe
 	}
 
 	default_canvas_item_texture_repeat = p_repeat;
-
-	switch (default_canvas_item_texture_repeat) {
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-			break;
-		default: {
-		}
-	}
+	_update_texture_repeat_changed(true);
 }
 
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
 	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	return default_canvas_item_texture_repeat;
+}
+
+RenderingServerEnums::CanvasItemTextureRepeat Viewport::get_texture_repeat_in_tree() const {
+	ERR_READ_THREAD_GUARD_V(RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	_refresh_texture_repeat_cache();
+	return default_canvas_item_texture_repeat_cache;
 }
 
 void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
@@ -4113,9 +4228,9 @@ Ref<Texture2D> Viewport::get_vrs_texture() const {
 	return vrs_texture;
 }
 
-DisplayServer::WindowID Viewport::get_window_id() const {
-	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
-	return DisplayServer::MAIN_WINDOW_ID;
+DisplayServerEnums::WindowID Viewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServerEnums::INVALID_WINDOW_ID);
+	return DisplayServerEnums::MAIN_WINDOW_ID;
 }
 
 Viewport *Viewport::get_parent_viewport() const {
@@ -4163,8 +4278,8 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-			for (const DisplayServer::WindowID &window_id : wl) {
+			Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServerEnums::WindowID &window_id : wl) {
 				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
@@ -5223,8 +5338,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_vrs_texture", "get_vrs_texture");
 #endif
 	ADD_GROUP("Canvas Items", "canvas_item_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap,Inherit"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror,Inherit"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
 	ADD_GROUP("Audio Listener", "audio_listener_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
 #ifndef _3D_DISABLED
@@ -5337,11 +5452,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
 	BIND_ENUM_CONSTANT(SDF_OVERSIZE_100_PERCENT);
@@ -5543,9 +5660,9 @@ SubViewport::ClearMode SubViewport::get_clear_mode() const {
 	return clear_mode;
 }
 
-DisplayServer::WindowID SubViewport::get_window_id() const {
-	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
-	return DisplayServer::INVALID_WINDOW_ID;
+DisplayServerEnums::WindowID SubViewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServerEnums::INVALID_WINDOW_ID);
+	return DisplayServerEnums::INVALID_WINDOW_ID;
 }
 
 Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position) const {

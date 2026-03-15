@@ -1,8 +1,6 @@
 <!--
-Please target the `master` branch in priority.
+Please target the `master` branch. We will take care of backporting relevant fixes to older versions.
 
-Relevant fixes are cherry-picked for stable branches as needed by maintainers.
-
-To speed up the contribution process and avoid CI errors, please set up pre-commit hooks locally:
-https://contributing.godotengine.org/en/latest/engine/introduction.html#setting-up-a-dev-environment
+Before submitting, please read our checklist for new contributors:
+https://contributing.godotengine.org/en/latest/engine/introduction.html#checklist-for-new-contributors
 -->

@@ -30,14 +30,15 @@
 
 #include "variant.h"
 
-#include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
-#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/variant_internal.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
@@ -2549,6 +2550,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Basis, is_conformal, sarray(), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
+	bind_method(Basis, is_orthonormal, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3::UP, false));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());

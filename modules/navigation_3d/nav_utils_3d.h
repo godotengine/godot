@@ -37,6 +37,8 @@
 #include "core/templates/local_vector.h"
 #include "servers/navigation_3d/navigation_constants_3d.h"
 
+#include <cfloat> // FLT_MAX
+
 class NavBaseIteration3D;
 
 namespace Nav3D {

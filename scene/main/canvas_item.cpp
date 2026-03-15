@@ -33,16 +33,20 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/font.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #define ERR_DRAW_GUARD \
@@ -305,7 +309,7 @@ void CanvasItem::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1660,11 +1664,17 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
-		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
-			CanvasItem *ci = data.canvas_item_children[n];
-
-			if (!ci->top_level && ci->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				ci->_update_texture_filter_changed(true);
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+					child_ci->_update_texture_filter_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->get_default_canvas_item_texture_filter() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+				child_vp->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1716,10 +1726,17 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	_update_self_texture_repeat(texture_repeat_cache);
 
 	if (p_propagate) {
-		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
-			CanvasItem *ci = data.canvas_item_children[n];
-			if (!ci->top_level && ci->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				ci->_update_texture_repeat_changed(true);
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_repeat == CanvasItem::TEXTURE_REPEAT_PARENT_NODE) {
+					child_ci->_update_texture_repeat_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->get_default_canvas_item_texture_repeat() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE) {
+				child_vp->_update_texture_repeat_changed(true);
 			}
 		}
 	}

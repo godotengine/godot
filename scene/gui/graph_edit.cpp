@@ -31,9 +31,11 @@
 #include "graph_edit.h"
 #include "graph_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "scene/2d/line_2d.h"
@@ -1830,7 +1832,7 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_frame->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
@@ -1839,6 +1841,7 @@ void GraphEdit::_minimap_draw() {
 			if (graph_frame->is_tint_color_enabled()) {
 				node_color = graph_frame->get_tint_color();
 			}
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 
@@ -1856,12 +1859,13 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_node->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_node->is_selected() ? graph_node->theme_cache.panel_selected : graph_node->theme_cache.panel;
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 

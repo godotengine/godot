@@ -31,6 +31,7 @@
 #include "input_event_configuration_dialog.h"
 
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"
@@ -43,8 +44,22 @@
 
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
-		event = p_event;
-		original_event = p_original_event;
+		// If there is already a binding set, let enter or escape confirm/cancel the popup.
+		if (event.is_valid()) {
+			Ref<InputEventKey> current_key = p_event;
+			// Without this is_visible() check, the gui would not open if the already bound
+			// keybind was escape.
+			if (is_visible()) {
+				if (current_key->get_physical_keycode() == Key::ENTER) {
+					_ok_pressed();
+					return;
+				}
+				if (current_key->get_physical_keycode() == Key::ESCAPE) {
+					_cancel_pressed();
+					return;
+				}
+			}
+		}
 
 		// If the event is changed to something which is not the same as the listener,
 		// clear out the event from the listener text box to avoid confusion.
@@ -52,7 +67,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		if (listener_event.is_valid() && !listener_event->is_match(p_event)) {
 			event_listener->clear_event();
 		}
-
+		event = p_event;
+		original_event = p_original_event;
 		// Update Label
 		event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 

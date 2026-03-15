@@ -31,6 +31,7 @@
 #include "gradient_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"

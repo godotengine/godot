@@ -30,7 +30,9 @@
 
 #include "static_body_2d.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/resources/physics_material.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/capsule_shape_2d.h"

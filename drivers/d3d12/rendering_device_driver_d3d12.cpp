@@ -32,8 +32,11 @@
 
 #include "d3d12_hooks.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
+
 #include "thirdparty/zlib/zlib.h"
 
 #include "d3d12_godot_nir_bridge.h"
@@ -2793,20 +2796,20 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	UINT present_flags = 0;
 	UINT creation_flags = 0;
 	switch (surface->vsync_mode) {
-		case DisplayServer::VSYNC_MAILBOX: {
+		case DisplayServerEnums::VSYNC_MAILBOX: {
 			sync_interval = 1;
 			present_flags = DXGI_PRESENT_RESTART;
 		} break;
-		case DisplayServer::VSYNC_ENABLED: {
+		case DisplayServerEnums::VSYNC_ENABLED: {
 			sync_interval = 1;
 			present_flags = 0;
 		} break;
-		case DisplayServer::VSYNC_DISABLED: {
+		case DisplayServerEnums::VSYNC_DISABLED: {
 			sync_interval = 0;
 			present_flags = is_tearing_supported ? DXGI_PRESENT_ALLOW_TEARING : 0;
 			creation_flags = is_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		} break;
-		case DisplayServer::VSYNC_ADAPTIVE: // Unsupported.
+		case DisplayServerEnums::VSYNC_ADAPTIVE: // Unsupported.
 		default:
 			sync_interval = 1;
 			present_flags = 0;
@@ -4036,18 +4039,11 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 					cmd_buf_info->uav_alloc.cpu_handle,
 					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-			UINT values[4] = {
-				(UINT)p_color.get_r8(),
-				(UINT)p_color.get_g8(),
-				(UINT)p_color.get_b8(),
-				(UINT)p_color.get_a8(),
-			};
-
-			cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
+			cmd_buf_info->cmd_list->ClearUnorderedAccessViewFloat(
 					shader_visible_descriptor_allocation.gpu_handle,
 					cmd_buf_info->uav_alloc.cpu_handle,
 					tex_info->resource,
-					values,
+					p_color.components,
 					0,
 					nullptr);
 		}

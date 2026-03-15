@@ -30,6 +30,7 @@
 
 #include "object.h"
 
+#include "core/config/engine.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -234,6 +235,7 @@ void ObjectGDExtension::create_gdtype() {
 	ERR_FAIL_COND(gdtype);
 
 	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
+	gdtype->initialize();
 }
 
 void ObjectGDExtension::destroy_gdtype() {
@@ -1440,6 +1442,10 @@ void Object::_reset_gdtype() const {
 	}
 }
 
+void Object::autorelease_gdtype(GDType **r_type) {
+	ClassDB::gdtype_autorelease_pool.push_back(r_type);
+}
+
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// this version of add_user_signal is meant to be used from scripts or external apis
 	// without access to ADD_SIGNAL in bind_methods
@@ -1792,10 +1798,18 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 
 void Object::initialize_class() {
 	static bool initialized = false;
-	if (initialized) {
+	if (likely(initialized)) {
 		return;
 	}
-	_add_class_to_classdb(get_gdtype_static(), nullptr);
+
+	static BinaryMutex __init_mutex;
+	MutexLock lock(__init_mutex);
+	if (initialized) {
+		// Initialized on another thread while we were waiting.
+		return;
+	}
+	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr);
+	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1871,7 +1885,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const GDType &p_type, const GDType *p_inherits) {
+void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
 	ClassDB::_add_class(p_type, p_inherits);
 }
 
@@ -2406,20 +2420,6 @@ void Object::detach_from_objectdb() {
 	}
 }
 
-void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type) {
-	static BinaryMutex _mutex;
-	MutexLock lock(_mutex);
-	GDType *type = *type_ptr;
-	if (type) {
-		// Assigned while we were waiting.
-		return;
-	}
-	type = memnew(GDType(super_type, StringName(p_name)));
-	*type_ptr = type;
-
-	ClassDB::gdtype_autorelease_pool.push_back(type_ptr);
-}
-
 Object::~Object() {
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
@@ -2641,7 +2641,7 @@ void ObjectDB::cleanup() {
 	spin_lock.lock();
 
 	if (slot_count > 0) {
-		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
+		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", slot_count, slot_count == 1 ? "instance was" : "instances were"));
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,

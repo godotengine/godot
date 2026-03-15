@@ -32,6 +32,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
+#include "core/os/os.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/light_storage.h"

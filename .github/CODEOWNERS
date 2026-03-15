@@ -40,10 +40,13 @@
 /drivers/vulkan/                              @godotengine/rendering
 
 ## OS
+/drivers/apple*/                              @godotengine/macos
 /drivers/unix/                                @godotengine/linux-bsd
 /drivers/windows/                             @godotengine/windows
 
 ## Misc
+/drivers/register_driver_types.*              @godotengine/buildsystem
+/drivers/accesskit/                           @godotengine/buildsystem
 /drivers/png/                                 @godotengine/asset-pipeline
 
 # Editor
@@ -54,7 +57,6 @@
 /editor/debugger/                             @godotengine/editor @godotengine/debugger
 /editor/doc/                                  @godotengine/editor @godotengine/documentation
 /editor/gui/                                  @godotengine/editor @godotengine/gui-nodes
-/editor/icons/                                @godotengine/editor
 /editor/import/                               @godotengine/editor @godotengine/asset-pipeline
 /editor/scene/2d/                             @godotengine/editor @godotengine/2d-nodes
 /editor/scene/2d/physics/                     @godotengine/editor @godotengine/physics
@@ -125,7 +127,6 @@
 /modules/multiplayer/                         @godotengine/network
 /modules/multiplayer/doc_classes/             @godotengine/network @godotengine/documentation
 /modules/multiplayer/editor/                  @godotengine/network @godotengine/editor
-/modules/multiplayer/icons/                   @godotengine/network
 /modules/multiplayer/tests/                   @godotengine/network @godotengine/tests
 /modules/upnp/                                @godotengine/network
 /modules/upnp/doc_classes/                    @godotengine/network @godotengine/documentation
@@ -152,14 +153,12 @@
 /modules/gdscript/                            @godotengine/gdscript
 /modules/gdscript/doc_classes/                @godotengine/gdscript @godotengine/documentation
 /modules/gdscript/editor/                     @godotengine/gdscript @godotengine/script-editor
-/modules/gdscript/icons/                      @godotengine/gdscript
 /modules/gdscript/tests/                      @godotengine/gdscript @godotengine/tests
 /modules/jsonrpc/                             @godotengine/gdscript @godotengine/network
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
 /modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
-/modules/mono/icons/                          @godotengine/dotnet
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
@@ -180,15 +179,14 @@
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 
 ## Misc
+/modules/register_module_types.*              @godotengine/buildsystem
 /modules/csg/                                 @godotengine/3d-nodes
 /modules/csg/doc_classes/                     @godotengine/3d-nodes @godotengine/documentation
 /modules/csg/editor/                          @godotengine/3d-nodes @godotengine/editor
-/modules/csg/icons/                           @godotengine/3d-nodes
 /modules/csg/tests/                           @godotengine/3d-nodes @godotengine/tests
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
 /modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
-/modules/gridmap/icons/                       @godotengine/3d-nodes
 /modules/navigation_2d/                       @godotengine/navigation
 /modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
 /modules/navigation_3d/                       @godotengine/navigation
@@ -196,13 +194,11 @@
 /modules/noise/                               @godotengine/core
 /modules/noise/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/noise/editor/                        @godotengine/core @godotengine/editor
-/modules/noise/icons/                         @godotengine/core
 /modules/noise/tests/                         @godotengine/core @godotengine/tests
 /modules/objectdb_profiler/                   @godotengine/debugger
 /modules/objectdb_profiler/editor/            @godotengine/debugger @godotengine/editor
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
-/modules/regex/icons/                         @godotengine/core
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
@@ -210,6 +206,7 @@
 
 # Platform
 
+/platform/register_platform_apis.*            @godotengine/buildsystem
 /platform/android/                            @godotengine/android
 /platform/android/doc_classes/                @godotengine/android @godotengine/documentation
 /platform/ios/                                @godotengine/ios
@@ -218,6 +215,8 @@
 /platform/linuxbsd/doc_classes/               @godotengine/linux-bsd @godotengine/documentation
 /platform/macos/                              @godotengine/macos
 /platform/macos/doc_classes/                  @godotengine/macos @godotengine/documentation
+/platform/visionos/                           @godotengine/xr
+/platform/visionos/doc_classes/               @godotengine/xr @godotengine/documentation
 /platform/web/                                @godotengine/web
 /platform/web/doc_classes/                    @godotengine/web @godotengine/documentation
 /platform/windows/                            @godotengine/windows
@@ -225,6 +224,9 @@
 
 # Scene
 
+/scene/property_*                             @godotengine/buildsystem
+/scene/register_scene_types.*                 @godotengine/buildsystem
+/scene/scene_string_names.*                   @godotengine/buildsystem
 /scene/2d/                                    @godotengine/2d-nodes
 /scene/2d/navigation/                         @godotengine/2d-nodes @godotengine/navigation
 /scene/2d/physics/                            @godotengine/2d-nodes @godotengine/physics
@@ -237,24 +239,32 @@
 /scene/debugger/                              @godotengine/debugger
 /scene/gui/                                   @godotengine/gui-nodes
 /scene/main/                                  @godotengine/core
+/scene/resources/*                            @godotengine/gui-nodes
 /scene/resources/2d/                          @godotengine/2d-nodes
 /scene/resources/2d/skeleton/                 @godotengine/2d-nodes @godotengine/animation
 /scene/resources/3d/                          @godotengine/3d-nodes
 /scene/resources/animated*                    @godotengine/animation
 /scene/resources/animation*                   @godotengine/animation
 /scene/resources/audio*                       @godotengine/audio
+/scene/resources/bone*                        @godotengine/animation
 /scene/resources/font*                        @godotengine/gui-nodes
+/scene/resources/physics*                     @godotengine/physics
 /scene/resources/shader*                      @godotengine/shaders
+/scene/resources/skeleton*                    @godotengine/animation
 /scene/resources/text_*                       @godotengine/gui-nodes
 /scene/resources/visual_shader*               @godotengine/shaders
 /scene/theme/                                 @godotengine/gui-nodes
-/scene/theme/icons/                           @godotengine/gui-nodes
 
 # Servers
 
+/servers/nav_heap.*                           @godotengine/navigation
+/servers/register_server_types.*              @godotengine/buildsystem
+/servers/server_wrap_*                        @godotengine/buildsystem
 /servers/audio/                               @godotengine/audio
 /servers/camera/                              @godotengine/xr
 /servers/debugger/                            @godotengine/debugger
+/servers/display/                             @godotengine/rendering
+/servers/movie_writer/                        @godotengine/rendering
 /servers/navigation_2d/                       @godotengine/navigation
 /servers/navigation_3d/                       @godotengine/navigation
 /servers/physics_2d/                          @godotengine/physics

@@ -47,6 +47,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -131,6 +132,23 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	public void disableScrollDeadzone(boolean disable) {
 		this.godotGestureHandler.setScrollDeadzoneDisabled(disable);
+	}
+
+	/**
+	 * Enable haptic feedback (vibration) when a long-press right-click is triggered.
+	 */
+	public void enableHapticFeedback(boolean enable) {
+		this.godotGestureHandler.setHapticFeedbackEnabled(enable);
+	}
+
+	/**
+	 * Perform haptic feedback on the render view.
+	 */
+	void performHapticFeedback() {
+		GodotRenderView view = godot.getRenderView();
+		if (view != null) {
+			view.getView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+		}
 	}
 
 	/**

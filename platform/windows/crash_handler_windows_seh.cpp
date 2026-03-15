@@ -36,7 +36,6 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 

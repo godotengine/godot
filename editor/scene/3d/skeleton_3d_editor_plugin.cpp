@@ -31,6 +31,7 @@
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
@@ -47,6 +48,7 @@
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/surface_tool.h"

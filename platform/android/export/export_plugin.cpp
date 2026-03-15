@@ -36,24 +36,24 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/os/os.h"
+#include "core/os/shared_object.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
-#include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
+#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_plugin.h"
 #include "editor/export/export_template_manager.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
 
 #ifdef MODULE_MONO_ENABLED
@@ -61,13 +61,14 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "../java_godot_wrapper.h"
 #include "../os_android.h"
 #include "android_editor_gradle_runner.h"
 #endif
 
 #ifndef ANDROID_ENABLED
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
+#include "editor/editor_log.h"
+#include "editor/editor_string_names.h"
 #endif
 
 static const char *ANDROID_PERMS[] = {
@@ -1220,7 +1221,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	String package_name = p_preset->get("package/unique_name");
 
 	const int screen_orientation =
-			_get_android_orientation_value(DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
+			_get_android_orientation_value(DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
 
 	bool screen_support_small = p_preset->get("screen/support_small");
 	bool screen_support_normal = p_preset->get("screen/support_normal");

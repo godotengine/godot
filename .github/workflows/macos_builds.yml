@@ -8,7 +8,6 @@ env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
 
 jobs:
   build-macos:
@@ -51,15 +50,15 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Download pre-built AccessKit
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: AccessKit/accesskit-c
-          version: tags/0.18.0
-          file: accesskit-c-0.18.0.zip
-          target: accesskit-c-0.18.0/accesskit_c.zip
-
-      - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
+        shell: sh
+        id: accesskit-sdk
+        run: |
+          if python3 ./misc/scripts/install_accesskit.py; then
+            echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
+            echo "ACCESSKIT_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Vulkan SDK
         id: vulkan-sdk
@@ -75,14 +74,14 @@ jobs:
       - name: Compilation (x86_64)
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=x86_64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=x86_64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }}
           platform: macos
           target: ${{ matrix.target }}
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }}
           platform: macos
           target: ${{ matrix.target }}
 

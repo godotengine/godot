@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_split_container)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
@@ -278,7 +279,7 @@ TEST_CASE("[SceneTree][SplitContainer] Collapsed") {
 
 		// Cursor is default.
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(1, 1), MouseButtonMask::NONE, Key::NONE);
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Dragger is disabled, cannot drag.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(1, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -377,20 +378,20 @@ TEST_CASE("[SceneTree][SplitContainer] Cursor shape") {
 
 	// Default cursor shape.
 	SEND_GUI_MOUSE_MOTION_EVENT(not_on_dragger, MouseButtonMask::NONE, Key::NONE);
-	CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+	CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 	// Horizontal cursor shape.
 	SEND_GUI_MOUSE_MOTION_EVENT(on_dragger, MouseButtonMask::NONE, Key::NONE);
-	CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_HSPLIT);
+	CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_HSPLIT);
 
 	// Vertical cursor shape.
 	split_container->set_vertical(true);
 	SEND_GUI_MOUSE_MOTION_EVENT(on_dragger, MouseButtonMask::NONE, Key::NONE);
-	CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_VSPLIT);
+	CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_VSPLIT);
 
 	// Move off, default cursor shape.
 	SEND_GUI_MOUSE_MOTION_EVENT(not_on_dragger, MouseButtonMask::NONE, Key::NONE);
-	CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+	CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 	memdelete(child_a);
 	memdelete(child_b);

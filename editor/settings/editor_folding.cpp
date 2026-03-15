@@ -124,7 +124,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 
 	const AnimationMixer *anim_mixer = Object::cast_to<AnimationMixer>(p_node);
 	if (anim_mixer) {
-		List<StringName> anim_names;
+		LocalVector<StringName> anim_names;
 		anim_mixer->get_animation_list(&anim_names);
 		for (const StringName &anim_name : anim_names) {
 			Ref<Animation> anim = anim_mixer->get_animation(anim_name);

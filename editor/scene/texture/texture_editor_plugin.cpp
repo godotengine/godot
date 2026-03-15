@@ -30,6 +30,7 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
@@ -46,7 +47,6 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/style_box_flat.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 

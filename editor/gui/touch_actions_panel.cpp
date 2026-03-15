@@ -31,14 +31,14 @@
 #include "touch_actions_panel.h"
 
 #include "core/input/input.h"
-#include "core/object/callable_method_pointer.h"
-#include "editor/editor_string_names.h"
+#include "core/object/callable_mp.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display/display_server.h"
 
 void TouchActionsPanel::_notification(int p_what) {
 	switch (p_what) {

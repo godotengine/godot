@@ -33,6 +33,9 @@
 #include "nav_mesh_generator_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 

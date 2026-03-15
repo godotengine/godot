@@ -6,7 +6,7 @@ index 8df03649b5..42ba704beb 100644
  See documentation chapter: \ref statistics.
  */
  
-+#include "drivers/vulkan/godot_vulkan.h"
++#include <drivers/vulkan/godot_vulkan.h>
  
  #ifdef __cplusplus
  extern "C" {

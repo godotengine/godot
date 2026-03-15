@@ -30,11 +30,14 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/config/engine.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -788,7 +791,7 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
-		if (key->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F)) && is_visible_in_tree()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event) && is_visible_in_tree()) {
 			filter->grab_focus();
 			filter->select_all();
 			accept_event();

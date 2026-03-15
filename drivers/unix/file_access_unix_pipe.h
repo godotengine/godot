@@ -30,12 +30,9 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/os/memory.h"
-
-#include <cstdio>
-
 #if defined(UNIX_ENABLED)
+
+#include "core/io/file_access.h"
 
 class FileAccessUnixPipe : public FileAccess {
 	GDSOFTCLASS(FileAccessUnixPipe, FileAccess);

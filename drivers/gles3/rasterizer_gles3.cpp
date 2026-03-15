@@ -32,10 +32,13 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_types.h"
 
@@ -211,6 +214,13 @@ void RasterizerGLES3::finalize() {
 	memdelete(config);
 }
 
+void RasterizerGLES3::make_current(bool p_gles_over_gl) {
+	RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
+	OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
+	_create_func = _create_current;
+	low_end = true;
+}
+
 RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
 
 #ifdef EGL_ENABLED
@@ -367,7 +377,7 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
+void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_blit.render_target);
 
 	ERR_FAIL_NULL(rt);
@@ -442,7 +452,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 }
 
 // is this p_screen useless in a multi window environment?
-void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
+void RasterizerGLES3::blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	for (int i = 0; i < p_amount; i++) {
 		_blit_render_target_to_screen(p_screen, p_render_targets[i], i == 0);
 	}

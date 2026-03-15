@@ -30,6 +30,7 @@
 
 #include "groups_editor.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -43,7 +44,9 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 static bool can_edit(Node *p_node, const String &p_group) {
 	Node *n = p_node;

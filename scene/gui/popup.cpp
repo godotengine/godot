@@ -30,14 +30,17 @@
 
 #include "popup.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
-#endif
-
-#include "core/object/class_db.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
+#endif
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
@@ -165,7 +168,7 @@ Rect2i Popup::_popup_adjust_rect() const {
 
 	Rect2i current(get_position(), get_size());
 
-	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 		// We're fine as is, the Display Server will take care of that for us.
 		return current;
 	}
@@ -432,6 +435,8 @@ void PopupPanel::_bind_methods() {
 
 PopupPanel::PopupPanel() {
 	set_flag(FLAG_TRANSPARENT, true);
+	set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	set_default_canvas_item_texture_repeat(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
 
 	panel = memnew(Panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

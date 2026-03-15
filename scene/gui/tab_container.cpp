@@ -30,11 +30,13 @@
 
 #include "tab_container.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
 	if (p_idx >= pending_tabs.size()) {
@@ -115,18 +117,18 @@ void TabContainer::_notification(int p_what) {
 				}
 				Control *control = _as_tab_control(child_node);
 				if (!control) {
-					DisplayServer::get_singleton()->accessibility_update_add_child(ae, child_node->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_child(ae, child_node->get_accessibility_element());
 				} else {
 					if (!tab_panels.has(child_node)) {
-						tab_panels[child_node] = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB_PANEL);
+						tab_panels[child_node] = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TAB_PANEL);
 					}
 					RID panel = tab_panels[child_node];
 					RID tab = tab_bar->get_tab_accessibility_element(tab_index);
 
-					DisplayServer::get_singleton()->accessibility_update_add_related_controls(tab, panel);
-					DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(panel, tab);
-					DisplayServer::get_singleton()->accessibility_update_set_flag(panel, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, tab_index != tab_cur);
-					DisplayServer::get_singleton()->accessibility_update_add_child(panel, child_node->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_related_controls(tab, panel);
+					AccessibilityServer::get_singleton()->update_add_related_labeled_by(panel, tab);
+					AccessibilityServer::get_singleton()->update_set_flag(panel, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, tab_index != tab_cur);
+					AccessibilityServer::get_singleton()->update_add_child(panel, child_node->get_accessibility_element());
 
 					tab_index++;
 				}
@@ -269,7 +271,17 @@ void TabContainer::_on_theme_changed() {
 	theme_changing = false;
 }
 
+void TabContainer::_repaint_call_deferred() {
+	layout_pending_start();
+	callable_mp(this, &TabContainer::_repaint_internal).call_deferred();
+}
+
 void TabContainer::_repaint() {
+	layout_pending_start();
+	_repaint_internal();
+}
+
+void TabContainer::_repaint_internal() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
@@ -313,6 +325,7 @@ void TabContainer::_repaint() {
 	updating_visibility = false;
 
 	update_minimum_size();
+	layout_pending_finish();
 }
 
 void TabContainer::_update_margins() {
@@ -492,7 +505,7 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint();
 	queue_redraw();
 	queue_accessibility_update();
 
@@ -501,7 +514,7 @@ void TabContainer::_on_tab_changed(int p_tab) {
 
 void TabContainer::_on_tab_selected(int p_tab) {
 	if (p_tab != get_previous_tab()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
@@ -593,7 +606,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -619,7 +632,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	Container::remove_child_notify(p_child);
 
 	if (tab_panels.has(p_child)) {
-		DisplayServer::get_singleton()->accessibility_free_element(tab_panels[p_child]);
+		AccessibilityServer::get_singleton()->free_element(tab_panels[p_child]);
 		tab_panels.erase(p_child);
 	}
 
@@ -655,7 +668,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -772,7 +785,7 @@ void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 
 	tab_bar->set_tab_style_v_flip(tabs_position == POSITION_BOTTOM);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -804,7 +817,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	tabs_visible = p_visible;
 	tab_bar->set_visible(tabs_visible);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -945,7 +958,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {

@@ -30,13 +30,13 @@
 
 #include "path_2d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/mesh.h"

@@ -45,7 +45,9 @@
 #include "thirdparty/re-spirv/re-spirv.h"
 #include "thirdparty/vulkan/vk_mem_alloc.h"
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
+
+class FileAccess;
 
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
