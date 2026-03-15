@@ -983,8 +983,6 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_name(const String &p_name) {
 void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("GraphBlendSpace")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -998,19 +996,6 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
-		} break;
-
-		case NOTIFICATION_PROCESS: {
-			AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
-			if (!tree) {
-				return;
-			}
-
-			update_error_message(tree, error_panel, error_label);
-		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			set_process(is_visible_in_tree());
 		} break;
 	}
 }
@@ -1416,12 +1401,6 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	min_y_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 	label_x->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
 	label_y->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-	error_panel->hide();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
