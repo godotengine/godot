@@ -30,7 +30,6 @@
 
 #include "scene_paint_2d_editor_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
@@ -39,22 +38,12 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_file_dialog.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map_layer.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/label.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 void ScenePaint2DEditor::_can_handle(bool p_is_node_2d, bool p_edit) {

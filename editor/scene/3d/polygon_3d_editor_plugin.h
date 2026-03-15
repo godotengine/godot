@@ -31,13 +31,14 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_polygon_3d.h"
 #include "scene/gui/box_container.h"
-#include "scene/resources/immediate_mesh.h"
 
+class ArrayMesh;
 class CanvasItemEditor;
+class ImmediateMesh;
 class MenuButton;
+class MeshInstance3D;
+class StandardMaterial3D;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
