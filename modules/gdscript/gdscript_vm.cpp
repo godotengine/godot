@@ -583,41 +583,42 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		stack = (Variant *)aptr;
 
 		const int non_vararg_arg_count = MIN(p_argcount, _argument_count);
+		const GDScriptDataType *unsafe_argument_types = argument_types.ptr();
 		for (int i = 0; i < non_vararg_arg_count; i++) {
-			if (!argument_types[i].has_type()) {
+			if (!unsafe_argument_types[i].has_type()) {
 				memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(*p_args[i]));
 				continue;
 			}
 			// If types already match, don't call Variant::construct(). Constructors of some types
 			// (e.g. packed arrays) do copies, whereas they pass by reference when inside a Variant.
-			if (argument_types[i].is_type(*p_args[i], false)) {
+			if (unsafe_argument_types[i].is_type(*p_args[i], false)) {
 				memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(*p_args[i]));
 				continue;
 			}
-			if (!argument_types[i].is_type(*p_args[i], true)) {
+			if (!unsafe_argument_types[i].is_type(*p_args[i], true)) {
 				r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_err.argument = i;
-				r_err.expected = argument_types[i].builtin_type;
+				r_err.expected = unsafe_argument_types[i].builtin_type;
 				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			}
-			if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
-				if (argument_types[i].builtin_type == Variant::DICTIONARY && argument_types[i].has_container_element_types()) {
-					const GDScriptDataType &arg_key_type = argument_types[i].get_container_element_type_or_variant(0);
-					const GDScriptDataType &arg_value_type = argument_types[i].get_container_element_type_or_variant(1);
+			if (unsafe_argument_types[i].kind == GDScriptDataType::BUILTIN) {
+				if (unsafe_argument_types[i].builtin_type == Variant::DICTIONARY && unsafe_argument_types[i].has_container_element_types()) {
+					const GDScriptDataType &arg_key_type = unsafe_argument_types[i].get_container_element_type_or_variant(0);
+					const GDScriptDataType &arg_value_type = unsafe_argument_types[i].get_container_element_type_or_variant(1);
 					Dictionary dict(p_args[i]->operator Dictionary(), arg_key_type.builtin_type, arg_key_type.native_type, arg_key_type.script_type, arg_value_type.builtin_type, arg_value_type.native_type, arg_value_type.script_type);
 					memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(dict));
-				} else if (argument_types[i].builtin_type == Variant::ARRAY && argument_types[i].has_container_element_type(0)) {
-					const GDScriptDataType &arg_type = argument_types[i].container_element_types[0];
+				} else if (unsafe_argument_types[i].builtin_type == Variant::ARRAY && unsafe_argument_types[i].has_container_element_type(0)) {
+					const GDScriptDataType &arg_type = unsafe_argument_types[i].container_element_types[0];
 					Array array(p_args[i]->operator Array(), arg_type.builtin_type, arg_type.native_type, arg_type.script_type);
 					memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(array));
 				} else {
 					Variant variant;
-					Variant::construct(argument_types[i].builtin_type, variant, &p_args[i], 1, r_err);
+					Variant::construct(unsafe_argument_types[i].builtin_type, variant, &p_args[i], 1, r_err);
 					if (unlikely(r_err.error)) {
 						r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 						r_err.argument = i;
-						r_err.expected = argument_types[i].builtin_type;
+						r_err.expected = unsafe_argument_types[i].builtin_type;
 						call_depth--;
 						return _get_default_variant_for_data_type(return_type);
 					}
