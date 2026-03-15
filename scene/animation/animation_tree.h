@@ -302,7 +302,7 @@ struct AnimationNodeInstance {
 	/* AnimationNodeTimeScale. */ \
 	X(3, TIME_SCALE, scale, Variant::FLOAT, double) \
 	/* AnimationNodeTimeSeek. */ \
-	X(3, SEEK_POS_REQUEST, seek_pos_request, Variant::FLOAT, double) \
+	X(3, SEEK_REQUEST, seek_request, Variant::FLOAT, double) \
 	/* AnimationNodeAdd2, AnimationNodeAdd3. */ \
 	X(3, ADD_AMOUNT, add_amount, Variant::FLOAT, double) \
 	/* AnimationNodeBlend2, AnimationNodeBlend3. */ \
