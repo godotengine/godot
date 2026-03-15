@@ -628,7 +628,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 		}
 		for (int i = non_vararg_arg_count + FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
-			memnew_placement(&stack[i], Variant);
+			VariantInitializer<Variant>::init(&stack[i]);
 		}
 
 		if (is_vararg()) {
