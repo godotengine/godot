@@ -33,15 +33,13 @@
 #include "dir_access_windows.h"
 #include "file_access_windows.h"
 
-#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <windows.h>
 #include <cstdio>
 #include <cwchar>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 typedef struct _NT_IO_STATUS_BLOCK {
 	union {

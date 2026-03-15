@@ -33,7 +33,6 @@
 TEST_FORCE_LINK(test_packed_scene)
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "scene/resources/packed_scene.h"
 
 namespace TestPackedScene {

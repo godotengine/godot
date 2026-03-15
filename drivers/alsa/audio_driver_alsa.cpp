@@ -33,9 +33,14 @@
 #ifdef ALSA_ENABLED
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
+
+#ifdef SOWRAP_ENABLED
+#include "asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 
 #include <cerrno>
 
