@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,8 @@ namespace Godot.Bridge
         private static ConcurrentDictionary<AssemblyLoadContext, ConcurrentDictionary<Type, byte>>
             _alcData = new();
 
+        private static readonly ConcurrentDictionary<string, string> _sourceFilePaths = new();
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void OnAlcUnloading(AssemblyLoadContext alc)
         {
@@ -29,13 +32,21 @@ namespace Godot.Bridge
             {
                 foreach (var type in typesInAlc.Keys)
                 {
+                    _pathTypeBiMap.TryGetScriptPath(type, out string? scriptPath);
+
                     if (_scriptTypeBiMap.RemoveByScriptType(type, out IntPtr scriptPtr) &&
-                        (!_pathTypeBiMap.TryGetScriptPath(type, out string? scriptPath) ||
+                        (scriptPath == null ||
                          scriptPath.StartsWith("csharp://", StringComparison.Ordinal)))
                     {
                         // For scripts without a path, we need to keep the class qualified name for reloading
                         _scriptDataForReload.TryAdd(scriptPtr,
                             (type.Assembly.GetName().Name, type.FullName ?? type.ToString()));
+                    }
+
+                    // Clean up source file path mappings for this type's script path.
+                    if (scriptPath != null)
+                    {
+                        _sourceFilePaths.TryRemove(scriptPath, out _);
                     }
 
                     _pathTypeBiMap.RemoveByScriptType(type);
@@ -158,7 +169,6 @@ namespace Godot.Bridge
                 obj.NativePtr = godotObject;
 
                 _ = ctor.Invoke(obj, invokeParams);
-
 
                 return godot_bool.True;
             }
@@ -295,11 +305,118 @@ namespace Godot.Bridge
             }
         }
 
+        /// <summary>
+        /// Scans all DLLs in the same directory as the main assembly for Godot script types.
+        /// This enables multi-assembly C# project support where scripts defined in external
+        /// assemblies (via ProjectReference) are discovered automatically.
+        /// We scan the output directory rather than using Assembly.GetReferencedAssemblies()
+        /// because the .NET compiler strips references for assemblies whose types are not
+        /// directly used in code.
+        /// </summary>
+        public static unsafe void LookupScriptsInReferencedAssemblies(Assembly mainAssembly,
+            string? assemblyPath = null)
+        {
+            var mainAssemblyName = mainAssembly.GetName().Name ?? string.Empty;
+            var alc = AssemblyLoadContext.GetLoadContext(mainAssembly);
+            if (alc == null)
+                return;
+
+            string effectivePath = assemblyPath ?? mainAssembly.Location;
+            if (string.IsNullOrEmpty(effectivePath))
+            {
+                string baseDir = AppContext.BaseDirectory;
+                string candidate = Path.Combine(baseDir, (mainAssembly.GetName().Name ?? "project") + ".dll");
+                if (File.Exists(candidate))
+                    effectivePath = candidate;
+            }
+            if (string.IsNullOrEmpty(effectivePath))
+                return;
+
+            string? assemblyDir = Path.GetDirectoryName(effectivePath);
+            if (string.IsNullOrEmpty(assemblyDir) || !Directory.Exists(assemblyDir))
+                return;
+
+            var externalScriptTypes = new List<Type>();
+
+            foreach (string dllPath in Directory.GetFiles(assemblyDir, "*.dll"))
+            {
+                string dllName = Path.GetFileNameWithoutExtension(dllPath);
+
+                if (dllName == mainAssemblyName ||
+                    dllName.StartsWith("System", StringComparison.Ordinal) ||
+                    dllName.StartsWith("Microsoft", StringComparison.Ordinal) ||
+                    dllName.StartsWith("netstandard", StringComparison.Ordinal) ||
+                    dllName == "GodotSharp" ||
+                    dllName == "GodotSharpEditor" ||
+                    dllName == "GodotPlugins")
+                {
+                    continue;
+                }
+
+                Assembly depAssembly;
+                try
+                {
+                    depAssembly = alc.LoadFromAssemblyName(new AssemblyName(dllName));
+                }
+                catch (BadImageFormatException)
+                {
+                    continue;
+                }
+                catch (Exception e)
+                {
+                    if (OS.IsStdOutVerbose())
+                        Console.Error.WriteLine($"[.NET] Failed to load '{dllName}': {e.Message}");
+                    continue;
+                }
+
+                var hasScriptsAttr = depAssembly.GetCustomAttributes(inherit: false)
+                    .OfType<AssemblyHasScriptsAttribute>()
+                    .FirstOrDefault();
+
+                if (hasScriptsAttr == null)
+                    continue;
+
+                LookupScriptsInAssembly(depAssembly, externalScriptTypes);
+            }
+
+            foreach (var scriptType in externalScriptTypes)
+            {
+                if (!_pathTypeBiMap.TryGetScriptPath(scriptType, out string? scriptPath))
+                    continue;
+
+                godot_ref scriptRef = default;
+                try
+                {
+                    using godot_string scriptPathNative = Marshaling.ConvertStringToNative(scriptPath);
+                    NativeFuncs.godotsharp_internal_script_load(scriptPathNative, &scriptRef);
+                }
+                catch (Exception e)
+                {
+                    if (OS.IsStdOutVerbose())
+                        Console.Error.WriteLine($"[.NET] Failed to load script '{scriptPath}': {e.Message}");
+                }
+                finally
+                {
+                    scriptRef.Dispose();
+                }
+            }
+        }
+
+        public static string? GetSourceFilePath(string scriptPath)
+        {
+            _sourceFilePaths.TryGetValue(scriptPath, out string? sourceFile);
+            return sourceFile;
+        }
+
         // Called from GodotPlugins
-        // ReSharper disable once UnusedMember.Local
         public static void LookupScriptsInAssembly(Assembly assembly)
         {
-            static void LookupScriptForClass(Type type)
+            LookupScriptsInAssembly(assembly, null);
+        }
+
+        private static void LookupScriptsInAssembly(Assembly assembly, List<Type>? externalScriptTypes)
+        {
+            static void LookupScriptForClass(Type type, List<Type>? externalTypes)
             {
                 var scriptPathAttr = type.GetCustomAttributes(inherit: false)
                     .OfType<ScriptPathAttribute>()
@@ -309,6 +426,17 @@ namespace Godot.Bridge
                     return;
 
                 _pathTypeBiMap.Add(scriptPathAttr.Path, type);
+
+                if (scriptPathAttr.SourceFile != null)
+                {
+                    _sourceFilePaths.TryAdd(scriptPathAttr.Path, scriptPathAttr.SourceFile);
+                }
+
+                if (externalTypes != null &&
+                    scriptPathAttr.Path.StartsWith("csharp://", StringComparison.Ordinal))
+                {
+                    externalTypes.Add(type);
+                }
 
                 if (AlcReloadCfg.IsAlcReloadingEnabled)
                 {
@@ -323,37 +451,39 @@ namespace Godot.Bridge
             if (assemblyHasScriptsAttr == null)
                 return;
 
+            // GetTypes() can throw ReflectionTypeLoadException when an assembly references
+            // types from assemblies that aren't loaded. Use partial results in that case.
+            IEnumerable<Type> typesToScan;
             if (assemblyHasScriptsAttr.RequiresLookup)
             {
-                // This is supported for scenarios where specifying all types would be cumbersome,
-                // such as when disabling C# source generators (for whatever reason) or when using a
-                // language other than C# that has nothing similar to source generators to automate it.
-
                 var typeOfGodotObject = typeof(GodotObject);
-
-                foreach (var type in assembly.GetTypes())
+                Type[] allTypes;
+                try
                 {
-                    if (type.IsNested)
-                        continue;
-
-                    if (!typeOfGodotObject.IsAssignableFrom(type))
-                        continue;
-
-                    LookupScriptForClass(type);
+                    allTypes = assembly.GetTypes();
                 }
+                catch (ReflectionTypeLoadException e)
+                {
+                    // Use the types that did load successfully.
+                    allTypes = e.Types.Where(t => t != null).ToArray()!;
+                }
+                typesToScan = allTypes.Where(t => !t.IsNested && typeOfGodotObject.IsAssignableFrom(t));
             }
             else
             {
-                // This is the most likely scenario as we use C# source generators
+                typesToScan = assemblyHasScriptsAttr.ScriptTypes ?? Enumerable.Empty<Type>();
+            }
 
-                var scriptTypes = assemblyHasScriptsAttr.ScriptTypes;
-
-                if (scriptTypes != null)
+            foreach (var type in typesToScan)
+            {
+                try
                 {
-                    foreach (var type in scriptTypes)
-                    {
-                        LookupScriptForClass(type);
-                    }
+                    LookupScriptForClass(type, externalScriptTypes);
+                }
+                catch (TypeLoadException e)
+                {
+                    if (OS.IsStdOutVerbose())
+                        Console.Error.WriteLine($"[.NET] Failed to process type '{type}': {e.Message}");
                 }
             }
         }
@@ -535,12 +665,21 @@ namespace Godot.Bridge
                 // (every Resource must have a unique path). So we create a unique "virtual" path
                 // for each type.
 
-                if (!scriptPath.StartsWith("res://", StringComparison.Ordinal))
+                if (scriptPath.StartsWith("res://", StringComparison.Ordinal))
                 {
-                    throw new ArgumentException("Script path must start with 'res://'.", nameof(scriptPath));
+                    scriptPath = scriptPath.Substring("res://".Length);
+                }
+                else if (scriptPath.StartsWith("csharp://", StringComparison.Ordinal))
+                {
+                    // Already a csharp:// path from an external assembly; strip scheme.
+                    scriptPath = scriptPath.Substring("csharp://".Length);
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        "Script path must start with 'res://' or 'csharp://'.", nameof(scriptPath));
                 }
 
-                scriptPath = scriptPath.Substring("res://".Length);
                 return $"csharp://{scriptPath}:{scriptType}.cs";
             }
 
@@ -548,7 +687,7 @@ namespace Godot.Bridge
             {
                 // This path is slower, but it's only executed for the first instantiation of the type
 
-                if (scriptType.IsConstructedGenericType && !scriptPath.StartsWith("csharp://", StringComparison.Ordinal))
+                if (scriptType.IsConstructedGenericType)
                 {
                     // If the script type is generic it can't be loaded using the real script path.
                     // Construct a virtual path unique to this constructed generic type and add it

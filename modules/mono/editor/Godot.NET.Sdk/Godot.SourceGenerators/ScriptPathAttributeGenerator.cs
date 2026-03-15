@@ -94,7 +94,23 @@ namespace Godot.SourceGenerators
                 if (attributes.Length != 0)
                     attributes.Append("\n");
 
-                string scriptPath = RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir);
+                string relPath = RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir);
+
+                string scriptPath;
+                string? sourceFile = null;
+                if (relPath.StartsWith("../", StringComparison.Ordinal) ||
+                    relPath.StartsWith("..\\", StringComparison.Ordinal))
+                {
+                    string assemblyName = context.Compilation.AssemblyName ?? "UnknownAssembly";
+                    string qualifiedName = symbol.FullQualifiedNameOmitGlobal();
+                    scriptPath = $"csharp://{assemblyName}/{qualifiedName}.cs";
+                    sourceFile = Path.GetFullPath(cds.SyntaxTree.FilePath);
+                }
+                else
+                {
+                    scriptPath = $"res://{relPath}";
+                }
+
                 if (!usedPaths.Add(scriptPath))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -105,9 +121,17 @@ namespace Godot.SourceGenerators
                     return;
                 }
 
-                attributes.Append(@"[ScriptPathAttribute(""res://");
+                attributes.Append(@"[ScriptPathAttribute(""");
                 attributes.Append(scriptPath);
-                attributes.Append(@""")]");
+                attributes.Append(@"""");
+                if (sourceFile != null)
+                {
+                    // Escape backslashes for the C# string literal
+                    attributes.Append(@", SourceFile = """);
+                    attributes.Append(sourceFile.Replace("\\", "\\\\"));
+                    attributes.Append(@"""");
+                }
+                attributes.Append(@")]");
             }
 
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;

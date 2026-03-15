@@ -152,6 +152,7 @@ namespace GodotPlugins
                 *outLoadedAssemblyPath = Marshaling.ConvertStringToNative(loadedAssemblyPath);
 
                 ScriptManagerBridge.LookupScriptsInAssembly(projectAssembly);
+                ScriptManagerBridge.LookupScriptsInReferencedAssemblies(projectAssembly, loadedAssemblyPath);
 
                 return godot_bool.True;
             }

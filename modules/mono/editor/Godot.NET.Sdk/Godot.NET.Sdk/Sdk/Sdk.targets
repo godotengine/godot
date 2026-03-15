@@ -34,6 +34,17 @@
     <PackageReference Include="GodotSharpEditor" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
   </ItemGroup>
 
+  <!--
+  Propagate GodotProjectDir to all ProjectReference items so that source generators
+  in referenced assemblies compute res:// paths relative to the main Godot project root,
+  not relative to the referenced project's own directory.
+  -->
+  <Target Name="GodotPropagateProjectDirToReferences" BeforeTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)" AdditionalProperties="GodotProjectDir=$(GodotProjectDir)" />
+    </ItemGroup>
+  </Target>
+
   <!-- iOS-specific build targets -->
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 
