@@ -64,6 +64,8 @@ class PluginConfigDialog : public ConfirmationDialog {
 
 	bool _edit_mode = false;
 
+	String plugins_path = "res://addons";
+
 	void _clear_fields();
 	void _on_confirmed();
 	void _on_canceled();
@@ -78,6 +80,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_plugins_path(String p_path);
+
 	void config(const String &p_config_path);
 
 	PluginConfigDialog();

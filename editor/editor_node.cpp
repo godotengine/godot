@@ -1167,6 +1167,9 @@ void EditorNode::init_plugins() {
 	if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
 		addons = GLOBAL_GET("editor_plugins/enabled");
 	}
+	if (EditorSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+		addons.append_array(EditorSettings::get_singleton()->get_setting("editor_plugins/enabled"));
+	}
 
 	for (const String &addon : addons) {
 		set_addon_plugin_enabled(addon, true);
@@ -1193,14 +1196,24 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
-	for (int i = 0; i < enabled_plugins.size(); ++i) {
-		if (enabled_plugins.get(i) == p_name) {
-			enabled_plugins.remove_at(i);
-			break;
+	PackedStringArray enabled_project_plugins = ps->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_project_plugins.size(); ++i) {
+		if (enabled_project_plugins.get(i) == p_name) {
+			enabled_project_plugins.remove_at(i);
+			ps->set("editor_plugins/enabled", enabled_project_plugins);
+			return;
 		}
 	}
-	ps->set("editor_plugins/enabled", enabled_plugins);
+
+	EditorSettings *es = EditorSettings::get_singleton();
+	PackedStringArray enabled_editor_plugins = es->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_editor_plugins.size(); ++i) {
+		if (enabled_editor_plugins.get(i) == p_name) {
+			enabled_editor_plugins.remove_at(i);
+			es->set("editor_plugins/enabled", enabled_editor_plugins);
+			return;
+		}
+	}
 }
 
 void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
@@ -4278,17 +4291,28 @@ void EditorNode::_update_addon_config() {
 		return;
 	}
 
-	Vector<String> enabled_addons;
+	Vector<String> enabled_project_addons;
+	Vector<String> enabled_editor_addons;
 
 	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
-		enabled_addons.push_back(E.key);
+		if (E.key.begins_with("res://")) {
+			enabled_project_addons.push_back(E.key);
+		} else if (E.key.begins_with("editor://")) {
+			enabled_editor_addons.push_back(E.key);
+		}
 	}
 
-	if (enabled_addons.is_empty()) {
+	if (enabled_project_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
-		enabled_addons.sort();
-		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
+		enabled_project_addons.sort();
+		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_project_addons);
+	}
+	if (enabled_editor_addons.is_empty()) {
+		EditorSettings::get_singleton()->set("editor_plugins/enabled", Variant());
+	} else {
+		enabled_editor_addons.sort();
+		EditorSettings::get_singleton()->set("editor_plugins/enabled", enabled_editor_addons);
 	}
 
 	project_settings_editor->queue_save();
@@ -9379,9 +9403,6 @@ EditorNode::EditorNode() {
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
-
-	const String editor_resource_path = EditorPaths::get_singleton()->get_data_dir().path_join("editor_resources").path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
-	ProjectSettings::get_singleton()->set_editor_resource_path(editor_resource_path);
 }
 
 EditorNode::~EditorNode() {

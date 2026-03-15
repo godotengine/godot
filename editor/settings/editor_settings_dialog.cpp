@@ -1027,6 +1027,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
 
+	// Plugins Tab
+
+	tab_plugins = memnew(EditorPluginSettings);
+	tab_plugins->set_plugins_path("editor://addons");
+	tabs->add_child(tab_plugins);
+	tab_plugins->set_name(TTRC("Plugins"));
+
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);
 	shortcut_editor->connect(SceneStringName(confirmed), callable_mp(this, &EditorSettingsDialog::_event_config_confirmed));

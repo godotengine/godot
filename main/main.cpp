@@ -3736,6 +3736,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// does not exist in the UID cache on startup. This prevents invalid UID errors
 	// when opening a project without a UID cache file or with an invalid cache.
 	if (editor) {
+		const String editor_resource_path = EditorPaths::get_singleton()->get_data_dir().path_join("editor_resources").path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
+		ProjectSettings::get_singleton()->set_editor_resource_path(editor_resource_path);
+
 		ResourceUID::scan_for_uid_on_startup = EditorFileSystem::scan_for_uid;
 	}
 
