@@ -689,7 +689,6 @@ private:
 #endif
 	ScriptInstance *script_instance = nullptr;
 	HashMap<StringName, Variant> metadata;
-	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 

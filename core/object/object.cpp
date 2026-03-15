@@ -373,16 +373,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else {
-		Variant **V = metadata_properties.getptr(p_name);
-		if (V) {
-			**V = p_value;
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return;
-		} else if (p_name.operator String().begins_with("metadata/")) {
-			// Must exist, otherwise duplicate() will not work.
-			set_meta(p_name.operator String().replace_first("metadata/", ""), p_value);
+		const String p_name_str = p_name;
+		if (p_name_str.begins_with("metadata/")) {
+			set_meta(p_name_str.replace_first("metadata/", ""), p_value);
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -455,14 +448,22 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 	}
 
-	const Variant *const *V = metadata_properties.getptr(p_name);
-
-	if (V) {
-		ret = **V;
-		if (r_valid) {
-			*r_valid = true;
+	const String p_name_str = p_name;
+	if (p_name_str.begins_with("metadata/")) {
+		const StringName meta_key = p_name_str.replace_first("metadata/", "");
+		const Variant *V = metadata.getptr(meta_key);
+		if (V) {
+			ret = *V;
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return ret;
+		} else {
+			if (r_valid) {
+				*r_valid = false;
+			}
+			return Variant();
 		}
-		return ret;
 
 	} else {
 #ifdef TOOLS_ENABLED
@@ -1124,7 +1125,6 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 			metadata.erase(p_name);
 
 			const String &sname = p_name;
-			metadata_properties.erase("metadata/" + sname);
 			if (!sname.begins_with("_")) {
 				// Metadata starting with _ don't show up in the inspector, so no need to update.
 				notify_property_list_changed();
@@ -1138,10 +1138,9 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		E->value = p_value;
 	} else {
 		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
-		Variant *V = &metadata.insert(p_name, p_value)->value;
+		metadata.insert(p_name, p_value);
 
 		const String &sname = p_name;
-		metadata_properties["metadata/" + sname] = V;
 		if (!sname.begins_with("_")) {
 			notify_property_list_changed();
 		}
