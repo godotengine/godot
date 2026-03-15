@@ -1210,53 +1210,30 @@ struct _VariantCall {
 		signal->emit(p_args, p_argcount);
 	}
 
-	struct ConstantData {
-		HashMap<StringName, int64_t> value;
-#ifdef DEBUG_ENABLED
-		List<StringName> value_ordered;
-#endif // DEBUG_ENABLED
-		HashMap<StringName, Variant> variant_value;
-#ifdef DEBUG_ENABLED
-		List<StringName> variant_value_ordered;
-#endif // DEBUG_ENABLED
-	};
-
-	static ConstantData *constant_data;
+	// Storage for constants added via add_variant_constant(). Once GDType supports storing these directly, this can be removed and the variants constants can be stored in the GDType instead. Integer constants and enums are already handled that way.
+	static HashMap<StringName, Variant> *variant_constants;
 
 	static void add_constant(int p_type, const StringName &p_constant_name, int64_t p_constant_value) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_COND(constant_data[p_type].value.has(p_constant_name));
-		ERR_FAIL_COND(enum_data[p_type].value.has(p_constant_name));
-		ERR_FAIL_COND(enum_data[p_type].value_to_enum.has(p_constant_name));
+		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
 #endif // DEBUG_ENABLED
-		constant_data[p_type].value[p_constant_name] = p_constant_value;
-#ifdef DEBUG_ENABLED
-		constant_data[p_type].value_ordered.push_back(p_constant_name);
-#endif // DEBUG_ENABLED
+		const_cast<GDType &>(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type))).bind_integer_constant(StringName(), p_constant_name, p_constant_value);
 	}
 
 	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
-		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
-		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
+		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
+		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_enum_map(true).has(p_constant_name));
+		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_integer_constant_map(true).has(p_constant_name));
 #endif // DEBUG_ENABLED
+		variant_constants[p_type][p_constant_name] = p_constant_value;
 	}
-
-	struct EnumData {
-		HashMap<StringName, HashMap<StringName, int>> value;
-		HashMap<StringName, StringName> value_to_enum;
-	};
-
-	static EnumData *enum_data;
 
 	static void add_enum_constant(int p_type, const StringName &p_enum_type_name, const StringName &p_enumeration_name, int p_enum_value) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_COND(constant_data[p_type].value.has(p_enumeration_name));
-		ERR_FAIL_COND(enum_data[p_type].value.has(p_enumeration_name));
-		ERR_FAIL_COND(enum_data[p_type].value_to_enum.has(p_enumeration_name));
+		ERR_FAIL_COND(variant_constants[p_type].has(p_enumeration_name));
 #endif // DEBUG_ENABLED
-		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
-		enum_data[p_type].value_to_enum[p_enumeration_name] = p_enum_type_name;
+		const_cast<GDType &>(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type))).bind_integer_constant(p_enum_type_name, p_enumeration_name, p_enum_value);
 	}
 
 #ifndef DISABLE_DEPRECATED
@@ -1272,8 +1249,7 @@ struct _VariantCall {
 #endif
 };
 
-_VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
-_VariantCall::EnumData *_VariantCall::enum_data = nullptr;
+HashMap<StringName, Variant> *_VariantCall::variant_constants = nullptr;
 
 struct VariantBuiltInMethodInfo {
 	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
@@ -1680,38 +1656,31 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
-	const _VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
-
-#ifdef DEBUG_ENABLED
-	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
-		p_constants->push_back(E->get());
-#else
-	for (const KeyValue<StringName, int64_t> &E : cd.value) {
-		p_constants->push_back(E.key);
-#endif // DEBUG_ENABLED
+	for (const KeyValue<StringName, int64_t> &E : _get_gdtype_for_type(p_type).get_integer_constant_map(false)) {
+		if (_get_gdtype_for_type(p_type).get_integer_constant_enum(E.key, false) == nullptr) {
+			p_constants->push_back(E.key);
+		}
 	}
 
-#ifdef DEBUG_ENABLED
-	for (const List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
-		p_constants->push_back(E->get());
-#else
-	for (const KeyValue<StringName, Variant> &E : cd.variant_value) {
+	for (const KeyValue<StringName, Variant> &E : _VariantCall::variant_constants[p_type]) {
 		p_constants->push_back(E.key);
-#endif // DEBUG_ENABLED
 	}
 }
 
 int Variant::get_constants_count_for_type(Variant::Type p_type) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	return cd.value.size() + cd.variant_value.size();
+	List<StringName> constants;
+	get_constants_for_type(p_type, &constants);
+	return constants.size();
 }
 
 bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
-	return cd.value.has(p_value) || cd.variant_value.has(p_value);
+	const bool is_non_enum_integer_constant =
+			_get_gdtype_for_type(p_type).get_integer_constant_map(false).has(p_value) &&
+			_get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr;
+	return is_non_enum_integer_constant || _VariantCall::variant_constants[p_type].has(p_value);
 }
 
 Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
@@ -1720,46 +1689,42 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	}
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
-	if (!E) {
-		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
-		if (F) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return F->value;
-		} else {
-			return -1;
+	const int64_t *int_value = _get_gdtype_for_type(p_type).get_integer_constant_map(false).getptr(p_value);
+	if (int_value && _get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr) {
+		if (r_valid) {
+			*r_valid = true;
 		}
-	}
-	if (r_valid) {
-		*r_valid = true;
+		return *int_value;
 	}
 
-	return E->value;
+	HashMap<StringName, Variant>::Iterator F = _VariantCall::variant_constants[p_type].find(p_value);
+	if (F) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return F->value;
+	}
+
+	return -1;
 }
 
 void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
-
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
+	for (const KeyValue<StringName, const GDType::EnumInfo *> &E : _get_gdtype_for_type(p_type).get_enum_map(false)) {
 		p_enums->push_back(E.key);
 	}
 }
 
 void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+	const GDType::EnumInfo *const *enum_info = _get_gdtype_for_type(p_type).get_enum_map(false).getptr(p_enum_name);
+	if (!enum_info) {
+		return;
+	}
 
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
-
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
-		for (const KeyValue<StringName, int> &V : E.value) {
-			p_enumerations->push_back(V.key);
-		}
+	for (const KeyValue<StringName, int64_t> &V : (*enum_info)->values) {
+		p_enumerations->push_back(V.key);
 	}
 }
 
@@ -1769,16 +1734,13 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 	}
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
-
-	HashMap<StringName, HashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
-	if (!E) {
+	const GDType::EnumInfo *const *enum_info = _get_gdtype_for_type(p_type).get_enum_map(false).getptr(p_enum_name);
+	if (!enum_info) {
 		return -1;
 	}
 
-	HashMap<StringName, int>::Iterator V = E->value.find(p_enumeration);
-	if (!V) {
+	const int64_t *enum_value = (*enum_info)->values.getptr(p_enumeration);
+	if (!enum_value) {
 		return -1;
 	}
 
@@ -1786,24 +1748,18 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 		*r_valid = true;
 	}
 
-	return V->value;
+	return *enum_value;
 }
 
 bool Variant::has_enum(Variant::Type p_type, const StringName &p_enum_name) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
-
-	return enum_data.value.has(p_enum_name);
+	return _get_gdtype_for_type(p_type).get_enum_map(false).has(p_enum_name);
 }
 
 StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, StringName());
-
-	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
-
-	const StringName *enum_name = enum_data.value_to_enum.getptr(p_enumeration);
-	return (enum_name == nullptr) ? StringName() : *enum_name;
+	const GDType::EnumInfo *enum_info = _get_gdtype_for_type(p_type).get_integer_constant_enum(p_enumeration, false);
+	return enum_info ? enum_info->name : StringName();
 }
 
 #ifdef DEBUG_ENABLED
@@ -1999,8 +1955,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
 
 static void _register_variant_builtin_methods_string() {
-	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
-	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, Variant::VARIANT_MAX);
+	_VariantCall::variant_constants = memnew_arr_template<HashMap<StringName, Variant>>(Variant::VARIANT_MAX);
 	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
 	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
 #ifndef DISABLE_DEPRECATED
@@ -3214,6 +3169,5 @@ void Variant::_unregister_variant_methods() {
 #ifndef DISABLE_DEPRECATED
 	memdelete_arr(builtin_compat_method_info);
 #endif
-	memdelete_arr(_VariantCall::constant_data);
-	memdelete_arr(_VariantCall::enum_data);
+	memdelete_arr(_VariantCall::variant_constants);
 }
