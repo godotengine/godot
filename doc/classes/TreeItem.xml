@@ -418,6 +418,12 @@
 				Returns the [Tree] that owns this TreeItem.
 			</description>
 		</method>
+		<method name="is_accepting_children" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [TreeItem] is allowed to accept children.
+			</description>
+		</method>
 		<method name="is_any_collapsed">
 			<return type="bool" />
 			<param index="0" name="only_visible" type="bool" default="false" />
@@ -526,6 +532,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Selects the given [param column].
+			</description>
+		</method>
+		<method name="set_accept_children">
+			<return type="void" />
+			<param index="0" name="allowed" type="bool" />
+			<description>
+				Sets [TreeItem]'s ability to accept children.
 			</description>
 		</method>
 		<method name="set_auto_translate_mode">
