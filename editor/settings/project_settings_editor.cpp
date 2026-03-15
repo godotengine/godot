@@ -847,6 +847,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTRC("Plugins"));
 	tab_container->add_child(plugin_settings);
+	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
 
 	gdextension_settings = memnew(ProjectSettingsGDExtension);
 	gdextension_settings->set_name(TTRC("GDExtension"));

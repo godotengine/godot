@@ -53,8 +53,11 @@ class EditorPluginSettings : public VBoxContainer {
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	TextureRect *recovery_mode_icon = nullptr;
+	Label *installed_plugins_label = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
+
+	String plugins_path = "res://addons";
 
 	void _plugin_activity_changed();
 	void _create_clicked();
@@ -66,6 +69,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_plugins_path(String p_path);
 	void update_plugins();
 
 	EditorPluginSettings();
