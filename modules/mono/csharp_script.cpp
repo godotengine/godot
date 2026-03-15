@@ -2847,7 +2847,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	// TODO ignore anything inside bin/ and obj/ in tools builds?
 
 	String real_path = p_path;
-	bool is_assembly_backed = false;
+	[[maybe_unused]] bool is_assembly_backed = false;
 	if (p_path.begins_with("csharp://")) {
 		String virtual_suffix = p_path.trim_prefix("csharp://");
 		int colon_idx = virtual_suffix.find(":");

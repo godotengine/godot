@@ -14,11 +14,10 @@ namespace Godot
         public string Path { get; }
 
         /// <summary>
-        /// Absolute path to the original source file on disk. Only set for assembly-backed
-        /// scripts (csharp:// paths) where the source file exists outside the Godot project.
-        /// Null for res:// scripts and NuGet packages (where source is not available).
+        /// Absolute path to the original source file on disk.
+        /// Null for res:// scripts and NuGet packages.
         /// </summary>
-        public string? SourceFile { get; init; }
+        public string SourceFile { get; set; }
 
         /// <summary>
         /// Constructs a new ScriptPathAttribute instance.
