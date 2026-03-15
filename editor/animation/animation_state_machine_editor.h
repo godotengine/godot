@@ -74,9 +74,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Control *state_machine_draw = nullptr;
 	Control *state_machine_play_pos = nullptr;
 
-	PanelContainer *error_panel = nullptr;
-	RichTextLabel *error_label = nullptr;
-
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> error_panel_style;
@@ -278,8 +275,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	float last_fading_pos = 0.0f;
 	float fading_time = 0.0f;
 	float fading_pos = 0.0f;
-
-	float error_time = 0.0f;
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;

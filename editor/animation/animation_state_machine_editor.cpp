@@ -72,6 +72,8 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		connected_nodes.clear();
 		_update_mode();
 		_update_graph();
+	} else {
+		AnimationTreeEditor::get_singleton()->current_playback_error = String();
 	}
 
 	if (read_only) {
@@ -1665,8 +1667,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
-			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
-			error_label->add_theme_color_override(SNAME("default_color"), theme_cache.error_color);
 
 			tool_select->set_button_icon(theme_cache.tool_icon_select);
 			tool_create->set_button_icon(theme_cache.tool_icon_create);
@@ -1692,19 +1692,9 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				return;
 			}
 
-			String error;
-
-			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-
-			if (error_time > 0) {
-				error_time -= get_process_delta_time();
-			}
-
-			if (playback.is_null()) {
-				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-			}
-
-			update_error_message(tree, error_panel, error_label, &error);
+			const String playback_path = AnimationTreeEditor::get_singleton()->get_base_path() + "playback";
+			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(playback_path);
+			AnimationTreeEditor::get_singleton()->current_playback_error = playback.is_null() ? vformat(TTR("No playback resource set at path: %s."), playback_path) : String();
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -1841,6 +1831,8 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			hovered_node_name = StringName();
 			hovered_node_area = HOVER_NODE_NONE;
 			set_process(is_visible_in_tree());
+
+			AnimationTreeEditor::get_singleton()->current_playback_error = String();
 		} break;
 	}
 }
@@ -2154,12 +2146,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-	error_panel->hide();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 

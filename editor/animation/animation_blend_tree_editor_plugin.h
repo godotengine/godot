@@ -37,7 +37,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/tree.h"
 
 class AcceptDialog;
@@ -61,9 +60,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	MenuButton *add_node = nullptr;
 	Vector2 position_from_popup_menu;
 	bool use_position_from_popup_menu;
-
-	PanelContainer *error_panel = nullptr;
-	RichTextLabel *error_label = nullptr;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;
