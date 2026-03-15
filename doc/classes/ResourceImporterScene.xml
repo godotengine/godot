@@ -111,12 +111,24 @@
 			- [code]0 (ubfx)[/code], handles FBX files as-is.
 			- [code]1 (FBX2glTF)[/code], converts FBX files to glTF on import. This requires additional setup and is not recommended unless you have a specific reason to use FBX2glTF over ufbx.
 		</member>
+		<member name="fbx/naming_version" type="int" setter="" getter="" default="2">
+			Handles naming of nodes within a skeleton hierarchy.
+			- [code]0 (Godot 4.0 or 4.1)[/code], provides compatibility for existing imports.
+			- [code]1 (Godot 4.2 to 4.4)[/code], provides compatibility for existing imports.
+			- [code]2 (Godot 4.5 or later)[/code], is the recommended choice for all new imports.
+		</member>
 		<member name="gltf/embedded_image_handling" type="int" setter="" getter="" default="1">
 			Controls how textures embedded within glTF scenes should be handled.
 			- [code]0 (Discard All Textures)[/code], does not import textures. This is useful if you wish to manually set up materials in Godot instead.
 			- [code]1 (Extract Textures)[/code], extracts textures to external images. This can result in smaller file sizes and more control over import options.
 			- [code]2 (Embed As Basis Universal)[/code], keeps textures embedded in the imported scene with VRAM compression.
 			- [code]3 (Embed As Uncompressed)[/code], keeps textures embedded in the imported scene without VRAM compression.
+		</member>
+		<member name="gltf/naming_version" type="int" setter="" getter="" default="2">
+			Handles naming of nodes within a skeleton hierarchy.
+			- [code]0 (Godot 4.0 or 4.1)[/code], provides compatibility for existing imports.
+			- [code]1 (Godot 4.2 to 4.4)[/code], provides compatibility for existing imports.
+			- [code]2 (Godot 4.5 or later)[/code], is the recommended choice for all new imports.
 		</member>
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
