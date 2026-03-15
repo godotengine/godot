@@ -201,6 +201,7 @@ class PopupMenu : public Popup {
 
 		int v_separation = 0;
 		int h_separation = 0;
+		int search_bar_separation = 0;
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
