@@ -89,6 +89,7 @@ public:
 	void reset_time_scale();
 
 	void set_node_type(int p_type);
+	int get_node_type();
 	void set_select_mode(int p_mode);
 
 	void set_selection_visible(bool p_visible);
@@ -123,6 +124,9 @@ class GameView : public VBoxContainer {
 		EMBED_MAKE_FLOATING_ON_PLAY,
 		SELECTION_AVOID_LOCKED,
 		SELECTION_PREFER_GROUP,
+		SELECTION_SHOW_OUTLINE,
+		SELECTION_MODE_SINGLE,
+		SELECTION_MODE_LIST,
 	};
 
 	enum EmbedSizeMode {
@@ -163,16 +167,17 @@ class GameView : public VBoxContainer {
 
 	bool debug_mute_audio = false;
 
+	int selection_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
+	bool show_selection_outline = false;
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
 
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
-	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
-	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+	Button *node_type_2d_button = nullptr;
+	Button *node_type_3d_button = nullptr;
 
-	Button *hide_selection = nullptr;
 	MenuButton *selection_options_menu = nullptr;
 
 	Button *debug_mute_audio_button = nullptr;
@@ -204,7 +209,6 @@ class GameView : public VBoxContainer {
 	void _suspend_button_toggled(bool p_pressed);
 
 	void _node_type_pressed(int p_option);
-	void _select_mode_pressed(int p_option);
 	void _selection_options_menu_id_pressed(int p_id);
 	void _embed_options_menu_menu_id_pressed(int p_id);
 
