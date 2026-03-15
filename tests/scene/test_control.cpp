@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/os/memory.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/container.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_control)
@@ -43,6 +39,10 @@ TEST_FORCE_LINK(test_control)
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
+#include "core/os/memory.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/container.h"
 
 namespace TestControl {
 
