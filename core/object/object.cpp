@@ -603,16 +603,19 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	if (!p_args[0]->is_string()) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+	if (p_args[0]->get_type() == Variant::STRING_NAME) {
+		const StringName &method = *VariantInternal::get_string_name(p_args[0]);
+		return callp(method, &p_args[1], p_argcount - 1, r_error);
+	}
+	if (p_args[0]->get_type() == Variant::STRING) {
+		StringName method = *VariantInternal::get_string(p_args[0]);
+		return callp(method, &p_args[1], p_argcount - 1, r_error);
 	}
 
-	StringName method = *p_args[0];
-
-	return callp(method, &p_args[1], p_argcount - 1, r_error);
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+	r_error.argument = 0;
+	r_error.expected = Variant::STRING_NAME;
+	return Variant();
 }
 
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -621,20 +624,22 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 		r_error.expected = 1;
 		return Variant();
 	}
+	r_error.error = Callable::CallError::CALL_OK;
 
-	if (!p_args[0]->is_string()) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+	if (p_args[0]->get_type() == Variant::STRING_NAME) {
+		const StringName &method = *VariantInternal::get_string_name(p_args[0]);
+		MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
+		return Variant();
+	}
+	if (p_args[0]->get_type() == Variant::STRING) {
+		StringName method = *VariantInternal::get_string(p_args[0]);
+		MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
 		return Variant();
 	}
 
-	r_error.error = Callable::CallError::CALL_OK;
-
-	StringName method = *p_args[0];
-
-	MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
-
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+	r_error.argument = 0;
+	r_error.expected = Variant::STRING_NAME;
 	return Variant();
 }
 
@@ -2371,15 +2376,17 @@ void postinitialize_handler(Object *p_object) {
 }
 
 void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
-	spin_lock.lock();
+	mutex.lock();
 
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-		if (object_slots[i].validator) {
-			p_func(object_slots[i].object, p_user_data);
+		const ObjectSlot &slot = blocks[i / block_size][i % block_size];
+		if (slot.get_data().validator) {
+			p_func(slot.object, p_user_data);
 			count--;
 		}
 	}
-	spin_lock.unlock();
+
+	mutex.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2428,99 +2435,98 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 }
 #endif
 
-SpinLock ObjectDB::spin_lock;
-uint32_t ObjectDB::slot_count = 0;
-uint32_t ObjectDB::slot_max = 0;
-ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
-uint64_t ObjectDB::validator_counter = 0;
-
 int ObjectDB::get_object_count() {
 	return slot_count;
 }
 
 ObjectID ObjectDB::add_instance(Object *p_object) {
-	spin_lock.lock();
+	mutex.lock();
+
 	if (unlikely(slot_count == slot_max)) {
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-
-		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-		for (uint32_t i = slot_max; i < new_slot_max; i++) {
-			object_slots[i].object = nullptr;
-			object_slots[i].is_ref_counted = false;
-			object_slots[i].next_free = i;
-			object_slots[i].validator = 0;
+		CRASH_COND(slot_count == max_slots);
+		uint32_t max = block_max.get();
+		blocks[max] = static_cast<ObjectSlot *>(memalloc(sizeof(ObjectSlot) * block_size));
+		for (uint32_t i = 0; i < block_size; i++) {
+			ObjectSlot &new_slot = *memnew_placement(&blocks[max][i], ObjectSlot);
+			ObjectSlotData data{};
+			data.block_idx = max;
+			data.slot_idx = i;
+			new_slot.set_data(data);
 		}
-		slot_max = new_slot_max;
+		block_max.add(1);
+		slot_max += block_size;
 	}
 
-	uint32_t slot = object_slots[slot_count].next_free;
-	if (object_slots[slot].object != nullptr) {
-		spin_lock.unlock();
-		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
-	}
-	object_slots[slot].object = p_object;
-	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
-	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
-	if (unlikely(validator_counter == 0)) {
-		validator_counter = 1;
-	}
-	object_slots[slot].validator = validator_counter;
+	// Get the free slot.
+	ObjectSlotData next_free_slot_data = blocks[slot_count / block_size][slot_count % block_size].get_data();
+	ObjectSlot &free_slot = blocks[next_free_slot_data.block_idx][next_free_slot_data.slot_idx];
+	ObjectSlotData free_slot_data = free_slot.get_data();
 
-	uint64_t id = validator_counter;
-	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
-	id |= uint64_t(slot);
-
-	if (p_object->is_ref_counted()) {
-		id |= OBJECTDB_REFERENCE_BIT;
+	if (free_slot.object != nullptr) {
+		mutex.unlock();
+		ERR_FAIL_COND_V(free_slot.object != nullptr, ObjectID());
 	}
+
+	free_slot_data.is_ref_counted = p_object->is_ref_counted();
+	free_slot_data.validator = validator_counter.incremented();
+
+	free_slot.object = p_object;
+	free_slot.set_data(free_slot_data);
 
 	slot_count++;
 
-	spin_lock.unlock();
+	mutex.unlock();
 
-	return ObjectID(id);
+	ObjectSlotData instance_data = free_slot_data;
+	instance_data.block_idx = next_free_slot_data.block_idx;
+	instance_data.slot_idx = next_free_slot_data.slot_idx;
+	return ObjectID(static_cast<uint64_t>(instance_data));
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
-	uint64_t t = p_object->get_instance_id();
-	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
+	mutex.lock();
+	ObjectSlotData remove_data{ static_cast<uint64_t>(p_object->get_instance_id()) };
 
-	spin_lock.lock();
-
+	ObjectSlot &remove_slot = blocks[remove_data.block_idx][remove_data.slot_idx];
+	ObjectSlotData remove_slot_data = remove_slot.get_data();
 #ifdef DEBUG_ENABLED
-
-	if (object_slots[slot].object != p_object) {
-		spin_lock.unlock();
-		ERR_FAIL_COND(object_slots[slot].object != p_object);
+	if (remove_slot_data.validator != remove_data.validator) {
+		mutex.unlock();
+		ERR_FAIL_COND(remove_slot_data.validator != remove_data.validator);
 	}
-	{
-		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-		if (object_slots[slot].validator != validator) {
-			spin_lock.unlock();
-			ERR_FAIL_COND(object_slots[slot].validator != validator);
-		}
+	if (remove_slot.object != p_object) {
+		mutex.unlock();
+		ERR_FAIL_COND(remove_slot.object != p_object);
 	}
-
 #endif
+
+	//invalidate, so checks against it fail
+	remove_slot_data.validator = 0;
+	remove_slot_data.is_ref_counted = false;
+	remove_slot.set_data(remove_slot_data);
+	remove_slot.object = nullptr;
+
 	//decrease slot count
 	slot_count--;
-	//set the free slot properly
-	object_slots[slot_count].next_free = slot;
-	//invalidate, so checks against it fail
-	object_slots[slot].validator = 0;
-	object_slots[slot].is_ref_counted = false;
-	object_slots[slot].object = nullptr;
 
-	spin_lock.unlock();
+	//set the free slot properly
+	ObjectSlot &top_slot = blocks[slot_count / block_size][slot_count % block_size];
+	ObjectSlotData top_slot_data = top_slot.get_data();
+	top_slot_data.block_idx = remove_data.block_idx;
+	top_slot_data.slot_idx = remove_data.slot_idx;
+	top_slot.set_data(top_slot_data);
+
+	mutex.unlock();
 }
 
 void ObjectDB::setup() {
-	//nothing to do now
+	mutex.lock();
+	blocks = static_cast<ObjectSlot **>(memalloc_zeroed(sizeof(ObjectSlot *) * max_blocks));
+	mutex.unlock();
 }
 
 void ObjectDB::cleanup() {
-	spin_lock.lock();
+	mutex.lock();
 
 	if (slot_count > 0) {
 		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", slot_count, slot_count == 1 ? "instance was" : "instances were"));
@@ -2533,8 +2539,11 @@ void ObjectDB::cleanup() {
 			Callable::CallError call_error;
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-				if (object_slots[i].validator) {
-					Object *obj = object_slots[i].object;
+				uint32_t block_idx = i / block_size;
+				uint32_t slot_idx = i % block_size;
+				const ObjectSlot &slot = blocks[block_idx][slot_idx];
+				if (slot.get_data().validator) {
+					Object *obj = slot.object;
 
 					String extra_info;
 					if (obj->is_class("Node")) {
@@ -2547,20 +2556,22 @@ void ObjectDB::cleanup() {
 						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
-					DEV_ASSERT(id == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
-					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos(id) + extra_info);
-
-					count--;
+					ObjectSlotData slot_data = slot.get_data();
+					slot_data.block_idx = block_idx;
+					slot_data.slot_idx = slot_idx;
+					DEV_ASSERT((uint64_t)slot_data == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
+					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos((uint64_t)slot_data) + extra_info);
 				}
 			}
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 	}
 
-	if (object_slots) {
-		memfree(object_slots);
+	for (uint32_t i = 0; i < block_max.get(); i++) {
+		memfree(blocks[i]);
 	}
+	memfree(blocks);
+	blocks = nullptr;
 
-	spin_lock.unlock();
+	mutex.unlock();
 }

@@ -36,7 +36,7 @@
 #include "core/object/object_id.h"
 #include "core/object/property_info.h"
 #include "core/os/mutex.h"
-#include "core/os/spin_lock.h"
+#include "core/os/spin_lock.h" // IWYU pragma: keep. TODO: remove this and include thread and spin lock properly in other places.
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -867,25 +867,62 @@ bool Object::derives_from() const {
 }
 
 class ObjectDB {
-// This needs to add up to 63, 1 bit is for reference.
-#define OBJECTDB_VALIDATOR_BITS 39
-#define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
-#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
-#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
+	static constexpr uint64_t block_bits = 10;
+	static constexpr uint64_t slot_bits = 14;
+	static constexpr uint64_t validator_bits = 39;
+	static constexpr uint64_t reference_bit = uint64_t(1) << 63;
+	static_assert((block_bits + slot_bits + validator_bits) == 63, "This needs to add up to 63, 1 bit is for reference.");
 
-	struct ObjectSlot { // 128 bits per slot.
-		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
-		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
-		uint64_t is_ref_counted : 1;
+	static constexpr uint64_t block_mask = (uint64_t(1) << block_bits) - 1;
+	static constexpr uint64_t slot_mask = (uint64_t(1) << slot_bits) - 1;
+	static constexpr uint64_t validator_mask = (uint64_t(1) << validator_bits) - 1;
+
+	static constexpr uint64_t max_blocks = uint64_t(1) << block_bits;
+	static constexpr uint64_t max_slots = uint64_t(1) << (block_bits + slot_bits);
+	static constexpr uint64_t block_size = uint64_t(1) << slot_bits;
+
+	struct ObjectSlotData {
+		uint64_t validator = 0;
+		uint16_t block_idx = 0;
+		uint16_t slot_idx = 0;
+		bool is_ref_counted = false;
+
+		_ALWAYS_INLINE_ ObjectSlotData() {}
+		_ALWAYS_INLINE_ explicit ObjectSlotData(uint64_t p_id) {
+			block_idx = p_id & block_mask;
+			slot_idx = (p_id >> block_bits) & slot_mask;
+			validator = (p_id >> (block_bits + slot_bits)) & validator_mask;
+			is_ref_counted = (p_id & reference_bit) != 0;
+		}
+		_ALWAYS_INLINE_ explicit operator uint64_t() const {
+			return block_idx | (slot_idx << block_bits) | (validator << (block_bits + slot_bits)) | (is_ref_counted ? reference_bit : 0);
+		}
+	};
+	struct ObjectSlot {
+		SafeNumeric<uint64_t> data;
 		Object *object = nullptr;
+
+		_ALWAYS_INLINE_ ObjectSlotData get_data() const {
+			return ObjectSlotData{ data.get() };
+		}
+		_ALWAYS_INLINE_ void set_data(const ObjectSlotData &p_data) {
+			data.set(static_cast<uint64_t>(p_data));
+		}
 	};
 
-	static SpinLock spin_lock;
-	static uint32_t slot_count;
-	static uint32_t slot_max;
-	static ObjectSlot *object_slots;
-	static uint64_t validator_counter;
+	inline static ObjectSlot **blocks = nullptr;
+	inline static uint32_t slot_count = 0;
+	inline static uint32_t slot_max = 0;
+	inline static SafeNumeric<uint32_t> block_max{ 0 };
+
+	inline static BinaryMutex mutex;
+	inline static struct {
+		uint64_t value : validator_bits;
+		_ALWAYS_INLINE_ uint64_t incremented() {
+			value = value + 1 != 0 ? value + 1 : 1;
+			return value;
+		}
+	} validator_counter;
 
 	friend class Object;
 	friend void unregister_core_types();
@@ -901,25 +938,17 @@ public:
 	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
 
 	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
-		uint64_t id = p_instance_id;
-		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
+		ObjectSlotData instance_data{ static_cast<uint64_t>(p_instance_id) };
 
-		ERR_FAIL_COND_V(slot >= slot_max, nullptr); // This should never happen unless RID is corrupted.
+		// This should never happen unless RID is corrupted.
+		ERR_FAIL_COND_V(instance_data.block_idx >= block_max.get() || instance_data.slot_idx >= block_size, nullptr);
+		const ObjectSlot &slot = blocks[instance_data.block_idx][instance_data.slot_idx];
 
-		spin_lock.lock();
-
-		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-
-		if (unlikely(object_slots[slot].validator != validator)) {
-			spin_lock.unlock();
+		if (unlikely(instance_data.validator != slot.get_data().validator)) {
 			return nullptr;
 		}
 
-		Object *object = object_slots[slot].object;
-
-		spin_lock.unlock();
-
-		return object;
+		return slot.object;
 	}
 
 	template <typename T>
