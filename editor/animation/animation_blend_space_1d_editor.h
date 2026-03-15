@@ -81,13 +81,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	Control *blend_space_draw = nullptr;
 
-	PanelContainer *error_panel = nullptr;
-	RichTextLabel *error_label = nullptr;
-
-	HBoxContainer *invalid_point_warning_hb = nullptr;
-	Button *invalid_point_warning = nullptr;
-	void _show_invalid_point_warning();
-
 	bool updating = false;
 
 	static AnimationNodeBlendSpace1DEditor *singleton;
