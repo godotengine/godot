@@ -47,9 +47,9 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant_utility.h"
 
-#include "Jolt/Physics/Collision/CollideShapeVsShapePerLeaf.h"
-#include "Jolt/Physics/Collision/CollisionCollectorImpl.h"
-#include "Jolt/Physics/PhysicsScene.h"
+#include <Jolt/Physics/Collision/CollideShapeVsShapePerLeaf.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/PhysicsScene.h>
 
 namespace {
 

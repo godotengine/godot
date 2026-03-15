@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 
-#include "Jolt/Physics/PhysicsSettings.h"
+#include <Jolt/Physics/PhysicsSettings.h>
 
 void JoltJobSystem::Job::_execute(void *p_user_data) {
 	Job *job = static_cast<Job *>(p_user_data);

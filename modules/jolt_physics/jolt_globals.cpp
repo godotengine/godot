@@ -38,9 +38,9 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/RegisterTypes.h"
+#include <Jolt/RegisterTypes.h>
 
 #include <cstdarg>
 

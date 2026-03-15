@@ -37,11 +37,11 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
-#include "Jolt/Physics/Collision/ObjectLayer.h"
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
 
 class JoltArea3D;
 class JoltBody3D;

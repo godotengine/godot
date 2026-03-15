@@ -37,11 +37,11 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Collision/ContactListener.h"
-#include "Jolt/Physics/SoftBody/SoftBodyContactListener.h"
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/SoftBody/SoftBodyContactListener.h>
 
 class JoltArea3D;
 class JoltBody3D;
