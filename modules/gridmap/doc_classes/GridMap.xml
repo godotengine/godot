@@ -67,7 +67,7 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector3i" />
 			<description>
-				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
+				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty. To get the cell item's rotation, pass the value returned by this method to [method get_basis_with_orthogonal_index].
 			</description>
 		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
@@ -155,7 +155,7 @@
 			<description>
 				Sets the mesh index for the cell referenced by its grid coordinates.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
-				Optionally, the item's orientation can be passed. For valid orientation values, see [method get_orthogonal_index_from_basis].
+				Optionally, the item's orientation can be passed. To get an orientation value that best represents a given rotation, use [method get_orthogonal_index_from_basis].
 			</description>
 		</method>
 		<method name="set_collision_layer_value">
