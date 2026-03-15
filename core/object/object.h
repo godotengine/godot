@@ -550,6 +550,7 @@ public: \
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) { \
 			_bind_compatibility_methods(); \
 		} \
+		get_gdtype_static_mutable().finalize(); \
 		initialized = true; \
 	} \
 \

@@ -69,7 +69,10 @@ public:
 	~GDType();
 
 	InitState get_init_state() const { return init_state; }
+	// Prepare for registration events. Automatically called externally during the GDType lifecycle.
 	void initialize();
+	// Disallow future changes to the type. Automatically called externally during the GDType lifecycle.
+	void finalize();
 
 	const GDType *get_super_type() const { return super_type; }
 	const StringName &get_name() const { return name; }
