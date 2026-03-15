@@ -31,7 +31,6 @@
 #include "editor_plugin_settings.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -73,8 +72,7 @@ void EditorPluginSettings::update_plugins() {
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
 
-	Vector<String> plugins = _get_plugins("res://addons");
-	plugins.append_array(_get_plugins("editor://addons"));
+	Vector<String> plugins = _get_plugins(plugins_path);
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -218,10 +216,21 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	return plugins;
 }
 
-EditorPluginSettings::EditorPluginSettings() {
-	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
+void EditorPluginSettings::set_plugins_path(const String &p_path) {
+	plugins_path = p_path;
+	if (p_path.begins_with("res://")) {
+		installed_plugins_label->set_text(TTRC("Installed Project-wide Plugins:"));
+	} else if (p_path.begins_with("editor://")) {
+		installed_plugins_label->set_text(TTRC("Installed Editor-wide Plugins:"));
+	}
 
+	plugin_config_dialog->set_plugins_path(p_path);
+	update_plugins();
+}
+
+EditorPluginSettings::EditorPluginSettings() {
 	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog->set_plugins_path(plugins_path);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);
 
@@ -243,9 +252,9 @@ EditorPluginSettings::EditorPluginSettings() {
 	}
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTRC("Installed Plugins:")));
-	label->set_theme_type_variation("HeaderSmall");
-	title_hb->add_child(label);
+	installed_plugins_label = memnew(Label(TTRC("Installed Project-wide Plugins:")));
+	installed_plugins_label->set_theme_type_variation("HeaderSmall");
+	title_hb->add_child(installed_plugins_label);
 	title_hb->add_spacer();
 	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));
