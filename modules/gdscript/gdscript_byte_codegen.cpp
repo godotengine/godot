@@ -133,18 +133,18 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 	return slot;
 }
 
-void GDScriptByteCodeGenerator::pop_temporary() {
-	ERR_FAIL_COND(used_temporaries.is_empty());
-	int slot_idx = used_temporaries.back()->get();
-	if (temporaries[slot_idx].can_contain_object) {
+void GDScriptByteCodeGenerator::pop_temporary(int p_slot_idx) {
+	List<int>::Element *iter = used_temporaries.find(p_slot_idx);
+	ERR_FAIL_NULL(iter);
+	if (temporaries[p_slot_idx].can_contain_object) {
 		// Avoid keeping in the stack long-lived references to objects,
 		// which may prevent `RefCounted` objects from being freed.
 		// However, the cleanup will be performed an the end of the
 		// statement, to allow object references to survive chaining.
-		temporaries_pending_clear.insert(slot_idx);
+		temporaries_pending_clear.insert(p_slot_idx);
 	}
-	temporaries_pool[temporaries[slot_idx].type].push_back(slot_idx);
-	used_temporaries.pop_back();
+	temporaries_pool[temporaries[p_slot_idx].type].push_back(p_slot_idx);
+	used_temporaries.erase(iter);
 }
 
 void GDScriptByteCodeGenerator::start_parameters() {

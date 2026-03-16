@@ -71,7 +71,7 @@ public:
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
-	virtual void pop_temporary() = 0;
+	virtual void pop_temporary(int p_slot_idx) = 0;
 	virtual void clear_temporaries() = 0;
 	virtual void clear_address(const Address &p_address) = 0;
 	virtual bool is_local_dirty(const Address &p_address) const = 0;
