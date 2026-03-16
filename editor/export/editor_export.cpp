@@ -116,7 +116,7 @@ void EditorExport::_save() {
 				config->set_value(option_section, E.key, E.value);
 			}
 			else{
-				//Set every property that doesnt exist anymore to be secret so the value can be save for future use but not exposed in export_presets.cfg 
+				// Set every property that doesn't exist anymore to be secret so the value can be saved for future use but not exposed in export_presets.cfg 
 				credentials->set_value(option_section, E.key, E.value);
 			}
 		}
