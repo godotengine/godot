@@ -46,6 +46,7 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
+#include "core/variant/variant_utility.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
@@ -1532,6 +1533,10 @@ void godotsharp_bytes_to_var(const godot_packed_array *p_bytes, bool p_allow_obj
 	memnew_placement(r_ret, Variant(ret));
 }
 
+uint64_t godotsharp_rid_alloc_id() {
+	return VariantUtilityFunctions::rid_allocate_id();
+}
+
 int godotsharp_hash(const godot_variant *p_var) {
 	return reinterpret_cast<const Variant *>(p_var)->hash();
 }
@@ -1822,6 +1827,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_node_path_hash,
 	(void *)godotsharp_bytes_to_var,
 	(void *)godotsharp_convert,
+	(void *)godotsharp_rid_alloc_id,
 	(void *)godotsharp_hash,
 	(void *)godotsharp_instance_from_id,
 	(void *)godotsharp_print,
