@@ -711,12 +711,12 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
 
-		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
+		for (const KeyValue<StringName, const MethodInfo *> &K : signal_map) {
 			SignalData signal;
 
-			const MethodInfo &method_info = signal_map.get(K.key);
+			const MethodInfo &method_info = *signal_map.get(K.key);
 
 			signal.name = method_info.name;
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
