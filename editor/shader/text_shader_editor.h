@@ -135,6 +135,7 @@ class TextShaderEditor : public ShaderEditor {
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
 		EDIT_JOIN_LINES,
+		SEARCH_GOTO_NEXT_ERROR,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;

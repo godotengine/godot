@@ -2667,6 +2667,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTRC("Remove All Breakpoints"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);
 	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTRC("Go to Next Breakpoint"), KeyModifierMask::CTRL | Key::PERIOD);
+	ED_SHORTCUT("script_text_editor/next_error", TTRC("Go to Next Error"), KeyModifierMask::ALT | Key::N);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTRC("Go to Previous Breakpoint"), KeyModifierMask::CTRL | Key::COMMA);
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
