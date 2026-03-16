@@ -30,6 +30,8 @@
 
 #include "gltf_document_extension_physics.h"
 
+#include "gltf_physics_material.h"
+
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/rigid_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
@@ -44,6 +46,20 @@ Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, con
 	Dictionary state_json = p_state->get_json();
 	if (state_json.has("extensions")) {
 		Dictionary state_extensions = state_json["extensions"];
+		if (state_extensions.has("OMI_physics_body")) {
+			Dictionary omi_physics_body_ext = state_extensions["OMI_physics_body"];
+			// Import physics materials.
+			if (omi_physics_body_ext.has("physicsMaterials")) {
+				Array material_dicts = omi_physics_body_ext["physicsMaterials"];
+				if (material_dicts.size() > 0) {
+					Array physics_materials;
+					for (int i = 0; i < material_dicts.size(); i++) {
+						physics_materials.push_back(GLTFPhysicsMaterial::from_dictionary(material_dicts[i]));
+					}
+					p_state->set_additional_data(StringName("GLTFPhysicsMaterials"), physics_materials);
+				}
+			}
+		}
 		if (state_extensions.has("OMI_physics_shape")) {
 			Dictionary omi_physics_shape_ext = state_extensions["OMI_physics_shape"];
 			if (omi_physics_shape_ext.has("shapes")) {
@@ -113,6 +129,16 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 				// If this node is a collider but does not have a collider
 				// shape, then it only serves to combine together shapes.
 				p_gltf_node->set_additional_data(StringName("GLTFPhysicsCompoundCollider"), true);
+			}
+			// Handle physics material index.
+			int material_index = node_collider.get("physicsMaterial", -1);
+			if (material_index != -1) {
+				Array physics_materials = p_state->get_additional_data(StringName("GLTFPhysicsMaterials"));
+				if (physics_materials.size() > 0) {
+					ERR_FAIL_INDEX_V_MSG(material_index, physics_materials.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the physics material index " + itos(material_index) + " is not in the state physics materials (size: " + itos(physics_materials.size()) + ").");
+					p_gltf_node->set_additional_data(StringName("GLTFPhysicsMaterial"), physics_materials[material_index]);
+					p_gltf_node->set_additional_data(StringName("GLTFPhysicsMaterialIndex"), material_index);
+				}
 			}
 		}
 		if (physics_body_ext.has("trigger")) {
@@ -435,6 +461,16 @@ Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state
 	if (gltf_physics_body.is_valid()) {
 		ancestor_col_obj = gltf_physics_body->to_node();
 		ret = ancestor_col_obj;
+		// Apply physics material if present.
+		Ref<GLTFPhysicsMaterial> gltf_physics_material = p_gltf_node->get_additional_data(StringName("GLTFPhysicsMaterial"));
+		if (gltf_physics_material.is_valid()) {
+			Ref<PhysicsMaterial> physics_material = gltf_physics_material->to_resource();
+			if (StaticBody3D *static_body = Object::cast_to<StaticBody3D>(ancestor_col_obj)) {
+				static_body->set_physics_material_override(physics_material);
+			} else if (RigidBody3D *rigid_body = Object::cast_to<RigidBody3D>(ancestor_col_obj)) {
+				rigid_body->set_physics_material_override(physics_material);
+			}
+		}
 	} else {
 		ancestor_col_obj = _get_ancestor_collision_object(p_scene_parent);
 		if (Object::cast_to<Area3D>(ancestor_col_obj) && gltf_physics_trigger_shape.is_valid()) {
@@ -456,6 +492,12 @@ Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state
 				// and there is no parent body, we need to create a static body.
 				ancestor_col_obj = memnew(StaticBody3D);
 				ret = ancestor_col_obj;
+				// Apply physics material if present.
+				Ref<GLTFPhysicsMaterial> gltf_physics_material = p_gltf_node->get_additional_data(StringName("GLTFPhysicsMaterial"));
+				if (gltf_physics_material.is_valid()) {
+					Ref<PhysicsMaterial> physics_material = gltf_physics_material->to_resource();
+					static_cast<StaticBody3D *>(ancestor_col_obj)->set_physics_material_override(physics_material);
+				}
 			}
 		}
 	}
@@ -550,6 +592,17 @@ void GLTFDocumentExtensionPhysics::convert_scene_node(Ref<GLTFState> p_state, Re
 	} else if (cast_to<CollisionObject3D>(p_scene_node)) {
 		CollisionObject3D *godot_body = Object::cast_to<CollisionObject3D>(p_scene_node);
 		p_gltf_node->set_additional_data(StringName("GLTFPhysicsBody"), GLTFPhysicsBody::from_node(godot_body));
+		// Extract physics material if present.
+		Ref<PhysicsMaterial> physics_material;
+		if (StaticBody3D *static_body = Object::cast_to<StaticBody3D>(godot_body)) {
+			physics_material = static_body->get_physics_material_override();
+		} else if (RigidBody3D *rigid_body = Object::cast_to<RigidBody3D>(godot_body)) {
+			physics_material = rigid_body->get_physics_material_override();
+		}
+		if (physics_material.is_valid()) {
+			Ref<GLTFPhysicsMaterial> gltf_material = GLTFPhysicsMaterial::from_resource(physics_material);
+			p_gltf_node->set_additional_data(StringName("GLTFPhysicsMaterial"), gltf_material);
+		}
 	}
 }
 
@@ -595,10 +648,57 @@ GLTFShapeIndex _export_node_shape(const Ref<GLTFState> &p_state, const Ref<GLTFP
 	return size;
 }
 
+Array _get_or_create_physics_materials_in_state(const Ref<GLTFState> &p_state) {
+	Dictionary state_json = p_state->get_json();
+	Dictionary state_extensions;
+	if (state_json.has("extensions")) {
+		state_extensions = state_json["extensions"];
+	} else {
+		state_json["extensions"] = state_extensions;
+	}
+	Dictionary omi_physics_body_ext;
+	if (state_extensions.has("OMI_physics_body")) {
+		omi_physics_body_ext = state_extensions["OMI_physics_body"];
+	} else {
+		state_extensions["OMI_physics_body"] = omi_physics_body_ext;
+	}
+	Array physics_materials;
+	if (omi_physics_body_ext.has("physicsMaterials")) {
+		physics_materials = omi_physics_body_ext["physicsMaterials"];
+	} else {
+		omi_physics_body_ext["physicsMaterials"] = physics_materials;
+	}
+	return physics_materials;
+}
+
+int64_t _export_physics_material(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsMaterial> &p_material) {
+	Array physics_materials = _get_or_create_physics_materials_in_state(p_state);
+	int64_t size = physics_materials.size();
+	Dictionary material_dict = p_material->to_dictionary();
+	for (int64_t i = 0; i < size; i++) {
+		Dictionary other = physics_materials[i];
+		if (other == material_dict) {
+			// De-duplication: If we already have an identical material,
+			// return the existing index.
+			return i;
+		}
+	}
+	// If we don't have an identical material, add it to the array.
+	physics_materials.push_back(material_dict);
+	return size;
+}
+
 Error GLTFDocumentExtensionPhysics::export_preserialize(Ref<GLTFState> p_state) {
 	// Note: Need to do _export_node_shape before exporting animations, so export_node is too late.
 	const Vector<Ref<GLTFNode>> &state_gltf_nodes = p_state->get_nodes();
 	for (Ref<GLTFNode> gltf_node : state_gltf_nodes) {
+		// Export physics materials.
+		const Ref<GLTFPhysicsMaterial> physics_material = gltf_node->get_additional_data(StringName("GLTFPhysicsMaterial"));
+		if (physics_material.is_valid()) {
+			int64_t material_index = _export_physics_material(p_state, physics_material);
+			gltf_node->set_additional_data(StringName("GLTFPhysicsMaterialIndex"), material_index);
+		}
+		// Export shapes.
 		const Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
 		if (collider_shape.is_valid()) {
 			GLTFShapeIndex collider_shape_index = _export_node_shape(p_state, collider_shape);
@@ -714,6 +814,22 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 	if (collider_shape_index.get_type() == Variant::INT) {
 		Dictionary collider_dict;
 		collider_dict["shape"] = collider_shape_index;
+		// Add physics material index if present on this node or parent body node.
+		Variant material_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsMaterialIndex"));
+		if (material_index.get_type() != Variant::INT) {
+			// If not on this node, check the parent node (body nodes have the material).
+			GLTFNodeIndex parent_index = p_gltf_node->get_parent();
+			if (parent_index != -1) {
+				const Vector<Ref<GLTFNode>> &state_nodes = p_state->get_nodes();
+				if (parent_index < state_nodes.size()) {
+					const Ref<GLTFNode> &parent_node = state_nodes[parent_index];
+					material_index = parent_node->get_additional_data(StringName("GLTFPhysicsMaterialIndex"));
+				}
+			}
+		}
+		if (material_index.get_type() == Variant::INT) {
+			collider_dict["physicsMaterial"] = material_index;
+		}
 		physics_body_ext["collider"] = collider_dict;
 	}
 	Variant trigger_shape_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
