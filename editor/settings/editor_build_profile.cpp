@@ -1418,6 +1418,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	force_detect_classes = memnew(LineEdit);
 	force_detect_classes->set_accessibility_name(TTRC("Forced Classes on Detect:"));
+	force_detect_classes->set_placeholder(TTRC("Comma-separated list (case-sensitive). Example: Sprite2D,LineEdit"));
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
