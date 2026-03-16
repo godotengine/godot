@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  d3d12_hooks.h                                                         */
+/*  godot_nir.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,19 +30,21 @@
 
 #pragma once
 
-#include <drivers/d3d12/godot_d3dx12.h>
+#include "core/typedefs.h"
 
-class D3D12Hooks {
-private:
-	static D3D12Hooks *singleton;
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wmissing-field-initializers")
+GODOT_MSVC_WARNING_PUSH
+GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
+GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
 
-public:
-	D3D12Hooks();
-	virtual ~D3D12Hooks();
-	virtual D3D_FEATURE_LEVEL get_feature_level() const = 0;
-	virtual LUID get_adapter_luid() const = 0;
-	virtual void set_device(ID3D12Device *p_device) = 0;
-	virtual void set_command_queue(ID3D12CommandQueue *p_queue) = 0;
-	virtual void cleanup_device() = 0;
-	static D3D12Hooks *get_singleton() { return singleton; }
-};
+#include <nir_spirv.h>
+#include <nir_to_dxil.h>
+#include <spirv_to_dxil.h>
+extern "C" {
+#include <dxil_spirv_nir.h>
+}
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+GODOT_MSVC_WARNING_POP
