@@ -1571,6 +1571,163 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPropertyLayers::_refresh_names));
 }
 
+///////////////////// LAYER PRESETS /////////////////////////
+
+void EditorPropertyLayerPresets::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		} break;
+	}
+}
+
+void EditorPropertyLayerPresets::_preset_changed(int p_index) {
+	int id = option_button->get_item_id(p_index);
+	emit_changed(get_edited_property(), id);
+}
+
+bool EditorPropertyLayerPresets::_sort_presets(Variant p_l, Variant p_r) {
+	Dictionary l = p_l;
+	Dictionary r = p_r;
+
+	String name_l = l.get("name", "");
+	String name_r = r.get("name", "");
+
+	return name_l < name_r;
+}
+
+// Returns true if the selection changed.
+bool EditorPropertyLayerPresets::_set_selected(int p_id) {
+	int item_count = option_button->get_item_count();
+	for (int i = 0; i < item_count; i++) {
+		int id = option_button->get_item_id(i);
+		if (id == p_id) {
+			if (option_button->get_selected() == i) {
+				return false;
+			}
+			option_button->select(i);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+String EditorPropertyLayerPresets::_get_setting_base() {
+	String setting_base;
+	switch (preset_type) {
+		case PRESET_PHYSICS_2D:
+			setting_base = "physics/2d";
+			break;
+		case PRESET_PHYSICS_3D:
+			setting_base = "physics/3d";
+			break;
+	}
+	return setting_base;
+}
+
+void EditorPropertyLayerPresets::_edit_button_pressed() {
+	ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
+	ProjectSettingsEditor::get_singleton()->set_general_page(_get_setting_base());
+}
+
+void EditorPropertyLayerPresets::_settings_changed() {
+	_update_options();
+	update_property();
+}
+
+void EditorPropertyLayerPresets::_update_options() {
+	String setting_base = _get_setting_base();
+	String preset_setting = setting_base + "/presets";
+	String default_setting = setting_base + "/default_preset";
+
+	// Need to duplicate so that sorting doesn't screw up the order in project settings.
+	Array presets = ProjectSettings::get_singleton()->get_setting(preset_setting).duplicate();
+	presets.sort_custom(callable_mp(this, &EditorPropertyLayerPresets::_sort_presets));
+	option_button->clear();
+
+	int default_preset = ProjectSettings::get_singleton()->get_setting(default_setting, -1);
+	bool default_preset_found = false;
+	String default_preset_name = "";
+
+	option_button->add_item("");
+	option_button->set_item_id(0, 0);
+
+	int i = 1;
+	for (Dictionary preset : presets) {
+		int preset_id = preset.get("id", 0);
+		String preset_name = preset.get("name", "");
+		// Handling ID initialization here; ideally we would do this when elements are added to the list,
+		// but this is less complex and is still guaranteed to work.
+		if (preset_id == 0) {
+			int highest_id = 0;
+			for (Dictionary id_check_preset : presets) {
+				highest_id = MAX(highest_id, int(id_check_preset.get("id", 0)));
+			}
+			preset_id = highest_id + 1;
+			preset.set("id", preset_id);
+		} else if (preset_id == default_preset) {
+			default_preset_name = preset_name;
+			default_preset_found = true;
+		}
+
+		option_button->add_item(preset_name);
+		option_button->set_item_id(i, preset_id);
+
+		i += 1;
+	}
+
+	if (default_preset <= 0 || !default_preset_found) {
+		default_preset_name = "None";
+	}
+
+	if (is_default_selector) {
+		option_button->set_item_text(0, TTR("None"));
+	} else {
+		option_button->set_item_text(0, vformat(TTR("Default (%s)"), default_preset_name));
+	}
+
+	if (!is_default_selector) {
+		option_button->add_item(TTR("Custom"));
+		option_button->set_item_id(i, -1);
+	}
+}
+
+void EditorPropertyLayerPresets::update_property() {
+	int id = get_edited_property_value();
+	_set_selected(id);
+}
+
+void EditorPropertyLayerPresets::setup(PresetType p_preset_type, const String &p_hint_string) {
+	is_default_selector = p_hint_string == "default_selector";
+	edit_button->set_visible(!is_default_selector);
+	preset_type = p_preset_type;
+	_update_options();
+}
+
+EditorPropertyLayerPresets::EditorPropertyLayerPresets() {
+	HBoxContainer *h_box = memnew(HBoxContainer);
+	add_child(h_box);
+
+	option_button = memnew(OptionButton);
+	option_button->set_clip_text(true);
+	option_button->set_flat(true);
+	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	option_button->set_h_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
+	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyLayerPresets::_preset_changed));
+	add_focusable(option_button);
+	h_box->add_child(option_button);
+
+	edit_button = memnew(Button);
+	h_box->add_child(edit_button);
+	edit_button->set_accessibility_name(TTR("Edit"));
+	edit_button->set_tooltip_text(TTR("Edit presets"));
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLayerPresets::_edit_button_pressed));
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPropertyLayerPresets::_settings_changed));
+}
+
 ///////////////////// INT /////////////////////////
 
 void EditorPropertyInteger::_set_read_only(bool p_read_only) {
@@ -3961,6 +4118,22 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				}
 				EditorPropertyLayers *editor = memnew(EditorPropertyLayers);
 				editor->setup(lt);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_PRESETS_2D_PHYSICS ||
+					p_hint == PROPERTY_HINT_PRESETS_3D_PHYSICS) {
+				EditorPropertyLayerPresets::PresetType preset_type = EditorPropertyLayerPresets::PRESET_PHYSICS_2D;
+				switch (p_hint) {
+					case PROPERTY_HINT_PRESETS_2D_PHYSICS:
+						preset_type = EditorPropertyLayerPresets::PRESET_PHYSICS_2D;
+						break;
+					case PROPERTY_HINT_PRESETS_3D_PHYSICS:
+						preset_type = EditorPropertyLayerPresets::PRESET_PHYSICS_3D;
+						break;
+					default: {
+					}
+				}
+				EditorPropertyLayerPresets *editor = memnew(EditorPropertyLayerPresets);
+				editor->setup(preset_type, p_hint_text);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_OBJECT_ID) {
 				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);

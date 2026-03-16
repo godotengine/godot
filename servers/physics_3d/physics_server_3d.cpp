@@ -1141,6 +1141,8 @@ PhysicsServer3D::PhysicsServer3D() {
 	// World3D physics space
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "physics/3d/default_gravity", PROPERTY_HINT_RANGE, U"-32,32,0.001,or_less,or_greater,suffix:m/s\u00B2"), 9.8);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR3, "physics/3d/default_gravity_vector", PROPERTY_HINT_RANGE, "-10,10,0.001,or_less,or_greater"), Vector3(0, -1, 0));
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/3d/default_preset", PROPERTY_HINT_PRESETS_3D_PHYSICS, "default_selector"), 0);
+	GLOBAL_DEF_ARRAY_BASIC("physics/3d/presets", { ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::STRING_NAME, "name"), ""), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), 0) });
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 

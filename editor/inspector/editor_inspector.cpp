@@ -3268,7 +3268,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 	Array output;
 
 	for (const PropertyInfo &pi : p_list) {
-		if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+		if (!(pi.usage & PROPERTY_USAGE_EDITOR) && !(pi.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 

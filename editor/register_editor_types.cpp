@@ -128,6 +128,8 @@
 #include "editor/script/editor_script_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
+#include "editor/settings/collision_presets_2d.h"
+#include "editor/settings/collision_presets_3d.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
@@ -149,6 +151,9 @@ void register_editor_types() {
 	ResourceSaver::set_timestamp_on_save(true);
 
 	EditorStringNames::create();
+
+	GDREGISTER_CLASS(CollisionPresets2D);
+	GDREGISTER_CLASS(CollisionPresets3D);
 
 	GDREGISTER_CLASS(EditorPaths);
 	GDREGISTER_CLASS(EditorPlugin);

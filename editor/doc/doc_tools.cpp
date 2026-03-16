@@ -513,7 +513,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					}
 				}
 
-				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
+				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || ((E.type == Variant::NIL) && E.usage & PROPERTY_USAGE_ARRAY)) {
 					continue;
 				}
 
@@ -533,8 +533,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				Variant default_value;
 
 				if (name == "ProjectSettings") {
-					// Special case for project settings, so that settings are not taken from the current project's settings
-					if (!ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
+					// Special case for project settings, so that settings are not taken from the current project's settings.
+					if (((E.type == Variant::INT) && E.usage & PROPERTY_USAGE_ARRAY) || ProjectSettings::get_singleton()->get_is_array_internal(E.name) || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
 						continue;
 					}
 					if (E.usage & PROPERTY_USAGE_EDITOR) {

@@ -906,6 +906,8 @@ PhysicsServer2D::PhysicsServer2D() {
 	// World2D physics space
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "physics/2d/default_gravity", PROPERTY_HINT_RANGE, U"-4096,4096,0.001,or_less,or_greater,suffix:px/s\u00B2"), 980.0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR2, "physics/2d/default_gravity_vector", PROPERTY_HINT_RANGE, "-10,10,0.001,or_less,or_greater"), Vector2(0, 1));
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/2d/default_preset", PROPERTY_HINT_PRESETS_2D_PHYSICS, "default_selector"), 0);
+	GLOBAL_DEF_ARRAY_BASIC("physics/2d/presets", { ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::STRING_NAME, "name"), ""), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), 1), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), 1), ProjectSettings::ArrayElementFormat(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), 0) });
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 1.0);
 

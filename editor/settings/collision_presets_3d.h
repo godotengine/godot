@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_sectioned_inspector.h                                          */
+/*  collision_presets_3d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,55 +30,24 @@
 
 #pragma once
 
-#include "scene/gui/split_container.h"
+#include "core/object/object.h"
 
-class CheckButton;
-class EditorInspector;
-class LineEdit;
-class SectionedInspectorFilter;
-class Tree;
-class TreeItem;
+class CollisionPresets3D : public Object {
+	GDCLASS(CollisionPresets3D, Object)
 
-class SectionedInspector : public HSplitContainer {
-	GDCLASS(SectionedInspector, HSplitContainer);
-
-	ObjectID obj;
-
-	Tree *sections = nullptr;
-	SectionedInspectorFilter *filter = nullptr;
-
-	HashMap<String, TreeItem *> section_map;
-	EditorInspector *inspector = nullptr;
-	LineEdit *search_box = nullptr;
-	CheckButton *advanced_toggle = nullptr;
-
-	String selected_category;
-
-	bool restrict_to_basic = false;
-
-	static void _bind_methods();
-	void _section_selected();
-
-	void _search_changed(const String &p_what);
-	void _edited_property_list_changed();
-	void _advanced_toggled(bool p_toggled_on);
+private:
+	static bool get_preset_dict(int p_preset, Dictionary *r_dict);
 
 protected:
-	void _notification(int p_notification);
+	static void _bind_methods();
 
 public:
-	void register_search_box(LineEdit *p_box);
-	void register_advanced_toggle(CheckButton *p_toggle);
+	static int get_preset(const String &p_name);
+	static String get_preset_name(int p_preset);
+	static uint32_t get_preset_layer(int p_preset);
+	static uint32_t get_preset_mask(int p_preset);
 
-	EditorInspector *get_inspector();
-	void edit(Object *p_object);
-	String get_full_item_path(const String &p_item);
-
-	void set_current_section(const String &p_section);
-	String get_current_section() const;
-
-	void update_category_list();
-
-	SectionedInspector();
-	~SectionedInspector();
+	static bool has_preset_named(const String &p_name);
+	static bool has_preset(int p_preset);
+	static bool get_preset_is_custom(int p_preset);
 };
