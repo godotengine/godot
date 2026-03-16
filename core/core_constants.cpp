@@ -32,7 +32,6 @@
 
 #include "core/input/input_enums.h"
 #include "core/object/method_bind_common.h" // IWYU pragma: keep. For `VARIANT_BITFIELD_CAST(MethodFlags)`.
-#include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"

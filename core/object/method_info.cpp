@@ -32,7 +32,7 @@
 
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
+#include "core/variant/typed_array.h" // IWYU pragma: keep. `convert_property_list` return type.
 
 MethodInfo::operator Dictionary() const {
 	Dictionary d;

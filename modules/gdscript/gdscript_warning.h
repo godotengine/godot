@@ -32,9 +32,10 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "core/object/object.h"
-#include "core/string/ustring.h"
 #include "core/templates/vector.h"
+
+class String;
+struct PropertyInfo;
 
 class GDScriptWarning {
 public:

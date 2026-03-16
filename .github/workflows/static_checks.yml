@@ -3,7 +3,7 @@ on:
   workflow_call:
     outputs:
       changed-files:
-        description: A list of changed files.
+        description: A list of changed files, pre-filtered for parsing by clangd-tidy.
         value: ${{ jobs.static-checks.outputs.changed-files }}
       sources-changed:
         description: Determines if any source files were changed.
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
-      changed-files: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
+      changed-files: '"${{ steps.changed-files.outputs.clangd_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
       sources-changed: ${{ steps.changed-files.outputs.sources_any_changed }}
     steps:
       - name: Checkout
