@@ -209,6 +209,9 @@
 		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
 			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
 		</member>
+		<member name="allow_tab_hotkeys" type="bool" setter="set_allows_tab_hotkeys" getter="does_allow_tab_hotkeys" default="false">
+			If [code]true[/code], the shortcuts [code]ui_focus_tab[1-8][/code] and [code]ui_focus_last_tab[/code] will switch the active tab on this [TabContainer]. Otherwise, these shortcuts will be ignored.
+		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
 		</member>

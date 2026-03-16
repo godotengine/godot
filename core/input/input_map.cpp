@@ -429,6 +429,15 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
 	{ "ui_filedialog_find",                            TTRC("Find") },
 	{ "ui_filedialog_focus_path",                      TTRC("Focus Path") },
+	{ "ui_focus_tab1", 			                       TTRC("Focus Tab 1") },
+	{ "ui_focus_tab2", 			                       TTRC("Focus Tab 2") },
+	{ "ui_focus_tab3", 			                       TTRC("Focus Tab 3") },
+	{ "ui_focus_tab4", 			                       TTRC("Focus Tab 4") },
+	{ "ui_focus_tab5", 			                       TTRC("Focus Tab 5") },
+	{ "ui_focus_tab6", 			                       TTRC("Focus Tab 6") },
+	{ "ui_focus_tab7", 			                       TTRC("Focus Tab 7") },
+	{ "ui_focus_tab8", 			                       TTRC("Focus Tab 8") },
+	{ "ui_focus_last_tab", 		                       TTRC("Focus Last Tab") },
 	{ "ui_swap_input_direction",                       TTRC("Swap Input Direction") },
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
@@ -486,6 +495,16 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::TAB | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_focus_prev", inputs);
+
+	for (int i = 1; i <= 8; i++) {
+		inputs = List<Ref<InputEvent>>();
+		inputs.push_back(InputEventKey::create_reference((Key::KEY_0 + i) | KeyModifierMask::CMD_OR_CTRL));
+		default_builtin_cache.insert("ui_focus_tab" + itos(i), inputs);
+	}
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_9 | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_focus_last_tab", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT));

@@ -867,6 +867,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTRC("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
+	tab_container->set_allows_tab_hotkeys(true);
 
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }

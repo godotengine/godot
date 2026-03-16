@@ -1039,6 +1039,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tabs->add_child(tab_shortcuts);
 	tab_shortcuts->set_name(TTRC("Shortcuts"));
+	tabs->set_allows_tab_hotkeys(true);
 
 	shortcut_search_bar = memnew(EditorEventSearchBar);
 	shortcut_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &EditorSettingsDialog::_update_shortcuts));

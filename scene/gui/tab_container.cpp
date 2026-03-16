@@ -825,6 +825,18 @@ bool TabContainer::are_tabs_visible() const {
 	return tabs_visible;
 }
 
+void TabContainer::set_allows_tab_hotkeys(bool p_allow_hotkeys) {
+	if (p_allow_hotkeys == allows_tab_hotkeys) {
+		return;
+	}
+
+	allows_tab_hotkeys = p_allow_hotkeys;
+}
+
+bool TabContainer::does_allow_tab_hotkeys() const {
+	return allows_tab_hotkeys;
+}
+
 void TabContainer::set_all_tabs_in_front(bool p_in_front) {
 	if (p_in_front == all_tabs_in_front) {
 		return;
@@ -1140,6 +1152,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
+	ClassDB::bind_method(D_METHOD("set_allows_tab_hotkeys", "allow_tab_hotkeys"), &TabContainer::set_allows_tab_hotkeys);
+	ClassDB::bind_method(D_METHOD("does_allow_tab_hotkeys"), &TabContainer::does_allow_tab_hotkeys);
 
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
@@ -1195,6 +1209,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_tab_hotkeys"), "set_allows_tab_hotkeys", "does_allow_tab_hotkeys");
 
 	ADD_CLASS_DEPENDENCY("TabBar");
 	ADD_CLASS_DEPENDENCY("Button");
@@ -1255,6 +1270,37 @@ void TabContainer::_bind_methods() {
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
+void TabContainer::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventKey> key = p_event;
+
+	if (key.is_null() || !key->is_pressed()) {
+		return;
+	}
+
+	if (!allows_tab_hotkeys) {
+		return;
+	}
+	bool handled = false;
+	for (int i = 1; i <= 8; i++) {
+		if (p_event->is_action("ui_focus_tab" + itos(i), true)) {
+			set_current_tab(i - 1);
+			handled = true;
+			break;
+		}
+	}
+
+	if (p_event->is_action("ui_focus_last_tab", true)) {
+		set_current_tab(get_tab_count() - 1);
+		handled = true;
+	}
+
+	if (handled) {
+		get_viewport()->set_input_as_handled();
+	}
+}
+
 TabContainer::TabContainer() {
 	internal_container = memnew(HBoxContainer);
 	internal_container->add_theme_constant_override(SNAME("separation"), 0);
@@ -1277,4 +1323,5 @@ TabContainer::TabContainer() {
 
 	property_helper.setup_for_instance(base_property_helper, this);
 	property_helper.enable_out_of_bounds_assign();
+	set_process_shortcut_input(true);
 }
