@@ -549,25 +549,30 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String expression_str = data[0];
 				int frame = data[1];
 
-				ScriptInstance *breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
-				if (!breaked_instance) {
-					break;
-				}
+				ScriptInstance *breaked_instance = nullptr;
 
 				PackedStringArray input_names;
 				Array input_vals;
 
-				List<String> locals;
-				List<Variant> local_vals;
-				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
-				ERR_FAIL_COND(locals.size() != local_vals.size());
+				//	If frame == -1 we are entering a pause session not a debug session
+				if (frame > -1) {
+					breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
+					if (!breaked_instance) {
+						return;
+					}
 
-				for (const String &S : locals) {
-					input_names.append(S);
-				}
+					List<String> locals;
+					List<Variant> local_vals;
+					script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
+					ERR_FAIL_COND(locals.size() != local_vals.size());
 
-				for (const Variant &V : local_vals) {
-					input_vals.append(V);
+					for (const String &S : locals) {
+						input_names.append(S);
+					}
+
+					for (const Variant &V : local_vals) {
+						input_vals.append(V);
+					}
 				}
 
 				List<String> globals;
@@ -607,7 +612,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 				Expression expression;
 				expression.parse(expression_str, input_names);
-				const Variant return_val = expression.execute(input_vals, breaked_instance->get_owner());
+
+				const Variant return_val = expression.execute(input_vals, breaked_instance == nullptr ? nullptr : breaked_instance->get_owner());
 
 				DebuggerMarshalls::ScriptStackVariable stvar;
 				stvar.name = expression_str;
