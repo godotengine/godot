@@ -400,6 +400,7 @@ private:
 #ifdef DEBUG_ENABLED
 	friend struct _ObjectDebugLock;
 #endif // DEBUG_ENABLED
+	friend struct ObjectSignalLock;
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
@@ -417,7 +418,6 @@ private:
 		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
-	friend struct _ObjectSignalLock;
 	mutable Mutex *signal_mutex = nullptr;
 	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
