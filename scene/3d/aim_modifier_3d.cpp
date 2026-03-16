@@ -172,7 +172,7 @@ void AimModifier3D::set_relative(int p_index, bool p_enabled) {
 }
 
 bool AimModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 	return setting->relative;
 }

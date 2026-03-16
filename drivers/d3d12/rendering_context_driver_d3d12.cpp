@@ -34,7 +34,6 @@
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
-#include "drivers/d3d12/d3d12_hooks.h"
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
