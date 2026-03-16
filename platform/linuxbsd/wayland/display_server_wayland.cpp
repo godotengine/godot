@@ -270,7 +270,8 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_SUBWINDOWS:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
-		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS: {
+		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS:
+		case DisplayServerEnums::FEATURE_HDR_OUTPUT: {
 			return true;
 		} break;
 
@@ -1482,6 +1483,125 @@ void DisplayServerWayland::window_start_resize(DisplayServerEnums::WindowResizeE
 	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
+void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
+	DisplayServerEnums::WindowID window_id = p_window.id;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		// The `display/window/hdr/request_hdr_output` project setting makes the main window "request" HDR.
+		// On Windows, this means enable HDR for the main window if it is on an HDR screen.
+		// Since all screens support HDR on Wayland, we use whether the window "prefers" HDR or not instead.
+		bool hdr_preferred = p_window.color_profile.target_max_luminance > p_window.color_profile.reference_luminance;
+		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && p_window.hdr_requested;
+
+		if (rendering_context->window_get_hdr_output_enabled(window_id) != hdr_desired) {
+			rendering_context->window_set_hdr_output_enabled(window_id, hdr_desired);
+		}
+
+		if (hdr_desired) {
+			rendering_context->window_set_hdr_output_max_luminance(window_id, p_window.color_profile.target_max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(window_id, p_window.color_profile.reference_luminance);
+			rendering_context->window_set_hdr_output_linear_luminance_scale(window_id, p_window.color_profile.target_max_luminance);
+
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+		} else {
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+		}
+
+		if (p_window.visible) {
+			MutexLock mutex_lock(wayland_thread.mutex);
+			wayland_thread.window_set_color_profile(window_id, p_window.color_profile);
+		}
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+
+	return wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
+}
+
+void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+#endif
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.hdr_requested = p_enabled;
+
+	_window_update_hdr_state(wd);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+	return wd.hdr_requested;
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window_id);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_reference_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Linux devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_max_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting max luminance is not supported on Linux devices as they provide a built-in method of calibrating max luminance without the need for additional apps or tools.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+float DisplayServerWayland::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window_id);
+	}
+#endif
+
+	return 1.0f;
+}
+
 void DisplayServerWayland::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, DisplayServerEnums::CURSOR_MAX);
 
@@ -1736,6 +1856,35 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
+#if defined(RD_ENABLED)
+	// Enabling HDR may have failed, in which case we need to clear the color profile.
+	// NOTE: this happens _before_ reading events because the rendering driver is only updated the frame _after_ we try to enable HDR.
+	if (rendering_device && (!OS::get_singleton()->is_in_low_processor_usage_mode() || RS::get_singleton()->has_changed())) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &pair : windows) {
+			const RD::ColorSpace color_space = rendering_device->screen_get_color_space(pair.key);
+
+			bool dirty_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+			bool dirty_linear = color_space == RDD::COLOR_SPACE_REC709_LINEAR && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+			if (dirty_srgb) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+			} else if (dirty_linear) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+			}
+		}
+	}
+#endif
+
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
@@ -1865,6 +2014,15 @@ void DisplayServerWayland::process_events() {
 
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
+			continue;
+		}
+
+		Ref<WaylandThread::ColorProfileMessage> color_profile_msg = msg;
+		if (color_profile_msg.is_valid()) {
+			WindowData &wd = windows[color_profile_msg->id];
+			wd.color_profile = color_profile_msg->color_profile;
+
+			_window_update_hdr_state(wd);
 			continue;
 		}
 	}
