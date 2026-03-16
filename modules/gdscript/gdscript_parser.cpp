@@ -4873,6 +4873,12 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 				}
 			} break;
+			case GDScriptParser::DataType::STRUCT: {
+				variable->export_info.type = Variant::ARRAY;
+				variable->export_info.hint = PROPERTY_HINT_STRUCT;
+				variable->export_info.hint_string = export_type.script_path + "::" + export_type.native_type;
+				variable->export_info.class_name = export_type.native_type;
+			} break;
 			case GDScriptParser::DataType::VARIANT: {
 				if (export_type.is_variant()) {
 					variable->export_info.type = Variant::NIL;
@@ -4880,7 +4886,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				}
 			} break;
 			default:
-				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+				push_error(R"(Export type can only be built-in, a resource, a node, an enum, or a struct.)", p_annotation);
 				return false;
 		}
 
@@ -4950,8 +4956,14 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 					}
 				} break;
+				case GDScriptParser::DataType::STRUCT: {
+					variable->export_info.type = Variant::ARRAY;
+					variable->export_info.hint = PROPERTY_HINT_STRUCT;
+					variable->export_info.hint_string = export_type.script_path + "::" + export_type.native_type;
+					variable->export_info.class_name = export_type.native_type;
+				} break;
 				default:
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					push_error(R"(Export type can only be built-in, a resource, a node, an enum, or a struct.)", p_annotation);
 					return false;
 			}
 

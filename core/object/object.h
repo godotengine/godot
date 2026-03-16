@@ -94,6 +94,7 @@ enum PropertyHint {
 	PROPERTY_HINT_INPUT_NAME,
 	PROPERTY_HINT_FILE_PATH,
 	PROPERTY_HINT_MAX,
+	PROPERTY_HINT_STRUCT, // The hint string would be like "script_path::struct_name"
 };
 
 enum PropertyUsageFlags {

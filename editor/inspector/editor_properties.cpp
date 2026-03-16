@@ -4253,6 +4253,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			}
 		} break;
 		case Variant::ARRAY: {
+			if (p_hint == PROPERTY_HINT_STRUCT) {
+				EditorPropertyStruct *editor = memnew(EditorPropertyStruct);
+				editor->setup(p_hint_text);
+				return editor;
+			}
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::ARRAY, p_hint_text);
 			return editor;

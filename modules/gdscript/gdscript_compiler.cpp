@@ -3032,6 +3032,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					GDScriptStruct::Field field;
 					field.name = var_node->identifier->name;
 					field.data_type = _gdtype_from_datatype(var_node->get_datatype(), p_script);
+					field.property_info = var_node->get_datatype().to_property_info(field.name);
 
 					if (var_node->initializer != nullptr && var_node->initializer->is_constant) {
 						field.default_value = var_node->initializer->reduced_value;

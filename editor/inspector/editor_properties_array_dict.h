@@ -89,6 +89,56 @@ public:
 	String get_key_name_for_index(int p_index);
 };
 
+class EditorPropertyStructObject : public RefCounted {
+	GDCLASS(EditorPropertyStructObject, RefCounted);
+
+	Variant array;
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+
+public:
+	void set_array(const Variant &p_array);
+	Variant get_array();
+};
+
+class EditorPropertyStruct : public EditorProperty {
+	GDCLASS(EditorPropertyStruct, EditorProperty);
+
+	struct Slot {
+		EditorProperty *prop = nullptr;
+		String prop_name;
+		int index = -1;
+	};
+
+	Ref<EditorPropertyStructObject> object;
+	VBoxContainer *property_vbox = nullptr;
+	Button *edit = nullptr;
+	PanelContainer *container = nullptr;
+	bool updating = false;
+
+	String struct_path;
+	String struct_name;
+
+	LocalVector<Slot> slots;
+	Array fields;
+
+	void _edit_pressed();
+	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void setup(const String &p_hint_string);
+	virtual void update_property() override;
+	virtual bool is_colored(ColorationMode p_mode) override;
+	EditorPropertyStruct();
+};
+
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 

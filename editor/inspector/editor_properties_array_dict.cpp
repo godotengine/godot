@@ -234,6 +234,226 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 	}
 }
 
+///////////////////// STRUCT ///////////////////////////
+
+bool EditorPropertyStructObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (!name.begins_with("indices/")) {
+		return false;
+	}
+	int index = name.get_slicec('/', 1).to_int();
+	array.set(index, p_value);
+	return true;
+}
+
+bool EditorPropertyStructObject::_get(const StringName &p_name, Variant &r_ret) const {
+	String name = p_name;
+	if (!name.begins_with("indices/")) {
+		return false;
+	}
+	int index = name.get_slicec('/', 1).to_int();
+	bool valid;
+	r_ret = array.get(index, &valid);
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+	return valid;
+}
+
+void EditorPropertyStructObject::set_array(const Variant &p_array) {
+	array = p_array;
+}
+
+Variant EditorPropertyStructObject::get_array() {
+	return array;
+}
+
+void EditorPropertyStruct::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	if (!p_property.begins_with("indices/")) {
+		return;
+	}
+	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+		p_value = Variant();
+	}
+	int index = p_property.get_slicec('/', 1).to_int();
+	Variant array = object->get_array().duplicate();
+	array.set(index, p_value);
+	emit_changed(get_edited_property(), array, p_name, p_changing);
+	if (p_changing) {
+		object->set_array(array);
+	}
+}
+
+void EditorPropertyStruct::_edit_pressed() {
+	Variant array = get_edited_property_value();
+	if (!array.is_array() && edit->is_pressed()) {
+		Array arr;
+		arr.resize(fields.size());
+		Vector<StringName> names;
+		Vector<Variant> default_values;
+		for (int i = 0; i < fields.size(); i++) {
+			Dictionary d = fields[i];
+			arr[i] = d["default_value"];
+			names.push_back(d["name"]);
+			default_values.push_back(d["default_value"]);
+		}
+		arr.set_as_struct(names, default_values);
+		array = arr;
+		emit_changed(get_edited_property(), array);
+	}
+
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+	update_property();
+}
+
+void EditorPropertyStruct::update_property() {
+	Variant array = get_edited_property_value();
+
+	if (!array.is_array()) {
+		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		edit->set_button_icon(Ref<Texture2D>());
+		edit->set_text(vformat(TTR("(Nil) %s"), struct_name));
+		edit->set_pressed(false);
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			container = nullptr;
+			slots.clear();
+		}
+		return;
+	}
+
+	object->set_array(array);
+
+	edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	edit->set_button_icon(Ref<Texture2D>());
+	edit->set_text(struct_name);
+
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (edit->is_pressed() != unfolded) {
+		edit->set_pressed(unfolded);
+	}
+
+	if (unfolded) {
+		updating = true;
+
+		if (!container) {
+			container = memnew(PanelContainer);
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			container->add_child(vbox);
+
+			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			vbox->add_child(property_vbox);
+
+			for (int i = 0; i < fields.size(); i++) {
+				Dictionary d = fields[i];
+				StringName field_name = d["name"];
+				Variant::Type field_type = (Variant::Type)(int)d["type"];
+				PropertyHint field_hint = (PropertyHint)(int)d["hint"];
+				String field_hint_string = d["hint_string"];
+				uint32_t field_usage = d["usage"];
+
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				property_vbox->add_child(hbox);
+
+				EditorProperty *prop = EditorInspector::instantiate_property_editor(this, field_type, "", field_hint, field_hint_string, field_usage);
+				if (!prop) {
+					prop = memnew(EditorPropertyNil);
+				}
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				hbox->add_child(prop);
+
+				String prop_name = "indices/" + itos(i);
+				prop->set_object_and_property(object.ptr(), prop_name);
+				prop->set_label(field_name);
+				prop->set_selectable(false);
+				prop->set_use_folding(is_using_folding());
+				prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyStruct::_property_changed));
+				prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyStruct::_object_id_selected));
+				if (field_type == Variant::OBJECT) {
+					prop->connect("resource_selected", callable_mp(this, &EditorPropertyStruct::_resource_selected), CONNECT_DEFERRED);
+				}
+				prop->set_read_only(is_read_only());
+
+				Slot slot;
+				slot.prop = prop;
+				slot.prop_name = prop_name;
+				slot.index = i;
+				slots.push_back(slot);
+			}
+		}
+
+		for (Slot &slot : slots) {
+			slot.prop->update_property();
+		}
+
+		updating = false;
+	} else {
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			container = nullptr;
+			slots.clear();
+		}
+	}
+}
+
+void EditorPropertyStruct::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyStruct::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
+bool EditorPropertyStruct::is_colored(ColorationMode p_mode) {
+	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
+void EditorPropertyStruct::_notification(int p_what) {
+}
+
+void EditorPropertyStruct::setup(const String &p_hint_string) {
+	int sep = p_hint_string.find("::");
+	if (sep != -1) {
+		struct_path = p_hint_string.substr(0, sep);
+		struct_name = p_hint_string.substr(sep + 2);
+		Ref<Script> scr = ResourceLoader::load(struct_path);
+		if (scr.is_valid()) {
+			HashMap<StringName, Variant> constants;
+			scr->get_constants(&constants);
+			if (constants.has(struct_name)) {
+				Variant struct_def = constants[struct_name];
+				if (struct_def.get_type() == Variant::OBJECT) {
+					fields = struct_def.call("get_fields");
+				}
+			}
+		}
+	}
+}
+
+EditorPropertyStruct::EditorPropertyStruct() {
+	object.instantiate();
+	edit = memnew(Button);
+	edit->set_accessibility_name(TTRC("Edit"));
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyStruct::_edit_pressed));
+	edit->set_toggle_mode(true);
+	add_child(edit);
+	add_focusable(edit);
+
+	container = nullptr;
+	has_borders = true;
+}
+
 ///////////////////// ARRAY ///////////////////////////
 
 void EditorPropertyArray::initialize_array(Variant &p_array) {

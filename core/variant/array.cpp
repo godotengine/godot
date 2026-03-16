@@ -994,12 +994,15 @@ void Array::set_named(const StringName &p_member, const Variant &p_value) {
 
 void Array::set_as_struct(const Vector<StringName> &p_names, const Vector<Variant> &p_default_values) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+	//ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL || is_struct(), "Type can only be set once.");
 
 	uint32_t p_member_count = p_names.size();
 	ERR_FAIL_COND_MSG(p_default_values.size() != p_member_count, "Struct member vectors must have the same size.");
+
+	// Added this, and commented out the line above as a temporary fix for the exporting.
+	_p->array.clear();
 
 	_p->struct_size = p_member_count;
 	if (p_member_count > 0) {
