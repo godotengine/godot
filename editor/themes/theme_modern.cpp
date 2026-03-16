@@ -2202,6 +2202,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 				style_audio_bus_effect_tree->set_border_color(p_config.extra_border_color_2);
 			}
 			p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusEffectsTree", style_audio_bus_effect_tree);
+			p_theme->set_constant("h_separation", "EditorAudioBusEffectsTree", 0);
 		}
 
 		// ForegroundPanel.
