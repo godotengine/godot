@@ -47,6 +47,7 @@
 #endif
 
 #include <emscripten/emscripten.h>
+
 #include <cstdlib>
 
 static OS_Web *os = nullptr;

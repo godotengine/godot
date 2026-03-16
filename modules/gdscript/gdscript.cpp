@@ -30,8 +30,6 @@
 
 #include "gdscript.h"
 
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
@@ -39,6 +37,9 @@
 #include "gdscript_rpc_callable.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -52,7 +53,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 

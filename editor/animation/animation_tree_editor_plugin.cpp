@@ -30,12 +30,12 @@
 
 #include "animation_tree_editor_plugin.h"
 
-#include "animation_blend_space_1d_editor.h"
-#include "animation_blend_space_2d_editor.h"
-#include "animation_blend_tree_editor_plugin.h"
-#include "animation_state_machine_editor.h"
 #include "core/object/callable_mp.h"
 #include "core/string/string_buffer.h"
+#include "editor/animation/animation_blend_space_1d_editor.h"
+#include "editor/animation/animation_blend_space_2d_editor.h"
+#include "editor/animation/animation_blend_tree_editor_plugin.h"
+#include "editor/animation/animation_state_machine_editor.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"

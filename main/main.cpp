@@ -63,8 +63,6 @@
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
 #include "main/splash.gen.h"
-#include "modules/register_module_types.h"
-#include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/property_list_helper.h"
@@ -83,6 +81,9 @@
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
 #include "servers/text/text_server_dummy.h"
+
+#include "modules/register_module_types.h"
+#include "platform/register_platform_apis.h"
 
 // 2D
 #ifndef NAVIGATION_2D_DISABLED

@@ -41,7 +41,7 @@
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 namespace GLES3 {
 

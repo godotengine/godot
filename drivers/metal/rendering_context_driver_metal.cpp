@@ -37,10 +37,9 @@
 #include "core/os/os.h"
 #include "core/templates/sort_array.h"
 
+#include <objc/message.h>
 #include <os/log.h>
 #include <os/signpost.h>
-
-#include <objc/message.h>
 
 #pragma mark - Logging
 

@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "font.h"
 #include "scene/property_list_helper.h"
+#include "scene/resources/font.h"
 
 /*************************************************************************/
 

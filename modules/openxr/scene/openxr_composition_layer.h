@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <openxr/openxr.h>
-
 #include "scene/3d/node_3d.h"
+
+#include <openxr/openxr.h>
 
 class JavaObject;
 class MeshInstance3D;

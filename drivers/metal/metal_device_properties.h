@@ -53,6 +53,7 @@
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
+
 #include <cstddef>
 
 /** The buffer index to use for vertex content. */

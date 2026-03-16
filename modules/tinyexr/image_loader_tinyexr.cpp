@@ -30,11 +30,11 @@
 
 #include "image_loader_tinyexr.h"
 
-#include <zlib.h> // Should come before including tinyexr.
-
-#include "thirdparty/tinyexr/tinyexr.h"
-
 #include "core/io/file_access_memory.h"
+
+#include <zlib.h>
+// zlib should come before including tinyexr.
+#include <thirdparty/tinyexr/tinyexr.h>
 
 Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	Vector<uint8_t> src_image;

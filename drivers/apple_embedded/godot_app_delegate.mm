@@ -31,6 +31,7 @@
 #import "godot_app_delegate.h"
 
 #import "app_delegate_service.h"
+
 #include "core/typedefs.h"
 
 @implementation GDTApplicationDelegate

@@ -52,8 +52,7 @@
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_gltf.h"
-
-#include "core/config/engine.h"
+//
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"

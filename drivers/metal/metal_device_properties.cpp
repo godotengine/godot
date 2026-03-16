@@ -58,7 +58,6 @@
 #include <MetalFX/MetalFX.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_msl.hpp>
-
 #include <unistd.h>
 
 // Common scaling multipliers.

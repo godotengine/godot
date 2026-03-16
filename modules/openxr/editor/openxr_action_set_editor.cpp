@@ -30,12 +30,13 @@
 
 #include "openxr_action_set_editor.h"
 
+#include "openxr_action_editor.h"
+
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
-#include "openxr_action_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"

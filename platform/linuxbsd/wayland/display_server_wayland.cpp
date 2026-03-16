@@ -59,12 +59,12 @@
 
 #ifdef GLES3_ENABLED
 #include "detect_prime_egl.h"
+#include "wayland/egl_manager_wayland.h"
+#include "wayland/egl_manager_wayland_gles.h"
 
 #include "core/io/file_access.h"
 #include "drivers/egl/egl_manager.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "wayland/egl_manager_wayland.h"
-#include "wayland/egl_manager_wayland_gles.h"
 #endif
 
 #ifdef DBUS_ENABLED

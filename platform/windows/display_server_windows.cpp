@@ -64,6 +64,7 @@
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
+
 #include <dxgi1_6.h>
 #endif
 #if defined(GLES3_ENABLED)

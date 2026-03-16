@@ -52,10 +52,10 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
-#include <io.h>
-
-#include <shobjidl.h>
 #include <windows.h>
+
+#include <io.h>
+#include <shobjidl.h>
 #include <windowsx.h>
 
 // WinTab API

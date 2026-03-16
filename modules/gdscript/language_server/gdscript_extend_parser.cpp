@@ -32,9 +32,10 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
+
+#include "editor/settings/editor_settings.h"
 
 int get_indent_size() {
 	if (EditorSettings::get_singleton()) {

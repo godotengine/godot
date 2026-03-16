@@ -35,7 +35,7 @@
 #include "drivers/gles3/effects/glow.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 class RenderSceneBuffersGLES3 : public RenderSceneBuffers {
 	GDCLASS(RenderSceneBuffersGLES3, RenderSceneBuffers);

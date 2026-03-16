@@ -36,6 +36,7 @@
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
+
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;

@@ -30,7 +30,7 @@
 
 #include "color.h"
 
-#include "color_names.inc"
+#include "core/math/color_names.inc"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"

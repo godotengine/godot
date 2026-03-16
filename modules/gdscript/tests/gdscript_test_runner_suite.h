@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "gdscript_test_runner.h"
-
 #include "../gdscript_cache.h"
+#include "gdscript_test_runner.h"
 
 #include "core/io/file_access.h"
 #include "tests/test_macros.h"

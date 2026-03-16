@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "core/object/property_info.h"
 #include "core/variant/variant.h"
-#include "property_info.h"
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,

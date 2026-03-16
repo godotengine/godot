@@ -50,6 +50,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
+
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 

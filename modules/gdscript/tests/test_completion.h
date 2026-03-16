@@ -32,8 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "tests/test_macros.h"
-
 #include "../gdscript.h"
 #include "gdscript_test_runner.h"
 
@@ -47,6 +45,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
+#include "tests/test_macros.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 

@@ -34,7 +34,7 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-
+// Include winsock2 before iphlpapi.
 #include <iphlpapi.h>
 
 static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {

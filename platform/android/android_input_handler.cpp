@@ -30,10 +30,10 @@
 
 #include "android_input_handler.h"
 
-#include "core/input/input.h"
-
 #include "android_keys_utils.h"
 #include "display_server_android.h"
+
+#include "core/input/input.h"
 
 void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_event) {
 	switch (p_event.type) {

@@ -31,9 +31,10 @@
 #pragma once
 
 #include "2d/nav_base_iteration_2d.h"
-#include "core/os/rw_lock.h"
 #include "nav_base_2d.h"
 #include "nav_utils_2d.h"
+
+#include "core/os/rw_lock.h"
 
 class NavLinkIteration2D : public NavBaseIteration2D {
 	GDCLASS(NavLinkIteration2D, NavBaseIteration2D);

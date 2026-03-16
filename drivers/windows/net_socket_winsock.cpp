@@ -32,10 +32,10 @@
 
 #include "net_socket_winsock.h"
 
+#include <mswsock.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#include <mswsock.h>
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)

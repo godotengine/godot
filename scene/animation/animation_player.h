@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "animation_mixer.h"
+#include "scene/animation/animation_mixer.h"
 #include "scene/resources/animation.h"
 
 class AnimationPlayer : public AnimationMixer {

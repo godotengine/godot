@@ -36,9 +36,7 @@
 #include <drivers/d3d12/godot_d3d12ma.h>
 #include <drivers/d3d12/godot_d3dx12.h>
 #include <drivers/d3d12/godot_nir.h>
-
 #include <wrl/client.h>
-
 #include <zlib.h>
 
 extern "C" {
