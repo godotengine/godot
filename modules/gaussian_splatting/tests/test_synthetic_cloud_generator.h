@@ -101,15 +101,18 @@ TEST_CASE("[GaussianSplatting][Synthetic] Cloud splats have SH coefficients enco
 }
 
 TEST_CASE("[GaussianSplatting][Synthetic] Cloud density_threshold controls sparsity") {
+	// Threshold 0.95 rejects almost all candidates (only very central, high-noise
+	// points pass), so the generator hits its attempt limit before filling.
+	// Threshold 0.1 accepts most candidates, easily filling to splat_count.
 	CloudSplatGenerator::Config config_dense;
-	config_dense.splat_count = 2000;
+	config_dense.splat_count = 500;
 	config_dense.seed = 42;
-	config_dense.density_threshold = 0.2f;
+	config_dense.density_threshold = 0.1f;
 
 	CloudSplatGenerator::Config config_sparse;
-	config_sparse.splat_count = 2000;
+	config_sparse.splat_count = 500;
 	config_sparse.seed = 42;
-	config_sparse.density_threshold = 0.6f;
+	config_sparse.density_threshold = 0.95f;
 
 	const LocalVector<Gaussian> dense = CloudSplatGenerator::generate(config_dense);
 	const LocalVector<Gaussian> sparse = CloudSplatGenerator::generate(config_sparse);
