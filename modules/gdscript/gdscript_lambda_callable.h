@@ -59,6 +59,7 @@ public:
 	ObjectID get_object() const override;
 	StringName get_method() const override;
 	int get_argument_count(bool &r_is_valid) const override;
+	bool get_method_info(MethodInfo *r_info, Variant *r_return_script = nullptr) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	GDScriptLambdaCallable(GDScriptLambdaCallable &) = delete;
@@ -88,6 +89,7 @@ public:
 	ObjectID get_object() const override;
 	StringName get_method() const override;
 	int get_argument_count(bool &r_is_valid) const override;
+	bool get_method_info(MethodInfo *r_info, Variant *r_return_script = nullptr) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	GDScriptLambdaSelfCallable(GDScriptLambdaSelfCallable &) = delete;
