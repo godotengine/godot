@@ -32,15 +32,15 @@
 
 #include "servers/physics_3d/physics_server_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/JobSystem.h"
-#include "Jolt/Core/TempAllocator.h"
-#include "Jolt/Physics/Body/BodyInterface.h"
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h"
-#include "Jolt/Physics/Collision/NarrowPhaseQuery.h"
-#include "Jolt/Physics/Constraints/Constraint.h"
-#include "Jolt/Physics/PhysicsSystem.h"
+#include <Jolt/Core/JobSystem.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h>
+#include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
+#include <Jolt/Physics/Constraints/Constraint.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 
 class JoltArea3D;
 class JoltBody3D;

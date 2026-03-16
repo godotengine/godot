@@ -48,7 +48,6 @@
 #include "core/object/class_db.h"
 #include "core/object/object_id.h"
 #include "core/version.h"
-#include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"

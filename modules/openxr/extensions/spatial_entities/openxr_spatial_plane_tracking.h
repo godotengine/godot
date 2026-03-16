@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
-#include "openxr_spatial_entity_extension.h"
+
 #include "scene/resources/3d/shape_3d.h"
 
 // Plane tracking capability configuration

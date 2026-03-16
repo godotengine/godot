@@ -35,7 +35,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
-#include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;

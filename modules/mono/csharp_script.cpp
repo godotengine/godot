@@ -30,14 +30,18 @@
 
 #include "csharp_script.h"
 
+#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
-#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/path_utils.h"
 #include "utils/string_utils.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "managed_callable.h"
+#include "utils/path_utils.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -61,11 +65,14 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/signals_dock.h"
+#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.

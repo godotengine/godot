@@ -40,8 +40,6 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 
-#include "scene/scene_string_names.h"
-
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
 		return false;

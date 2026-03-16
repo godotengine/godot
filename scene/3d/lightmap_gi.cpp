@@ -44,10 +44,13 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
-#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For lightmapper_rd.
+
+#ifdef MODULE_LIGHTMAPPER_RD_ENABLED
+#include "servers/display/display_server.h"
+#endif
 
 #if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 #include "core/os/os.h"

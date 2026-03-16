@@ -30,6 +30,8 @@
 
 #include "camera_win.h"
 
+#include "servers/camera/camera_feed.h"
+
 ///@TODO sorry guys, I got about 80% through implementing this using DirectShow only
 // to find out Microsoft deprecated half the API and its replacement is as confusing
 // as they could make it. Joey suggested looking into libuvc which offers a more direct
