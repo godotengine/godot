@@ -49,6 +49,14 @@ protected:
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
+public:
+	enum ButtonAlignment {
+		BUTTON_ALIGNMENT_DEFAULT,
+		BUTTON_ALIGNMENT_LEFT,
+		BUTTON_ALIGNMENT_RIGHT,
+	};
+
+private:
 	SpinBoxLineEdit *line_edit = nullptr;
 	bool update_on_text_changed = false;
 	bool accepted = true;
@@ -81,6 +89,8 @@ class SpinBox : public Range {
 	double custom_arrow_step = 0.0;
 	bool custom_arrow_round = false;
 
+	ButtonAlignment button_alignment = BUTTON_ALIGNMENT_DEFAULT;
+
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
 	struct Drag {
@@ -104,6 +114,7 @@ class SpinBox : public Range {
 
 	inline void _compute_sizes();
 	inline int _get_widest_button_icon_width();
+	inline bool _are_buttons_on_left() const;
 
 	struct ThemeCache {
 		Ref<Texture2D> up_icon;
@@ -187,5 +198,10 @@ public:
 	void set_custom_arrow_round(bool p_round);
 	bool is_custom_arrow_rounding() const;
 
+	void set_button_alignment(ButtonAlignment p_alignment);
+	ButtonAlignment get_button_alignment() const;
+
 	SpinBox();
 };
+
+VARIANT_ENUM_CAST(SpinBox::ButtonAlignment);
