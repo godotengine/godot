@@ -24,6 +24,9 @@ JPH_NAMESPACE_BEGIN
 struct PhysicsSettings;
 class PhysicsUpdateContext;
 
+/// A contact constraint manager manages all contacts between two bodies
+///
+/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
 class JPH_EXPORT ContactConstraintManager : public NonCopyable
 {
 public:

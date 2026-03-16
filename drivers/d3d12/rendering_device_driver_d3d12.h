@@ -35,31 +35,10 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
-#include "rendering_shader_container_d3d12.h"
+#include "drivers/d3d12/rendering_shader_container_d3d12.h"
 #include "servers/rendering/rendering_device_driver.h"
 
-#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-
-#include <thirdparty/directx_headers/include/directx/d3dx12.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
+#include <drivers/d3d12/godot_d3dx12.h>
 
 #include <wrl/client.h>
 
@@ -93,6 +72,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	};
 
 	static const D3D12Format RD_TO_D3D12_FORMAT[RDD::DATA_FORMAT_MAX];
+	static const DXGI_COLOR_SPACE_TYPE RD_TO_DXGI_COLOR_SPACE_TYPE[RDD::COLOR_SPACE_MAX];
 
 	struct DeviceLimits {
 		uint64_t max_srvs_per_shader_stage = 0;
@@ -126,6 +106,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool depth_bounds_supported = false;
 	};
 
+	struct SamplerCapabilities {
+		bool aniso_filter_with_point_mip_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
@@ -141,6 +125,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
+	SamplerCapabilities sampler_capabilities;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
@@ -389,7 +374,8 @@ public:
 			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<RDD::MemoryAccessBarrier> p_memory_barriers,
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
-			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
+			VectorView<RDD::TextureBarrier> p_texture_barriers,
+			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) override final;
 
 private:
 	/****************/
@@ -548,10 +534,13 @@ private:
 		TightLocalVector<TextureInfo> render_targets_info;
 		TightLocalVector<FramebufferID> framebuffers;
 		RDD::DataFormat data_format = DATA_FORMAT_MAX;
+		RDD::ColorSpace color_space = COLOR_SPACE_MAX;
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
 	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
+	RenderPassID _swap_chain_create_render_pass(RDD::DataFormat p_format);
+	void _determine_swap_chain_format(SwapChain *p_swap_chain, DataFormat &r_format, ColorSpace &r_color_space);
 
 public:
 	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override;
@@ -559,6 +548,7 @@ public:
 	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override;
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
 
 	/*********************/
@@ -611,7 +601,7 @@ private:
 	struct ShaderInfo {
 		uint32_t dxil_push_constant_size = 0;
 		uint32_t nir_runtime_data_root_param_idx = UINT32_MAX;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 
 		struct UniformBindingInfo {
 			uint32_t stages = 0; // Actual shader stages using the uniform (0 if totally optimized out).
@@ -839,6 +829,31 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	// ---- ACCELERATION STRUCTURES ----
+
+	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) override final;
+	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
+	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
+	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;
+	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
+	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
+
+	// ----- PIPELINE -----
+
+	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	// ----- COMMANDS -----
+
+	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
+	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;
 
 	/*****************/
 	/**** QUERIES ****/

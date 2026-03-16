@@ -144,8 +144,8 @@ public:
 	void						ActivateBodiesInAABox(const AABox &inBox, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter);
 	void						DeactivateBody(const BodyID &inBodyID);
 	void						DeactivateBodies(const BodyID *inBodyIDs, int inNumber);
-	bool						IsActive(const BodyID &inBodyID) const;
-	void						ResetSleepTimer(const BodyID &inBodyID);
+	bool						IsActive(const BodyID &inBodyID) const; ///< Checks if a body is currently actively simulating
+	void						ResetSleepTimer(const BodyID &inBodyID); ///< @see Body::ResetSleepTimer
 	///@}
 
 	/// Create a two body constraint
@@ -178,8 +178,8 @@ public:
 
 	///@name Object layer of a body
 	///@{
-	void						SetObjectLayer(const BodyID &inBodyID, ObjectLayer inLayer);
-	ObjectLayer					GetObjectLayer(const BodyID &inBodyID) const;
+	void						SetObjectLayer(const BodyID &inBodyID, ObjectLayer inLayer); ///< The collision layer this body belongs to (determines if two objects can collide)
+	ObjectLayer					GetObjectLayer(const BodyID &inBodyID) const; ///< @see Body::GetObjectLayer
 	///@}
 
 	///@name Position and rotation of a body
@@ -189,11 +189,11 @@ public:
 	void						GetPositionAndRotation(const BodyID &inBodyID, RVec3 &outPosition, Quat &outRotation) const;
 	void						SetPosition(const BodyID &inBodyID, RVec3Arg inPosition, EActivation inActivationMode);
 	RVec3						GetPosition(const BodyID &inBodyID) const;
-	RVec3						GetCenterOfMassPosition(const BodyID &inBodyID) const;
+	RVec3						GetCenterOfMassPosition(const BodyID &inBodyID) const; ///< @see Body::GetCenterOfMassPosition
 	void						SetRotation(const BodyID &inBodyID, QuatArg inRotation, EActivation inActivationMode);
 	Quat						GetRotation(const BodyID &inBodyID) const;
-	RMat44						GetWorldTransform(const BodyID &inBodyID) const;
-	RMat44						GetCenterOfMassTransform(const BodyID &inBodyID) const;
+	RMat44						GetWorldTransform(const BodyID &inBodyID) const; ///< @see Body::GetWorldTransform
+	RMat44						GetCenterOfMassTransform(const BodyID &inBodyID) const; ///< @see Body::GetCenterOfMassTransform
 	///@}
 
 	/// Set velocity of body such that it will be positioned at inTargetPosition/Rotation in inDeltaTime seconds (will activate body if needed)
@@ -203,13 +203,13 @@ public:
 	/// Note that the linear velocity is the velocity of the center of mass, which may not coincide with the position of your object, to correct for this: \f$VelocityCOM = Velocity - AngularVelocity \times ShapeCOM\f$
 	void						SetLinearAndAngularVelocity(const BodyID &inBodyID, Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity);
 	void						GetLinearAndAngularVelocity(const BodyID &inBodyID, Vec3 &outLinearVelocity, Vec3 &outAngularVelocity) const;
-	void						SetLinearVelocity(const BodyID &inBodyID, Vec3Arg inLinearVelocity);
-	Vec3						GetLinearVelocity(const BodyID &inBodyID) const;
+	void						SetLinearVelocity(const BodyID &inBodyID, Vec3Arg inLinearVelocity); ///< @see Body::SetLinearVelocity
+	Vec3						GetLinearVelocity(const BodyID &inBodyID) const; ///< @see Body::GetLinearVelocity
 	void						AddLinearVelocity(const BodyID &inBodyID, Vec3Arg inLinearVelocity); ///< Add velocity to current velocity
 	void						AddLinearAndAngularVelocity(const BodyID &inBodyID, Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity); ///< Add linear and angular to current velocities
-	void						SetAngularVelocity(const BodyID &inBodyID, Vec3Arg inAngularVelocity);
-	Vec3						GetAngularVelocity(const BodyID &inBodyID) const;
-	Vec3						GetPointVelocity(const BodyID &inBodyID, RVec3Arg inPoint) const; ///< Velocity of point inPoint (in world space, e.g. on the surface of the body) of the body
+	void						SetAngularVelocity(const BodyID &inBodyID, Vec3Arg inAngularVelocity); ///< @see Body::SetAngularVelocity
+	Vec3						GetAngularVelocity(const BodyID &inBodyID) const; ///< @see Body::GetAngularVelocity
+	Vec3						GetPointVelocity(const BodyID &inBodyID, RVec3Arg inPoint) const; ///< Velocity of point inPoint (in world space, e.g. on the surface of the body) of the body. @see Body::GetPointVelocity
 
 	/// Set the complete motion state of a body.
 	/// Note that the linear velocity is the velocity of the center of mass, which may not coincide with the position of your object, to correct for this: \f$VelocityCOM = Velocity - AngularVelocity \times ShapeCOM\f$
@@ -217,86 +217,86 @@ public:
 
 	///@name Add forces to the body. Note that you should add a body to the physics system before applying forces or torques.
 	///@{
-	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, EActivation inActivationMode = EActivation::Activate); ///< See Body::AddForce
-	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, RVec3Arg inPoint, EActivation inActivationMode = EActivation::Activate); ///< Applied at inPoint
-	void						AddTorque(const BodyID &inBodyID, Vec3Arg inTorque, EActivation inActivationMode = EActivation::Activate); ///< See Body::AddTorque
+	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, EActivation inActivationMode = EActivation::Activate); ///< @see Body::AddForce
+	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, RVec3Arg inPoint, EActivation inActivationMode = EActivation::Activate); ///< Applied at world space position inPoint. @see Body::AddForce
+	void						AddTorque(const BodyID &inBodyID, Vec3Arg inTorque, EActivation inActivationMode = EActivation::Activate); ///< @see Body::AddTorque
 	void						AddForceAndTorque(const BodyID &inBodyID, Vec3Arg inForce, Vec3Arg inTorque, EActivation inActivationMode = EActivation::Activate); ///< A combination of Body::AddForce and Body::AddTorque
 	///@}
 
 	///@name Add an impulse to the body. Note that you should add a body to the physics system before applying impulses.
 	///@{
-	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse); ///< Applied at center of mass
-	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse, RVec3Arg inPoint); ///< Applied at inPoint
-	void						AddAngularImpulse(const BodyID &inBodyID, Vec3Arg inAngularImpulse);
-	bool						ApplyBuoyancyImpulse(const BodyID &inBodyID, RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime);
+	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse); ///< Applied at center of mass. @see Body::AddImpulse
+	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse, RVec3Arg inPoint); ///< Applied at world space position inPoint. @see Body::AddImpulse
+	void						AddAngularImpulse(const BodyID &inBodyID, Vec3Arg inAngularImpulse); ///< @see Body::AddAngularImpulse
+	bool						ApplyBuoyancyImpulse(const BodyID &inBodyID, RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime); ///< @see Body::ApplyBuoyancyImpulse
 	///@}
 
 	///@name Body type
 	///@{
-	EBodyType					GetBodyType(const BodyID &inBodyID) const;
+	EBodyType					GetBodyType(const BodyID &inBodyID) const; ///< @see Body::GetBodyType
 	///@}
 
 	///@name Body motion type
 	///@{
-	void						SetMotionType(const BodyID &inBodyID, EMotionType inMotionType, EActivation inActivationMode);
-	EMotionType					GetMotionType(const BodyID &inBodyID) const;
+	void						SetMotionType(const BodyID &inBodyID, EMotionType inMotionType, EActivation inActivationMode); ///< @see Body::SetMotionType
+	EMotionType					GetMotionType(const BodyID &inBodyID) const; ///< @see Body::GetMotionType
 	///@}
 
 	///@name Body motion quality
 	///@{
-	void						SetMotionQuality(const BodyID &inBodyID, EMotionQuality inMotionQuality);
-	EMotionQuality				GetMotionQuality(const BodyID &inBodyID) const;
+	void						SetMotionQuality(const BodyID &inBodyID, EMotionQuality inMotionQuality); ///< How well it detects collisions when it has a high velocity
+	EMotionQuality				GetMotionQuality(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMotionQuality
 	///@}
 
 	/// Get inverse inertia tensor in world space
-	Mat44						GetInverseInertia(const BodyID &inBodyID) const;
+	Mat44						GetInverseInertia(const BodyID &inBodyID) const; ///< @see Body::GetInverseInertia
 
 	///@name Restitution
 	///@{
-	void						SetRestitution(const BodyID &inBodyID, float inRestitution);
-	float						GetRestitution(const BodyID &inBodyID) const;
+	void						SetRestitution(const BodyID &inBodyID, float inRestitution); ///< @see Body::SetRestitution
+	float						GetRestitution(const BodyID &inBodyID) const; ///< @see Body::GetRestitution
 	///@}
 
 	///@name Friction
 	///@{
-	void						SetFriction(const BodyID &inBodyID, float inFriction);
-	float						GetFriction(const BodyID &inBodyID) const;
+	void						SetFriction(const BodyID &inBodyID, float inFriction); ///< @see Body::SetFriction
+	float						GetFriction(const BodyID &inBodyID) const; ///< @see Body::GetFriction
 	///@}
 
 	///@name Gravity factor
 	///@{
-	void						SetGravityFactor(const BodyID &inBodyID, float inGravityFactor);
-	float						GetGravityFactor(const BodyID &inBodyID) const;
+	void						SetGravityFactor(const BodyID &inBodyID, float inGravityFactor); ///< @see MotionProperties::SetGravityFactor
+	float						GetGravityFactor(const BodyID &inBodyID) const; ///< @see MotionProperties::GetGravityFactor
 	///@}
 
     ///@name Max linear velocity
     ///@{
-    void						SetMaxLinearVelocity(const BodyID &inBodyID, float inLinearVelocity);
-    float						GetMaxLinearVelocity(const BodyID &inBodyID) const;
+    void						SetMaxLinearVelocity(const BodyID &inBodyID, float inLinearVelocity); ///< @see MotionProperties::SetMaxLinearVelocity
+    float						GetMaxLinearVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxLinearVelocity
     ///@}
 
     ///@name Max angular velocity
     ///@{
-    void						SetMaxAngularVelocity(const BodyID &inBodyID, float inAngularVelocity);
-    float						GetMaxAngularVelocity(const BodyID &inBodyID) const;
+    void						SetMaxAngularVelocity(const BodyID &inBodyID, float inAngularVelocity); ///< @see MotionProperties::SetMaxAngularVelocity
+    float						GetMaxAngularVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxAngularVelocity
     ///@}
 
 	///@name Manifold reduction
 	///@{
-	void						SetUseManifoldReduction(const BodyID &inBodyID, bool inUseReduction);
-	bool						GetUseManifoldReduction(const BodyID &inBodyID) const;
+	void						SetUseManifoldReduction(const BodyID &inBodyID, bool inUseReduction); ///< @see Body::SetUseManifoldReduction
+	bool						GetUseManifoldReduction(const BodyID &inBodyID) const; ///< @see Body::GetUseManifoldReduction
 	///@}
 
 	///@name Sensor
 	///@{
-	void						SetIsSensor(const BodyID &inBodyID, bool inIsSensor);
-	bool						IsSensor(const BodyID &inBodyID) const;
+	void						SetIsSensor(const BodyID &inBodyID, bool inIsSensor); ///< @see Body::SetIsSensor
+	bool						IsSensor(const BodyID &inBodyID) const; ///< @see Body::IsSensor
 	///@}
 
 	///@name Collision group
 	///@{
-	void						SetCollisionGroup(const BodyID &inBodyID, const CollisionGroup &inCollisionGroup);
-	const CollisionGroup &		GetCollisionGroup(const BodyID &inBodyID) const;
+	void						SetCollisionGroup(const BodyID &inBodyID, const CollisionGroup &inCollisionGroup); ///< @see Body::SetCollisionGroup
+	const CollisionGroup &		GetCollisionGroup(const BodyID &inBodyID) const; ///< @see Body::GetCollisionGroup
 	///@}
 
 	/// Get transform and shape for this body, used to perform collision detection

@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
+#include "core/os/process_id.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -43,6 +44,37 @@
 class MainLoop;
 
 class OS {
+public:
+	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
+	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
+
+	enum RenderThreadMode {
+		RENDER_THREAD_UNSAFE,
+		RENDER_THREAD_SAFE,
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
+	};
+
+	enum RenderingSource {
+		RENDERING_SOURCE_DEFAULT,
+		RENDERING_SOURCE_PROJECT_SETTING,
+		RENDERING_SOURCE_COMMANDLINE,
+		RENDERING_SOURCE_FALLBACK
+	};
+
+	enum PlatformString {
+		PLATFORM_STRING_FILE_MANAGER_OPEN,
+		PLATFORM_STRING_FILE_MANAGER_SHOW,
+	};
+
+private:
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -71,7 +103,9 @@ class OS {
 	List<String> restart_commandline;
 
 	String _current_rendering_driver_name;
+	RenderingSource _current_rendering_driver_name_source = RENDERING_SOURCE_DEFAULT;
 	String _current_rendering_method;
+	RenderingSource _current_rendering_method_source = RENDERING_SOURCE_DEFAULT;
 	bool _is_gles_over_gl = false;
 
 	RemoteFilesystemClient default_rfs;
@@ -85,25 +119,6 @@ class OS {
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
-public:
-	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
-	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
-
-	enum RenderThreadMode {
-		RENDER_THREAD_UNSAFE,
-		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD,
-	};
-
-	enum StdHandleType {
-		STD_HANDLE_INVALID,
-		STD_HANDLE_CONSOLE,
-		STD_HANDLE_FILE,
-		STD_HANDLE_PIPE,
-		STD_HANDLE_UNKNOWN,
-	};
-
-protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
 	friend int test_main(int argc, char *argv[]);
@@ -128,18 +143,24 @@ protected:
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
-	typedef int64_t ProcessID;
-
 	static OS *get_singleton();
 
 	static bool prefer_meta_over_ctrl();
 
-	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
+	void set_current_rendering_driver_name(const String &p_driver_name, RenderingSource p_source) {
+		_current_rendering_driver_name = p_driver_name;
+		_current_rendering_driver_name_source = p_source;
+	}
+	void set_current_rendering_method(const String &p_name, RenderingSource p_source) {
+		_current_rendering_method = p_name;
+		_current_rendering_method_source = p_source;
+	}
 	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
+	RenderingSource get_current_rendering_driver_name_source() const { return _current_rendering_driver_name_source; }
+	RenderingSource get_current_rendering_method_source() const { return _current_rendering_method_source; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
@@ -218,8 +239,8 @@ public:
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
 	virtual String get_version_alias() const { return get_version(); }
-	virtual List<String> get_cmdline_args() const { return _cmdline; }
-	virtual List<String> get_cmdline_user_args() const { return _user_args; }
+	virtual List<String> get_cmdline_args() const { return List<String>(_cmdline); }
+	virtual List<String> get_cmdline_user_args() const { return List<String>(_user_args); }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 
@@ -374,6 +395,17 @@ public:
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
+
+	virtual String get_platform_string(PlatformString p_platform_string) const {
+		switch (p_platform_string) {
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in File Manager");
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in File Manager");
+			default:
+				ERR_FAIL_V_MSG("", vformat("Couldn't find a string for platform string: %d.", p_platform_string));
+		}
+	}
 
 #ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.

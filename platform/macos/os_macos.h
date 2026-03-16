@@ -32,7 +32,8 @@
 
 #include "crash_handler_macos.h"
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
@@ -165,6 +166,17 @@ public:
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	virtual void run() = 0;
+
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Finder");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Finder");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
 
 	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };

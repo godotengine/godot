@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
-#include "openxr_util.h"
-#include "util.h"
+
+#include <openxr/openxr.h>
 
 // Base class for XrStructureType based headers
 class OpenXRStructureBase : public RefCounted {

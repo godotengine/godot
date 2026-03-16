@@ -59,8 +59,10 @@
 #include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
+#include "wayland/protocol/pointer_warp.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
+#include "wayland/protocol/color_management.gen.h"
 #include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
 #include "wayland/protocol/text_input.gen.h"
@@ -86,13 +88,27 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "core/input/input_event.h"
+#include "core/os/process_id.h"
 #include "core/os/thread.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #include "wayland_embedder.h"
 
+class Image;
+
 class WaylandThread {
 public:
+	struct ColorProfile {
+		uint32_t named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+		uint32_t named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+
+		// The luminances the compositor recommends.
+		float target_min_luminance = 0;
+		float target_max_luminance = 0;
+		float reference_luminance = 0;
+	};
+
 	// Messages used for exchanging information between Godot's and Wayland's thread.
 	class Message : public RefCounted {
 		GDSOFTCLASS(Message, RefCounted);
@@ -106,7 +122,7 @@ public:
 		GDSOFTCLASS(WindowMessage, Message);
 
 	public:
-		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID id = DisplayServerEnums::INVALID_WINDOW_ID;
 	};
 
 	// Message data for window rect changes.
@@ -123,7 +139,7 @@ public:
 		GDSOFTCLASS(WindowEventMessage, WindowMessage);
 
 	public:
-		DisplayServer::WindowEvent event;
+		DisplayServerEnums::WindowEvent event;
 	};
 
 	class InputEventMessage : public Message {
@@ -153,6 +169,14 @@ public:
 
 	public:
 		String text;
+	};
+
+	class ColorProfileMessage : public WindowMessage {
+		GDSOFTCLASS(ColorProfileMessage, WindowMessage);
+
+	public:
+		WaylandThread *wayland_thread;
+		ColorProfile color_profile;
 	};
 
 	struct RegistryState {
@@ -190,6 +214,9 @@ public:
 
 		struct wp_viewporter *wp_viewporter = nullptr;
 		uint32_t wp_viewporter_name = 0;
+
+		struct wp_color_manager_v1 *wp_color_manager = nullptr;
+		uint32_t wp_color_manager_name = 0;
 
 		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
 		uint32_t wp_fractional_scale_manager_name = 0;
@@ -230,6 +257,9 @@ public:
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
 
+		struct wp_pointer_warp_v1 *wp_pointer_warp = nullptr;
+		uint32_t wp_pointer_warp_name = 0;
+
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
@@ -242,11 +272,13 @@ public:
 	// TODO: Make private?
 
 	struct WindowState {
-		DisplayServer::WindowID id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID parent_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID parent_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		Rect2i rect;
-		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
+		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
+
+		bool ready = false; // Is configured or otherwise ready to be mapped.
 
 		// Toplevel states.
 		bool maximized = false; // MUST obey configure size.
@@ -315,6 +347,9 @@ public:
 		// What the compositor is recommending us.
 		double preferred_fractional_scale = 0;
 
+		struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback = nullptr;
+		struct wp_color_management_surface_v1 *wp_color_management_surface = nullptr;
+
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
@@ -379,8 +414,8 @@ public:
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
 
-		DisplayServer::WindowID pointed_id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID last_pointed_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID last_pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -414,8 +449,8 @@ public:
 		uint64_t button_time = 0;
 		uint64_t motion_time = 0;
 
-		DisplayServer::WindowID proximal_id = DisplayServer::INVALID_WINDOW_ID;
-		DisplayServer::WindowID last_proximal_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID proximal_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID last_proximal_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		uint32_t proximity_serial = 0;
 	};
 
@@ -478,7 +513,7 @@ public:
 		struct wl_keyboard *wl_keyboard = nullptr;
 
 		// For key events.
-		DisplayServer::WindowID focused_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID focused_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
@@ -517,7 +552,7 @@ public:
 		struct wl_data_device *wl_data_device = nullptr;
 
 		// Drag and drop.
-		DisplayServer::WindowID dnd_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
 		uint32_t dnd_enter_serial = 0;
 
@@ -542,7 +577,7 @@ public:
 
 		// IME.
 		struct zwp_text_input_v3 *wp_text_input = nullptr;
-		DisplayServer::WindowID ime_window_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID ime_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		bool ime_enabled = false;
 		bool ime_active = false;
 		String ime_text;
@@ -559,13 +594,22 @@ public:
 		Point2i hotspot;
 	};
 
+	struct ColorManagementState {
+		// Compositor features.
+		uint32_t supported_render_intents = 0;
+		uint32_t supported_render_feature = 0;
+		uint32_t supported_transfer_function = 0;
+		uint32_t supported_primaries = 0;
+		bool supports_hdr = false;
+	};
+
 	struct EmbeddingCompositorState {
 		LocalVector<struct godot_embedded_client *> clients;
 
 		// Only a client per PID can create a window.
 		HashMap<int, struct godot_embedded_client *> mapped_clients;
 
-		OS::ProcessID focused_pid = -1;
+		ProcessID focused_pid = -1;
 	};
 
 	struct EmbeddedClientState {
@@ -589,7 +633,7 @@ private:
 	Thread events_thread;
 	ThreadData thread_data;
 
-	HashMap<DisplayServer::WindowID, WindowState> windows;
+	HashMap<DisplayServerEnums::WindowID, WindowState> windows;
 
 	List<Ref<Message>> messages;
 
@@ -607,34 +651,34 @@ private:
 	int cursor_scale = 1;
 
 	// Use cursor-shape-v1 protocol if the compositor supports it.
-	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServer::CURSOR_MAX] = {
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //CURSOR_ARROW
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //CURSOR_IBEAM
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //CURSOR_POINTING_HAND
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //CURSOR_CROSS
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //CURSOR_WAIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //CURSOR_BUSY
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //CURSOR_DRAG
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //CURSOR_CAN_DROP
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //CURSOR_FORBIDDEN
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //CURSOR_VSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //CURSOR_HSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //CURSOR_BDIAGSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //CURSOR_FDIAGSIZE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //CURSOR_MOVE
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //CURSOR_VSPLIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //CURSOR_HSPLIT
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //CURSOR_HELP
+	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServerEnums::CURSOR_MAX] = {
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //DisplayServerEnums::CURSOR_ARROW
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //DisplayServerEnums::CURSOR_IBEAM
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //DisplayServerEnums::CURSOR_POINTING_HAND
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //DisplayServerEnums::CURSOR_CROSS
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //DisplayServerEnums::CURSOR_WAIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //DisplayServerEnums::CURSOR_BUSY
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //DisplayServerEnums::CURSOR_DRAG
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //DisplayServerEnums::CURSOR_CAN_DROP
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //DisplayServerEnums::CURSOR_FORBIDDEN
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //DisplayServerEnums::CURSOR_VSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //DisplayServerEnums::CURSOR_HSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //DisplayServerEnums::CURSOR_BDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //DisplayServerEnums::CURSOR_FDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //DisplayServerEnums::CURSOR_MOVE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //DisplayServerEnums::CURSOR_VSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //DisplayServerEnums::CURSOR_HSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //DisplayServerEnums::CURSOR_HELP
 	};
 
 	// Fallback to reading $XCURSOR and system themes if the compositor does not.
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
-	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
+	struct wl_cursor *wl_cursors[DisplayServerEnums::CURSOR_MAX] = {};
 
 	// User-defined cursor overrides. Take precedence over standard and wl cursors.
-	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
+	HashMap<DisplayServerEnums::CursorShape, CustomCursor> custom_cursors;
 
-	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
+	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CURSOR_ARROW;
 	bool cursor_visible = true;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
@@ -736,6 +780,31 @@ private:
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
+	static void _wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent);
+	static void _wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature);
+	static void _wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf);
+	static void _wp_color_manager_on_supported_primaries_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t primaries);
+	static void _wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1);
+
+	static void _wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity);
+	static void _wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_high, uint32_t identity_low);
+
+	static void _wp_image_description_on_failed(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t cause, const char *msg);
+	static void _wp_image_description_on_ready(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity);
+	static void _wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity_high, uint32_t indentity_low);
+
+	static void _wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1);
+	static void _wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size);
+	static void _wp_image_description_info_on_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y);
+	static void _wp_image_description_info_on_primaries_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t primaries);
+	static void _wp_image_description_info_on_tf_power(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t eexp);
+	static void _wp_image_description_info_on_tf_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t tf);
+	static void _wp_image_description_info_on_luminances(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum);
+	static void _wp_image_description_info_on_target_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y);
+	static void _wp_image_description_info_on_target_luminance(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum);
+	static void _wp_image_description_info_on_target_max_cll(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_cll);
+	static void _wp_image_description_info_on_target_max_fall(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_fall);
+
 	static void _wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale);
 
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
@@ -904,6 +973,39 @@ private:
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct wp_color_manager_v1_listener wp_color_manager_listener = {
+		.supported_intent = _wp_color_manager_on_supported_intent,
+		.supported_feature = _wp_color_manager_on_supported_feature,
+		.supported_tf_named = _wp_color_manager_on_supported_tf_named,
+		.supported_primaries_named = _wp_color_manager_on_supported_primaries_named,
+		.done = _wp_color_manager_on_done,
+	};
+
+	static constexpr struct wp_color_management_surface_feedback_v1_listener wp_color_management_surface_feedback_listener = {
+		.preferred_changed = _wp_color_management_surface_feedback_on_preferred_changed,
+		.preferred_changed2 = _wp_color_management_surface_feedback_on_preferred_changed2,
+	};
+
+	static constexpr struct wp_image_description_v1_listener wp_image_description_listener = {
+		.failed = _wp_image_description_on_failed,
+		.ready = _wp_image_description_on_ready,
+		.ready2 = _wp_image_description_on_ready2,
+	};
+
+	static constexpr struct wp_image_description_info_v1_listener wp_image_description_info_listener = {
+		.done = _wp_image_description_info_on_done,
+		.icc_file = _wp_image_description_info_on_icc_file,
+		.primaries = _wp_image_description_info_on_primaries,
+		.primaries_named = _wp_image_description_info_on_primaries_named,
+		.tf_power = _wp_image_description_info_on_tf_power,
+		.tf_named = _wp_image_description_info_on_tf_named,
+		.luminances = _wp_image_description_info_on_luminances,
+		.target_primaries = _wp_image_description_info_on_target_primaries,
+		.target_luminance = _wp_image_description_info_on_target_luminance,
+		.target_max_cll = _wp_image_description_info_on_target_max_cll,
+		.target_max_fall = _wp_image_description_info_on_target_max_fall,
+	};
+
 	static constexpr struct wp_fractional_scale_v1_listener wp_fractional_scale_listener = {
 		.preferred_scale = _wp_fractional_scale_on_preferred_scale,
 	};
@@ -1049,6 +1151,9 @@ private:
 	static Vector<uint8_t> _wl_data_offer_read(struct wl_display *wl_display, const char *p_mime, struct wl_data_offer *wl_data_offer);
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
+	// Crashes if there's an error in the display and crashes if so.
+	static void _wl_display_check_error(struct wl_display *wl_display);
+
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
@@ -1079,12 +1184,14 @@ public:
 	static OfferState *wl_data_offer_get_offer_state(struct wl_data_offer *p_offer);
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
+	static ColorManagementState *wp_color_manager_get_state(wp_color_manager_v1 *p_color_manager);
 
 	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
+	void seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
@@ -1105,60 +1212,64 @@ public:
 
 	void set_icon(const Ref<Image> &p_icon);
 
-	void window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id = DisplayServer::INVALID_WINDOW_ID);
-	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
-	void window_destroy(DisplayServer::WindowID p_window_Id);
+	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
+	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
+	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
 
-	void window_set_parent(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id);
+	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
-	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
-	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
-	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
-	Size2i window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
+	struct wl_surface *window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const;
+	WindowState *window_get_state(DisplayServerEnums::WindowID p_window_id);
+	const WindowState *window_get_state(DisplayServerEnums::WindowID p_window_id) const;
+	Size2i window_set_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
 
-	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
+	void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window);
 
-	void window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
-	void window_set_min_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
+	void window_set_max_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
+	void window_set_min_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size);
 
-	bool window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode) const;
-	void window_try_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode);
-	DisplayServer::WindowMode window_get_mode(DisplayServer::WindowID p_window_id) const;
+	bool window_can_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode) const;
+	void window_try_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode);
+	DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id) const;
 
-	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
-	void window_set_title(DisplayServer::WindowID p_window_id, const String &p_title);
-	void window_set_app_id(DisplayServer::WindowID p_window_id, const String &p_app_id);
+	void window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless);
+	void window_set_title(DisplayServerEnums::WindowID p_window_id, const String &p_title);
+	void window_set_app_id(DisplayServerEnums::WindowID p_window_id, const String &p_app_id);
 
-	bool window_is_focused(DisplayServer::WindowID p_window_id);
+	bool window_is_focused(DisplayServerEnums::WindowID p_window_id);
 
 	// Optional - requires xdg_activation_v1
-	void window_request_attention(DisplayServer::WindowID p_window_id);
+	void window_request_attention(DisplayServerEnums::WindowID p_window_id);
 
-	void window_start_drag(DisplayServer::WindowID p_window_id);
+	void window_start_drag(DisplayServerEnums::WindowID p_window_id);
 
 	// Optional - require idle_inhibit_unstable_v1
-	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
-	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
+	void window_set_idle_inhibition(DisplayServerEnums::WindowID p_window_id, bool p_enable);
+	bool window_get_idle_inhibition(DisplayServerEnums::WindowID p_window_id) const;
+
+	// Optional - require wp_color_management_v1
+	void window_set_color_profile(DisplayServerEnums::WindowID p_window_id, ColorProfile p_profile);
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
+	void pointer_warp(const Point2i &p_to);
 	PointerConstraint pointer_get_constraint() const;
-	DisplayServer::WindowID pointer_get_pointed_window_id() const;
-	DisplayServer::WindowID pointer_get_last_pointed_window_id() const;
+	DisplayServerEnums::WindowID pointer_get_pointed_window_id() const;
+	DisplayServerEnums::WindowID pointer_get_last_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
 	void cursor_set_visible(bool p_visible);
-	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_set_shape(DisplayServerEnums::CursorShape p_cursor_shape);
 
-	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
-	void cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
-	void cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_set_custom_shape(DisplayServerEnums::CursorShape p_cursor_shape);
+	void cursor_shape_set_custom_image(DisplayServerEnums::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
+	void cursor_shape_clear_custom_image(DisplayServerEnums::CursorShape p_cursor_shape);
 
-	void window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id);
-	void window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id);
+	void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window_id);
+	void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window_id);
 
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout_index() const;
@@ -1181,20 +1292,27 @@ public:
 
 	void primary_set_text(const String &p_text);
 
+	bool supports_hdr() const;
+
 	void commit_surfaces();
+
+	// Returns handled events.
+	int wait_events(int p_timeout = -1);
 
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
 	bool is_fifo_available() const;
 
-	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
-	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
+	uint64_t window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const;
+	bool window_is_suspended(DisplayServerEnums::WindowID p_window_id) const;
 	bool is_suspended() const;
+
+	bool window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms);
 
 	struct godot_embedding_compositor *get_embedding_compositor();
 
-	OS::ProcessID embedded_compositor_get_focused_pid();
+	ProcessID embedded_compositor_get_focused_pid();
 
 	Error init();
 	void destroy();

@@ -34,11 +34,14 @@
 #include "core/os/condition_variable.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
+#include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
@@ -67,6 +70,7 @@ private:
 public:
 	typedef int64_t DrawListID;
 	typedef int64_t ComputeListID;
+	typedef int64_t RaytracingListID;
 
 	typedef void (*InvalidationCallback)(void *);
 
@@ -103,6 +107,7 @@ public:
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
 		ID_TYPE_COMPUTE_LIST = 4,
+		ID_TYPE_RAYTRACING_LIST = 5,
 		ID_TYPE_MAX,
 		ID_BASE_SHIFT = 58, // 5 bits for ID types.
 		ID_MASK = (ID_BASE_SHIFT - 1),
@@ -291,6 +296,9 @@ public:
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
 		CALLBACK_RESOURCE_USAGE_GENERAL,
+		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT,
+		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
+		CALLBACK_RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
 		CALLBACK_RESOURCE_USAGE_MAX
 	};
 
@@ -406,6 +414,7 @@ public:
 	void _texture_clear_color(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	void _texture_clear_depth_stencil(RID p_texture_rid, Texture *p_texture, float p_depth, uint8_t p_stencil, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
+	void _texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format);
 
 	struct TextureGetDataRequest {
 		uint32_t frame_local_index = 0;
@@ -840,6 +849,7 @@ public:
 		BUFFER_CREATION_DEVICE_ADDRESS_BIT = (1 << 0),
 		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
 		BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT = (1 << 2),
+		BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT = (1 << 3),
 	};
 
 	enum StorageBufferUsage {
@@ -861,6 +871,9 @@ public:
 	}
 
 	RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
+
+private:
+	BitField<RDD::BufferUsageBits> _creation_to_usage_bits(BitField<BufferCreationBits> p_creation_bits);
 
 	/****************/
 	/**** SHADER ****/
@@ -1229,6 +1242,17 @@ private:
 
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
+	struct RaytracingPipeline {
+		RID shader;
+		RDD::ShaderID shader_driver_id;
+		uint32_t shader_layout_hash = 0;
+		Vector<uint32_t> set_formats;
+		RDD::RaytracingPipelineID driver_id;
+		uint32_t push_constant_size = 0;
+	};
+
+	RID_Owner<RaytracingPipeline> raytracing_pipeline_owner;
+
 public:
 	RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
 	bool render_pipeline_is_valid(RID p_pipeline);
@@ -1236,25 +1260,69 @@ public:
 	RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
 	bool compute_pipeline_is_valid(RID p_pipeline);
 
+	RID raytracing_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
+	bool raytracing_pipeline_is_valid(RID p_pipeline);
+
 	void update_pipeline_cache(bool p_closing = false);
 
 private:
 	/****************/
 	/**** SCREEN ****/
 	/****************/
-	HashMap<DisplayServer::WindowID, RDD::SwapChainID> screen_swap_chains;
-	HashMap<DisplayServer::WindowID, RDD::FramebufferID> screen_framebuffers;
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID> screen_swap_chains;
+	HashMap<DisplayServerEnums::WindowID, RDD::FramebufferID> screen_framebuffers;
 
 	uint32_t _get_swap_chain_desired_count() const;
 
 public:
-	Error screen_create(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
-	Error screen_prepare_for_drawing(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
-	int screen_get_width(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	int screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
-	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	Error screen_create(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+	Error screen_prepare_for_drawing(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+	int screen_get_width(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	int screen_get_height(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	int screen_get_pre_rotation_degrees(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	FramebufferFormatID screen_get_framebuffer_format(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	ColorSpace screen_get_color_space(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	Error screen_free(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+
+private:
+	/********************************/
+	/**** ACCELERATION STRUCTURE ****/
+	/********************************/
+
+	struct InstancesBuffer {
+		Buffer buffer;
+		uint32_t instance_count;
+		Vector<RID> blases;
+	};
+
+	struct AccelerationStructure {
+		RDD::AccelerationStructureID driver_id;
+		RDD::AccelerationStructureType type = RDD::ACCELERATION_STRUCTURE_TYPE_BLAS;
+		RDG::ResourceTracker *draw_tracker = nullptr;
+		Vector<RDG::ResourceTracker *> draw_trackers;
+
+		// Scratch buffer used during build, owned by the AS.
+		RDD::BufferID scratch_buffer;
+		RID vertex_array;
+		RID index_array;
+		RID transform_buffer;
+		RID instances_buffer;
+	};
+
+	RID_Owner<InstancesBuffer, true> instances_buffer_owner;
+	RID_Owner<AccelerationStructure> acceleration_structure_owner;
+
+public:
+	enum AccelerationStructureGeometryBits {
+		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE = (1 << 0),
+		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION = (1 << 1),
+	};
+
+	RID blas_create(RID p_vertex_array, RID p_index_array, BitField<AccelerationStructureGeometryBits> p_geometry_bits = 0, uint32_t p_position_attribute_location = 0);
+	RID tlas_instances_buffer_create(uint32_t p_instance_count, BitField<BufferCreationBits> p_creation_bits = 0);
+	void tlas_instances_buffer_fill(RID p_buffer, const Vector<RID> &p_blases, VectorView<Transform3D> p_transforms);
+	RID tlas_create(RID p_instances_buffer);
+	Error acceleration_structure_build(RID p_acceleration_structure);
 
 	/*************************/
 	/**** DRAW LISTS (II) ****/
@@ -1370,7 +1438,7 @@ public:
 	/**
 	 * @param p_clear_color Must use linear encoding when HDR 2D is active.
 	 */
-	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	DrawListID draw_list_begin_for_screen(DisplayServerEnums::WindowID p_screen = 0, const Color &p_clear_color = Color());
 	/**
 	 * @param p_clear_color_values Color values must use linear encoding when HDR 2D is active.
 	 */
@@ -1397,6 +1465,61 @@ public:
 	DrawListID draw_list_switch_to_next_pass();
 
 	void draw_list_end();
+
+private:
+	/**************************/
+	/**** RAYTRACING LISTS ****/
+	/**************************/
+
+	struct RaytracingList {
+		bool active = false;
+		struct SetState {
+			uint32_t pipeline_expected_format = 0;
+			uint32_t uniform_set_format = 0;
+			RDD::UniformSetID uniform_set_driver_id;
+			RID uniform_set;
+			bool bound = false;
+		};
+
+		struct State {
+			SetState sets[MAX_UNIFORM_SETS];
+			uint32_t set_count = 0;
+			RID pipeline;
+			RDD::RaytracingPipelineID pipeline_driver_id;
+			RID pipeline_shader;
+			RDD::ShaderID pipeline_shader_driver_id;
+			uint32_t pipeline_shader_layout_hash = 0;
+			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
+			uint32_t push_constant_size = 0;
+			uint32_t trace_count = 0;
+		} state;
+
+#ifdef DEBUG_ENABLED
+		struct Validation {
+			bool active = true; // Means command buffer was not closed, so you can keep adding things.
+			Vector<uint32_t> set_formats;
+			Vector<bool> set_bound;
+			Vector<RID> set_rids;
+			// Last pipeline set values.
+			bool pipeline_active = false;
+			RID pipeline_shader;
+			uint32_t invalid_set_from = 0;
+			uint32_t pipeline_push_constant_size = 0;
+			bool pipeline_push_constant_supplied = false;
+		} validation;
+#endif
+	};
+
+	RaytracingList raytracing_list;
+	RaytracingList::State raytracing_list_barrier_state;
+
+public:
+	RaytracingListID raytracing_list_begin();
+	void raytracing_list_bind_raytracing_pipeline(RaytracingListID p_list, RID p_raytracing_pipeline);
+	void raytracing_list_bind_uniform_set(RaytracingListID p_list, RID p_uniform_set, uint32_t p_index);
+	void raytracing_list_set_push_constant(RaytracingListID p_list, const void *p_data, uint32_t p_data_size);
+	void raytracing_list_trace_rays(RaytracingListID p_list, uint32_t p_width, uint32_t p_height);
+	void raytracing_list_end();
 
 private:
 	/***********************/
@@ -1480,9 +1603,10 @@ private:
 		BinaryMutex operations_mutex;
 	};
 
-	LocalVector<TransferWorker *> transfer_worker_pool;
+	TightLocalVector<TransferWorker *> transfer_worker_pool;
+	uint32_t transfer_worker_pool_size = 0;
 	uint32_t transfer_worker_pool_max_size = 1;
-	LocalVector<uint64_t> transfer_worker_operation_used_by_draw;
+	TightLocalVector<uint64_t> transfer_worker_operation_used_by_draw;
 	LocalVector<uint32_t> transfer_worker_pool_available_list;
 	LocalVector<RDD::TextureBarrier> transfer_worker_pool_texture_barriers;
 	BinaryMutex transfer_worker_pool_mutex;
@@ -1559,6 +1683,8 @@ private:
 		List<UniformSet> uniform_sets_to_dispose_of;
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
+		List<AccelerationStructure> acceleration_structures_to_dispose_of;
+		List<RaytracingPipeline> raytracing_pipelines_to_dispose_of;
 
 		// Pending asynchronous data transfer for buffers.
 		LocalVector<RDD::BufferID> download_buffer_staging_buffers;
@@ -1659,7 +1785,7 @@ public:
 #endif
 
 public:
-	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
+	Error initialize(RenderingContextDriver *p_context, DisplayServerEnums::WindowID p_main_window = DisplayServerEnums::INVALID_WINDOW_ID);
 	void finalize();
 
 	void _set_max_fps(int p_max_fps);
@@ -1713,7 +1839,7 @@ public:
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
-	DeviceType get_device_type() const;
+	RenderingDeviceEnums::DeviceType get_device_type() const;
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
@@ -1775,14 +1901,18 @@ private:
 
 	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data);
 
+	void _tlas_instances_buffer_fill(RID p_buffer, const TypedArray<RID> &p_blases, const TypedArray<Transform3D> &p_transforms);
+
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
+	RID _raytracing_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
+	void _raytracing_list_set_push_constant(RaytracingListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
 
-VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
+VARIANT_ENUM_CAST_EXT(RenderingDeviceEnums::DeviceType, RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
@@ -1800,6 +1930,7 @@ VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency)
 VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat)
 VARIANT_BITFIELD_CAST(RenderingDevice::StorageBufferUsage)
 VARIANT_BITFIELD_CAST(RenderingDevice::BufferCreationBits)
+VARIANT_BITFIELD_CAST(RenderingDevice::AccelerationStructureGeometryBits)
 VARIANT_ENUM_CAST(RenderingDevice::UniformType)
 VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive)
 VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode)

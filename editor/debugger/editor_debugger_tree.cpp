@@ -30,14 +30,18 @@
 
 #include "editor_debugger_tree.h"
 
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
@@ -416,6 +420,15 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
+	// If we have not previously selected any of these items, expand the inspector's properties for this item.
+	for (ObjectID id : p_ids) {
+		if (!selection_cache.has(id)) {
+			selection_cache.insert(id);
+
+			InspectorDock::get_inspector_singleton()->expand_all_folding();
+		}
+	}
+
 	if (!updating_scene_tree) {
 		// Request a tree refresh.
 		EditorDebuggerNode::get_singleton()->request_remote_tree();
@@ -469,6 +482,11 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	}
 
 	return vformat("\"%s\"", path);
+}
+
+void EditorDebuggerTree::set_new_session() {
+	new_session = true;
+	selection_cache.clear();
 }
 
 void EditorDebuggerTree::update_icon_max_width() {

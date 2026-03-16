@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/object.h"
 
 class MainLoop : public Object {
@@ -57,6 +57,8 @@ public:
 		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
 		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
+		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
+		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 	};
 
 	virtual void initialize();

@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "gpu_particles_2d.h"
+
+#include "core/object/class_db.h"
+
 void GPUParticles2D::_restart_bind_compat_92089() {
 	restart(false);
 }

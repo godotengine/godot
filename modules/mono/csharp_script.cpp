@@ -30,14 +30,18 @@
 
 #include "csharp_script.h"
 
+#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
-#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/path_utils.h"
 #include "utils/string_utils.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "managed_callable.h"
+#include "utils/path_utils.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -48,10 +52,12 @@
 #include "editor/script_templates/templates.gen.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
@@ -59,11 +65,14 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/signals_dock.h"
+#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
@@ -400,10 +409,6 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	return "";
 }
 
-Script *CSharpLanguage::create_script() const {
-	return memnew(CSharpScript);
-}
-
 bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
@@ -538,10 +543,6 @@ void CSharpLanguage::frame() {
 	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
 		GDMonoCache::managed_callbacks.ScriptManagerBridge_FrameCallback();
 	}
-
-#ifdef TOOLS_ENABLED
-	_flush_filesystem_updates();
-#endif
 }
 
 struct CSharpScriptDepSort {
@@ -1076,47 +1077,6 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 }
 
 #ifdef TOOLS_ENABLED
-void CSharpLanguage::_queue_for_filesystem_update(String p_script_path) {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (p_script_path.is_empty()) {
-		return;
-	}
-
-	pending_file_system_update_paths.push_back(p_script_path);
-}
-
-void CSharpLanguage::_flush_filesystem_updates() {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (pending_file_system_update_paths.is_empty()) {
-		return;
-	}
-
-	// If the EditorFileSystem singleton is available, update the files;
-	// otherwise, the files will be updated when the singleton becomes available.
-	EditorFileSystem *efs = EditorFileSystem::get_singleton();
-	if (!efs) {
-		pending_file_system_update_paths.clear();
-		return;
-	}
-
-	// Required to prevent EditorProgress within EditorFileSystem from calling this while it is already flushing
-	if (is_flushing_filesystem_updates) {
-		return;
-	}
-	is_flushing_filesystem_updates = true;
-
-	efs->update_files(pending_file_system_update_paths);
-
-	is_flushing_filesystem_updates = false;
-	pending_file_system_update_paths.clear();
-}
-
 void CSharpLanguage::_editor_init_callback() {
 	// Load GodotTools and initialize GodotSharpEditor
 
@@ -1198,12 +1158,12 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
 	ERR_FAIL_NULL_V(classinfo, false);
-	type_name = classinfo->name;
+	type_name = classinfo->gdtype->get_name();
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
@@ -2288,7 +2248,12 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	p_script->_update_exports();
 
 #ifdef TOOLS_ENABLED
-	CSharpLanguage::get_singleton()->_queue_for_filesystem_update(p_script->get_path());
+	// If the EditorFileSystem singleton is available, update the file;
+	// otherwise, the file will be updated when the singleton becomes available.
+	EditorFileSystem *efs = EditorFileSystem::get_singleton();
+	if (efs && !p_script->get_path().is_empty()) {
+		efs->update_file(p_script->get_path());
+	}
 #endif
 }
 
@@ -2661,7 +2626,12 @@ Error CSharpScript::reload(bool p_keep_state) {
 		_update_exports();
 
 #ifdef TOOLS_ENABLED
-		CSharpLanguage::get_singleton()->_queue_for_filesystem_update(script_path);
+		// If the EditorFileSystem singleton is available, update the file;
+		// otherwise, the file will be updated when the singleton becomes available.
+		EditorFileSystem *efs = EditorFileSystem::get_singleton();
+		if (efs) {
+			efs->update_file(script_path);
+		}
 #endif
 	}
 

@@ -31,9 +31,12 @@
 #include "graph_edit.h"
 #include "graph_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "scene/2d/line_2d.h"
 #include "scene/gui/box_container.h"
@@ -1829,7 +1832,7 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_frame->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
@@ -1838,6 +1841,7 @@ void GraphEdit::_minimap_draw() {
 			if (graph_frame->is_tint_color_enabled()) {
 				node_color = graph_frame->get_tint_color();
 			}
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 
@@ -1855,12 +1859,13 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_node->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_node->is_selected() ? graph_node->theme_cache.panel_selected : graph_node->theme_cache.panel;
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 
@@ -2590,7 +2595,7 @@ TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const 
 TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringName &p_node) const {
 	ERR_FAIL_COND_V(!connection_map.has(p_node), TypedArray<Dictionary>());
 
-	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
+	List<Ref<GraphEdit::Connection>> connections_from_node(connection_map.get(p_node));
 	TypedArray<Dictionary> connections_from_node_dict;
 
 	for (const Ref<Connection> &conn : connections_from_node) {
@@ -3114,9 +3119,9 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 
-	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("frame_rect_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, "GraphFrame"), PropertyInfo(Variant::RECT2, "new_rect")));
+	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("frame_rect_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, GraphFrame::get_class_static()), PropertyInfo(Variant::RECT2, "new_rect")));
 
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "at_position")));
 

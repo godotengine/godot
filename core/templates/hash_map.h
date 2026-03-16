@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_list.h"
@@ -582,7 +582,7 @@ public:
 
 	/* Constructors */
 
-	HashMap(const HashMap &p_other) {
+	explicit HashMap(const HashMap &p_other) {
 		reserve(hash_table_size_primes[p_other._capacity_idx]);
 
 		if (p_other._size == 0) {

@@ -36,6 +36,8 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
+#include <cstdio>
+
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 #include "core/config/project_settings.h"

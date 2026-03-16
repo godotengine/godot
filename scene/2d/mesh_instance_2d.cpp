@@ -30,13 +30,15 @@
 
 #include "mesh_instance_2d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
-#include "thirdparty/misc/polypartition.h"
 #endif // NAVIGATION_2D_DISABLED
 
 Callable MeshInstance2D::_navmesh_source_geometry_parsing_callback;
@@ -61,8 +63,8 @@ void MeshInstance2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 }
 
 void MeshInstance2D::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -84,6 +86,7 @@ void MeshInstance2D::set_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 Ref<Mesh> MeshInstance2D::get_mesh() const {
@@ -215,5 +218,10 @@ void MeshInstance2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> 
 }
 #endif // NAVIGATION_2D_DISABLED
 
-MeshInstance2D::MeshInstance2D() {
+PackedStringArray MeshInstance2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+	if (mesh.is_null()) {
+		warnings.push_back(RTR("MeshInstance2D requires a Mesh to render anything. Please add a mesh resource for it!"));
+	}
+	return warnings;
 }

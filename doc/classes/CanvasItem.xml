@@ -789,7 +789,7 @@
 			Represents the size of the [enum TextureFilter] enum.
 		</constant>
 		<constant name="TEXTURE_REPEAT_PARENT_NODE" value="0" enum="TextureRepeat">
-			The [CanvasItem] will inherit the filter from its parent.
+			The [CanvasItem] will inherit the repeat mode from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
 			The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.

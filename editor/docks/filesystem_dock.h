@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class AcceptDialog;
 class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
@@ -205,11 +206,15 @@ private:
 
 	ConfirmationDialog *conversion_dialog = nullptr;
 	ConfirmationDialog *move_confirm_dialog = nullptr;
+	CheckBox *confirm_before_move_checkbox = nullptr;
+	Label *move_confirm_dialog_label = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
+
+	AcceptDialog *unrecognized_ext_dialog = nullptr;
 
 	String confirm_move_to_dir;
 	bool confirm_to_copy = false;
@@ -300,9 +305,9 @@ private:
 	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
-	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const;
+	void _before_move(HashSet<String> &r_file_owners) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
-	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const;
+	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames) const;
 	void _update_favorites_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
 	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
@@ -367,6 +372,7 @@ private:
 	void _preview_invalidated(const String &p_path);
 	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename);
 	void _tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item);
+	Ref<Texture2D> _apply_thumbnail_filter(const Ref<Texture2D> &p_thumbnail, const String &p_file_path) const;
 
 	void _update_display_mode(bool p_force = false);
 
@@ -379,11 +385,14 @@ private:
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
+	void _on_open_editor_settings_file_exts();
+
 private:
 	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
+	static DependencyEditorOwners *get_owners_dialog() { return singleton->owners_editor; }
 
 protected:
 	void _notification(int p_what);
@@ -437,6 +446,7 @@ public:
 	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
+	ItemList *get_list_control() { return files; }
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);

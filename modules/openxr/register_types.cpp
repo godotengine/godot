@@ -38,6 +38,7 @@
 #include "action_map/openxr_haptic_feedback.h"
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_metadata.h"
+#include "core/object/class_db.h"
 #include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
@@ -70,6 +71,7 @@
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_khr_generic_controller_extension.h"
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
@@ -80,6 +82,7 @@
 #ifdef MODULE_GLTF_ENABLED
 #include "extensions/openxr_render_model_extension.h"
 #endif
+#include "extensions/openxr_user_presence_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
@@ -98,8 +101,9 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "main/main.h"
+#include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -174,6 +178,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
@@ -214,6 +219,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(android_thread_settings);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRAndroidThreadSettingsExtension", android_thread_settings));
 
+			// Register user presence extension as a singleton
+			OpenXRUserPresenceExtension *user_presence_extension = memnew(OpenXRUserPresenceExtension);
+			OpenXRAPI::register_extension_wrapper(user_presence_extension);
+
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
@@ -237,7 +246,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
-			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			if (!openxr_api->initialize(OS::get_singleton()->get_current_rendering_driver_name())) {
 				const char *init_error_message =
 						"OpenXR was requested but failed to start.\n"
 						"HMD was not detected or a required feature was not supported.\n\n"

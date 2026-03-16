@@ -58,6 +58,9 @@ generated_sources = [
     generate_from_xml("viewporter", "#thirdparty/wayland-protocols/stable/viewporter/viewporter.xml"),
     generate_from_xml("xdg_shell", "#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"),
     # Staging protocols
+    generate_from_xml(
+        "color_management", "#thirdparty/wayland-protocols/staging/color-management/color-management-v1.xml"
+    ),
     generate_from_xml("cursor_shape", "#thirdparty/wayland-protocols/staging/cursor-shape/cursor-shape-v1.xml"),
     generate_from_xml(
         "fractional_scale", "#thirdparty/wayland-protocols/staging/fractional-scale/fractional-scale-v1.xml"
@@ -69,6 +72,7 @@ generated_sources = [
     generate_from_xml(
         "xdg_toplevel_icon", "#thirdparty/wayland-protocols/staging/xdg-toplevel-icon/xdg-toplevel-icon-v1.xml"
     ),
+    generate_from_xml("pointer_warp", "#thirdparty/wayland-protocols/staging/pointer-warp/pointer-warp-v1.xml"),
     # Unstable protocols
     generate_from_xml(
         "idle_inhibit", "#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml"
@@ -123,13 +127,11 @@ source_files = generated_sources + [
 ]
 
 if env["use_sowrap"]:
-    source_files.append(
-        [
-            File("dynwrappers/wayland-cursor-so_wrap.c"),
-            File("dynwrappers/wayland-client-core-so_wrap.c"),
-            File("dynwrappers/wayland-egl-core-so_wrap.c"),
-        ]
-    )
+    source_files.append([
+        File("dynwrappers/wayland-cursor-so_wrap.c"),
+        File("dynwrappers/wayland-client-core-so_wrap.c"),
+        File("dynwrappers/wayland-egl-core-so_wrap.c"),
+    ])
 
     if env["libdecor"]:
         source_files.append(File("dynwrappers/libdecor-so_wrap.c"))

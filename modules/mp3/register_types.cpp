@@ -32,8 +32,9 @@
 
 #include "audio_stream_mp3.h"
 
+#include "core/object/class_db.h"
+
 #ifdef TOOLS_ENABLED
-#include "core/config/engine.h"
 #include "editor/editor_node.h"
 #include "resource_importer_mp3.h"
 

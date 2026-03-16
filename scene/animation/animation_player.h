@@ -62,23 +62,23 @@ private:
 	Tween::TransitionType auto_capture_transition_type = Tween::TRANS_LINEAR;
 	Tween::EaseType auto_capture_ease_type = Tween::EASE_IN;
 
-	bool is_stopping = false;
-
 	struct PlaybackData {
-		AnimationData *from = nullptr;
+		bool is_enabled = false;
+		String animation_name;
+		double animation_length = 0.0;
 		double pos = 0.0;
 		float speed_scale = 1.0;
 		double start_time = 0.0;
 		double end_time = 0.0;
 		double get_start_time() const {
-			if (from && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, from->animation->get_length()))) {
+			if (is_enabled && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, animation_length))) {
 				return 0;
 			}
 			return start_time;
 		}
 		double get_end_time() const {
-			if (from && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, from->animation->get_length()))) {
-				return from->animation->get_length();
+			if (is_enabled && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, animation_length))) {
+				return animation_length;
 			}
 			return end_time;
 		}
@@ -96,7 +96,7 @@ private:
 		bool seeked = false;
 		bool internal_seeked = false;
 		bool started = false;
-		List<Blend> blend;
+		LocalVector<Blend> blend;
 	} playback;
 
 	struct BlendKey {
@@ -153,6 +153,7 @@ protected:
 	virtual void _blend_capture(double p_delta) override;
 	virtual void _blend_post_process() override;
 
+	virtual void _animation_changed(const StringName &p_name) override;
 	virtual void _animation_removed(const StringName &p_name, const StringName &p_library) override;
 	virtual void _rename_animation(const StringName &p_from_name, const StringName &p_to_name) override;
 

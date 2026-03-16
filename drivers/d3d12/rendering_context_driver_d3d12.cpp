@@ -30,31 +30,19 @@
 
 #include "rendering_context_driver_d3d12.h"
 
-#include "d3d12_hooks.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
-#include "core/version.h"
-#include "servers/rendering/rendering_device.h"
+#include "drivers/d3d12/d3d12_hooks.h"
 
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
 #include <dxcapi.h>
-#include <dxgi1_6.h>
-
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
+
+#include <dxgi1_6.h>
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
@@ -152,7 +140,7 @@ Error RenderingContextDriverD3D12::_initialize_debug_layers() {
 	return OK;
 }
 
-Error RenderingContextDriverD3D12::_initialize_devices() {
+Error RenderingContextDriverD3D12::_create_dxgi_factory() {
 	const UINT dxgi_factory_flags = use_validation_layers() ? DXGI_CREATE_FACTORY_DEBUG : 0;
 
 	typedef HRESULT(WINAPI * PFN_DXGI_CREATE_DXGI_FACTORY2)(UINT, REFIID, void **);
@@ -161,6 +149,16 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 
 	HRESULT res = dxgi_CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory));
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+	return OK;
+}
+
+Error RenderingContextDriverD3D12::_initialize_devices() {
+	// Create the initial DXGI factory.
+	Error err = _create_dxgi_factory();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	HRESULT res;
 
 	// Enumerate all possible adapters.
 	LocalVector<IDXGIAdapter1 *> adapters;
@@ -269,15 +267,61 @@ void RenderingContextDriverD3D12::surface_set_size(SurfaceID p_surface, uint32_t
 	surface->needs_resize = true;
 }
 
-void RenderingContextDriverD3D12::surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriverD3D12::surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) {
 	Surface *surface = (Surface *)(p_surface);
 	surface->vsync_mode = p_vsync_mode;
 	surface->needs_resize = true;
 }
 
-DisplayServer::VSyncMode RenderingContextDriverD3D12::surface_get_vsync_mode(SurfaceID p_surface) const {
+DisplayServerEnums::VSyncMode RenderingContextDriverD3D12::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverD3D12::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_reference_luminance = p_reference_luminance;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_reference_luminance;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_linear_luminance_scale;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_max_value(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return MAX(surface->hdr_max_luminance / MAX(surface->hdr_reference_luminance, 1.0f), 1.0f);
 }
 
 uint32_t RenderingContextDriverD3D12::surface_get_width(SurfaceID p_surface) const {
@@ -336,7 +380,12 @@ ID3D12DeviceFactory *RenderingContextDriverD3D12::device_factory_get() const {
 	return device_factory.Get();
 }
 
-IDXGIFactory2 *RenderingContextDriverD3D12::dxgi_factory_get() const {
+IDXGIFactory2 *RenderingContextDriverD3D12::dxgi_factory_get() {
+	// Check if the factory is still current. It can become invalid if displays change
+	if (dxgi_factory && !dxgi_factory->IsCurrent()) {
+		dxgi_factory.Reset();
+		_create_dxgi_factory();
+	}
 	return dxgi_factory.Get();
 }
 

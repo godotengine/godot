@@ -34,10 +34,8 @@
 #include "../openxr_fb_foveation_extension.h"
 
 #include "core/string/print_string.h"
-#include "servers/rendering/renderer_rd/effects/copy_effects.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
@@ -501,8 +499,8 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 }
 
 #define ENUM_TO_STRING_CASE(e) \
-	case e: {                  \
-		return String(#e);     \
+	case e: { \
+		return String(#e); \
 	} break;
 
 String OpenXRVulkanExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {

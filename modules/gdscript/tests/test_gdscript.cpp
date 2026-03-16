@@ -35,6 +35,7 @@
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../gdscript_tokenizer_buffer.h"
+#include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -175,7 +176,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
-			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+			print_line(vformat("%02d:%02d: %s", error.start_line, error.start_column, error.message));
 		}
 	}
 
@@ -185,7 +186,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
-			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+			print_line(vformat("%02d:%02d: %s", error.start_line, error.start_column, error.message));
 		}
 	}
 
@@ -261,7 +262,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		print_line("Error in parser:");
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
-			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+			print_line(vformat("%02d:%02d: %s", error.start_line, error.start_column, error.message));
 		}
 		return;
 	}
@@ -273,7 +274,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		print_line("Error in analyzer:");
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
-			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+			print_line(vformat("%02d:%02d: %s", error.start_line, error.start_column, error.message));
 		}
 		return;
 	}

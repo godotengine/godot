@@ -30,6 +30,9 @@
 
 #include "immediate_mesh.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void ImmediateMesh::surface_begin(PrimitiveType p_primitive, const Ref<Material> &p_material) {
 	ERR_FAIL_COND_MSG(surface_active, "Already creating a new surface.");
 	active_surface_data.primitive = p_primitive;
@@ -275,9 +278,9 @@ void ImmediateMesh::surface_end() {
 		}
 	}
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 
-	sd.primitive = RS::PrimitiveType(active_surface_data.primitive);
+	sd.primitive = RSE::PrimitiveType(active_surface_data.primitive);
 	sd.format = format;
 	sd.vertex_data = surface_vertex_create_cache;
 	if (uses_colors || uses_uvs || uses_uv2s) {

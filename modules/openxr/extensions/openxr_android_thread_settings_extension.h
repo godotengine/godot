@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../openxr_interface.h"
 #include "core/templates/hash_map.h"
 
 #include "openxr_extension_wrapper.h"

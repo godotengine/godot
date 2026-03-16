@@ -38,8 +38,6 @@
 
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 #include <io.h>
 #include <sys/stat.h>
@@ -141,7 +139,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	// platforms), we only check for relative paths, or paths in res:// or user://,
 	// other paths aren't likely to be portable anyway.
 	if (p_mode_flags == READ && (p_path.is_relative_path() || get_access_type() != ACCESS_FILESYSTEM)) {
-		String base_path = p_path;
+		String base_path = FileAccess::fix_path(p_path);
 		String working_path;
 		String proper_path;
 

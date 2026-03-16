@@ -30,7 +30,7 @@
 
 #include "gdscript_byte_codegen.h"
 
-#include "core/debugger/engine_debugger.h"
+#include "core/object/class_db.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
 	function->_argument_count++;
@@ -199,6 +199,9 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_constants_ptr = function->constants.ptrw();
 		for (const KeyValue<Variant, int> &K : constant_map) {
 			function->constants.write[K.value] = K.key;
+		}
+		for (const KeyValue<StringName, int> &K : local_constants) {
+			function->constant_map.insert(K.key, function->constants[K.value]);
 		}
 	} else {
 		function->_constants_ptr = nullptr;

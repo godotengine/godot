@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
+#include "core/os/thread.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/variant/array.h"
-#include "servers/display/display_server.h"
 
 #include <jni.h>
 

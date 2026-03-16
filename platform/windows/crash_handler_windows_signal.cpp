@@ -37,16 +37,12 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
 #include <cxxabi.h>
-#include <algorithm>
 #include <csignal>
 #include <cstdlib>
-#include <string>
-#include <vector>
 
 #include <psapi.h>
 

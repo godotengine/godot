@@ -30,10 +30,12 @@
 
 #import "openxr_metal_extension.h"
 
+#include "../../openxr_api.h"
 #include "../../openxr_util.h"
 
 #import "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
 
 HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
@@ -122,8 +124,8 @@ void OpenXRMetalExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_sw
 }
 
 #define ENUM_TO_STRING_CASE(m_e) \
-	case m_e: {                  \
-		return String(#m_e);     \
+	case m_e: { \
+		return String(#m_e); \
 	} break;
 
 String OpenXRMetalExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {

@@ -31,7 +31,7 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 	{
 		for (const Voided &vf : mVoidedFeatures)
 			if (vf.mSubShapeID == inSubShapeID
-				&& inV.IsClose(Vec3::sLoadFloat3Unsafe(vf.mFeature), 1.0e-8f))
+				&& inV.IsClose(Vec3::sLoadFloat3Unsafe(vf.mFeature), mVertexToleranceSq))
 				return true;
 		return false;
 	}
@@ -76,13 +76,15 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 
 public:
 	/// Constructor, configures a collector to be called with all the results that do not hit internal edges
-	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector
+	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector,
+			float inVertexToleranceSq
 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 			, RVec3Arg inBaseOffset
 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 		) :
 		CollideShapeCollector(inChainedCollector),
-		mChainedCollector(inChainedCollector)
+		mChainedCollector(inChainedCollector),
+		mVertexToleranceSq(inVertexToleranceSq)
 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 			, mBaseOffset(inBaseOffset)
 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
@@ -249,7 +251,7 @@ public:
 		JPH_ASSERT(inCollideShapeSettings.mActiveEdgeMode == EActiveEdgeMode::CollideWithAll); // Won't work without colliding with all edges
 		JPH_ASSERT(inCollideShapeSettings.mCollectFacesMode == ECollectFacesMode::CollectFaces); // Won't work without collecting faces
 
-		InternalEdgeRemovingCollector wrapper(ioCollector
+		InternalEdgeRemovingCollector wrapper(ioCollector, inCollideShapeSettings.mInternalEdgeRemovalVertexToleranceSq
 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 			, inBaseOffset
 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
@@ -271,6 +273,7 @@ private:
 	CollideShapeCollector &	mChainedCollector;
 	Array<Voided, STLLocalAllocator<Voided, cMaxLocalVoidedFeatures>> mVoidedFeatures;
 	Array<CollideShapeResult, STLLocalAllocator<CollideShapeResult, cMaxLocalDelayedResults>> mDelayedResults;
+	float					mVertexToleranceSq;		// Max squared distance to consider a vertex to be the same as another vertex, used to determine if a feature is voided
 #ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 	RVec3					mBaseOffset; 			// Base offset for the query, used to draw the results in the right place
 #endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG

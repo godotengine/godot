@@ -306,7 +306,7 @@
 			<param index="3" name="owned" type="bool" default="true" />
 			<description>
 				Finds all descendants of this node whose names match [param pattern], returning an empty [Array] if no match is found. The matching is done against node names, [i]not[/i] their paths, through [method String.match]. As such, it is case-sensitive, [code]"*"[/code] matches zero or more characters, and [code]"?"[/code] matches any single character.
-				If [param type] is not empty, only ancestors inheriting from [param type] are included (see [method Object.is_class]).
+				If [param type] is not empty, only descendants inheriting from [param type] are included (see [method Object.is_class]).
 				If [param recursive] is [code]false[/code], only this node's direct children are checked. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. Internal children are also included in the search (see [code]internal[/code] parameter in [method add_child]).
 				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked.
 				[b]Note:[/b] This method can be very slow. Consider storing references to the found nodes in a variable.
@@ -1323,6 +1323,12 @@
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when the [TextServer] is changed.
 		</constant>
+		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_ENTERED" value="2019">
+			Notification received when the application enters picture-in-picture mode.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_EXITED" value="2020">
+			Notification received when the application exits picture-in-picture mode.
+		</constant>
 		<constant name="NOTIFICATION_ACCESSIBILITY_UPDATE" value="3000">
 			Notification received when an accessibility information update is required.
 		</constant>
@@ -1333,16 +1339,16 @@
 			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>
 		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
-			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
+			Processes when [member SceneTree.paused] is [code]false[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
 		</constant>
 		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
-			Process [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
+			Processes [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
 		</constant>
 		<constant name="PROCESS_MODE_ALWAYS" value="3" enum="ProcessMode">
-			Always process. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
+			Always processes. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
 		</constant>
 		<constant name="PROCESS_MODE_DISABLED" value="4" enum="ProcessMode">
-			Never process. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
+			Never processes. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
 			Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.

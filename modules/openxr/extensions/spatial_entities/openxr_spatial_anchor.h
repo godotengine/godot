@@ -30,9 +30,12 @@
 
 #pragma once
 
-#include "../../openxr_util.h"
+#include "../../openxr_structure.h"
+#include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
-#include "openxr_spatial_entity_extension.h"
+
+#include "core/templates/rid_owner.h"
 
 // Anchor capability configuration
 class OpenXRSpatialCapabilityConfigurationAnchor : public OpenXRSpatialCapabilityConfigurationBaseHeader {

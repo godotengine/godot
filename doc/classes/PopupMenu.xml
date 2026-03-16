@@ -270,7 +270,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the ID of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+				Returns the ID of the item at the given [param index].
 			</description>
 		</method>
 		<method name="get_item_indent" qualifiers="const">
@@ -284,7 +284,7 @@
 			<return type="int" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns the index of the item containing the specified [param id]. Index is automatically assigned to each item by the engine and can not be set manually.
+				Returns the index of the item containing the specified [param id]. The index is automatically assigned to each item by the engine when added and represents the order items will be displayed.
 			</description>
 		</method>
 		<method name="get_item_language" qualifiers="const">
@@ -406,6 +406,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
+			</description>
+		</method>
+		<method name="is_search_bar_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if search bar is currently enabled.
 			</description>
 		</method>
 		<method name="is_system_menu" qualifiers="const">
@@ -536,6 +542,15 @@
 				Sets the horizontal offset of the item at the given [param index].
 			</description>
 		</method>
+		<method name="set_item_index">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="target_index" type="int" />
+			<description>
+				Changes the index of the item at index [param index] to be at index [param target_index]. This can be used to move an item above other items. The moved item will keep the same ID, even if it was generated from the original index.
+				[b]Note:[/b] The indices of any items between index [param index] and index [param target_index] will be shifted by one.
+			</description>
+		</method>
 		<method name="set_item_language">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -644,6 +659,8 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
+		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" overrides="Viewport" enum="Viewport.DefaultCanvasItemTextureFilter" default="4" />
+		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" overrides="Viewport" enum="Viewport.DefaultCanvasItemTextureRepeat" default="3" />
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>
@@ -659,6 +676,10 @@
 		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
 			If [code]true[/code], [MenuBar] will use native menu when supported.
 			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
+		</member>
+		<member name="search_bar_enabled_on_item_count" type="int" setter="set_search_bar_enabled_on_item_count" getter="get_search_bar_enabled_on_item_count" default="0">
+			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
+			[b]Note:[/b] When enabled, [member allow_search] is ignored.
 		</member>
 		<member name="shrink_height" type="bool" setter="set_shrink_height" getter="get_shrink_height" default="true">
 			If [code]true[/code], shrinks [PopupMenu] to minimum height when it's shown.
@@ -746,6 +767,9 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
+		<theme_item name="search_bar_separation" data_type="constant" type="int" default="4">
+			The vertical space between search bar and menu items.
+		</theme_item>
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.
 		</theme_item>
@@ -781,6 +805,9 @@
 		</theme_item>
 		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked radio button items when they are disabled.
+		</theme_item>
+		<theme_item name="search" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the search bar's search icon.
 		</theme_item>
 		<theme_item name="submenu" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the submenu arrow (for left-to-right layouts).

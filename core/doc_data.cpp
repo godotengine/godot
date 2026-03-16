@@ -30,6 +30,8 @@
 
 #include "doc_data.h"
 
+#include "core/object/object.h"
+
 String DocData::get_default_value_string(const Variant &p_value) {
 	const Variant::Type type = p_value.get_type();
 	if (type == Variant::ARRAY) {
