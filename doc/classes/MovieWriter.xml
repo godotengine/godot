@@ -30,6 +30,12 @@
 				Called when the audio speaker mode used for recording the audio is requested by the engine. This can affect the number of output channels in the resulting audio file/stream. Defaults to [constant AudioServer.SPEAKER_MODE_STEREO] if [method _get_audio_speaker_mode] is not overridden.
 			</description>
 		</method>
+		<method name="_get_supported_extensions" qualifiers="virtual required const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of supported filename extensions for movies written with this [MovieWriter].
+			</description>
+		</method>
 		<method name="_handles_file" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
