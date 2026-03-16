@@ -30,11 +30,8 @@
 
 #include "camera_2d.h"
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "scene/main/scene_tree.h"
+#include "core/input/input.h"
 #include "scene/main/viewport.h"
 
 void Camera2D::_update_scroll() {
@@ -119,7 +116,13 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	}
 
 	zoom = new_zoom;
-	zoom_scale = Vector2(1, 1) / zoom;
+	if (zoom_limit_enabled) {
+		smoothed_zoom = smoothed_zoom.clamp(zoom_min, zoom_max);
+	}
+	if (!zoom_smoothing_enabled) {
+		smoothed_zoom = zoom;
+	}
+	zoom_scale = Vector2(1, 1) / smoothed_zoom;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
@@ -137,6 +140,26 @@ Transform2D Camera2D::get_camera_transform() {
 	ERR_FAIL_COND_V(custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Transform2D());
 
 	Size2 screen_size = _get_camera_screen_size();
+
+	if (zoom_smoothing_enabled && !is_part_of_edited_scene()) {
+		real_t delta = (process_callback == CAMERA2D_PROCESS_PHYSICS) ? get_physics_process_delta_time() : get_process_delta_time();
+		delta = MIN(delta, smoothing_delta_limit);
+		smoothed_zoom = zoom + (smoothed_zoom - zoom) * Math::exp(-zoom_smoothing_speed * delta);
+		if (zoom_limit_enabled) {
+			smoothed_zoom = smoothed_zoom.clamp(zoom_min, zoom_max);
+		}
+	} else {
+		smoothed_zoom = zoom;
+	}
+
+	Vector2 used_zoom = smoothed_zoom;
+	Vector2 used_zoom_scale = Vector2(1, 1) / used_zoom;
+	Point2 screen_offset;
+	if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
+		screen_offset = screen_size * 0.5 * used_zoom_scale;
+	} else {
+		screen_offset = Point2();
+	}
 
 	Point2 new_camera_pos = get_global_position();
 	Point2 ret_camera_pos;
@@ -171,105 +194,69 @@ Transform2D Camera2D::get_camera_transform() {
 			camera_pos = new_camera_pos;
 		}
 
-		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
-		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
-
-		int current_limit_sides = 0;
-
-		if (limit_enabled && limit_smoothing_enabled) {
-			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - screen_rect.size.x) {
-				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
-				current_limit_sides |= 1 | 4;
-			} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
-				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
-				current_limit_sides |= 1;
-			} else if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
-				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[SIDE_RIGHT];
-				current_limit_sides |= 4;
-			}
-
-			if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - screen_rect.size.y) {
-				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - limit[SIDE_BOTTOM] - limit[SIDE_TOP]) / 2;
-				current_limit_sides |= 2 | 8;
-			} else if (screen_rect.position.y < limit[SIDE_TOP]) {
-				camera_pos.y -= screen_rect.position.y - limit[SIDE_TOP];
-				current_limit_sides |= 2;
-			} else if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
-				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[SIDE_BOTTOM];
-				current_limit_sides |= 8;
-			}
+		if (!zoom_smoothing_enabled) {
+			smoothed_zoom = zoom;
 		}
 
-		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
-			real_t c;
-			if (position_smoothing_delta_independent) {
-				bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
+		bool apply_smoothing = (position_smoothing_enabled || zoom_smoothing_enabled) && !is_part_of_edited_scene();
+		if (apply_smoothing) {
+			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
+			uint64_t smoothing_tick = physics_process ? Engine::get_singleton()->get_physics_frames() : Engine::get_singleton()->get_frames_drawn();
+			if (smoothing_tick != last_smoothing_frame) {
+				last_smoothing_frame = smoothing_tick;
+
 				real_t delta;
-				if (physics_process) {
-					delta = get_physics_process_delta_time();
-				} else {
-					real_t time_scale = Engine::get_singleton()->get_time_scale();
-					if (time_scale > 0.0) {
-						delta = get_process_delta_time() / time_scale;
+				if (position_smoothing_delta_independent) {
+					if (physics_process) {
+						delta = get_physics_process_delta_time();
 					} else {
-						delta = get_process_delta_time();
+						real_t time_scale = Engine::get_singleton()->get_time_scale();
+						if (time_scale > 0.0) {
+							delta = get_process_delta_time() / time_scale;
+						} else {
+							delta = get_process_delta_time();
+						}
 					}
+				} else {
+					delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
 				}
 				delta = MIN(delta, smoothing_delta_limit);
-				c = 1.0 - Math::exp(-position_smoothing_speed * delta);
-			} else {
-				bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
-				real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-				delta = MIN(delta, smoothing_delta_limit);
-				c = position_smoothing_speed * delta;
+
+				if (position_smoothing_enabled) {
+					smoothed_camera_pos = camera_pos + (smoothed_camera_pos - camera_pos) * Math::exp(-position_smoothing_speed * delta);
+				}
+				if (zoom_smoothing_enabled) {
+					smoothed_zoom = zoom + (smoothed_zoom - zoom) * Math::exp(-zoom_smoothing_speed * delta);
+					if (zoom_limit_enabled) {
+						smoothed_zoom = smoothed_zoom.clamp(zoom_min, zoom_max);
+					}
+				}
 			}
-			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
-			ret_camera_pos = smoothed_camera_pos;
-		} else {
-			ret_camera_pos = camera_pos;
 		}
 
-		if (limit_enabled && current_limit_sides != previous_limit_sides) {
-			int newly_hit = current_limit_sides & ~previous_limit_sides;
-			if (newly_hit != 0) {
-				emit_signal(SNAME("position_limit_reached"), newly_hit);
-			}
-
-			int newly_released = previous_limit_sides & ~current_limit_sides;
-			if (newly_released != 0) {
-				emit_signal(SNAME("position_limit_released"), newly_released);
-			}
-
-			previous_limit_sides = current_limit_sides;
-		}
+		ret_camera_pos = position_smoothing_enabled ? smoothed_camera_pos : camera_pos;
 
 	} else {
 		ret_camera_pos = smoothed_camera_pos = camera_pos = new_camera_pos;
 		first = false;
 	}
 
-	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
+	screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * used_zoom_scale) : Point2());
 
 	if (!ignore_rotation) {
 		if (rotation_smoothing_enabled && !is_part_of_edited_scene()) {
 			real_t delta = (process_callback == CAMERA2D_PROCESS_PHYSICS) ? get_physics_process_delta_time() : get_process_delta_time();
 			delta = MIN(delta, smoothing_delta_limit);
-			real_t step;
-			if (position_smoothing_delta_independent) {
-				step = 1.0 - Math::exp(-rotation_smoothing_speed * delta);
-			} else {
-				step = rotation_smoothing_speed * delta;
-			}
-			camera_angle = Math::lerp_angle(camera_angle, get_global_rotation(), step);
+			camera_angle = get_global_rotation() + Math::angle_difference(get_global_rotation(), camera_angle) * Math::exp(-rotation_smoothing_speed * delta);
 		} else {
 			camera_angle = get_global_rotation();
 		}
 		screen_offset = screen_offset.rotated(camera_angle);
 	}
 
-	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
+	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * used_zoom_scale);
 
-	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
+	if (limit_enabled) {
 		int current_limit_sides = 0;
 
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
@@ -299,12 +286,12 @@ Transform2D Camera2D::get_camera_transform() {
 		if (current_limit_sides != previous_limit_sides) {
 			int newly_hit = current_limit_sides & ~previous_limit_sides;
 			if (newly_hit != 0) {
-				emit_signal(SNAME("position_limit_reached"), newly_hit);
+				emit_signal(SNAME("bounds_limit_reached"), newly_hit);
 			}
 
 			int newly_released = previous_limit_sides & ~current_limit_sides;
 			if (newly_released != 0) {
-				emit_signal(SNAME("position_limit_released"), newly_released);
+				emit_signal(SNAME("bounds_limit_released"), newly_released);
 			}
 
 			previous_limit_sides = current_limit_sides;
@@ -316,7 +303,7 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Transform2D xform;
-	xform.scale_basis(zoom_scale);
+	xform.scale_basis(used_zoom_scale);
 	if (!ignore_rotation) {
 		xform.set_rotation(camera_angle);
 	}
@@ -659,12 +646,11 @@ bool Camera2D::is_zoom_limit_enabled() const {
 
 void Camera2D::set_zoom_min(const Vector2 &p_zoom_min) {
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom_min.x) || Math::is_zero_approx(p_zoom_min.y), "Zoom min must be different from 0.");
-	// Ensure min is not greater than current max
 	ERR_FAIL_COND_MSG(p_zoom_min.x > zoom_max.x, "Zoom min.x cannot be greater than zoom max.x.");
 	ERR_FAIL_COND_MSG(p_zoom_min.y > zoom_max.y, "Zoom min.y cannot be greater than zoom max.y.");
 	zoom_min = p_zoom_min;
 	if (zoom_limit_enabled) {
-		set_zoom(zoom); // Re-apply to enforce
+		set_zoom(zoom);
 	}
 }
 
@@ -674,12 +660,11 @@ Vector2 Camera2D::get_zoom_min() const {
 
 void Camera2D::set_zoom_max(const Vector2 &p_zoom_max) {
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom_max.x) || Math::is_zero_approx(p_zoom_max.y), "Zoom max must be different from 0.");
-	// Ensure max is not smaller than current min
 	ERR_FAIL_COND_MSG(p_zoom_max.x < zoom_min.x, "Zoom max.x cannot be smaller than zoom min.x.");
 	ERR_FAIL_COND_MSG(p_zoom_max.y < zoom_min.y, "Zoom max.y cannot be smaller than zoom min.y.");
 	zoom_max = p_zoom_max;
 	if (zoom_limit_enabled) {
-		set_zoom(zoom); // Re-apply to enforce
+		set_zoom(zoom);
 	}
 }
 
@@ -748,7 +733,7 @@ bool Camera2D::is_position_smoothing_delta_independent() const {
 }
 
 void Camera2D::set_smoothing_delta_limit(real_t p_limit) {
-	smoothing_delta_limit = MAX(0.001, p_limit); // Minimum 1ms to avoid division issues
+	smoothing_delta_limit = MAX(0.001, p_limit);
 }
 
 real_t Camera2D::get_smoothing_delta_limit() const {
@@ -998,8 +983,8 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("position_limit_reached", PropertyInfo(Variant::INT, "sides_hit")));
-	ADD_SIGNAL(MethodInfo("position_limit_released", PropertyInfo(Variant::INT, "sides_released")));
+	ADD_SIGNAL(MethodInfo("bounds_limit_reached", PropertyInfo(Variant::INT, "sides_hit")));
+	ADD_SIGNAL(MethodInfo("bounds_limit_released", PropertyInfo(Variant::INT, "sides_released")));
 	ADD_SIGNAL(MethodInfo("zoom_limit_reached", PropertyInfo(Variant::VECTOR2, "attempted_zoom"), PropertyInfo(Variant::VECTOR2, "clamped_zoom")));
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Camera2D::set_offset);
@@ -1069,6 +1054,10 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "enabled"), &Camera2D::set_position_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_position_smoothing_enabled"), &Camera2D::is_position_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("set_zoom_smoothing_enabled", "enabled"), &Camera2D::set_zoom_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("is_zoom_smoothing_enabled"), &Camera2D::is_zoom_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("set_zoom_smoothing_speed", "speed"), &Camera2D::set_zoom_smoothing_speed);
+	ClassDB::bind_method(D_METHOD("get_zoom_smoothing_speed"), &Camera2D::get_zoom_smoothing_speed);
 
 	ClassDB::bind_method(D_METHOD("set_zoom_limit_enabled", "enabled"), &Camera2D::set_zoom_limit_enabled);
 	ClassDB::bind_method(D_METHOD("is_zoom_limit_enabled"), &Camera2D::is_zoom_limit_enabled);
@@ -1103,10 +1092,11 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, Viewport::get_class_static(), PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
-	ADD_GROUP("Position Limit", "limit_");
+	ADD_GROUP("Bounds", "limit_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_enabled", "is_limit_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_top", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_TOP);
@@ -1117,7 +1107,7 @@ void Camera2D::_bind_methods() {
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_delta_independent"), "set_position_smoothing_delta_independent", "is_position_smoothing_delta_independent");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_delta_independent", PROPERTY_HINT_NONE), "set_position_smoothing_delta_independent", "is_position_smoothing_delta_independent");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_delta_limit", PROPERTY_HINT_RANGE, "0.001,0.1,0.001,suffix:s"), "set_smoothing_delta_limit", "get_smoothing_delta_limit");
 
 	ADD_GROUP("Zoom Limit", "zoom_limit_");
@@ -1125,9 +1115,13 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom_limit_min", PROPERTY_HINT_LINK), "set_zoom_min", "get_zoom_min");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom_limit_max", PROPERTY_HINT_LINK), "set_zoom_max", "get_zoom_max");
 
+	ADD_GROUP("Zoom Smoothing", "zoom_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "zoom_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_zoom_smoothing_enabled", "is_zoom_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_smoothing_speed", PROPERTY_HINT_NONE), "set_zoom_smoothing_speed", "get_zoom_smoothing_speed");
+
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed", PROPERTY_HINT_NONE), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
 
 	ADD_GROUP("Drag", "drag_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_horizontal_enabled"), "set_drag_horizontal_enabled", "is_drag_horizontal_enabled");

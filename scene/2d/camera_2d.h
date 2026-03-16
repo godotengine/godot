@@ -61,7 +61,14 @@ protected:
 	RID canvas;
 	Vector2 offset;
 	Vector2 zoom = Vector2(1, 1);
+	Vector2 smoothed_zoom = Vector2(1, 1);
 	Vector2 zoom_scale = Vector2(1, 1);
+	bool zoom_smoothing_enabled = false;
+	real_t zoom_smoothing_speed = 5.0;
+	void set_zoom_smoothing_enabled(bool p_enabled) { zoom_smoothing_enabled = p_enabled; }
+	bool is_zoom_smoothing_enabled() const { return zoom_smoothing_enabled; }
+	void set_zoom_smoothing_speed(real_t p_speed) { zoom_smoothing_speed = MAX(0, p_speed); }
+	real_t get_zoom_smoothing_speed() const { return zoom_smoothing_speed; }
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
 	bool enabled = true;
@@ -81,6 +88,7 @@ protected:
 	bool rotation_smoothing_enabled = false;
 
 	int previous_limit_sides = 0;
+	uint64_t last_smoothing_frame = UINT64_MAX;
 	bool limit_enabled = true;
 	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;
