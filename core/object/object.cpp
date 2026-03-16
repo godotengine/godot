@@ -66,22 +66,44 @@ struct _ObjectDebugLock {
 
 #endif
 
-struct _ObjectSignalLock {
-	Mutex *mutex;
-	_ObjectSignalLock(const Object *const p_obj) {
-		mutex = p_obj->signal_mutex;
-		if (mutex) {
-			mutex->lock();
+struct ObjectSignalLock {
+	Mutex *mutex1 = nullptr;
+	Mutex *mutex2 = nullptr;
+
+	ObjectSignalLock(const Object *p_obj1, const Object *p_obj2 = nullptr) {
+		mutex1 = p_obj1->signal_mutex;
+
+		if (p_obj2 != nullptr) {
+			mutex2 = p_obj2->signal_mutex;
+
+			if (mutex2 < mutex1) {
+				// We must always lock two locks in the same order.
+				SWAP(mutex1, mutex2);
+			} else if (unlikely(mutex2 == mutex1)) {
+				// No point locking the same lock twice.
+				mutex2 = nullptr;
+			}
+		}
+
+		if (mutex1) {
+			mutex1->lock();
+		}
+
+		if (mutex2) {
+			mutex2->lock();
 		}
 	}
-	~_ObjectSignalLock() {
-		if (mutex) {
-			mutex->unlock();
+
+	~ObjectSignalLock() {
+		if (mutex2) {
+			mutex2->unlock();
+		}
+
+		if (mutex1) {
+			mutex1->unlock();
 		}
 	}
 };
-
-#define OBJ_SIGNAL_LOCK _ObjectSignalLock _signal_lock(this);
 
 Object::Connection::operator Variant() const {
 	Dictionary d;
@@ -1071,7 +1093,7 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
 
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), vformat("Trying to add already existing signal '%s'.", p_signal.name));
 	SignalData s;
@@ -1080,7 +1102,7 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	if (!signal_map.has(p_name)) {
 		return false;
@@ -1089,19 +1111,26 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
-	OBJ_SIGNAL_LOCK
+	HashMap<Callable, Object::SignalData::Slot> slots_to_disconnect;
 
-	SignalData *s = signal_map.getptr(p_name);
-	ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
-	ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
-	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+	{
+		ObjectSignalLock signal_lock(this);
+
+		SignalData *s = signal_map.getptr(p_name);
+		ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
+		ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
+
+		slots_to_disconnect = std::move(s->slot_map);
+		signal_map.erase(p_name);
+	}
+
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : slots_to_disconnect) {
 		Object *target = slot_kv.key.get_object();
 		if (likely(target)) {
+			ObjectSignalLock signal_lock(target);
 			target->connections.erase(slot_kv.value.cE);
 		}
 	}
-
-	signal_map.erase(p_name);
 }
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1147,7 +1176,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	uint32_t slot_count = 0;
 
 	{
-		OBJ_SIGNAL_LOCK
+		ObjectSignalLock signal_lock(this);
 
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
@@ -1174,19 +1203,19 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		}
 
 		DEV_ASSERT(slot_count == s->slot_map.size());
+	}
 
-		// Disconnect all one-shot connections before emitting to prevent recursion.
-		for (uint32_t i = 0; i < slot_count; ++i) {
-			bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
+	// Disconnect all one-shot connections before emitting to prevent recursion.
+	for (uint32_t i = 0; i < slot_count; ++i) {
+		bool disconnect = slot_flags[i] & CONNECT_ONE_SHOT;
 #ifdef TOOLS_ENABLED
-			if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-				// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
-				disconnect = false;
-			}
+		if (disconnect && (slot_flags[i] & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+			// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
+			disconnect = false;
+		}
 #endif
-			if (disconnect) {
-				_disconnect(p_name, slot_callables[i]);
-			}
+		if (disconnect) {
+			_disconnect(p_name, slot_callables[i]);
 		}
 	}
 
@@ -1311,7 +1340,7 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// without access to ADD_SIGNAL in bind_methods
 	// added events are per instance, as opposed to the other ones, which are global
 
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	MethodInfo mi;
 	mi.name = p_name;
@@ -1365,6 +1394,8 @@ TypedArray<Dictionary> Object::_get_signal_connection_list(const StringName &p_s
 }
 
 TypedArray<Dictionary> Object::_get_incoming_connections() const {
+	ObjectSignalLock signal_lock(this);
+
 	TypedArray<Dictionary> ret;
 	for (const Object::Connection &connection : connections) {
 		ret.push_back(connection);
@@ -1390,7 +1421,7 @@ bool Object::has_signal(const StringName &p_name) const {
 }
 
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	if (script_instance) {
 		script_instance->get_script()->get_script_signal_list(p_signals);
@@ -1408,7 +1439,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 }
 
 void Object::get_all_signal_connections(List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
@@ -1420,7 +1451,7 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 }
 
 void Object::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1433,7 +1464,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 }
 
 int Object::get_persistent_signal_connection_count() const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 	int count = 0;
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
@@ -1450,7 +1481,7 @@ int Object::get_persistent_signal_connection_count() const {
 }
 
 uint32_t Object::get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 	const SignalData *signal_data = signal_map.getptr(p_name);
 	if (signal_data) {
 		const SignalData::Slot *slot = signal_data->slot_map.getptr(p_callable);
@@ -1462,7 +1493,7 @@ uint32_t Object::get_signal_connection_flags(const StringName &p_name, const Cal
 }
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	for (const Connection &E : connections) {
 		p_connections->push_back(E);
@@ -1471,13 +1502,14 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is null.", p_signal));
-	OBJ_SIGNAL_LOCK
+	Object *target_object = p_callable.get_object();
+	ObjectSignalLock signal_lock(this, target_object);
 
 	if (p_callable.is_standard()) {
 		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
 		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
 		// and registered soon enough this branch is needed to allow `connect()` to succeed.
-		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s' to callable '%s': the callable object is null.", p_signal, p_callable));
+		ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s' to callable '%s': the callable object is null.", p_signal, p_callable));
 	} else {
 		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is not valid: '%s'.", p_signal, p_callable));
 	}
@@ -1516,8 +1548,6 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		}
 	}
 
-	Object *target_object = p_callable.get_object();
-
 	SignalData::Slot slot;
 
 	Connection conn;
@@ -1540,7 +1570,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, vformat("Cannot determine if connected to '%s': the provided callable is null.", p_signal)); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1560,7 +1590,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 }
 
 bool Object::has_connections(const StringName &p_signal) const {
-	OBJ_SIGNAL_LOCK
+	ObjectSignalLock signal_lock(this);
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1585,7 +1615,8 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, vformat("Cannot disconnect from '%s': the provided callable is null.", p_signal)); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
-	OBJ_SIGNAL_LOCK
+	Object *target_object = p_callable.get_object();
+	ObjectSignalLock signal_lock(this, target_object);
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1606,11 +1637,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	if (slot->cE) {
-		Object *target_object = p_callable.get_object();
-		if (target_object) {
-			target_object->connections.erase(slot->cE);
-		}
+	if (likely(target_object)) {
+		target_object->connections.erase(slot->cE);
 	}
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
@@ -2286,36 +2314,30 @@ Object::~Object() {
 		ERR_PRINT(vformat("Object '%s' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
 	}
 
-	{
-		OBJ_SIGNAL_LOCK
-		// Drop all connections to the signals of this object.
-		while (signal_map.size()) {
-			// Avoid regular iteration so erasing is safe.
-			KeyValue<StringName, SignalData> &E = *signal_map.begin();
-			SignalData *s = &E.value;
+	// Drop all connections to the signals of this object.
+	while (signal_map.size()) {
+		// Avoid regular iteration so erasing is safe.
+		KeyValue<StringName, SignalData> &E = *signal_map.begin();
+		SignalData *s = &E.value;
 
-			for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
-				Object *target = slot_kv.value.conn.callable.get_object();
-				if (likely(target)) {
-					target->connections.erase(slot_kv.value.cE);
-				}
+		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+			Object *target = slot_kv.value.conn.callable.get_object();
+			if (likely(target)) {
+				ObjectSignalLock signal_lock(this, target);
+				target->connections.erase(slot_kv.value.cE);
 			}
-
-			signal_map.erase(E.key);
 		}
 
-		// Disconnect signals that connect to this object.
-		while (connections.size()) {
-			Connection c = connections.front()->get();
-			Object *obj = c.callable.get_object();
-			bool disconnected = false;
-			if (likely(obj)) {
-				disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
-			}
-			if (unlikely(!disconnected)) {
-				// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
-				connections.pop_front();
-			}
+		signal_map.erase(E.key);
+	}
+
+	// Disconnect signals that connect to this object.
+	while (connections.size()) {
+		Connection c = connections.front()->get();
+		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		if (unlikely(!disconnected)) {
+			// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
+			connections.pop_front();
 		}
 	}
 
