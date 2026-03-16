@@ -1,0 +1,10 @@
+GH-114221
+--------
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_line_column_at_pos/arguments/0': type changed value in new API, from "Vector2i" to "Vector2".
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/set_h_scroll/arguments/0': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/set_h_scroll/arguments/0': meta changed value in new API, from "int32" to "double".
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_h_scroll/return_value': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_h_scroll/return_value': meta changed value in new API, from "int32" to "double".
+Validate extension JSON: Error: Field 'classes/TextEdit/properties/scroll_horizontal': type changed value in new API, from "int" to "float".
+
+Changed `get_line_column_at_pos` to use `Vector2` to be more accurate. Changed horizontal scroll from `int` to `double` to match the vertical scroll. Compatibility methods registered.
