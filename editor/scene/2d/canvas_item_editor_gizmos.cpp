@@ -299,6 +299,8 @@ void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p
 
 	instance = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->canvas_item_set_parent(instance, p_base->get_canvas_item());
+	RS::get_singleton()->canvas_item_set_z_index(instance, 1);
+	RS::get_singleton()->canvas_item_set_z_as_relative_to_parent(instance, true);
 	RS::get_singleton()->canvas_item_set_visible(instance, p_visible);
 }
 
@@ -620,7 +622,7 @@ void EditorCanvasItemGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorCanvasItemGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_rect", "rect"), &EditorCanvasItemGizmo::add_collision_rect);
 	ClassDB::bind_method(D_METHOD("add_collision_polygon", "polygon"), &EditorCanvasItemGizmo::add_collision_polygon);
-	ClassDB::bind_method(D_METHOD("add_handles", "handles", "color", "ids", "secondary"), &EditorCanvasItemGizmo::add_handles, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_handles", "handles", "texture", "ids", "secondary"), &EditorCanvasItemGizmo::add_handles, DEFVAL(Ref<Texture>()), DEFVAL(PackedInt32Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_canvas_item", "canvas_item"), &EditorCanvasItemGizmo::_set_canvas_item);
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &EditorCanvasItemGizmo::get_canvas_item);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorCanvasItemGizmo::get_plugin);
@@ -900,15 +902,17 @@ Dictionary EditorCanvasItemGizmoPlugin::_edit_get_state(const EditorCanvasItemGi
 void EditorCanvasItemGizmoPlugin::_edit_set_state(const EditorCanvasItemGizmo *p_gizmo, const Dictionary &p_state) {
 	ERR_FAIL_NULL(p_gizmo);
 
-	// first restore underlying canvas item state
-	CanvasItem *ci = p_gizmo->get_canvas_item();
-	ERR_FAIL_NULL(ci);
-	ci->_edit_set_state(p_state);
-
-	// then allow GDScript code to do their own restores on a known good state
+	// allow GDScript code to do their own restores on a known good state
+	// we do this before the underlying canvas item, so we can be sure the GDScript code
+	// sees the same state it had when it created the state dictionary
 	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_state)) {
 		GDVIRTUAL_CALL(_edit_set_state, Ref<EditorCanvasItemGizmo>(p_gizmo), p_state);
 	}
+
+	// then restore underlying canvas item state
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	ci->_edit_set_state(p_state);
 }
 
 bool EditorCanvasItemGizmoPlugin::_is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
