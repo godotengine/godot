@@ -1740,6 +1740,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/hdr/request_hdr_output", false);
+	GLOBAL_DEF("display/window/hdr/max_output_value", 0.0f);
+	GLOBAL_DEF("display/window/hdr/max_output_value.android", 4.0f);
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("animation/warnings/check_invalid_skeleton_modifier_node_paths", true);

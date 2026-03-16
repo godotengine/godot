@@ -46,6 +46,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -288,5 +289,11 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	public void startRenderer() {
 		/* Set the renderer responsible for frame rendering */
 		setRenderer(godotRenderer);
+	}
+
+	@Keep
+	@Override
+	public void requestMaxHdrHeadroom(float desiredHeadroom) {
+		// Not supported for OpenGL
 	}
 }

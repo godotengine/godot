@@ -39,7 +39,9 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -222,5 +224,14 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
 		return getPointerIcon();
+	}
+
+	@Keep
+	@Override
+	public void requestMaxHdrHeadroom(float desiredHeadroom) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+			getView().setDesiredHdrHeadroom(desiredHeadroom);
+			Log.v("GodotVulkanRenderView", "requestMaxHdrHeadroom: " + desiredHeadroom);
+		}
 	}
 }

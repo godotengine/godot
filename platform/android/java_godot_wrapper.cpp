@@ -103,6 +103,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_enter_pip_mode = p_env->GetMethodID(godot_class, "nativeEnterPiPMode", "()V");
 	_set_pip_mode_aspect_ratio = p_env->GetMethodID(godot_class, "nativeSetPiPModeAspectRatio", "(II)V");
 	_set_auto_enter_pip_mode_on_background = p_env->GetMethodID(godot_class, "nativeSetAutoEnterPiPModeOnBackground", "(Z)V");
+    
+	_get_hdr_capabilities = p_env->GetMethodID(godot_class, "getHdrCapabilities", "()[F");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -755,4 +757,24 @@ void GodotJavaWrapper::set_auto_enter_pip_mode_on_background(bool p_auto_enter_o
 		ERR_FAIL_NULL(env);
 		env->CallVoidMethod(godot_instance, _set_auto_enter_pip_mode_on_background, p_auto_enter_on_background);
 	}
+}
+
+AndroidHdrCapabilities GodotJavaWrapper::get_hdr_capabilities() {
+	AndroidHdrCapabilities result = {};
+
+	ERR_FAIL_NULL_V(_get_hdr_capabilities, result);
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, result);
+	jfloatArray returnArray = (jfloatArray)env->CallObjectMethod(godot_instance, _get_hdr_capabilities);
+	ERR_FAIL_COND_V(env->GetArrayLength(returnArray) != 5, result);
+	jfloat *arrayBody = env->GetFloatArrayElements(returnArray, JNI_FALSE);
+
+	result.hdr_supported = arrayBody[0] > 0.0f;
+	result.min_luminance = arrayBody[1];
+	result.max_luminance = arrayBody[2];
+	result.max_average_luminance = arrayBody[3];
+	result.hdr_sdr_ratio = arrayBody[4];
+
+	env->ReleaseFloatArrayElements(returnArray, arrayBody, 0);
+	return result;
 }

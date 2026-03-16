@@ -46,6 +46,7 @@ import android.util.Log
 import android.util.Rational
 import android.util.TypedValue
 import android.view.*
+import android.view.Display
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -88,6 +89,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 
 /**
@@ -140,6 +142,14 @@ class Godot private constructor(val context: Context) {
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
 	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
+
+	private val hdrSdrRatioListener: Consumer<Display> by lazy {
+		Consumer<Display> { changedDisplay ->
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+				GodotLib.onHdrSdrRatioChanged(changedDisplay.hdrSdrRatio)
+			}
+		}
+	}
 
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
@@ -694,6 +704,7 @@ class Godot private constructor(val context: Context) {
 
 		renderView?.onActivityResumed()
 		registerSensorsIfNeeded()
+		registerHdrSdrRatioListenerIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainResume()
 		}
@@ -725,6 +736,29 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	private fun registerHdrSdrRatioListenerIfNeeded() {
+		if (!resumed || !godotMainLoopStarted.get()) {
+			return
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = getActivity()?.display ?: context.display
+			if (display.isHdrSdrRatioAvailable) {
+				display.registerHdrSdrRatioChangedListener(
+					{ runnable -> runOnHostThread(runnable) },
+					hdrSdrRatioListener
+				)
+			}
+		}
+	}
+
+	private fun unregisterHdrSdrRatioListenerIfNeeded() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = getActivity()?.display ?: context.display
+			display.unregisterHdrSdrRatioChangedListener(hdrSdrRatioListener)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
 		resumed = false
@@ -734,6 +768,7 @@ class Godot private constructor(val context: Context) {
 
 		renderView?.onActivityPaused()
 		mSensorManager?.unregisterListener(godotInputHandler)
+		unregisterHdrSdrRatioListenerIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
@@ -869,6 +904,7 @@ class Godot private constructor(val context: Context) {
 
 		runOnHostThread {
 			registerSensorsIfNeeded()
+			registerHdrSdrRatioListenerIfNeeded()
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
@@ -1429,4 +1465,23 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+
+	@Keep
+	private fun getHdrCapabilities(): FloatArray {
+		val result = FloatArray(5)
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = getActivity()?.display ?: context.display
+			val capabilities = display.hdrCapabilities
+
+			// The size and order of this array is critical, make sure it matches with java_godot_wrapper!
+			result[0] = if (display.isHdr && display.isHdrSdrRatioAvailable) 1.0f else 0.0f
+			result[1] = capabilities.desiredMinLuminance
+			result[2] = capabilities.desiredMaxLuminance
+			result[3] = capabilities.desiredMaxAverageLuminance
+			result[4] = if (display.isHdrSdrRatioAvailable) display.hdrSdrRatio else -1.0f
+		}
+
+		return result
+	}
 }
