@@ -319,7 +319,14 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 	}
 
 	if (!FileAccess::exists(path) && (p_path.ends_with(".a") || p_path.ends_with(".xcframework"))) {
-		path = String(); // Try loading static library.
+		// Static library already linked into the binary — use RTLD_SELF.
+		p_library_handle = RTLD_SELF;
+
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
+		}
+
+		return OK;
 	} else {
 		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 	}
