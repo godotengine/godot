@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/required_result.h"
 #include "physics_server_2d.h"
 
 class PhysicsDirectBodyState2DDummy : public PhysicsDirectBodyState2D {

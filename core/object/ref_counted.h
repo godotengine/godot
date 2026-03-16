@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/object/object_db.h"
 #include "core/templates/safe_refcount.h"
 
 class RefCounted : public Object {
