@@ -33,8 +33,8 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/object/class_db.h"
 #include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 
