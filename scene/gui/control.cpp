@@ -1001,17 +1001,17 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
-		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
-		return;
-	}
-
 	if (p_preset == -1) {
 		if (!data.stored_use_custom_anchors) {
 			data.stored_use_custom_anchors = true;
 			notify_property_list_changed();
 		}
 		return; // Keep settings as is.
+	}
+
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
+		return;
 	}
 
 	bool list_changed = false;
