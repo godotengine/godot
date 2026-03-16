@@ -31,10 +31,13 @@
 #include "canvas_item_editor_gizmos.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 bool EditorCanvasItemGizmo::is_editable() const {
 	ERR_FAIL_NULL_V(canvas_item, false);
