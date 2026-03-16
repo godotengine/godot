@@ -29,8 +29,10 @@
 /**************************************************************************/
 
 #include "shader_preprocessor.h"
+
+#include "core/math/expression.h"
 #include "core/os/os.h"
-#include "shader_expression.h"
+#include "servers/rendering/shader_expression.h"
 
 const char32_t CURSOR = 0xFFFF;
 

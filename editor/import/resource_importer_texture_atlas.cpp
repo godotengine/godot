@@ -30,11 +30,11 @@
 
 #include "resource_importer_texture_atlas.h"
 
-#include "atlas_import_failed.xpm"
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
+#include "editor/import/atlas_import_failed.xpm"
 #include "editor/import/editor_atlas_packer.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/bit_map.h"

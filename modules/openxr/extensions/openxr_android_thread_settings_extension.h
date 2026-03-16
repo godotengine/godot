@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include "core/templates/hash_map.h"
-
 #include "openxr_extension_wrapper.h"
+
+#include "core/templates/hash_map.h"
 
 #ifdef XR_USE_PLATFORM_ANDROID
 #include "../util.h"
+
 #include <jni.h>
 #include <openxr/openxr_platform.h>
 #endif

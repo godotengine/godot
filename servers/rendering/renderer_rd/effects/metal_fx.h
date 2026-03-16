@@ -36,9 +36,8 @@
 
 #ifdef METAL_ENABLED
 
-#include "spatial_upscaler.h"
-
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/renderer_rd/effects/spatial_upscaler.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device_driver.h"
 

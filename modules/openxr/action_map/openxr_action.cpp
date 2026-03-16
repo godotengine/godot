@@ -30,8 +30,9 @@
 
 #include "openxr_action.h"
 
-#include "core/object/class_db.h"
 #include "openxr_action_set.h"
+
+#include "core/object/class_db.h"
 
 void OpenXRAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRAction::set_localized_name);

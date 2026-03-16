@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "container.h"
-
-#include "scroll_bar.h"
+#include "scene/gui/container.h"
+#include "scene/gui/scroll_bar.h"
 
 class PanelContainer;
 class TextureRect;

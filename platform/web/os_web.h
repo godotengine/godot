@@ -31,9 +31,8 @@
 #pragma once
 
 #include "audio_driver_web.h"
-#include "webmidi_driver.h"
-
 #include "godot_js.h"
+#include "webmidi_driver.h"
 
 #include "core/input/input_event.h"
 #include "drivers/unix/os_unix.h"

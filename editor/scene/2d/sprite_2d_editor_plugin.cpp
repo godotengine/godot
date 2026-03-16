@@ -51,6 +51,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/mesh.h"
+
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 
 #define PRECISION 1

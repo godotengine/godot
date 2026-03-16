@@ -36,8 +36,8 @@
 #include "core/os/os.h"
 
 #include <functiondiscoverykeys.h>
-
 #include <wrl/client.h>
+
 using Microsoft::WRL::ComPtr;
 
 // Define IAudioClient3 if not already defined by MinGW headers

@@ -35,9 +35,9 @@
 #include "core/object/script_backtrace.h"
 #include "core/os/os.h"
 
-#include <cstdio>
-
 #include <windows.h>
+
+#include <cstdio>
 
 void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {

@@ -41,12 +41,12 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#include <io.h>
-#include <shellapi.h>
+#include <windows.h>
 
 #include <dwrite.h>
 #include <dwrite_2.h>
-#include <windows.h>
+#include <io.h>
+#include <shellapi.h>
 #include <windowsx.h>
 
 #ifdef DEBUG_ENABLED
