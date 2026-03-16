@@ -63,7 +63,9 @@ SyntheticSceneSummary summarize_generated_scene(
 namespace detail {
 
 String hash_hex(uint64_t p_value) {
-	return "0x" + String::num_uint64(p_value, 16).pad_zeros(16);
+	// Note: pad_zeros() uses is_digit() internally which only matches 0-9,
+	// corrupting hex strings that start with a-f. Use lpad() instead.
+	return "0x" + String::num_uint64(p_value, 16).lpad(16, "0");
 }
 
 uint32_t read_non_negative_u32(const Variant &p_value, uint32_t p_default) {
