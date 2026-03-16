@@ -2366,11 +2366,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append("\n");
 		}
 
-		for (const PropertyInterface &iprop : itype.properties) {
-			auto p_itype = itype;
-			auto p_iprop = iprop;
-
-			auto &p_output = output;
+		for (const PropertyInterface &p_iprop : itype.properties) {
+			// the following code is based on _generate_cs_property, so the following variables are renamed to match
+			const BindingsGenerator::TypeInterface p_itype = itype;
+			StringBuilder &p_output = output;
 
 			const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
 
@@ -2431,11 +2430,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (getter) {
 				p_output << INDENT2 << ".Register("
-						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + p_iprop.proxy_name << ", " << "1" << ",\n"
 						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
 						 << INDENT3 << "{\n"
-						 << INDENT4 << "var callRet = Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name << ";\n"
+						 << INDENT4 << "var callRet = Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << p_iprop.proxy_name << ";\n"
 						 << INDENT4 << "return ";
 
 				const TypeInterface *return_interface = _get_type_or_null(getter->return_type);
@@ -2459,11 +2458,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (setter) {
 				p_output << INDENT2 << ".Register("
-						 << "global::Godot." << itype.proxy_name + ".PropertyName." + iprop.proxy_name << ", " << "1" << ",\n"
+						 << "global::Godot." << itype.proxy_name + ".PropertyName." + p_iprop.proxy_name << ", " << "1" << ",\n"
 						 << INDENT3 << "[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n"
 						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
 						 << INDENT3 << "{\n"
-						 << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << iprop.proxy_name;
+						 << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << p_iprop.proxy_name;
 
 				//if (p_iprop.index != -1) {
 				//	const ArgumentInterface &idx_arg = setter->arguments.front()->get();
@@ -2479,7 +2478,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				p_output << " = ";
 
-				const auto iarg = setter->arguments.back()->get();
+				const BindingsGenerator::ArgumentInterface &iarg = setter->arguments.back()->get();
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
 					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
@@ -2817,7 +2816,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << INDENT4 << "throw new InvalidOperationException(\"Signal script dispatcher should not be called for built-in types!\");\n"
 					   << INDENT4 << "//Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).backing_" << isignal.proxy_name << "?.Invoke(";
 
-				auto &imethod = isignal;
+				const BindingsGenerator::SignalInterface &imethod = isignal;
 
 				int idx = 0;
 				for (const ArgumentInterface &iarg : imethod.arguments) {
