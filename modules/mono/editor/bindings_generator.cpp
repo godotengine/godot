@@ -2661,8 +2661,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				}
 				output << ".MethodRegistry)";
 			} else {
-				ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
-				return ERR_INVALID_DATA;
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			}
 		}
 
