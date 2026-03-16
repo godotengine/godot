@@ -2367,7 +2367,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		for (const PropertyInterface &p_iprop : itype.properties) {
-			// the following code is based on _generate_cs_property, so the following variables are renamed to match
+			// The following code is based on `_generate_cs_property`, so the following variables are renamed to match.
 			const BindingsGenerator::TypeInterface p_itype = itype;
 			StringBuilder &p_output = output;
 
@@ -2384,7 +2384,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			const MethodInterface *getter = p_itype.find_method_by_name(p_iprop.getter);
 
-			// Search it in base types too
+			// Search it in base types too.
 			current_type = &p_itype;
 			while (!getter && current_type->base_name != StringName()) {
 				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
@@ -2441,18 +2441,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				String to_managed = sformat(return_interface->cs_managed_to_variant, "callRet", return_interface->cs_type, return_interface->name).replacen("params ", "");
 
 				p_output << to_managed << ";\n";
-
-				//if (p_iprop.index != -1) {
-				//	const ArgumentInterface &idx_arg = getter->arguments.front()->get();
-				//	if (idx_arg.type.cname != name_cache.type_int) {
-				//		// Assume the index parameter is an enum
-				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
-				//		CRASH_COND(idx_arg_type == nullptr);
-				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + ")");
-				//	} else {
-				//		p_output.append(itos(p_iprop.index));
-				//	}
-				//}
 				p_output << INDENT3 << "})\n";
 			}
 
@@ -2463,18 +2451,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						 << INDENT3 << "static (GodotObject scriptInstance, scoped in godot_variant value) =>\n"
 						 << INDENT3 << "{\n"
 						 << INDENT4 << "Unsafe.As<GodotObject, " << itype.proxy_name << ">(ref scriptInstance).@" << p_iprop.proxy_name;
-
-				//if (p_iprop.index != -1) {
-				//	const ArgumentInterface &idx_arg = setter->arguments.front()->get();
-				//	if (idx_arg.type.cname != name_cache.type_int) {
-				//		// Assume the index parameter is an enum
-				//		const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
-				//		CRASH_COND(idx_arg_type == nullptr);
-				//		p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + "), ");
-				//	} else {
-				//		p_output.append(itos(p_iprop.index) + ", ");
-				//	}
-				//}
 
 				p_output << " = ";
 
@@ -2648,7 +2624,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << itype.proxy_name
 			   << ">()";
 
-		// TODO: this is a 99% copy & paste from above: we need to know if we inherit from someone to "inherit" the base type MethodRegistry
+		// Carry over the method registrations of the base class. As this generator cares only about GodotSharp classes,
+		// it's only about aliases registrations (see comment below).
 		if (is_derived_type && !itype.is_singleton) {
 			if (obj_types.has(itype.base_name)) {
 				TypeInterface base_type = obj_types[itype.base_name];
