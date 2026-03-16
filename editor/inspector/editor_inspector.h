@@ -382,6 +382,8 @@ class EditorInspectorCategory : public Control {
 
 	friend class EditorInspector;
 
+	const float FADE_AMOUNT = 0.25;
+
 	// Right-click context menu options.
 	enum ClassMenuOption {
 		MENU_COPY_VALUE,
@@ -418,11 +420,16 @@ class EditorInspectorCategory : public Control {
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
 
+	HBoxContainer *button_hbox = nullptr;
+	Button *open_docs_button = nullptr;
+
 	LocalVector<EditorProperty *> category_properties;
 
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
+	void _setup_category_buttons();
+	void _fade_category_buttons(float p_fade_amount);
 	void _theme_changed();
 
 protected:

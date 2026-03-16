@@ -56,6 +56,7 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/animation/tween.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -1785,8 +1786,51 @@ void EditorInspectorCategory::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("unfavorite_all"));
 }
 
+void EditorInspectorCategory::_fade_category_buttons(const float p_fade_amount) {
+	const Ref<Tween> tween = create_tween();
+	tween->tween_property(button_hbox, NodePath("modulate"), Color(1, 1, 1, p_fade_amount), 0.25);
+}
+
+void EditorInspectorCategory::_setup_category_buttons() {
+	button_hbox = memnew(HBoxContainer);
+	button_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	button_hbox->set_alignment(BoxContainer::ALIGNMENT_END);
+	button_hbox->set_mouse_filter(MOUSE_FILTER_PASS);
+	button_hbox->set_modulate(Color(1, 1, 1, FADE_AMOUNT));
+	button_hbox->add_theme_constant_override("separation", 0);
+	add_child(button_hbox);
+
+	if (!info.hint_string.is_empty()) {
+		open_docs_button = memnew(Button);
+		open_docs_button->set_tooltip_text(TTRC("Open documentation for this object."));
+		open_docs_button->set_flat(true);
+		open_docs_button->set_button_icon(get_editor_theme_icon(SNAME("Help")));
+		open_docs_button->set_mouse_filter(MOUSE_FILTER_PASS);
+		open_docs_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option).bind(MENU_OPEN_DOCS));
+		button_hbox->add_child(open_docs_button);
+	}
+}
+
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_setup_category_buttons();
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			_fade_category_buttons(1);
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			_fade_category_buttons(FADE_AMOUNT);
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			if (open_docs_button) {
+				open_docs_button->set_button_icon(get_editor_theme_icon(SNAME("Help")));
+			}
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorCategory::_theme_changed));
 		} break;
