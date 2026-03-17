@@ -717,7 +717,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	}
 
 	p_instance.set_parameter_fade_in_remaining(cur_fade_in_remaining, p_process_state.is_testing);
-	p_instance.set_parameter_fade_in_remaining(cur_fade_out_remaining, p_process_state.is_testing);
+	p_instance.set_parameter_fade_out_remaining(cur_fade_out_remaining, p_process_state.is_testing);
 
 	return cur_internal_active ? os_nti : main_nti;
 }
