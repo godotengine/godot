@@ -1527,7 +1527,7 @@ bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::Wi
 
 void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+	ERR_FAIL_COND_MSG(p_enabled && !(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
 #endif
 
 	ERR_FAIL_COND(!windows.has(p_window_id));
