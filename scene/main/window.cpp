@@ -898,12 +898,16 @@ void Window::hide() {
 
 void Window::_accessibility_activate() {
 	_accessibility_notify_enter(this);
-	DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+	if (!get_embedder()) {
+		DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+	}
 }
 
 void Window::_accessibility_deactivate() {
 	_accessibility_notify_exit(this);
-	DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+	if (!get_embedder()) {
+		DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+	}
 }
 
 void Window::_accessibility_notify_enter(Node *p_node) {
@@ -988,12 +992,16 @@ void Window::set_visible(bool p_visible) {
 		if (get_tree() && get_tree()->is_accessibility_supported()) {
 			get_tree()->_accessibility_force_update();
 			_accessibility_notify_enter(this);
-			DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+			if (!embedder_vp) {
+				DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+			}
 		}
 	} else {
 		if (get_tree() && get_tree()->is_accessibility_supported()) {
 			_accessibility_notify_exit(this);
-			DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+			if (!embedder_vp) {
+				DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+			}
 		}
 		focused = false;
 		if (focused_window == this) {
@@ -1598,7 +1606,9 @@ void Window::_notification(int p_what) {
 				if (window_id != DisplayServer::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
 					get_tree()->_accessibility_force_update();
 					_accessibility_notify_enter(this);
-					DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+					if (!embedder) {
+						DisplayServer::get_singleton()->accessibility_window_activation_completed(get_window_id());
+					}
 				}
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringName(visibility_changed));
@@ -1653,7 +1663,9 @@ void Window::_notification(int p_what) {
 			if (visible && window_id != DisplayServer::MAIN_WINDOW_ID) {
 				if (get_tree() && get_tree()->is_accessibility_supported()) {
 					_accessibility_notify_exit(this);
-					DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+					if (!embedder) {
+						DisplayServer::get_singleton()->accessibility_window_deactivation_completed(get_window_id());
+					}
 					if (get_parent()) {
 						get_parent()->queue_accessibility_update();
 					}
