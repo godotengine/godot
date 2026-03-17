@@ -1972,10 +1972,10 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		return;
 	}
 
-	if (tex->rd_texture_srgb.is_valid()) {
-		RD::get_singleton()->free_rid(tex->rd_texture_srgb);
-	}
-	RD::get_singleton()->free_rid(tex->rd_texture);
+	RID old_rd_texture = tex->rd_texture;
+	RID old_rd_texture_srgb = tex->rd_texture_srgb;
+	RID new_rd_texture = by_tex->rd_texture;
+	RID new_rd_texture_srgb = by_tex->rd_texture_srgb;
 
 	if (tex->canvas_texture) {
 		memdelete(tex->canvas_texture);
@@ -1999,6 +1999,19 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	for (int i = 0; i < proxies_to_redirect.size(); i++) {
 		texture_proxy_update(proxies_to_redirect[i], p_texture);
 	}
+
+	// Replace RD-level textures: patches uniform sets and defers old resources.
+	if (old_rd_texture_srgb.is_valid() && old_rd_texture_srgb != new_rd_texture_srgb) {
+		if (new_rd_texture_srgb.is_valid()) {
+			RD::get_singleton()->texture_replace_rid(old_rd_texture_srgb, new_rd_texture_srgb);
+		} else {
+			RD::get_singleton()->free_rid(old_rd_texture_srgb);
+		}
+	}
+	if (old_rd_texture != new_rd_texture) {
+		RD::get_singleton()->texture_replace_rid(old_rd_texture, new_rd_texture);
+	}
+
 	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 
