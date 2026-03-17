@@ -30,10 +30,12 @@
 
 package org.godotengine.godot
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
+import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -42,10 +44,12 @@ import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
+import android.provider.Settings.Global
 import android.util.Log
 import android.util.Rational
 import android.util.TypedValue
 import android.view.*
+import android.view.accessibility.AccessibilityManager
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -988,6 +992,47 @@ class Godot private constructor(val context: Context) {
 				getActivity()?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 			}
 		}
+	}
+
+	/**
+	 * Returns true if screen reader is active, false otherwise.
+	 */
+	@Keep
+	private fun isScreenReaderActive(): Boolean {
+		val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (am != null && am.isEnabled()) {
+			val serviceInfoList = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_SPOKEN)
+			if (!serviceInfoList.isEmpty()) {
+				return true
+			}
+		}
+		return false
+	}
+
+	/**
+	 * Returns true if high contrast text is enabled, false otherwise.
+	 */
+	@Keep
+	private fun isHighContrastActive(): Boolean {
+		val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (am != null && am.isEnabled()) {
+			return am.isHighContrastTextEnabled()
+		}
+		return false
+	}
+
+	/**
+	 * Returns true if animation is disabled, false otherwise.
+	 */
+	@Keep
+	private fun isAnimationDisabled(): Boolean {
+		val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (am != null && am.isEnabled()) {
+			return (Global.getFloat(context.getContentResolver(), Global.ANIMATOR_DURATION_SCALE, 1.0f) == 0f
+                && Global.getFloat(context.getContentResolver(), Global.TRANSITION_ANIMATION_SCALE, 1.0f) == 0f
+                && Global.getFloat(context.getContentResolver(), Global.WINDOW_ANIMATION_SCALE, 1.0f) == 0f)
+		}
+		return false
 	}
 
 	/**

@@ -130,6 +130,11 @@ public:
 	virtual void update_set_background_color(const RID &p_id, const Color &p_color) override {}
 	virtual void update_set_foreground_color(const RID &p_id, const Color &p_color) override {}
 
+	virtual void *native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) override { return nullptr; }
+	virtual void *native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) override { return nullptr; }
+	virtual bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) override { return false; }
+	virtual bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) override { return false; }
+
 	AccessibilityServerDummy() {}
 	virtual ~AccessibilityServerDummy() {}
 };

@@ -204,6 +204,7 @@ String tablet_driver = "";
 String text_driver = "";
 static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
+static int accessibility_driver_idx = -1;
 
 // Engine config/tools
 
@@ -1078,6 +1079,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String audio_driver = "";
 	String project_path = ".";
 	String debug_uri = "";
+	Error err = OK;
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
 	bool test_rd_support = false;
@@ -2041,7 +2043,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else {
 			port = 6010;
 		}
-		Error err = OS::get_singleton()->setup_remote_filesystem(remotefs, port, remotefs_pass, project_path);
+		err = OS::get_singleton()->setup_remote_filesystem(remotefs, port, remotefs_pass, project_path);
 
 		if (err) {
 			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
@@ -2870,6 +2872,55 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
+	// Init AccessibilityServer.
+	// Note: early setup is required for Android.
+	if (accessibility_driver_name.is_empty()) {
+		if (!editor && !project_manager) {
+			accessibility_driver_name = GLOBAL_GET("accessibility/general/accessibility_driver");
+		} else {
+			accessibility_driver_name = "accesskit";
+		}
+	}
+	if (display_driver == NULL_DISPLAY_DRIVER || display_driver == EMBEDDED_DISPLAY_DRIVER || accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver_name = "dummy";
+	}
+
+	if (accessibility_driver_name.is_empty() || accessibility_driver_name == "default") {
+		accessibility_driver_idx = 0;
+	} else {
+		for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
+			String name = AccessibilityServer::get_create_function_name(i);
+			if (accessibility_driver_name == name) {
+				accessibility_driver_idx = i;
+				break;
+			}
+		}
+
+		if (accessibility_driver_idx < 0) {
+			// If the requested driver wasn't found, pick the first entry.
+			// If all else failed it would be the headless server.
+			accessibility_driver_idx = 0;
+		}
+	}
+
+	accessibility_server = AccessibilityServer::create(accessibility_driver_idx, err);
+	if (err != OK || accessibility_server == nullptr) {
+		String last_name = AccessibilityServer::get_create_function_name(accessibility_driver_idx);
+
+		for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
+			if (i == accessibility_driver_idx) {
+				continue; // Don't try the same twice.
+			}
+			String name = AccessibilityServer::get_create_function_name(i);
+			WARN_VERBOSE(vformat("Accessibility driver %s failed, falling back to %s.", last_name, name));
+
+			accessibility_server = AccessibilityServer::create(i, err);
+			if (err == OK && accessibility_server != nullptr) {
+				break;
+			}
+		}
+	}
+
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
@@ -3261,56 +3312,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 				accessibility_mode = (AccessibilityServerEnums::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
 			}
 		}
-		if (accessibility_driver_name.is_empty()) {
-			if (!editor && !project_manager) {
-				accessibility_driver_name = GLOBAL_GET("accessibility/general/accessibility_driver");
-			} else {
-				accessibility_driver_name = "accesskit";
-			}
-		}
-		if (display_driver == NULL_DISPLAY_DRIVER || display_driver == EMBEDDED_DISPLAY_DRIVER || accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
-			accessibility_driver_name = "dummy";
-		}
-		int accessibility_driver_idx = -1;
 
-		if (accessibility_driver_name.is_empty() || accessibility_driver_name == "default") {
-			accessibility_driver_idx = 0;
-		} else {
-			for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
-				String name = AccessibilityServer::get_create_function_name(i);
-				if (accessibility_driver_name == name) {
-					accessibility_driver_idx = i;
-					break;
-				}
-			}
-
-			if (accessibility_driver_idx < 0) {
-				// If the requested driver wasn't found, pick the first entry.
-				// If all else failed it would be the headless server.
-				accessibility_driver_idx = 0;
-			}
-		}
-
-		Error err;
-		accessibility_server = AccessibilityServer::create(accessibility_driver_idx, err);
-		if (err != OK || accessibility_server == nullptr) {
-			String last_name = AccessibilityServer::get_create_function_name(accessibility_driver_idx);
-
-			for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
-				if (i == accessibility_driver_idx) {
-					continue; // Don't try the same twice.
-				}
-				String name = AccessibilityServer::get_create_function_name(i);
-				WARN_VERBOSE(vformat("Accessibility driver %s failed, falling back to %s.", last_name, name));
-
-				accessibility_server = AccessibilityServer::create(i, err);
-				if (err == OK && accessibility_server != nullptr) {
-					break;
-				}
-			}
-		}
 		accessibility_server->set_mode(accessibility_mode);
 
+		Error err;
 		String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {

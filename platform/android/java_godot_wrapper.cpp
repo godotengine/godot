@@ -96,6 +96,9 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_build_env_execute = p_env->GetMethodID(godot_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
 	_build_env_cancel = p_env->GetMethodID(godot_class, "nativeBuildEnvCancel", "(I)V");
 	_build_env_clean_project = p_env->GetMethodID(godot_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
+	_is_screen_reader_active = p_env->GetMethodID(godot_class, "isScreenReaderActive", "()Z");
+	_is_high_contrast_active = p_env->GetMethodID(godot_class, "isHighContrastActive", "()Z");
+	_is_animation_disabled = p_env->GetMethodID(godot_class, "isAnimationDisabled", "()Z");
 
 	// PiP mode method ids.
 	_is_pip_mode_supported = p_env->GetMethodID(godot_class, "nativeIsPiPModeSupported", "()Z");
@@ -529,6 +532,36 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
 		env->DeleteLocalRef(j_benchmark_file);
+	}
+}
+
+bool GodotJavaWrapper::is_screen_reader_active() {
+	if (_is_screen_reader_active) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_screen_reader_active);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_animation_disabled() {
+	if (_is_animation_disabled) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_animation_disabled);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_high_contrast_active() {
+	if (_is_high_contrast_active) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_high_contrast_active);
+	} else {
+		return false;
 	}
 }
 
