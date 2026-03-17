@@ -502,6 +502,11 @@ public:
 	static int64_t get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
+	static void bind_variant_constant(const StringName &p_class, const StringName &p_name, const Variant &p_constant);
+	static void get_variant_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
+	static Variant get_variant_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
+	static bool has_variant_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
@@ -546,13 +551,16 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_name(#m_constant), m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_name(#m_constant), m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_name(#m_constant), m_constant);
+
+#define BIND_VARIANT_CONSTANT(m_constant) \
+	get_gdtype_static_mutable().bind_variant_constant(__constant_get_name(#m_constant), m_constant);
 
 #ifdef DEBUG_ENABLED
 

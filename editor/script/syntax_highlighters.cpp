@@ -155,6 +155,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
+			ClassDB::get_variant_constant_list(instance_base, &clist);
 			for (const String &E : clist) {
 				highlighter->add_member_keyword_color(E, member_variable_color);
 			}

@@ -260,7 +260,7 @@ inline StringName __constant_get_enum_name(T param) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-inline StringName __constant_get_enum_value_name(const char *p_name) {
+inline StringName __constant_get_name(const char *p_name) {
 	return String(p_name).get_slice("::", 1);
 }
 

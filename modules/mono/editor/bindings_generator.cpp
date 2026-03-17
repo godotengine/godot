@@ -4445,6 +4445,45 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			itype.constants.push_back(iconstant);
 		}
 
+		List<String> variant_constants;
+		ClassDB::get_variant_constant_list(type_cname, &variant_constants, true);
+
+		for (const String &constant_name : variant_constants) {
+			Variant value = ClassDB::get_variant_constant(type_cname, StringName(constant_name));
+
+			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
+
+			if (itype.find_property_by_proxy_name(constant_proxy_name) || itype.find_method_by_proxy_name(constant_proxy_name) || itype.find_signal_by_proxy_name(constant_proxy_name)) {
+				// In case the constant name conflicts with other PascalCase members,
+				// we append 'Constant' to the constant name in those cases.
+				constant_proxy_name += "Constant";
+			}
+
+			VariantConstantInterface iconstant(constant_name, constant_proxy_name, value);
+
+			iconstant.const_doc = nullptr;
+			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
+				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
+
+				if (const_doc.name == iconstant.name) {
+					iconstant.const_doc = &const_doc;
+					break;
+				}
+			}
+
+			if (iconstant.const_doc) {
+				iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
+				iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
+
+				if (iconstant.is_deprecated && iconstant.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Constant: '" + itype.proxy_name + "." + iconstant.proxy_name + "'.");
+					iconstant.deprecation_message = "This constant is deprecated.";
+				}
+			}
+
+			itype.variant_constants.push_back(iconstant);
+		}
+
 		obj_types.insert(itype.cname, itype);
 
 		if (itype.is_singleton) {

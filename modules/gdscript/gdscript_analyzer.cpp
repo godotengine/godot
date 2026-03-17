@@ -259,7 +259,7 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 	if (ClassDB::has_property(p_native_type_string, p_member_name)) {
 		return true;
 	}
-	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
+	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name) || ClassDB::has_variant_constant(p_native_type_string, p_member_name)) {
 		return true;
 	}
 	if (p_member_name == CoreStringName(script)) {
@@ -4366,6 +4366,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 			return;
 		}
+
 		bool valid = false;
 
 		int64_t int_constant = ClassDB::get_integer_constant(native, name, &valid);
@@ -4381,6 +4382,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			} else {
 				p_identifier->set_datatype(type_from_variant(int_constant, p_identifier));
 			}
+		}
+
+		Variant variant_constant = ClassDB::get_variant_constant(native, name, &valid);
+		if (valid) {
+			p_identifier->is_constant = true;
+			p_identifier->reduced_value = variant_constant;
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+			p_identifier->set_datatype(type_from_variant(variant_constant, p_identifier));
 		}
 	}
 }
@@ -6185,7 +6194,7 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		} else if (ClassDB::has_property(native_base_class, name, true)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "property", native_base_class);
 			return;
-		} else if (ClassDB::has_integer_constant(native_base_class, name, true)) {
+		} else if (ClassDB::has_integer_constant(native_base_class, name, true) || ClassDB::has_variant_constant(native_base_class, name, true)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "constant", native_base_class);
 			return;
 		} else if (ClassDB::has_enum(native_base_class, name, true)) {

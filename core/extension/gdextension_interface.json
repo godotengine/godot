@@ -8935,6 +8935,43 @@
             "since": "4.1"
         },
         {
+            "name": "classdb_register_extension_class_variant_constant",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                },
+                {
+                    "name": "p_constant_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the constant name."
+                    ]
+                },
+                {
+                    "name": "p_constant_value",
+                    "type": "const GDExtensionVariantPtr*",
+                    "description": [
+                        "A pointer to a Variant with the constant value."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers a Variant constant on an extension class in the ClassDB."
+            ],
+            "since": "4.7"
+        },
+        {
             "name": "classdb_register_extension_class_property",
             "arguments": [
                 {
