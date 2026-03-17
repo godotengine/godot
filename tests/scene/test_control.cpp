@@ -1236,14 +1236,14 @@ TEST_CASE("[SceneTree][Control] Container layout") {
 		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
 		CHECK_MESSAGE(
-			b1->get_position().y == 0,
-			"First child should be at the top of the container.");
+				b1->get_position().y == 0,
+				"First child should be at the top of the container.");
 		CHECK_MESSAGE(
-			Math::is_equal_approx(b2->get_position().y, b1->get_size().y),
-			"Second child position should be after first child's height.");
+				Math::is_equal_approx(b2->get_position().y, b1->get_size().y),
+				"Second child position should be after first child's height.");
 		CHECK_MESSAGE(
-			Math::is_equal_approx(b3->get_position().y, b1->get_size().y + b2->get_size().y),
-			"Third child position should be after the sum of other children's heights.");
+				Math::is_equal_approx(b3->get_position().y, b1->get_size().y + b2->get_size().y),
+				"Third child position should be after the sum of other children's heights.");
 		root->remove_child(container);
 		memdelete(container);
 	}
@@ -1260,14 +1260,14 @@ TEST_CASE("[SceneTree][Control] Container layout") {
 		container->add_child(b3);
 		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
 		CHECK_MESSAGE(
-			b1->get_position().x == 0,
-			"First child should be on the left side of the container.");
+				b1->get_position().x == 0,
+				"First child should be on the left side of the container.");
 		CHECK_MESSAGE(
-			Math::is_equal_approx(b2->get_position().x, b1->get_size().x),
-			"Second child should be after the first child's width.");
+				Math::is_equal_approx(b2->get_position().x, b1->get_size().x),
+				"Second child should be after the first child's width.");
 		CHECK_MESSAGE(
-			Math::is_equal_approx(b3->get_position().x, b1->get_size().x + b2->get_size().x),
-			"Third child should be after the sum of the other children's widths.");
+				Math::is_equal_approx(b3->get_position().x, b1->get_size().x + b2->get_size().x),
+				"Third child should be after the sum of the other children's widths.");
 		root->remove_child(container);
 		memdelete(container);
 	}
