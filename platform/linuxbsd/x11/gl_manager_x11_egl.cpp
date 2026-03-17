@@ -57,4 +57,4 @@ Vector<EGLint> GLManagerEGL_X11::_get_platform_context_attribs() const {
 	return ret;
 }
 
-#endif // WINDOWS_ENABLED && GLES3_ENABLED
+#endif // X11_ENABLED && GLES3_ENABLED
