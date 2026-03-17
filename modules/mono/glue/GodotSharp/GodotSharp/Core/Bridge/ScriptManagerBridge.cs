@@ -432,8 +432,7 @@ namespace Godot.Bridge
                     _sourceFilePaths.TryAdd(scriptPathAttr.Path, scriptPathAttr.SourceFile);
                 }
 
-                if (externalTypes != null &&
-                    scriptPathAttr.Path.StartsWith("csharp://", StringComparison.Ordinal))
+                if (externalTypes != null)
                 {
                     externalTypes.Add(type);
                 }
