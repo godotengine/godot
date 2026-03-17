@@ -347,6 +347,18 @@ void Skeleton3D::_notification(int p_what) {
 				return;
 			}
 
+			// Copy the final bone transforms
+			global_bone_transforms_final.clear();
+			global_bone_transforms_final.reserve(bones.size());
+			for (uint32_t i = 0; i < bones.size(); i++) {
+				global_bone_transforms_final.push_back(bonesptr[i].global_pose);
+			}
+			bone_transforms_final.clear();
+			bone_transforms_final.reserve(bones.size());
+			for (uint32_t i = 0; i < bones.size(); i++) {
+				bone_transforms_final.push_back(bonesptr[i].pose_cache);
+			}
+
 			emit_signal(SceneStringName(skeleton_updated));
 
 			// Update skins.
@@ -564,6 +576,15 @@ void Skeleton3D::_update_bone_global_pose(int p_bone) const {
 		bone.global_pose = global_pose;
 		bone_global_pose_dirty[bone.nested_set_offset] = false;
 	}
+}
+
+Transform3D Skeleton3D::get_bone_global_pose_final(int p_bone) const {
+	const int bone_size = global_bone_transforms_final.size();
+	if (p_bone > bone_size) {
+		return get_bone_global_pose(p_bone);
+	}
+
+	return global_bone_transforms_final[p_bone];
 }
 
 Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
@@ -927,6 +948,14 @@ Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
 	bones[p_bone].update_pose_cache();
 	return bones[p_bone].pose_cache;
+}
+
+Transform3D Skeleton3D::get_bone_pose_final(int p_bone) const {
+	const int bone_size = bone_transforms_final.size();
+	if (p_bone > bone_size) {
+		return get_bone_pose(p_bone);
+	}
+	return bone_transforms_final[p_bone];
 }
 
 void Skeleton3D::_make_dirty() {
