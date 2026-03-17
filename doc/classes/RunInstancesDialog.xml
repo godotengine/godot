@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RunInstancesDialog" inherits="AcceptDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class used to define the number of instances to be created during play mode. As well as their launch arguments and feature tags.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_instance_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of instances that will be created during play.
+			</description>
+		</method>
+		<method name="get_stored_data" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the launch arguments and feature tags of each instance.
+			</description>
+		</method>
+		<method name="set_instance_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<param index="1" name="force_debug_mode" type="bool" />
+			<description>
+				Sets the number of instances to be created during play mode.
+				[code]enable_multiples_instances[/code] is set to [code]false[/code] if instance count equals [code]0[/code]. Unless [param force_debug_mode] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_stored_data">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary[]" />
+			<description>
+				Sets the launch arguments and feature tags of each instance. The number of instances will match the size of the provided dictionary.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Run Instances&quot;" />
+	</members>
+</class>
