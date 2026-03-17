@@ -108,6 +108,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 	} else {
 		emit_signal(SceneStringName(hidden));
 	}
+	queue_accessibility_update();
 
 	_block();
 	for (int i = 0; i < get_child_count(); i++) {
@@ -374,7 +375,7 @@ void CanvasItem::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
