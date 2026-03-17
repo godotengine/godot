@@ -1234,10 +1234,10 @@
 			The minimum distance the mouse cursor must move while pressed before a drag operation begins in the default viewport. For custom viewports see [member Viewport.gui_drag_threshold].
 		</member>
 		<member name="gui/common/show_focus_state_on_pointer_event" type="int" setter="" getter="" default="1">
-			Determines whether a [Control] should visually indicate focus when said focus is gained using a mouse or touch input.
+			Determines whether a [Control] should visually indicate focus when that focus is gained using a mouse or touch input.
 			- [b]Never[/b] ([code]0[/code]) show the focused state for mouse/touch input.
-			- [b]Control Supports Keyboard Input[/b] ([code]1[/code]) shows the focused state even when gained via mouse/touch input (similar to how browsers handle focus).
-			- [b]Always[/b] ([code]2[/code]) show the focused state, even if said focus was gained via mouse/touch input.
+			- [b]Text Input Controls[/b] ([code]1[/code]) show the focused state even if that focus was gained via mouse/touch input (similar to browser behavior).
+			- [b]Always[/b] ([code]2[/code]) show the focused state, even if that focus was gained via mouse/touch input.
 		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
