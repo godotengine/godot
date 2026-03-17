@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
@@ -260,7 +261,7 @@ String FileAccess::fix_path(const String &p_path) const {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
 				if (r_path.begins_with("uid://")) {
-					ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(r_path);
+					ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(r_path);
 					if (ResourceUID::get_singleton()->has_id(uid)) {
 						r_path = ResourceUID::get_singleton()->get_id_path(uid);
 					} else {

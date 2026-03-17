@@ -52,7 +52,7 @@ static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g'
 static constexpr uint32_t uuid_characters_element_count = std_size(uuid_characters);
 static constexpr uint8_t max_uuid_number_length = 13; // Max 0x7FFFFFFFFFFFFFFF (uid://d4n4ub6itg400) size is 13 characters.
 
-String ResourceUID::id_to_text(ID p_id) const {
+String ResourceUID::id_to_text(ResourceUIDTypes::ID p_id) const {
 	if (p_id < 0) {
 		return "uid://<invalid>";
 	}
@@ -89,9 +89,9 @@ String ResourceUID::id_to_text(ID p_id) const {
 	return txt;
 }
 
-ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
+ResourceUIDTypes::ID ResourceUID::text_to_id(const String &p_text) const {
 	if (!p_text.begins_with("uid://") || p_text == "uid://<invalid>") {
-		return INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	uint32_t l = p_text.length();
@@ -104,13 +104,13 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 		} else if (is_digit(c)) {
 			uid += c - '0' + char_count;
 		} else {
-			return INVALID_ID;
+			return ResourceUIDTypes::INVALID_ID;
 		}
 	}
-	return ID(uid & 0x7FFFFFFFFFFFFFFF);
+	return ResourceUIDTypes::ID(uid & 0x7FFFFFFFFFFFFFFF);
 }
 
-ResourceUID::ID ResourceUID::create_id() {
+ResourceUIDTypes::ID ResourceUID::create_id() {
 	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
 	// need to lazily instantiate the random number generator.
 	if (crypto == nullptr) {
@@ -119,10 +119,10 @@ ResourceUID::ID ResourceUID::create_id() {
 	}
 
 	while (true) {
-		ID id = INVALID_ID;
+		ResourceUIDTypes::ID id = ResourceUIDTypes::INVALID_ID;
 		MutexLock lock(mutex);
 		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
-		ERR_FAIL_COND_V(err != OK, INVALID_ID);
+		ERR_FAIL_COND_V(err != OK, ResourceUIDTypes::INVALID_ID);
 		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
 		if (!exists) {
@@ -131,8 +131,8 @@ ResourceUID::ID ResourceUID::create_id() {
 	}
 }
 
-ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
-	ID id = INVALID_ID;
+ResourceUIDTypes::ID ResourceUID::create_id_for_path(const String &p_path) {
+	ResourceUIDTypes::ID id = ResourceUIDTypes::INVALID_ID;
 	RandomPCG rng;
 
 	const String project_name = GLOBAL_GET("application/config/name");
@@ -154,12 +154,12 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 	return id;
 }
 
-bool ResourceUID::has_id(ID p_id) const {
+bool ResourceUID::has_id(ResourceUIDTypes::ID p_id) const {
 	MutexLock l(mutex);
 	return unique_ids.has(p_id);
 }
 
-void ResourceUID::add_id(ID p_id, const String &p_path) {
+void ResourceUID::add_id(ResourceUIDTypes::ID p_id, const String &p_path) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(unique_ids.has(p_id));
 	Cache c;
@@ -171,7 +171,7 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 	changed = true;
 }
 
-void ResourceUID::set_id(ID p_id, const String &p_path) {
+void ResourceUID::set_id(ResourceUIDTypes::ID p_id, const String &p_path) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
 	CharString cs = p_path.utf8();
@@ -190,8 +190,8 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	}
 }
 
-String ResourceUID::get_id_path(ID p_id) const {
-	ERR_FAIL_COND_V_MSG(p_id == INVALID_ID, String(), "Invalid UID.");
+String ResourceUID::get_id_path(ResourceUIDTypes::ID p_id) const {
+	ERR_FAIL_COND_V_MSG(p_id == ResourceUIDTypes::INVALID_ID, String(), "Invalid UID.");
 	MutexLock l(mutex);
 	const ResourceUID::Cache *cache = unique_ids.getptr(p_id);
 
@@ -212,15 +212,15 @@ String ResourceUID::get_id_path(ID p_id) const {
 	return String::utf8(cs.ptr());
 }
 
-ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
-	const ID *id = reverse_cache.getptr(p_path.utf8());
+ResourceUIDTypes::ID ResourceUID::get_path_id(const String &p_path) const {
+	const ResourceUIDTypes::ID *id = reverse_cache.getptr(p_path.utf8());
 	if (id) {
 		return *id;
 	}
-	return INVALID_ID;
+	return ResourceUIDTypes::INVALID_ID;
 }
 
-void ResourceUID::remove_id(ID p_id) {
+void ResourceUID::remove_id(ResourceUIDTypes::ID p_id) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
 	if (use_reverse_cache) {
@@ -234,8 +234,8 @@ String ResourceUID::uid_to_path(const String &p_uid) {
 }
 
 String ResourceUID::path_to_uid(const String &p_path) {
-	const ID id = ResourceLoader::get_resource_uid(p_path);
-	if (id == INVALID_ID) {
+	const ResourceUIDTypes::ID id = ResourceLoader::get_resource_uid(p_path);
+	if (id == ResourceUIDTypes::INVALID_ID) {
 		return p_path;
 	} else {
 		return singleton->id_to_text(id);
@@ -249,12 +249,12 @@ String ResourceUID::ensure_path(const String &p_uid_or_path) {
 	return p_uid_or_path;
 }
 
-Vector<uint8_t> ResourceUID::encode_binary_cache(const Vector<Pair<ID, String>> &p_entries) {
+Vector<uint8_t> ResourceUID::encode_binary_cache(const Vector<Pair<ResourceUIDTypes::ID, String>> &p_entries) {
 	Ref<StreamPeerBuffer> buffer;
 	buffer.instantiate();
 	buffer->put_u32(p_entries.size());
 
-	for (const Pair<ID, String> &entry : p_entries) {
+	for (const Pair<ResourceUIDTypes::ID, String> &entry : p_entries) {
 		buffer->put_u64(uint64_t(entry.first));
 		CharString cs = entry.second.utf8();
 		buffer->put_u32(cs.length());
@@ -278,12 +278,12 @@ Error ResourceUID::save_to_cache() {
 
 	MutexLock l(mutex);
 
-	Vector<Pair<ID, String>> entries;
+	Vector<Pair<ResourceUIDTypes::ID, String>> entries;
 	entries.reserve(unique_ids.size());
 	cache_entries = 0;
 
-	for (KeyValue<ID, Cache> &E : unique_ids) {
-		entries.push_back(Pair<ID, String>(E.key, String::utf8(E.value.cs.ptr(), E.value.cs.length())));
+	for (KeyValue<ResourceUIDTypes::ID, Cache> &E : unique_ids) {
+		entries.push_back(Pair<ResourceUIDTypes::ID, String>(E.key, String::utf8(E.value.cs.ptr(), E.value.cs.length())));
 		E.value.saved_to_cache = true;
 		cache_entries++;
 	}
@@ -343,7 +343,7 @@ Error ResourceUID::update_cache() {
 	MutexLock l(mutex);
 
 	Ref<FileAccess> f;
-	for (KeyValue<ID, Cache> &E : unique_ids) {
+	for (KeyValue<ResourceUIDTypes::ID, Cache> &E : unique_ids) {
 		if (!E.value.saved_to_cache) {
 			if (f.is_null()) {
 				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); // Append.
@@ -373,7 +373,7 @@ Error ResourceUID::update_cache() {
 
 String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string) {
 	const int64_t uid_from_string = singleton->text_to_id(p_uid_string);
-	if (uid_from_string != INVALID_ID) {
+	if (uid_from_string != ResourceUIDTypes::INVALID_ID) {
 		const uint32_t entry_count = p_cache_file->get_32();
 		for (uint32_t i = 0; i < entry_count; i++) {
 			int64_t id = p_cache_file->get_64();
@@ -422,7 +422,7 @@ void ResourceUID::_bind_methods() {
 	ClassDB::bind_static_method("ResourceUID", D_METHOD("path_to_uid", "path"), &ResourceUID::path_to_uid);
 	ClassDB::bind_static_method("ResourceUID", D_METHOD("ensure_path", "path_or_uid"), &ResourceUID::ensure_path);
 
-	BIND_CONSTANT(INVALID_ID)
+	BIND_CONSTANT(ResourceUIDTypes::INVALID_ID)
 }
 ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {

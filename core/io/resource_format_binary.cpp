@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/missing_resource.h"
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
@@ -959,7 +960,7 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 		String dep;
 		String fallback_path;
 
-		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
+		if (external_resources[i].uid != ResourceUIDTypes::INVALID_ID) {
 			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
 			fallback_path = external_resources[i].path; // Used by Dependency Editor, in case uid path fails.
 		} else {
@@ -1045,10 +1046,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	f->real_is_double = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_REAL_T_IS_DOUBLE) != 0;
 
 	if (using_uids) {
-		uid = ResourceUID::ID(f->get_64());
+		uid = ResourceUIDTypes::ID(f->get_64());
 	} else {
 		f->get_64(); // skip over uid field
-		uid = ResourceUID::INVALID_ID;
+		uid = ResourceUIDTypes::INVALID_ID;
 	}
 
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
@@ -1078,8 +1079,8 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		er.type = get_unicode_string();
 		er.path = get_unicode_string();
 		if (using_uids) {
-			er.uid = ResourceUID::ID(f->get_64());
-			if (!p_keep_uuid_paths && er.uid != ResourceUID::INVALID_ID) {
+			er.uid = ResourceUIDTypes::ID(f->get_64());
+			if (!p_keep_uuid_paths && er.uid != ResourceUIDTypes::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(er.uid)) {
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					er.path = ResourceUID::get_singleton()->get_id_path(er.uid);
@@ -1436,8 +1437,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		String path = get_ustring(f);
 
 		if (using_uids) {
-			ResourceUID::ID uid = f->get_64();
-			if (uid != ResourceUID::INVALID_ID) {
+			ResourceUIDTypes::ID uid = f->get_64();
+			if (uid != ResourceUIDTypes::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(uid)) {
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					path = ResourceUID::get_singleton()->get_id_path(uid);
@@ -1467,7 +1468,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		save_ustring(fw, path);
 
 		if (using_uids) {
-			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
+			ResourceUIDTypes::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
 			fw->store_64(uint64_t(uid));
 		}
 	}
@@ -1584,15 +1585,15 @@ String ResourceFormatLoaderBinary::get_resource_script_class(const String &p_pat
 	return loader.recognize_script_class(f);
 }
 
-ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_path) const {
+ResourceUIDTypes::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_path) const {
 	String ext = p_path.get_extension().to_lower();
 	if (!ClassDB::is_resource_extension(ext)) {
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
-		return ResourceUID::INVALID_ID; //could not read
+		return ResourceUIDTypes::INVALID_ID; //could not read
 	}
 
 	ResourceLoaderBinary loader;
@@ -1600,7 +1601,7 @@ ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_pat
 	loader.res_path = loader.local_path;
 	loader.open(f, true);
 	if (loader.error != OK) {
-		return ResourceUID::INVALID_ID; //could not read
+		return ResourceUIDTypes::INVALID_ID; //could not read
 	}
 	return loader.uid;
 }
@@ -2239,7 +2240,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 		f->store_32(format_flags);
 	}
-	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
+	ResourceUIDTypes::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uint64_t(uid));
 	if (!script_class.is_empty()) {
 		save_unicode_string(f, script_class);
@@ -2326,7 +2327,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		String res_path = save_order[i]->get_path();
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
 		save_unicode_string(f, res_path);
-		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
+		ResourceUIDTypes::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
 		f->store_64(uint64_t(ruid));
 	}
 	// save internal resource table
@@ -2409,7 +2410,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	return OK;
 }
 
-Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
@@ -2528,7 +2529,7 @@ Error ResourceFormatSaverBinary::save(const Ref<Resource> &p_resource, const Str
 	return saver.save(local_path, p_resource, p_flags);
 }
 
-Error ResourceFormatSaverBinary::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatSaverBinary::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
 	return saver.set_uid(local_path, p_uid);

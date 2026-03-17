@@ -30,6 +30,8 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -63,8 +65,8 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		vb->add_child(label);
 	}
 
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
-	if (id != ResourceUID::INVALID_ID) {
+	ResourceUIDTypes::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
+	if (id != ResourceUIDTypes::INVALID_ID) {
 		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
 		vb->add_child(label);
 	}

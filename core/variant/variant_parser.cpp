@@ -33,6 +33,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
@@ -1158,8 +1159,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 					Ref<Resource> res;
 					if (!uid_string.is_empty()) {
-						ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_string);
-						if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+						ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(uid_string);
+						if (uid != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 							const String id_path = ResourceUID::get_singleton()->get_id_path(uid);
 							if (!id_path.is_empty()) {
 								res = ResourceLoader::load(id_path);
@@ -2000,8 +2001,8 @@ static String rtos_fix(double p_value, bool p_compat) {
 }
 
 static String encode_resource_reference(const String &path) {
-	ResourceUID::ID uid = ResourceLoader::get_resource_uid(path);
-	if (uid != ResourceUID::INVALID_ID) {
+	ResourceUIDTypes::ID uid = ResourceLoader::get_resource_uid(path);
+	if (uid != ResourceUIDTypes::INVALID_ID) {
 		return "Resource(\"" + ResourceUID::get_singleton()->id_to_text(uid) +
 				"\", \"" + path.c_escape_multiline() + "\")";
 	} else {

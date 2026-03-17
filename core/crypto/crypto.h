@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/ref_counted.h"
 
 class CryptoKey : public Resource {
@@ -155,7 +156,7 @@ public:
 	virtual String get_resource_type(const String &p_path) const override;
 
 	// Treat certificates as text files, do not generate a `*.{crt,key,pub}.uid` file.
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
+	virtual ResourceUIDTypes::ID get_resource_uid(const String &p_path) const override { return ResourceUIDTypes::INVALID_ID; }
 	virtual bool has_custom_uid_support() const override { return true; }
 };
 

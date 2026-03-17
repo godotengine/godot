@@ -49,7 +49,7 @@ Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p
 	return err;
 }
 
-Error ResourceFormatSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatSaver::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	Error err = ERR_FILE_UNRECOGNIZED;
 	GDVIRTUAL_CALL(_set_uid, p_path, p_uid, err);
 	return err;
@@ -154,7 +154,7 @@ Error ResourceSaver::save(RequiredParam<Resource> rp_resource, const String &p_p
 	return err;
 }
 
-Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceSaver::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	String path = p_path;
 
 	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
@@ -282,11 +282,11 @@ void ResourceSaver::remove_custom_savers() {
 	}
 }
 
-ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
+ResourceUIDTypes::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (save_get_id_for_path) {
 		return save_get_id_for_path(p_path, p_generate);
 	}
-	return ResourceUID::INVALID_ID;
+	return ResourceUIDTypes::INVALID_ID;
 }
 
 void ResourceSaver::set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback) {

@@ -37,6 +37,8 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisenc.h>
 
+class FileAccess;
+
 class MovieWriterOGV : public MovieWriter {
 	GDCLASS(MovieWriterOGV, MovieWriter)
 

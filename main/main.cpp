@@ -47,6 +47,8 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -3884,7 +3886,7 @@ void Main::setup_boot_logo() {
 		// It's too soon to scan the project files since the ResourceFormatImporter is not loaded yet,
 		// so to prevent printing errors, we will just skip the custom boot logo this time.
 		if (boot_logo_path.begins_with("uid://")) {
-			const ResourceUID::ID logo_id = ResourceUID::get_singleton()->text_to_id(boot_logo_path);
+			const ResourceUIDTypes::ID logo_id = ResourceUID::get_singleton()->text_to_id(boot_logo_path);
 			if (ResourceUID::get_singleton()->has_id(logo_id)) {
 				boot_logo_path = ResourceUID::get_singleton()->get_id_path(logo_id).strip_edges();
 			} else {
@@ -4280,7 +4282,7 @@ int Main::start() {
 	if (script.is_empty() && game_path.is_empty()) {
 		const String main_scene = GLOBAL_GET("application/run/main_scene");
 		if (main_scene.begins_with("uid://")) {
-			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(main_scene);
+			ResourceUIDTypes::ID id = ResourceUID::get_singleton()->text_to_id(main_scene);
 			if (!editor && !ResourceUID::get_singleton()->has_id(id) && !FileAccess::exists(ResourceUID::get_singleton()->get_cache_file())) {
 				OS::get_singleton()->alert("Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
 				ERR_FAIL_V_MSG(EXIT_FAILURE, "Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");

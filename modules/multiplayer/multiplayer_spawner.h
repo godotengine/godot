@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/resource_uid_types.h"
 #include "core/templates/local_vector.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
@@ -50,7 +51,7 @@ private:
 
 	LocalVector<SpawnableScene> spawnable_scenes;
 
-	HashSet<ResourceUID::ID> spawnable_ids;
+	HashSet<ResourceUIDTypes::ID> spawnable_ids;
 	NodePath spawn_path;
 
 	struct SpawnInfo {

@@ -34,6 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 #include "core/templates/hash_map.h"

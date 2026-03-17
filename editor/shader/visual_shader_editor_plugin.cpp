@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/math/math_defs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -2739,8 +2741,8 @@ void VisualShaderEditor::_restore_editor_state() {
 
 String VisualShaderEditor::_get_cache_id_string() const {
 	String id_string = visual_shader->get_path();
-	const ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(id_string);
-	if (uid != ResourceUID::INVALID_ID) {
+	const ResourceUIDTypes::ID uid = EditorFileSystem::get_singleton()->get_file_uid(id_string);
+	if (uid != ResourceUIDTypes::INVALID_ID) {
 		id_string = ResourceUID::get_singleton()->id_to_text(uid);
 	}
 	return id_string;

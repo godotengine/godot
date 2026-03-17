@@ -32,6 +32,8 @@
 
 #include "servers/movie_writer/movie_writer.h"
 
+class FileAccess;
+
 class MovieWriterPNGWAV : public MovieWriter {
 	GDCLASS(MovieWriterPNGWAV, MovieWriter)
 

@@ -34,6 +34,7 @@
 #include "core/io/logger.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/class_db.h"
 #include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
@@ -83,7 +84,7 @@ public:
 	bool has_cached(const String &p_path);
 	Ref<Resource> get_cached_ref(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
-	ResourceUID::ID get_resource_uid(const String &p_path);
+	ResourceUIDTypes::ID get_resource_uid(const String &p_path);
 
 	Vector<String> list_directory(const String &p_directory);
 
@@ -112,12 +113,12 @@ public:
 	static ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags);
-	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
+	Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
-	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+	ResourceUIDTypes::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 
 	ResourceSaver() { singleton = this; }
 };

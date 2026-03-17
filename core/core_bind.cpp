@@ -132,7 +132,7 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 	return ::ResourceLoader::exists(p_path, p_type_hint);
 }
 
-ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
+ResourceUIDTypes::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ::ResourceLoader::get_resource_uid(p_path);
 }
 
@@ -175,7 +175,7 @@ Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_pa
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
-Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceSaver::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	return ::ResourceSaver::set_uid(p_path, p_uid);
 }
 
@@ -197,7 +197,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
 
-ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
+ResourceUIDTypes::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
 	return ::ResourceSaver::get_resource_id_for_path(p_path, p_generate);
 }
 

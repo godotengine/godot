@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/resource_uid_types.h"
 #include "core/templates/a_hash_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
@@ -60,11 +61,11 @@ enum class QuickOpenDisplayMode {
 };
 
 struct QuickOpenResultCandidate {
-	ResourceUID::ID uid;
+	ResourceUIDTypes::ID uid;
 	Ref<Texture2D> thumbnail;
 	const FuzzySearchResult *result = nullptr;
 
-	static QuickOpenResultCandidate from_uid(const ResourceUID::ID &p_uid, bool &r_success);
+	static QuickOpenResultCandidate from_uid(const ResourceUIDTypes::ID &p_uid, bool &r_success);
 	static QuickOpenResultCandidate from_result(const FuzzySearchResult &p_result, bool &r_success);
 };
 
@@ -98,7 +99,7 @@ public:
 	void update_results();
 
 	bool has_nothing_selected() const;
-	ResourceUID::ID get_selected() const;
+	ResourceUIDTypes::ID get_selected() const;
 	String get_selected_path() const;
 
 	bool is_instant_preview_enabled() const;
@@ -117,13 +118,13 @@ private:
 
 	Vector<FuzzySearchResult> search_results;
 	Vector<StringName> base_types;
-	LocalVector<ResourceUID::ID> uids;
-	AHashMap<ResourceUID::ID, StringName> filetypes;
+	LocalVector<ResourceUIDTypes::ID> uids;
+	AHashMap<ResourceUIDTypes::ID, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
-	HashSet<ResourceUID::ID> candidates_uids;
+	HashSet<ResourceUIDTypes::ID> candidates_uids;
 
-	AHashMap<StringName, Vector<ResourceUID::ID>> selected_history;
-	HashSet<ResourceUID::ID> history_set;
+	AHashMap<StringName, Vector<ResourceUIDTypes::ID>> selected_history;
+	HashSet<ResourceUIDTypes::ID> history_set;
 
 	String query;
 	int selection_index = -1;
@@ -160,7 +161,7 @@ private:
 	void _create_initial_results();
 	void _find_uids_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
-	Vector<ResourceUID::ID> *_get_history();
+	Vector<ResourceUIDTypes::ID> *_get_history();
 	void _add_candidate(QuickOpenResultCandidate &p_candidate);
 	void _update_fuzzy_search_results();
 	void _use_default_candidates();
