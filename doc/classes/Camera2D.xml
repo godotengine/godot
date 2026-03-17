@@ -97,6 +97,13 @@
 				Sets the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
+		<method name="set_limit_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<description>
+				Sets all four camera limits at once using a [Rect2i]. Equivalent to calling [method set_limit] individually for each side.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode" default="1">
@@ -205,18 +212,27 @@
 		<member name="zoom_limit_min" type="Vector2" setter="set_zoom_min" getter="get_zoom_min" default="Vector2(0.1, 0.1)">
 			The minimum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally always be set to the same value.
 		</member>
+		<member name="zoom_smoothing_delta_independent" type="bool" setter="set_zoom_smoothing_delta_independent" getter="is_zoom_smoothing_delta_independent" default="false">
+			If [code]true[/code], the zoom smoothing speed is delta-independent, automatically accounting for frame rate variations. This ensures consistent smoothing behavior across different frame rates. If [code]false[/code], smoothing is frame-dependent using a fixed coefficient per frame.
+		</member>
+		<member name="zoom_smoothing_enabled" type="bool" setter="set_zoom_smoothing_enabled" getter="is_zoom_smoothing_enabled" default="false">
+			If [code]true[/code], the camera's zoom smoothly transitions towards its target zoom at [member zoom_smoothing_speed].
+		</member>
+		<member name="zoom_smoothing_speed" type="float" setter="set_zoom_smoothing_speed" getter="get_zoom_smoothing_speed" default="5.0">
+			Speed of the camera's zoom smoothing effect when [member zoom_smoothing_enabled] is [code]true[/code].
+		</member>
 	</members>
 	<signals>
-		<signal name="position_limit_reached">
+		<signal name="bounds_limit_reached">
 			<param index="0" name="sides_hit" type="int" />
 			<description>
-				Emitted when the camera reaches a position limit. The [param sides_hit] parameter is a bitmask indicating which limits were reached (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+				Emitted when the camera reaches a bounds limit. The [param sides_hit] parameter is a bitmask indicating which limits were reached (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
 			</description>
 		</signal>
-		<signal name="position_limit_released">
+		<signal name="bounds_limit_released">
 			<param index="0" name="sides_released" type="int" />
 			<description>
-				Emitted when the camera stops being limited by a position limit. The [param sides_released] parameter is a bitmask indicating which limits were released (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+				Emitted when the camera stops being limited by a bounds limit. The [param sides_released] parameter is a bitmask indicating which limits were released (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
 			</description>
 		</signal>
 		<signal name="zoom_limit_reached">
