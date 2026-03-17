@@ -39,6 +39,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -1223,6 +1224,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			joint_tree->connect("button_clicked", callable_mp(this, &Skeleton3DEditor::_joint_tree_button_clicked));
 
 			skeleton->connect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+			skeleton->connect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
 			skeleton->connect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
 			skeleton->connect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
 			skeleton->connect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
@@ -1406,7 +1408,7 @@ void Skeleton3DEditor::_draw_handles() {
 			} else {
 				c = Color(0.1, 0.25, 0.8);
 			}
-			Vector3 point = skeleton->get_bone_global_pose(i).origin;
+			Vector3 point = skeleton->get_bone_global_pose_final(i).origin;
 			handles_mesh->surface_set_color(c);
 			handles_mesh->surface_add_vertex(point);
 		}
@@ -1467,7 +1469,7 @@ void Skeleton3DEditor::_subgizmo_selection_change() {
 			if (plugin.is_null()) {
 				continue;
 			}
-			skeleton->set_subgizmo_selection(gizmo, selected, skeleton->get_bone_global_pose(selected));
+			skeleton->set_subgizmo_selection(gizmo, selected, skeleton->get_bone_global_pose_final(selected));
 			break;
 		}
 	} else {
@@ -1655,7 +1657,7 @@ int Skeleton3DGizmoPlugin::skeleton_intersect_ray(const Skeleton3D *p_skeleton, 
 	real_t closest_dist = 1e10;
 	const int bone_count = p_skeleton->get_bone_count();
 	for (int i = 0; i < bone_count; i++) {
-		Vector3 joint_pos_3d = gt.xform(p_skeleton->get_bone_global_pose(i).origin);
+		Vector3 joint_pos_3d = gt.xform(p_skeleton->get_bone_global_pose_final(i).origin);
 		Vector2 joint_pos_2d = p_camera->unproject_position(joint_pos_3d);
 		real_t dist_3d = ray_from.distance_to(joint_pos_3d);
 		real_t dist_2d = p_point.distance_to(joint_pos_2d);
@@ -1670,8 +1672,7 @@ int Skeleton3DGizmoPlugin::skeleton_intersect_ray(const Skeleton3D *p_skeleton, 
 Transform3D Skeleton3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	ERR_FAIL_NULL_V(skeleton, Transform3D());
-
-	return skeleton->get_bone_global_pose(p_id);
+	return skeleton->get_bone_global_pose_final(p_id);
 }
 
 void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
@@ -1682,7 +1683,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	Transform3D original_to_local;
 	int parent_idx = skeleton->get_bone_parent(p_id);
 	if (parent_idx >= 0) {
-		original_to_local = skeleton->get_bone_global_pose(parent_idx);
+		original_to_local = skeleton->get_bone_global_pose_final(parent_idx);
 	}
 	Basis to_local = original_to_local.get_basis().inverse();
 
@@ -1693,8 +1694,8 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	t.basis = to_local * p_transform.get_basis();
 
 	// Origin.
-	Vector3 orig = skeleton->get_bone_pose(p_id).origin;
-	Vector3 sub = p_transform.origin - skeleton->get_bone_global_pose(p_id).origin;
+	Vector3 orig = skeleton->get_bone_pose_final(p_id).origin;
+	Vector3 sub = p_transform.origin - skeleton->get_bone_global_pose_final(p_id).origin;
 	t.origin = orig + to_local.xform(sub);
 
 	// Apply transform.
