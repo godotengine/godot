@@ -45,6 +45,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/main/timer.h"
@@ -88,7 +89,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			animations_to_add.clear();
 
 			LocalVector<StringName> classes;
-			ClassDB::get_inheriters_from_class("AnimationRootNode", classes);
+			ClassDB::get_inheriters_from_class(SNAME("AnimationRootNode"), classes);
 			classes.sort_custom<StringName::AlphCompare>();
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
@@ -189,6 +190,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				if (snap->is_pressed()) {
 					point = Math::snapped(point, blend_space->get_snap());
 				}
+				point = CLAMP(point, blend_space->get_min_space(), blend_space->get_max_space());
 
 				updating = true;
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -294,7 +296,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
-	if (blend_space->get_min_space() < 0) {
+	if (blend_space->get_min_space() <= 0 && blend_space->get_max_space() >= 0) {
 		float point = 0.0;
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;
@@ -312,7 +314,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		if (blend_space->get_snap() > 0) {
 			int prev_idx = -1;
 
-			for (int i = 0; i < s.x; i++) {
+			for (int i = 0; i <= s.x; i++) {
 				float v = blend_space->get_min_space() + i * (blend_space->get_max_space() - blend_space->get_min_space()) / s.x;
 				int idx = int(v / blend_space->get_snap());
 
@@ -334,6 +336,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			if (snap->is_pressed()) {
 				point = Math::snapped(point, blend_space->get_snap());
 			}
+			point = CLAMP(point, blend_space->get_min_space(), blend_space->get_max_space());
 		}
 
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
@@ -413,6 +416,11 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	}
 
 	updating = true;
+
+	constexpr double STEP_UNIT = 0.01;
+	min_value->set_max(max_value->get_value() - STEP_UNIT);
+	max_value->set_min(min_value->get_value() + STEP_UNIT);
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change BlendSpace1D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", max_value->get_value());
@@ -566,6 +574,7 @@ void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
 			if (snap->is_pressed()) {
 				pos = Math::snapped(pos, blend_space->get_snap());
 			}
+			pos = CLAMP(pos, blend_space->get_min_space(), blend_space->get_max_space());
 		}
 
 		updating = true;
@@ -730,7 +739,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -750,18 +759,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 				return;
 			}
 
-			String error;
-
-			error = tree->get_editor_error_message();
-
-			if (error != error_label->get_text()) {
-				error_label->set_text(error);
-				if (!error.is_empty()) {
-					error_panel->show();
-				} else {
-					error_panel->hide();
-				}
-			}
+			update_error_message(tree, error_panel, error_label);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1033,12 +1031,15 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	edit_hb->add_child(memnew(VSeparator));
 
+	constexpr double STEP_UNIT = 0.01;
+	constexpr double ABS_MAX = 10000;
+
 	edit_hb->add_child(memnew(Label(TTR("Position"))));
 	edit_value = memnew(SpinBox);
 	edit_hb->add_child(edit_value);
-	edit_value->set_min(-1000);
-	edit_value->set_max(1000);
-	edit_value->set_step(0.01);
+	edit_value->set_min(-ABS_MAX);
+	edit_value->set_max(ABS_MAX);
+	edit_value->set_step(STEP_UNIT);
 	edit_value->set_accessibility_name(TTRC("Blend Value"));
 	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
 
@@ -1069,15 +1070,15 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		bottom_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		min_value = memnew(SpinBox);
-		min_value->set_min(-10000);
-		min_value->set_max(0);
-		min_value->set_step(0.01);
+		min_value->set_min(-ABS_MAX);
+		min_value->set_max(ABS_MAX - STEP_UNIT);
+		min_value->set_step(STEP_UNIT);
 		min_value->set_accessibility_name(TTRC("Min"));
 
 		max_value = memnew(SpinBox);
-		max_value->set_min(0.01);
-		max_value->set_max(10000);
-		max_value->set_step(0.01);
+		max_value->set_min(-ABS_MAX + STEP_UNIT);
+		max_value->set_max(ABS_MAX);
+		max_value->set_step(STEP_UNIT);
 		max_value->set_accessibility_name(TTRC("Max"));
 
 		label_value = memnew(LineEdit);
@@ -1101,8 +1102,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
 
-	error_label = memnew(Label);
-	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
 	error_panel->hide();
 

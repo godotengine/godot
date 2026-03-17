@@ -13,7 +13,7 @@
 #define wl_cursor_image_get_buffer wl_cursor_image_get_buffer_dylibloader_orig_wayland_cursor
 #define wl_cursor_frame wl_cursor_frame_dylibloader_orig_wayland_cursor
 #define wl_cursor_frame_and_duration wl_cursor_frame_and_duration_dylibloader_orig_wayland_cursor
-#include "./thirdparty/linuxbsd_headers/wayland/wayland-cursor.h"
+#include "./thirdparty/linuxbsd_headers/wayland/wayland-cursor.h" // IWYU pragma: export.
 #undef wl_cursor_theme_load
 #undef wl_cursor_theme_destroy
 #undef wl_cursor_theme_get_cursor

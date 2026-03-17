@@ -31,8 +31,10 @@
 #include "openxr_render_model_manager.h"
 
 #ifdef MODULE_GLTF_ENABLED
+
 #include "../extensions/openxr_render_model_extension.h"
 #include "../openxr_api.h"
+#include "openxr_render_model.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"

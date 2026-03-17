@@ -67,7 +67,7 @@ private:
 	HashMap<int64_t, CharString> utterance_ids;
 
 	DisplayServerEnums::WindowMode window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
-	ObjectID window_attached_instance_id = {};
+	ObjectID window_attached_instance_id;
 
 	Callable rect_changed_callback;
 	Callable window_event_callback;

@@ -30,14 +30,13 @@
 
 #include "windows_terminal_logger.h"
 
+#ifdef WINDOWS_ENABLED
+
 #include "core/object/script_backtrace.h"
 #include "core/os/os.h"
 
-#ifdef WINDOWS_ENABLED
-
 #include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_err) {

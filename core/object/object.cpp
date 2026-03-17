@@ -83,146 +83,6 @@ struct _ObjectSignalLock {
 
 #define OBJ_SIGNAL_LOCK _ObjectSignalLock _signal_lock(this);
 
-PropertyInfo::operator Dictionary() const {
-	Dictionary d;
-	d["name"] = name;
-	d["class_name"] = class_name;
-	d["type"] = type;
-	d["hint"] = hint;
-	d["hint_string"] = hint_string;
-	d["usage"] = usage;
-	return d;
-}
-
-PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
-	PropertyInfo pi;
-
-	if (p_dict.has("type")) {
-		pi.type = Variant::Type(int(p_dict["type"]));
-	}
-
-	if (p_dict.has("name")) {
-		pi.name = p_dict["name"];
-	}
-
-	if (p_dict.has("class_name")) {
-		pi.class_name = p_dict["class_name"];
-	}
-
-	if (p_dict.has("hint")) {
-		pi.hint = PropertyHint(int(p_dict["hint"]));
-	}
-
-	if (p_dict.has("hint_string")) {
-		pi.hint_string = p_dict["hint_string"];
-	}
-
-	if (p_dict.has("usage")) {
-		pi.usage = p_dict["usage"];
-	}
-
-	return pi;
-}
-
-TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
-	TypedArray<Dictionary> va;
-	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
-		va.push_back(Dictionary(E->get()));
-	}
-
-	return va;
-}
-
-TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector) {
-	TypedArray<Dictionary> va;
-	for (const PropertyInfo &E : p_vector) {
-		va.push_back(Dictionary(E));
-	}
-
-	return va;
-}
-
-MethodInfo::operator Dictionary() const {
-	Dictionary d;
-	d["name"] = name;
-	d["args"] = convert_property_list(arguments);
-	Array da;
-	for (int i = 0; i < default_arguments.size(); i++) {
-		da.push_back(default_arguments[i]);
-	}
-	d["default_args"] = da;
-	d["flags"] = flags;
-	d["id"] = id;
-	Dictionary r = return_val;
-	d["return"] = r;
-	return d;
-}
-
-MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
-	MethodInfo mi;
-
-	if (p_dict.has("name")) {
-		mi.name = p_dict["name"];
-	}
-	Array args;
-	if (p_dict.has("args")) {
-		args = p_dict["args"];
-	}
-
-	for (const Variant &arg : args) {
-		Dictionary d = arg;
-		mi.arguments.push_back(PropertyInfo::from_dict(d));
-	}
-	Array defargs;
-	if (p_dict.has("default_args")) {
-		defargs = p_dict["default_args"];
-	}
-	for (const Variant &defarg : defargs) {
-		mi.default_arguments.push_back(defarg);
-	}
-
-	if (p_dict.has("return")) {
-		mi.return_val = PropertyInfo::from_dict(p_dict["return"]);
-	}
-
-	if (p_dict.has("flags")) {
-		mi.flags = p_dict["flags"];
-	}
-
-	return mi;
-}
-
-uint32_t MethodInfo::get_compatibility_hash() const {
-	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
-
-	uint32_t hash = hash_murmur3_one_32(has_return);
-	hash = hash_murmur3_one_32(arguments.size(), hash);
-
-	if (has_return) {
-		hash = hash_murmur3_one_32(return_val.type, hash);
-		if (return_val.class_name != StringName()) {
-			hash = hash_murmur3_one_32(return_val.class_name.hash(), hash);
-		}
-	}
-
-	for (const PropertyInfo &arg : arguments) {
-		hash = hash_murmur3_one_32(arg.type, hash);
-		if (arg.class_name != StringName()) {
-			hash = hash_murmur3_one_32(arg.class_name.hash(), hash);
-		}
-	}
-
-	hash = hash_murmur3_one_32(default_arguments.size(), hash);
-	for (const Variant &v : default_arguments) {
-		hash = hash_murmur3_one_32(v.hash(), hash);
-	}
-
-	hash = hash_murmur3_one_32(flags & METHOD_FLAG_CONST ? 1 : 0, hash);
-	hash = hash_murmur3_one_32(flags & METHOD_FLAG_VARARG ? 1 : 0, hash);
-
-	return hash_fmix32(hash);
-}
-
 Object::Connection::operator Variant() const {
 	Dictionary d;
 	d["signal"] = signal;
@@ -235,6 +95,7 @@ void ObjectGDExtension::create_gdtype() {
 	ERR_FAIL_COND(gdtype);
 
 	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
+	gdtype->initialize();
 }
 
 void ObjectGDExtension::destroy_gdtype() {
@@ -1441,6 +1302,10 @@ void Object::_reset_gdtype() const {
 	}
 }
 
+void Object::autorelease_gdtype(GDType **r_type) {
+	ClassDB::gdtype_autorelease_pool.push_back(r_type);
+}
+
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// this version of add_user_signal is meant to be used from scripts or external apis
 	// without access to ADD_SIGNAL in bind_methods
@@ -1793,10 +1658,18 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 
 void Object::initialize_class() {
 	static bool initialized = false;
-	if (initialized) {
+	if (likely(initialized)) {
 		return;
 	}
-	_add_class_to_classdb(get_gdtype_static(), nullptr);
+
+	static BinaryMutex __init_mutex;
+	MutexLock lock(__init_mutex);
+	if (initialized) {
+		// Initialized on another thread while we were waiting.
+		return;
+	}
+	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr);
+	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1872,7 +1745,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const GDType &p_type, const GDType *p_inherits) {
+void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
 	ClassDB::_add_class(p_type, p_inherits);
 }
 
@@ -2405,20 +2278,6 @@ void Object::detach_from_objectdb() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
-}
-
-void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type) {
-	static BinaryMutex _mutex;
-	MutexLock lock(_mutex);
-	GDType *type = *type_ptr;
-	if (type) {
-		// Assigned while we were waiting.
-		return;
-	}
-	type = memnew(GDType(super_type, StringName(p_name)));
-	*type_ptr = type;
-
-	ClassDB::gdtype_autorelease_pool.push_back(type_ptr);
 }
 
 Object::~Object() {

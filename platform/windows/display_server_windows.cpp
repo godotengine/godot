@@ -31,8 +31,10 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "key_mapping_windows.h"
 #include "native_menu_windows.h"
 #include "os_windows.h"
+#include "tts_windows.h"
 #include "wgl_detect_version.h"
 
 #include "core/config/engine.h"
@@ -48,10 +50,10 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/main/window.h"
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
@@ -1541,11 +1543,11 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-	LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 
 	Ref<Image> img;
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		HDC hdc = CreateCompatibleDC(dc);
 		int width = p2.x - p1.x;
@@ -1578,7 +1580,7 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 			}
 			DeleteDC(hdc);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return img;
@@ -1776,7 +1778,7 @@ DisplayServerEnums::WindowID DisplayServerWindows::create_sub_window(DisplayServ
 #endif
 
 	DisplayServerEnums::WindowID window_id = window_id_counter;
-	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL, no_redirection_bitmap);
+	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, nullptr, no_redirection_bitmap);
 	ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Failed to create sub window.");
 	++window_id_counter;
 
@@ -2944,7 +2946,7 @@ void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, Disp
 		return;
 	}
 	if (taskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+		if (CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
 			taskbar = nullptr;
 			return;
 		} else {
@@ -2962,7 +2964,7 @@ void DisplayServerWindows::window_set_taskbar_progress_state(DisplayServerEnums:
 	WindowData &wd = windows[p_window];
 	wd.progress_state = p_state;
 	if (taskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+		if (CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
 			taskbar = nullptr;
 			return;
 		} else {
@@ -3356,7 +3358,7 @@ static BOOL CALLBACK _enum_proc_find_window_from_process_id_callback(HWND hWnd, 
 
 HWND DisplayServerWindows::_find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd) {
 	DWORD pid = p_pid;
-	WindowEnumData ed = { pid, p_current_hwnd, NULL };
+	WindowEnumData ed = { pid, p_current_hwnd, nullptr };
 
 	// First, check our own child, maybe it's already embedded.
 	if (!EnumChildWindows(p_current_hwnd, _enum_proc_find_window_from_process_id_callback, (LPARAM)&ed) && (GetLastError() == ERROR_SUCCESS)) {
@@ -3370,7 +3372,7 @@ HWND DisplayServerWindows::_find_window_from_process_id(ProcessID p_pid, HWND p_
 		return ed.hWnd;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // Get screen HDR capabilities for internal use only.
@@ -7627,7 +7629,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
-	HWND parent_hwnd = NULL;
+	HWND parent_hwnd = nullptr;
 	if (p_parent_window) {
 		// Parented window.
 		parent_hwnd = (HWND)p_parent_window;

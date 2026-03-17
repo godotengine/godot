@@ -84,6 +84,7 @@
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
+#define WINDOW_READY_TIMEOUT_MS (10'000)
 
 String DisplayServerWayland::_get_app_id_from_context(DisplayServerEnums::Context p_context) {
 	String app_id;
@@ -161,6 +162,62 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	}
 }
 
+void DisplayServerWayland::_delete_window(DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+
+	ERR_FAIL_COND(!windows.has(wd.root_id));
+	WindowData &root_wd = windows[wd.root_id];
+
+	// NOTE: By the time the Wayland thread will send a `WINDOW_EVENT_MOUSE_EXIT`
+	// the window will be gone and the message will be discarded, confusing the
+	// engine. We thus have to send it ourselves.
+	if (wayland_thread.pointer_get_pointed_window_id() == p_window_id) {
+		_send_window_event(DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT, p_window_id);
+	}
+
+	// The XDG shell specification requires us to clear all popups in reverse order.
+	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.back()->get() != p_window_id) {
+		_send_window_event(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.back()->get());
+	}
+
+	if (root_wd.popup_stack.back() && root_wd.popup_stack.back()->get() == p_window_id) {
+		root_wd.popup_stack.pop_back();
+	}
+
+	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
+		popup_menu_list.pop_back();
+	}
+
+	AccessibilityServer::get_singleton()->window_destroy(p_window_id);
+
+	if (wd.visible) {
+#ifdef VULKAN_ENABLED
+		if (rendering_device) {
+			rendering_device->screen_free(p_window_id);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(p_window_id);
+		}
+#endif
+
+#ifdef GLES3_ENABLED
+		if (egl_manager) {
+			egl_manager->window_destroy(p_window_id);
+		}
+#endif
+	}
+
+	if (wd.created) {
+		wayland_thread.window_destroy(p_window_id);
+	}
+
+	windows.erase(p_window_id);
+
+	DEBUG_LOG_WAYLAND(vformat("Destroyed window %d", p_window_id));
+}
+
 void DisplayServerWayland::_update_window_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 
@@ -213,7 +270,8 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_SUBWINDOWS:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
-		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS: {
+		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS:
+		case DisplayServerEnums::FEATURE_HDR_OUTPUT: {
 			return true;
 		} break;
 
@@ -765,7 +823,7 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 
 	WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		DEBUG_LOG_WAYLAND(vformat("Showing window %d", p_window_id));
 		// Showing this window will reset its mode with whatever the compositor
 		// reports. We'll save the mode beforehand so that we can reapply it later.
@@ -795,7 +853,7 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 			wayland_thread.window_set_borderless(p_window_id, window_get_flag(DisplayServerEnums::WINDOW_FLAG_BORDERLESS, p_window_id));
 
 			// Since it can't have a position. Let's tell the window node the news by
-			// the actual rect to it.
+			// sending the actual rect to it.
 			if (wd.rect_changed_callback.is_valid()) {
 				wd.rect_changed_callback.call(wd.rect);
 			}
@@ -810,6 +868,16 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 			}
 
 			wayland_thread.window_create_popup(p_window_id, wd.parent_id, wd.rect);
+		}
+
+		wd.created = true;
+
+		bool ready = wayland_thread.window_wait_ready(p_window_id, WINDOW_READY_TIMEOUT_MS);
+		if (!ready) {
+			ERR_PRINT(vformat("Could not create window %d: timeout.", p_window_id));
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE, p_window_id);
+
+			return;
 		}
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
@@ -873,57 +941,9 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 void DisplayServerWayland::delete_sub_window(DisplayServerEnums::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowData &wd = windows[p_window_id];
+	ERR_FAIL_COND_MSG(p_window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't be deleted");
 
-	ERR_FAIL_COND(!windows.has(wd.root_id));
-	WindowData &root_wd = windows[wd.root_id];
-
-	// NOTE: By the time the Wayland thread will send a `DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT`
-	// the window will be gone and the message will be discarded, confusing the
-	// engine. We thus have to send it ourselves.
-	if (wayland_thread.pointer_get_pointed_window_id() == p_window_id) {
-		_send_window_event(DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT, p_window_id);
-	}
-
-	// The XDG shell specification requires us to clear all popups in reverse order.
-	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.back()->get() != p_window_id) {
-		_send_window_event(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.back()->get());
-	}
-
-	if (root_wd.popup_stack.back() && root_wd.popup_stack.back()->get() == p_window_id) {
-		root_wd.popup_stack.pop_back();
-	}
-
-	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
-		popup_menu_list.pop_back();
-	}
-
-	AccessibilityServer::get_singleton()->window_destroy(p_window_id);
-
-	if (wd.visible) {
-#ifdef VULKAN_ENABLED
-		if (rendering_device) {
-			rendering_device->screen_free(p_window_id);
-		}
-
-		if (rendering_context) {
-			rendering_context->window_destroy(p_window_id);
-		}
-#endif
-
-#ifdef GLES3_ENABLED
-		if (egl_manager) {
-			egl_manager->window_destroy(p_window_id);
-		}
-#endif
-
-		wayland_thread.window_destroy(p_window_id);
-	}
-
-	windows.erase(p_window_id);
-
-	DEBUG_LOG_WAYLAND(vformat("Destroyed window %d", p_window_id));
+	_delete_window(p_window_id);
 }
 
 DisplayServerEnums::WindowID DisplayServerWayland::window_get_active_popup() const {
@@ -1025,7 +1045,7 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 
 	wd.title = p_title;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_title(p_window_id, wd.title);
 	}
 }
@@ -1121,7 +1141,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	wd.max_size = p_size;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_max_size(p_window_id, p_size);
 	}
 }
@@ -1156,7 +1176,7 @@ void DisplayServerWayland::window_set_transient(DisplayServerEnums::WindowID p_w
 
 		// NOTE: Looks like live unparenting is not really practical unfortunately.
 		// See WaylandThread::window_set_parent for more info.
-		if (wd.visible) {
+		if (wd.created) {
 			wayland_thread.window_set_parent(p_window_id, p_parent);
 		}
 	}
@@ -1182,7 +1202,7 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	wd.min_size = p_size;
 
-	if (wd.visible) {
+	if (wd.created) {
 		wayland_thread.window_set_min_size(p_window_id, p_size);
 	}
 }
@@ -1205,7 +1225,9 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServerEnu
 	}
 
 	Size2i new_size = p_size;
-	if (wd.visible) {
+	new_size = p_size.maxi(1);
+
+	if (wd.created) {
 		new_size = wayland_thread.window_set_size(p_window_id, p_size);
 	}
 
@@ -1244,7 +1266,7 @@ void DisplayServerWayland::window_set_mode(DisplayServerEnums::WindowMode p_mode
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		return;
 	}
 
@@ -1257,7 +1279,7 @@ DisplayServerEnums::WindowMode DisplayServerWayland::window_get_mode(DisplayServ
 	ERR_FAIL_COND_V(!windows.has(p_window_id), DisplayServerEnums::WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window_id];
 
-	if (!wd.visible) {
+	if (!wd.created) {
 		return DisplayServerEnums::WINDOW_MODE_WINDOWED;
 	}
 
@@ -1285,12 +1307,12 @@ void DisplayServerWayland::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 
 		case DisplayServerEnums::WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't be popup.");
-			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & DisplayServerEnums::WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.created && (wd.flags & DisplayServerEnums::WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
 		} break;
 
 		case DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT: {
 			ERR_FAIL_COND_MSG(p_window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't have popup hint.");
-			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.created && (wd.flags & DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
 		} break;
 
 		default: {
@@ -1459,6 +1481,125 @@ void DisplayServerWayland::window_start_resize(DisplayServerEnums::WindowResizeE
 
 	ERR_FAIL_INDEX(int(p_edge), DisplayServerEnums::WINDOW_EDGE_MAX);
 	wayland_thread.window_start_resize(p_edge, p_window);
+}
+
+void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
+	DisplayServerEnums::WindowID window_id = p_window.id;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		// The `display/window/hdr/request_hdr_output` project setting makes the main window "request" HDR.
+		// On Windows, this means enable HDR for the main window if it is on an HDR screen.
+		// Since all screens support HDR on Wayland, we use whether the window "prefers" HDR or not instead.
+		bool hdr_preferred = p_window.color_profile.target_max_luminance > p_window.color_profile.reference_luminance;
+		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && p_window.hdr_requested;
+
+		if (rendering_context->window_get_hdr_output_enabled(window_id) != hdr_desired) {
+			rendering_context->window_set_hdr_output_enabled(window_id, hdr_desired);
+		}
+
+		if (hdr_desired) {
+			rendering_context->window_set_hdr_output_max_luminance(window_id, p_window.color_profile.target_max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(window_id, p_window.color_profile.reference_luminance);
+			rendering_context->window_set_hdr_output_linear_luminance_scale(window_id, p_window.color_profile.target_max_luminance);
+
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+		} else {
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+		}
+
+		if (p_window.visible) {
+			MutexLock mutex_lock(wayland_thread.mutex);
+			wayland_thread.window_set_color_profile(window_id, p_window.color_profile);
+		}
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+
+	return wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
+}
+
+void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+#endif
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.hdr_requested = p_enabled;
+
+	_window_update_hdr_state(wd);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+	return wd.hdr_requested;
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window_id);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_reference_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Linux devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_max_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting max luminance is not supported on Linux devices as they provide a built-in method of calibrating max luminance without the need for additional apps or tools.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+float DisplayServerWayland::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window_id);
+	}
+#endif
+
+	return 1.0f;
 }
 
 void DisplayServerWayland::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
@@ -1715,6 +1856,35 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
+#if defined(RD_ENABLED)
+	// Enabling HDR may have failed, in which case we need to clear the color profile.
+	// NOTE: this happens _before_ reading events because the rendering driver is only updated the frame _after_ we try to enable HDR.
+	if (rendering_device && (!OS::get_singleton()->is_in_low_processor_usage_mode() || RS::get_singleton()->has_changed())) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &pair : windows) {
+			const RD::ColorSpace color_space = rendering_device->screen_get_color_space(pair.key);
+
+			bool dirty_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+			bool dirty_linear = color_space == RDD::COLOR_SPACE_REC709_LINEAR && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+			if (dirty_srgb) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+			} else if (dirty_linear) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+			}
+		}
+	}
+#endif
+
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
@@ -1844,6 +2014,15 @@ void DisplayServerWayland::process_events() {
 
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
+			continue;
+		}
+
+		Ref<WaylandThread::ColorProfileMessage> color_profile_msg = msg;
+		if (color_profile_msg.is_valid()) {
+			WindowData &wd = windows[color_profile_msg->id];
+			wd.color_profile = color_profile_msg->color_profile;
+
+			_window_update_hdr_state(wd);
 			continue;
 		}
 	}
@@ -2015,6 +2194,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 	String current_desk = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower();
 	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
 	swap_cancel_ok = (current_desk.contains("kde") || session_desk.contains("kde") || current_desk.contains("lxqt") || session_desk.contains("lxqt"));
+
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	Error thread_err = wayland_thread.init();
 
@@ -2221,6 +2402,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 
 	show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 
+	if (!windows.has(DisplayServerEnums::MAIN_WINDOW_ID) || !windows[DisplayServerEnums::MAIN_WINDOW_ID].visible) {
+		ERR_PRINT("Could not map the main window.");
+		r_error = ERR_CANT_CREATE;
+		return;
+	}
+
 #ifdef RD_ENABLED
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
@@ -2272,6 +2459,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
+	wayland_thread.mutex.lock();
+
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
@@ -2293,10 +2482,13 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 
 	for (DisplayServerEnums::WindowID &id : toplevels) {
-		delete_sub_window(id);
+		_delete_window(id);
 	}
 	windows.clear();
 
+	// The thread needs the mutex to clean up. We're not going to touch Wayland
+	// stuff anymore from now on anyways.
+	wayland_thread.mutex.unlock();
 	wayland_thread.destroy();
 
 	// Destroy all drivers.

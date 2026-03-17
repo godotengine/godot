@@ -31,10 +31,6 @@
 #pragma once
 
 #include "core/crypto/crypto_core.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/zip_io.h"
-#include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
 #include "servers/display/display_server_enums.h"
 

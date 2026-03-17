@@ -31,15 +31,11 @@
 #pragma once
 
 #include "crash_handler_windows.h"
-#include "key_mapping_windows.h"
 
-#include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/os/os.h"
-#include "core/templates/rb_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -47,9 +43,7 @@
 
 #include <io.h>
 #include <shellapi.h>
-#include <cstdio>
 
-#define WIN32_LEAN_AND_MEAN
 #include <dwrite.h>
 #include <dwrite_2.h>
 #include <windows.h>

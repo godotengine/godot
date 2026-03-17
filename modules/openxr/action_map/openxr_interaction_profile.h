@@ -32,7 +32,6 @@
 
 #include "openxr_action.h"
 #include "openxr_binding_modifier.h"
-#include "openxr_interaction_profile_metadata.h"
 
 #include "core/io/resource.h"
 

@@ -30,7 +30,6 @@
 
 #include "jolt_area_3d.h"
 
-#include "../jolt_project_settings.h"
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_shape_3d.h"

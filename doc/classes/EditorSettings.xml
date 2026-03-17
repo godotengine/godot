@@ -281,6 +281,9 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/ask_before_moving_files" type="bool" setter="" getter="">
+			If [code]true[/code], displays a confirmation dialog when moving or duplicating items in the FileSystem dock. This dialog can also be bypassed by holding [kbd]Shift[/kbd].
+		</member>
 		<member name="docks/filesystem/automatically_open_created_scripts" type="bool" setter="" getter="">
 			If [code]true[/code], scripts created in FileSystem dock will be automatically edited.
 		</member>
@@ -1265,6 +1268,10 @@
 		<member name="interface/touchscreen/enable_touch_optimizations" type="bool" setter="" getter="">
 			If [code]true[/code], increases the scrollbar touch area, enables a larger dragger for split containers, and increases PopupMenu vertical separation to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
+		<member name="interface/touchscreen/haptic_on_long_press" type="bool" setter="" getter="">
+			If [code]true[/code], the device will vibrate when a long-press gesture triggers a right-click context menu in the editor.
+			[b]Note:[/b] Only has an effect on devices with haptic feedback hardware. Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
 			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.

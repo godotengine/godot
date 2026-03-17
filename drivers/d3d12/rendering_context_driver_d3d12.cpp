@@ -30,30 +30,18 @@
 
 #include "rendering_context_driver_d3d12.h"
 
-#include "d3d12_hooks.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
-#include "core/version.h"
 
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
 #include <dxcapi.h>
-#include <dxgi1_6.h>
-
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
+
+#include <dxgi1_6.h>
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>

@@ -30,7 +30,6 @@
 
 #include "jolt_layers.h"
 
-#include "../jolt_project_settings.h"
 #include "jolt_broad_phase_layer.h"
 
 #include "core/error/error_macros.h"

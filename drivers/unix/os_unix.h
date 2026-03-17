@@ -33,7 +33,6 @@
 #ifdef UNIX_ENABLED
 
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 
 #if defined(__GLIBC__) || defined(WEB_ENABLED)
 #include <iconv.h>
@@ -47,7 +46,7 @@ typedef void *gd_iconv_t;
 typedef gd_iconv_t (*PIConvOpen)(const char *, const char *);
 typedef size_t (*PIConv)(gd_iconv_t, char **, size_t *, char **, size_t *);
 typedef int (*PIConvClose)(gd_iconv_t);
-typedef const char *(*PIConvLocaleCharset)(void);
+typedef const char *(*PIConvLocaleCharset)();
 #endif
 
 class OS_Unix : public OS {

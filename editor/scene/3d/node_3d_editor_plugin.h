@@ -222,6 +222,7 @@ private:
 	Button *translation_preview_button = nullptr;
 	Button *follow_mode = nullptr;
 	CheckBox *preview_camera = nullptr;
+	CheckBox *pilot_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
 	MenuButton *view_display_menu = nullptr;
@@ -234,6 +235,16 @@ private:
 	bool transform_gizmo_visible = true;
 	bool collision_reposition = false;
 	real_t gizmo_scale;
+
+	bool vertex_snap_mode = false;
+	Key vertex_snap_keycode = Key::NONE;
+	bool vertex_snap_dragging = false;
+	Vector3 vertex_snap_source;
+	Plane vertex_snap_drag_plane;
+	Vector3 vertex_snap_target;
+	bool vertex_snap_has_target = false;
+	bool vertex_snap_has_source = false;
+	HashMap<ObjectID, Vector3> vertex_snap_original_positions;
 
 	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
@@ -271,6 +282,14 @@ private:
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
 
+	float _min_screen_dist_to_aabb(const AABB &p_aabb, const Transform3D &p_transform, const Point2 &p_cursor) const;
+	bool _find_closest_vertex_on_node(const Point2 &p_screen_pos, Node3D *p_node, float &r_closest_screen_dist, Vector3 &r_vertex_world) const;
+	bool _find_closest_vertex_in_scene(const Point2 &p_screen_pos, float p_threshold, Vector3 &r_vertex_world, const HashMap<ObjectID, Vector3> *p_exclude = nullptr);
+	void _vertex_snap_update_source(const Point2 &p_screen_pos);
+	void _vertex_snap_commit();
+	void _vertex_snap_cancel();
+	bool _is_vertex_occluded(const Vector3 &p_world_pos, const Vector2 &p_screen_pos) const;
+
 	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
 	void cancel_transform();
@@ -279,6 +298,7 @@ private:
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
+	Vector<Plane> _build_screen_frustum(const Point2 &p_min, const Point2 &p_max);
 
 	void _select_region();
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
@@ -407,13 +427,16 @@ private:
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
 	int times_focused_consecutively = 0;
+	bool pilot_preview_enabled = false;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
+	void _sync_cursor_from_transform(const Transform3D &p_transform);
 	void _update_centered_labels();
 	void _disable_follow_mode();
 	void _reset_follow_mode_count();
 	void _toggle_camera_preview(bool);
+	void _toggle_pilot_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
@@ -476,6 +499,7 @@ public:
 	void update_transform_gizmo_highlight();
 
 	void set_can_preview(Camera3D *p_preview);
+	void switch_preview_camera(Camera3D *p_new_camera);
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();

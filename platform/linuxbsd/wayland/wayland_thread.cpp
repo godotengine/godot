@@ -199,6 +199,21 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 	return Vector<uint8_t>();
 }
 
+void WaylandThread::_wl_display_check_error(struct wl_display *wl_display) {
+	int werror = wl_display_get_error(wl_display);
+	if (werror) {
+		if (werror == EPROTO) {
+			struct wl_interface *wl_interface = nullptr;
+			uint32_t id = 0;
+
+			int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
+			CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
+		} else {
+			CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
+		}
+	}
+}
+
 Ref<InputEventKey> WaylandThread::_seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed) {
 	Ref<InputEventKey> event;
 
@@ -618,6 +633,16 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_color_manager_v1_interface.name) == 0) {
+		registry->wp_color_manager = (struct wp_color_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_color_manager_v1_interface, 1);
+		registry->wp_color_manager_name = name;
+		wl_proxy_tag_godot((struct wl_proxy *)registry->wp_color_manager);
+
+		WaylandThread::ColorManagementState *color_state = memnew(WaylandThread::ColorManagementState);
+		wp_color_manager_v1_add_listener(registry->wp_color_manager, &wp_color_manager_listener, color_state);
+		return;
+	}
+
 	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
 		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
 		registry->wp_cursor_shape_manager_name = name;
@@ -847,6 +872,32 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_color_manager_name) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
+			WindowState ws = pair.value;
+
+			if (ws.wp_color_management_surface) {
+				wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+				ws.wp_color_management_surface = nullptr;
+			}
+
+			if (ws.wp_color_management_surface_feedback) {
+				wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
+				ws.wp_color_management_surface_feedback = nullptr;
+			}
+		}
+
+		if (registry->wp_color_manager) {
+			ColorManagementState *color_state = wp_color_manager_get_state(registry->wp_color_manager);
+			memdelete(color_state);
+
+			wp_color_manager_v1_destroy(registry->wp_color_manager);
+			registry->wp_color_manager = nullptr;
+		}
+
+		registry->wp_color_manager_name = 0;
 	}
 
 	if (name == registry->wp_cursor_shape_manager_name) {
@@ -1361,12 +1412,22 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
+	ws->ready = true;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
+
+	if (width == 0) {
+		width = ws->rect.size.width;
+	}
+
+	if (height == 0) {
+		height = ws->rect.size.height;
+	}
 
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
@@ -1423,9 +1484,7 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		}
 	}
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
-	}
+	window_state_update_size(ws, width, height);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
@@ -1476,9 +1535,15 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
+	if (width == 0) {
+		width = ws->rect.size.width;
 	}
+
+	if (height == 0) {
+		height = ws->rect.size.width;
+	}
+
+	window_state_update_size(ws, width, height);
 
 	WindowState *parent = ws->wayland_thread->window_get_state(ws->parent_id);
 	ERR_FAIL_NULL(parent);
@@ -1570,6 +1635,8 @@ void WaylandThread::libdecor_on_error(struct libdecor *context, enum libdecor_er
 void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
 	WindowState *ws = (WindowState *)user_data;
 	ERR_FAIL_NULL(ws);
+
+	ws->ready = true;
 
 	int width = 0;
 	int height = 0;
@@ -2567,6 +2634,139 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
+void WaylandThread::_wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_intents |= 1 << render_intent;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_feature |= 1 << feature;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_transfer_function |= 1 << tf;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_primaries_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t primaries) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_primaries |= 1 << primaries;
+}
+
+void WaylandThread::_wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	// We require parametric profiles until we can support reading ICC files.
+	if ((cms->supported_render_feature & (1 << WP_COLOR_MANAGER_V1_FEATURE_PARAMETRIC)) == 0) {
+		return;
+	}
+
+	// We require the compositor to support extended linear sRGB.
+	// sRGB primaries support is assumed.
+	cms->supports_hdr = cms->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity) {
+	_wp_color_management_surface_feedback_on_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_high, uint32_t identity_low) {
+	struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(wp_color_management_surface_feedback_v1);
+
+	wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, data);
+}
+
+void WaylandThread::_wp_image_description_on_failed(void *data, struct wp_image_description_v1 *image_descrptor, uint32_t cause, const char *msg) {
+	WARN_PRINT(msg);
+}
+
+void WaylandThread::_wp_image_description_on_ready(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity) {
+	_wp_image_description_on_ready2(data, image_descriptor, 0, identity);
+}
+
+void WaylandThread::_wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity_high, uint32_t identity_low) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	struct wp_image_description_info_v1 *image_info = wp_image_description_v1_get_information(image_descriptor);
+	if (image_info != nullptr) {
+		ColorProfileMessage *msg = memnew(ColorProfileMessage);
+		msg->id = ws->id;
+		msg->wayland_thread = ws->wayland_thread;
+
+		wp_image_description_info_v1_add_listener(image_info, &wp_image_description_info_listener, msg);
+		wp_image_description_v1_destroy(image_descriptor);
+	}
+}
+
+void WaylandThread::_wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1) {
+	wp_image_description_info_v1_destroy(wp_image_description_info_v1);
+
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->wayland_thread->push_message(msg);
+}
+
+void WaylandThread::_wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size) {
+	::close(icc);
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t primaries) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_primary = primaries;
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_power(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t eexp) {
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t tf) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_transfer_function = tf;
+}
+
+void WaylandThread::_wp_image_description_info_on_luminances(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.reference_luminance = reference_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_luminance(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	// The uint32 is multiplied by 10000 for precision.
+	msg->color_profile.target_min_luminance = static_cast<float>(min_lum) / 10000;
+	msg->color_profile.target_max_luminance = max_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_cll(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_cll) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_fall(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_fall) {
+}
+
 void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
@@ -3361,19 +3561,7 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			}
 		}
 
-		int werror = wl_display_get_error(data->wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(data->wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
+		_wl_display_check_error(data->wl_display);
 
 		wl_display_flush(data->wl_display);
 
@@ -3479,6 +3667,14 @@ WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_s
 	return nullptr;
 }
 
+WaylandThread::ColorManagementState *WaylandThread::wp_color_manager_get_state(wp_color_manager_v1 *p_color_manager) {
+	if (p_color_manager && wl_proxy_is_godot((wl_proxy *)p_color_manager)) {
+		return (ColorManagementState *)wp_color_manager_v1_get_user_data(p_color_manager);
+	}
+
+	return nullptr;
+}
+
 WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
 	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
 	if (p_compositor) {
@@ -3544,6 +3740,10 @@ double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 
 void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int p_height) {
 	ERR_FAIL_NULL(p_ws);
+
+	// Failsafe.
+	p_width = MAX(p_width, 1);
+	p_height = MAX(p_height, 1);
 
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
@@ -3858,7 +4058,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size = p_size;
+	ws.rect.size = p_size.maxi(1);
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3871,6 +4071,17 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 			ws.wp_fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(registry.wp_fractional_scale_manager, ws.wl_surface);
 			wp_fractional_scale_v1_add_listener(ws.wp_fractional_scale, &wp_fractional_scale_listener, &ws);
 		}
+	}
+
+	if (supports_hdr()) {
+		ws.wp_color_management_surface_feedback = wp_color_manager_v1_get_surface_feedback(registry.wp_color_manager, ws.wl_surface);
+		wp_color_management_surface_feedback_v1_add_listener(ws.wp_color_management_surface_feedback, &wp_color_management_surface_feedback_listener, &ws);
+
+		struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(ws.wp_color_management_surface_feedback);
+		wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, &ws);
+
+		//NOTE: requires vulkan to use the VK_COLOR_SPACE_PASSTHROUGH_EXT colorspace to not raise protocol errors
+		ws.wp_color_management_surface = wp_color_manager_v1_get_surface(registry.wp_color_manager, ws.wl_surface);
 	}
 
 	bool decorated = false;
@@ -3932,11 +4143,6 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	}
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
-
-	window_state_update_size(&ws, ws.rect.size.width, ws.rect.size.height);
 }
 
 void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect) {
@@ -3950,7 +4156,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
-
 	// We manually scaled based on the parent. If we don't set the relevant fields,
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
@@ -4021,9 +4226,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
 }
 
 void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
@@ -4050,6 +4252,14 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	if (ws.wp_fractional_scale) {
 		wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
+	}
+
+	if (ws.wp_color_management_surface) {
+		wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+	}
+
+	if (ws.wp_color_management_surface_feedback) {
+		wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
 	}
 
 	if (ws.wp_viewport) {
@@ -4142,7 +4352,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
-	return scale_vector2i(new_size, window_scale);
+	return scale_vector2i(new_size, window_scale).maxi(1);
 }
 
 void WaylandThread::beep() const {
@@ -4408,8 +4618,8 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 #endif // LIBDECOR_ENABLED
 		} break;
 	}
-
-	// Wait for a configure event and hope that something changed.
+	// Roundtrip and hope that something changed.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	if (ws.mode != DisplayServerEnums::WINDOW_MODE_WINDOWED) {
@@ -4654,6 +4864,40 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServerEnums::WindowID p_wi
 	const WindowState &ws = windows[p_window_id];
 
 	return ws.wp_idle_inhibitor != nullptr;
+}
+
+void WaylandThread::window_set_color_profile(DisplayServerEnums::WindowID p_window_id, ColorProfile p_profile) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	const WindowState &ws = windows[p_window_id];
+
+	if (!ws.wp_color_management_surface) {
+		return;
+	}
+
+	if (p_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22) {
+		// This is largely a problem with some HDR monitors applying "glare compensation" or not.
+		// For monitors which do not apply glare compensation, it is correct to report gamma22 like we would on SDR.
+		// But there also exist monitors which apply glare compensation, on these monitors it is correct to request compound_2_4.
+		// Since we have no way to know on which type of monitor we are in, we unset the image description in the hopes
+		// that future compositor features may include choosing a default transfer function.
+		wp_color_management_surface_v1_unset_image_description(ws.wp_color_management_surface);
+		return;
+	}
+
+	ColorManagementState *cms = wp_color_manager_get_state(registry.wp_color_manager);
+
+	struct wp_image_description_creator_params_v1 *builder = wp_color_manager_v1_create_parametric_creator(registry.wp_color_manager);
+	wp_image_description_creator_params_v1_set_primaries_named(builder, p_profile.named_primary);
+	wp_image_description_creator_params_v1_set_tf_named(builder, p_profile.named_transfer_function);
+
+	if ((cms->supported_render_feature & WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) > 0) {
+		uint32_t min_luminance = static_cast<uint32_t>(p_profile.target_min_luminance * 10000);
+		wp_image_description_creator_params_v1_set_luminances(builder, min_luminance, p_profile.target_max_luminance, p_profile.reference_luminance);
+	}
+
+	struct wp_image_description_v1 *image_desc = wp_image_description_creator_params_v1_create(builder);
+	wp_color_management_surface_v1_set_image_description(ws.wp_color_management_surface, image_desc, WP_COLOR_MANAGER_V1_RENDER_INTENT_PERCEPTUAL);
+	wp_image_description_v1_destroy(image_desc);
 }
 
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
@@ -4910,6 +5154,7 @@ Error WaylandThread::init() {
 	wl_registry_add_listener(wl_registry, &wl_registry_listener, &registry);
 
 	// Wait for registry to get notified from the compositor.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
@@ -4946,6 +5191,7 @@ Error WaylandThread::init() {
 	}
 
 	// Wait for seat capabilities.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 #ifdef LIBDECOR_ENABLED
@@ -5351,6 +5597,15 @@ void WaylandThread::primary_set_text(const String &p_text) {
 	wl_display_roundtrip(wl_display);
 }
 
+bool WaylandThread::supports_hdr() const {
+	ColorManagementState *color_state = wp_color_manager_get_state(registry.wp_color_manager);
+	if (!color_state) {
+		return false;
+	}
+
+	return color_state->supports_hdr;
+}
+
 void WaylandThread::commit_surfaces() {
 	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
 		wl_surface_commit(pair.value.wl_surface);
@@ -5368,6 +5623,41 @@ bool WaylandThread::get_reset_frame() {
 	return old_frame;
 }
 
+// Wraps around `wl_display_dispatch_pending`. Judging from the docs, this
+// should work pretty much like `wl_display_dispatch_timeout`, which is only
+// available on somewhat recent versions of libwayland.
+//
+// This implementation is NOT based on libwayland's code.
+int WaylandThread::wait_events(int p_timeout_ms) {
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wl_display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	while (wl_display_prepare_read(wl_display) != 0) {
+		// Event queue got already something.
+		return wl_display_dispatch_pending(wl_display);
+	}
+
+	wl_display_flush(wl_display);
+
+	// Wait for the event file descriptor to have new data.
+	poll(&poll_fd, 1, p_timeout_ms);
+
+	if (poll_fd.revents | POLLIN) {
+		// Load the queues with fresh new data.
+		wl_display_read_events(wl_display);
+	} else {
+		// Oh well... Stop signaling that we want to read.
+		wl_display_cancel_read(wl_display);
+
+		// We've got no new events :(
+		return 0;
+	}
+
+	// Let's try dispatching now...
+	return wl_display_dispatch_pending(wl_display);
+}
+
 // Dispatches events until a frame event is received, a window is reported as
 // suspended or the timeout expires.
 bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
@@ -5376,9 +5666,21 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 	// `wl_display_prepare_read` and `wl_display_read`. This means, that it will
 	// basically be guaranteed to stay stuck in a "prepare read" state, where it
 	// will block any other attempt at reading the display fd, such as ours. The
-	// solution? Let's make sure the mutex is locked (it should) and unblock the
-	// main thread with a roundtrip!
+	// solution? Let's make sure the mutex is locked (it should)...
 	MutexLock mutex_lock(mutex);
+
+	if (is_suspended()) {
+		return false;
+	}
+
+	if (frame) {
+		frame = false;
+		return true;
+	}
+
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), false);
+
+	// ...and unblock the main thread with a roundtrip!
 	wl_display_roundtrip(wl_display);
 
 	if (is_suspended()) {
@@ -5394,65 +5696,12 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 		return true;
 	}
 
-	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	for (int remaining_ms = p_timeout; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
 
-	int begin_ms = OS::get_singleton()->get_ticks_msec();
-	int remaining_ms = p_timeout;
+		wait_events(remaining_ms);
 
-	while (remaining_ms > 0) {
-		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wl_display) != 0) {
-			if (wl_display_dispatch_pending(wl_display) == -1) {
-				// Oh no. We'll check and handle any display error below.
-				break;
-			}
-
-			if (is_suspended()) {
-				return false;
-			}
-
-			if (frame) {
-				// We had a frame event in the queue :D
-				frame = false;
-				return true;
-			}
-		}
-
-		int werror = wl_display_get_error(wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
-
-		wl_display_flush(wl_display);
-
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, remaining_ms);
-
-		if (poll_fd.revents | POLLIN) {
-			// Load the queues with fresh new data.
-			wl_display_read_events(wl_display);
-		} else {
-			// Oh well... Stop signaling that we want to read.
-			wl_display_cancel_read(wl_display);
-
-			// We've got no new events :(
-			// We won't even bother with checking the frame flag.
-			return false;
-		}
-
-		// Let's try dispatching now...
-		wl_display_dispatch_pending(wl_display);
+		_wl_display_check_error(wl_display);
 
 		if (is_suspended()) {
 			return false;
@@ -5492,6 +5741,43 @@ bool WaylandThread::is_suspended() const {
 	}
 
 	return true;
+}
+
+bool WaylandThread::window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms) {
+	MutexLock mutex_lock(mutex);
+
+	WindowState *ws = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(ws, false);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	// See _poll_events_thread.
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), ws->ready);
+
+	// Unlock the thread.
+	wl_display_roundtrip(wl_display);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	for (int remaining_ms = p_timeout_ms; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
+
+		wait_events(remaining_ms);
+
+		_wl_display_check_error(wl_display);
+
+		if (ws->ready) {
+			return true;
+		}
+
+		remaining_ms -= OS::get_singleton()->get_ticks_msec() - begin_ms;
+	}
+
+	return false;
 }
 
 struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
@@ -5707,6 +5993,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_color_manager) {
+		wp_color_manager_v1_destroy(registry.wp_color_manager);
 	}
 
 	if (registry.wp_cursor_shape_manager) {

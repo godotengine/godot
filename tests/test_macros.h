@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/core_globals.h" // IWYU pragma: Used in macro.
+#include "core/core_globals.h" // IWYU pragma: keep. Used in macro.
 #include "core/variant/variant.h"
 
 #if defined(_MSC_VER) && !defined(DOCTEST_THREAD_LOCAL)
@@ -146,7 +146,7 @@ extern HashMap<String, TestFunc> *test_commands;
 int register_test_command(String p_command, TestFunc p_function);
 
 #define REGISTER_TEST_COMMAND(m_command, m_function) \
-	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(DOCTEST_ANON_VAR_), \
+	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(GODOT_DOCTEST_ANON_VAR_), \
 			register_test_command(m_command, m_function))
 
 #define MULTICHECK_STRING_EQ(m_obj, m_func, m_param1, m_eq) \

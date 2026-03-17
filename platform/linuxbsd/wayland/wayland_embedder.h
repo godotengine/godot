@@ -37,17 +37,12 @@
 #include "core/templates/a_hash_map.h"
 #include "core/templates/pooled_list.h"
 
-#ifdef SOWRAP_ENABLED
-#include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
-#else
-#include <wayland-client-core.h>
-#endif
-
 #include "protocol/wayland.gen.h"
 
 #include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
+#include "protocol/color_management.gen.h"
 #include "protocol/commit_timing_v1.gen.h"
 #include "protocol/cursor_shape.gen.h"
 #include "protocol/fifo_v1.gen.h"
@@ -61,7 +56,7 @@
 #include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
-#include "protocol/tablet.gen.h"
+// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
 #include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
@@ -74,13 +69,12 @@
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <poll.h>
 
@@ -346,6 +340,16 @@ class WaylandEmbedder {
 		&zwp_linux_explicit_synchronization_v1_interface,
 		&zwp_linux_surface_synchronization_v1_interface,
 		&zwp_linux_buffer_release_v1_interface,
+
+		// color-management
+		&wp_color_manager_v1_interface,
+		&wp_color_management_output_v1_interface,
+		&wp_color_management_surface_v1_interface,
+		&wp_color_management_surface_feedback_v1_interface,
+		&wp_image_description_creator_icc_v1_interface,
+		&wp_image_description_creator_params_v1_interface,
+		&wp_image_description_v1_interface,
+		&wp_image_description_info_v1_interface,
 
 		// fractional-scale
 		&wp_fractional_scale_manager_v1_interface,

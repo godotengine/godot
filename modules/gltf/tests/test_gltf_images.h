@@ -30,13 +30,15 @@
 
 #pragma once
 
-#include "test_gltf.h"
-
 #ifdef TOOLS_ENABLED
 
+#include "test_gltf.h"
+
 #include "editor/file_system/editor_file_system.h"
-#include "editor/file_system/editor_paths.h"
+#include "editor/inspector/editor_resource_preview.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
+#include "scene/resources/3d/primitive_meshes.cpp"
 #include "scene/resources/image_texture.h"
 
 namespace TestGltf {

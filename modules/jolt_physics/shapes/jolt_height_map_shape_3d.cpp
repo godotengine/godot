@@ -33,8 +33,8 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
-#include "Jolt/Physics/Collision/Shape/MeshShape.h"
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
 namespace {
 

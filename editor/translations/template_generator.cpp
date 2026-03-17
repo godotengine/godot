@@ -74,8 +74,12 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		}
 	}
 
+	EditorTranslationParser::get_singleton()->customize_strings(raw);
+
 	MessageMap result;
-	for (const Vector<String> &entry : raw) {
+	for (Vector<String> &entry : raw) {
+		entry.resize(5); // Ensure size, in case the strings were customized.
+
 		const String &msgid = entry[0];
 		const String &msgctxt = entry[1];
 		const String &plural = entry[2];

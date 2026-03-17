@@ -45,7 +45,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
@@ -752,17 +752,19 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 
 	switch (p_action) {
 		case ACTION_RESET: {
-			confirm_dialog->set_text(TTR("Reset the edited profile?"));
+			confirm_dialog->set_text(TTRC("Reset the edited profile?"));
 			confirm_dialog->popup_centered();
 		} break;
+
 		case ACTION_LOAD: {
 			import_profile->popup_file_dialog();
 		} break;
+
 		case ACTION_SAVE: {
 			if (!profile_path->get_text().is_empty()) {
 				Error err = edited->save_to_file(profile_path->get_text());
 				if (err != OK) {
-					EditorNode::get_singleton()->show_warning(TTR("File saving failed."));
+					EditorNode::get_singleton()->show_warning(TTRC("File saving failed."));
 				}
 				break;
 			}
@@ -772,10 +774,12 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			export_profile->popup_file_dialog();
 			export_profile->set_current_file(profile_path->get_text());
 		} break;
+
 		case ACTION_NEW: {
-			confirm_dialog->set_text(TTR("Create a new profile?"));
+			confirm_dialog->set_text(TTRC("Create a new profile?"));
 			confirm_dialog->popup_centered();
 		} break;
+
 		case ACTION_DETECT: {
 			String text = TTR("This will scan all files in the current project to detect used classes.\nNote that the first scan may take a while, specially in larger projects.");
 #ifdef MODULE_MONO_ENABLED
@@ -784,6 +788,12 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			confirm_dialog->set_text(text);
 			confirm_dialog->popup_centered();
 		} break;
+
+		case ACTION_CLEAR_CACHE: {
+			confirm_dialog->set_text(TTRC("Clear cache of used classes per file? This will make it so that those files will need to be re-scanned, but it can also help fix problems related to outdated caching."));
+			confirm_dialog->popup_centered();
+		} break;
+
 		case ACTION_MAX: {
 		} break;
 	}
@@ -865,9 +875,11 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 void EditorBuildProfileManager::_detect_from_project() {
 	EditorNode::get_singleton()->progress_add_task("detect_classes_from_project", TTRC("Scanning Project for Used Classes"), 3, true);
 
+	String cache_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache");
+
 	HashMap<String, DetectedFile> previous_file_cache;
 
-	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(cache_path, FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			String l = f->get_line();
@@ -902,31 +914,33 @@ void EditorBuildProfileManager::_detect_from_project() {
 	LocalVector<String> used_build_deps;
 
 	// Find classes and update the disk cache in the process.
-	f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::WRITE);
+	f = FileAccess::open(cache_path, FileAccess::WRITE);
+	if (f.is_valid()) {
+		for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
+			String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
+			for (int i = 0; i < E.value.classes.size(); i++) {
+				String c = E.value.classes[i];
+				if (i > 0) {
+					l += ",";
+				}
+				l += c;
+				used_classes.insert(c);
+			}
+			l += "::";
+			for (int i = 0; i < E.value.build_deps.size(); i++) {
+				String c = E.value.build_deps[i];
+				if (i > 0) {
+					l += ",";
+				}
+				l += c;
+				used_build_deps.push_back(c);
+			}
+			f->store_line(l);
+		}
+		f.unref();
 
-	for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
-		String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
-		for (int i = 0; i < E.value.classes.size(); i++) {
-			String c = E.value.classes[i];
-			if (i > 0) {
-				l += ",";
-			}
-			l += c;
-			used_classes.insert(c);
-		}
-		l += "::";
-		for (int i = 0; i < E.value.build_deps.size(); i++) {
-			String c = E.value.build_deps[i];
-			if (i > 0) {
-				l += ",";
-			}
-			l += c;
-			used_build_deps.push_back(c);
-		}
-		f->store_line(l);
+		profile_actions[ACTION_CLEAR_CACHE]->set_disabled(false);
 	}
-
-	f.unref();
 
 	// Add classes that are either necessary for the engine to work properly, or there isn't a way to infer their use.
 
@@ -1102,22 +1116,29 @@ void EditorBuildProfileManager::_action_confirm() {
 			edited.instantiate();
 			_update_edited_profile();
 		} break;
-		case ACTION_LOAD: {
-		} break;
-		case ACTION_SAVE: {
-		} break;
-		case ACTION_SAVE_AS: {
-		} break;
+
 		case ACTION_NEW: {
 			profile_path->set_text("");
 			edited.instantiate();
 			_update_edited_profile();
 		} break;
+
 		case ACTION_DETECT: {
 			_detect_from_project();
 			_update_edited_profile();
 		} break;
-		case ACTION_MAX: {
+
+		case ACTION_CLEAR_CACHE: {
+			String cache_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache");
+			Error err = DirAccess::remove_absolute(cache_path);
+			if (err != OK) {
+				ERR_FAIL_MSG(vformat("Cannot remove cache file: '%s'.", cache_path));
+			} else {
+				profile_actions[ACTION_CLEAR_CACHE]->set_disabled(true);
+			}
+		} break;
+
+		default: {
 		} break;
 	}
 }
@@ -1276,7 +1297,7 @@ void EditorBuildProfileManager::_update_edited_profile() {
 	}
 
 	TreeItem *classes = class_list->create_item(root);
-	classes->set_text(0, TTR("Nodes and Classes:"));
+	classes->set_text(0, TTRC("Nodes and Classes:"));
 
 	_fill_classes_from(classes, "Node", class_selected);
 	_fill_classes_from(classes, "Resource", class_selected);
@@ -1344,37 +1365,44 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	profile_path->set_editable(true);
 	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
+	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
 	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
-	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
+	profile_actions[ACTION_LOAD] = memnew(Button(TTRC("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
 	profile_actions[ACTION_LOAD]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
-	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
+	profile_actions[ACTION_SAVE] = memnew(Button(TTRC("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
 	profile_actions[ACTION_SAVE]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
-	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
+	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTRC("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
 	profile_actions[ACTION_SAVE_AS]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
-	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
+	main_vbc->add_margin_child(TTRC("Profile:"), path_hbc);
 
 	main_vbc->add_child(memnew(HSeparator));
 
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 
-	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
+	profile_actions[ACTION_RESET] = memnew(Button(TTRC("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
 	profile_actions[ACTION_RESET]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
-	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
+	profile_actions[ACTION_DETECT] = memnew(Button(TTRC("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
 	profile_actions[ACTION_DETECT]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
-	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
+	profiles_hbc->add_spacer();
+
+	profile_actions[ACTION_CLEAR_CACHE] = memnew(Button(TTRC("Clear Cache")));
+	profile_actions[ACTION_CLEAR_CACHE]->set_disabled(FileAccess::exists(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache")));
+	profiles_hbc->add_child(profile_actions[ACTION_CLEAR_CACHE]);
+	profile_actions[ACTION_CLEAR_CACHE]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_CLEAR_CACHE));
+
+	main_vbc->add_margin_child(TTRC("Actions:"), profiles_hbc);
 
 	class_list = memnew(Tree);
 	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1393,35 +1421,37 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	description_bit->connect("request_hide", callable_mp(this, &EditorBuildProfileManager::_hide_requested));
-	main_vbc->add_margin_child(TTR("Description:"), description_bit, false);
+	main_vbc->add_margin_child(TTRC("Description:"), description_bit, false);
 
 	confirm_dialog = memnew(ConfirmationDialog);
 	add_child(confirm_dialog);
-	confirm_dialog->set_title(TTR("Please Confirm:"));
+	confirm_dialog->set_title(TTRC("Please Confirm:"));
+	confirm_dialog->set_autowrap(true);
+	confirm_dialog->set_min_size(Size2i(420 * EDSCALE, 0));
 	confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorBuildProfileManager::_action_confirm));
 
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
+	import_profile->add_filter("*.gdbuild,*.build", TTRC("Engine Compilation Profile"));
 	import_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
-	import_profile->set_title(TTR("Load Profile"));
+	import_profile->set_title(TTRC("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
+	export_profile->add_filter("*.gdbuild,*.build", TTRC("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
-	export_profile->set_title(TTR("Export Profile"));
+	export_profile->set_title(TTRC("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	force_detect_classes = memnew(LineEdit);
 	force_detect_classes->set_accessibility_name(TTRC("Forced Classes on Detect:"));
-	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
+	main_vbc->add_margin_child(TTRC("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
-	set_title(TTR("Edit Compilation Configuration Profile"));
+	set_title(TTRC("Edit Compilation Configuration Profile"));
 
 	singleton = this;
 }

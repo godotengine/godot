@@ -48,7 +48,7 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
 namespace GDScriptTests {
 

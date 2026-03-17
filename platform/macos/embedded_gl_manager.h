@@ -43,7 +43,7 @@
 
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
-typedef CGLContextObj (*CGLGetCurrentContextPtr)(void);
+typedef CGLContextObj (*CGLGetCurrentContextPtr)();
 typedef CGLError (*CGLTexImageIOSurface2DPtr)(CGLContextObj ctx, GLenum target, GLenum internal_format,
 		GLsizei width, GLsizei height, GLenum format, GLenum type, IOSurfaceRef ioSurface, GLuint plane);
 typedef const char *(*CGLErrorStringPtr)(CGLError);

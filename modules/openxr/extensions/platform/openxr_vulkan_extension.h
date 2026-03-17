@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
@@ -38,7 +37,7 @@
 #include "drivers/vulkan/vulkan_hooks.h"
 
 // Always include this as late as possible.
-#include "../../openxr_platform_inc.h"
+#include "../../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:

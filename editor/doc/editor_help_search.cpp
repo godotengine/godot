@@ -41,7 +41,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "servers/display/display_server.h"
 
