@@ -232,6 +232,11 @@ String OS_LinuxBSD::get_processor_name() const {
 }
 
 bool OS_LinuxBSD::is_sandboxed() const {
+	// Check for openKylin Kaiming
+	if (has_environment("KAIMING_ID")) {
+		return true;
+	}
+	
 	// This function is derived from SDL:
 	// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
 
