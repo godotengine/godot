@@ -1062,11 +1062,10 @@ bool EditorFileSystem::_update_scan_actions() {
 
 	if (reloads.size()) {
 		emit_signal(SNAME("resources_reload"), reloads);
-	}
-
-	for (const String &file : reloads) {
-		// Update preview.
-		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+		for (const String &file : reloads) {
+			// Update preview.
+			EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+		}
 	}
 
 	scan_actions.clear();
@@ -2508,15 +2507,6 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				}
 			}
 
-			if (!is_scanning()) {
-				Ref<Resource> res = ResourceCache::get_ref(file);
-				if (res.is_valid()) {
-					res->reload_from_file();
-				}
-				// Update preview
-				EditorResourcePreview::get_singleton()->check_for_invalidation(file);
-			}
-
 			if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
 				_queue_update_script_class(file, ScriptClassInfoUpdate::from_file_info(fi));
 			}
@@ -2556,6 +2546,14 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		if (!filesystem_changed_queued) {
 			filesystem_changed_queued = true;
 			callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
+		}
+	}
+
+	if (!is_scanning()) {
+		// `update_file()` may be called by a tool script.
+		emit_signal(SNAME("resources_reload"), p_script_paths);
+		for (const String &file : p_script_paths) {
+			EditorResourcePreview::get_singleton()->check_for_invalidation(file); // Update preview.
 		}
 	}
 }
