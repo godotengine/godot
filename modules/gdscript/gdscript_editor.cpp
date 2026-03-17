@@ -232,6 +232,9 @@ int GDScriptLanguage::find_function(const String &p_function, const String &p_co
 			indent++;
 		} else if (current.type == GDScriptTokenizer::Token::DEDENT) {
 			indent--;
+			if (indent < 0) {
+				indent = 0;
+			}
 		}
 		if (indent == 0 && current.type == GDScriptTokenizer::Token::FUNC) {
 			current = tokenizer.scan();
