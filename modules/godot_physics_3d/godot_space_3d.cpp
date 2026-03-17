@@ -227,17 +227,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 
 bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	int n_collisions = intersect_ray_multiple(p_parameters, &r_result, 1);
-	bool hit = n_collisions > 0;
-	if (hit) {
-		r_result.collider_id = r_result.collider_id;
-		r_result.collider = r_result.collider;
-		r_result.normal = r_result.normal;
-		r_result.face_index = r_result.face_index;
-		r_result.position = r_result.position;
-		r_result.rid = r_result.rid;
-		r_result.shape = r_result.shape;
-	}
-	return hit;
+	return n_collisions > 0;
 }
 
 int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
