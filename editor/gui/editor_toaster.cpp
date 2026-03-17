@@ -576,6 +576,7 @@ EditorToaster::EditorToaster() {
 
 	// VBox.
 	vbox_container = memnew(VBoxContainer);
+	vbox_container->set_name("ToastVBoxContainer");
 	vbox_container->set_as_top_level(true);
 	vbox_container->connect(SceneStringName(resized), callable_mp(this, &EditorToaster::_update_vbox_position));
 	add_child(vbox_container);
@@ -613,6 +614,7 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
+	main_button->set_name("NotificationsButton");
 	main_button->set_accessibility_name(TTRC("Notifications:"));
 	main_button->set_tooltip_text(TTRC("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
@@ -625,6 +627,7 @@ EditorToaster::EditorToaster() {
 
 	// Disable notification button.
 	disable_notifications_panel = memnew(PanelContainer);
+	disable_notifications_panel->set_name("DisableNotificationsPanel");
 	disable_notifications_panel->set_as_top_level(true);
 	disable_notifications_panel->add_theme_style_override(SceneStringName(panel), info_panel_style_background);
 	add_child(disable_notifications_panel);

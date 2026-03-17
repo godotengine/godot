@@ -5614,31 +5614,38 @@ CanvasItemEditor::CanvasItemEditor() {
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->set_name("ToolbarMargin");
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
+	main_flow->set_name("MainFlow");
 	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
+	main_menu_hbox->set_name("MainMenuHbox");
 	main_menu_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	main_flow->add_child(main_menu_hbox);
 
 	bottom_split = memnew(VSplitContainer);
+	bottom_split->set_name("BottomSplit");
 	add_child(bottom_split);
 	bottom_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	left_panel_split = memnew(HSplitContainer);
+	left_panel_split->set_name("LeftPanelSplit");
 	bottom_split->add_child(left_panel_split);
 	left_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	right_panel_split = memnew(HSplitContainer);
+	right_panel_split->set_name("RightPanelSplit");
 	left_panel_split->add_child(right_panel_split);
 	right_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	viewport_scrollable = memnew(Control);
+	viewport_scrollable->set_name("ViewportScrollable");
 	right_panel_split->add_child(viewport_scrollable);
 	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport_scrollable->set_clip_contents(true);
@@ -5737,6 +5744,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport->add_child(controls_vb);
 
 	select_button = memnew(Button);
+	select_button->set_name("SelectButton");
 	select_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(select_button);
@@ -5759,6 +5767,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	move_button = memnew(Button);
+	move_button->set_name("MoveButton");
 	move_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(move_button);
 	move_button->set_toggle_mode(true);
@@ -5768,6 +5777,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	move_button->set_accessibility_name(TTRC("Move Mode"));
 
 	rotate_button = memnew(Button);
+	rotate_button->set_name("RotateButton");
 	rotate_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
@@ -5777,6 +5787,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	rotate_button->set_accessibility_name(TTRC("Rotate Mode"));
 
 	scale_button = memnew(Button);
+	scale_button->set_name("ScaleButton");
 	scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
@@ -5849,6 +5860,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_snap_button->set_shortcut_context(this);
 
 	snap_config_menu = memnew(MenuButton);
+	snap_config_menu->set_name("SnapConfigMenu");
 	snap_config_menu->set_flat(false);
 	snap_config_menu->set_theme_type_variation("FlatMenuButton");
 	snap_config_menu->set_shortcut_context(this);
@@ -5921,6 +5933,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	skeleton_menu = memnew(MenuButton);
+	skeleton_menu->set_name("SkeletonMenu");
 	skeleton_menu->set_flat(false);
 	skeleton_menu->set_theme_type_variation("FlatMenuButton");
 	skeleton_menu->set_shortcut_context(this);
@@ -5938,6 +5951,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
+	view_menu->set_name("ViewMenu");
 	view_menu->set_flat(false);
 	view_menu->set_theme_type_variation("FlatMenuButton");
 	// TRANSLATORS: Noun, name of the 2D/3D View menus.
@@ -6008,7 +6022,9 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	// Contextual toolbars.
 	context_toolbar_panel = memnew(PanelContainer);
+	context_toolbar_panel->set_name("ContextToolbarPanel");
 	context_toolbar_hbox = memnew(HBoxContainer);
+	context_toolbar_hbox->set_name("ContextToolbarHbox");
 	context_toolbar_panel->add_child(context_toolbar_hbox);
 	main_flow->add_child(context_toolbar_panel);
 
@@ -6081,12 +6097,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_clear_pose", TTRC("Clear Pose"), KeyModifierMask::SHIFT | Key::K), ANIM_CLEAR_POSE);
 
 	snap_dialog = memnew(SnapDialog);
+	snap_dialog->set_name("SnapDialog");
 	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &CanvasItemEditor::_snap_changed));
 	add_child(snap_dialog);
 
 	select_sb.instantiate();
 
 	selection_menu = memnew(PopupMenu);
+	selection_menu->set_name("SelectionMenu");
 	add_child(selection_menu);
 	selection_menu->set_min_size(Vector2(100, 0));
 	selection_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -6094,6 +6112,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide), CONNECT_DEFERRED);
 
 	add_node_menu = memnew(PopupMenu);
+	add_node_menu->set_name("AddNodeMenu");
 	add_child(add_node_menu);
 	add_node_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 

@@ -4360,6 +4360,7 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(nav_hbc);
 
 	button_hist_prev = memnew(Button);
+	button_hist_prev->set_name("HistoryPrevButton");
 	button_hist_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -4367,6 +4368,7 @@ FileSystemDock::FileSystemDock() {
 	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
+	button_hist_next->set_name("HistoryNextButton");
 	button_hist_next->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -4374,6 +4376,7 @@ FileSystemDock::FileSystemDock() {
 	nav_hbc->add_child(button_hist_next);
 
 	current_path_line_edit = memnew(LineEdit);
+	current_path_line_edit->set_name("CurrentPathLineEdit");
 	current_path_line_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	current_path_line_edit->set_accessibility_name(TTRC("Path"));
 	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -4381,6 +4384,7 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(current_path_line_edit);
 
 	button_toggle_display_mode = memnew(Button);
+	button_toggle_display_mode->set_name("ToggleDisplayModeButton");
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
@@ -4391,6 +4395,7 @@ FileSystemDock::FileSystemDock() {
 	top_vbc->add_child(toolbar2_hbc);
 
 	tree_search_box = memnew(LineEdit);
+	tree_search_box->set_name("TreeSearchBox");
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTRC("Filter Files"));
 	tree_search_box->set_clear_button_enabled(true);
@@ -4401,14 +4406,15 @@ FileSystemDock::FileSystemDock() {
 	toolbar2_hbc->add_child(tree_button_sort);
 
 	file_list_popup = memnew(PopupMenu);
-
+	file_list_popup->set_name("FileListPopup");
 	add_child(file_list_popup);
 
 	tree_popup = memnew(PopupMenu);
-
+	tree_popup->set_name("TreePopup");
 	add_child(tree_popup);
 
 	split_box = memnew(SplitContainer);
+	split_box->set_name("SplitBox");
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
 	split_box_offset_h = 240 * EDSCALE;
@@ -4420,6 +4426,7 @@ FileSystemDock::FileSystemDock() {
 	tree_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree = memnew(FileSystemTree);
+	tree->set_name("FileSystemTree");
 	tree->set_accessibility_name(TTRC("Directories"));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
@@ -4449,6 +4456,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_vb->add_child(path_hb);
 
 	file_list_search_box = memnew(LineEdit);
+	file_list_search_box->set_name("FileListSearchBox");
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTRC("Filter Files"));
 	file_list_search_box->set_accessibility_name(TTRC("Filter Files"));
@@ -4470,6 +4478,7 @@ FileSystemDock::FileSystemDock() {
 	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	files = memnew(FileSystemList);
+	files->set_name("FileList");
 	files->set_accessibility_name(TTRC("Files"));
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);

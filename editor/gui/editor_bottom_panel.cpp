@@ -279,15 +279,18 @@ EditorBottomPanel::EditorBottomPanel() :
 	set_theme_type_variation("BottomPanel");
 
 	bottom_hbox = memnew(HBoxContainer);
+	bottom_hbox->set_name("BottomHBox");
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	get_internal_container()->add_child(bottom_hbox);
 
 	bottom_hbox->add_child(memnew(VSeparator));
 
 	editor_toaster = memnew(EditorToaster);
+	editor_toaster->set_name("EditorToaster");
 	bottom_hbox->add_child(editor_toaster);
 
 	EditorVersionButton *version_btn = memnew(EditorVersionButton(EditorVersionButton::FORMAT_BASIC));
+	version_btn->set_name("VersionButton");
 	// Fade out the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -298,6 +301,7 @@ EditorBottomPanel::EditorBottomPanel() :
 	bottom_hbox->add_child(h_spacer);
 
 	expand_button = memnew(Button);
+	expand_button->set_name("ExpandButton");
 	bottom_hbox->add_child(expand_button);
 	expand_button->hide();
 	expand_button->set_theme_type_variation("BottomPanelButton");

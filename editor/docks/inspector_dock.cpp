@@ -734,6 +734,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	main_vb->add_child(general_options_hb);
 
 	resource_new_button = memnew(Button);
+	resource_new_button->set_name("ResourceNewButton");
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
 	resource_new_button->set_tooltip_text(TTRC("Create a new resource in memory and edit it."));
 	general_options_hb->add_child(resource_new_button);
@@ -741,6 +742,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_new_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	resource_load_button = memnew(Button);
+	resource_load_button->set_name("ResourceLoadButton");
 	resource_load_button->set_theme_type_variation("FlatMenuButton");
 	resource_load_button->set_tooltip_text(TTRC("Load an existing resource from disk and edit it."));
 	general_options_hb->add_child(resource_load_button);
@@ -748,6 +750,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_load_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_name("ResourceSaveButton");
 	resource_save_button->set_flat(false);
 	resource_save_button->set_theme_type_variation("FlatMenuButton");
 	resource_save_button->set_tooltip_text(TTRC("Save the currently edited resource."));
@@ -759,6 +762,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);
+	resource_extra_button->set_name("ResourceExtraButton");
 	resource_extra_button->set_flat(false);
 	resource_extra_button->set_theme_type_variation("FlatMenuButton");
 	resource_extra_button->set_tooltip_text(TTRC("Extra resource options."));
@@ -776,6 +780,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_spacer();
 
 	backward_button = memnew(Button);
+	backward_button->set_name("HistoryBackwardButton");
 	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTRC("Go to previous edited object in history."));
@@ -783,6 +788,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
+	forward_button->set_name("HistoryForwardButton");
 	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
@@ -790,6 +796,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	forward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
+	history_menu->set_name("HistoryMenu");
 	history_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	history_menu->set_flat(false);
 	history_menu->set_theme_type_variation("FlatMenuButton");
@@ -801,10 +808,12 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	main_vb->add_child(subresource_hb);
 	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
+	object_selector->set_name("ObjectSelector");
 	object_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subresource_hb->add_child(object_selector);
 
 	open_docs_button = memnew(Button);
+	open_docs_button->set_name("OpenDocsButton");
 	open_docs_button->set_theme_type_variation("FlatMenuButton");
 	open_docs_button->set_disabled(true);
 	open_docs_button->set_tooltip_text(TTRC("Open documentation for this object."));
@@ -821,12 +830,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	main_vb->add_child(property_tools_hb);
 
 	search = memnew(LineEdit);
+	search->set_name("SearchLineEdit");
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTRC("Filter Properties"));
 	search->set_clear_button_enabled(true);
 	property_tools_hb->add_child(search);
 
 	object_menu = memnew(MenuButton);
+	object_menu->set_name("ObjectMenu");
 	object_menu->set_flat(false);
 	object_menu->set_theme_type_variation("FlatMenuButton");
 	property_tools_hb->add_child(object_menu);
@@ -879,6 +890,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	inspector = memnew(EditorInspector);
+	inspector->set_name("Inspector");
 	mc->add_child(inspector);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true, true);

@@ -6332,11 +6332,13 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	c->add_child(viewport);
 	surface = memnew(Control);
+	surface->set_name("SurfaceControl");
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
 	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
+	camera->set_name("ViewportCamera");
 	camera->set_disable_gizmos(true);
 	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
 	viewport->add_child(camera);
@@ -6352,6 +6354,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	vbox->add_child(hbox);
 
 	view_display_menu = memnew(MenuButton);
+	view_display_menu->set_name("ViewDisplayMenu");
 	view_display_menu->set_flat(false);
 	view_display_menu->set_h_size_flags(0);
 	view_display_menu->set_shortcut_context(this);
@@ -6387,6 +6390,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
 
 	display_submenu = memnew(PopupMenu);
+	display_submenu->set_name("DisplaySubmenu");
 	display_submenu->set_hide_on_checkable_item_selection(false);
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Directional Shadow Splits"), VIEW_DISPLAY_DEBUG_PSSM_SPLITS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays directional shadow splits in different colors to make adjusting split thresholds easier. \nRed: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, Yellow: 4th split (furthest from the camera)"));
@@ -6527,6 +6531,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_node = nullptr;
 
 	bottom_center_vbox = memnew(VBoxContainer);
+	bottom_center_vbox->set_name("BottomCenterVBox");
 	bottom_center_vbox->set_anchors_preset(LayoutPreset::PRESET_CENTER);
 	bottom_center_vbox->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -20 * EDSCALE);
 	bottom_center_vbox->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
@@ -6535,6 +6540,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->add_child(bottom_center_vbox);
 
 	info_panel = memnew(PanelContainer);
+	info_panel->set_name("InfoPanel");
 	info_panel->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
 	info_panel->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
 	info_panel->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
@@ -6595,6 +6601,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	frame_time_gradient->add_point(0.5, Color());
 
 	top_right_vbox = memnew(VBoxContainer);
+	top_right_vbox->set_name("TopRightVBox");
 	top_right_vbox->add_theme_constant_override("separation", 10.0 * EDSCALE);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
@@ -6602,6 +6609,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	const int navigation_control_size = 150;
 
 	position_control = memnew(ViewportNavigationControl);
+	position_control->set_name("PositionControl");
 	position_control->set_navigation_mode(View3DController::NAV_MODE_MOVE);
 	position_control->set_custom_minimum_size(Size2(navigation_control_size, navigation_control_size) * EDSCALE);
 	position_control->set_h_size_flags(SIZE_SHRINK_END);
@@ -6613,6 +6621,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->add_child(position_control);
 
 	look_control = memnew(ViewportNavigationControl);
+	look_control->set_name("LookControl");
 	look_control->set_navigation_mode(View3DController::NAV_MODE_LOOK);
 	look_control->set_custom_minimum_size(Size2(navigation_control_size, navigation_control_size) * EDSCALE);
 	look_control->set_h_size_flags(SIZE_SHRINK_END);
@@ -6624,6 +6633,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->add_child(look_control);
 
 	rotation_control = memnew(ViewportRotationControl);
+	rotation_control->set_name("RotationControl");
 	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
 	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
@@ -6631,6 +6641,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	top_right_vbox->add_child(rotation_control);
 
 	frame_time_panel = memnew(PanelContainer);
+	frame_time_panel->set_name("FrameTimePanel");
 	frame_time_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_right_vbox->add_child(frame_time_panel);
 	frame_time_panel->hide();
@@ -6653,6 +6664,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	accept = nullptr;
 
 	selection_menu = memnew(PopupMenu);
+	selection_menu->set_name("SelectionMenu");
 	add_child(selection_menu);
 	selection_menu->set_min_size(Size2(100, 0) * EDSCALE);
 	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_selection_result_pressed));
@@ -9916,15 +9928,18 @@ Node3DEditor::Node3DEditor() {
 	editor_selection->add_editor_plugin(this);
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->set_name("ToolbarMargin");
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	vbc->add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
+	main_flow->set_name("MainFlow");
 	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
+	main_menu_hbox->set_name("MainMenuHBox");
 	main_flow->add_child(main_menu_hbox);
 
 	String sct;
@@ -10142,6 +10157,7 @@ Node3DEditor::Node3DEditor() {
 	PopupMenu *p;
 
 	transform_menu = memnew(MenuButton);
+	transform_menu->set_name("TransformMenu");
 	transform_menu->set_flat(false);
 	transform_menu->set_theme_type_variation("FlatMenuButton");
 	transform_menu->set_text(TTRC("Transform"));
@@ -10159,6 +10175,7 @@ Node3DEditor::Node3DEditor() {
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	view_layout_menu = memnew(MenuButton);
+	view_layout_menu->set_name("ViewLayoutMenu");
 	view_layout_menu->set_flat(false);
 	view_layout_menu->set_theme_type_variation("FlatMenuButton");
 	// TRANSLATORS: Noun, name of the 2D/3D View menus.
@@ -10170,7 +10187,9 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	context_toolbar_panel = memnew(PanelContainer);
+	context_toolbar_panel->set_name("ContextToolbarPanel");
 	context_toolbar_hbox = memnew(HBoxContainer);
+	context_toolbar_hbox->set_name("ContextToolbarHBox");
 	context_toolbar_panel->add_child(context_toolbar_hbox);
 	main_flow->add_child(context_toolbar_panel);
 
@@ -10213,17 +10232,21 @@ Node3DEditor::Node3DEditor() {
 	/* REST OF MENU */
 
 	left_panel_split = memnew(HSplitContainer);
+	left_panel_split->set_name("LeftPanelSplit");
 	left_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_child(left_panel_split);
 
 	right_panel_split = memnew(HSplitContainer);
+	right_panel_split->set_name("RightPanelSplit");
 	right_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	left_panel_split->add_child(right_panel_split);
 
 	shader_split = memnew(VSplitContainer);
+	shader_split->set_name("ShaderSplit");
 	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
 	right_panel_split->add_child(shader_split);
 	viewport_base = memnew(Node3DEditorViewportContainer);
+	viewport_base->set_name("ViewportBase");
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
@@ -10240,6 +10263,7 @@ Node3DEditor::Node3DEditor() {
 	/* SNAP DIALOG */
 
 	snap_dialog = memnew(ConfirmationDialog);
+	snap_dialog->set_name("SnapDialog");
 	snap_dialog->set_title(TTRC("Snap Settings"));
 	add_child(snap_dialog);
 	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_snap_changed));
@@ -10276,6 +10300,7 @@ Node3DEditor::Node3DEditor() {
 	/* SETTINGS DIALOG */
 
 	settings_dialog = memnew(ConfirmationDialog);
+	settings_dialog->set_name("SettingsDialog");
 	settings_dialog->set_title(TTRC("Viewport Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
@@ -10317,6 +10342,7 @@ Node3DEditor::Node3DEditor() {
 	/* XFORM DIALOG */
 
 	xform_dialog = memnew(ConfirmationDialog);
+	xform_dialog->set_name("XformDialog");
 	xform_dialog->set_title(TTRC("Transform Change"));
 	add_child(xform_dialog);
 

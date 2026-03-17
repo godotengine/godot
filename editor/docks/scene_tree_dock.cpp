@@ -1722,6 +1722,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts->set_h_size_flags(SIZE_EXPAND_FILL);
 
 			beginner_node_shortcuts = memnew(VBoxContainer);
+			beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
 			node_shortcuts->add_child(beginner_node_shortcuts);
 
 			button_2d = memnew(Button);
@@ -4971,6 +4972,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/delete", TTRC("Delete"), Key::KEY_DELETE);
 
 	button_add = memnew(Button);
+	button_add->set_name("AddNodeButton");
 	button_add->set_theme_type_variation("FlatMenuButton");
 	button_add->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 	button_add->set_tooltip_text(TTRC("Add/Create a New Node."));
@@ -4978,6 +4980,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(button_add);
 
 	button_instance = memnew(Button);
+	button_instance->set_name("InstanceSceneButton");
 	button_instance->set_theme_type_variation("FlatMenuButton");
 	button_instance->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_INSTANTIATE, false));
 	button_instance->set_tooltip_text(TTRC("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
@@ -4987,6 +4990,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
+	filter->set_name("FilterLineEdit");
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTRC("Filter Nodes"));
 	filter->set_accessibility_name(TTRC("Filter Nodes"));
@@ -5023,6 +5027,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_extend_script->hide();
 
 	button_tree_menu = memnew(MenuButton);
+	button_tree_menu->set_name("TreeMenuButton");
 	button_tree_menu->set_flat(false);
 	button_tree_menu->set_theme_type_variation("FlatMenuButton");
 	button_tree_menu->set_tooltip_text(TTR("Extra scene options."));
@@ -5036,6 +5041,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	main_vbox->add_child(button_hb);
 
 	edit_remote = memnew(Button);
+	edit_remote->set_name("EditRemoteButton");
 	edit_remote->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_remote->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit_remote->set_text(TTR("Remote"));
@@ -5045,6 +5051,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	edit_remote->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_remote_tree_selected));
 
 	edit_local = memnew(Button);
+	edit_local->set_name("EditLocalButton");
 	edit_local->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_local->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit_local->set_text(TTR("Local"));
@@ -5067,6 +5074,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_root_dialog->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
+	scene_tree->set_name("SceneTree");
 	main_mc->add_child(scene_tree);
 	scene_tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
@@ -5096,15 +5104,18 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(inspect_hovered_node_delay);
 
 	create_dialog = memnew(CreateDialog);
+	create_dialog->set_name("CreateDialog");
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
 	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 
 	rename_dialog = memnew(RenameDialog(scene_tree));
+	rename_dialog->set_name("RenameDialog");
 	add_child(rename_dialog);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
+	script_create_dialog->set_name("ScriptCreateDialog");
 	script_create_dialog->set_inheritance_base_type("Node");
 	add_child(script_create_dialog);
 

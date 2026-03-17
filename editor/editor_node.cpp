@@ -7683,6 +7683,7 @@ void EditorNode::_renderer_selected(int p_index) {
 
 	if (video_restart_dialog == nullptr) {
 		video_restart_dialog = memnew(ConfirmationDialog);
+		video_restart_dialog->set_name("VideoRestartDialog");
 		video_restart_dialog->set_ok_button_text(TTRC("Save & Restart"));
 		video_restart_dialog->get_label()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		gui_base->add_child(video_restart_dialog);
@@ -7910,6 +7911,7 @@ void EditorNode::_build_file_menu() {
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), SCENE_OPEN_PREV);
 	if (!recent_scenes) {
 		recent_scenes = memnew(PopupMenu);
+		recent_scenes->set_name("RecentScenesMenu");
 		recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 	}
@@ -7928,6 +7930,7 @@ void EditorNode::_build_file_menu() {
 
 	if (!export_as_menu) {
 		export_as_menu = memnew(PopupMenu);
+		export_as_menu->set_name("ExportAsMenu");
 		export_as_menu->add_shortcut(ED_GET_SHORTCUT("editor/export_as_mesh_library"), FILE_EXPORT_MESH_LIBRARY);
 		export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 	}
@@ -7983,6 +7986,7 @@ void EditorNode::_build_project_menu() {
 
 	if (!tool_menu) {
 		tool_menu = memnew(PopupMenu);
+		tool_menu->set_name("ToolMenu");
 		tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
 		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/orphan_resource_explorer"), TOOLS_ORPHAN_RESOURCES);
 		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/engine_compilation_configuration_editor"), TOOLS_BUILD_PROFILE_MANAGER);
@@ -8016,6 +8020,7 @@ void EditorNode::_build_settings_menu() {
 
 	if (!editor_layouts) {
 		editor_layouts = memnew(PopupMenu);
+		editor_layouts->set_name("EditorLayoutsMenu");
 		editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
 	}
 	settings_menu->add_submenu_node_item(TTRC("Editor Layout"), editor_layouts);
@@ -8137,6 +8142,7 @@ void EditorNode::_update_main_menu_type() {
 	// Create new menu.
 	if (new_menu_type == MENU_TYPE_COMPACT) {
 		main_menu_button = memnew(MenuButton);
+		main_menu_button->set_name("MainMenuButton");
 		main_menu_button->set_text(TTRC("Main Menu"));
 		main_menu_button->set_theme_type_variation("MainScreenButton");
 		main_menu_button->set_focus_mode(Control::FOCUS_NONE);
@@ -8166,6 +8172,7 @@ void EditorNode::_update_main_menu_type() {
 		}
 	} else {
 		main_menu_bar = memnew(MenuBar);
+		main_menu_bar->set_name("MainMenuBar");
 		main_menu_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		main_menu_bar->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 		main_menu_bar->set_theme_type_variation("MainMenuBar");
@@ -8554,10 +8561,12 @@ EditorNode::EditorNode() {
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
+	progress_dialog->set_name("ProgressDialog");
 	add_child(progress_dialog);
 	progress_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_progress_dialog_visibility_changed));
 
 	gui_base = memnew(Panel);
+	gui_base->set_name("GuiBase");
 	add_child(gui_base);
 
 	// Take up all screen.
@@ -8567,15 +8576,19 @@ EditorNode::EditorNode() {
 	gui_base->set_end(Point2(0, 0));
 
 	main_vbox = memnew(VBoxContainer);
+	main_vbox->set_name("MainVBox");
 
 #ifdef ANDROID_ENABLED
 	base_vbox = memnew(VBoxContainer);
+	base_vbox->set_name("BaseVBox");
 	base_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 
 	title_bar = memnew(EditorTitleBar);
+	title_bar->set_name("EditorTitleBar");
 	base_vbox->add_child(title_bar);
 
 	main_hbox = memnew(HBoxContainer);
+	main_hbox->set_name("MainHBox");
 	main_hbox->add_child(main_vbox);
 	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8588,6 +8601,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(main_vbox);
 
 	title_bar = memnew(EditorTitleBar);
+	title_bar->set_name("EditorTitleBar");
 	main_vbox->add_child(title_bar);
 #endif
 
@@ -8639,6 +8653,7 @@ EditorNode::EditorNode() {
 	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
+	center_vb->set_name("CenterVBox");
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_hsplit->add_child(center_vb);
 
@@ -8727,21 +8742,25 @@ EditorNode::EditorNode() {
 	add_child(scan_changes_timer);
 
 	top_split = memnew(VSplitContainer);
+	top_split->set_name("TopSplit");
 	center_split->add_child(top_split);
 	top_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	top_split->set_collapsed(true);
 
 	VBoxContainer *srt = memnew(VBoxContainer);
+	srt->set_name("SceneRootVBox");
 	srt->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	srt->add_theme_constant_override("separation", 0);
 	top_split->add_child(srt);
 
 	scene_tabs = memnew(EditorSceneTabs);
+	scene_tabs->set_name("SceneTabs");
 	srt->add_child(scene_tabs);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_set_current_scene));
 	scene_tabs->connect("tab_closed", callable_mp(this, &EditorNode::_scene_tab_closed));
 
 	distraction_free = memnew(Button);
+	distraction_free->set_name("DistractionFreeButton");
 	distraction_free->set_theme_type_variation("FlatMenuButton");
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTRC("Distraction Free Mode"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::D);
@@ -8753,12 +8772,14 @@ EditorNode::EditorNode() {
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 
 	editor_main_screen = memnew(EditorMainScreen);
+	editor_main_screen->set_name("EditorMainScreen");
 	editor_main_screen->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	editor_main_screen->set_draw_behind_parent(true);
 	srt->add_child(editor_main_screen);
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
+	scene_root->set_name("SceneRoot");
 	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
@@ -8767,55 +8788,70 @@ EditorNode::EditorNode() {
 	scene_root->set_as_audio_listener_2d(true);
 
 	accept = memnew(AcceptDialog);
+	accept->set_name("GenericAcceptDialog");
 	accept->set_autowrap(true);
 	accept->set_min_size(Vector2i(600, 0));
 	accept->set_unparent_when_invisible(true);
 
 	save_accept = memnew(AcceptDialog);
+	save_accept->set_name("SaveAcceptDialog");
 	save_accept->set_unparent_when_invisible(true);
 	save_accept->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind((int)MenuOptions::SCENE_SAVE_AS_SCENE));
 
 	project_export = memnew(ProjectExportDialog);
+	project_export->set_name("ProjectExportDialog");
 	gui_base->add_child(project_export);
 
 	dependency_error = memnew(DependencyErrorDialog);
+	dependency_error->set_name("DependencyErrorDialog");
 	gui_base->add_child(dependency_error);
 
 	editor_settings_dialog = memnew(EditorSettingsDialog);
+	editor_settings_dialog->set_name("EditorSettingsDialog");
 	gui_base->add_child(editor_settings_dialog);
 	editor_settings_dialog->connect("restart_requested", callable_mp(this, &EditorNode::restart_editor).bind(false));
 
 	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
+	project_settings_editor->set_name("ProjectSettingsEditor");
 	gui_base->add_child(project_settings_editor);
 
 	scene_import_settings = memnew(SceneImportSettingsDialog);
+	scene_import_settings->set_name("SceneImportSettingsDialog");
 	gui_base->add_child(scene_import_settings);
 
 	audio_stream_import_settings = memnew(AudioStreamImportSettingsDialog);
+	audio_stream_import_settings->set_name("AudioStreamImportSettingsDialog");
 	gui_base->add_child(audio_stream_import_settings);
 
 	fontdata_import_settings = memnew(DynamicFontImportSettingsDialog);
+	fontdata_import_settings->set_name("DynamicFontImportSettingsDialog");
 	gui_base->add_child(fontdata_import_settings);
 
 	export_template_manager = memnew(ExportTemplateManager);
+	export_template_manager->set_name("ExportTemplateManager");
 	gui_base->add_child(export_template_manager);
 
 	feature_profile_manager = memnew(EditorFeatureProfileManager);
+	feature_profile_manager->set_name("FeatureProfileManager");
 	gui_base->add_child(feature_profile_manager);
 
 	build_profile_manager = memnew(EditorBuildProfileManager);
+	build_profile_manager->set_name("BuildProfileManager");
 	gui_base->add_child(build_profile_manager);
 
 	about = memnew(EditorAbout);
+	about->set_name("AboutDialog");
 	gui_base->add_child(about);
 	feature_profile_manager->connect("current_feature_profile_changed", callable_mp(this, &EditorNode::_feature_profile_changed));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	fbx_importer_manager = memnew(FBXImporterManager);
+	fbx_importer_manager->set_name("FBXImporterManager");
 	gui_base->add_child(fbx_importer_manager);
 #endif
 
 	warning = memnew(AcceptDialog);
+	warning->set_name("WarningDialog");
 	warning->set_unparent_when_invisible(true);
 	warning->add_button(TTRC("Copy Text"), true, "copy");
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
@@ -8957,6 +8993,7 @@ EditorNode::EditorNode() {
 	title_bar->add_child(left_spacer);
 
 	project_title = memnew(Label);
+	project_title->set_name("ProjectTitle");
 	project_title->add_theme_font_override(SceneStringName(font), theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
 	project_title->add_theme_font_size_override(SceneStringName(font_size), theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 	project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -8980,16 +9017,19 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_spacer);
 
 	project_run_bar = memnew(EditorRunBar);
+	project_run_bar->set_name("EditorRunBar");
 	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	right_menu_hb = memnew(HBoxContainer);
+	right_menu_hb->set_name("RendererSelection");
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
+	renderer->set_name("RendererSelector");
 	renderer->set_visible(true);
 	renderer->set_flat(true);
 	renderer->set_theme_type_variation("TopBarOptionButton");
@@ -9039,12 +9079,14 @@ EditorNode::EditorNode() {
 	progress_hb = memnew(BackgroundProgress);
 
 	layout_dialog = memnew(EditorLayoutsDialog);
+	layout_dialog->set_name("LayoutDialog");
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
 	layout_dialog->set_size(Size2(225, 270) * EDSCALE);
 	layout_dialog->connect("name_confirmed", callable_mp(this, &EditorNode::_dialog_action));
 
 	update_spinner = memnew(MenuButton);
+	update_spinner->set_name("UpdateSpinner");
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_button_icon(theme->get_icon(SNAME("Progress1"), EditorStringName(EditorIcons)));
 	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
@@ -9141,12 +9183,15 @@ EditorNode::EditorNode() {
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
+	native_shader_source_visualizer->set_name("NativeShaderSourceVisualizer");
 	gui_base->add_child(native_shader_source_visualizer);
 
 	orphan_resources = memnew(OrphanResourcesDialog);
+	orphan_resources->set_name("OrphanResourcesDialog");
 	gui_base->add_child(orphan_resources);
 
 	confirmation = memnew(ConfirmationDialog);
+	confirmation->set_name("ConfirmationDialog");
 	confirmation_button = confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(confirmation);
 	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
@@ -9155,6 +9200,7 @@ EditorNode::EditorNode() {
 	confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_confirmation));
 
 	save_confirmation = memnew(ConfirmationDialog);
+	save_confirmation->set_name("SaveConfirmationDialog");
 	save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(save_confirmation);
 	save_confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
@@ -9164,6 +9210,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
+	gradle_build_manage_templates->set_name("GradleBuildManageTemplates");
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
 	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
