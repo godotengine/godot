@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  joypad_sdl.h                                                          */
+/*  godot_controller_models.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,50 +30,16 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/templates/hash_map.h"
 
-typedef uint32_t SDL_JoystickID;
-typedef struct SDL_Joystick SDL_Joystick;
-typedef struct SDL_Gamepad SDL_Gamepad;
+#define CONTROLLER_VID_PID(VID, PID) (int32_t)((int32_t)VID << 16 | (int32_t)PID)
 
-class JoypadSDL {
-public:
-	~JoypadSDL();
-
-	Error initialize();
-	void process_events();
-
-private:
-	class Joypad : public Input::JoypadFeatures {
-	public:
-		bool attached = false;
-		StringName guid;
-
-		SDL_JoystickID sdl_instance_idx;
-
-		bool supports_force_feedback = false;
-		bool supports_motion_sensors = false;
-		uint64_t ff_effect_timestamp = 0;
-
-		virtual bool has_joy_light() const override;
-		virtual void set_joy_light(const Color &p_color) override;
-
-		virtual bool has_joy_motion_sensors() const override;
-		virtual void set_joy_motion_sensors_enabled(bool p_enable) override;
-
-		virtual bool has_joy_vibration() const override;
-
-		virtual int get_joy_num_touchpads() const override;
-
-		virtual JoyModel get_joy_model() const override;
-		virtual JoyDeviceType get_joy_device_type() const override;
-
-		SDL_Joystick *get_sdl_joystick() const;
-		SDL_Gamepad *get_sdl_gamepad() const;
-	};
-
-	Joypad joypads[Input::JOYPADS_MAX];
-	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
-
-	void close_joypad(int p_pad_idx);
+// Custom Godot controller models not defined by SDL or Godot's current SDL version.
+static HashMap<int32_t, JoyModel> _godot_controller_models = {
+	{ CONTROLLER_VID_PID(0x28de, 0x1205), JoyModel::STEAM }, // Steam Deck
+	{ CONTROLLER_VID_PID(0x28de, 0x1302), JoyModel::STEAM }, // Steam Controller (2026)
+	{ CONTROLLER_VID_PID(0x28de, 0x1303), JoyModel::STEAM }, // Steam Controller (2026)
+	{ CONTROLLER_VID_PID(0x28de, 0x1304), JoyModel::STEAM }, // Steam Controller (2026) dongle
+	{ CONTROLLER_VID_PID(0x28de, 0x1305), JoyModel::STEAM }, // Steam Controller (2026) dongle
 };

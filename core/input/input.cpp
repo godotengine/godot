@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
+#include "core/input/godot_controller_models.h"
 #include "core/input/input_map.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -194,6 +195,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("set_device_orientation", "value"), &Input::set_device_orientation);
+	ClassDB::bind_method(D_METHOD("get_joy_model", "device"), &Input::get_joy_model);
+	ClassDB::bind_method(D_METHOD("get_joy_scheme", "device"), &Input::get_joy_scheme);
+	ClassDB::bind_method(D_METHOD("get_joy_model_scheme", "model"), &Input::get_joy_model_scheme);
+	ClassDB::bind_method(D_METHOD("get_joy_device_type", "device"), &Input::get_joy_device_type);
 	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
@@ -691,6 +696,29 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
+JoyModel Input::_get_joypad_model(const Joypad *p_joypad) {
+	if (!p_joypad->is_known) {
+		return JoyModel::UNKNOWN;
+	}
+
+	if (p_joypad->features != nullptr) {
+		JoyModel model = p_joypad->features->get_joy_model();
+		if (model != JoyModel::UNKNOWN) {
+			return model;
+		}
+	}
+
+	int vendor_id = p_joypad->info.get("vendor_id", 0);
+	int product_id = p_joypad->info.get("product_id", 0);
+	JoyModel *godot_model = _godot_controller_models.getptr(CONTROLLER_VID_PID(vendor_id, product_id));
+	if (godot_model != nullptr) {
+		return *godot_model;
+	}
+
+	// If a joypad has a mapping but it doesn't fall into any other category, assume it has an Xbox button layout.
+	return JoyModel::XBOX_GENERIC;
+}
+
 void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
@@ -878,6 +906,64 @@ int Input::get_joy_num_touchpads(int p_device) const {
 		return 0;
 	}
 	return touch->num_touchpads;
+}
+
+JoyModel Input::get_joy_model(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyModel::UNKNOWN;
+	}
+	return joypad->model;
+}
+
+JoyScheme Input::get_joy_scheme(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyScheme::UNKNOWN;
+	}
+	return get_joy_model_scheme(joypad->model);
+}
+
+JoyScheme Input::get_joy_model_scheme(JoyModel p_model) const {
+	switch (p_model) {
+		case JoyModel::UNKNOWN:
+			return JoyScheme::UNKNOWN;
+
+		case JoyModel::XBOX_GENERIC:
+		case JoyModel::XBOX_360:
+		case JoyModel::XBOX_ONE:
+		case JoyModel::STEAM:
+			return JoyScheme::XBOX;
+
+		case JoyModel::PLAYSTATION_GENERIC:
+		case JoyModel::PS3:
+		case JoyModel::PS4:
+		case JoyModel::PS5:
+			return JoyScheme::PLAYSTATION;
+
+		case JoyModel::NINTENDO_GENERIC:
+		case JoyModel::SWITCH_PRO:
+		case JoyModel::JOYCON_PAIR:
+			return JoyScheme::NINTENDO;
+
+		case JoyModel::JOYCON_LEFT:
+		case JoyModel::JOYCON_RIGHT:
+			return JoyScheme::JOYCON_HORIZONTAL;
+
+		default: // Unknown scheme
+			return JoyScheme::UNKNOWN;
+	}
+}
+
+JoyDeviceType Input::get_joy_device_type(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyDeviceType::UNKNOWN;
+	}
+	return joypad->device_type;
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -2019,6 +2105,8 @@ void Input::_update_joypad_features(int p_device) {
 	if (joypad->features->get_joy_num_touchpads() > 0) {
 		joy_touch[p_device].num_touchpads = joypad->features->get_joy_num_touchpads();
 	}
+	joypad->model = _get_joypad_model(joypad);
+	joypad->device_type = joypad->features->get_joy_device_type();
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &p_mapping, JoyButton p_button) {
