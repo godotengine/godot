@@ -895,7 +895,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
-			return EditorPlugin::AFTER_GUI_INPUT_STOP; // Eaten.
+			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_or_control_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
@@ -941,14 +941,14 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					}
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
+
+				return EditorPlugin::AFTER_GUI_INPUT_PASS; // Allow freelook to be enabled.
 			} else {
 				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
-			if (do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true)) {
-				return EditorPlugin::AFTER_GUI_INPUT_STOP;
-			}
-			return EditorPlugin::AFTER_GUI_INPUT_PASS;
+			do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
+			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		} else {
 			if ((mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_ERASE) || (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
