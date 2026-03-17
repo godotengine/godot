@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.vulkan.VkRenderer;
 import org.godotengine.godot.vulkan.VkSurfaceView;
@@ -39,12 +40,16 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import androidx.annotation.Keep;
 
@@ -56,9 +61,30 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
+	private final AccessibilityNodeProvider accessibilityNodeProvider;
+	private final long mWindowID = 0; // DisplayServerEnums::MAIN_WINDOW_ID
+
 	public GodotVulkanRenderView(Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
 		super(godot.getContext());
-
+		if (GodotLib.createAccessKitAdapter(mWindowID)) {
+			accessibilityNodeProvider = new AccessibilityNodeProvider() {
+				@Override
+				public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
+					return GodotLib.createAccessibilityNodeInfo(mWindowID, getView(), virtualViewId);
+				}
+				@Override
+				public AccessibilityNodeInfo findFocus(int focusType) {
+					return GodotLib.findAccessibilityFocus(mWindowID, getView(), focusType);
+				}
+				@Override
+				public boolean performAction(int virtualViewId, int action, Bundle arguments) {
+					return GodotLib.performAccessibilityAction(mWindowID, getView(), virtualViewId, action, arguments);
+				}
+			};
+			setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+		} else {
+			accessibilityNodeProvider = null;
+		}
 		this.godot = godot;
 		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();
@@ -68,6 +94,31 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 
 		if (shouldBeTranslucent) {
 			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		}
+	}
+
+	@Override
+	public boolean onHoverEvent(MotionEvent event) {
+		if (accessibilityNodeProvider != null && GodotLib.onAccessibilityHoverEvent(mWindowID, this, event.getAction(), event.getX(), event.getY())) {
+			return true;
+		}
+		return super.onHoverEvent(event);
+	}
+
+	@Override
+	public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+		if (accessibilityNodeProvider == null) {
+			return super.getAccessibilityNodeProvider();
+		}
+		return accessibilityNodeProvider;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			GodotLib.freeAccessKitAdapter(mWindowID);
+		} finally {
+			super.finalize();
 		}
 	}
 
