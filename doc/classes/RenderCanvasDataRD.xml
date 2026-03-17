@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderCanvasDataRD" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Render data object, holds canvas data related to rendering a single frame of a viewport.
+	</brief_description>
+	<description>
+		Canvas data object, exists for the duration of rendering a single viewport.
+		[b]Note:[/b] This is an internal rendering server object. Do not instantiate this class from a script.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_backbuffer_texture" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Gets the back-buffer this viewport is being rendered on, only effective when using back-buffering, see [method RenderingServer.canvas_item_set_copy_to_backbuffer].
+			</description>
+		</method>
+		<method name="get_screen_texture" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Gets the back-buffer this viewport is being rendered on.
+			</description>
+		</method>
+		<method name="is_using_linear_colors" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when this viewport is using linear colors instead of sRGB, use this to know when to use sRGB version of textures.
+			</description>
+		</method>
+	</methods>
+</class>

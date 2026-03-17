@@ -739,6 +739,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 	Item *ci = p_item_list;
 
+	RenderCanvasDataRD data;
+	data.use_linear_colors = use_linear_colors;
+	render_data = &data;
+
 	//fill the list until rendering is possible.
 	bool material_screen_texture_cached = false;
 	bool material_screen_texture_mipmaps_cached = false;
@@ -2302,9 +2306,44 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	for (uint32_t i = 0; i <= state.current_batch_index; i++) {
 		Batch *current_batch = &state.canvas_instance_batches[i];
+
+		// Custom callback
+		if (current_batch->command_type == Item::Command::TYPE_CALLBACK) {
+			// Finish previous draw list as a custom one may be issued
+			if (draw_list != 0) {
+				RD::get_singleton()->draw_list_end();
+				draw_list = 0;
+			}
+
+			RID screen, backbuffer;
+			screen = texture_storage->render_target_get_rd_texture(p_to_render_target.render_target);
+			backbuffer = texture_storage->render_target_get_rd_backbuffer(p_to_render_target.render_target);
+			if (backbuffer.is_null()) { //unallocated backbuffer
+				backbuffer = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+			}
+
+			render_data->screen = screen;
+			render_data->backbuffer = backbuffer;
+			render_data->use_linear_colors = p_to_render_target.use_linear_colors;
+
+			const Item::CommandCallback *cb = static_cast<const Item::CommandCallback *>(current_batch->command);
+			cb->callback.call(render_data);
+			continue;
+		}
+
 		// Skipping when there is no instances.
 		if (current_batch->instance_count == 0) {
 			continue;
+		}
+
+		// Create draw list
+		if (draw_list == 0) {
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_DEFAULT_ALL);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, fb_uniform_set, BASE_UNIFORM_SET);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);
+
+			current_clip = nullptr;
+			state.current_batch_uniform_set = RID();
 		}
 
 		//setup clip
@@ -2334,7 +2373,11 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 		_render_batch(draw_list, shader_data, fb_format, p_lights, current_batch, r_render_info);
 	}
 
-	RD::get_singleton()->draw_list_end();
+	// Finish previous draw list
+	if (draw_list != 0) {
+		RD::get_singleton()->draw_list_end();
+		draw_list = 0;
+	}
 
 	state.current_batch_index = 0;
 	state.canvas_instance_batches.clear();
@@ -2652,6 +2695,14 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				instance_data->modulation[1] = color.g;
 				instance_data->modulation[2] = color.b;
 				instance_data->modulation[3] = color.a;
+			} break;
+
+			case Item::Command::TYPE_CALLBACK: {
+				// Callback rendering commands are unknown, always create a new batch
+				r_current_batch = _new_batch(r_batch_broken);
+				r_current_batch->command_type = Item::Command::TYPE_CALLBACK;
+				r_current_batch->command = c;
+				_add_to_batch(r_batch_broken, r_current_batch);
 			} break;
 
 			case Item::Command::TYPE_PRIMITIVE: {
@@ -3221,7 +3272,8 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 		} break;
 		case Item::Command::TYPE_TRANSFORM:
 		case Item::Command::TYPE_CLIP_IGNORE:
-		case Item::Command::TYPE_ANIMATION_SLICE: {
+		case Item::Command::TYPE_ANIMATION_SLICE:
+		case Item::Command::TYPE_CALLBACK: {
 			// Can ignore these as they only impact batch creation.
 		} break;
 	}
@@ -3290,7 +3342,8 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 void RendererCanvasRenderRD::_add_to_batch(bool &r_batch_broken, Batch *&r_current_batch) {
 	DEV_ASSERT(r_current_batch->command_type == Item::Command::TYPE_RECT ||
 			r_current_batch->command_type == Item::Command::TYPE_NINEPATCH ||
-			r_current_batch->command_type == Item::Command::TYPE_PRIMITIVE);
+			r_current_batch->command_type == Item::Command::TYPE_PRIMITIVE ||
+			r_current_batch->command_type == Item::Command::TYPE_CALLBACK);
 	r_current_batch->instance_count++;
 	memcpy(&state.instance_data[state.instance_data_index], &state.intermediary_instance_data, sizeof(InstanceData));
 	state.instance_data_index++;
