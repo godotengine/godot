@@ -1258,7 +1258,7 @@ void RasterizerSceneGLES3::voxel_gi_update(RID p_probe, bool p_update_light_inst
 void RasterizerSceneGLES3::voxel_gi_set_quality(RSE::VoxelGIQuality) {
 }
 
-_FORCE_INLINE_ static uint32_t _indices_to_primitives(RSE::PrimitiveType p_primitive, uint32_t p_indices) {
+uint32_t RasterizerSceneGLES3::_indices_to_primitives(RSE::PrimitiveType p_primitive, uint32_t p_indices) const {
 	static const uint32_t divisor[RSE::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
 	static const uint32_t subtractor[RSE::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
