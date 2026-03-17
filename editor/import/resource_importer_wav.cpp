@@ -96,6 +96,7 @@ Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_s
 	}
 
 	Ref<AudioStreamWAV> sample = AudioStreamWAV::load_from_file(p_source_file, options);
-	ResourceSaver::save(sample, p_save_path + ".sample");
-	return OK;
+	ERR_FAIL_COND_V_MSG(sample.is_null(), ERR_FILE_CORRUPT, "Failed to import WAV (corrupt or invalid).");
+	Error save_err = ResourceSaver::save(sample, p_save_path + ".sample");
+	return save_err;
 }

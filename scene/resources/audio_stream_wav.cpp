@@ -773,8 +773,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			uint64_t remaining_bytes = file_size - file_pos;
 			frames = chunksize;
 			if (remaining_bytes < chunksize) {
-				WARN_PRINT("Data chunk size is smaller than expected. Proceeding with actual data size.");
-				frames = remaining_bytes;
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Data chunk size is smaller than expected.");
 			}
 
 			ERR_FAIL_COND_V(format_channels == 0, Ref<AudioStreamWAV>());
