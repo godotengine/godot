@@ -1174,7 +1174,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 }
 
 void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
-	PackedStringArray types = p_hint_string.split(";");
+	PackedStringArray types = p_hint_string.split(";", true, 1);
 	if (types.size() > 0 && !types[0].is_empty()) {
 		String key = types[0];
 		int hint_key_subtype_separator = key.find_char(':');
