@@ -62,13 +62,9 @@ protected:
 	Vector2 offset;
 	Vector2 zoom = Vector2(1, 1);
 	Vector2 smoothed_zoom = Vector2(1, 1);
-	Vector2 zoom_scale = Vector2(1, 1);
 	bool zoom_smoothing_enabled = false;
 	real_t zoom_smoothing_speed = 5.0;
-	void set_zoom_smoothing_enabled(bool p_enabled) { zoom_smoothing_enabled = p_enabled; }
-	bool is_zoom_smoothing_enabled() const { return zoom_smoothing_enabled; }
-	void set_zoom_smoothing_speed(real_t p_speed) { zoom_smoothing_speed = MAX(0, p_speed); }
-	real_t get_zoom_smoothing_speed() const { return zoom_smoothing_speed; }
+	bool zoom_smoothing_delta_independent = false;
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
 	bool enabled = true;
@@ -102,7 +98,6 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
-	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
 
@@ -112,8 +107,6 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }
-
-	void _update_process_internal_for_smoothing();
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -189,6 +182,13 @@ public:
 
 	void set_position_smoothing_enabled(bool p_enabled);
 	bool is_position_smoothing_enabled() const;
+
+	void set_zoom_smoothing_enabled(bool p_enabled);
+	bool is_zoom_smoothing_enabled() const;
+	void set_zoom_smoothing_speed(real_t p_speed);
+	real_t get_zoom_smoothing_speed() const;
+	void set_zoom_smoothing_delta_independent(bool p_enabled);
+	bool is_zoom_smoothing_delta_independent() const;
 
 	void set_position_smoothing_delta_independent(bool p_enabled);
 	bool is_position_smoothing_delta_independent() const;
