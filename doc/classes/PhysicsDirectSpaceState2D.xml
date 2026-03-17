@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState2D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class
+	name="PhysicsDirectSpaceState2D"
+	inherits="Object"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../class.xsd"
+>
 	<brief_description>
 		Provides direct access to a physics space in the [PhysicsServer2D].
 	</brief_description>
@@ -77,7 +82,7 @@
 			<param index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
 			<param index="1" name="max_results" type="int" default="32" />
 			<description>
-				Intersects a ray in a given space yielding all intersected objects up to the number specified by the [code skip-lint]max_results[/code] parameter. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
+				Intersects a ray in a given space yielding all intersected objects up to the number specified by the [param max_results] parameter. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector2(0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters2D.hit_from_inside] is [code]true[/code].
@@ -85,8 +90,8 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty array is returned instead.
-				If [code skip-lint]max_results[/code] is set to [code]1[/code], the method will behave as [code skip-lint]intersect_ray[/code].
-				[b]Note:[/b] The results array is not guaranteed to contain all possible (or closest) intersected objects if the returned array has a size of [code skip-lint]max_results[/code]. It is recommended to increase the size of [code skip-lint]max_results[/code] (default [code]32[/code]) if all elements in the raycast are required.
+				If [param max_results] is set to [code]1[/code], the method will behave as [method intersect_ray].
+				[b]Note:[/b] The results array is not guaranteed to contain all possible (or closest) intersected objects if the returned array has a size of [param max_results]. It is recommended to increase the size of [param max_results] (default [code]32[/code]) if all elements in the raycast are required.
 			</description>
 		</method>
 		<method name="intersect_shape">

@@ -226,19 +226,16 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 }
 
 bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
-	LocalVector<RayResult> results;
-	results.resize(1);
-
-	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
+	int n_collisions = intersect_ray_multiple(p_parameters, &r_result, 1);
 	bool hit = n_collisions > 0;
 	if (hit) {
-		r_result.collider_id = results[0].collider_id;
-		r_result.collider = results[0].collider;
-		r_result.normal = results[0].normal;
-		r_result.face_index = results[0].face_index;
-		r_result.position = results[0].position;
-		r_result.rid = results[0].rid;
-		r_result.shape = results[0].shape;
+		r_result.collider_id = r_result.collider_id;
+		r_result.collider = r_result.collider;
+		r_result.normal = r_result.normal;
+		r_result.face_index = r_result.face_index;
+		r_result.position = r_result.position;
+		r_result.rid = r_result.rid;
+		r_result.shape = r_result.shape;
 	}
 	return hit;
 }

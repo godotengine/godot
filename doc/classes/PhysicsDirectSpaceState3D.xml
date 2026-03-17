@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class
+	name="PhysicsDirectSpaceState3D"
+	inherits="Object"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../class.xsd"
+>
 	<brief_description>
 		Provides direct access to a physics space in the [PhysicsServer3D].
 	</brief_description>
@@ -80,7 +85,7 @@
 			<param index="0" name="parameters" type="PhysicsRayQueryParameters3D" />
 			<param index="1" name="max_results" type="int" default="32" />
 			<description>
-				Intersects a ray in a given space yielding all intersected objects up to the number specified by the [code skip-lint]max_results[/code] parameter. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
+				Intersects a ray in a given space yielding all intersected objects up to the number specified by the [param max_results] parameter. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
@@ -90,8 +95,8 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty array is returned instead.
-				If [code skip-lint]max_results[/code] is set to [code]1[/code], the method will behave as [code skip-lint]intersect_ray[/code].
-				[b]Note:[/b] The results array is not guaranteed to contain all possible intersected objects if the returned array has a size of [code skip-lint]max_results[/code]. It is recommended to increase the size of [code skip-lint]max_results[/code] (default [code]32[/code]) if all elements in the raycast are required. Additionally, the godot-physics backend is [i]not[/i] guaranteed to provide the closest [code skip-lint]max_results[/code] hits (unless [code]max_results = 1[/code]), whereas the jolt-physics backend will.
+				If [param max_results] is set to [code]1[/code], the method will behave as [method intersect_ray].
+				[b]Note:[/b] The results array is not guaranteed to contain all possible intersected objects if the returned array has a size of [param max_results]. It is recommended to increase the size of [param max_results] (default [code]32[/code]) if all elements in the raycast are required. Additionally, the godot-physics backend is [i]not[/i] guaranteed to provide the closest [param max_results] hits (unless [code]max_results = 1[/code]), whereas the jolt-physics backend will.
 			</description>
 		</method>
 		<method name="intersect_shape">
