@@ -37,6 +37,7 @@
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"

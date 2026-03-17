@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"

@@ -38,6 +38,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {

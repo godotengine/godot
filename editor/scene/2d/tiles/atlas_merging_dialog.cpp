@@ -30,6 +30,7 @@
 
 #include "atlas_merging_dialog.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_undo_redo_manager.h"

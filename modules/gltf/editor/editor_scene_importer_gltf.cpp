@@ -33,6 +33,8 @@
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 
+#include "core/io/resource_importer.h"
+
 void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");

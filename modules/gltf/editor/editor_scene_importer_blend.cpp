@@ -35,6 +35,7 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"

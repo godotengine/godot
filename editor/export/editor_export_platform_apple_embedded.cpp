@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/plist.h"
+#include "core/io/resource_loader.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"

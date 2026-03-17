@@ -58,6 +58,8 @@
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
 #include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"

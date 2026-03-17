@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/inspector_dock.h"
