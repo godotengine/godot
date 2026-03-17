@@ -1063,6 +1063,12 @@ bool EditorFileSystem::_update_scan_actions() {
 	if (reloads.size()) {
 		emit_signal(SNAME("resources_reload"), reloads);
 	}
+
+	for (const String &file : reloads) {
+		// Update preview.
+		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+	}
+
 	scan_actions.clear();
 
 	return fs_changed;
@@ -2502,8 +2508,14 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				}
 			}
 
-			// Update preview
-			EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+			if (!is_scanning()) {
+				Ref<Resource> res = ResourceCache::get_ref(file);
+				if (res.is_valid()) {
+					res->reload_from_file();
+				}
+				// Update preview
+				EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+			}
 
 			if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
 				_queue_update_script_class(file, ScriptClassInfoUpdate::from_file_info(fi));
@@ -2780,8 +2792,6 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 				r->set_import_last_modified_time(0);
 			}
 		}
-
-		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
 	}
 
 	return err;
@@ -2862,7 +2872,6 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			fs->files[cpos]->deps.clear();
 			fs->files[cpos]->type = "";
 			fs->files[cpos]->import_valid = false;
-			EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		}
 		return OK;
 	}
@@ -3062,8 +3071,6 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
-	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
-
 	print_verbose(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
 
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_UNRECOGNIZED, "Error importing '" + p_file + "'.");
@@ -3098,6 +3105,10 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 
 	// Emit the resource_reimported signal for the single file we just reimported.
 	emit_signal(SNAME("resources_reimported"), reloads);
+	for (const String &file : reloads) {
+		// Update preview.
+		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+	}
 }
 
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
@@ -3414,6 +3425,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		emit_signal(SNAME("filesystem_changed"));
 	}
 	emit_signal(SNAME("resources_reimported"), reloads);
+	for (const String &file : reloads) {
+		// Update preview.
+		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+	}
 	memdelete_notnull(ep);
 }
 
@@ -3428,6 +3443,10 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 
 	// Emit the resource_reimported signal for the single file we just reimported.
 	emit_signal(SNAME("resources_reimported"), reloads);
+	for (const String &file : reloads) {
+		// Update preview.
+		EditorResourcePreview::get_singleton()->check_for_invalidation(file);
+	}
 	return ret;
 }
 
