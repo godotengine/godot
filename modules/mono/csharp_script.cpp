@@ -2850,7 +2850,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	[[maybe_unused]] bool is_assembly_backed = false;
 	if (p_path.begins_with("csharp://")) {
 		String virtual_suffix = p_path.trim_prefix("csharp://");
-		int colon_idx = virtual_suffix.find(":");
+		int colon_idx = virtual_suffix.find_char(':');
 		if (colon_idx >= 0) {
 			// Generic type virtual path (csharp://path:GenericType).
 			String base_path = "res://" + virtual_suffix.substr(0, colon_idx);
