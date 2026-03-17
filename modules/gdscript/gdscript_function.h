@@ -346,8 +346,12 @@ private:
 	StringName name;
 	StringName source;
 	bool _static = false;
+
+public:
 	bool _self_used = false;
 	bool _class_used = false;
+
+private:
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 	MethodInfo method_info;

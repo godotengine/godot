@@ -38,9 +38,15 @@
 #include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "core/string/string_builder.h"
+#include "core/string/string_name.h"
+#include "modules/gdscript/gdscript.h"
+#include "modules/gdscript/gdscript_function.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
