@@ -209,6 +209,9 @@ void JoypadSDL::process_events() {
 					// Data rate for all sensors should be the same.
 					Input::get_singleton()->set_joy_motion_sensors_rate(joy_id, SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_ACCEL));
 				}
+
+				// Godot constants are intentionally the same as SDL's
+				Input::get_singleton()->set_joy_device_type(joy_id, static_cast<JoyDeviceType>(SDL_GetJoystickType(joy)));
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {

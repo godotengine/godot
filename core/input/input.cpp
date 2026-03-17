@@ -44,6 +44,11 @@
 
 #include "thirdparty/gamepadmotionhelpers/GamepadMotion.hpp"
 
+// This is safe to include, because this file doesn't use any other SDL code. Copyright (C) Valve Corporation.
+#include <thirdparty/sdl/joystick/controller_type.h>
+// Controller types list.
+#include <thirdparty/sdl/joystick/controller_list.h>
+
 #define STANDARD_GRAVITY 9.80665f
 
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
@@ -183,6 +188,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_model", "device"), &Input::get_joy_model);
+	ClassDB::bind_method(D_METHOD("get_joy_scheme", "device"), &Input::get_joy_scheme);
+	ClassDB::bind_method(D_METHOD("get_joy_model_scheme", "model"), &Input::get_joy_model_scheme);
+	ClassDB::bind_method(D_METHOD("get_joy_device_type", "device"), &Input::get_joy_device_type);
 	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
@@ -680,6 +689,77 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
+JoyModel Input::_get_joypad_model(const Joypad &p_joypad) {
+	int vendor_id = p_joypad.info.get("vendor_id", 0);
+	int product_id = p_joypad.info.get("product_id", 0);
+	if (vendor_id == 0 && product_id == 0) {
+		if (p_joypad.is_known) {
+			// The joypad has a mapping based on its name rather than its vendor/product IDs
+			// (most likely the current platform is Android), so assume it has an Xbox button layout.
+			return JoyModel::XBOX_GENERIC;
+		} else {
+			return JoyModel::UNKNOWN;
+		}
+	}
+
+	unsigned int device_id = MAKE_CONTROLLER_ID(vendor_id, product_id);
+
+	for (unsigned long i = 0; i < sizeof(arrControllers) / sizeof(arrControllers[0]); i++) {
+		const ControllerDescription_t &desc = arrControllers[i];
+		if (desc.m_unDeviceID == device_id) {
+			switch (desc.m_eControllerType) {
+				case k_eControllerType_UnknownSteamController:
+				case k_eControllerType_SteamController:
+				case k_eControllerType_SteamControllerV2:
+					return JoyModel::XBOX_GENERIC;
+				case k_eControllerType_WiiController:
+					return JoyModel::NINTENDO_GENERIC;
+				case k_eControllerType_XBox360Controller:
+					return JoyModel::XBOX_360;
+				case k_eControllerType_XBoxOneController:
+					return JoyModel::XBOX_ONE;
+				case k_eControllerType_SteamControllerNeptune:
+					return JoyModel::STEAM_DECK;
+				case k_eControllerType_PS3Controller:
+					return JoyModel::PS3;
+				case k_eControllerType_PS4Controller:
+				case k_eControllerType_XInputPS4Controller:
+					return JoyModel::PS4;
+				case k_eControllerType_PS5Controller:
+					return JoyModel::PS5;
+				case k_eControllerType_SwitchProController:
+				case k_eControllerType_XInputSwitchController:
+				case k_eControllerType_SwitchInputOnlyController:
+					return JoyModel::SWITCH_PRO;
+				case k_eControllerType_SwitchJoyConLeft:
+					return JoyModel::JOYCON_LEFT;
+				case k_eControllerType_SwitchJoyConRight:
+					return JoyModel::JOYCON_RIGHT;
+				default:
+					break;
+			}
+		}
+	}
+
+	if (p_joypad.name.operator String().to_lower().contains("playstation")) {
+		return JoyModel::PLAYSTATION_GENERIC;
+	}
+
+#ifdef WINDOWS_ENABLED
+	// Return Xbox 360 joypad model for XInput devices not specified in controller_list.h.
+	if (p_joypad.uid.operator String().substr(30, 2).hex_to_int() == 'x') {
+		return JoyModel::XBOX_360;
+	}
+#endif
+
+	// If a joypad has a mapping but it doesn't fall into any other category, assume it has an Xbox button layout.
+	if (p_joypad.is_known) {
+		return JoyModel::XBOX_GENERIC;
+	}
+
+	return JoyModel::UNKNOWN;
+}
+
 void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
@@ -729,6 +809,8 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.info.erase("mapping_handled");
 
 		_set_joypad_mapping(js, mapping);
+
+		js.model = _get_joypad_model(js);
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -796,6 +878,64 @@ Vector3 Input::get_gyroscope() const {
 #endif
 
 	return gyroscope;
+}
+
+JoyModel Input::get_joy_model(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyModel::UNKNOWN;
+	}
+	return joypad->model;
+}
+
+JoyScheme Input::get_joy_scheme(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyScheme::UNKNOWN;
+	}
+	return get_joy_model_scheme(joypad->model);
+}
+
+JoyScheme Input::get_joy_model_scheme(JoyModel p_model) const {
+	switch (p_model) {
+		case JoyModel::UNKNOWN:
+			return JoyScheme::UNKNOWN;
+
+		case JoyModel::XBOX_GENERIC:
+		case JoyModel::XBOX_360:
+		case JoyModel::XBOX_ONE:
+		case JoyModel::STEAM_DECK:
+			return JoyScheme::XBOX;
+
+		case JoyModel::PLAYSTATION_GENERIC:
+		case JoyModel::PS3:
+		case JoyModel::PS4:
+		case JoyModel::PS5:
+			return JoyScheme::PLAYSTATION;
+
+		case JoyModel::NINTENDO_GENERIC:
+		case JoyModel::SWITCH_PRO:
+		case JoyModel::JOYCON_PAIR:
+			return JoyScheme::NINTENDO;
+
+		case JoyModel::JOYCON_LEFT:
+		case JoyModel::JOYCON_RIGHT:
+			return JoyScheme::JOYCON_HORIZONTAL;
+
+		default: // Unknown scheme
+			return JoyScheme::UNKNOWN;
+	}
+}
+
+JoyDeviceType Input::get_joy_device_type(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyDeviceType::UNKNOWN;
+	}
+	return joypad->device_type;
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -1354,6 +1494,15 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_joy_device_type(int p_device, JoyDeviceType p_type) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->device_type = p_type;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {
