@@ -31,7 +31,6 @@
 #include "nav_map_2d.h"
 
 #include "2d/nav_map_builder_2d.h"
-#include "2d/nav_mesh_queries_2d.h"
 #include "2d/nav_region_iteration_2d.h"
 #include "nav_agent_2d.h"
 #include "nav_link_2d.h"
@@ -43,6 +42,7 @@
 #include "core/os/os.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
+#include <KdTree2d.h>
 #include <Obstacle2d.h>
 
 using namespace Nav2D;

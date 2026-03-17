@@ -31,7 +31,12 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/navigation_mesh.h"
+
+class NavigationMesh;
+
+#ifdef DEBUG_ENABLED
+class ArrayMesh;
+#endif
 
 class NavigationRegion3D : public Node3D {
 	GDCLASS(NavigationRegion3D, Node3D);

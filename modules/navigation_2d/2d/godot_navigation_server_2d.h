@@ -39,9 +39,13 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
-#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+
+class GodotNavigationServer2D;
+
+#ifdef CLIPPER2_ENABLED
+class NavMeshGenerator2D;
+#endif // CLIPPER2_ENABLED
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -55,11 +59,6 @@
 #define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
-
-class GodotNavigationServer2D;
-#ifdef CLIPPER2_ENABLED
-class NavMeshGenerator2D;
-#endif // CLIPPER2_ENABLED
 
 struct SetCommand2D {
 	virtual ~SetCommand2D() {}

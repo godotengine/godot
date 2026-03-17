@@ -35,8 +35,15 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "scene/main/node.h" // IWYU pragma: keep. Needed to bind `Node *` arg.
 #include "servers/navigation_2d/navigation_server_2d_dummy.h"
+
+// IWYU pragma: begin_keep. Needed to for method bindings.
+#include "scene/main/node.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
+// IWYU pragma: end_keep.
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 

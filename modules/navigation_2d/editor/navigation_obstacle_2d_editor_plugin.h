@@ -31,7 +31,8 @@
 #pragma once
 
 #include "editor/scene/2d/abstract_polygon_2d_editor.h"
-#include "scene/2d/navigation/navigation_obstacle_2d.h"
+
+class NavigationObstacle2D;
 
 class NavigationObstacle2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationObstacle2DEditor, AbstractPolygon2DEditor);

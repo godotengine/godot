@@ -32,7 +32,8 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/object/class_db.h"
-#include "core/os/mutex.h"
+#include "core/variant/typed_array.h"
+#include "scene/resources/navigation_mesh.h"
 
 #include <thirdparty/misc/polypartition.h>
 

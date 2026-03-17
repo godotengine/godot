@@ -32,7 +32,6 @@
 
 #include "2d/nav_mesh_queries_2d.h"
 #include "2d/nav_region_builder_2d.h"
-#include "2d/nav_region_iteration_2d.h"
 #include "nav_map_2d.h"
 
 #include "core/config/project_settings.h"

@@ -31,7 +31,8 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
+
+class NavigationPolygon;
 
 class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);

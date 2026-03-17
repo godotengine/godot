@@ -34,6 +34,9 @@
 
 #include "core/os/mutex.h"
 #include "scene/main/node.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
 using namespace NavigationDefaults3D;
 

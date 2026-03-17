@@ -32,6 +32,7 @@
 
 #include "core/math/random_pcg.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
+#include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {

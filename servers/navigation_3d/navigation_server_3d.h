@@ -30,12 +30,19 @@
 
 #pragma once
 
+#include "core/object/object.h"
+#include "core/os/rw_lock.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
-#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+#include "core/variant/type_info.h"
 
+#ifdef DEBUG_ENABLED
+#include "scene/resources/material.h"
+#endif
+
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+class NavigationPathQueryParameters3D;
+class NavigationPathQueryResult3D;
 class Node;
 
 struct NavMeshGeometryParser3D {

@@ -30,9 +30,15 @@
 
 #pragma once
 
+#include "core/io/resource.h"
 #include "core/os/rw_lock.h"
-#include "scene/resources/mesh.h"
 #include "servers/navigation_3d/navigation_constants_3d.h"
+
+class Mesh;
+
+#ifdef DEBUG_ENABLED
+class ArrayMesh;
+#endif
 
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
@@ -40,7 +46,10 @@ class NavigationMesh : public Resource {
 
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
+
+#ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> debug_mesh;
+#endif
 
 protected:
 	static void _bind_methods();

@@ -34,6 +34,7 @@
 #include "nav_base_3d.h"
 #include "nav_utils_3d.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 

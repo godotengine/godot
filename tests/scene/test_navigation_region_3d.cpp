@@ -41,6 +41,7 @@ TEST_FORCE_LINK(test_navigation_region_3d)
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/navigation_mesh.h"
 
 namespace TestNavigationRegion3D {
 

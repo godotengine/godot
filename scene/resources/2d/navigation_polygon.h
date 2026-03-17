@@ -30,8 +30,12 @@
 
 #pragma once
 
-#include "scene/resources/navigation_mesh.h"
+#include "core/io/resource.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
 #include "servers/navigation_2d/navigation_constants_2d.h"
+
+class NavigationMesh;
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);
@@ -45,7 +49,6 @@ class NavigationPolygon : public Resource {
 	mutable bool rect_cache_dirty = true;
 
 	Mutex navigation_mesh_generation;
-	// Navigation mesh
 	Ref<NavigationMesh> navigation_mesh;
 
 	real_t cell_size = NavigationDefaults2D::NAV_MESH_CELL_SIZE;

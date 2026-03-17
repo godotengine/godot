@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "scene/resources/mesh.h"
 
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
 	RWLockWrite write_lock(geometry_rwlock);
