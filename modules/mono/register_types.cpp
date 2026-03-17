@@ -32,6 +32,8 @@
 
 #include "csharp_script.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 
 CSharpLanguage *script_language_cs = nullptr;

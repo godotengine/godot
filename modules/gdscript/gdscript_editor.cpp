@@ -42,6 +42,7 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/math/expression.h"
 #include "core/object/class_db.h"
 #include "core/variant/container_type_validate.h"

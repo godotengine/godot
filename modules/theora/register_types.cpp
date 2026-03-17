@@ -32,6 +32,7 @@
 
 #include "video_stream_theora.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
