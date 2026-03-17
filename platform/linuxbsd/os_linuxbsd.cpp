@@ -248,6 +248,10 @@ bool OS_LinuxBSD::is_sandboxed() const {
 	if (access("/run/host/container-manager", F_OK) == 0) {
 		return true;
 	}
+	
+	if (has_environment("KAIMING_ID")) {
+		return true;
+	}
 
 	return false;
 }
