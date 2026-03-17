@@ -109,6 +109,22 @@ enum class JoyButton {
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
+// See SDL_PowerState. SDL_POWERSTATE_ERROR equivalent was omitted for simplicity.
+enum class JoyPowerState {
+	UNKNOWN = 0,
+	ON_BATTERY = 1,
+	NO_BATTERY = 2,
+	CHARGING = 3,
+	FULL_BATTERY = 4,
+};
+
+// See SDL_JoystickConnectionState. SDL_JOYSTICK_CONNECTION_INVALID equivalent was omitted for simplicity.
+enum class JoyConnectionState {
+	UNKNOWN = 0,
+	WIRED = 1,
+	WIRELESS = 2,
+};
+
 enum class MIDIMessage {
 	NONE = 0,
 	NOTE_OFF = 0x8,

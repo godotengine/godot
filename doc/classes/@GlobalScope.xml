@@ -2572,6 +2572,30 @@
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
+		<constant name="JOY_POWER_UNKNOWN" value="0" enum="JoyPowerState">
+			An invalid or unknown joypad power state.
+		</constant>
+		<constant name="JOY_POWER_ON_BATTERY" value="1" enum="JoyPowerState">
+			The joypad is not plugged in and is running on the battery.
+		</constant>
+		<constant name="JOY_POWER_NO_BATTERY" value="2" enum="JoyPowerState">
+			The joypad is plugged in and has no battery available.
+		</constant>
+		<constant name="JOY_POWER_CHARGING" value="3" enum="JoyPowerState">
+			The joypad is plugged in and its battery is currently charging.
+		</constant>
+		<constant name="JOY_POWER_FULL_BATTERY" value="4" enum="JoyPowerState">
+			The joypad is plugged in and its battery is fully charged.
+		</constant>
+		<constant name="JOY_CONNECTION_UNKNOWN" value="0" enum="JoyConnectionState">
+			An invalid or unknown joypad connection state.
+		</constant>
+		<constant name="JOY_CONNECTION_WIRED" value="1" enum="JoyConnectionState">
+			The joypad is currently using a wired connection to the device.
+		</constant>
+		<constant name="JOY_CONNECTION_WIRELESS" value="2" enum="JoyConnectionState">
+			The joypad is currently using a wireless connection to the device.
+		</constant>
 		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
 			Does not correspond to any MIDI message. This is the default value of [member InputEventMIDI.message].
 		</constant>
