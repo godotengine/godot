@@ -4240,7 +4240,7 @@ void EditorInspector::update_tree() {
 
 	// Get the lists of editors for properties.
 	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
-		PropertyInfo &p = E_property->get();
+		const PropertyInfo &p = E_property->get();
 
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
@@ -4690,6 +4690,7 @@ void EditorInspector::update_tree() {
 		String doc_path;
 		String theme_item_name;
 		String doc_tooltip_text;
+		bool is_internal = p.usage & PROPERTY_USAGE_INTERNAL;
 
 		// Build the doc hint, to use as tooltip.
 		if (use_doc_hints) {
@@ -4787,8 +4788,26 @@ void EditorInspector::update_tree() {
 			if (theme_item_name.is_empty()) {
 				if (p.name.contains("shader_parameter/")) {
 					doc_tooltip_text = "property|" + p.class_name + "|" + property_prefix + propname;
-				} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
+				} else if (is_internal) {
 					doc_tooltip_text = "internal_property|" + classname + "|" + propname;
+
+					// HACK: Display documentation for borrowed import options.
+					if (classname == SNAME("ResourceImporterScene")) {
+						String importer_class;
+						if (p.name.begins_with("blender/")) {
+							importer_class = "EditorSceneFormatImporterBlend";
+						} else if (p.name.begins_with("fbx/")) {
+							importer_class = "EditorSceneFormatImporterUFBX";
+						} else if (p.name.begins_with("gltf/")) {
+							importer_class = "EditorSceneFormatImporterGLTF";
+						}
+
+						if (!importer_class.is_empty()) {
+							doc_tooltip_text = "property|" + importer_class + "|" + propname;
+							doc_path = "class_property:" + importer_class + ":" + propname;
+							is_internal = false;
+						}
+					}
 				} else {
 					doc_tooltip_text = "property|" + classname + "|" + propname;
 				}
@@ -4968,7 +4987,7 @@ void EditorInspector::update_tree() {
 				ep->set_tooltip_text(doc_tooltip_text);
 				ep->has_doc_tooltip = use_doc_hints;
 				ep->set_doc_path(doc_path);
-				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
+				ep->set_internal(is_internal);
 
 				// If this property is favorited, it won't be in the tree yet. So don't do this setup right now.
 				if (ep->is_inside_tree()) {

@@ -2542,13 +2542,33 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
+	// Add import options from registered importers as internal to exclude them from documentation generation (in `EditorHelp`).
+	// Multiple importers can define multiple import options with the same name (e.g. `gltf/naming_version`).
+	// This is fine as long as their definitions match, but only one copy should be borrowed.
+	HashMap<String, ImportOption> borrowed_import_options;
+
+#define ADD_BORROWED_IMPORT_OPTIONS(m_vector, m_elem_type) \
+	for (Ref<m_elem_type> elem : m_vector) { \
+		List<ImportOption> options; \
+		elem->get_import_options(p_path, &options); \
+		for (ImportOption &option : options) { \
+			if (borrowed_import_options.has(option.option.name)) { \
+				const ImportOption &prev_option = borrowed_import_options[option.option.name]; \
+				if (!(option.option == prev_option.option) || option.default_value != prev_option.default_value) { \
+					ERR_PRINT(vformat(R"(A conflict between borrowed import options of the same name "%s" was found.)", option.option.name)); \
+				} \
+			} else { \
+				borrowed_import_options[option.option.name] = option; \
+				option.option.usage |= PROPERTY_USAGE_INTERNAL; \
+				r_options->push_back(option); \
+			} \
+		} \
 	}
 
-	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
-		importer_elem->get_import_options(p_path, r_options);
-	}
+	ADD_BORROWED_IMPORT_OPTIONS(post_importer_plugins, EditorScenePostImportPlugin);
+	ADD_BORROWED_IMPORT_OPTIONS(scene_importers, EditorSceneFormatImporter);
+
+#undef ADD_BORROWED_IMPORT_OPTIONS
 }
 
 void ResourceImporterScene::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {

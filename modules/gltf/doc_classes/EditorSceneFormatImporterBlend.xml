@@ -12,4 +12,46 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="blender/animation/always_sample" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/animation/group_tracks" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/animation/limit_playback" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/materials/export_materials" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="blender/materials/unpack_enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/meshes/colors" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="blender/meshes/export_bones_deforming_mesh_only" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="blender/meshes/export_geometry_nodes_instances" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="blender/meshes/gpu_instances" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="blender/meshes/normals" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/meshes/skins" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="blender/meshes/tangents" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/meshes/uvs" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/nodes/active_collection_only" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="blender/nodes/cameras" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/nodes/custom_properties" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/nodes/modifiers" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="blender/nodes/punctual_lights" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="blender/nodes/visible" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="gltf/naming_version" type="int" setter="" getter="" default="2">
+		</member>
+	</members>
 </class>

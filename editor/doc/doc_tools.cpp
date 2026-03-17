@@ -42,6 +42,7 @@
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
@@ -468,6 +469,18 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			} else if (ClassDB::is_parent_class(name, "ResourceImporter") && name != "EditorImportPlugin" && ClassDB::can_instantiate(name)) {
 				import_option = true;
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
+				List<ResourceImporter::ImportOption> options;
+				resimp->get_import_options("", &options);
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
+					properties.push_back(prop);
+					import_options_default[prop.name] = option.default_value;
+				}
+				own_properties = properties;
+				memdelete(resimp);
+			} else if (ClassDB::is_parent_class(name, "EditorSceneFormatImporter") && ClassDB::can_instantiate(name)) {
+				import_option = true;
+				EditorSceneFormatImporter *resimp = Object::cast_to<EditorSceneFormatImporter>(ClassDB::instantiate(name));
 				List<ResourceImporter::ImportOption> options;
 				resimp->get_import_options("", &options);
 				for (const ResourceImporter::ImportOption &option : options) {

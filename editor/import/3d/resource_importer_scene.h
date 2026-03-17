@@ -237,7 +237,7 @@ public:
 	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
-	const Vector<Ref<EditorSceneFormatImporter>> &get_scene_importers() const { return scene_importers; }
+	static const Vector<Ref<EditorSceneFormatImporter>> &get_scene_importers() { return scene_importers; }
 	static void add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
 	static void remove_scene_importer(Ref<EditorSceneFormatImporter> p_importer);
 	static void get_scene_importer_extensions(List<String> *p_extensions);
