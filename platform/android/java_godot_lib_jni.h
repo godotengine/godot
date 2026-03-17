@@ -43,6 +43,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface);
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jlong id, jint pos);
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acCreateAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_acFreeAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id);
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_acCreateAccessibilityNodeInfo(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id);
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_acFindFocus(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_focus_type);
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acPerformAction(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id, jint p_action, jobject p_arguments);
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acOnHoverEvent(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_action, jfloat p_x, jfloat p_y);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray positions, jboolean p_double_tap);

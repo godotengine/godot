@@ -39,6 +39,7 @@
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/os.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 
 #if defined(RD_ENABLED)
@@ -99,6 +100,8 @@ bool DisplayServerAndroid::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			return true;
+		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER:
+			return AccessibilityServer::get_singleton()->is_supported();
 		default:
 			return false;
 	}
@@ -106,6 +109,24 @@ bool DisplayServerAndroid::has_feature(DisplayServerEnums::Feature p_feature) co
 
 String DisplayServerAndroid::get_name() const {
 	return "Android";
+}
+
+int DisplayServerAndroid::accessibility_should_increase_contrast() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+	return godot_java->is_high_contrast_active();
+}
+
+int DisplayServerAndroid::accessibility_screen_reader_active() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+	return godot_java->is_screen_reader_active();
+}
+
+int DisplayServerAndroid::accessibility_should_reduce_animation() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+	return godot_java->is_animation_disabled();
 }
 
 bool DisplayServerAndroid::tts_is_speaking() const {
