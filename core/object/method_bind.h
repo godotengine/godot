@@ -654,6 +654,262 @@ MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 	return a;
 }
 
+/* CALLABLE OBJECTS */
+
+// No return, not const.
+
+template <typename T, typename... P>
+class MethodBindTL : public MethodBind {
+	std::function<void (T &, P...)> method;
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual GDExtensionVariantType gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return GDEXTENSION_VARIANT_TYPE_NIL;
+		}
+	}
+
+	virtual PropertyInfo gen_argument_type_info(int p_arg) const {
+		PropertyInfo pi;
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			call_get_argument_type_info<P...>(p_arg, pi);
+		} else {
+			pi = PropertyInfo();
+		}
+		return pi;
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+public:
+	virtual GDExtensionClassMethodArgumentMetadata get_argument_metadata(int p_argument) const {
+		return call_get_argument_metadata<P...>(p_argument);
+	}
+
+	virtual Variant call(GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionCallError &r_error) const {
+		call_with_variant_args_dv(static_cast<T *>(p_instance), method, p_args, (int)p_argument_count, r_error, get_default_arguments());
+		return Variant();
+	}
+	virtual void ptrcall(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret) const {
+		call_with_ptr_args<T, P...>(static_cast<T *>(p_instance), method, p_args, nullptr);
+	}
+
+	MethodBindTL(std::function<void (T &, P...)> p_method) {
+		method = p_method;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+	}
+};
+
+template <typename T, typename... P>
+MethodBind *create_method_bind(std::function<void (T &, P...)> p_method) {
+	MethodBind *a = memnew((MethodBindTL<T, P...>)(p_method));
+	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
+// No return, const.
+
+template <typename T, typename... P>
+class MethodBindTLC : public MethodBind {
+	std::function<void (const T &, P...)> method;
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual GDExtensionVariantType gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return GDEXTENSION_VARIANT_TYPE_NIL;
+		}
+	}
+
+	virtual PropertyInfo gen_argument_type_info(int p_arg) const {
+		PropertyInfo pi;
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			call_get_argument_type_info<P...>(p_arg, pi);
+		} else {
+			pi = PropertyInfo();
+		}
+		return pi;
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+public:
+	virtual GDExtensionClassMethodArgumentMetadata get_argument_metadata(int p_argument) const {
+		return call_get_argument_metadata<P...>(p_argument);
+	}
+
+	virtual Variant call(GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionCallError &r_error) const {
+		call_with_variant_argsc_dv(static_cast<T *>(p_instance), method, p_args, (int)p_argument_count, r_error, get_default_arguments());
+		return Variant();
+	}
+	virtual void ptrcall(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret) const {
+		call_with_ptr_args<T, P...>(static_cast<T *>(p_instance), method, p_args, nullptr);
+	}
+
+	MethodBindTLC(std::function<void (const T &, P...)> p_method) {
+		method = p_method;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+		_set_const(true);
+	}
+};
+
+template <typename T, typename... P>
+MethodBind *create_method_bind(std::function<void (const T &, P...)> p_method) {
+	MethodBind *a = memnew((MethodBindTLC<T, P...>)(p_method));
+	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
+// Return, not const.
+
+template <typename T, typename R, typename... P>
+class MethodBindTLR : public MethodBind {
+	std::function<R (T &, P...)> method;
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual GDExtensionVariantType gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return GDExtensionVariantType(GetTypeInfo<R>::VARIANT_TYPE);
+		}
+	}
+
+	virtual PropertyInfo gen_argument_type_info(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			PropertyInfo pi;
+			call_get_argument_type_info<P...>(p_arg, pi);
+			return pi;
+		} else {
+			return GetTypeInfo<R>::get_class_info();
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+public:
+	virtual GDExtensionClassMethodArgumentMetadata get_argument_metadata(int p_argument) const {
+		if (p_argument >= 0) {
+			return call_get_argument_metadata<P...>(p_argument);
+		} else {
+			return GetTypeInfo<R>::METADATA;
+		}
+	}
+
+	virtual Variant call(GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionCallError &r_error) const {
+		Variant ret;
+		call_with_variant_args_ret_dv(static_cast<T *>(p_instance), method, p_args, (int)p_argument_count, ret, r_error, get_default_arguments());
+		return ret;
+	}
+	virtual void ptrcall(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret) const {
+		call_with_ptr_args<T, R, P...>(static_cast<T *>(p_instance), method, p_args, r_ret);
+	}
+
+	MethodBindTLR(std::function<R (T &, P...)> p_method) {
+		method = p_method;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+		_set_returns(true);
+	}
+};
+
+template <typename T, typename R, typename... P>
+MethodBind *create_method_bind(std::function<R (T &, P...)> p_method) {
+	MethodBind *a = memnew((MethodBindTLR<T, R, P...>)(p_method));
+	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
+// Return, const.
+
+template <typename T, typename R, typename... P>
+class MethodBindTLRC : public MethodBind {
+	std::function<R (const T &, P...)> method;
+
+protected:
+// GCC raises warnings in the case P = {} as the comparison is always false...
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+	virtual GDExtensionVariantType gen_argument_type(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			return call_get_argument_type<P...>(p_arg);
+		} else {
+			return GDExtensionVariantType(GetTypeInfo<R>::VARIANT_TYPE);
+		}
+	}
+
+	virtual PropertyInfo gen_argument_type_info(int p_arg) const {
+		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
+			PropertyInfo pi;
+			call_get_argument_type_info<P...>(p_arg, pi);
+			return pi;
+		} else {
+			return GetTypeInfo<R>::get_class_info();
+		}
+	}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+public:
+	virtual GDExtensionClassMethodArgumentMetadata get_argument_metadata(int p_argument) const {
+		if (p_argument >= 0) {
+			return call_get_argument_metadata<P...>(p_argument);
+		} else {
+			return GetTypeInfo<R>::METADATA;
+		}
+	}
+
+	virtual Variant call(GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionCallError &r_error) const {
+		Variant ret;
+		call_with_variant_args_retc_dv(static_cast<T *>(p_instance), method, p_args, (int)p_argument_count, ret, r_error, get_default_arguments());
+		return ret;
+	}
+	virtual void ptrcall(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret) const {
+		call_with_ptr_args<T, R, P...>(static_cast<T *>(p_instance), method, p_args, r_ret);
+	}
+
+	MethodBindTLRC(std::function<R (const T &, P...)> p_method) {
+		method = p_method;
+		_generate_argument_types(sizeof...(P));
+		set_argument_count(sizeof...(P));
+		_set_returns(true);
+		_set_const(true);
+	}
+};
+
+template <typename T, typename R, typename... P>
+MethodBind *create_method_bind(std::function<R (const T &, P...)> p_method) {
+	MethodBind *a = memnew((MethodBindTLRC<T, R, P...>)(p_method));
+	a->set_instance_class(T::get_class_static());
+	return a;
+}
+
 /* STATIC BINDS */
 
 // no return
