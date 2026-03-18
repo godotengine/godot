@@ -52,7 +52,7 @@ void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	}
 }
 
-EditorProfiler::Metric EditorProfiler::_get_frame_metric(int index) {
+const EditorProfiler::Metric &EditorProfiler::_get_frame_metric(int index) const {
 	return frame_metrics[(frame_metrics.size() + last_metric - (total_metrics - 1) + index) % frame_metrics.size()];
 }
 
