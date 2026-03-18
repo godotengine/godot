@@ -31,7 +31,6 @@
 #include "packed_scene.h"
 
 #include "core/config/engine.h"
-#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
@@ -39,10 +38,8 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
-#include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -452,6 +449,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						}
 
 						if (value.get_type() == Variant::ARRAY) {
+
 							Array set_array = value;
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
