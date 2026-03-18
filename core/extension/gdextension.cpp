@@ -561,8 +561,6 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 #endif
 
-	extension->gdextension.create_gdtype();
-
 	ClassDB::register_extension_class(&extension->gdextension);
 
 	if (p_extension_funcs->icon_path != nullptr) {
@@ -580,6 +578,8 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 	StringName method_name = *reinterpret_cast<const StringName *>(p_method_info->name);
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), vformat("Attempt to register extension method '%s' for unexisting class '%s'.", String(method_name), class_name));
 
+	bool is_from_old_extension = false;
+
 #ifdef TOOLS_ENABLED
 	Extension *extension = &self->extension_classes[class_name];
 	GDExtensionMethodBind *method = nullptr;
@@ -596,8 +596,6 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 		// mark as invalid and create a new one.
 		if (!method->is_reloading || !method->try_update(p_method_info)) {
 			method->valid = false;
-			self->invalid_methods.push_back(method);
-
 			method = nullptr;
 		}
 	}
@@ -608,13 +606,14 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 		extension->methods[method_name] = method;
 	} else {
 		method->is_reloading = false;
+		is_from_old_extension = true;
 	}
 #else
 	GDExtensionMethodBind *method = memnew(GDExtensionMethodBind(p_method_info));
 	method->set_instance_class(class_name);
 #endif
 
-	ClassDB::bind_method_custom(class_name, method);
+	ClassDB::bind_method_custom(class_name, method, !is_from_old_extension);
 }
 
 void GDExtension::_register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info) {
@@ -743,11 +742,7 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 #endif
 	ERR_FAIL_COND_MSG(ext->gdextension.children.size(), vformat("Attempt to unregister class '%s' while other extension classes inherit from it.", class_name));
 
-#ifdef TOOLS_ENABLED
-	ClassDB::unregister_extension_class(class_name, !ext->is_reloading);
-#else
 	ClassDB::unregister_extension_class(class_name);
-#endif
 
 	if (ext->gdextension.parent != nullptr) {
 		ext->gdextension.parent->children.erase(&ext->gdextension);
@@ -878,12 +873,6 @@ GDExtension::~GDExtension() {
 	if (is_library_open()) {
 		close_library();
 	}
-#ifdef TOOLS_ENABLED
-	// If we have any invalid method binds still laying around, we can finally free them!
-	for (GDExtensionMethodBind *E : invalid_methods) {
-		memdelete(E);
-	}
-#endif
 }
 
 void GDExtension::initialize_gdextensions() {
@@ -982,8 +971,6 @@ void GDExtension::_clear_extension(Extension *p_extension) {
 
 		obj->clear_internal_extension();
 	}
-
-	p_extension->gdextension.destroy_gdtype();
 }
 
 void GDExtension::track_instance_binding(Object *p_object) {
@@ -1021,7 +1008,6 @@ void GDExtension::finish_reload() {
 		for (KeyValue<StringName, GDExtensionMethodBind *> &M : E.value.methods) {
 			if (M.value->is_reloading) {
 				M.value->valid = false;
-				invalid_methods.push_back(M.value);
 
 				M.value->is_reloading = false;
 				methods_to_remove.push_back(M.key);

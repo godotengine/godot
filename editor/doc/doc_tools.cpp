@@ -623,7 +623,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				bool found_type = false;
 				if (getter != StringName()) {
-					MethodBind *mb = ClassDB::get_method(name, getter);
+					const MethodBind *mb = ClassDB::get_method(name, getter);
 					if (mb) {
 						PropertyInfo retinfo = mb->get_return_info();
 

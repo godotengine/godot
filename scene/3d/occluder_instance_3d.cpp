@@ -52,6 +52,14 @@ RID Occluder3D::get_rid() const {
 	return occluder;
 }
 
+void Occluder3D::_bind_methods() {
+	// TODO Note: These used to be bound in ArrayOccluder3D::_bind_methods, indicating they
+	//            were originally meant to be exposed to ArrayOccluder3D instead of Occluder3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_vertices"), &Occluder3D::get_vertices);
+	ClassDB::bind_method(D_METHOD("get_indices"), &Occluder3D::get_indices);
+}
+
 void Occluder3D::_update() {
 	_update_arrays(vertices, indices);
 
@@ -172,10 +180,7 @@ void ArrayOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_arrays", "vertices", "indices"), &ArrayOccluder3D::set_arrays);
 
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &ArrayOccluder3D::set_vertices);
-	ClassDB::bind_method(D_METHOD("get_vertices"), &ArrayOccluder3D::get_vertices);
-
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &ArrayOccluder3D::set_indices);
-	ClassDB::bind_method(D_METHOD("get_indices"), &ArrayOccluder3D::get_indices);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
