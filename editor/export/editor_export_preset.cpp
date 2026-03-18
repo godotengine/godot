@@ -33,6 +33,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 
@@ -260,7 +262,7 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 }
 
 HashSet<String> EditorExportPreset::get_selected_files() const {
-	return selected_files;
+	return HashSet<String>(selected_files);
 }
 
 void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {

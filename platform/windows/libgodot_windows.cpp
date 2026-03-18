@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/extension/libgodot.h"
+#include "os_windows.h"
 
 #include "core/extension/godot_instance.h"
+#include "core/extension/libgodot.h"
 #include "main/main.h"
-
-#include "os_windows.h"
 
 static OS_Windows *os = nullptr;
 

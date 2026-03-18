@@ -39,7 +39,6 @@
 #include "objects/jolt_area_3d.h"
 #include "objects/jolt_body_3d.h"
 #include "objects/jolt_soft_body_3d.h"
-#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 #include "shapes/jolt_box_shape_3d.h"
 #include "shapes/jolt_capsule_shape_3d.h"
 #include "shapes/jolt_concave_polygon_shape_3d.h"
@@ -52,6 +51,7 @@
 #include "spaces/jolt_job_system.h"
 #include "spaces/jolt_physics_direct_space_state_3d.h"
 #include "spaces/jolt_space_3d.h"
+#include "spaces/jolt_temp_allocator.h"
 
 JoltPhysicsServer3D::JoltPhysicsServer3D(bool p_on_separate_thread) :
 		on_separate_thread(p_on_separate_thread) {
@@ -181,7 +181,7 @@ real_t JoltPhysicsServer3D::shape_get_custom_solver_bias(RID p_shape) const {
 }
 
 RID JoltPhysicsServer3D::space_create() {
-	JoltSpace3D *space = memnew(JoltSpace3D(job_system));
+	JoltSpace3D *space = memnew(JoltSpace3D(job_system, temp_allocator));
 	RID rid = space_owner.make_rid(space);
 	space->set_rid(rid);
 
@@ -1605,9 +1605,15 @@ void JoltPhysicsServer3D::set_active(bool p_active) {
 
 void JoltPhysicsServer3D::init() {
 	job_system = new JoltJobSystem();
+	temp_allocator = new JoltTempAllocator();
 }
 
 void JoltPhysicsServer3D::finish() {
+	if (temp_allocator != nullptr) {
+		delete temp_allocator;
+		temp_allocator = nullptr;
+	}
+
 	if (job_system != nullptr) {
 		delete job_system;
 		job_system = nullptr;

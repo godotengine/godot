@@ -926,7 +926,7 @@ namespace Godot
                 return false;
 
             int from = 0;
-            if (instance.Length != 1 && instance[0] == '+' || instance[0] == '-')
+            if (instance.Length != 1 && (instance[0] == '+' || instance[0] == '-'))
             {
                 from++;
             }
@@ -935,26 +935,24 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
+                if (instance[from] != '0' || (instance[from + 1] != 'x' && instance[from + 1] != 'X'))
                     return false;
                 from += 2;
             }
 
+            if (from == instance.Length)
+                return false;
+
             for (int i = from; i < instance.Length; i++)
             {
                 char c = instance[i];
-                if (IsHexDigit(c))
+                if (char.IsAsciiHexDigit(c))
                     continue;
 
                 return false;
             }
 
             return true;
-
-            static bool IsHexDigit(char c)
-            {
-                return char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-            }
         }
 
         /// <summary>

@@ -30,19 +30,21 @@
 
 #pragma once
 
-#include "core/io/zip_io.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export_preset.h"
 
 class DirAccess;
 class EditorExportPlugin;
 class EditorFileSystemDirectory;
+class FileAccess;
 class Image;
 class Node;
 class RichTextLabel;
 class Texture2D;
 struct EditorProgress;
 struct SharedObject;
+
+typedef void *zipFile;
 
 const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 
@@ -105,7 +107,8 @@ public:
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt);
 	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
 	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt);
-	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
+	static String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset);
+	static Vector<uint8_t> _get_script_encryption_key_bytes(const Ref<EditorExportPreset> &p_preset);
 
 private:
 	struct ZipData {
@@ -116,6 +119,7 @@ private:
 	};
 
 	Vector<ExportMessage> messages;
+	Vector<String> patch_temp_dirs;
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
 	void _export_find_customized_resources(const Ref<EditorExportPreset> &p_preset, EditorFileSystemDirectory *p_dir, EditorExportPreset::FileExportMode p_mode, HashSet<String> &p_paths);
@@ -142,7 +146,13 @@ private:
 	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude);
 	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
 
-	static Vector<uint8_t> _filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths);
+	struct FilteredCache {
+		Vector<uint8_t> extension_list;
+		Vector<uint8_t> global_class_list;
+		Vector<uint8_t> uids;
+	};
+
+	static FilteredCache _get_filtered_cache(const HashSet<String> &p_paths);
 
 	struct FileExportCache {
 		uint64_t source_modified_time = 0;
@@ -191,8 +201,8 @@ protected:
 		r_output.push_back(pipe);
 		return err;
 	}
-	OS::ProcessID _ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, int p_port_fwd = -1) const {
-		OS::ProcessID pid = 0;
+	ProcessID _ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, int p_port_fwd = -1) const {
+		ProcessID pid = 0;
 		Error err = ssh_run_on_remote_no_wait(p_host, p_port, p_ssh_args, p_cmd_args, &pid, p_port_fwd);
 		if (err != OK) {
 			return -1;
@@ -202,10 +212,11 @@ protected:
 	}
 
 	Error ssh_run_on_remote(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, String *r_out = nullptr, int p_port_fwd = -1) const;
-	Error ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, OS::ProcessID *r_pid = nullptr, int p_port_fwd = -1) const;
+	Error ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, ProcessID *r_pid = nullptr, int p_port_fwd = -1) const;
 	Error ssh_push_to_remote(const String &p_host, const String &p_port, const Vector<String> &p_scp_args, const String &p_src_file, const String &p_dst_file) const;
 
-	Error _load_patches(const Vector<String> &p_patches);
+	Error _extract_android_assets(const String &p_bundle_path, String &r_pck_path, String &r_temp_dir);
+	Error _load_patches(const Ref<EditorExportPreset> &p_preset, const Vector<String> &p_patches);
 	void _unload_patches();
 
 	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;

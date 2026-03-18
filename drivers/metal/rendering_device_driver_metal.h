@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "metal_device_profile.h"
-#include "metal_objects_shared.h"
-
+#include "drivers/metal/metal_device_profile.h"
+#include "drivers/metal/metal_objects_shared.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
+
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;
@@ -301,11 +301,11 @@ protected:
 	struct SwapChain {
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		RenderPassID render_pass;
-		RDD::DataFormat data_format = DATA_FORMAT_MAX;
-		SwapChain() :
-				render_pass(nullptr) {}
+		DataFormat data_format = DATA_FORMAT_MAX;
+		ColorSpace color_space = COLOR_SPACE_MAX;
 	};
 
+	RenderPassID _swap_chain_create_render_pass(DataFormat p_format);
 	void _swap_chain_release(SwapChain *p_swap_chain);
 	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
 

@@ -31,6 +31,9 @@
 #include "project_export.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -56,6 +59,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "servers/display/display_server.h"
 
 #include <zstd.h>
 
@@ -104,6 +108,12 @@ void ProjectExportDialog::_notification(int p_what) {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
 				show_script_key->set_pressed(false);
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 			}
 		} break;
 
@@ -1530,19 +1540,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	HSplitContainer *hbox = memnew(HSplitContainer);
-	main_vb->add_child(hbox);
-	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
-		hbox->set_touch_dragger_enabled(true);
-	}
+	main_split = memnew(HSplitContainer);
+	main_vb->add_child(main_split);
+	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 
 	// Presets list.
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preset_vb->set_stretch_ratio(0.35);
-	hbox->add_child(preset_vb);
+	main_split->add_child(preset_vb);
 
 	Label *l = memnew(Label(TTR("Presets")));
 	l->set_theme_type_variation("HeaderSmall");
@@ -1582,7 +1590,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb = memnew(VBoxContainer);
 	settings_vb->hide();
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbox->add_child(settings_vb);
+	main_split->add_child(settings_vb);
 
 	PanelContainer *panel = memnew(PanelContainer);
 	panel->set_theme_type_variation(SNAME("PanelForeground"));
@@ -1679,8 +1687,9 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	include_files = memnew(Tree);
 	include_files->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
-	include_margin->add_child(include_files);
 	include_files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	include_files->set_theme_type_variation("TreeSecondary");
+	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
 	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));
@@ -1785,8 +1794,10 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patches = memnew(Tree);
 	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patches->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
 	patches->set_hide_root(true);
 	patches->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	patches->set_theme_type_variation("TreeSecondary");
 	patches->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_patch_tree_button_clicked));
 	patches->connect("item_edited", callable_mp(this, &ProjectExportDialog::_patch_tree_item_edited));
 	SET_DRAG_FORWARDING_GCD(patches, ProjectExportDialog);
@@ -1795,6 +1806,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
+	patch_dialog->add_filter("*.aab", TTR("Android App Bundle"));
+	patch_dialog->add_filter("*.apk", TTR("Android Package"));
 	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_file_selected));
@@ -1929,7 +1942,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	empty_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_label->hide();
-	hbox->add_child(empty_label);
+	main_split->add_child(empty_label);
 
 	// Deletion dialog.
 

@@ -30,22 +30,30 @@
 
 #include "editor_export_platform_apple_embedded.h"
 
-#include "core/io/json.h"
+#include "core/io/file_access.h"
 #include "core/io/plist.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
-#include "editor/export/lipo.h"
-#include "editor/export/macho.h"
-#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+#include "servers/display/display_server.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
+
+#ifdef MACOS_ENABLED
+#include "core/io/json.h"
+#include "core/object/callable_mp.h"
+#include "core/os/process_id.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
+#endif
 
 void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -523,33 +531,33 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$required_device_capabilities", capabilities);
 	} else if (p_line.contains("$interface_orientations")) {
 		String orientations;
-		const DisplayServer::ScreenOrientation screen_orientation =
-				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		const DisplayServerEnums::ScreenOrientation screen_orientation =
+				DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 		switch (screen_orientation) {
-			case DisplayServer::SCREEN_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				break;
-			case DisplayServer::SCREEN_PORTRAIT:
+			case DisplayServerEnums::SCREEN_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+			case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 				// Allow both landscape orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+			case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 				// Allow both portrait orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR:
+			case DisplayServerEnums::SCREEN_SENSOR:
 				// Allow all screen orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
@@ -561,33 +569,33 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$interface_orientations", orientations);
 	} else if (p_line.contains("$ipad_interface_orientations")) {
 		String orientations;
-		const DisplayServer::ScreenOrientation screen_orientation =
-				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		const DisplayServerEnums::ScreenOrientation screen_orientation =
+				DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
 		switch (screen_orientation) {
-			case DisplayServer::SCREEN_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_PORTRAIT:
+			case DisplayServerEnums::SCREEN_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				break;
-			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+			case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+			case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 				// Allow both landscape orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+			case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 				// Allow both portrait orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
 				break;
-			case DisplayServer::SCREEN_SENSOR:
+			case DisplayServerEnums::SCREEN_SENSOR:
 				// Allow all screen orientations depending on sensor direction.
 				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
@@ -2058,6 +2066,12 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		}
 	}
 
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+			export_plugins[i]->end_generate_apple_embedded_project(p_path, export_project_only);
+		}
+	}
+
 	if (export_project_only) {
 		return OK;
 	}
@@ -2559,7 +2573,7 @@ int EditorExportPlatformAppleEmbedded::_execute(const String &p_path, const List
 
 	Ref<FileAccess> fa_stdout = pipe_info["stdio"];
 	Ref<FileAccess> fa_stderr = pipe_info["stderr"];
-	OS::ProcessID pid = pipe_info["pid"];
+	ProcessID pid = pipe_info["pid"];
 
 	FileReader stdout_r(fa_stdout);
 	FileReader stderr_r(fa_stderr);

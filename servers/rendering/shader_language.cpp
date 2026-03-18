@@ -30,12 +30,14 @@
 
 #include "shader_language.h"
 
+#include "core/config/engine.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rb_set.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "shader_types.h"
+#include "servers/rendering/shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
@@ -1397,8 +1399,8 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 
 bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, Vector<Scalar> *r_constant_values) {
 	if (is_shader_inc) {
-		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i))) {
 				if ((current_function == E.key || E.key == "global" || E.key == "constants") && E.value.built_ins.has(p_identifier)) {
 					if (r_data_type) {
 						*r_data_type = E.value.built_ins[p_identifier].type;
@@ -3311,20 +3313,20 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 	// textureGather
 
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
-	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, false },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
 
 	// textureQueryLod
 
@@ -8021,7 +8023,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 		}
 
-		bool is_struct = shader->structs.has(tk.text);
+		bool is_struct = shader->structs.has(tk.text) && !(p_block && _find_identifier(p_block, false, p_function_info, tk.text));
 		bool is_var_init = false;
 		bool is_condition = false;
 
@@ -11229,8 +11231,8 @@ Error ShaderLanguage::_parse_shader_mode(bool p_is_stencil, const Vector<ModeInf
 	bool found = false;
 
 	if (is_shader_inc) {
-		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-			const Vector<ModeInfo> modes = p_is_stencil ? ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i)) : ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+		for (int i = 0; i < RSE::SHADER_MAX; i++) {
+			const Vector<ModeInfo> modes = p_is_stencil ? ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i)) : ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
 
 			for (const ModeInfo &info : modes) {
 				const String name = String(info.name);
@@ -11514,8 +11516,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			if (is_shader_inc) {
-				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+				for (int i = 0; i < RSE::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
 
 					for (int j = 0; j < modes.size(); j++) {
 						const ModeInfo &info = modes[j];
@@ -11579,8 +11581,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_STENCIL_MODE: {
 			if (is_shader_inc) {
-				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i));
+				for (int i = 0; i < RSE::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i));
 
 					for (const ModeInfo &info : modes) {
 						if (!info.options.is_empty()) {
@@ -11700,8 +11702,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 				if (comp_ident) {
 					if (is_shader_inc) {
-						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-							const HashMap<StringName, ShaderLanguage::FunctionInfo> &info = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i));
+						for (int i = 0; i < RSE::SHADER_MAX; i++) {
+							const HashMap<StringName, ShaderLanguage::FunctionInfo> &info = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i));
 
 							if (info.has("global")) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info["global"].built_ins) {

@@ -32,11 +32,12 @@
 
 #include "detect_prime_x11.h"
 
+#include "core/core_globals.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
+#include <thirdparty/glad/glad/gl.h>
+#include <thirdparty/glad/glad/glx.h>
 
 #ifdef SOWRAP_ENABLED
 #include "x11/dynwrappers/xlib-so_wrap.h"
@@ -49,6 +50,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cstdlib>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091

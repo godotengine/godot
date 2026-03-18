@@ -428,24 +428,45 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 		return varr;
 	}
 
-	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
+	if (name == "org.godotengine.godot.Dictionary") {
 		Dictionary ret;
 		jclass oclass = c;
-		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
-		jobjectArray arr = (jobjectArray)env->CallObjectMethod(obj, get_keys);
 
-		PackedStringArray keys = _jobject_to_variant(env, arr, p_depth + 1);
-		env->DeleteLocalRef(arr);
+		jmethodID entrySet = env->GetMethodID(oclass, "entrySet", "()Ljava/util/Set;");
+		jobject entrySetObj = env->CallObjectMethod(obj, entrySet);
 
-		jmethodID get_values = env->GetMethodID(oclass, "get_values", "()[Ljava/lang/Object;");
-		arr = (jobjectArray)env->CallObjectMethod(obj, get_values);
+		jclass setClass = env->GetObjectClass(entrySetObj);
+		jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+		jobject iteratorObj = env->CallObjectMethod(entrySetObj, iterator);
 
-		Array vals = _jobject_to_variant(env, arr, p_depth + 1);
-		env->DeleteLocalRef(arr);
+		jclass iteratorClass = env->GetObjectClass(iteratorObj);
+		jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
+		jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
 
-		for (int i = 0; i < keys.size(); i++) {
-			ret[keys[i]] = vals[i];
+		jclass entryClass = jni_find_class(env, "java/util/Map$Entry");
+		jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+		jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+
+		while (env->CallBooleanMethod(iteratorObj, hasNext)) {
+			jobject entry = env->CallObjectMethod(iteratorObj, next);
+
+			jobject jkey = env->CallObjectMethod(entry, getKey);
+			jobject jvalue = env->CallObjectMethod(entry, getValue);
+
+			Variant key = _jobject_to_variant(env, jkey, p_depth + 1);
+			Variant value = _jobject_to_variant(env, jvalue, p_depth + 1);
+			ret[key] = value;
+
+			env->DeleteLocalRef(entry);
+			env->DeleteLocalRef(jkey);
+			env->DeleteLocalRef(jvalue);
 		}
+
+		env->DeleteLocalRef(entrySetObj);
+		env->DeleteLocalRef(iteratorObj);
+		env->DeleteLocalRef(setClass);
+		env->DeleteLocalRef(iteratorClass);
+		env->DeleteLocalRef(entryClass);
 
 		return ret;
 	}

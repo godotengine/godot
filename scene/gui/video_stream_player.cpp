@@ -30,8 +30,12 @@
 
 #include "video_stream_player.h"
 
-#include "core/os/os.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/accessibility_server.h"
 
 int VideoStreamPlayer::sp_get_channel_count() const {
 	if (playback.is_null()) {
@@ -131,7 +135,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_VIDEO);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_VIDEO);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

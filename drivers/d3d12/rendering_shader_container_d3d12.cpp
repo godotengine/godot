@@ -31,49 +31,18 @@
 #include "rendering_shader_container_d3d12.h"
 
 #include "core/templates/sort_array.h"
+#include "drivers/d3d12/dxil_hash.h"
 
-#include "dxil_hash.h"
-
+#include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_d3dx12.h>
+#include <drivers/d3d12/godot_nir.h>
+#include <wrl/client.h>
 #include <zlib.h>
 
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
-GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
-GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
-
-#include <dxgi1_6.h>
-#include <thirdparty/directx_headers/include/directx/d3dx12.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
-
-#include <wrl/client.h>
-
-#include <nir_spirv.h>
-#include <nir_to_dxil.h>
-#include <spirv_to_dxil.h>
 extern "C" {
-#include <dxil_spirv_nir.h>
-
 void dxil_reassign_driver_locations(nir_shader *s, nir_variable_mode modes,
 		uint64_t other_stage_mask, const BITSET_WORD *other_stage_frac_mask);
 }
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-GODOT_MSVC_WARNING_POP
 
 // SPIR-V to DXIL does way too many allocations, which causes worker threads
 // to bottleneck each other due to sharing the same global process heap.
@@ -457,8 +426,8 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				shader->info.inputs_read |= VARYING_BIT_POS;
 
 				if (prev_shader) {
-					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, NULL);
-					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, NULL);
+					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, nullptr);
+					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, nullptr);
 				}
 			}
 		}

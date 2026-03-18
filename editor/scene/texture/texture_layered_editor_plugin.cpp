@@ -31,6 +31,7 @@
 #include "texture_layered_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
@@ -241,7 +242,7 @@ void TextureLayeredEditor::_update_gui() {
 	info->set_text(texture_info);
 
 	const uint32_t components_mask = Image::get_format_component_mask(format);
-	if (is_power_of_2(components_mask)) {
+	if (Math::is_power_of_2(components_mask)) {
 		// Only one channel available, no point in showing a channel selector.
 		channel_selector->hide();
 	} else {

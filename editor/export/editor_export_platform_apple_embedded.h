@@ -30,24 +30,18 @@
 
 #pragma once
 
-#include "plugin_config_apple_embedded.h"
-
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/image_loader.h"
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
-#include "core/io/zip_io.h"
-#include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor/settings/editor_settings.h"
-#include "main/splash.gen.h"
+#include "editor/export/plugin_config_apple_embedded.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
+
+#ifdef MACOS_ENABLED
 #include <functional>
+#endif
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.

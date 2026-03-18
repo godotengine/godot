@@ -50,10 +50,10 @@
 
 #include "metal3_objects.h"
 
-#include "metal_utils.h"
-#include "pixel_formats.h"
-#include "rendering_device_driver_metal3.h"
-#include "rendering_shader_container_metal.h"
+#include "drivers/metal/metal_utils.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_device_driver_metal3.h"
+#include "drivers/metal/rendering_shader_container_metal.h"
 
 #include <algorithm>
 

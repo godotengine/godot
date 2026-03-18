@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaybackOggVorbis" inherits="AudioStreamPlaybackResampled" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Playback class used for [AudioStreamOggVorbis].
 	</brief_description>
 	<description>
+		Playback component of [AudioStreamOggVorbis]. Uses [OggPacketSequencePlayback] for playback data.
 	</description>
 	<tutorials>
 	</tutorials>

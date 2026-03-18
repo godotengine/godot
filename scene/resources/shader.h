@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "shader_include.h"
+#include "scene/resources/shader_include.h"
 
 class Texture;
 class Texture2D;

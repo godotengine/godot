@@ -36,9 +36,9 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	for (int i = 0; i < sources.size(); i++) {
-		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset, p_decryption_key)) {
 			return OK;
 		}
 	}
@@ -215,7 +215,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		return false;
@@ -330,9 +330,18 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		ERR_FAIL_COND_V_MSG(fae.is_null(), false, "Can't open encrypted pack directory.");
 
 		Vector<uint8_t> key;
-		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+#ifdef TOOLS_ENABLED
+		if (!p_decryption_key.is_empty()) {
+			ERR_FAIL_COND_V_MSG(p_decryption_key.size() != 32, false, "Decryption key must be 256-bit.");
+			constexpr uint8_t empty_key[32] = {};
+			if (memcmp(script_encryption_key, empty_key, sizeof(empty_key)) == 0) {
+				key = p_decryption_key;
+			}
+		} else
+#endif
+		{
+			key.resize(32);
+			memcpy(key.ptrw(), script_encryption_key, 32);
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
@@ -364,8 +373,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	return true;
 }
 
-Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
-	Ref<FileAccess> file(memnew(FileAccessPack(p_path, *p_file)));
+Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key) {
+	Ref<FileAccess> file(memnew(FileAccessPack(p_path, *p_file, p_decryption_key)));
 
 	if (PackedData::get_singleton()->has_delta_patches(p_path)) {
 		Ref<FileAccessPatched> file_patched;
@@ -380,7 +389,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	// Load with offset feature only supported for PCK files.
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
 
@@ -391,7 +400,7 @@ bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_f
 	return true;
 }
 
-Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key) {
 	Ref<FileAccess> ret = FileAccess::create_for_path(p_path);
 	ret->reopen(p_path, FileAccess::READ);
 	return ret;
@@ -514,16 +523,24 @@ void FileAccessPack::close() {
 	f = Ref<FileAccess>();
 }
 
-FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) {
+FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file, const Vector<uint8_t> &p_decryption_key) {
 	path = p_path;
 	pf = p_file;
 	if (pf.bundle) {
 		String simplified_path = p_path.simplify_path();
-		if (pf.salt.is_empty()) {
-			f = FileAccess::open(simplified_path, FileAccess::READ | FileAccess::SKIP_PACK);
+		String path_to_load = simplified_path;
+#ifdef TOOLS_ENABLED
+		if (!pf.salt.is_empty()) {
+			path_to_load = pf.pack.get_base_dir().path_join((simplified_path + pf.salt).sha256_text());
 		} else {
-			f = FileAccess::open("res://" + (simplified_path + pf.salt).sha256_text(), FileAccess::READ | FileAccess::SKIP_PACK);
+			path_to_load = pf.pack.get_base_dir().path_join(simplified_path.replace("res://", ""));
 		}
+#else
+		if (!pf.salt.is_empty()) {
+			path_to_load = "res://" + (simplified_path + pf.salt).sha256_text();
+		}
+#endif
+		f = FileAccess::open(path_to_load, FileAccess::READ | FileAccess::SKIP_PACK);
 		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s".)", simplified_path, pf.pack));
 		off = 0; // For the sparse pack offset is always zero.
 	} else {
@@ -539,9 +556,18 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		ERR_FAIL_COND_MSG(fae.is_null(), vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
 
 		Vector<uint8_t> key;
-		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+#ifdef TOOLS_ENABLED
+		if (!p_decryption_key.is_empty()) {
+			ERR_FAIL_COND_MSG(p_decryption_key.size() != 32, "Decryption key must be 256-bit.");
+			constexpr uint8_t empty_key[32] = {};
+			if (memcmp(script_encryption_key, empty_key, sizeof(empty_key)) == 0) {
+				key = p_decryption_key;
+			}
+		} else
+#endif
+		{
+			key.resize(32);
+			memcpy(key.ptrw(), script_encryption_key, 32);
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);

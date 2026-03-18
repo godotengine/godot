@@ -31,6 +31,7 @@
 #include "modifier_bone_target_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 void ModifierBoneTarget3D::_validate_bone_names() {
 	// Prior bone name.
@@ -58,7 +59,7 @@ void ModifierBoneTarget3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Bone index '" + itos(p_bone) + "' is out of range!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);

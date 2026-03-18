@@ -30,10 +30,13 @@
 
 #include "core_constants.h"
 
-#include "core/input/input_event.h"
-#include "core/object/class_db.h"
+#include "core/input/input_enums.h"
+#include "core/object/method_bind.h" // IWYU pragma: keep. To bind `MethodFlags`.
+#include "core/object/object.h"
 #include "core/os/keyboard.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
+#include "core/variant/variant_caster.h"
 
 struct _CoreConstant {
 #ifdef DEBUG_ENABLED
@@ -549,6 +552,11 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE3);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE4);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, TOUCHPAD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC5);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC6);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, SDL_MAX);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MAX);
 
@@ -728,6 +736,18 @@ void register_global_constants() {
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL_REQUIRED);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
+
+	BIND_CORE_CONSTANT(UINT8_MAX);
+	BIND_CORE_CONSTANT(UINT16_MAX);
+	BIND_CORE_CONSTANT(UINT32_MAX);
+	BIND_CORE_CONSTANT(INT8_MIN);
+	BIND_CORE_CONSTANT(INT8_MAX);
+	BIND_CORE_CONSTANT(INT16_MIN);
+	BIND_CORE_CONSTANT(INT16_MAX);
+	BIND_CORE_CONSTANT(INT32_MIN);
+	BIND_CORE_CONSTANT(INT32_MAX);
+	BIND_CORE_CONSTANT(INT64_MIN);
+	BIND_CORE_CONSTANT(INT64_MAX);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_BOOL", Variant::BOOL);

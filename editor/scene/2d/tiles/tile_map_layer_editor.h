@@ -30,15 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/margin_container.h"
-#include "tile_atlas_view.h"
-
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
@@ -140,6 +139,7 @@ private:
 	void _update_toolbar();
 	void _update_transform_buttons();
 	void _set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled);
+	void _update_translation();
 
 	///// Tilemap editing. /////
 	bool has_mouse = false;
@@ -345,6 +345,7 @@ private:
 	void _update_terrains_tree();
 	void _update_tiles_list();
 	void _update_theme();
+	void _update_translation();
 
 	// Update callback
 	virtual void tile_set_changed() override;

@@ -30,52 +30,20 @@
 
 #include "rendering_device_driver_d3d12.h"
 
-#include "d3d12_hooks.h"
-
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
-#include "thirdparty/zlib/zlib.h"
+#include "core/os/os.h"
+#include "drivers/d3d12/d3d12_hooks.h"
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
 
-#include "d3d12_godot_nir_bridge.h"
-#include "rendering_context_driver_d3d12.h"
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
-GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
-GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
-
+#include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_nir.h>
 #include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
-
-#include <nir_spirv.h>
-#include <nir_to_dxil.h>
-#include <spirv_to_dxil.h>
-extern "C" {
-#include <dxil_spirv_nir.h>
-}
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-GODOT_MSVC_WARNING_POP
 
 #if !defined(_MSC_VER)
-#include <guiddef.h>
-
 #include <thirdparty/directx_headers/include/dxguids/dxguids.h>
+
+#include <guiddef.h>
 #endif
 
 using Microsoft::WRL::ComPtr;
@@ -1119,7 +1087,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 				msql.SampleCount = (UINT)samples;
 				HRESULT res = device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msql, sizeof(msql));
 				if (SUCCEEDED(res) && msql.NumQualityLevels) {
-					int bit = get_shift_from_power_of_2((uint32_t)samples);
+					int bit = Math::get_shift_from_power_of_2((uint32_t)samples);
 					ERR_FAIL_COND_V(bit == -1, 1);
 					mask |= (uint32_t)(1 << bit);
 				}
@@ -1131,7 +1099,7 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 	if (common == UINT32_MAX) {
 		return 1;
 	} else {
-		return ((uint32_t)1 << nearest_shift(common));
+		return ((uint32_t)1 << Math::nearest_shift(common));
 	}
 }
 
@@ -2793,20 +2761,20 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	UINT present_flags = 0;
 	UINT creation_flags = 0;
 	switch (surface->vsync_mode) {
-		case DisplayServer::VSYNC_MAILBOX: {
+		case DisplayServerEnums::VSYNC_MAILBOX: {
 			sync_interval = 1;
 			present_flags = DXGI_PRESENT_RESTART;
 		} break;
-		case DisplayServer::VSYNC_ENABLED: {
+		case DisplayServerEnums::VSYNC_ENABLED: {
 			sync_interval = 1;
 			present_flags = 0;
 		} break;
-		case DisplayServer::VSYNC_DISABLED: {
+		case DisplayServerEnums::VSYNC_DISABLED: {
 			sync_interval = 0;
 			present_flags = is_tearing_supported ? DXGI_PRESENT_ALLOW_TEARING : 0;
 			creation_flags = is_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		} break;
-		case DisplayServer::VSYNC_ADAPTIVE: // Unsupported.
+		case DisplayServerEnums::VSYNC_ADAPTIVE: // Unsupported.
 		default:
 			sync_interval = 1;
 			present_flags = 0;
@@ -4036,18 +4004,11 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 					cmd_buf_info->uav_alloc.cpu_handle,
 					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-			UINT values[4] = {
-				(UINT)p_color.get_r8(),
-				(UINT)p_color.get_g8(),
-				(UINT)p_color.get_b8(),
-				(UINT)p_color.get_a8(),
-			};
-
-			cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
+			cmd_buf_info->cmd_list->ClearUnorderedAccessViewFloat(
 					shader_visible_descriptor_allocation.gpu_handle,
 					cmd_buf_info->uav_alloc.cpu_handle,
 					tex_info->resource,
-					values,
+					p_color.components,
 					0,
 					nullptr);
 		}
@@ -5799,9 +5760,11 @@ uint64_t RenderingDeviceDriverD3D12::get_resource_native_handle(DriverResource p
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_total_memory_used() {
-	D3D12MA::TotalStatistics stats;
-	allocator->CalculateStatistics(&stats);
-	return stats.Total.Stats.BlockBytes;
+	D3D12MA::Budget local_budget;
+	D3D12MA::Budget non_local_budget;
+	allocator->GetBudget(&local_budget, &non_local_budget);
+
+	return local_budget.Stats.AllocationBytes + non_local_budget.Stats.AllocationBytes;
 }
 
 uint64_t RenderingDeviceDriverD3D12::get_lazily_memory_used() {
@@ -6323,7 +6286,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
-	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
+	allocator_desc.Flags = D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");

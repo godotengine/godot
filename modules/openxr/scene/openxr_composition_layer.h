@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <openxr/openxr.h>
-
 #include "scene/3d/node_3d.h"
+
+#include <openxr/openxr.h>
 
 class JavaObject;
 class MeshInstance3D;
@@ -40,6 +40,7 @@ class Mesh;
 class OpenXRAPI;
 class OpenXRCompositionLayerExtension;
 class SubViewport;
+class XRCamera3D;
 
 class OpenXRCompositionLayer : public Node3D {
 	GDCLASS(OpenXRCompositionLayer, Node3D);
@@ -124,6 +125,8 @@ private:
 	void _clear_composition_layer();
 
 	void _viewport_size_changed();
+
+	XRCamera3D *_get_xrcamera3d_ancestor() const;
 
 protected:
 	OpenXRAPI *openxr_api = nullptr;

@@ -31,6 +31,7 @@
 #include "spring_bone_collision_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 
 PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
@@ -94,7 +95,7 @@ void SpringBoneCollision3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range! Cannot connect BoneAttachment to node!");
+			WARN_PRINT("Bone index '" + itos(p_bone) + "' is out of range! Cannot connect BoneAttachment to node!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);

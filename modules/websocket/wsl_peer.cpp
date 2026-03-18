@@ -33,6 +33,8 @@
 #ifndef WEB_ENABLED
 
 #include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 
 CryptoCore::RandomGenerator *WSLPeer::_static_rng = nullptr;
 
@@ -47,6 +49,10 @@ void WSLPeer::deinitialize() {
 		memdelete(_static_rng);
 		_static_rng = nullptr;
 	}
+}
+
+WebSocketPeer *WSLPeer::_create(bool p_notify_postinitialize) {
+	return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize));
 }
 
 ///
@@ -297,7 +303,7 @@ Error WSLPeer::_do_server_handshake() {
 			wslay_event_context_server_init(&wsl_ctx, &_wsl_callbacks, this);
 			wslay_event_config_set_no_buffering(wsl_ctx, 1);
 			wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-			in_buffer.resize(nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
+			in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 			packet_buffer.resize(inbound_buffer_size);
 			ready_state = STATE_OPEN;
 		}
@@ -406,7 +412,7 @@ void WSLPeer::_do_client_handshake() {
 				wslay_event_context_client_init(&wsl_ctx, &_wsl_callbacks, this);
 				wslay_event_config_set_no_buffering(wsl_ctx, 1);
 				wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-				in_buffer.resize(nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
+				in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 				packet_buffer.resize(inbound_buffer_size);
 				ready_state = STATE_OPEN;
 				break;

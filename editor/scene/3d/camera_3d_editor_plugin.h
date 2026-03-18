@@ -33,7 +33,6 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/texture/texture_editor_plugin.h"
 
-class Camera3D;
 class SubViewport;
 
 class Camera3DEditor : public Control {
@@ -52,14 +51,18 @@ public:
 	Camera3DEditor();
 };
 
-class Camera3DPreview : public TexturePreview {
-	GDCLASS(Camera3DPreview, TexturePreview);
+class Camera3DPreview : public MarginContainer {
+	GDCLASS(Camera3DPreview, MarginContainer);
 
 	Camera3D *camera = nullptr;
+	AspectRatioContainer *centering_container = nullptr;
 	SubViewport *sub_viewport = nullptr;
+
+	static bool camera_preview_folded;
 
 	void _update_sub_viewport_size();
 	void _project_settings_changed();
+	void _toggle_folding(bool p_folded);
 
 public:
 	Camera3DPreview(Camera3D *p_camera);
@@ -78,7 +81,6 @@ class Camera3DEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "Camera3D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

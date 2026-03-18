@@ -35,13 +35,15 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
+#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -654,7 +656,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
+	return List<String>(restart_commandline);
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {

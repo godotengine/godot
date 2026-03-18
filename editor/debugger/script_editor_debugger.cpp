@@ -33,7 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_expression_evaluator.h"
@@ -1355,6 +1359,8 @@ void ScriptEditorDebugger::stop() {
 	visual_profiler->set_enabled(false);
 	visual_profiler->set_profiling(false);
 
+	audio_muted_on_break = false;
+
 	inspector->edit(nullptr);
 	_update_buttons_state();
 }
@@ -2434,7 +2440,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_item_menu = memnew(PopupMenu);
 		vmem_item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_vmem_item_menu_id_pressed));
 		vmem_item_menu->add_item(TTRC("Show in FileSystem"), VMEM_MENU_SHOW_IN_FILESYSTEM);
-		vmem_item_menu->add_item(TTRC("Show in File Manager"), VMEM_MENU_SHOW_IN_EXPLORER);
+		vmem_item_menu->add_item(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), VMEM_MENU_SHOW_IN_EXPLORER);
 		vmem_item_menu->add_item(TTRC("View Owners..."), VMEM_MENU_OWNERS);
 		add_child(vmem_item_menu);
 	}

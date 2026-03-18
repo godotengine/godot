@@ -30,6 +30,8 @@
 
 #include "gltf_document_extension.h"
 
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
+
 void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
 	GDVIRTUAL_BIND(_import_preflight, "state", "extensions");

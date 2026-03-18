@@ -30,35 +30,17 @@
 
 #include "text_server_fb.h"
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/rendering_server.hpp>
-#include <godot_cpp/classes/translation_server.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-
-#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
-
-using namespace godot;
-
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/math/math_funcs_binary.h"
+#include "core/object/callable_mp.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
-#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Thirdparty headers.
 
@@ -104,11 +86,7 @@ bool TextServerFallback::_has_feature(Feature p_feature) const {
 }
 
 String TextServerFallback::_get_name() const {
-#ifdef GDEXTENSION
-	return "Fallback (GDExtension)";
-#elif defined(GODOT_MODULE)
 	return "Fallback (Built-in)";
-#endif
 }
 
 int64_t TextServerFallback::_get_features() const {
@@ -287,7 +265,7 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2((uint32_t)texsize);
+		texsize = Math::next_power_of_2((uint32_t)texsize);
 
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
@@ -295,10 +273,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mw);
+			texsize = Math::next_power_of_2((uint32_t)mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mh);
+			texsize = Math::next_power_of_2((uint32_t)mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -1571,6 +1549,51 @@ bool TextServerFallback::_font_is_modulate_color_glyphs(const RID &p_font_rid) c
 	return fd->modulate_color_glyphs;
 }
 
+int64_t TextServerFallback::_font_get_palette_count(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+String TextServerFallback::_font_get_palette_name(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, String());
+
+	return String();
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+void TextServerFallback::_font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_custom_colors(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+int64_t TextServerFallback::_font_get_used_palette(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+void TextServerFallback::_font_set_used_palette(const RID &p_font_rid, int64_t p_index) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
 void TextServerFallback::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -2458,28 +2481,26 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 
 	ERR_FAIL_COND_V(fgl.texture_idx < -1 || fgl.texture_idx >= ffsd->textures.size(), RID());
 
-	if (RenderingServer::get_singleton() != nullptr) {
-		if (fgl.texture_idx != -1) {
-			if (ffsd->textures[fgl.texture_idx].dirty) {
-				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-				Ref<Image> img = tex.image;
-				if (fgl.from_svg) {
-					// Same as the "fix alpha border" process option when importing SVGs
-					img->fix_alpha_edges();
-				}
-				if (fd->mipmaps && !img->has_mipmaps()) {
-					img = tex.image->duplicate();
-					img->generate_mipmaps();
-				}
-				if (tex.texture.is_null()) {
-					tex.texture = ImageTexture::create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-				tex.dirty = false;
+	if (fgl.texture_idx != -1) {
+		if (ffsd->textures[fgl.texture_idx].dirty) {
+			ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+			Ref<Image> img = tex.image;
+			if (fgl.from_svg) {
+				// Same as the "fix alpha border" process option when importing SVGs
+				img->fix_alpha_edges();
 			}
-			return ffsd->textures[fgl.texture_idx].texture->get_rid();
+			if (fd->mipmaps && !img->has_mipmaps()) {
+				img = tex.image->duplicate();
+				img->generate_mipmaps();
+			}
+			if (tex.texture.is_null()) {
+				tex.texture = ImageTexture::create_from_image(img);
+			} else {
+				tex.texture->update(img);
+			}
+			tex.dirty = false;
 		}
+		return ffsd->textures[fgl.texture_idx].texture->get_rid();
 	}
 
 	return RID();
@@ -2510,28 +2531,26 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 
 	ERR_FAIL_COND_V(fgl.texture_idx < -1 || fgl.texture_idx >= ffsd->textures.size(), Size2());
 
-	if (RenderingServer::get_singleton() != nullptr) {
-		if (fgl.texture_idx != -1) {
-			if (ffsd->textures[fgl.texture_idx].dirty) {
-				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-				Ref<Image> img = tex.image;
-				if (fgl.from_svg) {
-					// Same as the "fix alpha border" process option when importing SVGs
-					img->fix_alpha_edges();
-				}
-				if (fd->mipmaps && !img->has_mipmaps()) {
-					img = tex.image->duplicate();
-					img->generate_mipmaps();
-				}
-				if (tex.texture.is_null()) {
-					tex.texture = ImageTexture::create_from_image(img);
-				} else {
-					tex.texture->update(img);
-				}
-				tex.dirty = false;
+	if (fgl.texture_idx != -1) {
+		if (ffsd->textures[fgl.texture_idx].dirty) {
+			ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+			Ref<Image> img = tex.image;
+			if (fgl.from_svg) {
+				// Same as the "fix alpha border" process option when importing SVGs
+				img->fix_alpha_edges();
 			}
-			return ffsd->textures[fgl.texture_idx].texture->get_size();
+			if (fd->mipmaps && !img->has_mipmaps()) {
+				img = tex.image->duplicate();
+				img->generate_mipmaps();
+			}
+			if (tex.texture.is_null()) {
+				tex.texture = ImageTexture::create_from_image(img);
+			} else {
+				tex.texture->update(img);
+			}
+			tex.dirty = false;
 		}
+		return ffsd->textures[fgl.texture_idx].texture->get_size();
 	}
 
 	return Size2();
@@ -2942,67 +2961,64 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-			if (RenderingServer::get_singleton() != nullptr) {
-				if (ffsd->textures[fgl.texture_idx].dirty) {
-					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-					Ref<Image> img = tex.image;
-					if (fgl.from_svg) {
-						// Same as the "fix alpha border" process option when importing SVGs
-						img->fix_alpha_edges();
-					}
-					if (fd->mipmaps && !img->has_mipmaps()) {
-						img = tex.image->duplicate();
-						img->generate_mipmaps();
-					}
-					if (tex.texture.is_null()) {
-						tex.texture = ImageTexture::create_from_image(img);
-					} else {
-						tex.texture->update(img);
-					}
-					tex.dirty = false;
+			if (ffsd->textures[fgl.texture_idx].dirty) {
+				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
 				}
-				RID texture = ffsd->textures[fgl.texture_idx].texture->get_rid();
-				if (fd->msdf) {
-					Point2 cpos = p_pos;
-					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
-					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
+					img->generate_mipmaps();
+				}
+				if (tex.texture.is_null()) {
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
-					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
-					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.125;
-					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
-					}
-					Vector2 gpos = fgl.rect.position;
-					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
-						if (size.x != p_size * 64) {
-							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-								double gl_scale = (double)p_size / (double)fd->fixed_size;
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							} else {
-								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							}
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			if (fd->msdf) {
+				Point2 cpos = p_pos;
+				cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
+				Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
+				ffsd->textures[fgl.texture_idx].texture->draw_msdf_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+			} else {
+				Point2 cpos = p_pos;
+				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.125;
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.25;
+				}
+				if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y);
+					cpos.x = Math::floor(cpos.x);
+				}
+				Vector2 gpos = fgl.rect.position;
+				Size2 csize = fgl.rect.size;
+				if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+					if (size.x != p_size * 64) {
+						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+							double gl_scale = (double)p_size / (double)fd->fixed_size;
+							gpos *= gl_scale;
+							csize *= gl_scale;
+						} else {
+							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+							gpos *= gl_scale;
+							csize *= gl_scale;
 						}
-					} else {
-						gpos /= oversampling_factor;
-						csize /= oversampling_factor;
 					}
-					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+				} else {
+					gpos /= oversampling_factor;
+					csize /= oversampling_factor;
+				}
+				cpos += gpos;
+				if (lcd_aa) {
+					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
+				} else {
+					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
 				}
 			}
 		}
@@ -3088,63 +3104,60 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
-			if (RenderingServer::get_singleton() != nullptr) {
-				if (ffsd->textures[fgl.texture_idx].dirty) {
-					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
-					Ref<Image> img = tex.image;
-					if (fd->mipmaps && !img->has_mipmaps()) {
-						img = tex.image->duplicate();
-						img->generate_mipmaps();
-					}
-					if (tex.texture.is_null()) {
-						tex.texture = ImageTexture::create_from_image(img);
-					} else {
-						tex.texture->update(img);
-					}
-					tex.dirty = false;
+			if (ffsd->textures[fgl.texture_idx].dirty) {
+				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
+					img->generate_mipmaps();
 				}
-				RID texture = ffsd->textures[fgl.texture_idx].texture->get_rid();
-				if (fd->msdf) {
-					Point2 cpos = p_pos;
-					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
-					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+				if (tex.texture.is_null()) {
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
-					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
-					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.125;
-					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
-					}
-					Vector2 gpos = fgl.rect.position;
-					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
-						if (size.x != p_size * 64) {
-							if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
-								double gl_scale = (double)p_size / (double)fd->fixed_size;
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							} else {
-								double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
-								gpos *= gl_scale;
-								csize *= gl_scale;
-							}
+					tex.texture->update(img);
+				}
+				tex.dirty = false;
+			}
+			if (fd->msdf) {
+				Point2 cpos = p_pos;
+				cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
+				Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
+				ffsd->textures[fgl.texture_idx].texture->draw_msdf_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+			} else {
+				Point2 cpos = p_pos;
+				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.125;
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					cpos.x = cpos.x + 0.25;
+				}
+				if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y);
+					cpos.x = Math::floor(cpos.x);
+				}
+				Vector2 gpos = fgl.rect.position;
+				Size2 csize = fgl.rect.size;
+				if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE) {
+					if (size.x != p_size * 64) {
+						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
+							double gl_scale = (double)p_size / (double)fd->fixed_size;
+							gpos *= gl_scale;
+							csize *= gl_scale;
+						} else {
+							double gl_scale = Math::round((double)p_size / (double)fd->fixed_size);
+							gpos *= gl_scale;
+							csize *= gl_scale;
 						}
-					} else {
-						gpos /= oversampling_factor;
-						csize /= oversampling_factor;
 					}
-					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+				} else {
+					gpos /= oversampling_factor;
+					csize /= oversampling_factor;
+				}
+				cpos += gpos;
+				if (lcd_aa) {
+					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
+				} else {
+					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
 				}
 			}
 		}
@@ -3648,12 +3661,15 @@ void TextServerFallback::_generate_runs(ShapedTextDataFallback *p_sd) const {
 				p_sd->runs.push_back(run);
 			}
 			run.range = Vector2i(gl.start, gl.end);
+			run.gl_range = Vector2i(i, i);
 			run.font_rid = gl.font_rid;
 			run.font_size = gl.font_size;
 			run.span_index = span;
 		}
 		run.range.x = MIN(run.range.x, gl.start);
 		run.range.y = MAX(run.range.y, gl.end);
+		run.gl_range.x = MIN(run.gl_range.x, i);
+		run.gl_range.y = MAX(run.gl_range.y, i);
 	}
 	if (run.span_index >= 0) {
 		p_sd->runs.push_back(run);
@@ -3700,6 +3716,20 @@ Vector2i TextServerFallback::_shaped_get_run_range(const RID &p_shaped, int64_t 
 	}
 	ERR_FAIL_INDEX_V(p_index, sd->runs.size(), Vector2i());
 	return sd->runs[p_index].range;
+}
+
+Vector2i TextServerFallback::_shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, Vector2i());
+	MutexLock lock(sd->mutex);
+	if (!sd->valid.is_set()) {
+		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+	}
+	if (sd->runs_dirty) {
+		_generate_runs(sd);
+	}
+	ERR_FAIL_INDEX_V(p_index, sd->runs.size(), Vector2i());
+	return sd->runs[p_index].gl_range;
 }
 
 RID TextServerFallback::_shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const {
@@ -4452,12 +4482,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 
 		String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 		PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
-#ifdef GDEXTENSION
-		for (int fb = 0; fb < fallback_font_name.size(); fb++) {
-			const String &E = fallback_font_name[fb];
-#elif defined(GODOT_MODULE)
 		for (const String &E : fallback_font_name) {
-#endif
 			SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
 			if (system_fonts.has(key)) {
 				const SystemFontCache &sysf_cache = system_fonts[key];
@@ -5213,11 +5238,7 @@ PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID
 	if (size > 0) {
 		ret.resize(size);
 		for (int i = 0; i < size; i++) {
-#ifdef GDEXTENSION
-			ret[i] = i + 1 + sd->start;
-#else
 			ret.write[i] = i + 1 + sd->start;
-#endif
 		}
 	}
 	return ret;

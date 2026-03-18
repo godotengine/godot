@@ -30,17 +30,13 @@
 
 #pragma once
 
-#include "core/input/shortcut.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "core/variant/array.h"
 
-class CanvasItem;
-class LiveEditor;
-class PopupMenu;
-class RuntimeNodeSelect;
-class Script;
-class SceneTree;
+class Array;
+class InputEvent;
+class Node;
+class Shortcut;
 
 class SceneDebugger {
 private:
@@ -110,6 +106,7 @@ private:
 	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
 	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
 	static Error _msg_rq_screenshot(const Array &p_args);
+	static Error _msg_report_window_focused(const Array &p_args);
 
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
 	static Error _msg_transform_camera_2d(const Array &p_args);

@@ -37,50 +37,6 @@
 
 #include "script_iterator.h"
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/godot.hpp>
-
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/ext_wrappers.gen.inc>
-#include <godot_cpp/core/mutex_lock.hpp>
-
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/packed_int32_array.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/packed_vector2_array.hpp>
-#include <godot_cpp/variant/rect2.hpp>
-#include <godot_cpp/variant/rid.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/vector2.hpp>
-#include <godot_cpp/variant/vector2i.hpp>
-
-#include <godot_cpp/classes/text_server.hpp>
-#include <godot_cpp/classes/text_server_extension.hpp>
-#include <godot_cpp/classes/text_server_manager.hpp>
-
-#include <godot_cpp/classes/caret_info.hpp>
-#include <godot_cpp/classes/global_constants_binds.hpp>
-#include <godot_cpp/classes/glyph.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/classes/worker_thread_pool.hpp>
-
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
-#include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/safe_refcount.hpp>
-#include <godot_cpp/templates/vector.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/extension/ext_wrappers.gen.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -89,8 +45,6 @@ using namespace godot;
 #include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
-
-#endif
 
 // Thirdparty headers.
 
@@ -137,6 +91,9 @@ GODOT_CLANG_WARNING_POP
 
 #include <hb-icu.h>
 #include <hb.h>
+#if HB_VERSION_ATLEAST(13, 0, 0)
+#include <hb-raster.h>
+#endif
 
 /*************************************************************************/
 
@@ -274,7 +231,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
-		bool from_svg = false;
+		bool fix_edge = false;
 	};
 
 	struct FontAdvanced;
@@ -295,6 +252,10 @@ class TextServerAdvanced : public TextServerExtension {
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2> kerning_map;
 		hb_font_t *hb_handle = nullptr;
+#if HB_VERSION_ATLEAST(13, 0, 0)
+		hb_face_t *hb_face = nullptr;
+		bool color_paint = false;
+#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Size fsize = nullptr;
@@ -357,6 +318,14 @@ class TextServerAdvanced : public TextServerExtension {
 
 		HashMap<Vector2i, FontForSizeAdvanced *> cache;
 
+#if HB_VERSION_ATLEAST(13, 0, 0)
+		Vector<String> palette_names;
+		Vector<PackedColorArray> palette_colors;
+		PackedColorArray palette_custom_colors;
+		Vector<hb_color_t> palette_custom_colors_hb;
+		unsigned int palette_index = 0;
+#endif
+
 		bool face_init = false;
 		HashSet<uint32_t> supported_scripts;
 		Dictionary supported_features;
@@ -396,6 +365,9 @@ class TextServerAdvanced : public TextServerExtension {
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
+#endif
 #endif
 	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
 	bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
@@ -487,6 +459,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 	struct TextRun {
 		Vector2i range;
+		Vector2i gl_range;
 		RID font_rid;
 		int font_size = 0;
 		bool rtl = false;
@@ -599,6 +572,11 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable RID_PtrOwner<FontAdvancedLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
+
+#if HB_VERSION_ATLEAST(13, 0, 0)
+	hb_raster_paint_t *hb_rdr = nullptr;
+	hb_raster_draw_t *hb_mono = nullptr;
+#endif
 
 	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
@@ -915,6 +893,14 @@ public:
 	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
 	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
+	MODBIND1RC(int64_t, font_get_palette_count, const RID &);
+	MODBIND2RC(String, font_get_palette_name, const RID &, int64_t);
+	MODBIND2RC(Vector<Color>, font_get_palette_colors, const RID &, int64_t);
+	MODBIND2(font_set_palette_custom_colors, const RID &, const Vector<Color> &);
+	MODBIND1RC(Vector<Color>, font_get_palette_custom_colors, const RID &);
+	MODBIND1RC(int64_t, font_get_used_palette, const RID &);
+	MODBIND2(font_set_used_palette, const RID &, int64_t);
+
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
 
@@ -1084,6 +1070,7 @@ public:
 	MODBIND1RC(int64_t, shaped_get_run_count, const RID &);
 	MODBIND2RC(String, shaped_get_run_text, const RID &, int64_t);
 	MODBIND2RC(Vector2i, shaped_get_run_range, const RID &, int64_t);
+	MODBIND2RC(Vector2i, shaped_get_run_glyph_range, const RID &, int64_t);
 	MODBIND2RC(RID, shaped_get_run_font_rid, const RID &, int64_t);
 	MODBIND2RC(int, shaped_get_run_font_size, const RID &, int64_t);
 	MODBIND2RC(String, shaped_get_run_language, const RID &, int64_t);

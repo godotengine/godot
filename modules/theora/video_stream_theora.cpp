@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
-#include "thirdparty/misc/yuv2rgb.h"
+#include <thirdparty/misc/yuv2rgb.h>
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);

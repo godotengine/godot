@@ -49,11 +49,11 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/rendering/rendering_server.h"
-
 #include "servers/camera/camera_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"
@@ -273,7 +273,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	}
 
 	if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
-		dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST);
 	}
 }
 
@@ -729,5 +729,19 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv
 		return os->has_feature(feature);
 	}
 	return false;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onPictureInPictureModeChanged(JNIEnv *env, jclass clazz, jboolean p_is_in_picture_in_picture_mode) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+	if (os_android->get_main_loop()) {
+		if (p_is_in_picture_in_picture_mode) {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_ENTERED);
+		} else {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_EXITED);
+		}
+	}
 }
 }

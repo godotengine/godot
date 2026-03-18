@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
@@ -218,7 +220,7 @@ void EditorAudioBus::update_send() {
 	send->clear();
 	if (is_master) {
 		send->set_disabled(true);
-		send->set_text(TTR("Speakers"));
+		send->add_item(TTRC("Speakers"));
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());

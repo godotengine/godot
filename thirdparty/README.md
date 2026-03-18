@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.18.0 (0c52a8ce2357bbeb927f90dc9a1c19c8ec1bd2c3, 2025)
+- Version: 0.21.2 (72460cd52d1b24492393cdf54a6f19d2fd63e258, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -153,7 +153,7 @@ Patches:
 ## d3d12ma
 
 - Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
-- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- Version: 3.1.0 (0fa62ed3a0a69b73230a8ec1faa752d4061c8dc8, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -170,7 +170,7 @@ Patches:
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.618.2 (dde59d560da2760fec612d6634124edc2a26b82f, 2025)
+- Version: main (25411c74bb9cc7c416b2ff01b3ad8a306811dfdd, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -468,7 +468,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 12.3.2 (b42511e071162fe76102f613a6ccc009726c99af, 2026)
+- Version: 13.1.1 (70b812d8d2fb4a2b6386c04bfd8565a0fcc05f9b, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -510,13 +510,21 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
+- Version: 5.5.0 (23dadd0e603f1b321142d4c74df07fce85064989, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
 - All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
 - `LICENSE`
+
+Patches:
+
+- `0001-backport-upstream-commit-ee3725250.patch` (GH-115089)
+- `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
+- `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
+- `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
+- `0005-backport-upstream-commit-449b645.patch` (GH-117194)
 
 
 ## libbacktrace
@@ -598,7 +606,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.54 (02f2b4f4699f0ef9111a6534f093b53732df4452, 2026)
+- Version: 1.6.55 (c3e304954a9cfd154bc0dfbfea2b01cd61d6546d, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -1202,7 +1210,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.46 (6141e1154303dadd5c3e480bc4a16e26f1dcb2af, 2025)
+- Version: 1.47 (88223018d1b578d0d8869866da66d9608e05f928, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1213,11 +1221,15 @@ Files extracted from upstream source:
 - `stable/viewporter/viewporter.xml`
 - `stable/xdg-shell/README`
 - `stable/xdg-shell/xdg-shell.xml`
+- `staging/color-management/README.md`
+- `staging/color-management/color-management-v1.xml`
 - `staging/fractional-scale/README`
 - `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
 - `staging/xdg-system-bell/xdg-system-bell-v1.xml`
+- `staging/pointer-warp/pointer-warp-v1.xml`
+- `staging/pointer-warp/README`
 - `unstable/idle-inhibit/README`
 - `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`

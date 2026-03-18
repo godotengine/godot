@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "tile_atlas_view.h"
-#include "tile_data_editors.h"
-
+#include "editor/scene/2d/tiles/tile_atlas_view.h"
+#include "editor/scene/2d/tiles/tile_data_editors.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/2d/tile_set.h"
 
@@ -101,7 +100,7 @@ public:
 
 	public:
 		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; }
-		RBSet<TileSelection> get_edited_tiles() const { return tiles; }
+		RBSet<TileSelection> get_edited_tiles() const { return RBSet<TileSelection>(tiles); }
 
 		// Update the proxied object.
 		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles = RBSet<TileSelection>());

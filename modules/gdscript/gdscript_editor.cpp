@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "gdscript.h"
-
 #include "gdscript_analyzer.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
@@ -44,6 +43,7 @@
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
 #include "core/math/expression.h"
+#include "core/object/class_db.h"
 #include "core/variant/container_type_validate.h"
 
 #ifdef TOOLS_ENABLED

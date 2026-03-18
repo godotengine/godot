@@ -37,15 +37,14 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
+#include "core/io/xml_parser.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-
-// Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h" // For mono.
 
 static String _get_indent(const String &p_text) {
 	String indent;
@@ -988,7 +987,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
-			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
+			while (!ClassDB::is_class_exposed(pd.type)) {
 				pd.type = ClassDB::get_parent_class(pd.type);
 			}
 			c.properties.push_back(pd);

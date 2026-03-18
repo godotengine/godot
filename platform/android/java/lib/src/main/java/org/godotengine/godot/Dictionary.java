@@ -31,11 +31,16 @@
 package org.godotengine.godot;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-public class Dictionary extends HashMap<String, Object> {
-	protected String[] keys_cache;
+public final class Dictionary extends HashMap<String, Object> {
+	private String[] keys_cache;
 
+	/**
+	 * @deprecated Use {@link java.util.HashMap#keySet()} instead.
+	 */
+	@Deprecated
 	public String[] get_keys() {
 		String[] ret = new String[size()];
 		int i = 0;
@@ -48,6 +53,10 @@ public class Dictionary extends HashMap<String, Object> {
 		return ret;
 	}
 
+	/**
+	 * @deprecated Use {@link java.util.HashMap#values()} instead.
+	 */
+	@Deprecated
 	public Object[] get_values() {
 		Object[] ret = new Object[size()];
 		int i = 0;
@@ -60,10 +69,18 @@ public class Dictionary extends HashMap<String, Object> {
 		return ret;
 	}
 
+	/**
+	 * @deprecated Use {@link java.util.HashMap#putAll(Map)} instead.
+	 */
+	@Deprecated
 	public void set_keys(String[] keys) {
 		keys_cache = keys;
 	}
 
+	/**
+	 * @deprecated Use {@link java.util.HashMap#putAll(Map)} instead.
+	 */
+	@Deprecated
 	public void set_values(Object[] vals) {
 		int i = 0;
 		for (String key : keys_cache) {

@@ -33,10 +33,10 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
-#include "Jolt/Physics/Collision/ObjectLayer.h"
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
 
 class JoltLayers final
 		: public JPH::BroadPhaseLayerInterface,

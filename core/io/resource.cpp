@@ -33,9 +33,18 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant/container_type_validate.h"
+#include "core/variant/container_type_validate.h" // IWYU pragma: keep.
 #include "scene/main/node.h" //only so casting works
+
+void Resource::register_custom_data_to_otdb() {
+	ClassDB::add_resource_base_extension("res", get_class_static());
+}
+
+void Resource::_add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
 
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
@@ -751,9 +760,9 @@ void Resource::_bind_methods() {
 
 	// For the bindings, it's much more natural to expose this enum from the Variant realm via Resource.
 	// Therefore, we can't use BIND_ENUM_CONSTANT here because we need some customization.
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));

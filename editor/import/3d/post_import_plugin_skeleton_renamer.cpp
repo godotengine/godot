@@ -95,9 +95,7 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 		TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 		while (nodes.size()) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
-			for (const StringName &name : anims) {
+			for (const StringName &name : ap->get_sorted_animation_list()) {
 				Ref<Animation> anim = ap->get_animation(name);
 				int len = anim->get_track_count();
 				for (int i = 0; i < len; i++) {
@@ -208,9 +206,7 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
+				for (const StringName &name : ap->get_sorted_animation_list()) {
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {

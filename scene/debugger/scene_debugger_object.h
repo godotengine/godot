@@ -32,11 +32,18 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "scene/main/node.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+
+class Node;
+class Script;
 
 class SceneDebuggerObject {
 private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
+	static String _parse_type_from_remote_object(const Variant &p_variant);
 
 public:
 	typedef Pair<PropertyInfo, Variant> SceneDebuggerProperty;

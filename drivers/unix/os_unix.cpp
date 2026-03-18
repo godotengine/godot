@@ -32,15 +32,17 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
-#include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef UNIX_SOCKET_UNAVAILABLE
+#include "drivers/unix/ip_unix.h"
+#include "drivers/unix/net_socket_unix.h"
+#endif
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -76,9 +78,9 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cerrno>
 #include <csignal>
-#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -87,7 +89,7 @@
 #define RTLD_DEEPBIND 0
 #endif
 
-#ifndef SANITIZERS_ENABLED
+#ifndef ASAN_ENABLED
 #define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
 #else
 #define GODOT_DLOPEN_MODE RTLD_NOW
@@ -858,8 +860,8 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		// Thread is still running.
 		return true;
 	}
-
-	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
+	ERR_FAIL_COND_V_MSG(result != 0 && errno == ECHILD, false, vformat("The process %d does not exist or is not a child of the calling process.", (int)p_pid));
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("waitpid for process %d failed with errno: %d", (int)p_pid, errno));
 
 	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;

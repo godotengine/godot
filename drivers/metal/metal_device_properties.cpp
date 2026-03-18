@@ -50,14 +50,13 @@
 
 #include "metal_device_properties.h"
 
-#include "metal_utils.h"
-
+#include "core/os/os.h"
+#include "drivers/metal/metal_utils.h"
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 
 #include <MetalFX/MetalFX.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_msl.hpp>
-
 #include <unistd.h>
 
 // Common scaling multipliers.
@@ -149,6 +148,7 @@ void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 	features.quadPermute = p_device->supportsFamily(MTL::GPUFamilyApple4);
 	features.simdPermute = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.simdReduction = p_device->supportsFamily(MTL::GPUFamilyApple7);
+	features.supports_border_color = p_device->supportsFamily(MTL::GPUFamilyApple7);
 	features.argument_buffers_tier = p_device->argumentBuffersSupport();
 	features.supports_image_atomic_32_bit = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.supports_image_atomic_64_bit = p_device->supportsFamily(GPUFamilyApple9) || (p_device->supportsFamily(MTL::GPUFamilyApple8) && p_device->supportsFamily(MTL::GPUFamilyMac2));

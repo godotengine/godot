@@ -31,8 +31,12 @@
 #pragma once
 
 #include "core/object/worker_thread_pool.h"
-#include "rendering_device_commons.h"
-#include "rendering_device_driver.h"
+#include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/rendering_device_driver.h"
+
+#ifdef DEV_ENABLED
+#include "core/templates/rb_map.h"
+#endif
 
 // Buffer barriers have not shown any significant improvement or shown to be
 // even detrimental to performance. However, there are currently some known

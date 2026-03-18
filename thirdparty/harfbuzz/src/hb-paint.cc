@@ -742,14 +742,14 @@ hb_paint_pop_group (hb_paint_funcs_t *funcs, void *paint_data,
 
 /**
  * hb_paint_custom_palette_color:
- * @funcs: paint functions
- * @paint_data: associated data passed by the caller
- * @color_index: color index
- * @color: (out): fetched color
+ * @funcs: paint functions.
+ * @paint_data: associated data passed by the caller.
+ * @color_index: color index to fetch.
+ * @color: (out): fetched color.
  *
- * Gets the custom palette color for @color_index.
+ * Gets the custom palette override color for @color_index.
  *
- * Return value: `true` if found, `false` otherwise
+ * Return value: `true` if a custom color is provided, `false` otherwise.
  *
  * Since: 7.0.0
  */

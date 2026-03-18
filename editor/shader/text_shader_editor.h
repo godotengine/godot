@@ -134,6 +134,7 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
@@ -206,8 +207,6 @@ public:
 	void trim_final_newlines();
 	void tag_saved_version();
 	ShaderTextEditor *get_code_editor() { return code_editor; }
-
-	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 
 	TextShaderEditor();
 };

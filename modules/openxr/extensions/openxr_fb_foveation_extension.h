@@ -35,12 +35,12 @@
 // Other Android based devices are implementing this as well, see:
 // https://github.khronos.org/OpenXR-Inventory/extension_support.html#XR_FB_foveation
 
-#include "../openxr_api.h"
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
 #include "openxr_fb_update_swapchain_extension.h"
 
-#include "../openxr_platform_inc.h"
+// Always include this as late as possible.
+#include "../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXRFBFoveationExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRFBFoveationExtension, OpenXRExtensionWrapper);
@@ -92,13 +92,7 @@ private:
 
 	void _update_profile_rt();
 
-	void update_profile() {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp(this, &OpenXRFBFoveationExtension::_update_profile_rt));
-	}
+	void update_profile();
 
 	// Enable foveation on this swapchain
 	XrSwapchainCreateInfoFoveationFB swapchain_create_info_foveation_fb;
