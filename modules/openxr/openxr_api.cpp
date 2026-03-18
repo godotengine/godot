@@ -1855,9 +1855,9 @@ const Vector<OpenXRExtensionWrapper *> &OpenXRAPI::get_registered_extension_wrap
 	return registered_extension_wrappers;
 }
 
-void OpenXRAPI::register_extension_metadata() {
+void OpenXRAPI::register_extension_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) {
 	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
-		extension_wrapper->on_register_metadata();
+		extension_wrapper->on_register_metadata(p_interaction_profile_metadata);
 	}
 }
 
