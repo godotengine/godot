@@ -35,9 +35,10 @@
 #include "core/templates/list.h"
 #include "core/variant/array.h"
 
+#include <windows.h>
+
 #include <objbase.h>
 #include <sapi.h>
-#include <windows.h>
 #include <winnls.h>
 
 struct TTSUtterance;

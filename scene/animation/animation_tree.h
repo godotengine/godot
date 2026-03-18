@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "animation_mixer.h"
+#include "scene/animation/animation_mixer.h"
 #include "scene/resources/animation.h"
 
 #define HUGE_LENGTH 31540000 // 31540000 seconds mean 1 year... is it too long? It must be longer than any Animation length and Transition xfade time to prevent time inversion for AnimationNodeStateMachine.

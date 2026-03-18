@@ -96,9 +96,9 @@ void godot_cleanup_profiler();
 #elif defined(GODOT_USE_PERFETTO)
 // Use the perfetto profiler.
 
-#include <perfetto.h>
-
 #include "core/typedefs.h"
+
+#include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
 		perfetto::Category("godot")

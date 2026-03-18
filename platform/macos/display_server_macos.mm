@@ -67,6 +67,7 @@
 
 #ifdef TOOLS_ENABLED
 #import "display_server_macos_embedded.h"
+
 #import "editor/embedded_process_macos.h"
 #endif
 

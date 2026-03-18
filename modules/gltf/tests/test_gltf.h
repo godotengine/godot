@@ -34,6 +34,10 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../editor/editor_scene_importer_gltf.h"
+#include "../gltf_document.h"
+#include "../gltf_state.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/object/class_db.h"
@@ -42,10 +46,6 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "tests/test_utils.h"
-
-#include "modules/gltf/editor/editor_scene_importer_gltf.h"
-#include "modules/gltf/gltf_document.h"
-#include "modules/gltf/gltf_state.h"
 
 namespace TestGltf {
 
