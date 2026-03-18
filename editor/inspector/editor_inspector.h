@@ -720,6 +720,21 @@ class EditorInspector : public ScrollContainer {
 
 	friend class EditorPropertyResource;
 
+public:
+	struct PropertyClipboard {
+		enum class Type {
+			EMPTY,
+			PROPERTY,
+			SECTION,
+			CATEGORY,
+		};
+		Type type = Type::EMPTY;
+		Variant value;
+
+		PropertyClipboard() {}
+	};
+
+private:
 	enum {
 		MAX_PLUGINS = 1024
 	};
@@ -800,8 +815,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; // Used for sectioned inspector.
 	String object_class;
-
-	static inline Variant property_clipboard;
+	static inline PropertyClipboard property_clipboard;
 
 	bool restrict_to_basic = false;
 
@@ -869,8 +883,9 @@ public:
 	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 	static void initialize_property_theme(EditorProperty::ThemeCache &p_cache, Control *p_control);
 
-	static void set_property_clipboard(const Variant &p_value);
-	static Variant get_property_clipboard();
+	static void set_property_clipboard(PropertyClipboard::Type p_type, const Variant &p_value);
+	static PropertyClipboard::Type get_property_clipboard_type() { return property_clipboard.type; }
+	static Variant get_property_clipboard_value() { return property_clipboard.value; }
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;

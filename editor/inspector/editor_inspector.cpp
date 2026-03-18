@@ -1436,23 +1436,21 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			EditorInspector::set_property_clipboard(object->get(property));
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
+				return;
+			}
+
 			EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(this);
 			if (epr) {
-				const Ref<Resource> res = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+				const Ref<Resource> res = EditorInspector::get_property_clipboard_value();
 				if (res.is_valid() && !epr->get_resource_picker()->is_resource_allowed(res)) {
 					return;
 				}
 			}
-
-			Dictionary dict = InspectorDock::get_inspector_singleton()->get_property_clipboard();
-			if (dict.has("@pastebin_category_name") || dict.has("@pastebin_section_name")) {
-				return;
-			}
-
-			emit_changed(property, EditorInspector::get_property_clipboard());
+			emit_changed(property, EditorInspector::get_property_clipboard_value());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
@@ -1607,9 +1605,9 @@ void EditorProperty::_update_popup() {
 	}
 	menu->add_icon_shortcut(theme_cache.copy_icon, ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
 	menu->add_icon_shortcut(theme_cache.paste_icon, ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
+	menu->set_item_disabled(-1, read_only || EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
 	menu->add_icon_shortcut(theme_cache.copy_node_path_icon, ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
-	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
-	menu->set_item_disabled(MENU_COPY_PROPERTY_PATH, internal);
+	menu->set_item_disabled(-1, internal);
 
 	if (can_favorite || !pin_hidden) {
 		menu->add_separator();
@@ -1907,20 +1905,18 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 			LocalVector<String> properties;
 			_collect_properties(object, properties);
 
-			clipboard["@pastebin_category_name"] = category_name;
 			for (const String &property_name : properties) {
 				clipboard[property_name] = object->get(property_name);
 			}
-			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::CATEGORY, clipboard);
 		} break;
 
 		case MENU_PASTE_VALUE: {
-			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
-			const Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
-			if (!clipboard.has("@pastebin_category_name")) {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY) {
 				break;
 			}
-			const String pastebin_category_name = clipboard["@pastebin_category_name"];
+			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
 			String category_name = info.name;
 
 			if (!EditorNode::get_editor_data().is_type_recognized(info.name) && ResourceLoader::exists(info.hint_string, "Script")) {
@@ -2015,8 +2011,6 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		if (is_favorite) {
 			menu->add_item(TTRC("Unfavorite All"), MENU_UNFAVORITE_ALL);
 		} else {
-			const Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
-
 			menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Category Values"), MENU_COPY_VALUE);
 			menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Category Values"), MENU_PASTE_VALUE);
 
@@ -2027,6 +2021,7 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
 		add_child(menu);
 	}
+	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY);
 
 	if (menu_icon_dirty) {
 		if (is_favorite) {
@@ -2718,6 +2713,7 @@ void EditorInspectorSection::_update_popup() {
 		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
 		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	}
+	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
 }
 
 void EditorInspectorSection::_collect_properties(LocalVector<String> &r_properties) const {
@@ -2769,22 +2765,17 @@ void EditorInspectorSection::menu_option(int p_option) const {
 			Dictionary clipboard;
 			_collect_properties(properties);
 
-			clipboard["@pastebin_section_name"] = get_inspector_path();
 			for (const String &property_name : properties) {
 				clipboard[property_name] = object->get(property_name);
 			}
-			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::SECTION, clipboard);
 		} break;
 		case MENU_PASTE_VALUE: {
-			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
-			if (!clipboard.has("@pastebin_section_name")) {
-				break;
-			}
-			const String section_path = clipboard["@pastebin_section_name"];
-			if (!get_inspector_path().begins_with(section_path)) {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION) {
 				break;
 			}
 
+			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
 			LocalVector<String> properties;
 
 			_collect_properties(properties);
@@ -2792,7 +2783,7 @@ void EditorInspectorSection::menu_option(int p_option) const {
 
 			if (const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object)) {
 				const Node *es = EditorNode::get_singleton()->get_edited_scene();
-				const String action_name = vformat(TTR("Set section %s on %d nodes"), section_path, multi_node_edit->get_node_count());
+				const String action_name = vformat(TTR("Set section values on %d nodes"), multi_node_edit->get_node_count());
 				ur->create_action(action_name);
 
 				for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
@@ -2810,7 +2801,7 @@ void EditorInspectorSection::menu_option(int p_option) const {
 
 				ur->commit_action();
 			} else {
-				const String action_name = vformat(TTR("Set section %s on node %s"), section_path, object->get("name"));
+				const String action_name = vformat(TTR("Set section values on node %s"), object->get("name"));
 				ur->create_action(action_name);
 
 				for (const String &property_name : properties) {
@@ -6129,12 +6120,9 @@ void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
 	update_tree();
 }
 
-void EditorInspector::set_property_clipboard(const Variant &p_value) {
-	property_clipboard = p_value;
-}
-
-Variant EditorInspector::get_property_clipboard() {
-	return property_clipboard;
+void EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type p_type, const Variant &p_value) {
+	property_clipboard.type = p_type;
+	property_clipboard.value = p_value;
 }
 
 void EditorInspector::_show_add_meta_dialog() {
