@@ -813,6 +813,124 @@ TEST_SUITE("[Navigation3D]") {
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
+	// This test case does not check precise values on purpose - to not be too sensitive.
+	TEST_CASE("[NavigationServer3D] Links should function properly when multiple overlapping regions are present") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMesh> navigation_mesh_bigger = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+		Array arr;
+		arr.resize(RSE::ARRAY_MAX);
+		BoxMesh::create_mesh_array(arr, Vector3(5.0, 0.1, 5.0));
+		source_geometry->add_mesh_array(arr, Transform3D(Basis(), Vector3(-10, 0, 0)));
+		source_geometry->add_mesh_array(arr, Transform3D());
+		source_geometry->add_mesh_array(arr, Transform3D(Basis(), Vector3(10, 0, 0)));
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+
+		// Spews warnings about edge errors if I use 3 of the same navmesh, so I'm making a bigger one.
+		BoxMesh::create_mesh_array(arr, Vector3(6.0, 0.1, 6.0));
+		source_geometry->add_mesh_array(arr, Transform3D(Basis(), Vector3(-10, 0, 0)));
+		source_geometry->add_mesh_array(arr, Transform3D());
+		source_geometry->add_mesh_array(arr, Transform3D(Basis(), Vector3(10, 0, 0)));
+		navigation_server->bake_from_source_geometry_data(navigation_mesh_bigger, source_geometry, Callable());
+
+		RID map = navigation_server->map_create();
+		navigation_server->map_set_use_edge_connections(map, false);
+		RID region1 = navigation_server->region_create();
+		RID region2 = navigation_server->region_create();
+		RID region3 = navigation_server->region_create();
+		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region1, false);
+		navigation_server->region_set_use_async_iterations(region2, false);
+		navigation_server->region_set_use_async_iterations(region3, false);
+		navigation_server->region_set_navigation_layers(region1, 1);
+		navigation_server->region_set_navigation_layers(region2, 2);
+		navigation_server->region_set_navigation_layers(region3, 4);
+		navigation_server->region_set_map(region1, map);
+		navigation_server->region_set_map(region2, map);
+		navigation_server->region_set_map(region3, map);
+		navigation_server->region_set_navigation_mesh(region1, navigation_mesh_bigger);
+		navigation_server->region_set_navigation_mesh(region2, navigation_mesh);
+		navigation_server->region_set_navigation_mesh(region3, navigation_mesh);
+
+		RID link1 = navigation_server->link_create();
+		navigation_server->link_set_navigation_layers(link1, 6);
+		navigation_server->link_set_bidirectional(link1, true);
+		navigation_server->link_set_start_position(link1, Vector3(-8, 0, 0));
+		navigation_server->link_set_end_position(link1, Vector3(-2, 0, 0));
+		navigation_server->link_set_map(link1, map);
+		RID link2 = navigation_server->link_create();
+		navigation_server->link_set_navigation_layers(link2, 6);
+		navigation_server->link_set_bidirectional(link2, false);
+		navigation_server->link_set_start_position(link2, Vector3(2, 0, 0));
+		navigation_server->link_set_end_position(link2, Vector3(8, 0, 0));
+		navigation_server->link_set_map(link2, map);
+
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+
+		SUBCASE("Should not find path from left platform to right platform as there are no links on first layer") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			query_parameters->set_navigation_layers(1);
+			query_parameters->set_start_position(Vector3(-10, 0, 0));
+			query_parameters->set_target_position(Vector3(10, 0, 0));
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			uint32_t path_size = query_result->get_path().size();
+			CHECK_GT(path_size, 0);
+			if (path_size > 0) {
+				CHECK_LT(query_result->get_path()[path_size - 1].x, -5);
+			}
+		}
+
+		SUBCASE("Should find path from left platform to right platform on second and third layers") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			for (uint32_t layer = 2; layer <= 4; layer *= 2) {
+				query_parameters->set_navigation_layers(layer);
+				query_parameters->set_start_position(Vector3(-10, 0, 0));
+				query_parameters->set_target_position(Vector3(10, 0, 0));
+				Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+				navigation_server->query_path(query_parameters, query_result);
+				uint32_t path_size = query_result->get_path().size();
+				CHECK_GT(path_size, 0);
+				if (path_size > 0) {
+					CHECK_GT(query_result->get_path()[path_size - 1].x, 5);
+				}
+			}
+		}
+
+		SUBCASE("Should not find path from right platform to left platform because of unidirectional link") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			for (uint32_t layer = 1; layer <= 4; layer *= 2) {
+				query_parameters->set_navigation_layers(layer);
+				query_parameters->set_start_position(Vector3(10, 0, 0));
+				query_parameters->set_target_position(Vector3(-10, 0, 0));
+				Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+				navigation_server->query_path(query_parameters, query_result);
+				uint32_t path_size = query_result->get_path().size();
+				CHECK_GT(path_size, 0);
+				if (path_size > 0) {
+					CHECK_GT(query_result->get_path()[path_size - 1].x, 5);
+				}
+			}
+		}
+
+		navigation_server->free_rid(region1);
+		navigation_server->free_rid(region2);
+		navigation_server->free_rid(region3);
+		navigation_server->free_rid(link1);
+		navigation_server->free_rid(link2);
+		navigation_server->free_rid(map);
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+	}
+
 	// FIXME: The race condition mentioned below is actually a problem and fails on CI (GH-90613).
 	/*
 	TEST_CASE("[NavigationServer3D] Server should be able to bake asynchronously") {

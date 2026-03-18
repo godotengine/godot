@@ -747,6 +747,129 @@ TEST_SUITE("[Navigation2D]") {
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
+	// This test case does not check precise values on purpose - to not be too sensitive.
+	TEST_CASE("[NavigationServer2D] Links should function properly when multiple overlapping regions are present") {
+		NavigationServer2D *navigation_server = NavigationServer2D::get_singleton();
+		Ref<NavigationPolygon> navigation_polygon;
+		navigation_polygon.instantiate();
+		Ref<NavigationMeshSourceGeometryData2D> source_geometry;
+		source_geometry.instantiate();
+
+		navigation_polygon->add_outline(PackedVector2Array({ Vector2(-1250.0, -250.0), Vector2(-750.0, -250.0), Vector2(-750.0, 250.0), Vector2(-1250.0, 250.0) }));
+		navigation_polygon->add_outline(PackedVector2Array({ Vector2(-250.0, -250.0), Vector2(250.0, -250.0), Vector2(250.0, 250.0), Vector2(-250.0, 250.0) }));
+		navigation_polygon->add_outline(PackedVector2Array({ Vector2(750.0, -250.0), Vector2(1250.0, -250.0), Vector2(1250.0, 250.0), Vector2(750.0, 250.0) }));
+		navigation_server->bake_from_source_geometry_data(navigation_polygon, source_geometry, Callable());
+
+		// Spews warnings about edge errors if I use 3 of the same navmesh, so I'm making a bigger one.
+		Ref<NavigationPolygon> navigation_polygon_bigger;
+		navigation_polygon_bigger.instantiate();
+		navigation_polygon_bigger->add_outline(PackedVector2Array({ Vector2(-1300.0, -300.0), Vector2(-700.0, -300.0), Vector2(-700.0, 300.0), Vector2(-1300.0, 300.0) }));
+		navigation_polygon_bigger->add_outline(PackedVector2Array({ Vector2(-300.0, -300.0), Vector2(300.0, -300.0), Vector2(300.0, 300.0), Vector2(-300.0, 300.0) }));
+		navigation_polygon_bigger->add_outline(PackedVector2Array({ Vector2(700.0, -300.0), Vector2(1300.0, -300.0), Vector2(1300.0, 300.0), Vector2(700.0, 300.0) }));
+		navigation_server->bake_from_source_geometry_data(navigation_polygon_bigger, source_geometry, Callable());
+
+		RID map = navigation_server->map_create();
+		navigation_server->map_set_use_edge_connections(map, false);
+		RID region1 = navigation_server->region_create();
+		RID region2 = navigation_server->region_create();
+		RID region3 = navigation_server->region_create();
+		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region1, false);
+		navigation_server->region_set_use_async_iterations(region2, false);
+		navigation_server->region_set_use_async_iterations(region3, false);
+		navigation_server->region_set_navigation_layers(region1, 1);
+		navigation_server->region_set_navigation_layers(region2, 2);
+		navigation_server->region_set_navigation_layers(region3, 4);
+		navigation_server->region_set_map(region1, map);
+		navigation_server->region_set_map(region2, map);
+		navigation_server->region_set_map(region3, map);
+		navigation_server->region_set_navigation_polygon(region1, navigation_polygon_bigger);
+		navigation_server->region_set_navigation_polygon(region2, navigation_polygon);
+		navigation_server->region_set_navigation_polygon(region3, navigation_polygon);
+
+		RID link1 = navigation_server->link_create();
+		navigation_server->link_set_navigation_layers(link1, 6);
+		navigation_server->link_set_bidirectional(link1, true);
+		navigation_server->link_set_start_position(link1, Vector2(-800, 0));
+		navigation_server->link_set_end_position(link1, Vector2(-200, 0));
+		navigation_server->link_set_map(link1, map);
+		RID link2 = navigation_server->link_create();
+		navigation_server->link_set_navigation_layers(link2, 6);
+		navigation_server->link_set_bidirectional(link2, false);
+		navigation_server->link_set_start_position(link2, Vector2(200, 0));
+		navigation_server->link_set_end_position(link2, Vector2(800, 0));
+		navigation_server->link_set_map(link2, map);
+
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+
+		SUBCASE("Should not find path from left platform to right platform as there are no links on first layer") {
+			Ref<NavigationPathQueryParameters2D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters2D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			query_parameters->set_navigation_layers(1);
+			query_parameters->set_start_position(Vector2(-1000, 0));
+			query_parameters->set_target_position(Vector2(1000, 0));
+			Ref<NavigationPathQueryResult2D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			uint32_t path_size = query_result->get_path().size();
+			CHECK_GT(path_size, 0);
+			if (path_size > 0) {
+				CHECK_LT(query_result->get_path()[path_size - 1].x, -500);
+			}
+		}
+
+		SUBCASE("Should find path from left platform to right platform on second and third layers") {
+			Ref<NavigationPathQueryParameters2D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters2D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			for (uint32_t layer = 2; layer <= 4; layer *= 2) {
+				query_parameters->set_navigation_layers(layer);
+				query_parameters->set_start_position(Vector2(-1000, 0));
+				query_parameters->set_target_position(Vector2(1000, 0));
+				Ref<NavigationPathQueryResult2D> query_result;
+				query_result.instantiate();
+				navigation_server->query_path(query_parameters, query_result);
+				uint32_t path_size = query_result->get_path().size();
+				CHECK_GT(path_size, 0);
+				if (path_size > 0) {
+					CHECK_GT(query_result->get_path()[path_size - 1].x, 500);
+				}
+			}
+		}
+
+		SUBCASE("Should not find path from right platform to left platform because of unidirectional link") {
+			Ref<NavigationPathQueryParameters2D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters2D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			for (uint32_t layer = 1; layer <= 4; layer *= 2) {
+				query_parameters->set_navigation_layers(layer);
+				query_parameters->set_start_position(Vector2(1000, 0));
+				query_parameters->set_target_position(Vector2(-1000, 0));
+				Ref<NavigationPathQueryResult2D> query_result;
+				query_result.instantiate();
+				navigation_server->query_path(query_parameters, query_result);
+				uint32_t path_size = query_result->get_path().size();
+				CHECK_GT(path_size, 0);
+				if (path_size > 0) {
+					CHECK_GT(query_result->get_path()[path_size - 1].x, 500);
+				}
+			}
+		}
+
+		navigation_server->free_rid(region1);
+		navigation_server->free_rid(region2);
+		navigation_server->free_rid(region3);
+		navigation_server->free_rid(link1);
+		navigation_server->free_rid(link2);
+		navigation_server->free_rid(map);
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+	}
+
 	TEST_CASE("[NavigationServer2D] Server should simplify path properly") {
 		real_t simplify_epsilon = 0.2;
 		Vector<Vector2> source_path;

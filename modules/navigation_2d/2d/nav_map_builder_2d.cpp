@@ -280,34 +280,45 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 
 	HashMap<const NavBaseIteration2D *, LocalVector<LocalVector<Nav2D::Connection>>> &navbases_polygons_external_connections = map_iteration->navbases_polygons_external_connections;
 	LocalVector<Nav2D::Polygon> &navlink_polygons = map_iteration->navlink_polygons;
-	navlink_polygons.clear();
-	navlink_polygons.resize(links.size());
+	navlink_polygons.clear(); // navlink_polygons must not be resized after use because we are storing pointers to its elements.
 	uint32_t navlink_index = 0;
 
-	// Search for polygons within range of a nav link.
-	for (const Ref<NavLinkIteration2D> &link : links) {
-		polygon_count++;
-		Polygon &new_polygon = navlink_polygons[navlink_index++];
+	// We don't know how many navlink polygons we will need, so hold all the data in these vectors until we do
+	LocalVector<LocalVector<Nav2D::Polygon *>> link_start_polygons = LocalVector<LocalVector<Nav2D::Polygon *>>();
+	link_start_polygons.resize(links.size());
+	LocalVector<LocalVector<Vector2>> link_start_points = LocalVector<LocalVector<Vector2>>();
+	link_start_points.resize(links.size());
+	LocalVector<LocalVector<Nav2D::Polygon *>> link_end_polygons = LocalVector<LocalVector<Nav2D::Polygon *>>();
+	link_end_polygons.resize(links.size());
+	LocalVector<LocalVector<Vector2>> link_end_points = LocalVector<LocalVector<Vector2>>();
+	link_end_points.resize(links.size());
 
-		new_polygon.id = 0;
-		new_polygon.owner = link.ptr();
+	// Search for polygons within range of a nav link.
+	uint32_t link_index = 0;
+	for (const Ref<NavLinkIteration2D> &link : links) {
+		LocalVector<Nav2D::Polygon *> &start_polygons = link_start_polygons[link_index];
+		LocalVector<Vector2> &closest_start_points = link_start_points[link_index];
+		LocalVector<Nav2D::Polygon *> &end_polygons = link_end_polygons[link_index];
+		LocalVector<Vector2> &closest_end_points = link_end_points[link_index];
+		link_index++;
 
 		const Vector2 link_start_pos = link->get_start_position();
 		const Vector2 link_end_pos = link->get_end_position();
 
-		Polygon *closest_start_polygon = nullptr;
-		real_t closest_start_sqr_dist = link_connection_radius_sqr;
-		Vector2 closest_start_point;
-
-		Polygon *closest_end_polygon = nullptr;
-		real_t closest_end_sqr_dist = link_connection_radius_sqr;
-		Vector2 closest_end_point;
-
 		for (const Ref<NavRegionIteration2D> &region : map_iteration->region_iterations) {
 			Rect2 region_bounds = region->get_bounds().grow(link_connection_radius);
-			if (!region_bounds.has_point(link_start_pos) && !region_bounds.has_point(link_end_pos)) {
+			if ((!region_bounds.has_point(link_start_pos) && !region_bounds.has_point(link_end_pos)) ||
+					((region->navigation_layers & link->navigation_layers) == 0)) {
 				continue;
 			}
+
+			Polygon *closest_start_polygon = nullptr;
+			real_t closest_start_sqr_dist = link_connection_radius_sqr;
+			Vector2 closest_start_point;
+
+			Polygon *closest_end_polygon = nullptr;
+			real_t closest_end_sqr_dist = link_connection_radius_sqr;
+			Vector2 closest_end_point;
 
 			for (Polygon &polyon : region->navmesh_polygons) {
 				for (uint32_t point_id = 2; point_id < polyon.vertices.size(); point_id += 1) {
@@ -338,52 +349,89 @@ void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_
 					}
 				}
 			}
-		}
 
-		// If we have both a start and end point, then create a synthetic polygon to route through.
-		if (closest_start_polygon && closest_end_polygon) {
-			new_polygon.vertices.resize(4);
-
-			// Build a set of vertices that create a thin polygon going from the start to the end point.
-			new_polygon.vertices[0] = closest_start_point;
-			new_polygon.vertices[1] = closest_start_point;
-			new_polygon.vertices[2] = closest_end_point;
-			new_polygon.vertices[3] = closest_end_point;
-
-			// Setup connections to go forward in the link.
-			{
-				Connection entry_connection;
-				entry_connection.polygon = &new_polygon;
-				entry_connection.edge = -1;
-				entry_connection.pathway_start = new_polygon.vertices[0];
-				entry_connection.pathway_end = new_polygon.vertices[1];
-				navbases_polygons_external_connections[closest_start_polygon->owner][closest_start_polygon->id].push_back(entry_connection);
-
-				Connection exit_connection;
-				exit_connection.polygon = closest_end_polygon;
-				exit_connection.edge = -1;
-				exit_connection.pathway_start = new_polygon.vertices[2];
-				exit_connection.pathway_end = new_polygon.vertices[3];
-				navbases_polygons_external_connections[link.ptr()].push_back(LocalVector<Nav2D::Connection>());
-				navbases_polygons_external_connections[link.ptr()][new_polygon.id].push_back(exit_connection);
+			if (closest_start_polygon) {
+				start_polygons.push_back(closest_start_polygon);
+				closest_start_points.push_back(closest_start_point);
 			}
+			if (closest_end_polygon) {
+				end_polygons.push_back(closest_end_polygon);
+				closest_end_points.push_back(closest_end_point);
+			}
+		}
+	}
 
-			// If the link is bi-directional, create connections from the end to the start.
-			if (link->is_bidirectional()) {
-				Connection entry_connection;
-				entry_connection.polygon = &new_polygon;
-				entry_connection.edge = -1;
-				entry_connection.pathway_start = new_polygon.vertices[2];
-				entry_connection.pathway_end = new_polygon.vertices[3];
-				navbases_polygons_external_connections[closest_end_polygon->owner][closest_end_polygon->id].push_back(entry_connection);
+	// Calculate how many navlink polygons we need and resize the vector once before using it.
+	uint32_t navlink_polygon_count = 0;
+	for (uint32_t i = 0; i < link_start_polygons.size(); i++) {
+		navlink_polygon_count += link_start_polygons[i].size() * link_end_polygons[i].size();
+	}
+	navlink_polygons.resize(navlink_polygon_count);
+	polygon_count += navlink_polygon_count;
 
-				Connection exit_connection;
-				exit_connection.polygon = closest_start_polygon;
-				exit_connection.edge = -1;
-				exit_connection.pathway_start = new_polygon.vertices[0];
-				exit_connection.pathway_end = new_polygon.vertices[1];
-				navbases_polygons_external_connections[link.ptr()].push_back(LocalVector<Nav2D::Connection>());
-				navbases_polygons_external_connections[link.ptr()][new_polygon.id].push_back(exit_connection);
+	link_index = 0;
+	for (const Ref<NavLinkIteration2D> &link : links) {
+		LocalVector<Nav2D::Polygon *> &start_polygons = link_start_polygons[link_index];
+		LocalVector<Vector2> &closest_start_points = link_start_points[link_index];
+		LocalVector<Nav2D::Polygon *> &end_polygons = link_end_polygons[link_index];
+		LocalVector<Vector2> &closest_end_points = link_end_points[link_index];
+		link_index++;
+
+		uint32_t new_polygon_id = 0;
+
+		for (uint32_t i = 0; i < start_polygons.size(); i++) {
+			for (uint32_t j = 0; j < end_polygons.size(); j++) {
+				Polygon *closest_start_polygon = start_polygons[i];
+				Vector2 closest_start_point = closest_start_points[i];
+				Polygon *closest_end_polygon = end_polygons[j];
+				Vector2 closest_end_point = closest_end_points[j];
+
+				// If we have both a start and end point, then create a synthetic polygon to route through.
+				Polygon &new_polygon = navlink_polygons[navlink_index++];
+				new_polygon.id = new_polygon_id++;
+				new_polygon.owner = link.ptr();
+				new_polygon.vertices.resize(4);
+
+				// Build a set of vertices that create a thin polygon going from the start to the end point.
+				new_polygon.vertices[0] = closest_start_point;
+				new_polygon.vertices[1] = closest_start_point;
+				new_polygon.vertices[2] = closest_end_point;
+				new_polygon.vertices[3] = closest_end_point;
+
+				// Setup connections to go forward in the link.
+				{
+					Connection entry_connection;
+					entry_connection.polygon = &new_polygon;
+					entry_connection.edge = -1;
+					entry_connection.pathway_start = new_polygon.vertices[0];
+					entry_connection.pathway_end = new_polygon.vertices[1];
+					navbases_polygons_external_connections[closest_start_polygon->owner][closest_start_polygon->id].push_back(entry_connection);
+
+					Connection exit_connection;
+					exit_connection.polygon = closest_end_polygon;
+					exit_connection.edge = -1;
+					exit_connection.pathway_start = new_polygon.vertices[2];
+					exit_connection.pathway_end = new_polygon.vertices[3];
+					navbases_polygons_external_connections[link.ptr()].push_back(LocalVector<Nav2D::Connection>());
+					navbases_polygons_external_connections[link.ptr()][new_polygon.id].push_back(exit_connection);
+				}
+
+				// If the link is bi-directional, create connections from the end to the start.
+				if (link->is_bidirectional()) {
+					Connection entry_connection;
+					entry_connection.polygon = &new_polygon;
+					entry_connection.edge = -1;
+					entry_connection.pathway_start = new_polygon.vertices[2];
+					entry_connection.pathway_end = new_polygon.vertices[3];
+					navbases_polygons_external_connections[closest_end_polygon->owner][closest_end_polygon->id].push_back(entry_connection);
+
+					Connection exit_connection;
+					exit_connection.polygon = closest_start_polygon;
+					exit_connection.edge = -1;
+					exit_connection.pathway_start = new_polygon.vertices[0];
+					exit_connection.pathway_end = new_polygon.vertices[1];
+					navbases_polygons_external_connections[link.ptr()][new_polygon.id].push_back(exit_connection);
+				}
 			}
 		}
 	}
