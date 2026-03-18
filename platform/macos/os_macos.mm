@@ -57,7 +57,14 @@
 #include <sys/sysctl.h>
 
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
-	if (p_wake_for_events) {
+	bool wake_for_events = p_wake_for_events;
+	if (!wake_for_events) {
+		NSArray<NSRunningApplication *> *proc_array = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.crowdcafe.windowmagnet"];
+		if (proc_array && proc_array.count > 0) {
+			wake_for_events = true;
+		}
+	}
+	if (wake_for_events) {
 		uint64_t delay = get_frame_delay(p_can_draw);
 		if (delay == 0) {
 			return;
@@ -75,7 +82,7 @@ void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 		CFRunLoopAddTimer(CFRunLoopGetCurrent(), wait_timer, kCFRunLoopCommonModes);
 		return;
 	}
-	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
+	OS_Unix::add_frame_delay(p_can_draw, wake_for_events);
 }
 
 void OS_MacOS::initialize() {
@@ -806,6 +813,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
+			[configuration setEnvironment:[[NSProcessInfo processInfo] environment]];
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
@@ -835,7 +843,11 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
-			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
+			NSDictionary *config = @{
+				NSWorkspaceLaunchConfigurationArguments : arguments,
+				NSWorkspaceLaunchConfigurationEnvironment : [[NSProcessInfo processInfo] environment]
+			};
+			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:config error:&error];
 			if (error) {
 				err = ERR_CANT_FORK;
 				NSLog(@"Failed to execute: %@", error.localizedDescription);
