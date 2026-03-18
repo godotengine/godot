@@ -321,641 +321,791 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @_lambdaPropertyStaticImport = "_lambdaPropertyStaticImport";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    private static partial class GodotInternal
     {
-        if (name == PropertyName.@NotGenerateComplexLamdaProperty) {
-            this.@NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
+        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_NotGenerateComplexLamdaProperty(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@NotGenerateComplexLamdaProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_NotGenerateComplexLamdaProperty(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_NotGenerateLamdaNoFieldProperty(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@NotGenerateLamdaNoFieldProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_NotGenerateLamdaNoFieldProperty(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_NotGenerateComplexReturnProperty(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@NotGenerateComplexReturnProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_NotGenerateComplexReturnProperty(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_NotGenerateReturnsProperty(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@NotGenerateReturnsProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_NotGenerateReturnsProperty(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_FullPropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@FullPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_FullPropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_FullPropertyString_Complex(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@FullPropertyString_Complex;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_FullPropertyString_Complex(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_FullPropertyStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@FullPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set_FullPropertyStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@FullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get_LamdaPropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@LamdaPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_LamdaPropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_LambdaPropertyStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@LambdaPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set_LambdaPropertyStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@LambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get_PrimaryCtorParameter(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PrimaryCtorParameter;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_PrimaryCtorParameter(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PrimaryCtorParameter = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_ConstantMath(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@ConstantMath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set_ConstantMath(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@ConstantMath = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get_ConstantMathStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@ConstantMathStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set_ConstantMathStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@ConstantMathStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get_StaticStringAddition(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@StaticStringAddition;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_StaticStringAddition(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@StaticStringAddition = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_PropertyBoolean(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyBoolean;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            }
+            static void trampoline_set_PropertyBoolean(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            static godot_variant trampoline_get_PropertyChar(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyChar;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(ret);
+            }
+            static void trampoline_set_PropertyChar(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
+            }
+            static godot_variant trampoline_get_PropertySByte(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertySByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(ret);
+            }
+            static void trampoline_set_PropertySByte(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
+            }
+            static godot_variant trampoline_get_PropertyInt16(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(ret);
+            }
+            static void trampoline_set_PropertyInt16(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
+            }
+            static godot_variant trampoline_get_PropertyInt32(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            }
+            static void trampoline_set_PropertyInt32(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+            }
+            static godot_variant trampoline_get_PropertyInt64(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(ret);
+            }
+            static void trampoline_set_PropertyInt64(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
+            }
+            static godot_variant trampoline_get_PropertyByte(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyByte;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(ret);
+            }
+            static void trampoline_set_PropertyByte(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
+            }
+            static godot_variant trampoline_get_PropertyUInt16(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyUInt16;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(ret);
+            }
+            static void trampoline_set_PropertyUInt16(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
+            }
+            static godot_variant trampoline_get_PropertyUInt32(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyUInt32;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(ret);
+            }
+            static void trampoline_set_PropertyUInt32(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
+            }
+            static godot_variant trampoline_get_PropertyUInt64(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyUInt64;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(ret);
+            }
+            static void trampoline_set_PropertyUInt64(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
+            }
+            static godot_variant trampoline_get_PropertySingle(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertySingle;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set_PropertySingle(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get_PropertyDouble(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyDouble;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(ret);
+            }
+            static void trampoline_set_PropertyDouble(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
+            }
+            static godot_variant trampoline_get_PropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_PropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector2(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(ret);
+            }
+            static void trampoline_set_PropertyVector2(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector2I(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(ret);
+            }
+            static void trampoline_set_PropertyVector2I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
+            }
+            static godot_variant trampoline_get_PropertyRect2(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyRect2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(ret);
+            }
+            static void trampoline_set_PropertyRect2(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
+            }
+            static godot_variant trampoline_get_PropertyRect2I(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyRect2I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(ret);
+            }
+            static void trampoline_set_PropertyRect2I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
+            }
+            static godot_variant trampoline_get_PropertyTransform2D(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyTransform2D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(ret);
+            }
+            static void trampoline_set_PropertyTransform2D(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector3(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector3;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(ret);
+            }
+            static void trampoline_set_PropertyVector3(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector3I(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector3I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(ret);
+            }
+            static void trampoline_set_PropertyVector3I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
+            }
+            static godot_variant trampoline_get_PropertyBasis(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyBasis;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(ret);
+            }
+            static void trampoline_set_PropertyBasis(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
+            }
+            static godot_variant trampoline_get_PropertyQuaternion(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyQuaternion;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(ret);
+            }
+            static void trampoline_set_PropertyQuaternion(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
+            }
+            static godot_variant trampoline_get_PropertyTransform3D(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyTransform3D;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(ret);
+            }
+            static void trampoline_set_PropertyTransform3D(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector4(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector4;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(ret);
+            }
+            static void trampoline_set_PropertyVector4(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector4I(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector4I;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(ret);
+            }
+            static void trampoline_set_PropertyVector4I(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
+            }
+            static godot_variant trampoline_get_PropertyProjection(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyProjection;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(ret);
+            }
+            static void trampoline_set_PropertyProjection(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
+            }
+            static godot_variant trampoline_get_PropertyAabb(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyAabb;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(ret);
+            }
+            static void trampoline_set_PropertyAabb(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
+            }
+            static godot_variant trampoline_get_PropertyColor(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyColor;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(ret);
+            }
+            static void trampoline_set_PropertyColor(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
+            }
+            static godot_variant trampoline_get_PropertyPlane(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyPlane;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(ret);
+            }
+            static void trampoline_set_PropertyPlane(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
+            }
+            static godot_variant trampoline_get_PropertyCallable(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyCallable;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static void trampoline_set_PropertyCallable(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+            }
+            static godot_variant trampoline_get_PropertySignal(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertySignal;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(ret);
+            }
+            static void trampoline_set_PropertySignal(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
+            }
+            static godot_variant trampoline_get_PropertyEnum(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(ret);
+            }
+            static void trampoline_set_PropertyEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
+            }
+            static godot_variant trampoline_get_PropertyFlagsEnum(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyFlagsEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(ret);
+            }
+            static void trampoline_set_PropertyFlagsEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
+            }
+            static godot_variant trampoline_get_PropertyByteArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyByteArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(ret);
+            }
+            static void trampoline_set_PropertyByteArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyInt32Array(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyInt32Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(ret);
+            }
+            static void trampoline_set_PropertyInt32Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyInt64Array(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyInt64Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(ret);
+            }
+            static void trampoline_set_PropertyInt64Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
+            }
+            static godot_variant trampoline_get_PropertySingleArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertySingleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(ret);
+            }
+            static void trampoline_set_PropertySingleArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyDoubleArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyDoubleArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(ret);
+            }
+            static void trampoline_set_PropertyDoubleArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyStringArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyStringArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            }
+            static void trampoline_set_PropertyStringArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyStringArrayEnum(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyStringArrayEnum;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(ret);
+            }
+            static void trampoline_set_PropertyStringArrayEnum(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector2Array(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector2Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(ret);
+            }
+            static void trampoline_set_PropertyVector2Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyVector3Array(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVector3Array;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(ret);
+            }
+            static void trampoline_set_PropertyVector3Array(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyColorArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyColorArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(ret);
+            }
+            static void trampoline_set_PropertyColorArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotObjectOrDerivedArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotObjectOrDerivedArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(ret);
+            }
+            static void trampoline_set_PropertyGodotObjectOrDerivedArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
+            }
+            static godot_variant trampoline_get_field_StringNameArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@field_StringNameArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(ret);
+            }
+            static void trampoline_set_field_StringNameArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@field_StringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
+            }
+            static godot_variant trampoline_get_field_NodePathArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@field_NodePathArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(ret);
+            }
+            static void trampoline_set_field_NodePathArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@field_NodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
+            }
+            static godot_variant trampoline_get_field_RidArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@field_RidArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(ret);
+            }
+            static void trampoline_set_field_RidArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
+            }
+            static godot_variant trampoline_get_PropertyVariant(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyVariant;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(ret);
+            }
+            static void trampoline_set_PropertyVariant(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotObjectOrDerived(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotObjectOrDerived;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(ret);
+            }
+            static void trampoline_set_PropertyGodotObjectOrDerived(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotResourceTexture(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotResourceTexture;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            }
+            static void trampoline_set_PropertyGodotResourceTexture(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotResourceTextureWithInitializer(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotResourceTextureWithInitializer;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(ret);
+            }
+            static void trampoline_set_PropertyGodotResourceTextureWithInitializer(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+            }
+            static godot_variant trampoline_get_PropertyStringName(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyStringName;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(ret);
+            }
+            static void trampoline_set_PropertyStringName(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
+            }
+            static godot_variant trampoline_get_PropertyNodePath(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyNodePath;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(ret);
+            }
+            static void trampoline_set_PropertyNodePath(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+            }
+            static godot_variant trampoline_get_PropertyRid(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyRid;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(ret);
+            }
+            static void trampoline_set_PropertyRid(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotDictionary(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(ret);
+            }
+            static void trampoline_set_PropertyGodotDictionary(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(ret);
+            }
+            static void trampoline_set_PropertyGodotArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotGenericDictionary(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotGenericDictionary;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(ret);
+            }
+            static void trampoline_set_PropertyGodotGenericDictionary(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
+            }
+            static godot_variant trampoline_get_PropertyGodotGenericArray(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@PropertyGodotGenericArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromArray(ret);
+            }
+            static void trampoline_set_PropertyGodotGenericArray(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+            }
+            static godot_variant trampoline_get__notGeneratePropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_notGeneratePropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set__notGeneratePropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get__notGeneratePropertyInt(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_notGeneratePropertyInt;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            }
+            static void trampoline_set__notGeneratePropertyInt(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+            }
+            static godot_variant trampoline_get__fullPropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_fullPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set__fullPropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get__fullPropertyStringComplex(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_fullPropertyStringComplex;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set__fullPropertyStringComplex(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get__fullPropertyStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_fullPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set__fullPropertyStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_fullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            static godot_variant trampoline_get__lamdaPropertyString(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_lamdaPropertyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set__lamdaPropertyString(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get__lambdaPropertyStaticImport(object godotObject)
+            {
+                var ret = ((global::ExportedProperties)godotObject).@_lambdaPropertyStaticImport;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(ret);
+            }
+            static void trampoline_set__lambdaPropertyStaticImport(object godotObject, in godot_variant value)
+            {
+                ((global::ExportedProperties)godotObject).@_lambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            }
+            collector.TryAdd(PropertyName.@NotGenerateComplexLamdaProperty, (new(&trampoline_get_NotGenerateComplexLamdaProperty), new(&trampoline_set_NotGenerateComplexLamdaProperty)));
+            collector.TryAdd(PropertyName.@NotGenerateLamdaNoFieldProperty, (new(&trampoline_get_NotGenerateLamdaNoFieldProperty), new(&trampoline_set_NotGenerateLamdaNoFieldProperty)));
+            collector.TryAdd(PropertyName.@NotGenerateComplexReturnProperty, (new(&trampoline_get_NotGenerateComplexReturnProperty), new(&trampoline_set_NotGenerateComplexReturnProperty)));
+            collector.TryAdd(PropertyName.@NotGenerateReturnsProperty, (new(&trampoline_get_NotGenerateReturnsProperty), new(&trampoline_set_NotGenerateReturnsProperty)));
+            collector.TryAdd(PropertyName.@FullPropertyString, (new(&trampoline_get_FullPropertyString), new(&trampoline_set_FullPropertyString)));
+            collector.TryAdd(PropertyName.@FullPropertyString_Complex, (new(&trampoline_get_FullPropertyString_Complex), new(&trampoline_set_FullPropertyString_Complex)));
+            collector.TryAdd(PropertyName.@FullPropertyStaticImport, (new(&trampoline_get_FullPropertyStaticImport), new(&trampoline_set_FullPropertyStaticImport)));
+            collector.TryAdd(PropertyName.@LamdaPropertyString, (new(&trampoline_get_LamdaPropertyString), new(&trampoline_set_LamdaPropertyString)));
+            collector.TryAdd(PropertyName.@LambdaPropertyStaticImport, (new(&trampoline_get_LambdaPropertyStaticImport), new(&trampoline_set_LambdaPropertyStaticImport)));
+            collector.TryAdd(PropertyName.@PrimaryCtorParameter, (new(&trampoline_get_PrimaryCtorParameter), new(&trampoline_set_PrimaryCtorParameter)));
+            collector.TryAdd(PropertyName.@ConstantMath, (new(&trampoline_get_ConstantMath), new(&trampoline_set_ConstantMath)));
+            collector.TryAdd(PropertyName.@ConstantMathStaticImport, (new(&trampoline_get_ConstantMathStaticImport), new(&trampoline_set_ConstantMathStaticImport)));
+            collector.TryAdd(PropertyName.@StaticStringAddition, (new(&trampoline_get_StaticStringAddition), new(&trampoline_set_StaticStringAddition)));
+            collector.TryAdd(PropertyName.@PropertyBoolean, (new(&trampoline_get_PropertyBoolean), new(&trampoline_set_PropertyBoolean)));
+            collector.TryAdd(PropertyName.@PropertyChar, (new(&trampoline_get_PropertyChar), new(&trampoline_set_PropertyChar)));
+            collector.TryAdd(PropertyName.@PropertySByte, (new(&trampoline_get_PropertySByte), new(&trampoline_set_PropertySByte)));
+            collector.TryAdd(PropertyName.@PropertyInt16, (new(&trampoline_get_PropertyInt16), new(&trampoline_set_PropertyInt16)));
+            collector.TryAdd(PropertyName.@PropertyInt32, (new(&trampoline_get_PropertyInt32), new(&trampoline_set_PropertyInt32)));
+            collector.TryAdd(PropertyName.@PropertyInt64, (new(&trampoline_get_PropertyInt64), new(&trampoline_set_PropertyInt64)));
+            collector.TryAdd(PropertyName.@PropertyByte, (new(&trampoline_get_PropertyByte), new(&trampoline_set_PropertyByte)));
+            collector.TryAdd(PropertyName.@PropertyUInt16, (new(&trampoline_get_PropertyUInt16), new(&trampoline_set_PropertyUInt16)));
+            collector.TryAdd(PropertyName.@PropertyUInt32, (new(&trampoline_get_PropertyUInt32), new(&trampoline_set_PropertyUInt32)));
+            collector.TryAdd(PropertyName.@PropertyUInt64, (new(&trampoline_get_PropertyUInt64), new(&trampoline_set_PropertyUInt64)));
+            collector.TryAdd(PropertyName.@PropertySingle, (new(&trampoline_get_PropertySingle), new(&trampoline_set_PropertySingle)));
+            collector.TryAdd(PropertyName.@PropertyDouble, (new(&trampoline_get_PropertyDouble), new(&trampoline_set_PropertyDouble)));
+            collector.TryAdd(PropertyName.@PropertyString, (new(&trampoline_get_PropertyString), new(&trampoline_set_PropertyString)));
+            collector.TryAdd(PropertyName.@PropertyVector2, (new(&trampoline_get_PropertyVector2), new(&trampoline_set_PropertyVector2)));
+            collector.TryAdd(PropertyName.@PropertyVector2I, (new(&trampoline_get_PropertyVector2I), new(&trampoline_set_PropertyVector2I)));
+            collector.TryAdd(PropertyName.@PropertyRect2, (new(&trampoline_get_PropertyRect2), new(&trampoline_set_PropertyRect2)));
+            collector.TryAdd(PropertyName.@PropertyRect2I, (new(&trampoline_get_PropertyRect2I), new(&trampoline_set_PropertyRect2I)));
+            collector.TryAdd(PropertyName.@PropertyTransform2D, (new(&trampoline_get_PropertyTransform2D), new(&trampoline_set_PropertyTransform2D)));
+            collector.TryAdd(PropertyName.@PropertyVector3, (new(&trampoline_get_PropertyVector3), new(&trampoline_set_PropertyVector3)));
+            collector.TryAdd(PropertyName.@PropertyVector3I, (new(&trampoline_get_PropertyVector3I), new(&trampoline_set_PropertyVector3I)));
+            collector.TryAdd(PropertyName.@PropertyBasis, (new(&trampoline_get_PropertyBasis), new(&trampoline_set_PropertyBasis)));
+            collector.TryAdd(PropertyName.@PropertyQuaternion, (new(&trampoline_get_PropertyQuaternion), new(&trampoline_set_PropertyQuaternion)));
+            collector.TryAdd(PropertyName.@PropertyTransform3D, (new(&trampoline_get_PropertyTransform3D), new(&trampoline_set_PropertyTransform3D)));
+            collector.TryAdd(PropertyName.@PropertyVector4, (new(&trampoline_get_PropertyVector4), new(&trampoline_set_PropertyVector4)));
+            collector.TryAdd(PropertyName.@PropertyVector4I, (new(&trampoline_get_PropertyVector4I), new(&trampoline_set_PropertyVector4I)));
+            collector.TryAdd(PropertyName.@PropertyProjection, (new(&trampoline_get_PropertyProjection), new(&trampoline_set_PropertyProjection)));
+            collector.TryAdd(PropertyName.@PropertyAabb, (new(&trampoline_get_PropertyAabb), new(&trampoline_set_PropertyAabb)));
+            collector.TryAdd(PropertyName.@PropertyColor, (new(&trampoline_get_PropertyColor), new(&trampoline_set_PropertyColor)));
+            collector.TryAdd(PropertyName.@PropertyPlane, (new(&trampoline_get_PropertyPlane), new(&trampoline_set_PropertyPlane)));
+            collector.TryAdd(PropertyName.@PropertyCallable, (new(&trampoline_get_PropertyCallable), new(&trampoline_set_PropertyCallable)));
+            collector.TryAdd(PropertyName.@PropertySignal, (new(&trampoline_get_PropertySignal), new(&trampoline_set_PropertySignal)));
+            collector.TryAdd(PropertyName.@PropertyEnum, (new(&trampoline_get_PropertyEnum), new(&trampoline_set_PropertyEnum)));
+            collector.TryAdd(PropertyName.@PropertyFlagsEnum, (new(&trampoline_get_PropertyFlagsEnum), new(&trampoline_set_PropertyFlagsEnum)));
+            collector.TryAdd(PropertyName.@PropertyByteArray, (new(&trampoline_get_PropertyByteArray), new(&trampoline_set_PropertyByteArray)));
+            collector.TryAdd(PropertyName.@PropertyInt32Array, (new(&trampoline_get_PropertyInt32Array), new(&trampoline_set_PropertyInt32Array)));
+            collector.TryAdd(PropertyName.@PropertyInt64Array, (new(&trampoline_get_PropertyInt64Array), new(&trampoline_set_PropertyInt64Array)));
+            collector.TryAdd(PropertyName.@PropertySingleArray, (new(&trampoline_get_PropertySingleArray), new(&trampoline_set_PropertySingleArray)));
+            collector.TryAdd(PropertyName.@PropertyDoubleArray, (new(&trampoline_get_PropertyDoubleArray), new(&trampoline_set_PropertyDoubleArray)));
+            collector.TryAdd(PropertyName.@PropertyStringArray, (new(&trampoline_get_PropertyStringArray), new(&trampoline_set_PropertyStringArray)));
+            collector.TryAdd(PropertyName.@PropertyStringArrayEnum, (new(&trampoline_get_PropertyStringArrayEnum), new(&trampoline_set_PropertyStringArrayEnum)));
+            collector.TryAdd(PropertyName.@PropertyVector2Array, (new(&trampoline_get_PropertyVector2Array), new(&trampoline_set_PropertyVector2Array)));
+            collector.TryAdd(PropertyName.@PropertyVector3Array, (new(&trampoline_get_PropertyVector3Array), new(&trampoline_set_PropertyVector3Array)));
+            collector.TryAdd(PropertyName.@PropertyColorArray, (new(&trampoline_get_PropertyColorArray), new(&trampoline_set_PropertyColorArray)));
+            collector.TryAdd(PropertyName.@PropertyGodotObjectOrDerivedArray, (new(&trampoline_get_PropertyGodotObjectOrDerivedArray), new(&trampoline_set_PropertyGodotObjectOrDerivedArray)));
+            collector.TryAdd(PropertyName.@field_StringNameArray, (new(&trampoline_get_field_StringNameArray), new(&trampoline_set_field_StringNameArray)));
+            collector.TryAdd(PropertyName.@field_NodePathArray, (new(&trampoline_get_field_NodePathArray), new(&trampoline_set_field_NodePathArray)));
+            collector.TryAdd(PropertyName.@field_RidArray, (new(&trampoline_get_field_RidArray), new(&trampoline_set_field_RidArray)));
+            collector.TryAdd(PropertyName.@PropertyVariant, (new(&trampoline_get_PropertyVariant), new(&trampoline_set_PropertyVariant)));
+            collector.TryAdd(PropertyName.@PropertyGodotObjectOrDerived, (new(&trampoline_get_PropertyGodotObjectOrDerived), new(&trampoline_set_PropertyGodotObjectOrDerived)));
+            collector.TryAdd(PropertyName.@PropertyGodotResourceTexture, (new(&trampoline_get_PropertyGodotResourceTexture), new(&trampoline_set_PropertyGodotResourceTexture)));
+            collector.TryAdd(PropertyName.@PropertyGodotResourceTextureWithInitializer, (new(&trampoline_get_PropertyGodotResourceTextureWithInitializer), new(&trampoline_set_PropertyGodotResourceTextureWithInitializer)));
+            collector.TryAdd(PropertyName.@PropertyStringName, (new(&trampoline_get_PropertyStringName), new(&trampoline_set_PropertyStringName)));
+            collector.TryAdd(PropertyName.@PropertyNodePath, (new(&trampoline_get_PropertyNodePath), new(&trampoline_set_PropertyNodePath)));
+            collector.TryAdd(PropertyName.@PropertyRid, (new(&trampoline_get_PropertyRid), new(&trampoline_set_PropertyRid)));
+            collector.TryAdd(PropertyName.@PropertyGodotDictionary, (new(&trampoline_get_PropertyGodotDictionary), new(&trampoline_set_PropertyGodotDictionary)));
+            collector.TryAdd(PropertyName.@PropertyGodotArray, (new(&trampoline_get_PropertyGodotArray), new(&trampoline_set_PropertyGodotArray)));
+            collector.TryAdd(PropertyName.@PropertyGodotGenericDictionary, (new(&trampoline_get_PropertyGodotGenericDictionary), new(&trampoline_set_PropertyGodotGenericDictionary)));
+            collector.TryAdd(PropertyName.@PropertyGodotGenericArray, (new(&trampoline_get_PropertyGodotGenericArray), new(&trampoline_set_PropertyGodotGenericArray)));
+            collector.TryAdd(PropertyName.@_notGeneratePropertyString, (new(&trampoline_get__notGeneratePropertyString), new(&trampoline_set__notGeneratePropertyString)));
+            collector.TryAdd(PropertyName.@_notGeneratePropertyInt, (new(&trampoline_get__notGeneratePropertyInt), new(&trampoline_set__notGeneratePropertyInt)));
+            collector.TryAdd(PropertyName.@_fullPropertyString, (new(&trampoline_get__fullPropertyString), new(&trampoline_set__fullPropertyString)));
+            collector.TryAdd(PropertyName.@_fullPropertyStringComplex, (new(&trampoline_get__fullPropertyStringComplex), new(&trampoline_set__fullPropertyStringComplex)));
+            collector.TryAdd(PropertyName.@_fullPropertyStaticImport, (new(&trampoline_get__fullPropertyStaticImport), new(&trampoline_set__fullPropertyStaticImport)));
+            collector.TryAdd(PropertyName.@_lamdaPropertyString, (new(&trampoline_get__lamdaPropertyString), new(&trampoline_set__lamdaPropertyString)));
+            collector.TryAdd(PropertyName.@_lambdaPropertyStaticImport, (new(&trampoline_get__lambdaPropertyStaticImport), new(&trampoline_set__lambdaPropertyStaticImport)));
         }
-        if (name == PropertyName.@NotGenerateLamdaNoFieldProperty) {
-            this.@NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateComplexReturnProperty) {
-            this.@NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateReturnsProperty) {
-            this.@NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString) {
-            this.@FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString_Complex) {
-            this.@FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyStaticImport) {
-            this.@FullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@LamdaPropertyString) {
-            this.@LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@LambdaPropertyStaticImport) {
-            this.@LambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@PrimaryCtorParameter) {
-            this.@PrimaryCtorParameter = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMath) {
-            this.@ConstantMath = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMathStaticImport) {
-            this.@ConstantMathStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@StaticStringAddition) {
-            this.@StaticStringAddition = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBoolean) {
-            this.@PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyChar) {
-            this.@PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySByte) {
-            this.@PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt16) {
-            this.@PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32) {
-            this.@PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64) {
-            this.@PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByte) {
-            this.@PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt16) {
-            this.@PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt32) {
-            this.@PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt64) {
-            this.@PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingle) {
-            this.@PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDouble) {
-            this.@PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyString) {
-            this.@PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2) {
-            this.@PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2I) {
-            this.@PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2) {
-            this.@PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2I) {
-            this.@PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform2D) {
-            this.@PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3) {
-            this.@PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3I) {
-            this.@PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBasis) {
-            this.@PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyQuaternion) {
-            this.@PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform3D) {
-            this.@PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4) {
-            this.@PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4I) {
-            this.@PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyProjection) {
-            this.@PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyAabb) {
-            this.@PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColor) {
-            this.@PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyPlane) {
-            this.@PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyCallable) {
-            this.@PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySignal) {
-            this.@PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyEnum) {
-            this.@PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyFlagsEnum) {
-            this.@PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByteArray) {
-            this.@PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32Array) {
-            this.@PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64Array) {
-            this.@PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingleArray) {
-            this.@PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDoubleArray) {
-            this.@PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArray) {
-            this.@PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArrayEnum) {
-            this.@PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2Array) {
-            this.@PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3Array) {
-            this.@PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColorArray) {
-            this.@PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerivedArray) {
-            this.@PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_StringNameArray) {
-            this.@field_StringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_NodePathArray) {
-            this.@field_NodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@field_RidArray) {
-            this.@field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVariant) {
-            this.@PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerived) {
-            this.@PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTexture) {
-            this.@PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTextureWithInitializer) {
-            this.@PropertyGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringName) {
-            this.@PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyNodePath) {
-            this.@PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRid) {
-            this.@PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotDictionary) {
-            this.@PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotArray) {
-            this.@PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericDictionary) {
-            this.@PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericArray) {
-            this.@PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyString) {
-            this.@_notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyInt) {
-            this.@_notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyString) {
-            this.@_fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStringComplex) {
-            this.@_fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStaticImport) {
-            this.@_fullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        if (name == PropertyName.@_lamdaPropertyString) {
-            this.@_lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
-        }
-        if (name == PropertyName.@_lambdaPropertyStaticImport) {
-            this.@_lambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@NotGenerateComplexLamdaProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateComplexLamdaProperty);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateLamdaNoFieldProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateLamdaNoFieldProperty);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateComplexReturnProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateComplexReturnProperty);
-            return true;
-        }
-        if (name == PropertyName.@NotGenerateReturnsProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateReturnsProperty);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyString_Complex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString_Complex);
-            return true;
-        }
-        if (name == PropertyName.@FullPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@FullPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@LamdaPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@LamdaPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@LambdaPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@LambdaPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@PrimaryCtorParameter) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@PrimaryCtorParameter);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMath);
-            return true;
-        }
-        if (name == PropertyName.@ConstantMathStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMathStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@StaticStringAddition) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@StaticStringAddition);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBoolean) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@PropertyBoolean);
-            return true;
-        }
-        if (name == PropertyName.@PropertyChar) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.@PropertyChar);
-            return true;
-        }
-        if (name == PropertyName.@PropertySByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.@PropertySByte);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.@PropertyInt16);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@PropertyInt32);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.@PropertyInt64);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.@PropertyByte);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.@PropertyUInt16);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.@PropertyUInt32);
-            return true;
-        }
-        if (name == PropertyName.@PropertyUInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.@PropertyUInt64);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingle) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@PropertySingle);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDouble) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.@PropertyDouble);
-            return true;
-        }
-        if (name == PropertyName.@PropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@PropertyString);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.@PropertyVector2);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.@PropertyVector2I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.@PropertyRect2);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRect2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.@PropertyRect2I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform2D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.@PropertyTransform2D);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.@PropertyVector3);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.@PropertyVector3I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyBasis) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.@PropertyBasis);
-            return true;
-        }
-        if (name == PropertyName.@PropertyQuaternion) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.@PropertyQuaternion);
-            return true;
-        }
-        if (name == PropertyName.@PropertyTransform3D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.@PropertyTransform3D);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.@PropertyVector4);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector4I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.@PropertyVector4I);
-            return true;
-        }
-        if (name == PropertyName.@PropertyProjection) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.@PropertyProjection);
-            return true;
-        }
-        if (name == PropertyName.@PropertyAabb) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.@PropertyAabb);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColor) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.@PropertyColor);
-            return true;
-        }
-        if (name == PropertyName.@PropertyPlane) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.@PropertyPlane);
-            return true;
-        }
-        if (name == PropertyName.@PropertyCallable) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@PropertyCallable);
-            return true;
-        }
-        if (name == PropertyName.@PropertySignal) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.@PropertySignal);
-            return true;
-        }
-        if (name == PropertyName.@PropertyEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(this.@PropertyEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyFlagsEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(this.@PropertyFlagsEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyByteArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.@PropertyByteArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt32Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.@PropertyInt32Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyInt64Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.@PropertyInt64Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertySingleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.@PropertySingleArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyDoubleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.@PropertyDoubleArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@PropertyStringArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringArrayEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.@PropertyStringArrayEnum);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector2Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.@PropertyVector2Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVector3Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.@PropertyVector3Array);
-            return true;
-        }
-        if (name == PropertyName.@PropertyColorArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.@PropertyColorArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerivedArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.@PropertyGodotObjectOrDerivedArray);
-            return true;
-        }
-        if (name == PropertyName.@field_StringNameArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(this.@field_StringNameArray);
-            return true;
-        }
-        if (name == PropertyName.@field_NodePathArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(this.@field_NodePathArray);
-            return true;
-        }
-        if (name == PropertyName.@field_RidArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(this.@field_RidArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyVariant) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.@PropertyVariant);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotObjectOrDerived) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.@PropertyGodotObjectOrDerived);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTexture) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@PropertyGodotResourceTexture);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotResourceTextureWithInitializer) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@PropertyGodotResourceTextureWithInitializer);
-            return true;
-        }
-        if (name == PropertyName.@PropertyStringName) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.@PropertyStringName);
-            return true;
-        }
-        if (name == PropertyName.@PropertyNodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.@PropertyNodePath);
-            return true;
-        }
-        if (name == PropertyName.@PropertyRid) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.@PropertyRid);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.@PropertyGodotDictionary);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.@PropertyGodotArray);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.@PropertyGodotGenericDictionary);
-            return true;
-        }
-        if (name == PropertyName.@PropertyGodotGenericArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@PropertyGodotGenericArray);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_notGeneratePropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_notGeneratePropertyInt) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_notGeneratePropertyInt);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fullPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStringComplex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fullPropertyStringComplex);
-            return true;
-        }
-        if (name == PropertyName.@_fullPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fullPropertyStaticImport);
-            return true;
-        }
-        if (name == PropertyName.@_lamdaPropertyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_lamdaPropertyString);
-            return true;
-        }
-        if (name == PropertyName.@_lambdaPropertyStaticImport) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_lambdaPropertyStaticImport);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.
