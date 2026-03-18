@@ -1599,7 +1599,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
 		Label *header = memnew(Label);
 		header->set_text(vformat(TTR("Polygon %d"), i));
-		header->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+		header->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 		add_child(header);
 
 		StringName one_way_property = vformat("polygon_%d_one_way", i);
