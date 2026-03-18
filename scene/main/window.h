@@ -169,7 +169,7 @@ private:
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
-	void _save_window();
+	bool _should_restore_window() const;
 	void _accessibility_notify_enter(Node *p_node);
 	void _accessibility_notify_exit(Node *p_node);
 

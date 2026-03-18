@@ -60,10 +60,13 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #endif
 
 DisplayServer *DisplayServer::singleton = nullptr;
-String DisplayServer::session_path = "";
 
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
+
+String DisplayServer::session_path = "";
+Ref<ConfigFile> DisplayServer::window_metadata = Ref<ConfigFile>();
+bool DisplayServer::window_metadata_dirty = false;
 
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
 	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
@@ -510,8 +513,41 @@ void DisplayServer::set_session_path(const String &p_path) {
 	session_path = p_path;
 }
 
-String DisplayServer::get_session_path() {
-	return session_path;
+void DisplayServer::set_window_metadata(const String &p_section, const String &p_key, const Variant &p_data) {
+	if (window_metadata.is_null()) {
+		window_metadata.instantiate();
+
+		Error err = window_metadata->load(session_path);
+		if (err != OK && err != ERR_FILE_NOT_FOUND) {
+			ERR_PRINT("Cannot load window metadata from file '" + session_path + "'.");
+		}
+	}
+
+	window_metadata->set_value(p_section, p_key, p_data);
+	window_metadata_dirty = true;
+}
+
+Variant DisplayServer::get_window_metadata(const String &p_section, const String &p_key, const Variant &p_default) const {
+	if (window_metadata.is_null()) {
+		window_metadata.instantiate();
+
+		Error err = window_metadata->load(session_path);
+		if (err != OK && err != ERR_FILE_NOT_FOUND) {
+			ERR_PRINT("Cannot load window metadata from file '" + session_path + "'.");
+		}
+	}
+
+	return window_metadata->get_value(p_section, p_key, p_default);
+}
+
+void DisplayServer::save_window_metadata() {
+	if (!window_metadata_dirty) {
+		return;
+	}
+
+	Error err = window_metadata->save(session_path);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + session_path + "'.");
+	window_metadata_dirty = false;
 }
 
 void DisplayServer::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
@@ -2279,5 +2315,7 @@ DisplayServer::DisplayServer() {
 }
 
 DisplayServer::~DisplayServer() {
+	// TODO: find better locations
+	singleton->save_window_metadata();
 	singleton = nullptr;
 }

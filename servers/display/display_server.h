@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/input/input_enums.h"
+#include "core/io/config_file.h"
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/object/object.h"
@@ -63,7 +64,6 @@ class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
-	static String session_path;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -366,13 +366,20 @@ private:
 	static bool window_early_clear_override_enabled;
 	static Color window_early_clear_override_color;
 
+	static String session_path;
+	static Ref<ConfigFile> window_metadata;
+	static bool window_metadata_dirty;
+
 protected:
 	static bool _get_window_early_clear_override(Color &r_color);
 
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 	static void set_session_path(const String &p_path);
-	static String get_session_path();
+
+	void set_window_metadata(const String &p_section, const String &p_key, const Variant &p_data);
+	Variant get_window_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
+	void save_window_metadata();
 
 	virtual Vector<DisplayServerEnums::WindowID> get_window_list() const = 0;
 

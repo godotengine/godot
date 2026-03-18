@@ -36,7 +36,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
-#include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -723,41 +722,13 @@ void Window::_make_window() {
 	}
 
 	DisplayServerEnums::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
-	bool restored_window = false;
 	Rect2i window_rect;
-	if (GLOBAL_GET("display/window/size/restore_window_properties") && !session_id.is_empty()) {
-		String path = DisplayServer::get_session_path();
-		Ref<ConfigFile> window_state;
-		window_state.instantiate();
-		window_state->load(path);
-
-		if (window_state->has_section(session_id)) {
-			position = window_state->get_value(session_id, "position");
-
-			String mode_str = window_state->get_value(session_id, "mode", "windowed");
-			if (mode_str == "windowed") {
-				mode = Mode::MODE_WINDOWED;
-				size = window_state->get_value(session_id, "size");
-			} else if (mode_str == "minimized") {
-				// TODO: is this correct?
-				mode = Mode::MODE_MINIMIZED;
-				size = window_state->get_value(session_id, "size");
-			} else if (mode_str == "maximized") {
-				// TODO: is this correct?
-				mode = Mode::MODE_MAXIMIZED;
-			} else if (mode_str == "fullscreen") {
-				// TODO: is this correct?
-				mode = Mode::MODE_FULLSCREEN;
-			} else {
-				mode = Mode::MODE_WINDOWED;
-			}
-
-			restored_window = true;
-			window_rect = Rect2i(position, size);
-		}
-	}
-
-	if (!restored_window) {
+	if (_should_restore_window()) {
+		mode = DisplayServer::get_singleton()->get_window_metadata(session_id, "mode", DisplayServerEnums::WINDOW_MODE_WINDOWED);
+		position = DisplayServer::get_singleton()->get_window_metadata(session_id, "position", position);
+		size = DisplayServer::get_singleton()->get_window_metadata(session_id, "size", size);
+		window_rect = Rect2i(position, size);
+	} else {
 		if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
 			window_rect = Rect2i(position, size);
 		} else if (initial_position == WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN) {
@@ -833,7 +804,6 @@ void Window::_clear_window() {
 	}
 
 	_update_from_window();
-	_save_window();
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
@@ -851,39 +821,16 @@ void Window::_clear_window() {
 	}
 }
 
-void Window::_save_window() {
+bool Window::_should_restore_window() const {
 	if (session_id.is_empty()) {
-		return;
+		return false;
 	}
 
-	String path = DisplayServer::get_session_path();
-	Ref<ConfigFile> state;
-	state.instantiate();
-	state->load(path);
-
-	state->set_value(session_id, "screen", get_current_screen());
-
-	Mode new_mode = get_mode();
-	switch (new_mode) {
-		case Window::MODE_WINDOWED:
-			state->set_value(session_id, "mode", "windowed");
-			state->set_value(session_id, "size", get_size());
-			break;
-		case Window::MODE_FULLSCREEN:
-		case Window::MODE_EXCLUSIVE_FULLSCREEN:
-			state->set_value(session_id, "mode", "fullscreen");
-			break;
-		case Window::MODE_MINIMIZED:
-			// ?????
-			break;
-		default:
-			state->set_value(session_id, "mode", "maximized");
-			break;
+	if (!GLOBAL_GET("display/window/size/restore_window_properties")) {
+		return false;
 	}
 
-	state->set_value(session_id, "position", get_position());
-
-	state->save(path);
+	return DisplayServer::get_singleton()->get_window_metadata(session_id, "tracked", false);
 }
 
 void Window::_rect_changed_callback(const Rect2i &p_callback) {
@@ -891,8 +838,6 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
 	}
-
-	_save_window();
 
 	if (position != p_callback.position) {
 		position = p_callback.position;
@@ -1119,27 +1064,16 @@ void Window::set_visible(bool p_visible) {
 		if (visible) {
 			embedder = embedder_vp;
 
-			bool restored_window = false;
-			if (GLOBAL_GET("display/window/size/restore_window_properties") && !session_id.is_empty()) {
-				String path = DisplayServer::get_session_path();
-				Ref<ConfigFile> window_state;
-				window_state.instantiate();
-				window_state->load(path);
-
-				if (window_state->has_section(session_id)) {
-					position = window_state->get_value(session_id, "position");
-					restored_window = true;
-				}
-			}
-
-			if (!restored_window) {
-				if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-					if (is_in_edited_scene_root()) {
-						Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
-						position = (screen_size - size) / 2;
-					} else {
-						position = (embedder->get_visible_rect().size - size) / 2;
-					}
+			if (_should_restore_window()) {
+				// Don't restore mode because when embedded, only Windowed makes sense.
+				position = DisplayServer::get_singleton()->get_window_metadata(session_id, "position", position);
+				size = DisplayServer::get_singleton()->get_window_metadata(session_id, "size", size);
+			} else if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+				if (is_in_edited_scene_root()) {
+					Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
+					position = (screen_size - size) / 2;
+				} else {
+					position = (embedder->get_visible_rect().size - size) / 2;
 				}
 			}
 
@@ -1153,7 +1087,6 @@ void Window::set_visible(bool p_visible) {
 				_update_viewport_for_hdr_output();
 			}
 		} else {
-			_save_window();
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
@@ -1170,6 +1103,13 @@ void Window::set_visible(bool p_visible) {
 			}
 		}
 	} else {
+		if (!session_id.is_empty()) {
+			DisplayServer::get_singleton()->set_window_metadata(session_id, "tracked", true);
+			DisplayServer::get_singleton()->set_window_metadata(session_id, "mode", mode);
+			DisplayServer::get_singleton()->set_window_metadata(session_id, "position", position);
+			DisplayServer::get_singleton()->set_window_metadata(session_id, "size", size);
+		}
+
 		if (get_tree() && get_tree()->is_accessibility_supported()) {
 			_accessibility_notify_exit(this);
 			if (!embedder_vp) {
