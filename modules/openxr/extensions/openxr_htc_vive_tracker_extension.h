@@ -45,7 +45,7 @@ public:
 
 	bool is_available();
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 private:
