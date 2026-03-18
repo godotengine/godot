@@ -34,7 +34,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server_enums.h"
 
-#include "thirdparty/misc/mikktspace.h"
+#include <thirdparty/misc/mikktspace.h>
 
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);

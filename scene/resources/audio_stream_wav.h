@@ -32,7 +32,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include "thirdparty/misc/qoa.h"
+#include <thirdparty/misc/qoa.h>
 
 class AudioStreamWAV;
 

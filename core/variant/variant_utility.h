@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "variant.h"
+#include "core/variant/variant.h"
 
 struct VariantUtilityFunctions {
 	// Math

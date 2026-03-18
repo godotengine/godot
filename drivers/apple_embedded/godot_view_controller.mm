@@ -30,14 +30,13 @@
 
 #import "godot_view_controller.h"
 
-#import "display_server_apple_embedded.h"
-#import "godot_keyboard_input_view.h"
-#import "godot_view_apple_embedded.h"
-#import "godot_view_renderer.h"
-#import "key_mapping_apple_embedded.h"
-#import "os_apple_embedded.h"
-
 #include "core/config/project_settings.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_keyboard_input_view.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_renderer.h"
+#import "drivers/apple_embedded/key_mapping_apple_embedded.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
 #include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
