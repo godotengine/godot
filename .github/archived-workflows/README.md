@@ -34,4 +34,9 @@ git commit -m "Re-enable build workflow"
 - **Triggers:** Manual dispatch
 - **Status:** Archived after the fork cutover because GitHub was still treating it as an active workflow and it is no longer part of the supported CI surface
 
+### `gaussian_pipeline_validation.yml.disabled`
+- **Purpose:** Legacy Windows pipeline smoke workflow
+- **Triggers:** Pushes, pull requests, and manual dispatch
+- **Status:** Archived after consolidation because its smoke coverage now runs inside `gaussian_production_gates.yml` using the shared Windows build artifact
+
 Workflows can be revisited once the module reaches a functional state and CI resources are available.
