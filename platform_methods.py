@@ -228,7 +228,7 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):
-        if entry.startswith("libgodot.") and entry.endswith(".xcframework"):
+        if (entry.startswith("libgodot.") or entry.startswith("libgodot_")) and entry.endswith(".xcframework"):
             parts = entry.split(".")
             if len(parts) >= 3 and parts[1] != platform:
                 full_path = os.path.join(app_dir, entry)
@@ -237,7 +237,11 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     if use_mkv:
         mvk_path = detect_mvk(env, "ios-arm64")
         if mvk_path != "":
-            shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
+            shutil.copytree(mvk_path + "/ios-arm64", app_dir + "/MoltenVK.xcframework/ios-arm64")
+            shutil.copytree(
+                mvk_path + "/ios-arm64_x86_64-simulator", app_dir + "/MoltenVK.xcframework/ios-arm64_x86_64-simulator"
+            )
+            shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
 
     # ZIP Xcode project bundle.
     zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
