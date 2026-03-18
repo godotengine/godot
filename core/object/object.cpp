@@ -1091,7 +1091,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
+	ERR_FAIL_COND_MSG(get_gdtype().get_signal_map(false).has(p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
 
 	ObjectSignalLock signal_lock(this);
 
@@ -1181,7 +1181,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
 #ifdef DEBUG_ENABLED
-			bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
+			bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_name);
 			//check in script
 			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
@@ -1409,7 +1409,7 @@ bool Object::has_signal(const StringName &p_name) const {
 		return true;
 	}
 
-	if (ClassDB::has_signal(get_class_name(), p_name)) {
+	if (get_gdtype().get_signal_map(false).has(p_name)) {
 		return true;
 	}
 
@@ -1516,7 +1516,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
 		//check in script
 		if (!signal_is_valid && script_instance) {
 			if (script_instance->get_script()->has_script_signal(p_signal)) {
@@ -1574,7 +1574,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
 		if (signal_is_valid) {
 			return false;
 		}
@@ -1594,7 +1594,7 @@ bool Object::has_connections(const StringName &p_signal) const {
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
 		if (signal_is_valid) {
 			return false;
 		}
@@ -1620,7 +1620,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
+		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal) ||
 				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
@@ -1643,7 +1643,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	if (s->slot_map.is_empty() && get_gdtype().get_signal_map(false).has(p_signal)) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
