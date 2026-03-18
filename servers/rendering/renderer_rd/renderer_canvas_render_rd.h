@@ -260,6 +260,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct CanvasLight {
 		RID texture;
+		RSE::CanvasItemTextureFilter texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 		struct {
 			bool enabled = false;
 			float z_far;

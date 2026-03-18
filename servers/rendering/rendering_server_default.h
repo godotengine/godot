@@ -1076,6 +1076,7 @@ public:
 	FUNC2(canvas_light_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_set_texture, RID, RID)
 	FUNC2(canvas_light_set_texture_offset, RID, const Vector2 &)
+	FUNC2(canvas_light_set_texture_filter, RID, RSE::CanvasItemTextureFilter)
 	FUNC2(canvas_light_set_color, RID, const Color &)
 	FUNC2(canvas_light_set_height, RID, float)
 	FUNC2(canvas_light_set_energy, RID, float)

@@ -201,6 +201,15 @@ Light2D::BlendMode Light2D::get_blend_mode() const {
 	return blend_mode;
 }
 
+void Light2D::set_texture_filter(CanvasItem::TextureFilter p_filter) {
+	texture_filter = p_filter;
+	RS::get_singleton()->canvas_light_set_texture_filter(canvas_light, RSE::CanvasItemTextureFilter(p_filter));
+}
+
+CanvasItem::TextureFilter Light2D::get_texture_filter() const {
+	return texture_filter;
+}
+
 void Light2D::_physics_interpolated_changed() {
 	RenderingServer::get_singleton()->canvas_light_set_interpolated(canvas_light, is_physics_interpolated());
 }
@@ -302,6 +311,9 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &Light2D::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &Light2D::get_blend_mode);
 
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &Light2D::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &Light2D::get_texture_filter);
+
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &Light2D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &Light2D::get_height);
 
@@ -310,6 +322,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Add,Subtract,Mix"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear"), "set_texture_filter", "get_texture_filter");
 	ADD_GROUP("Range", "range_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");

@@ -319,6 +319,7 @@ public:
 	void canvas_light_set_transform(RID p_light, const Transform2D &p_transform);
 	void canvas_light_set_texture(RID p_light, RID p_texture);
 	void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset);
+	void canvas_light_set_texture_filter(RID p_light, RSE::CanvasItemTextureFilter p_filter);
 	void canvas_light_set_color(RID p_light, const Color &p_color);
 	void canvas_light_set_height(RID p_light, float p_height);
 	void canvas_light_set_energy(RID p_light, float p_energy);

@@ -882,6 +882,7 @@ public:
 	virtual void canvas_light_set_texture_scale(RID p_light, float p_scale) = 0;
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture) = 0;
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) = 0;
+	virtual void canvas_light_set_texture_filter(RID p_light, RSE::CanvasItemTextureFilter p_filter) = 0;
 
 	virtual void canvas_light_set_blend_mode(RID p_light, RSE::CanvasLightBlendMode p_mode) = 0;
 

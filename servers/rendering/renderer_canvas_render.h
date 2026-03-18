@@ -71,6 +71,7 @@ public:
 		RSE::CanvasLightMode mode;
 		RSE::CanvasLightBlendMode blend_mode;
 		RID texture;
+		RSE::CanvasItemTextureFilter texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		Vector2 texture_offset;
 		RID canvas;
 		bool use_shadow;

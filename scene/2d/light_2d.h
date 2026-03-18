@@ -69,6 +69,7 @@ private:
 	Vector2 texture_offset;
 	ShadowFilter shadow_filter = SHADOW_FILTER_NONE;
 	BlendMode blend_mode = BLEND_MODE_ADD;
+	CanvasItem::TextureFilter texture_filter = CanvasItem::TEXTURE_FILTER_PARENT_NODE;
 
 	void _update_light_visibility();
 
@@ -129,6 +130,9 @@ public:
 
 	void set_blend_mode(BlendMode p_mode);
 	BlendMode get_blend_mode() const;
+
+	void set_texture_filter(CanvasItem::TextureFilter p_filter) override;
+	CanvasItem::TextureFilter get_texture_filter() const;
 
 	Light2D();
 	~Light2D();

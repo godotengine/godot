@@ -2156,6 +2156,14 @@ void RendererCanvasCull::canvas_light_set_texture_offset(RID p_light, const Vect
 	clight->texture_offset = p_offset;
 }
 
+void RendererCanvasCull::canvas_light_set_texture_filter(RID p_light, RSE::CanvasItemTextureFilter p_filter) {
+	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(clight);
+
+	clight->texture_filter = p_filter;
+	clight->version++;
+}
+
 void RendererCanvasCull::canvas_light_set_color(RID p_light, const Color &p_color) {
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(clight);
