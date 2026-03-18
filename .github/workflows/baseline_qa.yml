@@ -123,7 +123,7 @@ jobs:
       run: |
         mkdir -p ~/.config/godot
         mkdir -p ~/.local/share/godot
-        "$GODOT_BINARY" --headless --verbose --import --path . --quit
+        "$GODOT_BINARY" --headless --verbose --import --path tests/examples/godot/test_project --quit
         echo "✅ Project imported successfully"
 
     - name: Generate test data
