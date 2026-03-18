@@ -42,8 +42,8 @@
 #define _DEBUG
 #endif
 #endif
-#include "thirdparty/re-spirv/re-spirv.h"
-#include "thirdparty/vulkan/vk_mem_alloc.h"
+#include <thirdparty/re-spirv/re-spirv.h>
+#include <thirdparty/vulkan/vk_mem_alloc.h>
 
 #include <drivers/vulkan/godot_vulkan.h>
 

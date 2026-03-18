@@ -35,7 +35,7 @@
 #include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
 
 #ifndef PHYSICS_3D_DISABLED
-#include "box_shape_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {

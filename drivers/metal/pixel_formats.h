@@ -54,9 +54,8 @@
 
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 
-#include "inflection_map.h"
-#include "metal_device_properties.h"
-
+#include "drivers/metal/inflection_map.h"
+#include "drivers/metal/metal_device_properties.h"
 #include "servers/rendering/rendering_device_commons.h"
 
 #ifdef __OBJC__

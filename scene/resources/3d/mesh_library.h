@@ -37,7 +37,7 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
-#include "shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 class MeshLibrary : public Resource {
