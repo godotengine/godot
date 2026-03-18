@@ -9,7 +9,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 using namespace GaussianProjectionValidation;
 
@@ -32,13 +32,13 @@ static bool approx_equal(float p_a, float p_b, float p_rel_tol = 1e-4f, float p_
 
 static Basis basis_from_euler_degrees(float p_pitch_deg, float p_yaw_deg, float p_roll_deg) {
     Vector3 euler_rad(Math::deg_to_rad(p_pitch_deg), Math::deg_to_rad(p_yaw_deg), Math::deg_to_rad(p_roll_deg));
-    return Basis::from_euler(euler_rad, EulerOrder::XYZ);
+    return Basis::from_euler(euler_rad, Basis::EulerOrder::XYZ);
 }
 
 static Quaternion random_unit_quaternion(RandomNumberGenerator &p_rng) {
     float u1 = p_rng.randf();
-    float u2 = p_rng.randf() * (float)Math::TAU;
-    float u3 = p_rng.randf() * (float)Math::TAU;
+    float u2 = p_rng.randf() * Math_TAU;
+    float u3 = p_rng.randf() * Math_TAU;
     float sqrt1 = Math::sqrt(1.0f - u1);
     float sqrt2 = Math::sqrt(u1);
     return Quaternion(Math::sin(u2) * sqrt1, Math::cos(u2) * sqrt1, Math::sin(u3) * sqrt2, Math::cos(u3) * sqrt2);
@@ -51,9 +51,7 @@ static void seed_rng(RandomNumberGenerator &p_rng, uint64_t p_seed) {
 } // namespace
 
 TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -62,7 +60,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
     Vector<ProjectionInput> ground_truth;
     String load_error;
     Error load_err = validator.load_ground_truth("tests/data/projection_ground_truth.json", ground_truth, load_error);
-    INFO(vformat("Ground truth load error: %s", load_error));
+    INFO(String("Ground truth load error: ") + load_error);
     REQUIRE(load_err == OK);
     REQUIRE(!ground_truth.is_empty());
 
@@ -78,7 +76,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
         ProjectedGaussian cpu = validator.project_cpu(test_case);
         cpu_results.write[i] = cpu;
 
-        INFO(vformat("Case: %s", test_case.name));
+        INFO(String("Case: ") + test_case.name);
         CHECK(approx_equal(cpu.cov_xx, test_case.expected.cov_xx));
         CHECK(approx_equal(cpu.cov_yy, test_case.expected.cov_yy));
         CHECK(approx_equal(cpu.cov_xy, test_case.expected.cov_xy, 1e-3f, 1e-4f));
@@ -109,9 +107,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Numerical stability edge cases") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -160,9 +156,7 @@ TEST_CASE("[GaussianSplatting][Projection] Numerical stability edge cases") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical validation") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -170,7 +164,7 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
 
     RandomNumberGenerator rng;
     seed_rng(rng, RANDOM_ORIENTATION_SEED);
-    INFO(vformat("RNG seed: %s", itos((int64_t)RANDOM_ORIENTATION_SEED)));
+    INFO(String("RNG seed: ") + itos((int64_t)RANDOM_ORIENTATION_SEED));
 
     const int sample_count = 64;
     Vector<ProjectionInput> samples;
@@ -179,10 +173,10 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
     for (int i = 0; i < sample_count; ++i) {
         ProjectionInput sample;
         sample.name = String("random_") + itos(i);
-        sample.scale = Vector3(rng.randf_range(0.2f, 4.0f), rng.randf_range(0.2f, 4.0f), rng.randf_range(0.2f, 4.0f));
+        sample.scale = Vector3(rng.random(0.2f, 4.0f), rng.random(0.2f, 4.0f), rng.random(0.2f, 4.0f));
         sample.rotation = random_unit_quaternion(rng);
-        Vector3 view_euler(rng.randf_range((float)-Math::PI, (float)Math::PI), rng.randf_range((float)-Math::PI, (float)Math::PI), rng.randf_range((float)-Math::PI, (float)Math::PI));
-        sample.view_basis = Basis::from_euler(view_euler, EulerOrder::XYZ);
+        Vector3 view_euler(rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI));
+        sample.view_basis = Basis::from_euler(view_euler, Basis::EulerOrder::XYZ);
         samples.write[i] = sample;
     }
 
@@ -236,9 +230,7 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Camera angle coverage") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -287,9 +279,7 @@ TEST_CASE("[GaussianSplatting][Projection] Camera angle coverage") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -299,12 +289,12 @@ TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
     base_case.name = "invariance";
     base_case.scale = Vector3(0.75f, 1.5f, 2.25f);
     base_case.rotation = Quaternion(Vector3(0.3f, 0.7f, -0.2f).normalized(), Math::deg_to_rad(37.0f));
-    base_case.view_basis = Basis::from_euler(Vector3(Math::deg_to_rad(25.0f), Math::deg_to_rad(-15.0f), Math::deg_to_rad(5.0f)), EulerOrder::XYZ);
+    base_case.view_basis = Basis::from_euler(Vector3(Math::deg_to_rad(25.0f), Math::deg_to_rad(-15.0f), Math::deg_to_rad(5.0f)), Basis::EulerOrder::XYZ);
 
     double scale_error = validator.compute_scale_invariance_error(base_case, 1.8f);
     CHECK(scale_error < 5e-3);
 
-    Basis additional_rotation = Basis::from_euler(Vector3(Math::deg_to_rad(12.0f), Math::deg_to_rad(-9.0f), Math::deg_to_rad(3.0f)), EulerOrder::XYZ);
+    Basis additional_rotation = Basis::from_euler(Vector3(Math::deg_to_rad(12.0f), Math::deg_to_rad(-9.0f), Math::deg_to_rad(3.0f)), Basis::EulerOrder::XYZ);
     double rotation_error = validator.compute_rotation_equivariance_error(base_case, additional_rotation);
     CHECK(rotation_error < 5e-3);
 
@@ -313,9 +303,7 @@ TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] CPU vs GPU performance benchmark") {
-    RenderingServer *rs = RenderingServer::get_singleton();
-    REQUIRE(rs != nullptr);
-    RenderingDevice *rd = rs->create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -327,13 +315,13 @@ TEST_CASE("[GaussianSplatting][Projection] CPU vs GPU performance benchmark") {
 
     RandomNumberGenerator rng;
     seed_rng(rng, PERFORMANCE_BENCHMARK_SEED);
-    INFO(vformat("RNG seed: %s", itos((int64_t)PERFORMANCE_BENCHMARK_SEED)));
+    INFO(String("RNG seed: ") + itos((int64_t)PERFORMANCE_BENCHMARK_SEED));
 
     for (int i = 0; i < benchmark_count; ++i) {
         ProjectionInput input;
-        input.scale = Vector3(rng.randf_range(0.5f, 3.0f), rng.randf_range(0.5f, 3.0f), rng.randf_range(0.5f, 3.0f));
+        input.scale = Vector3(rng.random(0.5f, 3.0f), rng.random(0.5f, 3.0f), rng.random(0.5f, 3.0f));
         input.rotation = random_unit_quaternion(rng);
-        input.view_basis = Basis::from_euler(Vector3(rng.randf_range((float)-Math::PI, (float)Math::PI), rng.randf_range((float)-Math::PI, (float)Math::PI), rng.randf_range((float)-Math::PI, (float)Math::PI)), EulerOrder::XYZ);
+        input.view_basis = Basis::from_euler(Vector3(rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI)), Basis::EulerOrder::XYZ);
         inputs.write[i] = input;
     }
 

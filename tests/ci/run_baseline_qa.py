@@ -238,7 +238,7 @@ class BaselineQARunner:
 
         return details
 
-    def run_all_tests(self, quick: bool = False, category: Optional[str] = None) -> bool:
+    def run_all_tests(self, quick: bool = False, category: Optional[str] = None, categories: Optional[set] = None) -> bool:
         """Run baseline QA tests with optional filtering."""
         print("=== Baseline QA Test Suite ===")
         try:
@@ -311,7 +311,9 @@ class BaselineQARunner:
         ]
 
         selected_tests = tests
-        if category:
+        if categories:
+            selected_tests = [test for test in tests if test.get("category") in categories]
+        elif category:
             selected_tests = [test for test in tests if test.get("category") == category]
         elif quick:
             quick_categories = {"ply", "sorting"}
@@ -765,6 +767,10 @@ def main(argv: Optional[List[str]] = None):
         help="Run only the specified test category. Use 'all' for the full suite.",
     )
     parser.add_argument(
+        "--categories",
+        help="Comma-separated list of test categories to run (e.g., 'ply,pipeline,runtime,module').",
+    )
+    parser.add_argument(
         "--qa-baseline",
         default=str(DEFAULT_QA_BASELINE_PATH.relative_to(ROOT)),
         help="Path to QA baseline JSON.",
@@ -816,10 +822,19 @@ def main(argv: Optional[List[str]] = None):
     if args.update_qa_baseline and args.require_qa_baseline:
         print("[WARN] Ignoring --require-qa-baseline because --update-qa-baseline was provided.")
 
+    # Resolve --categories (plural) into a set if provided
+    categories_set = None
+    if args.categories:
+        categories_set = {normalize_test_category(c.strip()) for c in args.categories.split(",")}
+
     # Run tests
     run_quick = args.quick and not category_arg_provided
     runner = BaselineQARunner(godot_binary)
-    success = runner.run_all_tests(quick=run_quick, category=category)
+    success = runner.run_all_tests(
+        quick=run_quick,
+        category=category,
+        categories=categories_set,
+    )
 
     qa_results_path = ROOT / "tests" / "ci" / "qa_results.json"
     qa_baseline_path = resolve_root_path(args.qa_baseline)
