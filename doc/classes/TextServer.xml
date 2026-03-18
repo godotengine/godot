@@ -406,6 +406,36 @@
 				Returns oversampling factor override. If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
+		<method name="font_get_palette_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the array in the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors. Colors can be overridden using [method font_set_palette_custom_colors].
+			</description>
+		</method>
+		<method name="font_get_palette_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the number of predefined color palettes. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
+			</description>
+		</method>
+		<method name="font_get_palette_custom_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns array of custom colors to override predefined palette.
+			</description>
+		</method>
+		<method name="font_get_palette_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the name of the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
+			</description>
+		</method>
 		<method name="font_get_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -540,6 +570,13 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_get_used_palette" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns used palette index.
 			</description>
 		</method>
 		<method name="font_get_variation_coordinates" qualifiers="const">
@@ -882,7 +919,7 @@
 		<method name="font_set_modulate_color_glyphs">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="force_autohinter" type="bool" />
+			<param index="1" name="modulate" type="bool" />
 			<description>
 				If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
 			</description>
@@ -934,6 +971,14 @@
 			<param index="1" name="oversampling" type="float" />
 			<description>
 				If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_set_palette_custom_colors">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="colors" type="PackedColorArray" />
+			<description>
+				Sets array of custom colors to override predefined palette. Set to empty array to reset overrides. Use [code]Color(0, 0, 0, 0)[/code], to keep predefined palette color at specific position.
 			</description>
 		</method>
 		<method name="font_set_scale">
@@ -1042,6 +1087,14 @@
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
 				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_set_used_palette">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Sets used palette index.
 			</description>
 		</method>
 		<method name="font_set_variation_coordinates">
