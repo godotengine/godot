@@ -26,7 +26,7 @@ def can_build():
     return True
 
 
-def get_opts():
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable, EnumVariable
 
     # Dependencies folder.
@@ -48,7 +48,11 @@ def get_opts():
     return [
         EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
+        BoolVariable(
+            "use_static_cpp",
+            "Link libgcc and libstdc++ statically for better portability",
+            env.get_default("use_static_cpp", True),
+        ),
         BoolVariable("use_coverage", "Test Godot coverage", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),

@@ -6,6 +6,7 @@ EnsurePythonVersion(3, 9)
 
 # System
 import glob
+import inspect
 import os
 import pickle
 import sys
@@ -61,14 +62,10 @@ import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
-if ARGUMENTS.get("target", "editor") == "editor":
-    _helper_module("editor.editor_builders", "editor/editor_builders.py")
-    _helper_module("editor.template_builders", "editor/template_builders.py")
-
 # Scan possible build platforms
 
 platform_list = []  # list of platforms
-platform_opts = {}  # options for each platform
+platform_get_opts = {}  # getter to options for each platform
 platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
 platform_exporters = []
@@ -101,12 +98,127 @@ for x in sorted(glob.glob("platform/*")):
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
         platform_list += [x]
-        platform_opts[x] = detect.get_opts()
+        # Only store getter to load options after the initial update.
+        platform_get_opts[x] = detect.get_opts
         platform_flags[x] = detect.get_flags()
         if isinstance(platform_flags[x], list):  # backwards compatibility
             platform_flags[x] = {flag[0]: flag[1] for flag in platform_flags[x]}
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
+
+
+# Early build options
+# Explicitly handle early settings and aliases
+
+customs = ["custom.py"]
+
+profile = ARGUMENTS.get("profile", "")
+if profile:
+    if os.path.isfile(profile):
+        customs.append(profile)
+    elif os.path.isfile(profile + ".py"):
+        customs.append(profile + ".py")
+
+early_env = Environment(tools=[])
+early_env["platform_defaults"] = {}
+early_opts = Variables(customs, ARGUMENTS)
+
+early_opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
+early_opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
+early_opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+early_opts.Add(
+    BoolVariable(
+        "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
+    )
+)
+
+# Update early environment to have all above options defined
+# to configure further defaults.
+early_opts.Update(early_env)
+
+
+# Platform selection: validate input.
+
+if not early_env["platform"]:
+    # Missing `platform` argument, try to detect platform automatically
+    if (
+        sys.platform.startswith("linux")
+        or sys.platform.startswith("dragonfly")
+        or sys.platform.startswith("freebsd")
+        or sys.platform.startswith("netbsd")
+        or sys.platform.startswith("openbsd")
+    ):
+        early_env["platform"] = "linuxbsd"
+    elif sys.platform == "darwin":
+        early_env["platform"] = "macos"
+    elif sys.platform == "win32":
+        early_env["platform"] = "windows"
+
+    if early_env["platform"]:
+        print(f"Automatically detected platform: {early_env['platform']}")
+
+# Deprecated aliases kept for compatibility.
+if early_env["platform"] in compatibility_platform_aliases:
+    alias = early_env["platform"]
+    platform = compatibility_platform_aliases[alias]
+    print_warning(
+        f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".'
+    )
+    early_env["platform"] = platform
+
+# Alias for convenience.
+if early_env["platform"] in ["linux", "bsd"]:
+    early_env["platform"] = "linuxbsd"
+
+if early_env["platform"] not in platform_list:
+    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
+    text += "Please run SCons again and select a valid platform: platform=<string>."
+
+    if early_env["platform"] == "list":
+        print(text)
+    elif not early_env["platform"]:
+        print_error("Could not detect platform automatically.\n" + text)
+    else:
+        print_error(f'Invalid target platform "{early_env["platform"]}".\n' + text)
+
+    Exit(0 if early_env["platform"] == "list" else 255)
+
+
+# Platform-specific flags.
+# These can sometimes override default options, so they need to be processed
+# as early as possible to ensure that we're using the correct values.
+flag_list = platform_flags[early_env["platform"]]
+for key, value in flag_list.items():
+    # Configure platforms defaults, used in methods.early_env_get_default
+    local_defaults = early_env["platform_defaults"]
+    if early_env["platform"] not in local_defaults:
+        local_defaults[early_env["platform"]] = {}
+    local_defaults[early_env["platform"]][key] = value
+
+
+# Configure defaults from aliases after parsing platform's flags to
+# override them if needed.
+
+# 'dev_mode' and 'production' are aliases to set default options if they haven't been
+# set manually by the user.
+if early_env["dev_mode"]:
+    early_env["debug_symbols"] = True
+    early_env["verbose"] = True
+    early_env["warnings"] = "extra"
+    early_env["werror"] = False
+    early_env["tests"] = True
+    early_env["strict_checks"] = True
+
+if early_env["production"]:
+    early_env["use_static_cpp"] = True
+    early_env["debug_symbols"] = False
+    if "android" not in early_env["platform_defaults"]:
+        early_env["platform_defaults"]["android"] = {}
+    early_env["platform_defaults"]["android"]["swappy"] = True
+
+    # LTO "auto" means we handle the preferred option in each platform detect.py.
+    early_env["lto"] = "auto"
+
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually. However we enforce no "tools", which we register
@@ -138,6 +250,10 @@ env.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
 env.__class__.module_add_dependencies = methods.module_add_dependencies
 env.__class__.module_check_dependencies = methods.module_check_dependencies
 
+# Add a way to get the default values configured from get_flags and aliases.
+env["early_env"] = early_env
+env.__class__.get_default = methods.early_env_get_default
+
 env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
 
@@ -146,44 +262,49 @@ env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).ab
 
 # Build options
 
-customs = ["custom.py"]
-
-profile = ARGUMENTS.get("profile", "")
-if profile:
-    if os.path.isfile(profile):
-        customs.append(profile)
-    elif os.path.isfile(profile + ".py"):
-        customs.append(profile + ".py")
-
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
 opts.Add(
     EnumVariable(
-        "target", "Compilation target", "editor", ["editor", "template_release", "template_debug"], ignorecase=2
+        "target",
+        "Compilation target",
+        env.get_default("target", "editor"),
+        ["editor", "template_release", "template_debug"],
+        ignorecase=2,
     )
 )
-opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases, ignorecase=2))
-opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
+opts.Add(
+    EnumVariable(
+        "arch",
+        "CPU architecture",
+        env.get_default("arch", "auto"),
+        ["auto"] + architectures,
+        architecture_aliases,
+        ignorecase=2,
+    )
+)
 opts.Add(
     EnumVariable(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
-        "auto",
+        env.get_default("optimize", "auto"),
         ["auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"],
         ignorecase=2,
     )
 )
-opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
+opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", env.get_default("debug_symbols", False)))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", False))
 opts.Add(
     EnumVariable(
-        "lto", "Link-time optimization (production builds)", "none", ["none", "auto", "thin", "full"], ignorecase=2
+        "lto",
+        "Link-time optimization (production builds)",
+        env.get_default("lto", "none"),
+        ["none", "auto", "thin", "full"],
+        ignorecase=2,
     )
 )
-opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
@@ -194,11 +315,21 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
-opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
-opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
+opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", env.get_default("vulkan", True)))
+opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", env.get_default("opengl3", True)))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
-opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
-opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
+opts.Add(
+    BoolVariable(
+        "metal",
+        "Enable the Metal rendering driver on supported platforms (Apple arm64 only)",
+        env.get_default("metal", False),
+    )
+)
+opts.Add(
+    BoolVariable(
+        "use_volk", "Use the volk library to load the Vulkan loader dynamically", env.get_default("use_volk", True)
+    )
+)
 opts.Add(BoolVariable("accesskit", "Enable the AccessKit driver for screen reader support", True))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
 opts.Add(
@@ -224,12 +355,7 @@ opts.Add(
 
 
 # Advanced options
-opts.Add(
-    BoolVariable(
-        "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
-    )
-)
-opts.Add(BoolVariable("tests", "Build the unit tests", False))
+opts.Add(BoolVariable("tests", "Build the unit tests", env.get_default("tests", False)))
 opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster incremental builds", False))
 opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", False))
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
@@ -241,12 +367,18 @@ opts.Add(
     "Use up to N jobs when compiling (equivalent to `-j N`). Defaults to max jobs - 1. Ignored if -j is used.",
     "",
 )
-opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", env.get_default("verbose", False)))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(
-    EnumVariable("warnings", "Level of compilation warnings", "all", ["extra", "all", "moderate", "no"], ignorecase=2)
+    EnumVariable(
+        "warnings",
+        "Level of compilation warnings",
+        env.get_default("warnings", "all"),
+        ["extra", "all", "moderate", "no"],
+        ignorecase=2,
+    )
 )
-opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
+opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", env.get_default("werror", False)))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
@@ -279,7 +411,9 @@ opts.Add(
     "",
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
-opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
+opts.Add(
+    BoolVariable("strict_checks", "Enforce stricter checks (debug option)", env.get_default("strict_checks", False))
+)
 opts.Add(
     BoolVariable(
         "limit_transitive_includes", "Attempt to limit the amount of transitive includes in system headers", True
@@ -331,7 +465,13 @@ opts.Add(BoolVariable("builtin_mbedtls", "Use the built-in mbedTLS library", Tru
 opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable("builtin_openxr", "Use the built-in OpenXR library", True))
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
-opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
+opts.Add(
+    BoolVariable(
+        "builtin_pcre2_with_jit",
+        "Use JIT compiler for the built-in PCRE2 library",
+        env.get_default("builtin_pcre2_with_jit", True),
+    )
+)
 opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navigation library", True))
 opts.Add(BoolVariable("builtin_rvo2_2d", "Use the built-in RVO2 2D library", True))
 opts.Add(BoolVariable("builtin_rvo2_3d", "Use the built-in RVO2 3D library", True))
@@ -358,8 +498,20 @@ opts.Add("c_compiler_launcher", "C compiler launcher (e.g. `ccache`)")
 opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 
 # Update the environment to have all above options defined
-# in following code (especially platform and custom_modules).
+# in following code (especially custom_modules).
 opts.Update(env)
+
+# Copy early build options.
+env["platform"] = early_env["platform"]
+env["dev_build"] = early_env["dev_build"]
+env["production"] = early_env["production"]
+env["dev_mode"] = early_env["dev_mode"]
+env["supported"] = early_env["platform_defaults"][env["platform"]].get("supported", [])
+
+# Load additional editor specific modules.
+if env["target"] == "editor":
+    _helper_module("editor.editor_builders", "editor/editor_builders.py")
+    _helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
@@ -370,63 +522,23 @@ if env["import_env_vars"]:
         if env_var in os.environ:
             env["ENV"][env_var] = os.environ[env_var]
 
-# Platform selection: validate input, and add options.
-
-if not env["platform"]:
-    # Missing `platform` argument, try to detect platform automatically
-    if (
-        sys.platform.startswith("linux")
-        or sys.platform.startswith("dragonfly")
-        or sys.platform.startswith("freebsd")
-        or sys.platform.startswith("netbsd")
-        or sys.platform.startswith("openbsd")
-    ):
-        env["platform"] = "linuxbsd"
-    elif sys.platform == "darwin":
-        env["platform"] = "macos"
-    elif sys.platform == "win32":
-        env["platform"] = "windows"
-
-    if env["platform"]:
-        print(f"Automatically detected platform: {env['platform']}")
-
-# Deprecated aliases kept for compatibility.
-if env["platform"] in compatibility_platform_aliases:
-    alias = env["platform"]
-    platform = compatibility_platform_aliases[alias]
-    print_warning(
-        f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".'
-    )
-    env["platform"] = platform
-
-# Alias for convenience.
-if env["platform"] in ["linux", "bsd"]:
-    env["platform"] = "linuxbsd"
-
-if env["platform"] not in platform_list:
-    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
-    text += "Please run SCons again and select a valid platform: platform=<string>."
-
-    if env["platform"] == "list":
-        print(text)
-    elif not env["platform"]:
-        print_error("Could not detect platform automatically.\n" + text)
-    else:
-        print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
-
-    Exit(0 if env["platform"] == "list" else 255)
-
-# Add platform-specific options.
-if env["platform"] in platform_opts:
-    opts.AddVariables(*platform_opts[env["platform"]])
-
 # Platform-specific flags.
-# These can sometimes override default options, so they need to be processed
-# as early as possible to ensure that we're using the correct values.
+# Allow platform flags to override "auto" and missing settings.
 flag_list = platform_flags[env["platform"]]
 for key, value in flag_list.items():
-    if key not in ARGUMENTS or ARGUMENTS[key] == "auto":  # Allow command line to override platform flags
+    # Can the setting even be missing from the env at this point?
+    if key not in env or env[key] == "auto":
         env[key] = value
+
+# Add platform-specific options.
+if env["platform"] in platform_get_opts:
+    get_opts_func = platform_get_opts[env["platform"]]
+    get_opts_sig = inspect.signature(get_opts_func)
+    if len(get_opts_sig.parameters) == 0:  # backwards compatibility
+        platform_opts = get_opts_func()
+    else:
+        platform_opts = get_opts_func(env)
+    opts.AddVariables(*platform_opts)
 
 # Update the environment to take platform-specific options into account.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
@@ -474,11 +586,19 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
-    opts.Add(BoolVariable(f"module_{name}_enabled", f"Enable module '{name}'", enabled))
+    opts.Add(
+        BoolVariable(
+            f"module_{name}_enabled", f"Enable module '{name}'", env.get_default(f"module_{name}_enabled", enabled)
+        )
+    )
 
     # Add module-specific options.
     try:
-        opts.AddVariables(*config.get_opts(env["platform"]))
+        module_params_names = list(inspect.signature(config.get_opts).parameters.keys())
+        if module_params_names[0] == "env":
+            opts.AddVariables(*config.get_opts(env))
+        else:  # backwards compatibility
+            opts.AddVariables(*config.get_opts(env["platform"]))
     except AttributeError:
         pass
 
@@ -534,8 +654,6 @@ if env["optimize"] == "auto":
     else:  # Release
         opt_level = "speed"
     env["optimize"] = opt_level
-
-env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
 if env.editor_build:
     env.Append(CPPDEFINES=["TOOLS_ENABLED"])
@@ -654,22 +772,6 @@ if env["build_profile"] != "":
     except FileNotFoundError:
         print_error(f'Feature build profile not found at: "{env["build_profile"]}"')
         Exit(255)
-
-# 'dev_mode' and 'production' are aliases to set default options if they haven't been
-# set manually by the user.
-if env["dev_mode"]:
-    env["verbose"] = methods.get_cmdline_bool("verbose", True)
-    env["warnings"] = ARGUMENTS.get("warnings", "extra")
-    env["werror"] = methods.get_cmdline_bool("werror", True)
-    env["tests"] = methods.get_cmdline_bool("tests", True)
-    env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
-if env["production"]:
-    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-    if env["platform"] == "android":
-        env["swappy"] = methods.get_cmdline_bool("swappy", True)
-    # LTO "auto" means we handle the preferred option in each platform detect.py.
-    env["lto"] = ARGUMENTS.get("lto", "auto")
 
 if env["strict_checks"]:
     env.Append(CPPDEFINES=["STRICT_CHECKS"])
