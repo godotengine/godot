@@ -14,9 +14,9 @@
 #include "unicode/unistr.h"
 #include "unicode/uobject.h"
 
+#include "charstr.h"
 #include "cmemory.h"
 #include "cstring.h"
-#include "fixedstring.h"
 #include "uassert.h"
 #include "ucln_cmn.h"
 #include "uhash.h"
@@ -53,7 +53,7 @@ struct TypeAlias : public icu::UMemory {
     std::string_view from;
 };
 
-static icu::MemoryPool<icu::FixedString>* gKeyTypeStringPool = nullptr;
+static icu::MemoryPool<icu::CharString>* gKeyTypeStringPool = nullptr;
 static icu::MemoryPool<LocExtKeyData>* gLocExtKeyDataEntries = nullptr;
 static icu::MemoryPool<LocExtType>* gLocExtTypeEntries = nullptr;
 static icu::MemoryPool<TypeAlias>* gTypeAliasEntries = nullptr;
@@ -108,7 +108,7 @@ initFromResourceBundle(UErrorCode& sts) {
     LocalUResourceBundlePointer bcpTypeAliasRes(ures_getByKey(keyTypeDataRes.getAlias(), "bcpTypeAlias", nullptr, &tmpSts));
 
     // initialize pools storing dynamically allocated objects
-    gKeyTypeStringPool = new icu::MemoryPool<icu::FixedString>;
+    gKeyTypeStringPool = new icu::MemoryPool<icu::CharString>;
     if (gKeyTypeStringPool == nullptr) {
         sts = U_MEMORY_ALLOCATION_ERROR;
         return;
@@ -146,12 +146,12 @@ initFromResourceBundle(UErrorCode& sts) {
         // empty value indicates that BCP key is same with the legacy key.
         const char* bcpKeyId = legacyKeyId;
         if (!uBcpKeyId.isEmpty()) {
-            icu::FixedString* bcpKeyIdBuf = gKeyTypeStringPool->create();
+            icu::CharString* bcpKeyIdBuf = gKeyTypeStringPool->create();
             if (bcpKeyIdBuf == nullptr) {
                 sts = U_MEMORY_ALLOCATION_ERROR;
                 break;
             }
-            copyInvariantChars(uBcpKeyId, *bcpKeyIdBuf, sts);
+            bcpKeyIdBuf->appendInvariantChars(uBcpKeyId, sts);
             if (U_FAILURE(sts)) {
                 break;
             }
@@ -220,16 +220,18 @@ initFromResourceBundle(UErrorCode& sts) {
                     // a timezone key uses a colon instead of a slash in the resource.
                     // e.g. America:Los_Angeles
                     if (uprv_strchr(legacyTypeId, ':') != nullptr) {
-                        U_ASSERT(legacyTypeId != nullptr && *legacyTypeId != '\0');
-                        std::string_view legacyTypeIdView = legacyTypeId;
-                        icu::FixedString* legacyTypeIdBuf = gKeyTypeStringPool->create(legacyTypeIdView);
-                        if (legacyTypeIdBuf == nullptr || legacyTypeIdBuf->isEmpty()) {
+                        icu::CharString* legacyTypeIdBuf =
+                                gKeyTypeStringPool->create(legacyTypeId, sts);
+                        if (legacyTypeIdBuf == nullptr) {
                             sts = U_MEMORY_ALLOCATION_ERROR;
                             break;
                         }
+                        if (U_FAILURE(sts)) {
+                            break;
+                        }
                         std::replace(
-                                legacyTypeIdBuf->getAlias(),
-                                legacyTypeIdBuf->getAlias() + legacyTypeIdView.length(),
+                                legacyTypeIdBuf->data(),
+                                legacyTypeIdBuf->data() + legacyTypeIdBuf->length(),
                                 ':', '/');
                         legacyTypeId = legacyTypeIdBuf->data();
                     }
@@ -243,12 +245,12 @@ initFromResourceBundle(UErrorCode& sts) {
                 // empty value indicates that BCP type is same with the legacy type.
                 const char* bcpTypeId = legacyTypeId;
                 if (!uBcpTypeId.isEmpty()) {
-                    icu::FixedString* bcpTypeIdBuf = gKeyTypeStringPool->create();
+                    icu::CharString* bcpTypeIdBuf = gKeyTypeStringPool->create();
                     if (bcpTypeIdBuf == nullptr) {
                         sts = U_MEMORY_ALLOCATION_ERROR;
                         break;
                     }
-                    copyInvariantChars(uBcpTypeId, *bcpTypeIdBuf, sts);
+                    bcpTypeIdBuf->appendInvariantChars(uBcpTypeId, sts);
                     if (U_FAILURE(sts)) {
                         break;
                     }
@@ -300,18 +302,20 @@ initFromResourceBundle(UErrorCode& sts) {
                             if (isTZ) {
                                 // replace colon with slash if necessary
                                 if (uprv_strchr(from, ':') != nullptr) {
-                                    U_ASSERT(from != nullptr && *from != '\0');
-                                    std::string_view fromView = from;
-                                    icu::FixedString* fromBuf = gKeyTypeStringPool->create(fromView);
-                                    if (fromBuf == nullptr || fromBuf->isEmpty()) {
+                                    icu::CharString* fromBuf =
+                                            gKeyTypeStringPool->create(from, sts);
+                                    if (fromBuf == nullptr) {
                                         sts = U_MEMORY_ALLOCATION_ERROR;
                                         break;
                                     }
+                                    if (U_FAILURE(sts)) {
+                                        break;
+                                    }
                                     std::replace(
-                                            fromBuf->getAlias(),
-                                            fromBuf->getAlias() + fromView.length(),
+                                            fromBuf->data(),
+                                            fromBuf->data() + fromBuf->length(),
                                             ':', '/');
-                                    alias->from = {fromBuf->data(), fromView.length()};
+                                    alias->from = fromBuf->toStringPiece();
                                 }
                             }
                             uhash_put(typeDataMap, &alias->from, t, &sts);

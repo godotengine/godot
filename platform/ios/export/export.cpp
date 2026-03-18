@@ -32,9 +32,7 @@
 
 #include "export_plugin.h"
 
-#include "core/object/class_db.h"
 #include "editor/export/editor_export.h"
-#include "editor/settings/editor_settings.h"
 
 void register_ios_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformIOS);

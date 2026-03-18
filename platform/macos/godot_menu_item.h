@@ -30,11 +30,7 @@
 
 #pragma once
 
-#include "core/io/image.h"
-#include "core/object/ref_counted.h"
-#include "core/os/keyboard.h"
-#include "core/variant/callable.h"
-#include "core/variant/variant.h"
+#include "servers/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -57,7 +53,6 @@ enum GlobalMenuCheckType {
 	Key accel;
 	GlobalMenuCheckType checkable_type;
 	bool checked;
-	bool enabled;
 	int max_states;
 	int state;
 	Ref<Image> img;

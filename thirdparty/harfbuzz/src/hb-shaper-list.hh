@@ -61,10 +61,6 @@ HB_SHAPER_IMPLEMENT (coretext)
 HB_SHAPER_IMPLEMENT (harfrust)
 #endif
 
-#ifdef HAVE_KBTS
-HB_SHAPER_IMPLEMENT (kbts)
-#endif
-
 #ifndef HB_NO_FALLBACK_SHAPE
 HB_SHAPER_IMPLEMENT (fallback) /* <--- This should be last. */
 #endif

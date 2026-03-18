@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "core/object/object.h"
-#include "core/string/ustring.h"
+#include "../godotsharp_defs.h"
 
-#include <cstdint>
+#include "core/io/config_file.h"
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32
@@ -94,9 +93,19 @@ protected:
 
 public:
 #ifdef DEBUG_ENABLED
-	uint64_t get_api_core_hash();
+	uint64_t get_api_core_hash() {
+		if (api_core_hash == 0) {
+			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+		}
+		return api_core_hash;
+	}
 #ifdef TOOLS_ENABLED
-	uint64_t get_api_editor_hash();
+	uint64_t get_api_editor_hash() {
+		if (api_editor_hash == 0) {
+			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+		}
+		return api_editor_hash;
+	}
 #endif // TOOLS_ENABLED
 #endif // DEBUG_ENABLED
 

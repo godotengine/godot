@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "jsonrpc.h"
-
-#include "core/object/class_db.h"
-
 void JSONRPC::_set_scope_bind_compat_104890(const String &p_scope, Object *p_obj) {
 	ERR_PRINT("JSONRPC::set_scope is not supported anymore. Upgrade to JSONRPC::set_method.");
 }
@@ -42,4 +38,4 @@ void JSONRPC::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_scope", "scope", "target"), &JSONRPC::_set_scope_bind_compat_104890);
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

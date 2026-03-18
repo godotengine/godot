@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="world_a"]
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="world_b"]
+[ext_resource type="Script" path="res://scenes/qa/qa_stream_multi_asset.gd" id="multi_script"]
+
+[node name="QAStreamMultiAsset" type="Node3D"]
+script = ExtResource("multi_script")
+
+[node name="WorldA" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("world_a")
+
+[node name="WorldB" type="GaussianSplatWorld3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+world = ExtResource("world_b")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true

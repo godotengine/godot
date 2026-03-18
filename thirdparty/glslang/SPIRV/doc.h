@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include "spirv.hpp11"
+#include "spirv.hpp"
 
 #include <vector>
 
@@ -157,7 +157,6 @@ enum OperandClass {
     OperandKernelProfilingInfo,
     OperandCapability,
     OperandCooperativeMatrixOperands,
-    OperandTensorAddressingOperands,
 
     OperandOpcode,
 

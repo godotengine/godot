@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/mesh.h"
 
 class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
@@ -69,5 +68,5 @@ public:
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
 #endif // NAVIGATION_2D_DISABLED
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+	MeshInstance2D();
 };

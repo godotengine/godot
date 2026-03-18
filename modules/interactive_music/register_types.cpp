@@ -33,7 +33,6 @@
 #include "audio_stream_interactive.h"
 #include "audio_stream_playlist.h"
 #include "audio_stream_synchronized.h"
-
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED

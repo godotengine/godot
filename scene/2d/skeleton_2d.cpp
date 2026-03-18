@@ -30,11 +30,7 @@
 
 #include "skeleton_2d.h"
 
-#include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
@@ -508,7 +504,7 @@ Bone2D::~Bone2D() {
 #ifdef TOOLS_ENABLED
 	if (!editor_gizmo_rid.is_null()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free_rid(editor_gizmo_rid);
+		RenderingServer::get_singleton()->free(editor_gizmo_rid);
 	}
 #endif // TOOLS_ENABLED
 }
@@ -842,5 +838,5 @@ Skeleton2D::Skeleton2D() {
 
 Skeleton2D::~Skeleton2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free_rid(skeleton);
+	RS::get_singleton()->free(skeleton);
 }

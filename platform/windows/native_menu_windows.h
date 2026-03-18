@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display/native_menu.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class NativeMenuWindows : public NativeMenu {
@@ -54,11 +55,11 @@ class NativeMenuWindows : public NativeMenu {
 		int max_states = 0;
 		int state = 0;
 		Ref<Image> img;
-		HBITMAP bmp = nullptr;
+		HBITMAP bmp = 0;
 	};
 
 	struct MenuData {
-		HMENU menu = nullptr;
+		HMENU menu = 0;
 
 		Callable close_cb;
 		bool is_rtl = false;
@@ -141,7 +142,6 @@ public:
 	virtual void set_item_max_states(const RID &p_rid, int p_idx, int p_max_states) override;
 	virtual void set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon) override;
 	virtual void set_item_indentation_level(const RID &p_rid, int p_idx, int p_level) override;
-	virtual int set_item_index(const RID &p_rid, int p_idx, int p_target_idx) override;
 
 	virtual int get_item_count(const RID &p_rid) const override;
 	virtual bool is_system_menu(const RID &p_rid) const override;

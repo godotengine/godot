@@ -30,9 +30,6 @@
 
 #include "java_godot_io_wrapper.h"
 
-#include "jni_utils.h"
-#include "thread_jandroid.h"
-
 #include "core/math/rect2.h"
 #include "core/variant/variant.h"
 

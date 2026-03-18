@@ -89,10 +89,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void config(const String &p_dir, const String &p_scene_name = "");
+	void config(const String &p_dir);
 
 	String get_scene_path() const;
-	String get_root_name() const;
 	Node *create_scene_root();
 
 	SceneCreateDialog();

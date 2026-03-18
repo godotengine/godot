@@ -31,8 +31,6 @@
 #include "sprite_2d_editor_plugin.h"
 
 #include "core/math/geometry_2d.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -48,11 +46,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-#include "scene/main/scene_tree.h"
-#include "scene/resources/bit_map.h"
-#include "scene/resources/mesh.h"
-
-#include <thirdparty/clipper2/include/clipper2/clipper.h>
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
 
 #define PRECISION 1
 
@@ -629,7 +623,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	options->set_text(TTR("Sprite2D"));
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	options->set_theme_type_variation("FlatMenuButton");
 
 	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);

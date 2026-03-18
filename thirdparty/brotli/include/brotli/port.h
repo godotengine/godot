@@ -239,6 +239,8 @@
 #define BROTLI_PUBLIC
 #endif
 
+/* BROTLI_INTERNAL could be defined to override visibility, e.g. for tests. */
+#if !defined(BROTLI_INTERNAL)
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define BROTLI_INTERNAL
 #elif BROTLI_GNUC_VERSION_CHECK(3, 3, 0) ||                         \
@@ -252,6 +254,7 @@
 #define BROTLI_INTERNAL __attribute__ ((visibility ("hidden")))
 #else
 #define BROTLI_INTERNAL
+#endif
 #endif
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) &&   \
@@ -269,20 +272,20 @@
 #if defined(_WIN32)
 #if defined(BROTLICOMMON_SHARED_COMPILATION)
 #define BROTLI_COMMON_API __declspec(dllexport)
-#else  /* !BROTLICOMMON_SHARED_COMPILATION */
+#else
 #define BROTLI_COMMON_API __declspec(dllimport)
 #endif  /* BROTLICOMMON_SHARED_COMPILATION */
 #if defined(BROTLIDEC_SHARED_COMPILATION)
 #define BROTLI_DEC_API __declspec(dllexport)
-#else   /* !BROTLIDEC_SHARED_COMPILATION */
+#else
 #define BROTLI_DEC_API __declspec(dllimport)
 #endif  /* BROTLIDEC_SHARED_COMPILATION */
 #if defined(BROTLIENC_SHARED_COMPILATION)
 #define BROTLI_ENC_API __declspec(dllexport)
-#else  /* !BROTLIENC_SHARED_COMPILATION */
+#else
 #define BROTLI_ENC_API __declspec(dllimport)
 #endif  /* BROTLIENC_SHARED_COMPILATION */
-#else  /* !_WIN32 */
+#else  /* _WIN32 */
 #define BROTLI_COMMON_API BROTLI_PUBLIC
 #define BROTLI_DEC_API BROTLI_PUBLIC
 #define BROTLI_ENC_API BROTLI_PUBLIC

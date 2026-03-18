@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptMethodsGeneratorTests
 {
     [Fact]
-    public async Task Methods()
+    public async void Methods()
     {
         await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
             "Methods.cs",
@@ -15,7 +14,7 @@ public class ScriptMethodsGeneratorTests
     }
 
     [Fact]
-    public async Task ScriptBoilerplate()
+    public async void ScriptBoilerplate()
     {
         await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
             "ScriptBoilerplate.cs",

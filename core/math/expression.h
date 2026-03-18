@@ -35,9 +35,20 @@
 class Expression : public RefCounted {
 	GDCLASS(Expression, RefCounted);
 
-protected:
+private:
+	struct Input {
+		Variant::Type type = Variant::NIL;
+		String name;
+
+		Input() {}
+	};
+
+	Vector<Input> inputs;
+	Variant::Type output_type = Variant::NIL;
+
 	String expression;
 
+	bool sequenced = false;
 	int str_ofs = 0;
 	bool expression_dirty = false;
 
@@ -100,7 +111,7 @@ protected:
 		error_set = true;
 	}
 
-	virtual Error _get_token(Token &r_token);
+	Error _get_token(Token &r_token);
 
 	String error_str;
 	bool error_set = true;
@@ -124,6 +135,7 @@ protected:
 
 		Type type = TYPE_INPUT;
 
+		ENode() {}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -255,5 +267,6 @@ public:
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
+	Expression() {}
 	~Expression();
 };

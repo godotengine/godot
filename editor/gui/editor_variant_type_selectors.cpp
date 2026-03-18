@@ -166,12 +166,12 @@ void EditorVariantTypePopupMenu::_notification(int p_what) {
 	}
 }
 
-void EditorVariantTypePopupMenu::_popup_base(const Rect2i &p_bounds) {
+void EditorVariantTypePopupMenu::popup(const Rect2i &p_bounds) {
 	if (icons_dirty) {
 		_update_menu_icons();
 		icons_dirty = false;
 	}
-	PopupMenu::_popup_base(p_bounds);
+	PopupMenu::popup(p_bounds);
 }
 
 EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item) {

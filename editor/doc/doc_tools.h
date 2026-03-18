@@ -33,8 +33,6 @@
 #include "core/doc_data.h"
 #include "core/templates/rb_set.h"
 
-class XMLParser;
-
 class DocTools {
 public:
 	String version;

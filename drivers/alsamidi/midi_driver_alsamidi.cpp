@@ -34,12 +34,6 @@
 
 #include "core/os/os.h"
 
-#ifdef SOWRAP_ENABLED
-#include "drivers/alsa/asound-so_wrap.h"
-#else
-#include <alsa/asoundlib.h>
-#endif
-
 #include <cerrno>
 
 MIDIDriverALSAMidi::InputConnection::InputConnection(int p_device_index,

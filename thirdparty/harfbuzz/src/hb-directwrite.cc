@@ -452,7 +452,6 @@ hb_directwrite_font_get_dw_font_face (hb_font_t *font)
   return (IDWriteFontFace *) (const void *) font->data.directwrite;
 }
 
-#ifndef HB_DISABLE_DEPRECATED
 
 /**
 * hb_directwrite_font_get_dw_font:
@@ -470,7 +469,5 @@ hb_directwrite_font_get_dw_font (hb_font_t *font)
 {
   return nullptr;
 }
-
-#endif
 
 #endif

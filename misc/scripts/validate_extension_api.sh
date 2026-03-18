@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-
+#!/bin/bash
 set -o pipefail
 
 if [ ! -f "version.py" ]; then
@@ -37,39 +36,30 @@ make_annotation()
 get_expected_output()
 {
   local parts=()
-  IFS='_' read -ra parts <<< "$(basename "$1")"
+  IFS='_' read -ra parts <<< "$(basename -s .expected "$1")"
 
   if [[ "${#parts[@]}" == "2" ]]; then
-    while read -r file; do
-      cat "$file" >> "$expected_errors"
-    done <<< "$(find "$1" -type f -name "*.txt")"
-
-    next="$(find "$api_validation_dir" -type d -name "${parts[1]}*")"
-    if [[ "$next" != "" ]]; then
-      get_expected_output "$next"
-    fi
+    cat "$1" >> "$expected_errors"
+    get_expected_output "$(find "$api_validation_dir" -name "${parts[1]}*.expected")"
     reference_tag="${parts[0]}"
     warn_extra=0
   else
-    while read -r file; do
-      cat "$file" >> "$expected_errors"
-    done <<< "$(find "$1" -type f -name "*.txt")"
-
+    cat "$1" >> "$expected_errors"
     reference_tag="${parts[0]}"
     warn_extra=1
   fi
 }
 
-while read -r dir; do
+while read -r file; do
     reference_file="$(mktemp)"
     validate="$(mktemp)"
     validation_output="$(mktemp)"
     allowed_errors="$(mktemp)"
     expected_errors="$(mktemp)"
-    get_expected_output "$dir"
+    get_expected_output "$file"
 
     # Download the reference extension_api.json
-    wget -nv --retry-on-http-error=503 --tries=5 --timeout=60 -cO "$reference_file" "https://raw.githubusercontent.com/godotengine/godot-headers/godot-$reference_tag/extension_api.json" || has_problems=1
+    wget -nv --retry-on-http-error=503 --tries=5 --timeout=60 -cO "$reference_file" "https://raw.githubusercontent.com/godotengine/godot-cpp/godot-$reference_tag/gdextension/extension_api.json" || has_problems=1
     # Validate the current API against the reference
     "$1" --headless --validate-extension-api "$reference_file" 2>&1 | tee "$validate" | awk '!/^Validate extension JSON:/' - || true
     # Collect the expected and actual validation errors
@@ -91,6 +81,6 @@ while read -r dir; do
     fi
 
     rm -f "$reference_file" "$validate" "$validation_output" "$allowed_errors" "$expected_errors"
-done <<< "$(find "$api_validation_dir" -type d -mindepth 1 -maxdepth 1)"
+done <<< "$(find "$api_validation_dir" -name "*.expected")"
 
 exit $has_problems

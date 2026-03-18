@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
 
 class GodotCollisionObject2D;
@@ -38,7 +39,7 @@ class GodotBroadPhase2D {
 public:
 	typedef GodotBroadPhase2D *(*CreateFunction)();
 
-	static inline CreateFunction create_func = nullptr;
+	static CreateFunction create_func;
 
 	typedef uint32_t ID;
 
@@ -63,5 +64,5 @@ public:
 
 	virtual void update() = 0;
 
-	virtual ~GodotBroadPhase2D() {}
+	virtual ~GodotBroadPhase2D();
 };

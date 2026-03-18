@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "tile_map.h"
-
-#include "core/object/class_db.h"
-
 Rect2i TileMap::_get_used_rect_bind_compat_78328() {
 	return get_used_rect();
 }
@@ -66,4 +62,4 @@ void TileMap::_bind_compatibility_methods() {
 #endif // NAVIGATION_2D_DISABLED
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

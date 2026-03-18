@@ -31,22 +31,25 @@
 #include "crash_handler_windows.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access.h"
 #include "core/object/script_language.h"
-#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
+#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
-#include <thirdparty/libbacktrace/backtrace.h>
-
 #include <cxxabi.h>
-#include <psapi.h>
-
+#include <algorithm>
 #include <csignal>
 #include <cstdlib>
+#include <iterator>
+#include <string>
+#include <vector>
+
+#include <psapi.h>
+
+#include "thirdparty/libbacktrace/backtrace.h"
 
 struct CrashHandlerData {
 	int64_t index = 0;

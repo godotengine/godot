@@ -118,7 +118,7 @@ namespace GodotTools
 
         private void _ShowDotnetFeatures()
         {
-            MSBuildPanel.Open();
+            _bottomPanelBtn.Show();
             _toolBarBuildButton.Show();
         }
 
@@ -456,6 +456,12 @@ namespace GodotTools
             }
         }
 
+        private void BuildStateChanged()
+        {
+            if (_bottomPanelBtn != null)
+                _bottomPanelBtn.Icon = MSBuildPanel.GetBuildStateIcon();
+        }
+
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
@@ -505,7 +511,8 @@ namespace GodotTools
             _confirmCreateSlnDialog.Confirmed += () => CreateProjectSolution();
 
             MSBuildPanel = new MSBuildPanel();
-            AddDock(MSBuildPanel);
+            MSBuildPanel.BuildStateChanged += BuildStateChanged;
+            _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
@@ -539,7 +546,7 @@ namespace GodotTools
             }
             else
             {
-                MSBuildPanel.Close();
+                _bottomPanelBtn.Hide();
                 _toolBarBuildButton.Hide();
             }
             _menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
@@ -636,9 +643,6 @@ namespace GodotTools
             AddInspectorPlugin(inspectorPlugin);
             _inspectorPluginWeak = WeakRef(inspectorPlugin);
 
-            // TranslationParser Plugin
-            AddTranslationParserPlugin(new CsTranslationParserPlugin());
-
             BuildManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
@@ -650,6 +654,9 @@ namespace GodotTools
             base._DisablePlugin();
 
             _editorSettings.SettingsChanged -= OnSettingsChanged;
+
+            // Custom signals aren't automatically disconnected currently.
+            MSBuildPanel.BuildStateChanged -= BuildStateChanged;
         }
 
         public override void _ExitTree()

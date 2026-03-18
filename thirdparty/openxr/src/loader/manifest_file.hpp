@@ -51,7 +51,7 @@ class ManifestFile {
     const std::string &Filename() const { return _filename; }
     const std::string &LibraryPath() const { return _library_path; }
     void GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props);
-    std::string GetFunctionName(const std::string &func_name) const;
+    const std::string &GetFunctionName(const std::string &func_name) const;
 
    protected:
     ManifestFile(ManifestFileType type, const std::string &filename, const std::string &library_path);
@@ -107,13 +107,12 @@ class ApiLayerManifestFile : public ManifestFile {
     static bool LocateLibraryRelativeToJson(const std::string &json_filename, const std::string &library_path,
                                             std::string &out_combined_path);
 
-    // actually only implemented if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
-#if defined(XR_USE_PLATFORM_ANDROID)
+#if defined(XR_KHR_LOADER_INIT_SUPPORT) && defined(XR_USE_PLATFORM_ANDROID)
     static bool LocateLibraryInAssets(const std::string &json_filename, const std::string &library_path,
                                       std::string &out_combined_path);
     static void AddManifestFilesAndroid(const std::string &openxr_command, ManifestFileType type,
                                         std::vector<std::unique_ptr<ApiLayerManifestFile>> &manifest_files);
-#endif  // defined(XR_USE_PLATFORM_ANDROID)
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_KHR_LOADER_INIT_SUPPORT)
 
     JsonVersion _api_version;
     std::string _layer_name;

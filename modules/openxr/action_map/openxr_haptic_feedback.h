@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/resource.h"
-
 #include <openxr/openxr.h>
 
 class OpenXRHapticBase : public Resource {

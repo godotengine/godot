@@ -19,6 +19,9 @@ msgstr ""
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
 "X-Generator: Weblate 5.2\n"
 
+msgid "All Recognized"
+msgstr "Viss atpazīts"
+
 msgid "Save"
 msgstr "Saglabāt"
 
@@ -36,9 +39,6 @@ msgstr "Izvēlēties pašreizējo mapi"
 
 msgid "Select This Folder"
 msgstr "Izvēlēties Šo Mapi"
-
-msgid "All Recognized"
-msgstr "Viss atpazīts"
 
 msgid "Open a File"
 msgstr "Atvērt failu"

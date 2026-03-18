@@ -34,23 +34,24 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-
-#include <windows.h>
+#include "servers/display_server.h"
 
 #include <objbase.h>
 #include <sapi.h>
 #include <winnls.h>
+#include <cwchar>
 
-struct TTSUtterance;
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 class TTS_Windows {
-	List<TTSUtterance> queue;
+	List<DisplayServer::TTSUtterance> queue;
 	ISpVoice *synth = nullptr;
 	bool paused = false;
 	struct UTData {
 		Char16String string;
 		int offset;
-		int64_t id;
+		int id;
 	};
 	HashMap<uint32_t, UTData> ids;
 	bool update_requested = false;
@@ -66,7 +67,7 @@ public:
 	bool is_paused() const;
 	Array get_voices() const;
 
-	void speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false);
+	void speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
 	void pause();
 	void resume();
 	void stop();

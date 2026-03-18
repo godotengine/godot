@@ -32,10 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
-#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
-#include <thirdparty/misc/yuv2rgb.h>
+#include "thirdparty/misc/yuv2rgb.h"
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -820,7 +819,8 @@ bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
-	if (p_path.has_extension("ogv")) {
+	String el = p_path.get_extension().to_lower();
+	if (el == "ogv") {
 		return "VideoStreamTheora";
 	}
 	return "";

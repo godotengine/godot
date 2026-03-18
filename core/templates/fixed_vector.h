@@ -30,10 +30,7 @@
 
 #pragma once
 
-#include "core/os/memory.h"
 #include "core/templates/span.h"
-
-GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
 
 /**
  * A high performance Vector of fixed capacity.
@@ -56,7 +53,6 @@ class FixedVector {
 
 public:
 	_FORCE_INLINE_ constexpr FixedVector() = default;
-
 	constexpr FixedVector(std::initializer_list<T> p_init) {
 		ERR_FAIL_COND(p_init.size() > CAPACITY);
 		for (const T &element : p_init) {
@@ -64,7 +60,9 @@ public:
 		}
 	}
 
-	constexpr FixedVector(const FixedVector &p_from) {
+	template <uint32_t p_capacity>
+	constexpr FixedVector(const FixedVector<T, p_capacity> &p_from) {
+		ERR_FAIL_COND(p_from.size() > CAPACITY);
 		if constexpr (std::is_trivially_copyable_v<T>) {
 			// Copy size and all provided elements at once.
 			memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
@@ -75,46 +73,13 @@ public:
 		}
 	}
 
-	constexpr FixedVector(FixedVector &&p_from) {
+	template <uint32_t p_capacity>
+	constexpr FixedVector(FixedVector<T, p_capacity> &&p_from) {
+		ERR_FAIL_COND(p_from.size() > CAPACITY);
 		// Copy size and all provided elements at once.
 		// Note: Assumes trivial relocatability.
 		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
 		p_from._size = 0;
-	}
-
-	constexpr FixedVector &operator=(const FixedVector &p_from) {
-		if constexpr (std::is_trivially_copyable_v<T>) {
-			// Copy size and all provided elements at once.
-			memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
-		} else {
-			// Destruct extraneous elements.
-			if constexpr (!std::is_trivially_destructible_v<T>) {
-				for (uint32_t i = p_from.size(); i < _size; i++) {
-					ptr()[i].~T();
-				}
-			}
-
-			_size = 0; // Loop-assign the rest.
-			for (const T &element : p_from) {
-				ptr()[_size++] = element;
-			}
-		}
-		return *this;
-	}
-
-	constexpr FixedVector &operator=(FixedVector &&p_from) {
-		// Destruct extraneous elements.
-		if constexpr (!std::is_trivially_destructible_v<T>) {
-			for (uint32_t i = p_from.size(); i < _size; i++) {
-				ptr()[i].~T();
-			}
-		}
-
-		// Relocate elements (and size) into our buffer.
-		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
-		p_from._size = 0;
-
-		return *this;
 	}
 
 	~FixedVector() {
@@ -173,12 +138,6 @@ public:
 		_size++;
 	}
 
-	constexpr void push_back(T &&p_val) {
-		ERR_FAIL_COND(_size >= CAPACITY);
-		memnew_placement(ptr() + _size, T(std::move(p_val)));
-		_size++;
-	}
-
 	constexpr void pop_back() {
 		ERR_FAIL_COND(_size == 0);
 		_size--;
@@ -204,5 +163,3 @@ public:
 	_FORCE_INLINE_ constexpr const T *begin() const { return ptr(); }
 	_FORCE_INLINE_ constexpr const T *end() const { return ptr() + _size; }
 };
-
-GODOT_GCC_WARNING_POP

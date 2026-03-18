@@ -39,7 +39,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	bool is_available();
 

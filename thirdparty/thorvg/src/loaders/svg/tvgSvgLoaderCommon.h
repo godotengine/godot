@@ -25,7 +25,6 @@
 
 #include "tvgCommon.h"
 #include "tvgArray.h"
-#include "tvgInlist.h"
 
 struct SvgNode;
 struct SvgStyleGradient;
@@ -552,8 +551,6 @@ struct SvgParser
 
 struct SvgNodeIdPair
 {
-    INLIST_ITEM(SvgNodeIdPair);
-    SvgNodeIdPair(SvgNode* n, char* i) : node{n}, id{i} {}
     SvgNode* node;
     char *id;
 };
@@ -582,7 +579,7 @@ struct SvgLoaderData
     Array<SvgStyleGradient*> gradients;
     Array<SvgStyleGradient*> gradientStack; //For stops
     SvgParser* svgParse = nullptr;
-    Inlist<SvgNodeIdPair> cloneNodes;
+    Array<SvgNodeIdPair> cloneNodes;
     Array<SvgNodeIdPair> nodesToStyle;
     Array<char*> images;        //embedded images
     Array<FontFace> fonts;

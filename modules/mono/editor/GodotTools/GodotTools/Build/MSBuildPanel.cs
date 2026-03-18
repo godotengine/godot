@@ -7,8 +7,11 @@ using File = GodotTools.Utils.File;
 
 namespace GodotTools.Build
 {
-    public partial class MSBuildPanel : EditorDock, ISerializationListener
+    public partial class MSBuildPanel : MarginContainer, ISerializationListener
     {
+        [Signal]
+        public delegate void BuildStateChangedEventHandler();
+
 #nullable disable
         private MenuButton _buildMenuButton;
         private Button _openLogsFolderButton;
@@ -24,23 +27,21 @@ namespace GodotTools.Build
         private readonly object _pendingBuildLogTextLock = new object();
         private string _pendingBuildLogText = string.Empty;
 
-        public void UpdateBuildStateIcon()
+        public Texture2D? GetBuildStateIcon()
         {
-            Texture2D? icon = null;
             if (IsBuildingOngoing)
-                icon = GetThemeIcon("Stop", "EditorIcons");
+                return GetThemeIcon("Stop", "EditorIcons");
 
             if (_problemsView.WarningCount > 0 && _problemsView.ErrorCount > 0)
-                icon = GetThemeIcon("ErrorWarning", "EditorIcons");
+                return GetThemeIcon("ErrorWarning", "EditorIcons");
 
             if (_problemsView.WarningCount > 0)
-                icon = GetThemeIcon("Warning", "EditorIcons");
+                return GetThemeIcon("Warning", "EditorIcons");
 
             if (_problemsView.ErrorCount > 0)
-                icon = GetThemeIcon("Error", "EditorIcons");
+                return GetThemeIcon("Error", "EditorIcons");
 
-            DockIcon = icon;
-            ForceShowIcon = icon != null;
+            return null;
         }
 
         private enum BuildMenuOptions
@@ -141,7 +142,7 @@ namespace GodotTools.Build
 
             _problemsView.SetDiagnostics(new[] { diagnostic });
 
-            UpdateBuildStateIcon();
+            EmitSignal(SignalName.BuildStateChanged);
         }
 
         private void BuildStarted(BuildInfo buildInfo)
@@ -155,7 +156,7 @@ namespace GodotTools.Build
 
             _problemsView.UpdateProblemsView();
 
-            UpdateBuildStateIcon();
+            EmitSignal(SignalName.BuildStateChanged);
         }
 
         private void BuildFinished(BuildResult result)
@@ -168,7 +169,7 @@ namespace GodotTools.Build
 
             _problemsView.UpdateProblemsView();
 
-            UpdateBuildStateIcon();
+            EmitSignal(SignalName.BuildStateChanged);
         }
 
         private void UpdateBuildLogText()
@@ -198,16 +199,6 @@ namespace GodotTools.Build
                     CallDeferred(nameof(UpdateBuildLogText));
                 _pendingBuildLogText += text + "\n";
             }
-        }
-
-        public MSBuildPanel()
-        {
-            Name = "MSBuild".TTR();
-            IconName = "BuildCSharp";
-            DefaultSlot = EditorDock.DockSlot.Bottom;
-            AvailableLayouts = DockLayout.Horizontal | DockLayout.Floating;
-            Global = false;
-            Transient = true;
         }
 
         public override void _Ready()

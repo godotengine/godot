@@ -30,8 +30,6 @@
 
 #include "video_stream.h"
 
-#include "core/object/class_db.h"
-
 // VideoStreamPlayback starts here.
 
 void VideoStreamPlayback::_bind_methods() {

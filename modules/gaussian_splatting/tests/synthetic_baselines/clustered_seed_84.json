@@ -1,0 +1,163 @@
+{
+  "artifact_version": 1,
+  "deterministic_contract": {
+    "config_hash": "0x25e63e9e7ce14e14",
+    "hash": "fnv1a-64",
+    "hash_quantization_scale": 100000.0,
+    "note": "Any seed/config change must change at least one hash value.",
+    "rng": "splitmix64",
+    "scene_hash": "0x99c301078f846bbb",
+    "seed": 84,
+    "splat_count": 256
+  },
+  "generator": "clustered",
+  "normalized_config": {
+    "center_offset": [
+      0.5,
+      0.0,
+      0.0
+    ],
+    "cluster_center_max": [
+      10.0,
+      5.0,
+      2.0
+    ],
+    "cluster_center_min": [
+      -10.0,
+      -5.0,
+      -2.0
+    ],
+    "cluster_count": 8,
+    "cluster_radius": 1.5,
+    "color_per_cluster": true,
+    "max_opacity": 1.0,
+    "max_scale": 0.25,
+    "min_opacity": 0.5,
+    "min_scale": 0.05000000074505806,
+    "normal_tilt": 0.0,
+    "random_rotation": false,
+    "seed": 84,
+    "splat_count": 256
+  },
+  "preview_splats": [
+    {
+      "normal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "opacity": 0.577617883682251,
+      "position": [
+        6.189816951751709,
+        4.6421966552734375,
+        2.1826720237731934
+      ],
+      "scale": [
+        0.09712930023670197,
+        0.09712930023670197,
+        0.09712930023670197
+      ],
+      "sh_dc": [
+        0.7103818655014038,
+        0.6803786754608154,
+        0.3533046245574951,
+        0.577617883682251
+      ]
+    },
+    {
+      "normal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "opacity": 0.9498332738876343,
+      "position": [
+        0.8911051750183105,
+        -1.7719846963882446,
+        1.6944164037704468
+      ],
+      "scale": [
+        0.21091175079345703,
+        0.21091175079345703,
+        0.21091175079345703
+      ],
+      "sh_dc": [
+        0.23398546874523163,
+        0.7793118953704834,
+        0.7946566343307495,
+        0.9498332738876343
+      ]
+    },
+    {
+      "normal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "opacity": 0.6649141311645508,
+      "position": [
+        4.7599687576293945,
+        0.62626051902771,
+        0.6423791646957397
+      ],
+      "scale": [
+        0.2313668578863144,
+        0.2313668578863144,
+        0.2313668578863144
+      ],
+      "sh_dc": [
+        0.9248663187026978,
+        0.5918203592300415,
+        0.9587549567222595,
+        0.6649141311645508
+      ]
+    }
+  ],
+  "raw_config": {
+    "center_offset": [
+      0.5,
+      0.0,
+      0.0
+    ],
+    "cluster_center_max": [
+      10.0,
+      5.0,
+      2.0
+    ],
+    "cluster_center_min": [
+      -10.0,
+      -5.0,
+      -2.0
+    ],
+    "cluster_count": 8,
+    "cluster_radius": 1.5,
+    "color_per_cluster": true,
+    "max_opacity": 1.0,
+    "max_scale": 0.25,
+    "min_opacity": 0.5,
+    "min_scale": 0.05000000074505806,
+    "normal_tilt": 0.0,
+    "random_rotation": false,
+    "seed": 84,
+    "splat_count": 256
+  },
+  "summary": {
+    "average_opacity": 0.7490852475166321,
+    "average_scale": 0.15455344319343567,
+    "bounds_max": [
+      7.900712966918945,
+      5.365573883056641,
+      2.6465020179748535
+    ],
+    "bounds_min": [
+      -5.462891578674316,
+      -6.343627452850342,
+      -2.5870728492736816
+    ],
+    "config_hash": "0x25e63e9e7ce14e14",
+    "generator": "clustered",
+    "scene_hash": "0x99c301078f846bbb",
+    "seed": 84,
+    "splat_count": 256
+  }
+}

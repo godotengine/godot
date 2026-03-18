@@ -31,10 +31,6 @@
 #include "engine_update_label.h"
 
 #include "core/io/json.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
-#include "core/os/os.h"
-#include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/http_request.h"
@@ -83,16 +79,13 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	}
 
 	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/check_for_updates")));
-	if (update_mode == UpdateMode::AUTO) {
-		if (_get_version_type(GODOT_VERSION_STATUS) == VersionType::STABLE) {
-			update_mode = UpdateMode::NEWEST_STABLE;
-		} else {
-			update_mode = UpdateMode::NEWEST_UNSTABLE;
-		}
-	}
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
-	available_newer_version = String();
+	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
+	int current_major = current_version_info.get("major", 0);
+	int current_minor = current_version_info.get("minor", 0);
+	int current_patch = current_version_info.get("patch", 0);
+
 	for (const Variant &data_bit : version_array) {
 		const Dictionary version_info = data_bit;
 
@@ -104,7 +97,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		}
 
 		int minor = version_bits[1].to_int();
-		if (version_bits[0].to_int() != GODOT_VERSION_MAJOR || minor < GODOT_VERSION_MINOR) {
+		if (version_bits[0].to_int() != current_major || minor < current_minor) {
 			continue;
 		}
 
@@ -113,11 +106,11 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			patch = version_bits[2].to_int();
 		}
 
-		if (minor == GODOT_VERSION_MINOR && patch < GODOT_VERSION_PATCH) {
+		if (minor == current_minor && patch < current_patch) {
 			continue;
 		}
 
-		if (update_mode == UpdateMode::NEWEST_PATCH && minor > GODOT_VERSION_MINOR) {
+		if (update_mode == UpdateMode::NEWEST_PATCH && minor > current_minor) {
 			continue;
 		}
 
@@ -132,7 +125,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		int release_index;
 		VersionType release_type = _get_version_type(release_string, &release_index);
 
-		if (minor > GODOT_VERSION_MINOR || patch > GODOT_VERSION_PATCH) {
+		if (minor > current_minor || patch > current_patch) {
 			if (stable_only && release_type != VersionType::STABLE) {
 				continue;
 			}
@@ -142,7 +135,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		}
 
 		int current_version_index;
-		VersionType current_version_type = _get_version_type(GODOT_VERSION_STATUS, &current_version_index);
+		VersionType current_version_type = _get_version_type(current_version_info.get("status", "unknown"), &current_version_index);
 
 		if (int(release_type) > int(current_version_type)) {
 			break;
@@ -191,20 +184,20 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			} else {
 				_set_message(TTR("Update checks disabled."), theme_cache.disabled_color);
 			}
-			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_OFF);
 			set_tooltip_text("");
 			break;
 		}
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
-			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_POLITE);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
 			set_disabled(false);
-			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_POLITE);
+			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("Click to open download page."));
 		} break;
 

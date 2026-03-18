@@ -30,9 +30,6 @@
 
 #pragma once
 
-#include "modules/modules_enabled.gen.h"
-
-#ifdef MODULE_GLTF_ENABLED
 #include "scene/3d/node_3d.h"
 
 #include <openxr/openxr.h>
@@ -61,4 +58,3 @@ public:
 
 	String get_top_level_path() const;
 };
-#endif // MODULE_GLTF_ENABLED

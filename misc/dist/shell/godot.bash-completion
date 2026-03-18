@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Bash completion for the Godot editor
 # To use it, install this file in `/etc/bash_completion.d` then restart your shell.
 # You can also `source` this file directly in your shell startup file.
@@ -38,6 +40,7 @@ _complete_godot_options() {
 --quit
 --language
 --path
+--upwards
 --main-pack
 --render-thread
 --remote-fs

@@ -30,11 +30,8 @@
 
 #include "camera_2d.h"
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "scene/main/scene_tree.h"
+#include "core/input/input.h"
 #include "scene/main/viewport.h"
 
 void Camera2D::_update_scroll() {
@@ -167,7 +164,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 		if (limit_enabled && limit_smoothing_enabled) {
 			// Apply horizontal limiting.
-			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - screen_rect.size.x) {
+			if (screen_rect.size.x > limit[SIDE_RIGHT] - limit[SIDE_LEFT]) {
 				// Split the limit difference horizontally.
 				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
 			} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -179,7 +176,7 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 
 			// Apply vertical limiting.
-			if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - screen_rect.size.y) {
+			if (screen_rect.size.y > limit[SIDE_BOTTOM] - limit[SIDE_TOP]) {
 				// Split the limit difference vertically.
 				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - limit[SIDE_BOTTOM] - limit[SIDE_TOP]) / 2;
 			} else if (screen_rect.position.y < limit[SIDE_TOP]) {
@@ -229,7 +226,7 @@ Transform2D Camera2D::get_camera_transform() {
 	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
 		// Apply horizontal limiting.
-		if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
+		if (bottom_right_corner.x - screen_rect.position.x > limit[SIDE_RIGHT] - limit[SIDE_LEFT]) {
 			// Split the difference horizontally (center it).
 			screen_rect.position.x = (limit[SIDE_LEFT] + limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) / 2;
 		} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -241,7 +238,7 @@ Transform2D Camera2D::get_camera_transform() {
 		}
 
 		// Apply vertical limiting.
-		if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) {
+		if (bottom_right_corner.y - screen_rect.position.y > limit[SIDE_BOTTOM] - limit[SIDE_TOP]) {
 			// Split the limit difference vertically.
 			screen_rect.position.y = (limit[SIDE_TOP] + limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) / 2;
 		} else if (screen_rect.position.y < limit[SIDE_TOP]) {
@@ -310,12 +307,10 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (_interpolation_data.accepting_resets) {
-				// Force the limits etc. to update.
-				_interpolation_data.xform_curr = get_camera_transform();
-				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
-				_update_process_callback();
-			}
+			// Force the limits etc. to update.
+			_interpolation_data.xform_curr = get_camera_transform();
+			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			_update_process_callback();
 		} break;
 
 		case NOTIFICATION_SUSPENDED:
@@ -370,8 +365,6 @@ void Camera2D::_notification(int p_what) {
 				_interpolation_data.xform_curr = get_camera_transform();
 				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 			}
-
-			_interpolation_data.accepting_resets = true;
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -382,7 +375,6 @@ void Camera2D::_notification(int p_what) {
 			}
 			viewport = nullptr;
 			just_exited_tree = true;
-			_interpolation_data.accepting_resets = false;
 			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
@@ -746,8 +738,7 @@ Size2 Camera2D::_get_camera_screen_size() const {
 	if (is_part_of_edited_scene()) {
 		return Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 	}
-	ERR_FAIL_NULL_V(viewport, Size2());
-	return viewport->get_visible_rect().size;
+	return get_viewport_rect().size;
 }
 
 void Camera2D::set_drag_horizontal_enabled(bool p_enabled) {
@@ -965,7 +956,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, Viewport::get_class_static(), PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
 	ADD_GROUP("Limit", "limit_");

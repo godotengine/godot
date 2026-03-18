@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
 class Node3D;
 class Node;

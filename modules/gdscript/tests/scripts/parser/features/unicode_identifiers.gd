@@ -1,5 +1,4 @@
 const π = PI
-@warning_ignore("confusable_identifier")
 var ㄥ = π
 
 func test():

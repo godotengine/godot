@@ -199,9 +199,19 @@
 constexpr auto PIXEL_BITS = 8;   //must be at least 6 bits!
 constexpr auto ONE_PIXEL = (1L << PIXEL_BITS);
 
+using Area = long;
+
 struct Band
 {
     SwCoord min, max;
+};
+
+struct Cell
+{
+    SwCoord x;
+    SwCoord cover;
+    Area area;
+    Cell *next;
 };
 
 struct RleWorker
@@ -217,7 +227,7 @@ struct RleWorker
     Area area;
     SwCoord cover;
 
-    SwCell* cells;
+    Cell* cells;
     ptrdiff_t maxCells;
     ptrdiff_t cellsCnt;
 
@@ -232,11 +242,11 @@ struct RleWorker
     int bandSize;
     int bandShoot;
 
-    SwCell* buffer;
-    uint32_t bufferSize;
+    void* buffer;
+    long bufferSize;
 
-    SwCell** yCells;
-    int32_t yCnt;
+    Cell** yCells;
+    SwCoord yCnt;
 
     bool invalid;
     bool antiAlias;
@@ -272,11 +282,12 @@ static inline SwCoord SUBPIXELS(const SwCoord x)
     return SwCoord(((unsigned long) x) << PIXEL_BITS);
 }
 
-
-// Approximate sqrt(x*x+y*y) using the `alpha max plus beta min' algorithm.
-// We use alpha = 1, beta = 3/8, giving us results with a largest error
-// less than 7% compared to the exact value.
-static inline int32_t HYPOT(SwPoint pt)
+/*
+ *  Approximate sqrt(x*x+y*y) using the `alpha max plus beta min'
+ *  algorithm.  We use alpha = 1, beta = 3/8, giving us results with a
+ *  largest error less than 7% compared to the exact value.
+ */
+static inline SwCoord HYPOT(SwPoint pt)
 {
     if (pt.x < 0) pt.x = -pt.x;
     if (pt.y < 0) pt.y = -pt.y;
@@ -284,17 +295,7 @@ static inline int32_t HYPOT(SwPoint pt)
 }
 
 
-// Used to prevent integer overflow when calculating the distance between points.
-// This function uses 64-bit arithmetic to safely compute the difference between coordinates.
-static inline uint32_t SAFE_HYPOT(SwPoint& pt1, SwPoint& pt2)
-{
-    auto x = uint32_t(abs(int64_t(pt1.x) - int64_t(pt2.x)));
-    auto y = uint32_t(abs(int64_t(pt1.y) - int64_t(pt2.y)));
-    return (x > y) ? (x + (3 * y >> 3)) : (y + (3 * x >> 3));
-}
-
-
-static void _horizLine(RleWorker& rw, int32_t x, int32_t y, int32_t area, int32_t aCount)
+static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoord aCount)
 {
     x += rw.cellMin.x;
     y += rw.cellMin.y;
@@ -400,7 +401,7 @@ static void _sweep(RleWorker& rw)
 }
 
 
-static SwCell* _findCell(RleWorker& rw)
+static Cell* _findCell(RleWorker& rw)
 {
     auto x = rw.cellPos.x;
     if (x > rw.cellXCnt) x = rw.cellXCnt;
@@ -408,7 +409,7 @@ static SwCell* _findCell(RleWorker& rw)
     auto pcell = &rw.yCells[rw.cellPos.y];
 
     while(true) {
-        auto cell = *pcell;
+        Cell* cell = *pcell;
         if (!cell || cell->x > x) break;
         if (cell->x == x) return cell;
         pcell = &cell->next;
@@ -528,12 +529,14 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
     line[1] = rw.pos;
 
     while (true) {
-        if (SAFE_HYPOT(line[0], line[1]) > SHRT_MAX) {
+        auto diff = line[0] - line[1];
+        auto L = HYPOT(diff);
+
+        if (L > SHRT_MAX) {
             mathSplitLine(line);
             ++line;
             continue;
         }
-        auto diff = line[0] - line[1];
         e1 = TRUNC(line[1]);
         e2 = TRUNC(line[0]);
 
@@ -861,25 +864,21 @@ void _replaceClipSpan(SwRle *rle, SwSpan* clippedSpans, uint32_t size)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegion, SwMpool* mpool, unsigned tid, bool antiAlias)
+SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias)
 {
     if (!outline) return nullptr;
-  
-    RleWorker rw;
-    auto cellPool = mpoolReqCellPool(mpool, tid);
-    auto reqSize = uint32_t(std::max(renderRegion.w(), renderRegion.h()) * 0.75f) * sizeof(SwCell);  //experimental decision
 
-    // grow by 1.25x and align to multiple of sizeof(SwCell)
-    if (reqSize > cellPool->size) {
-        cellPool->size = ((reqSize + (reqSize >> 2)) / sizeof(SwCell)) * sizeof(SwCell);
-        free(cellPool->buffer);
-        cellPool->buffer = (SwCell*)malloc(cellPool->size);
-    }
+    constexpr auto RENDER_POOL_SIZE = 16384L;
+    constexpr auto BAND_SIZE = 40;
+
+    //TODO: We can preserve several static workers in advance
+    RleWorker rw;
+    Cell buffer[RENDER_POOL_SIZE / sizeof(Cell)];
 
     //Init Cells
-    rw.buffer = cellPool->buffer;
-    rw.bufferSize = cellPool->size;
-    rw.yCells = reinterpret_cast<SwCell**>(cellPool->buffer);
+    rw.buffer = buffer;
+    rw.bufferSize = sizeof(buffer);
+    rw.yCells = reinterpret_cast<Cell**>(buffer);
     rw.cells = nullptr;
     rw.maxCells = 0;
     rw.cellsCnt = 0;
@@ -891,7 +890,7 @@ SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegio
     rw.cellXCnt = rw.cellMax.x - rw.cellMin.x;
     rw.cellYCnt = rw.cellMax.y - rw.cellMin.y;
     rw.outline = const_cast<SwOutline*>(outline);
-    rw.bandSize = rw.bufferSize / (sizeof(SwCell) * 2);
+    rw.bandSize = rw.bufferSize / (sizeof(Cell) * 2);  //bandSize: 256
     rw.bandShoot = 0;
     rw.antiAlias = antiAlias;
 
@@ -899,8 +898,6 @@ SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegio
     else rw.rle = rle;
 
     //Generate RLE
-    constexpr auto BAND_SIZE = 40;
-
     Band bands[BAND_SIZE];
     Band* band;
 
@@ -923,16 +920,16 @@ SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegio
         band = bands;
 
         while (band >= bands) {
-            rw.yCells = reinterpret_cast<SwCell**>(rw.buffer);
+            rw.yCells = static_cast<Cell**>(rw.buffer);
             rw.yCnt = band->max - band->min;
 
-            int cellStart = sizeof(SwCell*) * (int)rw.yCnt;
-            int cellMod = cellStart % sizeof(SwCell);
+            int cellStart = sizeof(Cell*) * (int)rw.yCnt;
+            int cellMod = cellStart % sizeof(Cell);
 
-            if (cellMod > 0) cellStart += sizeof(SwCell) - cellMod;
+            if (cellMod > 0) cellStart += sizeof(Cell) - cellMod;
 
-            auto cellsMax = reinterpret_cast<SwCell*>((char*)rw.buffer + rw.bufferSize);
-            rw.cells = reinterpret_cast<SwCell*>((char*)rw.buffer + cellStart);
+            auto cellsMax = reinterpret_cast<Cell*>((char*)rw.buffer + rw.bufferSize);
+            rw.cells = reinterpret_cast<Cell*>((char*)rw.buffer + cellStart);
 
             if (rw.cells >= cellsMax) goto reduce_bands;
 

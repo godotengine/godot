@@ -14,7 +14,6 @@
 #include "../sys/atomic.h"
 #include "../math/range.h"
 
-#include <exception>
 #include <list>
 
 namespace embree

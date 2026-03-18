@@ -32,11 +32,9 @@
 
 #include "nav_rid_2d.h"
 
-#include "core/math/vector2.h"
+#include "core/object/class_db.h"
 #include "core/templates/self_list.h"
-#include "core/variant/callable.h"
-#include "core/variant/dictionary.h"
-#include "servers/navigation_2d/navigation_constants_2d.h"
+#include "servers/navigation/navigation_globals.h"
 
 #include <Agent2d.h>
 

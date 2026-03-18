@@ -32,9 +32,6 @@
 
 #include "api/java_class_wrapper.h"
 
-// Maximum recursion depth allowed when converting variants to jobjects or vice-versa.
-#define RECURSION_DEPTH_LIMIT 64
-
 static jobject android_class_loader = nullptr;
 static jmethodID load_class_method = nullptr;
 
@@ -58,17 +55,15 @@ Callable jcallable_to_callable(JNIEnv *p_env, jobject p_jcallable_obj) {
 	ERR_FAIL_NULL_V(p_env, Callable());
 
 	const Variant *callable_variant = nullptr;
-	if (p_jcallable_obj) {
-		jclass callable_class = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
-		if (callable_class && p_env->IsInstanceOf(p_jcallable_obj, callable_class)) {
-			jmethodID get_native_pointer = p_env->GetMethodID(callable_class, "getNativePointer", "()J");
-			jlong native_callable = p_env->CallLongMethod(p_jcallable_obj, get_native_pointer);
+	jclass callable_class = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
+	if (callable_class && p_env->IsInstanceOf(p_jcallable_obj, callable_class)) {
+		jmethodID get_native_pointer = p_env->GetMethodID(callable_class, "getNativePointer", "()J");
+		jlong native_callable = p_env->CallLongMethod(p_jcallable_obj, get_native_pointer);
 
-			callable_variant = reinterpret_cast<const Variant *>(native_callable);
-		}
-
-		p_env->DeleteLocalRef(callable_class);
+		callable_variant = reinterpret_cast<const Variant *>(native_callable);
 	}
+
+	p_env->DeleteLocalRef(callable_class);
 
 	ERR_FAIL_NULL_V(callable_variant, Callable());
 	return *callable_variant;
@@ -78,65 +73,72 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 	ERR_FAIL_NULL_V(p_env, String());
 
 	String result;
-	if (p_charsequence) {
-		jclass bclass = jni_find_class(p_env, "java/lang/CharSequence");
-		if (bclass && p_env->IsInstanceOf(p_charsequence, bclass)) {
-			jmethodID to_string = p_env->GetMethodID(bclass, "toString", "()Ljava/lang/String;");
-			jstring obj_string = (jstring)p_env->CallObjectMethod(p_charsequence, to_string);
+	jclass bclass = jni_find_class(p_env, "java/lang/CharSequence");
+	if (bclass && p_env->IsInstanceOf(p_charsequence, bclass)) {
+		jmethodID to_string = p_env->GetMethodID(bclass, "toString", "()Ljava/lang/String;");
+		jstring obj_string = (jstring)p_env->CallObjectMethod(p_charsequence, to_string);
 
-			result = jstring_to_string(obj_string, p_env);
-			p_env->DeleteLocalRef(obj_string);
-		}
-
-		p_env->DeleteLocalRef(bclass);
+		result = jstring_to_string(obj_string, p_env);
+		p_env->DeleteLocalRef(obj_string);
 	}
+
+	p_env->DeleteLocalRef(bclass);
 	return result;
 }
 
-jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth) {
-	jobject ret = nullptr;
-
-	if (p_depth > RECURSION_DEPTH_LIMIT) {
-		ERR_PRINT("Variant is too deep! Bailing.");
-		return ret;
-	}
-
-	env->PushLocalFrame(2);
-	if (env->ExceptionCheck()) {
-		env->ExceptionDescribe();
-		env->ExceptionClear();
-		return ret;
-	}
+jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
+	jvalret v;
 
 	switch (p_type) {
 		case Variant::BOOL: {
-			jclass bclass = jni_find_class(env, "java/lang/Boolean");
-			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
-			jvalue val;
-			val.z = (bool)(*p_arg);
-			ret = env->NewObjectA(bclass, ctor, &val);
-			env->DeleteLocalRef(bclass);
+			if (force_jobject) {
+				jclass bclass = jni_find_class(env, "java/lang/Boolean");
+				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
+				jvalue val;
+				val.z = (bool)(*p_arg);
+				jobject obj = env->NewObjectA(bclass, ctor, &val);
+				v.val.l = obj;
+				v.obj = obj;
+				env->DeleteLocalRef(bclass);
+			} else {
+				v.val.z = *p_arg;
+			}
 		} break;
 		case Variant::INT: {
-			jclass bclass = jni_find_class(env, "java/lang/Long");
-			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(J)V");
-			jvalue val;
-			val.j = (jlong)(*p_arg);
-			ret = env->NewObjectA(bclass, ctor, &val);
-			env->DeleteLocalRef(bclass);
+			if (force_jobject) {
+				jclass bclass = jni_find_class(env, "java/lang/Integer");
+				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(I)V");
+				jvalue val;
+				val.i = (int)(*p_arg);
+				jobject obj = env->NewObjectA(bclass, ctor, &val);
+				v.val.l = obj;
+				v.obj = obj;
+				env->DeleteLocalRef(bclass);
+
+			} else {
+				v.val.i = *p_arg;
+			}
 		} break;
 		case Variant::FLOAT: {
-			jclass bclass = jni_find_class(env, "java/lang/Double");
-			jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
-			jvalue val;
-			val.d = (double)(*p_arg);
-			ret = env->NewObjectA(bclass, ctor, &val);
-			env->DeleteLocalRef(bclass);
+			if (force_jobject) {
+				jclass bclass = jni_find_class(env, "java/lang/Double");
+				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
+				jvalue val;
+				val.d = (double)(*p_arg);
+				jobject obj = env->NewObjectA(bclass, ctor, &val);
+				v.val.l = obj;
+				v.obj = obj;
+				env->DeleteLocalRef(bclass);
+
+			} else {
+				v.val.f = *p_arg;
+			}
 		} break;
 		case Variant::STRING: {
 			String s = *p_arg;
 			jstring jStr = env->NewStringUTF(s.utf8().get_data());
-			ret = jStr;
+			v.val.l = jStr;
+			v.obj = jStr;
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
 			Vector<String> sarray = *p_arg;
@@ -147,12 +149,15 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 				env->SetObjectArrayElement(arr, j, str);
 				env->DeleteLocalRef(str);
 			}
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 
 		case Variant::CALLABLE: {
 			jobject jcallable = callable_to_jcallable(env, *p_arg);
-			ret = jcallable;
+			v.val.l = jcallable;
+			v.obj = jcallable;
 		} break;
 
 		case Variant::DICTIONARY: {
@@ -180,10 +185,10 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 
 			for (int j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
-				jobject jvar = _variant_to_jobject(env, var.get_type(), &var, p_depth + 1);
-				env->SetObjectArrayElement(jvalues, j, jvar);
-				if (jvar) {
-					env->DeleteLocalRef(jvar);
+				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
+				env->SetObjectArrayElement(jvalues, j, valret.val.l);
+				if (valret.obj) {
+					env->DeleteLocalRef(valret.obj);
 				}
 			}
 
@@ -193,7 +198,8 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			env->DeleteLocalRef(jvalues);
 			env->DeleteLocalRef(dclass);
 
-			ret = jdict;
+			v.val.l = jdict;
+			v.obj = jdict;
 		} break;
 
 		case Variant::ARRAY: {
@@ -202,13 +208,14 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 
 			for (int j = 0; j < array.size(); j++) {
 				Variant var = array[j];
-				jobject jvar = _variant_to_jobject(env, var.get_type(), &var, p_depth + 1);
-				env->SetObjectArrayElement(arr, j, jvar);
-				if (jvar) {
-					env->DeleteLocalRef(jvar);
+				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
+				env->SetObjectArrayElement(arr, j, valret.val.l);
+				if (valret.obj) {
+					env->DeleteLocalRef(valret.obj);
 				}
 			}
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
 		} break;
 
 		case Variant::PACKED_INT32_ARRAY: {
@@ -216,50 +223,62 @@ jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_
 			jintArray arr = env->NewIntArray(array.size());
 			const int *r = array.ptr();
 			env->SetIntArrayRegion(arr, 0, array.size(), r);
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			Vector<int64_t> array = *p_arg;
 			jlongArray arr = env->NewLongArray(array.size());
 			const int64_t *r = array.ptr();
 			env->SetLongArrayRegion(arr, 0, array.size(), r);
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			Vector<uint8_t> array = *p_arg;
 			jbyteArray arr = env->NewByteArray(array.size());
 			const uint8_t *r = array.ptr();
 			env->SetByteArrayRegion(arr, 0, array.size(), reinterpret_cast<const signed char *>(r));
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
 			Vector<float> array = *p_arg;
 			jfloatArray arr = env->NewFloatArray(array.size());
 			const float *r = array.ptr();
 			env->SetFloatArrayRegion(arr, 0, array.size(), r);
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			Vector<double> array = *p_arg;
 			jdoubleArray arr = env->NewDoubleArray(array.size());
 			const double *r = array.ptr();
 			env->SetDoubleArrayRegion(arr, 0, array.size(), r);
-			ret = arr;
+			v.val.l = arr;
+			v.obj = arr;
+
 		} break;
 		case Variant::OBJECT: {
 			Ref<JavaObject> generic_object = *p_arg;
 			if (generic_object.is_valid()) {
 				jobject obj = env->NewLocalRef(generic_object->get_instance());
-				ret = obj;
+				v.val.l = obj;
+				v.obj = obj;
+			} else {
+				v.val.i = 0;
 			}
 		} break;
 
-		// Add default to prevent compiler warning about not handling all types.
-		default:
-			break;
+		default: {
+			v.val.i = 0;
+		} break;
 	}
-
-	return env->PopLocalFrame(ret);
+	return v;
 }
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
@@ -274,14 +293,11 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 	}
 	String name = jstring_to_string(clsName, env);
 	env->DeleteLocalRef(clsName);
-	env->DeleteLocalRef(cclass);
 
 	return name;
 }
 
-Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
-	ERR_FAIL_COND_V_MSG(p_depth > RECURSION_DEPTH_LIMIT, Variant(), "Variant is too deep! Bailing.");
-
+Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	if (obj == nullptr) {
 		return Variant();
 	}
@@ -336,7 +352,6 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
 		jlong ret = env->CallLongMethod(obj, longValue);
-		env->DeleteLocalRef(nclass);
 		return ret;
 	}
 
@@ -377,7 +392,6 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID doubleValue = env->GetMethodID(nclass, "doubleValue", "()D");
 		double ret = env->CallDoubleMethod(obj, doubleValue);
-		env->DeleteLocalRef(nclass);
 		return ret;
 	}
 
@@ -420,7 +434,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 
 		for (int i = 0; i < objCount; i++) {
 			jobject jobj = env->GetObjectArrayElement(arr, i);
-			Variant v = _jobject_to_variant(env, jobj, p_depth + 1);
+			Variant v = _jobject_to_variant(env, jobj);
 			varr.push_back(v);
 			env->DeleteLocalRef(jobj);
 		}
@@ -428,45 +442,24 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 		return varr;
 	}
 
-	if (name == "org.godotengine.godot.Dictionary") {
+	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
 		Dictionary ret;
 		jclass oclass = c;
+		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
+		jobjectArray arr = (jobjectArray)env->CallObjectMethod(obj, get_keys);
 
-		jmethodID entrySet = env->GetMethodID(oclass, "entrySet", "()Ljava/util/Set;");
-		jobject entrySetObj = env->CallObjectMethod(obj, entrySet);
+		PackedStringArray keys = _jobject_to_variant(env, arr);
+		env->DeleteLocalRef(arr);
 
-		jclass setClass = env->GetObjectClass(entrySetObj);
-		jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
-		jobject iteratorObj = env->CallObjectMethod(entrySetObj, iterator);
+		jmethodID get_values = env->GetMethodID(oclass, "get_values", "()[Ljava/lang/Object;");
+		arr = (jobjectArray)env->CallObjectMethod(obj, get_values);
 
-		jclass iteratorClass = env->GetObjectClass(iteratorObj);
-		jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
-		jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+		Array vals = _jobject_to_variant(env, arr);
+		env->DeleteLocalRef(arr);
 
-		jclass entryClass = jni_find_class(env, "java/util/Map$Entry");
-		jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
-		jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
-
-		while (env->CallBooleanMethod(iteratorObj, hasNext)) {
-			jobject entry = env->CallObjectMethod(iteratorObj, next);
-
-			jobject jkey = env->CallObjectMethod(entry, getKey);
-			jobject jvalue = env->CallObjectMethod(entry, getValue);
-
-			Variant key = _jobject_to_variant(env, jkey, p_depth + 1);
-			Variant value = _jobject_to_variant(env, jvalue, p_depth + 1);
-			ret[key] = value;
-
-			env->DeleteLocalRef(entry);
-			env->DeleteLocalRef(jkey);
-			env->DeleteLocalRef(jvalue);
+		for (int i = 0; i < keys.size(); i++) {
+			ret[keys[i]] = vals[i];
 		}
-
-		env->DeleteLocalRef(entrySetObj);
-		env->DeleteLocalRef(iteratorObj);
-		env->DeleteLocalRef(setClass);
-		env->DeleteLocalRef(iteratorClass);
-		env->DeleteLocalRef(entryClass);
 
 		return ret;
 	}
@@ -557,11 +550,6 @@ void setup_android_class_loader() {
 		android_class_loader = nullptr;
 		ERR_FAIL_MSG("Failed to find method ID for ClassLoader::loadClass.");
 	}
-
-	env->DeleteLocalRef(class_loader_class);
-	env->DeleteLocalRef(class_loader);
-	env->DeleteLocalRef(class_class);
-	env->DeleteLocalRef(known_class);
 }
 
 void cleanup_android_class_loader() {
@@ -581,22 +569,17 @@ jclass jni_find_class(JNIEnv *p_env, const char *p_class_name) {
 	ERR_FAIL_NULL_V(p_env, nullptr);
 	ERR_FAIL_NULL_V(p_class_name, nullptr);
 
-	jobject class_object = nullptr;
 	if (!android_class_loader || !load_class_method) {
 		ERR_PRINT("Android ClassLoader is not initialized. Falling back to FindClass.");
-		class_object = p_env->FindClass(p_class_name);
-	} else {
-		jstring java_class_name = p_env->NewStringUTF(p_class_name);
-		class_object = p_env->CallObjectMethod(
-				android_class_loader,
-				load_class_method,
-				java_class_name);
-		p_env->DeleteLocalRef(java_class_name);
+		return p_env->FindClass(p_class_name);
 	}
-	if (p_env->ExceptionCheck()) {
-		p_env->ExceptionDescribe();
-		p_env->ExceptionClear();
-	}
+
+	jstring java_class_name = p_env->NewStringUTF(p_class_name);
+	jobject class_object = p_env->CallObjectMethod(
+			android_class_loader,
+			load_class_method,
+			java_class_name);
+	p_env->DeleteLocalRef(java_class_name);
 	ERR_FAIL_NULL_V_MSG(class_object, nullptr, vformat("Failed to find Java class: \"%s\".", p_class_name));
 	return static_cast<jclass>(class_object);
 }

@@ -30,17 +30,17 @@
 
 #pragma once
 
-#ifdef GLES3_ENABLED
-
-#include "core/templates/a_hash_map.h"
+#include "core/math/projection.h"
+#include "core/os/mutex.h"
+#include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering_server.h"
 
-#include <platform_gl.h>
+#ifdef GLES3_ENABLED
 
-class StringBuilder;
+#include "platform_gl.h"
 
 class ShaderGLES3 {
 public:
@@ -104,6 +104,8 @@ private:
 
 		LocalVector<AHashMap<uint64_t, Specialization>> variants;
 	};
+
+	Mutex variant_set_mutex;
 
 	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
@@ -248,7 +250,7 @@ public:
 	static void set_shader_cache_save_compressed_zstd(bool p_enable);
 	static void set_shader_cache_save_debug(bool p_enable);
 
-	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
+	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
 	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();

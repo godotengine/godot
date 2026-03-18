@@ -30,11 +30,9 @@
 
 #include "raycast_occlusion_cull.h"
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/math/projection.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/os.h"
+#include "core/templates/local_vector.h"
 
 #ifdef __SSE2__
 #include <pmmintrin.h>
@@ -633,7 +631,7 @@ RID RaycastOcclusionCull::buffer_get_debug_texture(RID p_buffer) {
 
 ////////////////////////////////////////////////////////
 
-void RaycastOcclusionCull::set_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality) {
+void RaycastOcclusionCull::set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) {
 	if (build_quality == p_quality) {
 		return;
 	}
@@ -659,7 +657,7 @@ RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
 	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
 	_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
-	build_quality = RSE::ViewportOcclusionCullingBuildQuality(default_quality);
+	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {

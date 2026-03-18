@@ -47,11 +47,11 @@ struct hb_hashmap_t
   hb_hashmap_t ()  { init (); }
   ~hb_hashmap_t () { fini (); }
 
-  void _copy (const hb_hashmap_t& o)
+  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t ()
   {
     if (unlikely (!o.mask)) return;
 
-    if (hb_is_trivially_copy_assignable (item_t))
+    if (item_t::is_trivial)
     {
       items = (item_t *) hb_malloc (sizeof (item_t) * (o.mask + 1));
       if (unlikely (!items))
@@ -70,16 +70,8 @@ struct hb_hashmap_t
 
     alloc (o.population); hb_copy (o, *this);
   }
-
-  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t () { _copy (o); }
-  hb_hashmap_t& operator= (const hb_hashmap_t& o)
-  {
-    reset ();
-    if (!items) { _copy (o); return *this; }
-    alloc (o.population); hb_copy (o, *this); return *this;
-  }
-
   hb_hashmap_t (hb_hashmap_t&& o)  noexcept : hb_hashmap_t () { hb_swap (*this, o); }
+  hb_hashmap_t& operator= (const hb_hashmap_t& o)  { reset (); alloc (o.population); hb_copy (o, *this); return *this; }
   hb_hashmap_t& operator= (hb_hashmap_t&& o)   noexcept { hb_swap (*this, o); return *this; }
 
   hb_hashmap_t (std::initializer_list<hb_pair_t<K, V>> lst) : hb_hashmap_t ()
@@ -138,7 +130,10 @@ struct hb_hashmap_t
     uint32_t total_hash () const
     { return (hash * 31u) + hb_hash (value); }
 
-    static constexpr bool is_trivially_constructible = (hb_is_trivially_constructible(K) && hb_is_trivially_constructible(V));
+    static constexpr bool is_trivial = hb_is_trivially_constructible(K) &&
+				       hb_is_trivially_destructible(K) &&
+				       hb_is_trivially_constructible(V) &&
+				       hb_is_trivially_destructible(V);
   };
 
   hb_object_header_t header;
@@ -179,19 +174,19 @@ struct hb_hashmap_t
     if (likely (items))
     {
       unsigned size = mask + 1;
-      for (unsigned i = 0; i < size; i++)
-	items[i].~item_t ();
+      if (!item_t::is_trivial)
+	for (unsigned i = 0; i < size; i++)
+	  items[i].~item_t ();
       hb_free (items);
       items = nullptr;
     }
     population = occupancy = 0;
   }
 
-  hb_hashmap_t& reset ()
+  void reset ()
   {
     successful = true;
     clear ();
-    return *this;
   }
 
   bool in_error () const { return !successful; }
@@ -202,7 +197,7 @@ struct hb_hashmap_t
 
     if (new_population != 0 && (new_population + new_population / 2) < mask) return true;
 
-    unsigned int power = hb_bit_storage (hb_max (hb_max ((unsigned) population, new_population) * 2, 4u));
+    unsigned int power = hb_bit_storage (hb_max ((unsigned) population, new_population) * 2 + 8);
     unsigned int new_size = 1u << power;
     item_t *new_items = (item_t *) hb_malloc ((size_t) new_size * sizeof (item_t));
     if (unlikely (!new_items))
@@ -210,7 +205,7 @@ struct hb_hashmap_t
       successful = false;
       return false;
     }
-    if (!item_t::is_trivially_constructible)
+    if (!item_t::is_trivial)
       for (auto &_ : hb_iter (new_items, new_size))
 	new (&_) item_t ();
     else
@@ -236,8 +231,9 @@ struct hb_hashmap_t
 		       std::move (old_items[i].value));
       }
     }
-    for (unsigned int i = 0; i < old_size; i++)
-      old_items[i].~item_t ();
+    if (!item_t::is_trivial)
+      for (unsigned int i = 0; i < old_size; i++)
+	old_items[i].~item_t ();
 
     hb_free (old_items);
 
@@ -339,13 +335,7 @@ struct hb_hashmap_t
   bool has (const K &key, VV **vp = nullptr) const
   {
     if (!items) return false;
-    return has_with_hash (key, hb_hash (key), vp);
-  }
-  template <typename VV=V>
-  bool has_with_hash (const K &key, uint32_t hash, VV **vp = nullptr) const
-  {
-    if (!items) return false;
-    auto *item = fetch_item (key, hash);
+    auto *item = fetch_item (key, hb_hash (key));
     if (item)
     {
       if (vp) *vp = std::addressof (item->value);
@@ -491,17 +481,10 @@ struct hb_hashmap_t
   /* Sink interface. */
   hb_hashmap_t& operator << (const hb_pair_t<K, V>& v)
   { set (v.first, v.second); return *this; }
-  template <typename V2 = V,
-	    hb_enable_if (!hb_is_trivially_copyable (V2))>
   hb_hashmap_t& operator << (const hb_pair_t<K, V&&>& v)
   { set (v.first, std::move (v.second)); return *this; }
-  template <typename K2 = K,
-	    hb_enable_if (!hb_is_trivially_copyable (K2))>
   hb_hashmap_t& operator << (const hb_pair_t<K&&, V>& v)
   { set (std::move (v.first), v.second); return *this; }
-  template <typename K2 = K, typename V2 = V,
-	    hb_enable_if (!hb_is_trivially_copyable (K2) &&
-			  !hb_is_trivially_copyable (V2))>
   hb_hashmap_t& operator << (const hb_pair_t<K&&, V&&>& v)
   { set (std::move (v.first), std::move (v.second)); return *this; }
 

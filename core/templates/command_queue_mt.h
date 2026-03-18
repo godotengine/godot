@@ -39,8 +39,6 @@
 #include "core/typedefs.h"
 
 class CommandQueueMT {
-	static const size_t MAX_COMMAND_SIZE = 1024;
-
 	struct CommandBase {
 		bool sync = false;
 		virtual void call() = 0;
@@ -60,7 +58,7 @@ class CommandQueueMT {
 		_FORCE_INLINE_ Command(T *p_instance, M p_method, FwdArgs &&...p_args) :
 				CommandBase(NeedsSync), instance(p_instance), method(p_method), args(std::forward<FwdArgs>(p_args)...) {}
 
-		void call() override {
+		void call() {
 			call_impl(BuildIndexSequence<sizeof...(Args)>{});
 		}
 
@@ -107,8 +105,6 @@ class CommandQueueMT {
 
 	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
-	inline static thread_local bool flushing = false;
-
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
 	ConditionVariable sync_cond_var;
@@ -129,7 +125,7 @@ class CommandQueueMT {
 		command_mem.resize(size + alloc_size + sizeof(uint64_t));
 		*(uint64_t *)&command_mem[size] = alloc_size;
 		void *cmd = &command_mem[size + sizeof(uint64_t)];
-		memnew_placement(cmd, T(std::forward<Args>(p_args)...));
+		new (cmd) T(std::forward<Args>(p_args)...);
 		pending.store(true);
 	}
 
@@ -158,48 +154,34 @@ class CommandQueueMT {
 	}
 
 	void _flush() {
-		// Safeguard against trying to re-lock the binary mutex.
-		if (flushing) {
+		if (unlikely(flush_read_ptr)) {
+			// Re-entrant call.
 			return;
 		}
-
-		flushing = true;
 
 		MutexLock lock(mutex);
 
-		if (unlikely(flush_read_ptr)) {
-			// Another thread is flushing.
-			lock.temp_unlock(); // Not really temp.
-			sync();
-			flushing = false;
-			return;
-		}
-
-		alignas(uint64_t) char cmd_local_mem[MAX_COMMAND_SIZE];
-
 		while (flush_read_ptr < command_mem.size()) {
 			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
-			flush_read_ptr += sizeof(uint64_t);
+			flush_read_ptr += 8;
+			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
+			uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
+			cmd->call();
+			WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 
-			// Protect against race condition between this thread
-			// during the call to the command and other threads potentially
-			// invalidating the pointer due to reallocs by relocating the object.
-			CommandBase *cmd_original = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
-			CommandBase *cmd_local = reinterpret_cast<CommandBase *>(cmd_local_mem);
-			memcpy(cmd_local_mem, (char *)cmd_original, size);
+			// Handle potential realloc due to the command and unlock allowance.
+			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 
-			lock.temp_unlock();
-			cmd_local->call();
-			lock.temp_relock();
-
-			if (unlikely(cmd_local->sync)) {
+			if (unlikely(cmd->sync)) {
 				sync_head++;
-				lock.temp_unlock(); // Give an opportunity to awaiters right away.
+				lock.~MutexLock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
-				lock.temp_relock();
+				new (&lock) MutexLock(mutex);
+				// Handle potential realloc happened during unlock.
+				cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			}
 
-			cmd_local->~CommandBase();
+			cmd->~CommandBase();
 
 			flush_read_ptr += size;
 		}
@@ -209,8 +191,6 @@ class CommandQueueMT {
 		flush_read_ptr = 0;
 
 		_prevent_sync_wraparound();
-
-		flushing = false;
 	}
 
 	_FORCE_INLINE_ void _wait_for_sync(MutexLock<BinaryMutex> &p_lock) {
@@ -230,7 +210,6 @@ public:
 	void push(T *p_instance, M p_method, Args &&...p_args) {
 		// Standard command, no sync.
 		using CommandType = Command<T, M, false, Args...>;
-		static_assert(sizeof(CommandType) <= MAX_COMMAND_SIZE);
 		_push_internal<CommandType, false>(p_instance, p_method, std::forward<Args>(p_args)...);
 	}
 
@@ -238,7 +217,6 @@ public:
 	void push_and_sync(T *p_instance, M p_method, Args... p_args) {
 		// Standard command, sync.
 		using CommandType = Command<T, M, true, Args...>;
-		static_assert(sizeof(CommandType) <= MAX_COMMAND_SIZE);
 		_push_internal<CommandType, true>(p_instance, p_method, std::forward<Args>(p_args)...);
 	}
 
@@ -246,7 +224,6 @@ public:
 	void push_and_ret(T *p_instance, M p_method, R *r_ret, Args... p_args) {
 		// Command with return value, sync.
 		using CommandType = CommandRet<T, M, R, Args...>;
-		static_assert(sizeof(CommandType) <= MAX_COMMAND_SIZE);
 		_push_internal<CommandType, true>(p_instance, p_method, r_ret, std::forward<Args>(p_args)...);
 	}
 
@@ -275,7 +252,6 @@ public:
 		pump_task_id = p_task_id;
 	}
 
-	CommandQueueMT() {
-		command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
-	}
+	CommandQueueMT();
+	~CommandQueueMT();
 };

@@ -384,24 +384,20 @@ struct Glyph
     {
 #ifndef HB_NO_BEYOND_64K
       if (glyf_accelerator.GVAR->has_data ())
-      {
-	if (!glyf_accelerator.GVAR->apply_deltas_to_points (gid,
-							    coords,
-							    points.as_array ().sub_array (old_length),
-							    scratch,
-							    gvar_cache,
-							    phantom_only && type == SIMPLE))
-	  return false;
-      }
+	glyf_accelerator.GVAR->apply_deltas_to_points (gid,
+						       coords,
+						       points.as_array ().sub_array (old_length),
+						       scratch,
+						       gvar_cache,
+						       phantom_only && type == SIMPLE);
       else
 #endif
-      if (!glyf_accelerator.gvar->apply_deltas_to_points (gid,
-							  coords,
-							  points.as_array ().sub_array (old_length),
-							  scratch,
-							  gvar_cache,
-							  phantom_only && type == SIMPLE))
-        return false;
+	glyf_accelerator.gvar->apply_deltas_to_points (gid,
+						       coords,
+						       points.as_array ().sub_array (old_length),
+						       scratch,
+						       gvar_cache,
+						       phantom_only && type == SIMPLE);
     }
 #endif
 
@@ -537,11 +533,7 @@ struct Glyph
   bool get_extents_without_var_scaled (hb_font_t *font, const glyf_accelerator_t &glyf_accelerator,
 				       hb_glyph_extents_t *extents) const
   {
-    if (type == EMPTY)
-    {
-      *extents = {0, 0, 0, 0};
-      return true; /* Empty glyph; zero extents. */
-    }
+    if (type == EMPTY) return true; /* Empty glyph; zero extents. */
     return header->get_extents_without_var_scaled (font, glyf_accelerator, gid, extents);
   }
 

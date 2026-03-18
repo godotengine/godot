@@ -16,10 +16,7 @@ constexpr float cDefaultPenetrationTolerance = 1.0e-4f; ///< Stop when there's l
 constexpr float cDefaultConvexRadius = 0.05f;
 
 /// Used by (Tapered)CapsuleShape to determine when supporting face is an edge rather than a point (unit: meter)
-constexpr float cCapsuleProjectionSlop = 0.02f;
-
-/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared (unit: meter^2)
-constexpr float cDefaultInternalEdgeRemovalVertexToleranceSq = 1.0e-8f;
+static constexpr float cCapsuleProjectionSlop = 0.02f;
 
 /// Maximum amount of jobs to allow
 constexpr int cMaxPhysicsJobs = 2048;
@@ -75,9 +72,6 @@ struct PhysicsSettings
 
 	/// Maximum allowed distance between old and new contact point to preserve contact forces for warm start (units: meter^2)
 	float		mContactPointPreserveLambdaMaxDistSq = Square(0.01f); ///< 1 cm
-
-	/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared. (unit: meter^2)
-	float		mInternalEdgeRemovalVertexToleranceSq = cDefaultInternalEdgeRemovalVertexToleranceSq;
 
 	/// Number of solver velocity iterations to run
 	/// Note that this needs to be >= 2 in order for friction to work (friction is applied using the non-penetration impulse from the previous iteration)

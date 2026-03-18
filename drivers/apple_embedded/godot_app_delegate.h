@@ -32,9 +32,9 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NSObject<UIApplicationDelegate, UIWindowSceneDelegate> GDTAppDelegateServiceProtocol;
+typedef NSObject<UIApplicationDelegate> GDTAppDelegateServiceProtocol;
 
-@interface GDTApplicationDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+@interface GDTApplicationDelegate : NSObject <UIApplicationDelegate>
 
 @property(class, readonly, strong) NSArray<GDTAppDelegateServiceProtocol *> *services;
 

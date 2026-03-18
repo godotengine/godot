@@ -32,10 +32,14 @@
 
 #include "../action_map/openxr_action_map.h"
 
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-
-class VBoxContainer;
-class ScrollContainer;
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/text_edit.h"
 
 class OpenXRSelectActionDialog : public ConfirmationDialog {
 	GDCLASS(OpenXRSelectActionDialog, ConfirmationDialog);
@@ -53,9 +57,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void _on_select_action(const String &p_action);
+	void _on_select_action(const String p_action);
 	void open();
 	virtual void ok_pressed() override;
 
-	OpenXRSelectActionDialog(const Ref<OpenXRActionMap> &p_action_map);
+	OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action_map);
 };

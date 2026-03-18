@@ -31,9 +31,7 @@
 #include <CL/cl.h>
 #endif
 
-#ifndef BASISU_OPENCL_ASSERT_ON_ANY_ERRORS
-	#define BASISU_OPENCL_ASSERT_ON_ANY_ERRORS (0)
-#endif
+#define BASISU_OPENCL_ASSERT_ON_ANY_ERRORS (1)
 
 namespace basisu
 {

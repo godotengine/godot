@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -930,8 +930,8 @@ FT_BEGIN_HEADER
    *   resolution and scaling independent parts of a TrueType font resource.
    *
    * @note:
-   *   The TT_Face structure is also used for CFF support; see file
-   *   `cffotypes.h`.
+   *   The TT_Face structure is also used as a 'parent class' for the
+   *   OpenType-CFF class (T2_Face).
    */
   typedef struct TT_FaceRec_*  TT_Face;
 
@@ -1276,6 +1276,10 @@ FT_BEGIN_HEADER
    *
    *     If varied by the `CVAR' table, non-integer values are possible.
    *
+   *   interpreter ::
+   *     A pointer to the TrueType bytecode interpreters field is also used
+   *     to hook the debugger in 'ttdebug'.
+   *
    *   extra ::
    *     Reserved for third-party font drivers.
    *
@@ -1517,6 +1521,10 @@ FT_BEGIN_HEADER
     FT_ULong              cvt_size;
     FT_Int32*             cvt;
 
+    /* A pointer to the bytecode interpreter to use.  This is also */
+    /* used to hook the debugger for the `ttdebug' utility.        */
+    TT_Interpreter        interpreter;
+
 
     /************************************************************************
      *
@@ -1574,6 +1582,11 @@ FT_BEGIN_HEADER
     FT_UInt32             kern_avail_bits;
     FT_UInt32             kern_order_bits;
 
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+    FT_Byte*              gpos_table;
+    FT_Bool               gpos_kerning_available;
+#endif
+
 #ifdef TT_CONFIG_OPTION_BDF
     TT_BDFRec             bdf;
 #endif /* TT_CONFIG_OPTION_BDF */
@@ -1595,15 +1608,6 @@ FT_BEGIN_HEADER
     /* since 2.12 */
     void*                 svg;
 
-#ifdef TT_CONFIG_OPTION_GPOS_KERNING
-    /* since 2.13.3 */
-    FT_Byte*              gpos_table;
-    /* since 2.14 */
-    /* This is actually an array of GPOS lookup subtables. */
-    FT_UInt32*            gpos_lookups_kerning;
-    FT_UInt               num_gpos_lookups_kerning;
-#endif
-
   } TT_FaceRec;
 
 
@@ -1617,6 +1621,15 @@ FT_BEGIN_HEADER
    *   coordinates.
    *
    * @fields:
+   *   memory ::
+   *     A handle to the memory manager.
+   *
+   *   max_points ::
+   *     The maximum size in points of the zone.
+   *
+   *   max_contours ::
+   *     Max size in links contours of the zone.
+   *
    *   n_points ::
    *     The current number of points in the zone.
    *
@@ -1640,6 +1653,9 @@ FT_BEGIN_HEADER
    */
   typedef struct  TT_GlyphZoneRec_
   {
+    FT_Memory   memory;
+    FT_UShort   max_points;
+    FT_UShort   max_contours;
     FT_UShort   n_points;    /* number of points in zone    */
     FT_UShort   n_contours;  /* number of contours          */
 
@@ -1698,6 +1714,7 @@ FT_BEGIN_HEADER
     TT_GlyphZoneRec  zone;
 
     TT_ExecContext   exec;
+    FT_Byte*         instructions;
     FT_ULong         ins_pos;
 
     /* for possible extensibility in other formats */

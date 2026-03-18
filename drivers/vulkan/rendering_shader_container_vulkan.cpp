@@ -30,7 +30,7 @@
 
 #include "rendering_shader_container_vulkan.h"
 
-#include <thirdparty/misc/smolv.h>
+#include "thirdparty/misc/smolv.h"
 
 // RenderingShaderContainerVulkan
 
@@ -44,23 +44,21 @@ uint32_t RenderingShaderContainerVulkan::_format_version() const {
 	return FORMAT_VERSION;
 }
 
-bool RenderingShaderContainerVulkan::_set_code_from_spirv(const ReflectShader &p_shader) {
-	const LocalVector<ReflectShaderStage> &p_spirv = p_shader.shader_stages;
-
+bool RenderingShaderContainerVulkan::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
 	PackedByteArray code_bytes;
 	shaders.resize(p_spirv.size());
-	for (uint64_t i = 0; i < p_spirv.size(); i++) {
+	for (int64_t i = 0; i < p_spirv.size(); i++) {
 		RenderingShaderContainer::Shader &shader = shaders.ptrw()[i];
+
 		if (debug_info_enabled) {
 			// Store SPIR-V as is when debug info is required.
-			shader.code_compressed_bytes = p_spirv[i].spirv_data();
+			shader.code_compressed_bytes = p_spirv[i].spirv;
 			shader.code_compression_flags = 0;
 			shader.code_decompressed_size = 0;
 		} else {
 			// Encode into smolv.
-			Span<uint8_t> spirv = p_spirv[i].spirv().reinterpret<uint8_t>();
 			smolv::ByteArray smolv_bytes;
-			bool smolv_encoded = smolv::Encode(spirv.ptr(), spirv.size(), smolv_bytes, smolv::kEncodeFlagStripDebugInfo);
+			bool smolv_encoded = smolv::Encode(p_spirv[i].spirv.ptr(), p_spirv[i].spirv.size(), smolv_bytes, smolv::kEncodeFlagStripDebugInfo);
 			ERR_FAIL_COND_V_MSG(!smolv_encoded, false, "Failed to compress SPIR-V into smolv.");
 
 			code_bytes.resize(smolv_bytes.size());
@@ -101,15 +99,11 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatVulk
 }
 
 RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_4;
+	return SHADER_SPIRV_VERSION_1_3;
 }
 
 void RenderingShaderContainerFormatVulkan::set_debug_info_enabled(bool p_debug_info_enabled) {
 	debug_info_enabled = p_debug_info_enabled;
-}
-
-bool RenderingShaderContainerFormatVulkan::get_debug_info_enabled() const {
-	return debug_info_enabled;
 }
 
 RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}

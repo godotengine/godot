@@ -30,9 +30,8 @@
 
 #include "concave_polygon_shape_3d.h"
 
-#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	HashSet<DrawEdge, DrawEdge> edges;
@@ -71,8 +70,8 @@ Ref<ArrayMesh> ConcavePolygonShape3D::get_debug_arraymesh_faces(const Color &p_m
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
-	a[RSE::ARRAY_VERTEX] = faces;
-	a[RSE::ARRAY_COLOR] = colors;
+	a[RS::ARRAY_VERTEX] = faces;
+	a[RS::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
 
 	return mesh;

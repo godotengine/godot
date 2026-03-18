@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+from misc.utility.scons_hints import *
+
+Import("env")
+
+if "RD_GLSL" in env["BUILDERS"]:
+    glsl_files = [str(f) for f in Glob("*.glsl")]
+    generated_headers = []
+
+    # Compute shaders #include files from ../shaders/includes/.  Declare
+    # those as explicit dependencies so that SCons regenerates the .gen.h
+    # headers whenever an included file changes (not just when glsl_builders.py
+    # changes).
+    shader_include_files = [str(f) for f in Glob("../shaders/includes/*.glsl")]
+
+    if glsl_files:
+        # Regenerate shader headers whenever the shared builder logic or
+        # any referenced shader include changes.
+        env.Depends(
+            [f + ".gen.h" for f in glsl_files],
+            ["#glsl_builders.py"] + shader_include_files,
+        )
+
+    for glsl_file in glsl_files:
+        generated = env.RD_GLSL(glsl_file)
+        if isinstance(generated, (list, tuple)):
+            generated_headers.extend(generated)
+        else:
+            generated_headers.append(generated)
+else:
+    generated_headers = []
+
+Return("generated_headers")

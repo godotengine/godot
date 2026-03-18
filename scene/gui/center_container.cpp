@@ -30,8 +30,6 @@
 
 #include "center_container.h"
 
-#include "core/object/class_db.h"
-
 Size2 CenterContainer::get_minimum_size() const {
 	if (use_top_left) {
 		return Size2();

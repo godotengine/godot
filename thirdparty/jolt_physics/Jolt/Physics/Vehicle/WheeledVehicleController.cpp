@@ -31,8 +31,6 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(WheeledVehicleControllerSettings)
 
 JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(WheelSettingsWV)
 {
-	JPH_ADD_BASE_CLASS(WheelSettingsWV, WheelSettings)
-
 	JPH_ADD_ATTRIBUTE(WheelSettingsWV, mInertia)
 	JPH_ADD_ATTRIBUTE(WheelSettingsWV, mAngularDamping)
 	JPH_ADD_ATTRIBUTE(WheelSettingsWV, mMaxSteerAngle)
@@ -57,8 +55,6 @@ WheelSettingsWV::WheelSettingsWV()
 
 void WheelSettingsWV::SaveBinaryState(StreamOut &inStream) const
 {
-	WheelSettings::SaveBinaryState(inStream);
-
 	inStream.Write(mInertia);
 	inStream.Write(mAngularDamping);
 	inStream.Write(mMaxSteerAngle);
@@ -70,8 +66,6 @@ void WheelSettingsWV::SaveBinaryState(StreamOut &inStream) const
 
 void WheelSettingsWV::RestoreBinaryState(StreamIn &inStream)
 {
-	WheelSettings::RestoreBinaryState(inStream);
-
 	inStream.Read(mInertia);
 	inStream.Read(mAngularDamping);
 	inStream.Read(mMaxSteerAngle);
@@ -846,21 +840,6 @@ void WheeledVehicleController::RestoreState(StateRecorder &inStream)
 
 	mEngine.RestoreState(inStream);
 	mTransmission.RestoreState(inStream);
-}
-
-void WheeledVehicleController::ToSettings(WheeledVehicleControllerSettings &outSettings) const
-{
-	outSettings.mEngine = static_cast<const VehicleEngineSettings &>(mEngine);
-	outSettings.mTransmission = static_cast<const VehicleTransmissionSettings &>(mTransmission);
-	outSettings.mDifferentials = mDifferentials;
-	outSettings.mDifferentialLimitedSlipRatio = mDifferentialLimitedSlipRatio;
-}
-
-Ref<VehicleControllerSettings> WheeledVehicleController::GetSettings() const
-{
-	WheeledVehicleControllerSettings *settings = new WheeledVehicleControllerSettings;
-	ToSettings(*settings);
-	return settings;
 }
 
 JPH_NAMESPACE_END

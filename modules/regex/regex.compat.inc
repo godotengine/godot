@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "regex.h"
-
-#include "core/object/class_db.h"
-
 Ref<RegEx> RegEx::_create_from_string_bind_compat_95212(const String &p_pattern) {
 	return create_from_string(p_pattern, true);
 }
@@ -47,4 +43,4 @@ void RegEx::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("compile", "pattern"), &RegEx::_compile_bind_compat_95212);
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

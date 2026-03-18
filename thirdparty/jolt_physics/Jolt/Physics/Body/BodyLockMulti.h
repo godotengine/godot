@@ -33,8 +33,8 @@ public:
 		}
 	}
 
-	/// Explicitly release the locks on all bodies (normally this is done in the destructor)
-	inline void					ReleaseLocks()
+	/// Destructor will unlock the bodies
+								~BodyLockMultiBase()
 	{
 		if (mMutexMask != 0)
 		{
@@ -42,23 +42,7 @@ public:
 				mBodyLockInterface.UnlockWrite(mMutexMask);
 			else
 				mBodyLockInterface.UnlockRead(mMutexMask);
-
-			mMutexMask = 0;
-			mBodyIDs = nullptr;
-			mNumBodyIDs = 0;
 		}
-	}
-
-	/// Destructor will unlock the bodies
-								~BodyLockMultiBase()
-	{
-		ReleaseLocks();
-	}
-
-	/// Returns the number of bodies that were locked
-	inline int					GetNumBodies() const
-	{
-		return mNumBodyIDs;
 	}
 
 	/// Access the body (returns null if body was not properly locked)

@@ -35,14 +35,12 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/resources/material.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
 class CodeEdit;
 class ColorPicker;
 class CurveEditor;
-class FilterLineEdit;
 class GraphElement;
 class GraphFrame;
 class HFlowContainer;
@@ -234,11 +232,9 @@ class VisualShaderEditor : public ShaderEditor {
 	OptionButton *edit_type_particles = nullptr;
 	OptionButton *edit_type_sky = nullptr;
 	OptionButton *edit_type_fog = nullptr;
-	OptionButton *edit_type_texture_blit = nullptr;
 	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
-	bool theme_dirty = false;
 	bool pending_update_preview = false;
 	bool shader_error = false;
 	AcceptDialog *code_preview_window = nullptr;
@@ -293,14 +289,11 @@ class VisualShaderEditor : public ShaderEditor {
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
 
-	float cached_theme_base_scale = 1.0f;
-
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
 		MODE_FLAGS_SKY = 2,
 		MODE_FLAGS_PARTICLES = 4,
 		MODE_FLAGS_FOG = 8,
-		MODE_FLAGS_TEXTURE_BLIT = 16,
 	};
 
 	int mode = MODE_FLAGS_SPATIAL_CANVASITEM;
@@ -326,10 +319,6 @@ class VisualShaderEditor : public ShaderEditor {
 
 	enum FogTypeFlags {
 		TYPE_FLAGS_FOG = 1,
-	};
-
-	enum TextureBlitTypeFlags {
-		TYPE_FLAGS_BLIT = 1,
 	};
 
 	enum ToolsMenuOptions {
@@ -376,7 +365,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 	Tree *members = nullptr;
 	AcceptDialog *alert = nullptr;
-	FilterLineEdit *node_filter = nullptr;
+	LineEdit *node_filter = nullptr;
 	RichTextLabel *node_desc = nullptr;
 	Label *highend_label = nullptr;
 
@@ -606,6 +595,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 
 	void _member_filter_changed(const String &p_text);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _member_selected();
 	void _member_create();
 	void _member_cancel();
@@ -661,7 +651,7 @@ protected:
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
-	virtual void use_menu_bar(MenuButton *p_file_menu) override;
+	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
@@ -679,12 +669,13 @@ public:
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
+	void set_toggle_list_control(Control *p_control);
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
-	virtual void update_toggle_files_button() override;
+	virtual Size2 get_minimum_size() const override;
+	void update_toggle_files_button();
 
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
 

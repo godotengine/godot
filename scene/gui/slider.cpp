@@ -30,11 +30,7 @@
 
 #include "slider.h"
 
-#include "core/config/engine.h"
-#include "core/input/input.h"
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display/accessibility_server.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();
@@ -60,7 +56,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber;
-				if (mouse_inside || has_focus(true)) {
+				if (mouse_inside || has_focus()) {
 					grabber = theme_cache.grabber_hl_icon;
 				} else {
 					grabber = theme_cache.grabber_icon;
@@ -247,7 +243,7 @@ void Slider::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SLIDER);
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -279,7 +275,7 @@ void Slider::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
 
-			bool highlighted = editable && (mouse_inside || has_focus(true));
+			bool highlighted = editable && (mouse_inside || has_focus());
 			Ref<Texture2D> grabber;
 			if (editable) {
 				if (highlighted) {

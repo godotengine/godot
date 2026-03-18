@@ -49,8 +49,7 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "core/math/basis.h"
-#include "core/math/vector3.h"
+#include "core/math/transform_3d.h"
 
 class GodotJacobianEntry3D {
 public:

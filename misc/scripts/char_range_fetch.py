@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 # Script used to dump char ranges for specific properties from
-# the Unicode Character Database to the `char_range.cpp` file.
+# the Unicode Character Database to the `char_range.inc` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
-from __future__ import annotations
 
 import os
 import sys
-from typing import Final
+from typing import Final, List, Tuple
 from urllib.request import urlopen
 
 if __name__ == "__main__":
@@ -16,23 +15,23 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt"
+URL: Final[str] = "https://www.unicode.org/Public/16.0.0/ucd/DerivedCoreProperties.txt"
 
 
-xid_start: list[tuple[int, int]] = []
-xid_continue: list[tuple[int, int]] = []
-uppercase_letter: list[tuple[int, int]] = []
-lowercase_letter: list[tuple[int, int]] = []
-unicode_letter: list[tuple[int, int]] = []
+xid_start: List[Tuple[int, int]] = []
+xid_continue: List[Tuple[int, int]] = []
+uppercase_letter: List[Tuple[int, int]] = []
+lowercase_letter: List[Tuple[int, int]] = []
+unicode_letter: List[Tuple[int, int]] = []
 
 
-def merge_ranges(ranges: list[tuple[int, int]]) -> None:
+def merge_ranges(ranges: List[Tuple[int, int]]) -> None:
     if len(ranges) < 2:
         return
 
     last_start: int = ranges[0][0]
     last_end: int = ranges[0][1]
-    original_ranges: list[tuple[int, int]] = ranges[1:]
+    original_ranges: List[Tuple[int, int]] = ranges[1:]
 
     ranges.clear()
 
@@ -48,13 +47,13 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> None:
 
 
 def parse_unicode_data() -> None:
-    lines: list[str] = [line.decode("utf-8") for line in urlopen(URL)]
+    lines: List[str] = [line.decode("utf-8") for line in urlopen(URL)]
 
     for line in lines:
         if line.startswith("#") or not line.strip():
             continue
 
-        split_line: list[str] = line.split(";")
+        split_line: List[str] = line.split(";")
 
         char_range: str = split_line[0].strip()
         char_property: str = split_line[1].strip().split("#")[0].strip()
@@ -64,7 +63,7 @@ def parse_unicode_data() -> None:
         if ".." in char_range:
             range_start, range_end = char_range.split("..")
 
-        range_tuple: tuple[int, int] = (int(range_start, 16), int(range_end, 16))
+        range_tuple: Tuple[int, int] = (int(range_start, 16), int(range_end, 16))
 
         if char_property == "XID_Start":
             xid_start.append(range_tuple)
@@ -88,9 +87,8 @@ def parse_unicode_data() -> None:
     merge_ranges(unicode_letter)
 
 
-def make_array(array_name: str, range_list: list[tuple[int, int]]) -> str:
-    result: str = f"\n\nconst int {array_name}_size = {len(range_list)};\n"
-    result += f"const CharRange {array_name}[{array_name}_size] = {{\n"
+def make_array(array_name: str, range_list: List[Tuple[int, int]]) -> str:
+    result: str = f"\n\nconstexpr inline CharRange {array_name}[] = {{\n"
 
     for start, end in range_list:
         result += f"\t{{ 0x{start:x}, 0x{end:x} }},\n"
@@ -103,16 +101,22 @@ def make_array(array_name: str, range_list: list[tuple[int, int]]) -> str:
 def generate_char_range_inc() -> None:
     parse_unicode_data()
 
-    source: str = generate_copyright_header("char_range.cpp")
+    source: str = generate_copyright_header("char_range.inc")
 
     source += f"""
 // This file was generated using the `misc/scripts/char_range_fetch.py` script.
 
-#include "core/string/char_utils.h"
+#pragma once
+
+#include "core/typedefs.h"
 
 // Unicode Derived Core Properties
-// Source: {URL}\
-"""
+// Source: {URL}
+
+struct CharRange {{
+\tchar32_t start;
+\tchar32_t end;
+}};"""
 
     source += make_array("xid_start", xid_start)
     source += make_array("xid_continue", xid_continue)
@@ -122,11 +126,11 @@ def generate_char_range_inc() -> None:
 
     source += "\n"
 
-    char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.cpp")
+    char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.inc")
     with open(char_range_path, "w", newline="\n") as f:
         f.write(source)
 
-    print("`char_range.cpp` generated successfully.")
+    print("`char_range.inc` generated successfully.")
 
 
 if __name__ == "__main__":

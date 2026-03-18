@@ -212,6 +212,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
   }
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
+                                         unsigned parent_index,
                                          unsigned this_index)
   {
     hb_set_t visited;
@@ -264,7 +265,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     split_context_t split_context {
       c,
       this,
-      this_index,
+      c.graph.duplicate_if_shared (parent_index, this_index),
       std::move (class_to_info),
       c.graph.vertices_[mark_array_id].position_to_index_map (),
     };
@@ -477,11 +478,12 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
 struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
 {
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
+                                         unsigned parent_index,
                                          unsigned this_index)
   {
-    switch (u.format.v) {
+    switch (u.format) {
     case 1:
-      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, this_index);
+      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
 #ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;
       // Don't split 24bit MarkBasePos's.
@@ -494,10 +496,10 @@ struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
   bool sanitize (graph_t::vertex_t& vertex) const
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    if (vertex_len < u.format.v.get_size ()) return false;
+    if (vertex_len < u.format.get_size ()) return false;
     hb_barrier ();
 
-    switch (u.format.v) {
+    switch (u.format) {
     case 1:
       return ((MarkBasePosFormat1*)(&u.format1))->sanitize (vertex);
 #ifndef HB_NO_BEYOND_64K

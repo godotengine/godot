@@ -114,17 +114,6 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
 
   *buf_consumed = 0;
   hb_position_t x = 0, y = 0;
-
-  /* Calculate the advance of the previous glyphs */
-  if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
-  {
-    for (unsigned int i = 0; i < start; i++)
-    {
-      x += pos[i].x_advance;
-      y += pos[i].y_advance;
-    }
-  }
-
   for (unsigned int i = start; i < end; i++)
   {
     char b[1024];
@@ -162,7 +151,7 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"cl\":%u", info[i].cluster));
     }
 
-    if (pos && !(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
+    if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
     {
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"dx\":%d,\"dy\":%d",
 		   x+pos[i].x_offset, y+pos[i].y_offset));
@@ -283,17 +272,6 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
 
   *buf_consumed = 0;
   hb_position_t x = 0, y = 0;
-
-  /* Calculate the advance of the previous glyphs */
-  if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
-  {
-    for (unsigned int i = 0; i < start; i++)
-    {
-      x += pos[i].x_advance;
-      y += pos[i].y_advance;
-    }
-  }
-
   for (unsigned int i = start; i < end; i++)
   {
     char b[1024];
@@ -319,7 +297,7 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "=%u", info[i].cluster));
     }
 
-    if (pos && !(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
+    if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
     {
       if (x+pos[i].x_offset || y+pos[i].y_offset)
         p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "@%d,%d", x+pos[i].x_offset, y+pos[i].y_offset));
@@ -439,9 +417,9 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
  * A human-readable, plain text format.
  * The serialized glyphs will look something like:
  *
- * |[<!-- language="plain" -->
+ * ```
  * [uni0651=0@518,0+0|uni0628=0+1897]
- * ]|
+ * ```
  *
  * - The serialized glyphs are delimited with `[` and `]`.
  * - Glyphs are separated with `|`
@@ -449,7 +427,7 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
  *   #HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES flag is set. Then,
  *   - If #HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS is not set, `=` then #hb_glyph_info_t.cluster.
  *   - If #HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS is not set, the #hb_glyph_position_t in the format:
- *     - If #hb_glyph_position_t.x_offset and #hb_glyph_position_t.y_offset are not both 0, `@x_offset,y_offset`. Then,
+ *     - If both #hb_glyph_position_t.x_offset and #hb_glyph_position_t.y_offset are not 0, `@x_offset,y_offset`. Then,
  *     - `+x_advance`, then `,y_advance` if #hb_glyph_position_t.y_advance is not 0. Then,
  *   - If #HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS is set, the #hb_glyph_extents_t in the format `<x_bearing,y_bearing,width,height>`
  *
@@ -457,10 +435,10 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
  * A machine-readable, structured format.
  * The serialized glyphs will look something like:
  *
- * |[<!-- language="plain" -->
+ * ```
  * [{"g":"uni0651","cl":0,"dx":518,"dy":0,"ax":0,"ay":0},
- *  {"g":"uni0628","cl":0,"dx":0,"dy":0,"ax":1897,"ay":0}]
- * ]|
+ * {"g":"uni0628","cl":0,"dx":0,"dy":0,"ax":1897,"ay":0}]
+ * ```
  *
  * Each glyph is a JSON object, with the following properties:
  * - `g`: the glyph name or glyph index if
@@ -552,9 +530,9 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
  * A human-readable, plain text format.
  * The serialized codepoints will look something like:
  *
- * |[<!-- language="plain" -->
+ * ```
  *  <U+0651=0|U+0628=1>
- * ]|
+ * ```
  *
  * - Glyphs are separated with `|`
  * - Unicode codepoints are expressed as zero-padded four (or more)
@@ -572,9 +550,9 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
  *
  * For example:
  *
- * |[<!-- language="plain" -->
+ * ```
  * [{u:1617,cl:0},{u:1576,cl:1}]
- * ]|
+ * ```
  *
  * Return value:
  * The number of serialized items.

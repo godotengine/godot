@@ -32,8 +32,6 @@
 
 #include "video_stream_theora.h"
 
-#include "core/object/class_db.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/movie_writer_ogv.h"
 #endif
@@ -47,7 +45,7 @@ void initialize_theora_module(ModuleInitializationLevel p_level) {
 	switch (p_level) {
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
 #ifdef TOOLS_ENABLED
-			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
+			if (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
 				writer_ogv = memnew(MovieWriterOGV);
 				MovieWriter::add_writer(writer_ogv);
 			}
@@ -73,7 +71,7 @@ void uninitialize_theora_module(ModuleInitializationLevel p_level) {
 
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
 #ifdef TOOLS_ENABLED
-			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
+			if (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
 				memdelete(writer_ogv);
 			}
 #endif

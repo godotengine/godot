@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Minden Felismert"
+
 msgid "Save"
 msgstr "Mentés"
 
@@ -32,9 +35,6 @@ msgstr "Aktuális Mappa Kiválasztása"
 
 msgid "Select This Folder"
 msgstr "Válassza ezt a mappát"
-
-msgid "All Recognized"
-msgstr "Minden Felismert"
 
 msgid "Open a File"
 msgstr "Fálj Megnyitása"

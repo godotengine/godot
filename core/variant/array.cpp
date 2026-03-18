@@ -30,16 +30,12 @@
 
 #include "array.h"
 
-STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
-STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
-STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
-
+#include "container_type_validate.h"
 #include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
-#include "core/variant/container_type_validate.h"
 #include "core/variant/dictionary.h"
 
 struct ArrayPrivate {
@@ -309,17 +305,11 @@ Error Array::resize(int p_new_size) {
 	int old_size = _p->array.size();
 	Error err = _p->array.resize_initialized(p_new_size);
 	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
-		Variant *write = _p->array.ptrw();
 		for (int i = old_size; i < p_new_size; i++) {
-			VariantInternal::initialize(&write[i], variant_type);
+			VariantInternal::initialize(&_p->array.write[i], variant_type);
 		}
 	}
 	return err;
-}
-
-Error Array::reserve(int p_new_size) {
-	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	return _p->array.reserve(p_new_size);
 }
 
 Error Array::insert(int p_pos, const Variant &p_value) {
@@ -943,10 +933,6 @@ void Array::make_read_only() {
 
 bool Array::is_read_only() const {
 	return _p->read_only != nullptr;
-}
-
-Span<Variant> Array::span() const {
-	return _p->array.span();
 }
 
 Array::Array(const Array &p_from) {

@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "editor_export_platform.h"
-
-#include "core/object/class_db.h"
-
 Vector<String> EditorExportPlatform::_get_forced_export_files_bind_compat_71542() {
 	return get_forced_export_files(Ref<EditorExportPreset>());
 }
@@ -42,4 +38,4 @@ void EditorExportPlatform::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::_get_forced_export_files_bind_compat_71542);
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

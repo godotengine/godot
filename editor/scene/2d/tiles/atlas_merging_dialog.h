@@ -54,6 +54,7 @@ private:
 
 	// GUI.
 	ItemList *atlas_merging_atlases_list = nullptr;
+	EditorPropertyVector2i *texture_region_size_editor_property = nullptr;
 	EditorPropertyInteger *columns_editor_property = nullptr;
 	TextureRect *preview = nullptr;
 	Label *select_2_atlases_label = nullptr;

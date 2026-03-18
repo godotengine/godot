@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Semua Dikenali"
+
 msgid "Save"
 msgstr "Simpan"
 
@@ -35,9 +38,6 @@ msgstr "Pilih Folder Semasa"
 
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
-
-msgid "All Recognized"
-msgstr "Semua Dikenali"
 
 msgid "Open a File"
 msgstr "Buka Fail"

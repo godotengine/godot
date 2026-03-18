@@ -28,14 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "config.h"
-
 #ifdef GLES3_ENABLED
 
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
-#include "core/string/ustring.h"
-#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "config.h"
+
+#include "../rasterizer_gles3.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
@@ -81,19 +78,17 @@ Config::Config() {
 #endif
 
 	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
-	astc_3d_supported = extensions.has("GL_OES_texture_compression_astc");
-	astc_hdr_supported = astc_3d_supported || extensions.has("GL_KHR_texture_compression_astc_hdr");
-	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
-	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
+	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
+	astc_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
+	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 
-	if (RasterizerUtilGLES3::is_gles_over_gl()) {
+	if (RasterizerGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
 		etc2_supported = false;
 		s3tc_supported = true;
 		rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 		srgb_framebuffer_supported = true;
-		unorm16_texture_supported = true;
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
@@ -108,14 +103,12 @@ Config::Config() {
 #endif
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
 		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
-		unorm16_texture_supported = extensions.has("GL_EXT_texture_norm16");
 	}
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
 	GLint max_vertex_output;
 	glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &max_vertex_output);
@@ -239,7 +232,7 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
-	} else if (rendering_device_name.contains("PowerVR")) {
+	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
 		disable_transform_feedback_shader_cache = true;
 	}
 

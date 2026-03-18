@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneInstanceStorm" instance=ExtResource("1")]
+lane_id = "instance_storm"
+lane_name = "Instance Storm"
+lane_description = "Dense repeated instances with rotational motion to stress instance submission."
+lane_preset = "instance_storm"
+default_duration_s = 35.0

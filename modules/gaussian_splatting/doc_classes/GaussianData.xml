@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianData" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Resource that stores Gaussian splat datasets for runtime and editor workflows.
+	</brief_description>
+	<description>
+		GaussianData is the canonical data container for the Gaussian Splatting module. It stores the per-splat payload,
+		tracks metadata required by rendering and streaming systems, and exposes import/export-compatible data to other
+		module components.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

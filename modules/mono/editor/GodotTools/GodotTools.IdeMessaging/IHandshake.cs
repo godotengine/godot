@@ -4,7 +4,7 @@ namespace GodotTools.IdeMessaging
 {
     public interface IHandshake
     {
-        public string GetHandshakeLine(string identity);
-        public bool IsValidPeerHandshake(string handshake, [NotNullWhen(true)] out string? identity, ILogger logger);
+        string GetHandshakeLine(string identity);
+        bool IsValidPeerHandshake(string handshake, [NotNullWhen(true)] out string? identity, ILogger logger);
     }
 }

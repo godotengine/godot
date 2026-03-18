@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 
 enum class BoolShift : uint8_t {
 	SHIFT = 0,
@@ -98,7 +99,7 @@ void encode_input_event_key(const Ref<InputEventKey> &p_event, PackedByteArray &
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 Error decode_input_event_key(const PackedByteArray &p_data, Ref<InputEventKey> &r_event) {
@@ -155,7 +156,7 @@ void encode_input_event_mouse_button(const Ref<InputEventMouseButton> &p_event, 
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 Error decode_input_event_mouse_button(const PackedByteArray &p_data, Ref<InputEventMouseButton> &r_event) {
@@ -205,7 +206,7 @@ void encode_input_event_mouse_motion(const Ref<InputEventMouseMotion> &p_event, 
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 void decode_input_event_mouse_motion(const PackedByteArray &p_data, Ref<InputEventMouseMotion> &r_event) {
@@ -246,7 +247,7 @@ void decode_input_event_mouse_motion(const PackedByteArray &p_data, Ref<InputEve
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
 void encode_input_event_joypad_button(const Ref<InputEventJoypadButton> &p_event, PackedByteArray &r_data) {
@@ -266,7 +267,7 @@ void encode_input_event_joypad_button(const Ref<InputEventJoypadButton> &p_event
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 void decode_input_event_joypad_button(const PackedByteArray &p_data, Ref<InputEventJoypadButton> &r_event) {
@@ -283,7 +284,7 @@ void decode_input_event_joypad_button(const PackedByteArray &p_data, Ref<InputEv
 	data++;
 
 	// Assert we had enough space.
-	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
 void encode_input_event_joypad_motion(const Ref<InputEventJoypadMotion> &p_event, PackedByteArray &r_data) {
@@ -299,7 +300,7 @@ void encode_input_event_joypad_motion(const Ref<InputEventJoypadMotion> &p_event
 	data += encode_float(p_event->get_axis_value(), data);
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 void decode_input_event_joypad_motion(const PackedByteArray &p_data, Ref<InputEventJoypadMotion> &r_event) {
@@ -315,7 +316,7 @@ void decode_input_event_joypad_motion(const PackedByteArray &p_data, Ref<InputEv
 	data += sizeof(float);
 
 	// Assert we had enough space.
-	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
 void encode_input_event_gesture_pan(const Ref<InputEventPanGesture> &p_event, PackedByteArray &r_data) {
@@ -332,7 +333,7 @@ void encode_input_event_gesture_pan(const Ref<InputEventPanGesture> &p_event, Pa
 	data += encode_vector2(p_event->get_delta(), data);
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 void decode_input_event_gesture_pan(const PackedByteArray &p_data, Ref<InputEventPanGesture> &r_event) {
@@ -352,7 +353,7 @@ void decode_input_event_gesture_pan(const PackedByteArray &p_data, Ref<InputEven
 	r_event->set_delta(delta);
 
 	// Assert we had enough space.
-	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
 void encode_input_event_gesture_magnify(const Ref<InputEventMagnifyGesture> &p_event, PackedByteArray &r_data) {
@@ -369,7 +370,7 @@ void encode_input_event_gesture_magnify(const Ref<InputEventMagnifyGesture> &p_e
 	data += encode_float(p_event->get_factor(), data);
 
 	// Assert we had enough space.
-	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
 }
 
 void decode_input_event_gesture_magnify(const PackedByteArray &p_data, Ref<InputEventMagnifyGesture> &r_event) {
@@ -388,7 +389,7 @@ void decode_input_event_gesture_magnify(const PackedByteArray &p_data, Ref<Input
 	data += sizeof(float);
 
 	// Assert we had enough space.
-	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
 bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data) {

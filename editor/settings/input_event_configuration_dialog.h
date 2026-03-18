@@ -51,7 +51,6 @@ private:
 
 	Ref<InputEvent> event;
 	Ref<InputEvent> original_event;
-	Array action_events;
 
 	bool in_tree_update = false;
 
@@ -107,8 +106,6 @@ private:
 	HBoxContainer *location_container = nullptr;
 	OptionButton *key_location = nullptr;
 
-	Label *event_exists = nullptr;
-
 	void _set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection = true);
 	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
 
@@ -132,7 +129,7 @@ protected:
 public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
 	// An action name can be passed for descriptive purposes.
-	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>(), const String &p_current_action_name = "", const Dictionary &p_current_action = Dictionary());
+	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>(), const String &p_current_action_name = "");
 	Ref<InputEvent> get_event() const;
 
 	void set_allowed_input_types(int p_type_masks);

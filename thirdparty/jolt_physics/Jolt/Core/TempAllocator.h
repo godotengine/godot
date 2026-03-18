@@ -17,9 +17,6 @@ class JPH_EXPORT TempAllocator : public NonCopyable
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-	/// If this allocator needs to fall back to aligned allocations because JPH_RVECTOR_ALIGNMENT is bigger than the platform default
-	static constexpr bool			needs_aligned_allocate = JPH_RVECTOR_ALIGNMENT > JPH_DEFAULT_ALLOCATE_ALIGNMENT;
-
 	/// Destructor
 	virtual							~TempAllocator() = default;
 
@@ -37,22 +34,17 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructs the allocator with a maximum allocatable size of inSize
-	explicit						TempAllocatorImpl(size_t inSize) : mSize(inSize)
+	explicit						TempAllocatorImpl(size_t inSize) :
+		mBase(static_cast<uint8 *>(AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT))),
+		mSize(inSize)
 	{
-		if constexpr (needs_aligned_allocate)
-			mBase = static_cast<uint8 *>(AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT));
-		else
-			mBase = static_cast<uint8 *>(JPH::Allocate(inSize));
 	}
 
 	/// Destructor, frees the block
 	virtual							~TempAllocatorImpl() override
 	{
 		JPH_ASSERT(mTop == 0);
-		if constexpr (needs_aligned_allocate)
-			AlignedFree(mBase);
-		else
-			JPH::Free(mBase);
+		AlignedFree(mBase);
 	}
 
 	// See: TempAllocator
@@ -140,27 +132,14 @@ public:
 	// See: TempAllocator
 	virtual void *					Allocate(uint inSize) override
 	{
-		if (inSize > 0)
-		{
-			if constexpr (needs_aligned_allocate)
-				return AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT);
-			else
-				return JPH::Allocate(inSize);
-		}
-		else
-			return nullptr;
+		return inSize > 0? AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT) : nullptr;
 	}
 
 	// See: TempAllocator
 	virtual void					Free(void *inAddress, [[maybe_unused]] uint inSize) override
 	{
 		if (inAddress != nullptr)
-		{
-			if constexpr (needs_aligned_allocate)
-				AlignedFree(inAddress);
-			else
-				JPH::Free(inAddress);
-		}
+			AlignedFree(inAddress);
 	}
 };
 

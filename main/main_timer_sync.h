@@ -30,7 +30,10 @@
 
 #pragma once
 
-#include <cstdint>
+#include "core/config/engine.h"
+
+// Uncomment this define to get more debugging logs for the delta smoothing.
+// #define GODOT_DEBUG_DELTA_SMOOTHER
 
 struct MainFrameTime {
 	double process_step; // delta time to advance during process()
@@ -47,7 +50,6 @@ class MainTimerSync {
 		int64_t smooth_delta(int64_t p_delta);
 
 	private:
-		void made_new_estimate();
 		void update_refresh_rate_estimator(int64_t p_delta);
 		bool fps_allows_smoothing(int64_t p_delta);
 
@@ -85,6 +87,21 @@ class MainTimerSync {
 		// to prevent spurious values
 		int64_t _estimator_total_delta = 0;
 		int32_t _estimator_delta_readings = 0;
+
+		void made_new_estimate() {
+			_hits_above_estimated = 0;
+			_hits_at_estimated = 0;
+			_hits_below_estimated = 0;
+			_hits_one_above_estimated = 0;
+			_hits_one_below_estimated = 0;
+
+			_estimate_complete = false;
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+			print_line("estimated fps " + itos(_estimated_fps));
+#endif
+		}
+
 	} _delta_smoother;
 
 	// wall clock time measured on the main thread

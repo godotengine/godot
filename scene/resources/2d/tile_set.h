@@ -33,7 +33,6 @@
 #include "core/io/resource.h"
 #include "core/object/object.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/main/canvas_item.h"
@@ -53,7 +52,6 @@
 #include "scene/resources/shader.h"
 #endif
 
-class ArrayMesh;
 class TileMap;
 class TileSetSource;
 class TileSetAtlasSource;
@@ -1031,7 +1029,7 @@ public:
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 
 	// Polygons.
-	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose, bool p_preserve_winding_order = false);
+	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);

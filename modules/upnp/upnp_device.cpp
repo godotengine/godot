@@ -30,8 +30,6 @@
 
 #include "upnp_device.h"
 
-#include "core/object/class_db.h"
-
 UPNPDevice *(*UPNPDevice::_create)(bool p_notify_postinitialize) = nullptr;
 
 void UPNPDevice::_bind_methods() {

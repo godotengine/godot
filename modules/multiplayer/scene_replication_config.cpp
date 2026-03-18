@@ -30,8 +30,6 @@
 
 #include "scene_replication_config.h"
 
-#include "core/object/class_db.h"
-
 bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
 

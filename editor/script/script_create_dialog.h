@@ -34,6 +34,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 
 class CreateDialog;
 class EditorFileDialog;
@@ -62,6 +63,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	EditorFileDialog *file_browse = nullptr;
 	CheckBox *built_in = nullptr;
 	CheckBox *use_templates = nullptr;
+	VBoxContainer *path_vb = nullptr;
 	AcceptDialog *alert = nullptr;
 	CreateDialog *select_class = nullptr;
 
@@ -73,6 +75,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool supports_built_in = false;
 	bool can_inherit_from_file = false;
 	bool is_parent_name_valid = false;
+	bool is_class_name_valid = false;
 	bool is_built_in = false;
 	bool is_using_templates = true;
 	bool built_in_enabled = true;

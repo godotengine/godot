@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include <cmath>
-#include <cstdlib>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"
@@ -230,12 +229,11 @@ char* strAppend(char* lhs, const char* rhs, size_t n)
 
 char* strDirname(const char* path)
 {
-    auto ptr = strrchr(path, '/');
+    const char *ptr = strrchr(path, '/');
 #ifdef _WIN32
-    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
-    if (ptr2) ptr = ptr2;
+    if (ptr) ptr = strrchr(ptr + 1, '\\');
 #endif
-    auto len = ptr ? size_t(ptr - path + 1) : SIZE_MAX;
+    int len = int(ptr + 1 - path);  // +1 to include '/'
     return strDuplicate(path, len);
 }
 

@@ -1,0 +1,1077 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/performance_overlay.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.02, 0.02, 0.04, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.35, 0.45, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxLine" id="separator_style"]
+color = Color(0.3, 0.4, 0.5, 0.5)
+thickness = 1
+grow_begin = 2.0
+grow_end = 2.0
+
+[node name="PerformanceOverlay" type="MarginContainer"]
+anchors_preset = 15
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Panel" type="PanelContainer" parent="."]
+mouse_filter = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="Columns" type="HBoxContainer" parent="Panel"]
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Left" type="VBoxContainer" parent="Panel/Columns"]
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="FPS" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.3, 0.85, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "60 FPS"
+horizontal_alignment = 1
+
+[node name="Sep0" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="GPU_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "GPU TIMING"
+horizontal_alignment = 1
+
+[node name="GPU" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="gpu_time_frame_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Frame"
+
+[node name="gpu_time_frame_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="gpu_time_cull_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "Cull"
+
+[node name="gpu_time_cull_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="gpu_time_binning_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "Binning"
+
+[node name="gpu_time_binning_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="gpu_time_prefix_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "Prefix"
+
+[node name="gpu_time_prefix_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="gpu_time_raster_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "Raster"
+
+[node name="gpu_time_raster_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="gpu_time_resolve_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "Resolve"
+
+[node name="gpu_time_resolve_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="cpu_setup_time_ms_lbl" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "CPU Setup"
+
+[node name="cpu_setup_time_ms" type="Label" parent="Panel/Columns/Left/GPU"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="Sep1" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="VIS_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "VISIBILITY"
+horizontal_alignment = 1
+
+[node name="VIS" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="visible_splats_lbl" type="Label" parent="Panel/Columns/Left/VIS"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Visible"
+
+[node name="visible_splats" type="Label" parent="Panel/Columns/Left/VIS"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="total_processed_lbl" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "Processed"
+
+[node name="total_processed" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="projection_success_count_lbl" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "Proj Success"
+
+[node name="projection_success_count" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="projection_success_rate_pct_lbl" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "Success Rate"
+
+[node name="projection_success_rate_pct" type="Label" parent="Panel/Columns/Left/VIS"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="REJ_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "REJECTIONS"
+horizontal_alignment = 1
+
+[node name="REJ" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="clip_reject_count_lbl" type="Label" parent="Panel/Columns/Left/REJ"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Clip"
+
+[node name="clip_reject_count" type="Label" parent="Panel/Columns/Left/REJ"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="radius_reject_count_lbl" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "Radius"
+
+[node name="radius_reject_count" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="viewport_reject_count_lbl" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "Viewport"
+
+[node name="viewport_reject_count" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="extreme_aspect_count_lbl" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "Extreme Aspect"
+
+[node name="extreme_aspect_count" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="index_mismatch_count_lbl" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "Index Mismatch"
+
+[node name="index_mismatch_count" type="Label" parent="Panel/Columns/Left/REJ"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep3" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="TILE_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "TILES"
+horizontal_alignment = 1
+
+[node name="TILE" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="tile_count_lbl" type="Label" parent="Panel/Columns/Left/TILE"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Count"
+
+[node name="tile_count" type="Label" parent="Panel/Columns/Left/TILE"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="overflow_tile_count_lbl" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "Overflow"
+
+[node name="overflow_tile_count" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="clamped_records_lbl" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "Clamped"
+
+[node name="clamped_records" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="aggregated_count_lbl" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "Aggregated"
+
+[node name="aggregated_count" type="Label" parent="Panel/Columns/Left/TILE"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep4" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="VRAM_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "VRAM"
+horizontal_alignment = 1
+
+[node name="VRAM" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="vram_current_usage_mb_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Usage"
+
+[node name="vram_current_usage_mb" type="Label" parent="Panel/Columns/Left/VRAM"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0.0 MB"
+horizontal_alignment = 2
+
+[node name="vram_budget_mb_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Budget"
+
+[node name="vram_budget_mb" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0 MB"
+horizontal_alignment = 2
+
+[node name="vram_usage_percent_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Usage %"
+
+[node name="vram_usage_percent" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="vram_current_max_chunks_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Max Chunks"
+
+[node name="vram_current_max_chunks" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_loaded_chunks_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Loaded"
+
+[node name="vram_loaded_chunks" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_evicted_this_frame_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Evicted/F"
+
+[node name="vram_evicted_this_frame" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_loaded_this_frame_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Loaded/F"
+
+[node name="vram_loaded_this_frame" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_budget_warning_active_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Budget Warn"
+
+[node name="vram_budget_warning_active" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_regulation_adjustments_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Adjustments"
+
+[node name="vram_regulation_adjustments" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="vram_thrashing_events_lbl" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "Thrashing"
+
+[node name="vram_thrashing_events" type="Label" parent="Panel/Columns/Left/VRAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep5" type="HSeparator" parent="Panel/Columns/Left"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="MEM_Header" type="Label" parent="Panel/Columns/Left"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "MEMORY STREAM"
+horizontal_alignment = 1
+
+[node name="MEM" type="GridContainer" parent="Panel/Columns/Left"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="memory_stream_total_bytes_uploaded_mb_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Uploaded"
+
+[node name="memory_stream_total_bytes_uploaded_mb" type="Label" parent="Panel/Columns/Left/MEM"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="memory_stream_total_bytes_downloaded_mb_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Downloaded"
+
+[node name="memory_stream_total_bytes_downloaded_mb" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="memory_stream_buffer_switches_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Buf Switches"
+
+[node name="memory_stream_buffer_switches" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="memory_stream_stalls_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Stalls"
+
+[node name="memory_stream_stalls" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="memory_stream_stall_percent_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Stall %"
+
+[node name="memory_stream_stall_percent" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="memory_stream_pool_hits_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Pool Hits"
+
+[node name="memory_stream_pool_hits" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="memory_stream_pool_misses_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Pool Misses"
+
+[node name="memory_stream_pool_misses" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="memory_stream_pool_hit_rate_pct_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Hit Rate"
+
+[node name="memory_stream_pool_hit_rate_pct" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="memory_stream_peak_memory_mb_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Peak Mem"
+
+[node name="memory_stream_peak_memory_mb" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0 MB"
+horizontal_alignment = 2
+
+[node name="memory_stream_defrag_count_lbl" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "Defrags"
+
+[node name="memory_stream_defrag_count" type="Label" parent="Panel/Columns/Left/MEM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="VSep" type="VSeparator" parent="Panel/Columns"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="Right" type="VBoxContainer" parent="Panel/Columns"]
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="STREAM_Header" type="Label" parent="Panel/Columns/Right"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "STREAMING"
+horizontal_alignment = 1
+
+[node name="STREAM" type="GridContainer" parent="Panel/Columns/Right"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="streaming_total_chunks_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Total Chunks"
+
+[node name="streaming_total_chunks" type="Label" parent="Panel/Columns/Right/STREAM"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_visible_chunks_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Visible"
+
+[node name="streaming_visible_chunks" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_loaded_chunks_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Loaded"
+
+[node name="streaming_loaded_chunks" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_frustum_culled_chunks_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Frustum Culled"
+
+[node name="streaming_frustum_culled_chunks" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_vram_usage_mb_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "VRAM"
+
+[node name="streaming_vram_usage_mb" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.0 MB"
+horizontal_alignment = 2
+
+[node name="streaming_chunks_loaded_this_frame_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Loaded/F"
+
+[node name="streaming_chunks_loaded_this_frame" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_chunks_evicted_this_frame_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Evicted/F"
+
+[node name="streaming_chunks_evicted_this_frame" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_visible_count_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Visible Count"
+
+[node name="streaming_visible_count" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_buffer_capacity_splats_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Buffer Cap"
+
+[node name="streaming_buffer_capacity_splats" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_effective_splat_count_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Effective"
+
+[node name="streaming_effective_splat_count" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_visible_change_ratio_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Change Ratio"
+
+[node name="streaming_visible_change_ratio" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="streaming_lod_blend_factor_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "LOD Blend"
+
+[node name="streaming_lod_blend_factor" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="streaming_sh_band_level_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "SH Band"
+
+[node name="streaming_sh_band_level" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="streaming_bytes_uploaded_mb_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Uploaded"
+
+[node name="streaming_bytes_uploaded_mb" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="streaming_buffer_switches_lbl" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "Buf Switches"
+
+[node name="streaming_buffer_switches" type="Label" parent="Panel/Columns/Right/STREAM"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep6" type="HSeparator" parent="Panel/Columns/Right"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="LOD_Header" type="Label" parent="Panel/Columns/Right"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "LOD"
+horizontal_alignment = 1
+
+[node name="LOD" type="GridContainer" parent="Panel/Columns/Right"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="lod_current_level_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Level"
+
+[node name="lod_current_level" type="Label" parent="Panel/Columns/Right/LOD"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_distance_multiplier_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Dist Mult"
+
+[node name="lod_distance_multiplier" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="lod_target_distance_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Target Dist"
+
+[node name="lod_target_distance" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="lod_hysteresis_zone_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Hysteresis"
+
+[node name="lod_hysteresis_zone" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="lod_blend_distance_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Blend Dist"
+
+[node name="lod_blend_distance" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="lod_transitions_this_frame_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Transitions"
+
+[node name="lod_transitions_this_frame" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_splat_skip_factor_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Skip Factor"
+
+[node name="lod_splat_skip_factor" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="lod_opacity_multiplier_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Opacity Mult"
+
+[node name="lod_opacity_multiplier" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="lod_effective_count_after_skip_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "After Skip"
+
+[node name="lod_effective_count_after_skip" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_chunk_blend_factors_avg_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Blend Avg"
+
+[node name="lod_chunk_blend_factors_avg" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="lod_chunks_in_transition_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "In Transition"
+
+[node name="lod_chunks_in_transition" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_quality_degradation_active_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Quality Deg"
+
+[node name="lod_quality_degradation_active" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_min_chunk_distance_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Min Dist"
+
+[node name="lod_min_chunk_distance" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="lod_max_chunk_distance_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Max Dist"
+
+[node name="lod_max_chunk_distance" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="lod_avg_chunk_distance_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Avg Dist"
+
+[node name="lod_avg_chunk_distance" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0"
+horizontal_alignment = 2
+
+[node name="lod_reduction_ratio_pct_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "Reduction"
+
+[node name="lod_reduction_ratio_pct" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="lod_level_0_chunk_count_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "L0 Chunks"
+
+[node name="lod_level_0_chunk_count" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="lod_sh_band_3_chunk_count_lbl" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "SH3 Chunks"
+
+[node name="lod_sh_band_3_chunk_count" type="Label" parent="Panel/Columns/Right/LOD"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep7" type="HSeparator" parent="Panel/Columns/Right"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="PREFETCH_Header" type="Label" parent="Panel/Columns/Right"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "PREFETCH"
+horizontal_alignment = 1
+
+[node name="PREFETCH" type="GridContainer" parent="Panel/Columns/Right"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="chunk_prefetch_hits_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Hits"
+
+[node name="chunk_prefetch_hits" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="chunk_prefetch_misses_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Misses"
+
+[node name="chunk_prefetch_misses" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="chunk_prefetch_efficiency_pct_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Efficiency"
+
+[node name="chunk_prefetch_efficiency_pct" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="chunk_camera_velocity_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Cam Velocity"
+
+[node name="chunk_camera_velocity" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0.00"
+horizontal_alignment = 2
+
+[node name="chunk_average_load_time_ms_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Avg Load"
+
+[node name="chunk_average_load_time_ms" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="chunk_upload_queue_depth_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Queue Depth"
+
+[node name="chunk_upload_queue_depth" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="chunk_pack_jobs_in_flight_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Pack Jobs"
+
+[node name="chunk_pack_jobs_in_flight" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="chunk_total_capacity_mb_lbl" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "Capacity"
+
+[node name="chunk_total_capacity_mb" type="Label" parent="Panel/Columns/Right/PREFETCH"]
+theme_override_font_sizes/font_size = 8
+text = "0.0 MB"
+horizontal_alignment = 2
+
+[node name="Sep8" type="HSeparator" parent="Panel/Columns/Right"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="PACK_Header" type="Label" parent="Panel/Columns/Right"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "PACK TIMING"
+horizontal_alignment = 1
+
+[node name="PACK" type="GridContainer" parent="Panel/Columns/Right"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="pack_avg_time_ms_lbl" type="Label" parent="Panel/Columns/Right/PACK"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Avg Time"
+
+[node name="pack_avg_time_ms" type="Label" parent="Panel/Columns/Right/PACK"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="pack_max_time_ms_lbl" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "Max Time"
+
+[node name="pack_max_time_ms" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 ms"
+horizontal_alignment = 2
+
+[node name="pack_jobs_completed_lbl" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "Jobs Done"
+
+[node name="pack_jobs_completed" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="upload_mb_this_frame_lbl" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "Upload MB"
+
+[node name="upload_mb_this_frame" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="upload_chunks_this_frame_lbl" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "Upload Chunks"
+
+[node name="upload_chunks_this_frame" type="Label" parent="Panel/Columns/Right/PACK"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="Sep9" type="HSeparator" parent="Panel/Columns/Right"]
+theme_override_styles/separator = SubResource("separator_style")
+
+[node name="SH_Header" type="Label" parent="Panel/Columns/Right"]
+theme_override_colors/font_color = Color(0.5, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 9
+text = "SH CACHE"
+horizontal_alignment = 1
+
+[node name="SH" type="GridContainer" parent="Panel/Columns/Right"]
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="sh_cache_hits_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+custom_minimum_size = Vector2(90, 0)
+theme_override_font_sizes/font_size = 8
+text = "Hits"
+
+[node name="sh_cache_hits" type="Label" parent="Panel/Columns/Right/SH"]
+custom_minimum_size = Vector2(70, 0)
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="sh_cache_updates_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "Updates"
+
+[node name="sh_cache_updates" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "0"
+horizontal_alignment = 2
+
+[node name="sh_cache_hit_rate_pct_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "Hit Rate"
+
+[node name="sh_cache_hit_rate_pct" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2
+
+[node name="sh_compression_raw_mb_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "Raw MB"
+
+[node name="sh_compression_raw_mb" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="sh_compression_compressed_mb_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "Compressed"
+
+[node name="sh_compression_compressed_mb" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "0.00 MB"
+horizontal_alignment = 2
+
+[node name="sh_compression_ratio_pct_lbl" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "Ratio"
+
+[node name="sh_compression_ratio_pct" type="Label" parent="Panel/Columns/Right/SH"]
+theme_override_font_sizes/font_size = 8
+text = "0.0%"
+horizontal_alignment = 2

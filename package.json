@@ -1,0 +1,25 @@
+{
+  "name": "godot-gaussian-splatting",
+  "private": true,
+  "scripts": {
+    "build": "make build",
+    "build:tests": "make build-tests",
+    "build:linux": "make build-linux",
+    "build:windows": "make build-windows",
+    "build:macos": "make build-macos",
+    "guard": "make guard",
+    "test": "make test",
+    "test:quick": "make test-quick",
+    "test:module": "make test-module",
+    "test:runtime": "make test-runtime",
+    "test:baseline": "make test-baseline",
+    "docs": "python3 scripts/build_documentation.py --all",
+    "benchmark": "python3 test_data/benchmark_performance.py",
+    "clean": "make clean"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "clang-format": "^1.8.0",
+    "glslang": "^1.0.0"
+  }
+}

@@ -31,11 +31,7 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
-#include "core/os/os.h"
 #include "scene/gui/dialogs.h"
-#include "servers/display/accessibility_server.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
@@ -70,7 +66,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		String mods_text = key->InputEventWithModifiers::as_text();
 		mods_text = mods_text.is_empty() ? mods_text : mods_text + "+";
 		if (key->is_command_or_control_autoremap()) {
-			if (OS::prefer_meta_over_ctrl()) {
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
 				mods_text = mods_text.replace("Command", "Command/Ctrl");
 			} else {
 				mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
@@ -98,7 +94,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		}
 
 		if (text.is_empty()) {
-			text = "(" + TTR("unset") + ")";
+			text = "(" + TTR("Unset") + ")";
 		}
 	} else {
 		text = p_event->as_text();
@@ -190,7 +186,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	accept_event();
-	if (event_to_check.is_null() || !event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
+	if (!event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
 
@@ -237,7 +233,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
+			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -272,7 +268,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 
 void EventListenerLineEdit::_bind_methods() {
 	// `event` is either null or a valid InputEvent that is pressed and non-echo.
-	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, InputEvent::get_class_static())));
+	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 }
 
 EventListenerLineEdit::EventListenerLineEdit() {

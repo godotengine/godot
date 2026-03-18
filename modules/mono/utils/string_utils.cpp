@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace {
 

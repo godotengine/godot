@@ -30,14 +30,11 @@
 
 #include "editor_native_shader_source_visualizer.h"
 
-#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/code_edit.h"
-#include "scene/gui/tab_container.h"
-#include "scene/resources/syntax_highlighter.h"
-#include "servers/rendering/rendering_server.h"
+#include "scene/gui/text_edit.h"
 #include "servers/rendering/shader_language.h"
 
 void EditorNativeShaderSourceVisualizer::_load_theme_settings() {
@@ -80,18 +77,16 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 		versions = nullptr;
 	}
 
-	RenderingServerTypes::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
+	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
 
 	_load_theme_settings();
 
 	versions = memnew(TabContainer);
-	versions->set_theme_type_variation("TabContainerInner");
 	versions->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	versions->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	versions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	for (int i = 0; i < nsc.versions.size(); i++) {
 		TabContainer *vtab = memnew(TabContainer);
-		vtab->set_theme_type_variation("TabContainerInner");
 		vtab->set_name("Version " + itos(i));
 		vtab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 		vtab->set_v_size_flags(Control::SIZE_EXPAND_FILL);

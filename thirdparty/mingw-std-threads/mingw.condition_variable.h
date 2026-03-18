@@ -29,7 +29,6 @@
 
 #include <cassert>
 #include <chrono>
-#include <exception>
 #include <system_error>
 
 #include <sdkddkver.h>  //  Detect Windows version.

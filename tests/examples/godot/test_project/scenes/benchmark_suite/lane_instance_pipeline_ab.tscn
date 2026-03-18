@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_instance_storm.tscn" id="1"]
+
+[node name="LaneInstancePipelineAB" instance=ExtResource("1")]
+lane_id = "instance_pipeline_ab"
+lane_name = "Instance Pipeline A/B"
+lane_description = "A/B lane for serial vs single-pass instance orchestration on identical content."
+lane_preset = "instance_storm"
+default_duration_s = 40.0

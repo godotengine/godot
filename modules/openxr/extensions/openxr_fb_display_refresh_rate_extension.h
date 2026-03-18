@@ -35,6 +35,7 @@
 // While this is an FB extension it has been adopted by most runtimes and
 // will likely become core in the near future.
 
+#include "../openxr_api.h"
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
 
@@ -50,7 +51,7 @@ public:
 	OpenXRDisplayRefreshRateExtension();
 	virtual ~OpenXRDisplayRefreshRateExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;

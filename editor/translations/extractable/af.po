@@ -1,0 +1,88 @@
+# Afrikaans translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-11-19 00:26+0000\n"
+"Last-Translator: Mad Murdock <madmurdock011@gmail.com>\n"
+"Language-Team: Afrikaans <https://hosted.weblate.org/projects/godot-engine/"
+"godot/af/>\n"
+"Language: af\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "All Recognized"
+msgstr "Alle Erkende"
+
+msgid "Open"
+msgstr "Oop"
+
+msgid "Save"
+msgstr "Stoor"
+
+msgid "Open a File"
+msgstr "Open 'n Lêer"
+
+msgid "Open File(s)"
+msgstr "Open Lêer(s)"
+
+msgid "Open a Directory"
+msgstr "Open 'n Gids"
+
+msgid "Open a File or Directory"
+msgstr "Open 'n Lêer of Gids"
+
+msgid "Save a File"
+msgstr "Stoor 'n Lêer"
+
+msgid "Path:"
+msgstr "Pad:"
+
+msgid "Directories & Files:"
+msgstr "Gidse & Lêers:"
+
+msgid "File:"
+msgstr "Lêer:"
+
+msgid "Create Folder"
+msgstr "Skep Vouer"
+
+msgid "Name:"
+msgstr "Naam:"
+
+msgid "Could not create folder."
+msgstr "Kon nie vouer skep nie."
+
+msgid "Zoom Out"
+msgstr "Zoem Uit"
+
+msgid "Zoom In"
+msgstr "Zoem In"
+
+msgid "Cut"
+msgstr "Sny"
+
+msgid "Copy"
+msgstr "Kopieer"
+
+msgid "Paste"
+msgstr "Plak"
+
+msgid "Select All"
+msgstr "Kies alles"
+
+msgid "Clear"
+msgstr "Vee uit"
+
+msgid "Undo"
+msgstr "Ongedaan Maak"
+
+msgid "Redo"
+msgstr "Oordoen"

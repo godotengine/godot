@@ -13,7 +13,6 @@
 #include "clipper2/clipper.version.h"
 #include <cstdint>
 #include <vector>
-#include <iterator>
 #include <string>
 #include <iostream>
 #include <algorithm>

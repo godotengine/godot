@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/config_file.h"
 #include "core/templates/vector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
@@ -103,7 +104,8 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _load_files(const PackedStringArray &p_paths);
 
 	void _save_mixer_lib_folding(TreeItem *p_item);
-	Vector<String> _load_mixer_libs_folding();
+	Vector<uint64_t> _load_mixer_libs_folding();
+	void _load_config_libs_folding(Vector<uint64_t> &p_lib_ids, ConfigFile *p_config, String p_section);
 	String _get_mixer_signature() const;
 
 	void _item_renamed();

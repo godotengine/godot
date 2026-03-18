@@ -1,0 +1,37 @@
+{
+  "name": "dense_atelier",
+  "description": "Dense painterly composition inspired by studio light with overlapping splats.",
+  "density": "dense",
+  "splat_count": 4096,
+  "radius": 0.22,
+  "fov_degrees": 55.0,
+  "palette": [
+    [0.945, 0.788, 0.623, 0.95],
+    [0.423, 0.305, 0.196, 0.88],
+    [0.741, 0.368, 0.239, 0.92],
+    [0.196, 0.215, 0.298, 0.85]
+  ],
+  "camera_path": [
+    {"time": 0.0, "position": [0.0, 0.2, 6.0], "target": [0.0, 0.2, 0.0]},
+    {"time": 2.0, "position": [1.0, 0.5, 5.5], "target": [0.0, 0.2, 0.0]}
+  ],
+  "shader_permutations": [
+    {
+      "name": "dense_brush_mix",
+      "defines": ["PAINTERLY_STYLE_BRUSH", "DENSE_SPLATS", "ENABLE_NOISE_LAYERS", "STROKE_VARIATION=3"]
+    },
+    {
+      "name": "dense_outline_glow",
+      "defines": ["PAINTERLY_STYLE_INK", "DENSE_SPLATS", "ENABLE_OUTLINE", "ENABLE_SOFT_GLOW"]
+    }
+  ],
+  "audit": {
+    "coverage_min": 0.18,
+    "luminance_min": 0.01,
+    "delta_min": 0.01,
+    "stability_max": 0.0005,
+    "comparison_camera_index": 1,
+    "artifact_camera_indices": [0, 1],
+    "performance_budget_ms": 160.0
+  }
+}

@@ -872,12 +872,11 @@ UTS46::processLabel(UnicodeString &dest,
                 buffer[1]=0x6e;
                 buffer[2]=0x2d;
                 buffer[3]=0x2d;
-                UErrorCode punycodeErrorCode=U_ZERO_ERROR;
                 int32_t punycodeLength=u_strToPunycode(label, labelLength,
                                                       buffer+4, punycode.getCapacity()-4,
-                                                      nullptr, &punycodeErrorCode);
-                if(punycodeErrorCode==U_BUFFER_OVERFLOW_ERROR) {
-                    punycodeErrorCode=U_ZERO_ERROR;
+                                                      nullptr, &errorCode);
+                if(errorCode==U_BUFFER_OVERFLOW_ERROR) {
+                    errorCode=U_ZERO_ERROR;
                     punycode.releaseBuffer(4);
                     buffer=punycode.getBuffer(4+punycodeLength);
                     if(buffer==nullptr) {
@@ -886,12 +885,11 @@ UTS46::processLabel(UnicodeString &dest,
                     }
                     punycodeLength=u_strToPunycode(label, labelLength,
                                                   buffer+4, punycode.getCapacity()-4,
-                                                  nullptr, &punycodeErrorCode);
+                                                  nullptr, &errorCode);
                 }
                 punycodeLength+=4;
                 punycode.releaseBuffer(punycodeLength);
-                if(U_FAILURE(punycodeErrorCode)) {
-                    errorCode = punycodeErrorCode;
+                if(U_FAILURE(errorCode)) {
                     return destLabelLength;
                 }
                 if(punycodeLength>63) {

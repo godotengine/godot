@@ -13,7 +13,7 @@
  *
  * @brief ktxTexture2 implementation. Support for KTX2 format.
  *
- * @author Mark Callow, github.com/MarkCallow
+ * @author Mark Callow, www.edgewise-consulting.com
  */
 
 #if defined(_WIN32)
@@ -55,11 +55,8 @@ struct ktxTexture_vtblInt ktxTexture2_vtblInt;
 struct sampleType {
     uint32_t bitOffset: 16;
     uint32_t bitLength: 8;
-    // MSVC 14.44 introduced a warning when mixing enums of different types.
-    // To avoid doing that make separate channelId and qualifier fields.
-    uint32_t channelId : 4;
-    uint32_t datatypeQualifiers : 4;
-    uint32_t samplePosition0 : 8;
+    uint32_t channelType: 8; // Includes qualifiers
+    uint32_t samplePosition0: 8;
     uint32_t samplePosition1: 8;
     uint32_t samplePosition2: 8;
     uint32_t samplePosition3: 8;
@@ -118,8 +115,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[0] = {
         .bitOffset = 0,
         .bitLength = 8,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_RED,
-        .datatypeQualifiers = 0,
+        .channelType = KHR_DF_CHANNEL_RGBSDA_RED,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -130,10 +126,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[1] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_RED,
-        // The constant is defined to be ORed with a channelId into
-        // an 8-bit value. Shift to make it suitable for the 4-bit field.
-        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
+        .channelType = KHR_DF_CHANNEL_RGBSDA_RED | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -144,8 +137,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[2] = {
         .bitOffset = 9,
         .bitLength = 8,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_GREEN,
-        .datatypeQualifiers = 0,
+        .channelType = KHR_DF_CHANNEL_RGBSDA_GREEN,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -156,9 +148,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[3] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_GREEN,
-        // Ditto comment in samples[1].
-        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
+        .channelType = KHR_DF_CHANNEL_RGBSDA_GREEN | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -169,8 +159,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[4] = {
         .bitOffset = 18,
         .bitLength = 8,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_BLUE,
-        .datatypeQualifiers = 0,
+        .channelType = KHR_DF_CHANNEL_RGBSDA_BLUE,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -181,9 +170,7 @@ struct BDFD e5b9g9r9_ufloat_comparator = {
     .samples[5] = {
         .bitOffset = 27,
         .bitLength = 4,
-        .channelId = KHR_DF_CHANNEL_RGBSDA_BLUE,
-        // Ditto comment in samples[1].
-        .datatypeQualifiers = (KHR_DF_SAMPLE_DATATYPE_EXPONENT >> 4U),
+        .channelType = KHR_DF_CHANNEL_RGBSDA_BLUE | KHR_DF_SAMPLE_DATATYPE_EXPONENT,
         .samplePosition0 = 0,
         .samplePosition1 = 0,
         .samplePosition2 = 0,
@@ -900,10 +887,8 @@ ktxTexture2_constructFromStreamAndHeader(ktxTexture2* This, ktxStream* pStream,
             }
 
             result = stream->read(stream, pKvd, kvdLen);
-            if (result != KTX_SUCCESS) {
-                free(pKvd);
+            if (result != KTX_SUCCESS)
                 goto cleanup;
-            }
 
             if (IS_BIG_ENDIAN) {
                 /* Swap the counts inside the key & value data. */

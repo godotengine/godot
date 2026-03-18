@@ -33,8 +33,11 @@
 #include "core/os/keyboard.h"
 #include "core/templates/hash_map.h"
 
-typedef uint32_t xkb_keycode_t;
-typedef uint32_t xkb_keysym_t;
+#ifdef SOWRAP_ENABLED
+#include "xkbcommon-so_wrap.h"
+#else
+#include <xkbcommon/xkbcommon.h>
+#endif // SOWRAP_ENABLED
 
 class KeyMappingXKB {
 	struct HashMapHasherKeys {

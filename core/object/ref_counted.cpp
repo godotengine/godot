@@ -30,8 +30,7 @@
 
 #include "ref_counted.h"
 
-#include "core/object/class_db.h"
-#include "core/object/script_instance.h"
+#include "core/object/script_language.h"
 
 bool RefCounted::init_ref() {
 	if (reference()) {
@@ -96,7 +95,6 @@ bool RefCounted::unreference() {
 
 RefCounted::RefCounted() :
 		Object(true) {
-	_define_ancestry(AncestralClass::REF_COUNTED);
 	refcount.init();
 	refcount_init.init();
 }

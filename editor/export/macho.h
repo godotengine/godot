@@ -36,8 +36,6 @@
 #include "core/object/ref_counted.h"
 
 class MachO : public RefCounted {
-	GDSOFTCLASS(MachO, RefCounted);
-
 public:
 	struct MachHeader {
 		uint32_t cputype;

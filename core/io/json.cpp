@@ -31,8 +31,6 @@
 #include "json.h"
 
 #include "core/config/engine.h"
-#include "core/io/file_access.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -77,18 +75,6 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 		case Variant::FLOAT: {
 			const double num = p_var;
 
-			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
-			if (!Math::is_finite(num)) {
-				if (num == Math::INF) {
-					r_result += "1e99999";
-				} else if (num == -Math::INF) {
-					r_result += "-1e99999";
-				} else {
-					WARN_PRINT_ONCE("`NaN` (\"Not a Number\") found in argument passed to JSON.stringify(). `NaN` cannot be represented in JSON, so the value has been replaced with `null`. This warning will not be printed for any later NaN occurrences.");
-					r_result += "null";
-				}
-				return;
-			}
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
 			if (num == double(0.0)) {
@@ -96,18 +82,11 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 				return;
 			}
 
-			if (p_full_precision) {
-				const String num_sci = String::num_scientific(num);
-				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
-					r_result += num_sci;
-				} else {
-					r_result += num_sci + ".0";
-				}
-			} else {
-				const double magnitude = std::log10(Math::abs(num));
-				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
-				r_result += String::num(num, precision);
-			}
+			const double magnitude = std::log10(Math::abs(num));
+			const int total_digits = p_full_precision ? 17 : 14;
+			const int precision = MAX(1, total_digits - (int)Math::floor(magnitude));
+
+			r_result += String::num(num, precision);
 			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:
@@ -154,11 +133,6 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 			if (p_markers.has(d.id())) {
 				r_result += "\"{...}\"";
 				ERR_FAIL_MSG("Converting circular structure to JSON.");
-			}
-
-			if (d.is_empty()) {
-				r_result += "{}";
-				return;
 			}
 
 			r_result += '{';
@@ -674,10 +648,10 @@ static bool _encode_container_type(Dictionary &r_dict, const String &p_key, cons
 }
 
 Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_depth) {
-#define RETURN_ARGS \
-	Dictionary ret; \
+#define RETURN_ARGS                                           \
+	Dictionary ret;                                           \
 	ret[TYPE] = Variant::get_type_name(p_variant.get_type()); \
-	ret[ARGS] = args; \
+	ret[ARGS] = args;                                         \
 	return ret
 
 	switch (p_variant.get_type()) {
@@ -1074,15 +1048,7 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 			if (s.begins_with("i:")) {
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
-				const String sub = s.substr(2);
-				if (sub == "inf") {
-					return Math::INF;
-				} else if (sub == "-inf") {
-					return -Math::INF;
-				} else if (sub == "nan") {
-					return Math::NaN;
-				}
-				return sub.to_float();
+				return s.substr(2).to_float();
 			} else if (s.begins_with("s:")) {
 				return s.substr(2);
 			} else if (s.begins_with("sn:")) {
@@ -1099,18 +1065,18 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 			ERR_FAIL_COND_V(!dict.has(TYPE), Variant());
 
-#define LOAD_ARGS() \
+#define LOAD_ARGS()                              \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
 	const Array args = dict[ARGS]
 
-#define LOAD_ARGS_CHECK_SIZE(m_size) \
+#define LOAD_ARGS_CHECK_SIZE(m_size)             \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS]; \
+	const Array args = dict[ARGS];               \
 	ERR_FAIL_COND_V(args.size() != (m_size), Variant())
 
-#define LOAD_ARGS_CHECK_FACTOR(m_factor) \
+#define LOAD_ARGS_CHECK_FACTOR(m_factor)         \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS]; \
+	const Array args = dict[ARGS];               \
 	ERR_FAIL_COND_V(args.size() % (m_factor) != 0, Variant())
 
 			switch (Variant::get_type_by_name(dict[TYPE])) {
@@ -1560,9 +1526,7 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	}
 
 	if (!FileAccess::exists(p_path)) {
-		if (r_error) {
-			*r_error = ERR_FILE_NOT_FOUND;
-		}
+		*r_error = ERR_FILE_NOT_FOUND;
 		return Ref<Resource>();
 	}
 
@@ -1601,7 +1565,8 @@ bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	if (p_path.has_extension("json")) {
+	String el = p_path.get_extension().to_lower();
+	if (el == "json") {
 		return "JSON";
 	}
 	return "";

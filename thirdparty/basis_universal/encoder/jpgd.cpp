@@ -3146,7 +3146,7 @@ namespace jpgd {
 
 		for (int y = 0; y < image_height; y++)
 		{
-			const uint8* pScan_line = nullptr;
+			const uint8* pScan_line;
 			uint scan_line_len;
 			if (decoder.decode((const void**)&pScan_line, &scan_line_len) != JPGD_SUCCESS)
 			{

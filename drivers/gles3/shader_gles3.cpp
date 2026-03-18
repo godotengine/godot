@@ -33,13 +33,10 @@
 #ifdef GLES3_ENABLED
 
 #include "core/io/dir_access.h"
-#include "core/string/string_builder.h"
-#include "drivers/gles3/rasterizer_util_gles3.h"
-#include "drivers/gles3/storage/config.h"
-
-#ifndef WEB_ENABLED
 #include "core/io/file_access.h"
-#endif
+
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");
@@ -47,7 +44,7 @@ static String _mkid(const String &p_id) {
 }
 
 void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
-	Vector<String> lines = String::utf8(p_code).split("\n");
+	Vector<String> lines = String(p_code).split("\n");
 
 	String text;
 
@@ -133,9 +130,9 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 
 	StringBuilder tohash;
 	tohash.append("[Vertex]");
-	tohash.append(p_vertex_code ? String::utf8(p_vertex_code) : "");
+	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
-	tohash.append(p_fragment_code ? String::utf8(p_fragment_code) : "");
+	tohash.append(p_fragment_code ? p_fragment_code : "");
 
 	tohash.append("[gl_implementation]");
 	const String &vendor = String::utf8((const char *)glGetString(GL_VENDOR));
@@ -157,7 +154,7 @@ RID ShaderGLES3::version_create() {
 }
 
 void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization) {
-	if (RasterizerUtilGLES3::is_gles_over_gl()) {
+	if (RasterizerGLES3::is_gles_over_gl()) {
 		builder.append("#version 330\n");
 		builder.append("#define USE_GLES_OVER_GL\n");
 	} else {
@@ -218,7 +215,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	// Default to highp precision unless specified otherwise.
 	builder.append("precision highp float;\n");
 	builder.append("precision highp int;\n");
-	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
+	if (!RasterizerGLES3::is_gles_over_gl()) {
 		builder.append("precision highp sampler2D;\n");
 		builder.append("precision highp samplerCube;\n");
 		builder.append("precision highp sampler2DArray;\n");
@@ -230,21 +227,21 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		const StageTemplate::Chunk &chunk = stage_template.chunks[i];
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
-				builder.append(String::utf8(p_version->uniforms.get_data())); //uniforms (same for vertex and fragment)
+				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
 			} break;
 			case StageTemplate::Chunk::TYPE_VERTEX_GLOBALS: {
-				builder.append(String::utf8(p_version->vertex_globals.get_data())); // vertex globals
+				builder.append(p_version->vertex_globals.get_data()); // vertex globals
 			} break;
 			case StageTemplate::Chunk::TYPE_FRAGMENT_GLOBALS: {
-				builder.append(String::utf8(p_version->fragment_globals.get_data())); // fragment globals
+				builder.append(p_version->fragment_globals.get_data()); // fragment globals
 			} break;
 			case StageTemplate::Chunk::TYPE_CODE: {
 				if (p_version->code_sections.has(chunk.code)) {
-					builder.append(String::utf8(p_version->code_sections[chunk.code].get_data()));
+					builder.append(p_version->code_sections[chunk.code].get_data());
 				}
 			} break;
 			case StageTemplate::Chunk::TYPE_TEXT: {
-				builder.append(String::utf8(chunk.text.get_data()));
+				builder.append(chunk.text.get_data());
 			} break;
 		}
 	}
@@ -469,9 +466,9 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	spec.ok = true;
 }
 
-RenderingServerTypes::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_version) {
+RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	RenderingServerTypes::ShaderNativeSourceCode source_code;
+	RS::ShaderNativeSourceCode source_code;
 	ERR_FAIL_NULL_V(version, source_code);
 
 	source_code.versions.resize(variant_count);
@@ -483,7 +480,7 @@ RenderingServerTypes::ShaderNativeSourceCode ShaderGLES3::version_get_native_sou
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, STAGE_TYPE_VERTEX, specialization_default_mask);
 
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
+			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
@@ -495,7 +492,7 @@ RenderingServerTypes::ShaderNativeSourceCode ShaderGLES3::version_get_native_sou
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, STAGE_TYPE_FRAGMENT, specialization_default_mask);
 
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
+			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 
@@ -530,7 +527,7 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 		hash_build.append("[custom_defines:" + itos(i) + "]");
 		hash_build.append(p_version->custom_defines[i].get_data());
 	}
-	if (RasterizerUtilGLES3::is_gles_over_gl()) {
+	if (RasterizerGLES3::is_gles_over_gl()) {
 		hash_build.append("[gl]");
 	} else {
 		hash_build.append("[gles]");
@@ -549,7 +546,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	return false;
 #else
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerUtilGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
@@ -622,7 +619,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 
 			variant.insert(specialization_key, specialization);
 		}
-		variants.push_back(std::move(variant));
+		variants.push_back(variant);
 	}
 	p_version->variants = variants;
 
@@ -636,7 +633,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #else
 	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerUtilGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}
 #endif
@@ -708,7 +705,8 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	}
 	p_version->variants.reserve(variant_count);
 	for (int i = 0; i < variant_count; i++) {
-		p_version->variants.push_back(AHashMap<uint64_t, Version::Specialization>());
+		AHashMap<uint64_t, Version::Specialization> variant;
+		p_version->variants.push_back(variant);
 		Version::Specialization spec;
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);

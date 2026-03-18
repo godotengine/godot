@@ -1,0 +1,52 @@
+[gd_scene load_steps=6 format=3 uid="uid://sphere_effector_test"]
+
+[ext_resource type="GaussianSplatAsset" uid="uid://vnhu3dprb1x1" path="res://tests/fixtures/test_splats.ply" id="cabin_asset"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="fps_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="perf_overlay"]
+
+[sub_resource type="SphereMesh" id="sphere_mesh"]
+radius = 5.0
+height = 10.0
+radial_segments = 32
+rings = 16
+
+[sub_resource type="StandardMaterial3D" id="sphere_mat"]
+transparency = 1
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0, 0, 0.15)
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 1.5
+rim_enabled = true
+rim = 1.0
+rim_tint = 0.0
+
+[node name="SphereEffectorTest" type="Node3D"]
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("perf_overlay")]
+
+[node name="Cabin" type="GaussianSplatNode3D" parent="."]
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+rendering/wind_override_enabled = true
+rendering/wind_enabled = false
+
+[node name="Label" type="Label3D" parent="Cabin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
+text = "SPHERE EFFECTOR TEST
+(center=0,2,0 radius=5m freq=2Hz)"
+font_size = 96
+outline_size = 12
+
+[node name="EffectorVisualizer" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("sphere_mesh")
+surface_material_override/0 = SubResource("sphere_mat")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 8, 20)
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

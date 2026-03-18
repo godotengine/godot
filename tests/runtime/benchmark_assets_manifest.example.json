@@ -1,0 +1,12 @@
+{
+  "static_baseline": "res://tests/fixtures/test_splats.ply",
+  "streaming_corridor": "res://tests/fixtures/test_splats.ply",
+  "city_flyover": "res://tests/fixtures/test_splats.ply",
+  "instance_storm": "res://tests/fixtures/test_splats.ply",
+  "lighting_stress": "res://tests/fixtures/test_splats.ply",
+  "animation_arena": "res://tests/fixtures/test_splats.ply",
+  "lod_torture": "res://tests/fixtures/test_splats.ply",
+  "integrity_sentinel": "res://tests/fixtures/test_splats.ply",
+  "long_soak": "res://tests/fixtures/test_splats.ply",
+  "unified_composite": "res://tests/fixtures/test_splats.ply"
+}

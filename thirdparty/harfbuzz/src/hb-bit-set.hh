@@ -91,10 +91,10 @@ struct hb_bit_set_t
     if (pages.length < count && (unsigned) pages.allocated < count && count <= 2)
       exact_size = true; // Most sets are small and local
 
-    if (unlikely (!pages.resize_full (count, clear, exact_size) ||
-	!page_map.resize_full (count, clear, false)))
+    if (unlikely (!pages.resize (count, clear, exact_size) ||
+	!page_map.resize (count, clear)))
     {
-      pages.resize_full (page_map.length, clear, exact_size);
+      pages.resize (page_map.length, clear, exact_size);
       successful = false;
       return false;
     }
@@ -108,11 +108,10 @@ struct hb_bit_set_t
     page_map.alloc (sz);
   }
 
-  hb_bit_set_t& reset ()
+  void reset ()
   {
     successful = true;
     clear ();
-    return *this;
   }
 
   void clear ()
@@ -395,7 +394,7 @@ struct hb_bit_set_t
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize  (count, false, exact_size)))
+    if (unlikely (!resize (count, false, exact_size)))
       return;
     population = other.population;
 
@@ -438,31 +437,23 @@ struct hb_bit_set_t
       return false;
 
     uint32_t spi = 0;
-    uint32_t lpi = 0;
-    while (spi < page_map.length && lpi < larger_set.page_map.length)
+    for (uint32_t lpi = 0; spi < page_map.length && lpi < larger_set.page_map.length; lpi++)
     {
       uint32_t spm = page_map.arrayZ[spi].major;
       uint32_t lpm = larger_set.page_map.arrayZ[lpi].major;
       auto sp = page_at (spi);
 
-      if (spm < lpm) {
-        if (!sp.is_empty ())
-          return false;
-        spi++;
-        continue;
-      }
+      if (spm < lpm && !sp.is_empty ())
+        return false;
 
-      if (lpm < spm) {
-        lpi++;
+      if (lpm < spm)
         continue;
-      }
 
       auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
       spi++;
-      lpi++;
     }
 
     while (spi < page_map.length)
@@ -931,7 +922,7 @@ struct hb_bit_set_t
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return v != o.v; }
+    { return s != o.s || v != o.v; }
 
     protected:
     const hb_bit_set_t *s;

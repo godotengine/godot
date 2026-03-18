@@ -30,8 +30,6 @@
 
 #include "webrtc_peer_connection_extension.h"
 
-#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
-
 void WebRTCPeerConnectionExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_connection_state);
 	GDVIRTUAL_BIND(_get_gathering_state);

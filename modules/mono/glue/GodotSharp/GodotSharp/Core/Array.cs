@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
-using System.ComponentModel;
 
 #nullable enable
 
@@ -84,92 +83,96 @@ namespace Godot.Collections
         /// Constructs a new <see cref="Array"/> from the given span's elements.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// The <paramref name="span"/> is <see langword="null"/>.
+        /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(scoped ReadOnlySpan<StringName> span)
+        public Array(Span<StringName> array)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            int length = span.Length;
+            int length = array.Length;
 
             Resize(length);
 
             for (int i = 0; i < length; i++)
-                this[i] = span[i];
+                this[i] = array[i];
         }
-
-        /// <inheritdoc cref="Array(ReadOnlySpan{StringName})"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<StringName> span) : this((ReadOnlySpan<StringName>)span) { }
 
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given span's elements.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// The <paramref name="span"/> is <see langword="null"/>.
+        /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(scoped ReadOnlySpan<NodePath> span)
+        public Array(Span<NodePath> array)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            int length = span.Length;
+            int length = array.Length;
 
             Resize(length);
 
             for (int i = 0; i < length; i++)
-                this[i] = span[i];
+                this[i] = array[i];
         }
-
-        /// <inheritdoc cref="Array(ReadOnlySpan{NodePath})"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<NodePath> span) : this((ReadOnlySpan<NodePath>)span) { }
 
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given span's elements.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// The <paramref name="span"/> is <see langword="null"/>.
+        /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(scoped ReadOnlySpan<Rid> span)
+        public Array(Span<Rid> array)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            int length = span.Length;
+            int length = array.Length;
 
             Resize(length);
 
             for (int i = 0; i < length; i++)
-                this[i] = span[i];
+                this[i] = array[i];
         }
 
-        /// <inheritdoc cref="Array(ReadOnlySpan{Rid})"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<Rid> span) : this((ReadOnlySpan<Rid>)span) { }
-
+        // We must use ReadOnlySpan instead of Span here as this can accept implicit conversions
+        // from derived types (e.g.: Node[]). Implicit conversion from Derived[] to Base[] are
+        // fine as long as the array is not mutated. However, Span does this type checking at
+        // instantiation, so it's not possible to use it even when not mutating anything.
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given ReadOnlySpan's elements.
         /// </summary>
         /// <exception cref="ArgumentNullException">
-        /// The <paramref name="span"/> is <see langword="null"/>.
+        /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(scoped ReadOnlySpan<GodotObject> span)
+        public Array(ReadOnlySpan<GodotObject> array)
         {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            int length = span.Length;
+            int length = array.Length;
 
             Resize(length);
 
             for (int i = 0; i < length; i++)
-                this[i] = span[i];
+                this[i] = array[i];
         }
 
         private Array(godot_array nativeValueToOwn)

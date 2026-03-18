@@ -30,13 +30,11 @@
 
 #include "shader_rd.h"
 
-#include "core/config/engine.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/os.h"
-#include "core/string/string_builder.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_include_db.h"
 
 #define ENABLE_SHADER_CACHE 1
@@ -66,21 +64,6 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 					break;
 				case STAGE_TYPE_COMPUTE:
 					chunk.type = StageTemplate::Chunk::TYPE_COMPUTE_GLOBALS;
-					break;
-				case STAGE_TYPE_RAYGEN:
-					chunk.type = StageTemplate::Chunk::TYPE_RAYGEN_GLOBALS;
-					break;
-				case STAGE_TYPE_ANY_HIT:
-					chunk.type = StageTemplate::Chunk::TYPE_ANY_HIT_GLOBALS;
-					break;
-				case STAGE_TYPE_CLOSEST_HIT:
-					chunk.type = StageTemplate::Chunk::TYPE_CLOSEST_HIT_GLOBALS;
-					break;
-				case STAGE_TYPE_MISS:
-					chunk.type = StageTemplate::Chunk::TYPE_MISS_GLOBALS;
-					break;
-				case STAGE_TYPE_INTERSECTION:
-					chunk.type = StageTemplate::Chunk::TYPE_INTERSECTION_GLOBALS;
 					break;
 				default: {
 				}
@@ -153,9 +136,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 	if (p_compute_code) {
 		_add_stage(p_compute_code, STAGE_TYPE_COMPUTE);
-		pipeline_type = RD::PIPELINE_TYPE_COMPUTE;
+		is_compute = true;
 	} else {
-		pipeline_type = RD::PIPELINE_TYPE_RASTERIZATION;
+		is_compute = false;
 		if (p_vertex_code) {
 			_add_stage(p_vertex_code, STAGE_TYPE_VERTEX);
 		}
@@ -175,47 +158,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 	tohash.append(p_fragment_code ? p_fragment_code : "");
 	tohash.append("[Compute]");
 	tohash.append(p_compute_code ? p_compute_code : "");
-	tohash.append("[DebugInfo]");
-	tohash.append(Engine::get_singleton()->is_generate_spirv_debug_info_enabled() ? "1" : "0");
-
-	base_sha256 = tohash.as_string().sha256_text();
-}
-
-void ShaderRD::setup_raytracing(const char *p_raygen_code, const char *p_any_hit_code, const char *p_closest_hit_code, const char *p_miss_code, const char *p_intersection_code, const char *p_name) {
-	name = p_name;
-
-	pipeline_type = RD::PIPELINE_TYPE_RAYTRACING;
-	if (p_raygen_code) {
-		_add_stage(p_raygen_code, STAGE_TYPE_RAYGEN);
-	}
-	if (p_any_hit_code) {
-		_add_stage(p_any_hit_code, STAGE_TYPE_ANY_HIT);
-	}
-	if (p_closest_hit_code) {
-		_add_stage(p_closest_hit_code, STAGE_TYPE_CLOSEST_HIT);
-	}
-	if (p_miss_code) {
-		_add_stage(p_miss_code, STAGE_TYPE_MISS);
-	}
-	if (p_intersection_code) {
-		_add_stage(p_intersection_code, STAGE_TYPE_INTERSECTION);
-	}
-
-	StringBuilder tohash;
-	tohash.append("[GodotVersionNumber]");
-	tohash.append(GODOT_VERSION_NUMBER);
-	tohash.append("[GodotVersionHash]");
-	tohash.append(GODOT_VERSION_HASH);
-	tohash.append("[Raygen]");
-	tohash.append(p_raygen_code ? p_raygen_code : "");
-	tohash.append("[AnyHit]");
-	tohash.append(p_any_hit_code ? p_any_hit_code : "");
-	tohash.append("[ClosestHit]");
-	tohash.append(p_closest_hit_code ? p_closest_hit_code : "");
-	tohash.append("[Miss]");
-	tohash.append(p_miss_code ? p_miss_code : "");
-	tohash.append("[Intersection]");
-	tohash.append(p_intersection_code ? p_intersection_code : "");
 	tohash.append("[DebugInfo]");
 	tohash.append(Engine::get_singleton()->is_generate_spirv_debug_info_enabled() ? "1" : "0");
 
@@ -267,7 +209,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 	if (!p_version->variants.is_empty()) {
 		for (int i = 0; i < variant_defines.size(); i++) {
 			if (p_version->variants[i].is_valid()) {
-				RD::get_singleton()->free_rid(p_version->variants[i]);
+				RD::get_singleton()->free(p_version->variants[i]);
 			}
 		}
 
@@ -309,21 +251,6 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 			case StageTemplate::Chunk::TYPE_COMPUTE_GLOBALS: {
 				builder.append(p_version->compute_globals.get_data()); // compute globals
 			} break;
-			case StageTemplate::Chunk::TYPE_RAYGEN_GLOBALS: {
-				builder.append(p_version->raygen_globals.get_data()); // raygen globals
-			} break;
-			case StageTemplate::Chunk::TYPE_ANY_HIT_GLOBALS: {
-				builder.append(p_version->any_hit_globals.get_data()); // any_hit globals
-			} break;
-			case StageTemplate::Chunk::TYPE_CLOSEST_HIT_GLOBALS: {
-				builder.append(p_version->closest_hit_globals.get_data()); // closest_hit globals
-			} break;
-			case StageTemplate::Chunk::TYPE_MISS_GLOBALS: {
-				builder.append(p_version->miss_globals.get_data()); // miss globals
-			} break;
-			case StageTemplate::Chunk::TYPE_INTERSECTION_GLOBALS: {
-				builder.append(p_version->intersection_globals.get_data()); // intersection globals
-			} break;
 			case StageTemplate::Chunk::TYPE_CODE: {
 				if (p_version->code_sections.has(chunk.code)) {
 					builder.append(p_version->code_sections[chunk.code].get_data());
@@ -344,46 +271,11 @@ Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, Compil
 	Vector<String> stage_sources;
 	stage_sources.resize(RD::SHADER_STAGE_MAX);
 
-	if (pipeline_type == RD::PIPELINE_TYPE_COMPUTE) {
+	if (is_compute) {
 		// Compute stage.
 		StringBuilder builder;
 		_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_COMPUTE]);
 		stage_sources.write[RD::SHADER_STAGE_COMPUTE] = builder.as_string();
-	} else if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-		{
-			// Raygen stage.
-			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_RAYGEN]);
-			stage_sources.write[RD::SHADER_STAGE_RAYGEN] = builder.as_string();
-		}
-
-		{
-			// Any hit stage.
-			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_ANY_HIT]);
-			stage_sources.write[RD::SHADER_STAGE_ANY_HIT] = builder.as_string();
-		}
-
-		{
-			// Closest hit stage.
-			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_CLOSEST_HIT]);
-			stage_sources.write[RD::SHADER_STAGE_CLOSEST_HIT] = builder.as_string();
-		}
-
-		{
-			// Miss stage.
-			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_MISS]);
-			stage_sources.write[RD::SHADER_STAGE_MISS] = builder.as_string();
-		}
-
-		{
-			// Intersection stage.
-			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_INTERSECTION]);
-			stage_sources.write[RD::SHADER_STAGE_INTERSECTION] = builder.as_string();
-		}
 	} else {
 		{
 			// Vertex stage.
@@ -410,7 +302,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 	}
 
 	Vector<String> variant_stage_sources = _build_variant_stage_sources(variant, p_data);
-	Vector<RD::ShaderStageSPIRVData> variant_stages = compile_stages(variant_stage_sources, dynamic_buffers);
+	Vector<RD::ShaderStageSPIRVData> variant_stages = compile_stages(variant_stage_sources);
 	ERR_FAIL_COND(variant_stages.is_empty());
 
 	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(variant_stages, name + ":" + itos(variant));
@@ -436,9 +328,9 @@ Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int 
 	return _build_variant_stage_sources(p_variant, compile_data);
 }
 
-RenderingServerTypes::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
+RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	RenderingServerTypes::ShaderNativeSourceCode source_code;
+	RS::ShaderNativeSourceCode source_code;
 	ERR_FAIL_NULL_V(version, source_code);
 
 	MutexLock lock(*version->mutex);
@@ -446,101 +338,40 @@ RenderingServerTypes::ShaderNativeSourceCode ShaderRD::version_get_native_source
 	source_code.versions.resize(variant_defines.size());
 
 	for (int i = 0; i < source_code.versions.size(); i++) {
-		if (pipeline_type == RD::PIPELINE_TYPE_RASTERIZATION) {
-			// Vertex stage.
+		if (!is_compute) {
+			//vertex stage
 
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_VERTEX]);
 
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
+			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
 
-		if (pipeline_type == RD::PIPELINE_TYPE_RASTERIZATION) {
-			// Fragment stage.
+		if (!is_compute) {
+			//fragment stage
 
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
+			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
 
-		if (pipeline_type == RD::PIPELINE_TYPE_COMPUTE) {
-			// Compute stage.
+		if (is_compute) {
+			//compute stage
 
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_COMPUTE]);
 
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
+			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "compute";
-			stage.code = builder.as_string();
-
-			source_code.versions.write[i].stages.push_back(stage);
-		}
-
-		if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-			// Raygen stage.
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_RAYGEN]);
-
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
-			stage.name = "raygen";
-			stage.code = builder.as_string();
-
-			source_code.versions.write[i].stages.push_back(stage);
-		}
-		if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-			// Any hit stage.
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_ANY_HIT]);
-
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
-			stage.name = "any_hit";
-			stage.code = builder.as_string();
-
-			source_code.versions.write[i].stages.push_back(stage);
-		}
-		if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-			// Closest hit stage.
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_CLOSEST_HIT]);
-
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
-			stage.name = "closest_hit";
-			stage.code = builder.as_string();
-
-			source_code.versions.write[i].stages.push_back(stage);
-		}
-		if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-			// Miss stage.
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_MISS]);
-
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
-			stage.name = "miss";
-			stage.code = builder.as_string();
-
-			source_code.versions.write[i].stages.push_back(stage);
-		}
-		if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
-			// Intersection stage.
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_INTERSECTION]);
-
-			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
-			stage.name = "intersection";
 			stage.code = builder.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
@@ -568,16 +399,6 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 	hash_build.append(p_version->fragment_globals.get_data());
 	hash_build.append("[compute_globals]");
 	hash_build.append(p_version->compute_globals.get_data());
-	hash_build.append("[raygen_globals]");
-	hash_build.append(p_version->raygen_globals.get_data());
-	hash_build.append("[any_hit_globals]");
-	hash_build.append(p_version->any_hit_globals.get_data());
-	hash_build.append("[closest_hit_globals]");
-	hash_build.append(p_version->closest_hit_globals.get_data());
-	hash_build.append("[miss_globals]");
-	hash_build.append(p_version->miss_globals.get_data());
-	hash_build.append("[intersection_globals]");
-	hash_build.append(p_version->intersection_globals.get_data());
 
 	Vector<StringName> code_sections;
 	for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
@@ -674,7 +495,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 			if (shader.is_null()) {
 				for (uint32_t j = 0; j < i; j++) {
 					int variant_free_id = group_to_variant_map[p_group][j];
-					RD::get_singleton()->free_rid(p_version->variants[variant_free_id]);
+					RD::get_singleton()->free(p_version->variants[variant_free_id]);
 				}
 				ERR_FAIL_COND_V(shader.is_null(), false);
 			}
@@ -763,7 +584,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 				continue; // Disabled.
 			}
 			if (!p_version->variants[i].is_null()) {
-				RD::get_singleton()->free_rid(p_version->variants[i]);
+				RD::get_singleton()->free(p_version->variants[i]);
 			}
 		}
 
@@ -787,33 +608,8 @@ void ShaderRD::_compile_ensure_finished(Version *p_version) {
 	}
 }
 
-void ShaderRD::_version_set(Version *p_version, const HashMap<String, String> &p_code, const Vector<String> &p_custom_defines) {
-	p_version->code_sections.clear();
-	for (const KeyValue<String, String> &E : p_code) {
-		p_version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
-	}
-
-	p_version->custom_defines.clear();
-	for (const String &custom_define : p_custom_defines) {
-		p_version->custom_defines.push_back(custom_define.utf8());
-	}
-
-	p_version->dirty = true;
-	if (p_version->initialize_needed) {
-		_initialize_version(p_version);
-		for (int i = 0; i < group_enabled.size(); i++) {
-			if (!group_enabled[i]) {
-				_allocate_placeholders(p_version, i);
-				continue;
-			}
-			_compile_version_start(p_version, i);
-		}
-		p_version->initialize_needed = false;
-	}
-}
-
 void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
-	ERR_FAIL_COND(pipeline_type != RD::PIPELINE_TYPE_RASTERIZATION);
+	ERR_FAIL_COND(is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_NULL(version);
@@ -825,12 +621,32 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 	version->vertex_globals = p_vertex_globals.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
+	version->code_sections.clear();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
+	}
 
-	_version_set(version, p_code, p_custom_defines);
+	version->custom_defines.clear();
+	for (int i = 0; i < p_custom_defines.size(); i++) {
+		version->custom_defines.push_back(p_custom_defines[i].utf8());
+	}
+
+	version->dirty = true;
+	if (version->initialize_needed) {
+		_initialize_version(version);
+		for (int i = 0; i < group_enabled.size(); i++) {
+			if (!group_enabled[i]) {
+				_allocate_placeholders(version, i);
+				continue;
+			}
+			_compile_version_start(version, i);
+		}
+		version->initialize_needed = false;
+	}
 }
 
 void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
-	ERR_FAIL_COND(pipeline_type != RD::PIPELINE_TYPE_COMPUTE);
+	ERR_FAIL_COND(!is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_NULL(version);
@@ -842,23 +658,28 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 	version->compute_globals = p_compute_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 
-	_version_set(version, p_code, p_custom_defines);
-}
+	version->code_sections.clear();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
+	}
 
-void ShaderRD::version_set_raytracing_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_raygen_globals, const String &p_any_hit_globals, const String &p_closest_hit_globals, const String &p_miss_globals, const String &p_intersection_globals, const Vector<String> &p_custom_defines) {
-	ERR_FAIL_COND(pipeline_type != RD::PIPELINE_TYPE_RAYTRACING);
+	version->custom_defines.clear();
+	for (int i = 0; i < p_custom_defines.size(); i++) {
+		version->custom_defines.push_back(p_custom_defines[i].utf8());
+	}
 
-	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_NULL(version);
-
-	version->raygen_globals = p_raygen_globals.utf8();
-	version->any_hit_globals = p_any_hit_globals.utf8();
-	version->closest_hit_globals = p_closest_hit_globals.utf8();
-	version->miss_globals = p_miss_globals.utf8();
-	version->intersection_globals = p_intersection_globals.utf8();
-	version->uniforms = p_uniforms.utf8();
-
-	_version_set(version, p_code, p_custom_defines);
+	version->dirty = true;
+	if (version->initialize_needed) {
+		_initialize_version(version);
+		for (int i = 0; i < group_enabled.size(); i++) {
+			if (!group_enabled[i]) {
+				_allocate_placeholders(version, i);
+				continue;
+			}
+			_compile_version_start(version, i);
+		}
+		version->initialize_needed = false;
+	}
 }
 
 bool ShaderRD::version_is_valid(RID p_version) {
@@ -962,10 +783,6 @@ const String &ShaderRD::get_name() const {
 	return name;
 }
 
-const Vector<uint64_t> &ShaderRD::get_dynamic_buffers() const {
-	return dynamic_buffers;
-}
-
 bool ShaderRD::shader_cache_cleanup_on_start = false;
 
 ShaderRD::ShaderRD() {
@@ -984,13 +801,12 @@ ShaderRD::ShaderRD() {
 	base_compute_defines = base_compute_define_text.ascii();
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 	immutable_samplers = p_immutable_samplers;
-	dynamic_buffers = p_dynamic_buffers;
 
 	// When initialized this way, there is just one group and its always enabled.
 	group_to_variant_map.insert(0, LocalVector<int>{});
@@ -1030,11 +846,6 @@ void ShaderRD::_initialize_cache() {
 			hash_build.append(variant_defines[E.value[i]].text.get_data());
 		}
 
-		for (const uint64_t dyn_buffer : dynamic_buffers) {
-			hash_build.append("[dynamic_buffer]");
-			hash_build.append(uitos(dyn_buffer));
-		}
-
 		group_sha256[E.key] = hash_build.as_string().sha256_text();
 
 		if (!shader_cache_user_dir.is_empty()) {
@@ -1069,13 +880,12 @@ void ShaderRD::_initialize_cache() {
 }
 
 // Same as above, but allows specifying shader compilation groups.
-void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
+void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 	immutable_samplers = p_immutable_samplers;
-	dynamic_buffers = p_dynamic_buffers;
 
 	int max_group_id = 0;
 
@@ -1152,7 +962,7 @@ void ShaderRD::set_shader_cache_save_debug(bool p_enable) {
 	shader_cache_save_debug = p_enable;
 }
 
-Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &p_stage_sources, const Vector<uint64_t> &p_dynamic_buffers) {
+Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &p_stage_sources) {
 	RD::ShaderStageSPIRVData stage;
 	Vector<RD::ShaderStageSPIRVData> stages;
 	String error;
@@ -1164,7 +974,6 @@ Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &
 		}
 
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), p_stage_sources[i], RD::SHADER_LANGUAGE_GLSL, &error);
-		stage.dynamic_buffers = p_dynamic_buffers;
 		stage.shader_stage = RD::ShaderStage(i);
 		if (!stage.spirv.is_empty()) {
 			stages.push_back(stage);

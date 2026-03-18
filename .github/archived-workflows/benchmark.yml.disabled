@@ -1,0 +1,50 @@
+name: Performance Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'addons/gaussian_splatting/**'
+      - 'scripts/core/**'
+      - 'shaders/**'
+      - 'compute/**'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+
+      - name: Run Benchmarks
+        run: |
+          godot --headless --script=benchmarks/run_all.gd
+
+      - name: Post Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = fs.readFileSync('benchmarks/results/latest.json', 'utf8');
+            const data = JSON.parse(results);
+
+            const comment = `## 🚀 Performance Benchmark Results
+
+            | Metric | Before | After | Change |
+            |--------|--------|-------|--------|
+            | 1M Splats FPS | ${data.before.fps} | ${data.after.fps} | ${data.change.fps} |
+            | Sort Time | ${data.before.sort}ms | ${data.after.sort}ms | ${data.change.sort} |
+            | Memory | ${data.before.memory}MB | ${data.after.memory}MB | ${data.change.memory} |
+
+            @claude Please review these performance changes.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

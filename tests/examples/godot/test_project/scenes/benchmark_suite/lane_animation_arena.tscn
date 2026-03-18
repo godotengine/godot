@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneAnimationArena" instance=ExtResource("1")]
+lane_id = "animation_arena"
+lane_name = "Animation Arena"
+lane_description = "Wind + effector + rotational animation lane."
+lane_preset = "animation_arena"
+default_duration_s = 35.0

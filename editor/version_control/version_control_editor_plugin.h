@@ -39,8 +39,6 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 
-class EditorDock;
-
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
@@ -82,8 +80,6 @@ private:
 	FileDialog *set_up_ssh_public_key_file_dialog = nullptr;
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
-	Button *select_public_path_button = nullptr;
-	Button *select_private_path_button = nullptr;
 
 	AcceptDialog *discard_all_confirm = nullptr;
 
@@ -102,7 +98,7 @@ private:
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
 	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
-	EditorDock *version_commit_dock = nullptr;
+	VBoxContainer *version_commit_dock = nullptr;
 	Tree *staged_files = nullptr;
 	Tree *unstaged_files = nullptr;
 	Tree *commit_list = nullptr;
@@ -131,7 +127,8 @@ private:
 	TextEdit *commit_message = nullptr;
 	Button *commit_button = nullptr;
 
-	EditorDock *version_control_dock = nullptr;
+	VBoxContainer *version_control_dock = nullptr;
+	Button *version_control_dock_button = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;
@@ -139,7 +136,6 @@ private:
 	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _notification(int p_what);
-	void _update_theme();
 	void _initialize_vcs();
 	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();

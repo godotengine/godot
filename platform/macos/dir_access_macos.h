@@ -32,6 +32,7 @@
 
 #if defined(UNIX_ENABLED)
 
+#include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
 #include <dirent.h>

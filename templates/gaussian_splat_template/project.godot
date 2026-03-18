@@ -1,0 +1,69 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+config/name="Gaussian Splat Template"
+config/features=PackedStringArray("4.5", "Forward Plus")
+run/main_scene="res://scenes/main.tscn"
+
+[autoload]
+GaussianBootstrap="*res://autoload/gaussian_bootstrap.gd"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
+[input]
+camera_move_forward={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 87, "physical_keycode": 87}]
+}
+camera_move_backward={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 83, "physical_keycode": 83}]
+}
+camera_move_left={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 65, "physical_keycode": 65}]
+}
+camera_move_right={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 68, "physical_keycode": 68}]
+}
+camera_move_up={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 32, "physical_keycode": 32}]
+}
+camera_move_down={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 67, "physical_keycode": 67}]
+}
+camera_boost_speed={
+"deadzone": 0.5,
+"events": [{"type": "InputEventKey", "keycode": 0, "physical_keycode": 340}]
+}
+camera_orbit={
+"deadzone": 0.5,
+"events": [{"type": "InputEventMouseButton", "button_index": 2}]
+}
+camera_pan={
+"deadzone": 0.5,
+"events": [{"type": "InputEventMouseButton", "button_index": 3}]
+}
+
+[rendering]
+renderer/rendering_method="forward_plus"
+driver/threads/thread_model=2
+rendering/anti_aliasing/quality/msaa_3d=1
+rendering/environment/defaults/default_environment="res://scenes/environment.tres"
+rendering/gaussian_splatting/gpu_sorting_enabled=true
+rendering/gaussian_splatting/async_compute_enabled=false
+rendering/gaussian_splatting/max_gpu_buffer_count=128
+rendering/gaussian_splatting/culling/octree_max_depth=8
+rendering/gaussian_splatting/culling/min_gaussians_per_leaf=32
+rendering/gaussian_splatting/lod/min_screen_size_pixels=1.5
+rendering/gaussian_splatting/lod/max_distance=150.0
+rendering/gaussian_splatting/lod/bias=1.0
+

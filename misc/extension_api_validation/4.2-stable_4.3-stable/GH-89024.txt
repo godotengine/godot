@@ -1,5 +1,0 @@
-GH-89024
---------
-Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_meta/arguments': size changed value in new API, from 1 to 3.
-
-Added optional argument. Compatibility method registered.

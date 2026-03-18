@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators.Tests;
@@ -16,7 +17,7 @@ public static class CSharpAnalyzerVerifier<TAnalyzer>
 {
     public const LanguageVersion LangVersion = LanguageVersion.CSharp11;
 
-    public class Test : CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
+    public class Test : CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
     {
         public Test()
         {

@@ -79,7 +79,7 @@ struct Dict : UnsizedByteStr
   {
     TRACE_SERIALIZE (this);
     for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], ds...)))
+      if (unlikely (!opszr.serialize (c, dictval[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
 
     return_trace (true);

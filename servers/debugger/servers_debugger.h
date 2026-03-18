@@ -30,15 +30,7 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
-#include "core/object/ref_counted.h"
-#include "core/string/string_name.h"
-#include "core/string/ustring.h"
-#include "core/templates/list.h"
-#include "core/templates/rid.h"
-#include "core/templates/vector.h"
-#include "core/variant/array.h"
-#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering_server.h"
 
 class ServersDebugger {
 public:
@@ -105,7 +97,7 @@ public:
 	// Visual Profiler
 	struct VisualProfilerFrame {
 		uint64_t frame_number = 0;
-		Vector<RenderingServerTypes::FrameProfileArea> areas;
+		Vector<RS::FrameProfileArea> areas;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);

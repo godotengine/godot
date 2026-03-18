@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="GaussianSplatAsset" uid="uid://dufbqibv4cxau" path="res://tests/fixtures/test_splats.ply" id="cabin_asset"]
+[ext_resource type="Script" path="res://scenes/qa/qa_scale_validation.gd" id="scale_script"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="fps_script"]
+
+[node name="QAScaleValidation" type="Node3D"]
+script = ExtResource("scale_script")
+
+[node name="SplatNode" type="GaussianSplatNode3D" parent="."]
+splat_asset = ExtResource("cabin_asset")
+scale = Vector3(1, 2, 1)
+quality/max_splat_count = 100000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 3, 8)
+current = true
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

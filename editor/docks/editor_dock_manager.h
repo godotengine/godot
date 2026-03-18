@@ -30,14 +30,12 @@
 
 #pragma once
 
-#include "editor/docks/editor_dock.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 
 class Button;
 class ConfigFile;
 class Control;
-class EditorDock;
 class PopupMenu;
 class TabBar;
 class TabContainer;
@@ -52,7 +50,6 @@ private:
 	bool is_updating = false;
 
 protected:
-	void _notification(int p_what);
 	void _update_visibility();
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -62,65 +59,85 @@ public:
 	DockSplitContainer();
 };
 
-class DockShortcutHandler : public Node {
-	GDCLASS(DockShortcutHandler, Node);
-
-protected:
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-public:
-	DockShortcutHandler() { set_process_shortcut_input(true); }
-};
-
 class DockContextPopup;
 class EditorDockDragHint;
-class DockTabContainer;
 
 class EditorDockManager : public Object {
 	GDCLASS(EditorDockManager, Object);
 
+public:
+	enum DockSlot {
+		DOCK_SLOT_NONE = -1,
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+
 private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
-	friend class DockShortcutHandler;
-	friend class DockSlotGrid;
 
-	static inline EditorDockManager *singleton = nullptr;
+	struct DockInfo {
+		String title;
+		bool open = false;
+		bool enabled = true;
+		bool at_bottom = false;
+		int previous_tab_index = -1;
+		bool previous_at_bottom = false;
+		WindowWrapper *dock_window = nullptr;
+		int dock_slot_index = DOCK_SLOT_NONE;
+		Ref<Shortcut> shortcut;
+		Ref<Texture2D> icon; // Only used when `icon_name` is empty.
+		StringName icon_name;
+	};
+
+	static EditorDockManager *singleton;
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
-	DockSplitContainer *main_hsplit = nullptr;
+	Vector<DockSplitContainer *> hsplits;
 
-	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
-	LocalVector<EditorDock *> all_docks;
-	HashSet<EditorDock *> dirty_docks;
-
-	EditorDock *dock_tab_dragged = nullptr;
+	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	EditorDockDragHint *dock_drag_rects[DOCK_SLOT_MAX];
+	HashMap<Control *, DockInfo> all_docks;
+	Control *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
 
 	DockContextPopup *dock_context_popup = nullptr;
 	PopupMenu *docks_menu = nullptr;
-	LocalVector<EditorDock *> docks_menu_docks;
+	Vector<Control *> docks_menu_docks;
 	Control *closed_dock_parent = nullptr;
 
-	EditorDock *_get_dock_tab_dragged();
+	Control *_get_dock_tab_dragged();
 	void _dock_drag_stopped();
 	void _dock_split_dragged(int p_offset);
+	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
+	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
+	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
 
 	void _docks_menu_option(int p_id);
 
 	void _window_close_request(WindowWrapper *p_wrapper);
-	EditorDock *_close_window(WindowWrapper *p_wrapper);
-	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
-	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
+	Control *_close_window(WindowWrapper *p_wrapper);
+	void _open_dock_in_window(Control *p_dock, bool p_show_window = true, bool p_reset_size = false);
+	void _restore_dock_to_saved_window(Control *p_dock, const Dictionary &p_window_dump);
 
-	void _make_dock_visible(EditorDock *p_dock, bool p_grab_focus);
-	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
+	void _dock_move_to_bottom(Control *p_dock, bool p_visible);
+	void _dock_remove_from_bottom(Control *p_dock);
+	bool _is_dock_at_bottom(Control *p_dock);
 
-	void _queue_update_tab_style(EditorDock *p_dock);
-	void _update_dirty_dock_tabs();
+	void _move_dock_tab_index(Control *p_dock, int p_tab_index, bool p_set_current);
+	void _move_dock(Control *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
+
+	void _update_tab_style(Control *p_dock);
 
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
@@ -130,55 +147,62 @@ public:
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void set_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockTabContainer *p_tab_container);
+	void add_hsplit(DockSplitContainer *p_split);
+	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
-	void set_dock_enabled(EditorDock *p_dock, bool p_enabled);
-	void close_dock(EditorDock *p_dock);
-	void open_dock(EditorDock *p_dock, bool p_set_current = true);
-	void focus_dock(EditorDock *p_dock);
-	void make_dock_floating(EditorDock *p_dock);
+	void set_dock_enabled(Control *p_dock, bool p_enabled);
+	void close_dock(Control *p_dock);
+	void open_dock(Control *p_dock, bool p_set_current = true);
+	void focus_dock(Control *p_dock);
+
+	TabContainer *get_dock_tab_container(Control *p_dock) const;
+
+	void bottom_dock_show_placement_popup(const Rect2i &p_position, Control *p_dock);
 
 	void set_docks_visible(bool p_show);
 	bool are_docks_visible() const;
 
-	void add_dock(EditorDock *p_dock);
-	void remove_dock(EditorDock *p_dock);
+	void add_dock(Control *p_dock, const String &p_title = "", DockSlot p_slot = DOCK_SLOT_NONE, const Ref<Shortcut> &p_shortcut = nullptr, const StringName &p_icon_name = StringName());
+	void remove_dock(Control *p_dock);
+
+	void set_dock_tab_icon(Control *p_dock, const Ref<Texture2D> &p_icon);
 
 	EditorDockManager();
 };
 
-class DockSlotGrid : public Control {
-	GDCLASS(DockSlotGrid, Control);
+class EditorDockDragHint : public Control {
+	GDCLASS(EditorDockDragHint, Control);
 
-	static constexpr Vector2i GRID_SIZE = Vector2i(8, 8);
-	static constexpr Vector2i MARGINS = Vector2i(4, 8);
-	static constexpr Vector2i CELL_SIZE = Vector2i(24, 12);
-	static constexpr int TABS_PER_CELL = 3;
-	static constexpr int TAB_MARGIN = 2;
+private:
+	EditorDockManager *dock_manager = nullptr;
+	EditorDockManager::DockSlot occupied_slot = EditorDockManager::DOCK_SLOT_MAX;
+	TabBar *drop_tabbar = nullptr;
 
-	int hovered_slot = -1;
+	Color valid_drop_color;
+	Ref<StyleBoxFlat> dock_drop_highlight;
+	bool can_drop_dock = false;
+	bool mouse_inside = false;
+	bool mouse_inside_tabbar = false;
 
-	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
-	Rect2 main_screen_rect;
-	bool rect_cache_dirty = true;
-
-	void _update_rect_cache();
+	void _drag_move_tab(int p_from_index, int p_to_index);
+	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 protected:
-	static void _bind_methods();
-	void _notification(int p_what);
-
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual Size2 get_minimum_size() const override;
+
+	void _notification(int p_what);
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 public:
-	EditorDock *context_dock = nullptr;
+	void set_slot(EditorDockManager::DockSlot p_slot);
+
+	EditorDockDragHint();
 };
 
 class DockContextPopup : public PopupPanel {
@@ -191,18 +215,25 @@ private:
 	Button *tab_move_left_button = nullptr;
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
+	Button *dock_to_bottom_button = nullptr;
 
-	DockSlotGrid *dock_select = nullptr;
+	Control *dock_select = nullptr;
+	Rect2 dock_select_rects[EditorDockManager::DOCK_SLOT_MAX];
+	int dock_select_rect_over_idx = -1;
 
-	EditorDock *context_dock = nullptr;
+	Control *context_dock = nullptr;
 
 	EditorDockManager *dock_manager = nullptr;
 
-	void _slot_clicked(int p_slot);
 	void _tab_move_left();
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
+	void _move_dock_to_bottom();
+
+	void _dock_select_input(const Ref<InputEvent> &p_input);
+	void _dock_select_mouse_exited();
+	void _dock_select_draw();
 
 	void _update_buttons();
 
@@ -210,7 +241,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_dock(EditorDock *p_dock);
+	void select_current_dock_in_dock_slot(int p_dock_slot);
+	void set_dock(Control *p_dock);
+	Control *get_dock() const;
 	void docks_updated();
 
 	DockContextPopup();

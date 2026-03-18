@@ -16,9 +16,6 @@
 #ifndef WEBP_DSP_LOSSLESS_COMMON_H_
 #define WEBP_DSP_LOSSLESS_COMMON_H_
 
-#include <assert.h>
-#include <stddef.h>
-
 #include "src/dsp/cpu.h"
 #include "src/utils/utils.h"
 #include "src/webp/types.h"
@@ -140,8 +137,8 @@ static WEBP_INLINE void VP8LPrefixEncodeNoLUT(int distance, int* const code,
 
 #define PREFIX_LOOKUP_IDX_MAX   512
 typedef struct {
-  int8_t code;
-  int8_t extra_bits;
+  int8_t code_;
+  int8_t extra_bits_;
 } VP8LPrefixCode;
 
 // These tables are derived using VP8LPrefixEncodeNoLUT.
@@ -151,8 +148,8 @@ static WEBP_INLINE void VP8LPrefixEncodeBits(int distance, int* const code,
                                              int* const extra_bits) {
   if (distance < PREFIX_LOOKUP_IDX_MAX) {
     const VP8LPrefixCode prefix_code = kPrefixEncodeCode[distance];
-    *code = prefix_code.code;
-    *extra_bits = prefix_code.extra_bits;
+    *code = prefix_code.code_;
+    *extra_bits = prefix_code.extra_bits_;
   } else {
     VP8LPrefixEncodeBitsNoLUT(distance, code, extra_bits);
   }
@@ -163,8 +160,8 @@ static WEBP_INLINE void VP8LPrefixEncode(int distance, int* const code,
                                          int* const extra_bits_value) {
   if (distance < PREFIX_LOOKUP_IDX_MAX) {
     const VP8LPrefixCode prefix_code = kPrefixEncodeCode[distance];
-    *code = prefix_code.code;
-    *extra_bits = prefix_code.extra_bits;
+    *code = prefix_code.code_;
+    *extra_bits = prefix_code.extra_bits_;
     *extra_bits_value = kPrefixEncodeExtraBitsValue[distance];
   } else {
     VP8LPrefixEncodeNoLUT(distance, code, extra_bits, extra_bits_value);

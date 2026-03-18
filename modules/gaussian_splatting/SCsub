@@ -1,0 +1,191 @@
+#!/usr/bin/env python
+
+from pathlib import Path
+
+Import("env")
+Import("env_modules")
+
+env_gaussian_splatting = env_modules.Clone()
+
+module_sources = []
+
+# Core runtime systems and runtime integrations
+module_root = Path(Dir(".").abspath)
+# Optional: silence GS module logging for performance testing
+# Usage: scons gs_silence_logs=yes ...
+silence_logs_value = env.get("gs_silence_logs", ARGUMENTS.get("gs_silence_logs", ""))
+silence_logs = str(silence_logs_value).lower() in ("1", "yes", "true", "on")
+if silence_logs:
+    env_gaussian_splatting.Append(CPPDEFINES=["GS_SILENCE_LOGS"])
+
+# Optional: enable host-native architecture tuning.
+# Usage: scons gs_native_arch=yes ...
+native_arch_value = env.get("gs_native_arch", ARGUMENTS.get("gs_native_arch", ""))
+native_arch = str(native_arch_value).lower() in ("1", "yes", "true", "on")
+native_arch_stamp = "native_arch=on" if native_arch else "native_arch=off"
+env_gaussian_splatting.Append(CPPDEFINES=[
+    f'GS_BUILD_METADATA_STAMP=\\"{native_arch_stamp}\\"',
+    "GS_NATIVE_ARCH_ENABLED=1" if native_arch else "GS_NATIVE_ARCH_ENABLED=0",
+])
+
+# Optional: AVX2 SIMD acceleration for x86 builds.
+# Usage: scons gs_avx2=yes/no/auto ...
+#   yes  - Force AVX2 (will crash on CPUs without AVX2 support)
+#   no   - Disable AVX2 (SSE2 baseline only, safe for all x86_64)
+#   auto - Detect at build time via a test compile (default)
+gs_avx2_value = str(env.get("gs_avx2", ARGUMENTS.get("gs_avx2", "auto"))).lower()
+if gs_avx2_value in ("1", "yes", "true", "on"):
+    gs_avx2 = "yes"
+elif gs_avx2_value in ("0", "no", "false", "off"):
+    gs_avx2 = "no"
+else:
+    gs_avx2 = "auto"
+
+
+def _detect_avx2_support(p_env):
+    """Try-compile a small AVX2 snippet to see if the toolchain supports it."""
+    import tempfile
+    import os
+    import subprocess
+
+    test_src = r"""
+#include <immintrin.h>
+int main() {
+    __m256i a = _mm256_set1_epi32(1);
+    __m256i b = _mm256_add_epi32(a, a);
+    (void)b;
+    return 0;
+}
+"""
+    is_msvc = p_env.get("is_msvc", False)
+    flag = "/arch:AVX2" if is_msvc else "-mavx2"
+
+    tmp_dir = tempfile.mkdtemp(prefix="gs_avx2_check_")
+    src_file = os.path.join(tmp_dir, "avx2_check.cpp")
+    out_file = os.path.join(tmp_dir, "avx2_check")
+
+    try:
+        with open(src_file, "w") as f:
+            f.write(test_src)
+
+        compiler = p_env.subst("$CXX") if p_env.get("CXX") else ("cl" if is_msvc else "c++")
+        if is_msvc:
+            cmd = [compiler, flag, "/Fe:" + out_file + ".exe", src_file]
+        else:
+            cmd = [compiler, flag, "-o", out_file, src_file]
+
+        result = subprocess.run(cmd, capture_output=True, timeout=30)
+        return result.returncode == 0
+    except Exception:
+        return False
+    finally:
+        import shutil
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+gs_avx2_enabled = False
+if gs_avx2 == "yes":
+    gs_avx2_enabled = True
+elif gs_avx2 == "no":
+    gs_avx2_enabled = False
+else:
+    # auto-detect
+    if env.get("arch") in ("x86_64", "x86_32"):
+        gs_avx2_enabled = _detect_avx2_support(env_gaussian_splatting)
+        if gs_avx2_enabled:
+            print("GaussianSplatting: AVX2 support detected, enabling.")
+        else:
+            print("GaussianSplatting: AVX2 not supported by toolchain, using SSE2 baseline.")
+    else:
+        gs_avx2_enabled = False
+
+env_gaussian_splatting.Append(CPPDEFINES=[
+    "GS_AVX2_ENABLED=1" if gs_avx2_enabled else "GS_AVX2_ENABLED=0",
+])
+
+# Authoritative C++ source directory list for module compilation.
+# Keep this list aligned with modules/gaussian_splatting/CMakeLists.txt;
+# modules/gaussian_splatting/tests/check_build_metadata_consistency.py enforces it.
+source_directories = [
+    # Core runtime systems and feature integrations.
+    "animation",
+    "asset_management",
+    "compute",
+    "core",
+    "interfaces",
+    "io",
+    "lod",
+    "logger",
+    "nodes",
+    "painterly",
+    "persistence",
+    "resources",
+    "renderer",
+]
+
+# Process GLSL sources and expose generated headers as explicit dependencies
+# for module objects in clean builds.
+#
+# Shader dependency enforcement (ISSUE-034):
+#   Each sub-SCsub (compute/SCsub, shaders/SCsub) registers env.Depends()
+#   edges from the generated .gen.h headers back to the .glsl source files,
+#   shared include files (shaders/includes/*.glsl), and glsl_builders.py.
+#   The generated header nodes are returned here and wired as prerequisites
+#   of the C++ module_sources via the env.Depends() call below (line 85+).
+#   This means:
+#     .glsl change  ->  .gen.h rebuilt  ->  C++ objects that #include it recompile
+#   The dependency chain is mandatory, not advisory.
+compute_generated_headers = SConscript("compute/SCsub")
+shader_generated_headers = SConscript("shaders/SCsub")
+generated_shader_headers = []
+if compute_generated_headers:
+    generated_shader_headers.extend(compute_generated_headers)
+if shader_generated_headers:
+    generated_shader_headers.extend(shader_generated_headers)
+
+for directory in source_directories:
+    dir_path = module_root / directory
+    if not dir_path.is_dir():
+        continue
+    if not any(dir_path.glob("*.cpp")):
+        continue
+    env_gaussian_splatting.add_source_files(module_sources, f"{directory}/*.cpp")
+
+# Editor extensions (editor builds only)
+if env.editor_build:
+    env_gaussian_splatting.add_source_files(module_sources, "editor/*.cpp")
+
+# Tests (optional)
+if env.get("tests", False):
+    env_gaussian_splatting.add_source_files(module_sources, "tests/*.cpp")
+    env_gaussian_splatting.Append(CPPDEFINES=[
+        "TESTS_ENABLED",
+        "DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS",
+    ])
+
+# Register module classes
+env_gaussian_splatting.add_source_files(module_sources, "register_types.cpp")
+
+if generated_shader_headers:
+    env_gaussian_splatting.Depends(module_sources, generated_shader_headers)
+
+# Optimization flags for high performance configurations
+if env["optimize"] == "speed":
+    if env_gaussian_splatting.get("is_msvc", False):
+        msvc_flags = ["/fp:fast"]
+        if gs_avx2_enabled and env.get("arch") in ("x86_64", "x86_32"):
+            msvc_flags.append("/arch:AVX2")
+        env_gaussian_splatting.Append(CCFLAGS=msvc_flags)
+    else:
+        ccflags = ["-O3", "-ffast-math"]
+        if native_arch:
+            ccflags.append("-march=native")
+        elif gs_avx2_enabled and env.get("arch") in ("x86_64", "x86_32"):
+            ccflags.extend(["-mavx2", "-mfma"])
+        env_gaussian_splatting.Append(CCFLAGS=ccflags)
+
+# Enable gaussian splatting compile-time guard
+env_gaussian_splatting.Append(CPPDEFINES=["GAUSSIAN_SPLATTING_ENABLED"])
+
+# Register compiled objects with the module
+env.modules_sources += module_sources

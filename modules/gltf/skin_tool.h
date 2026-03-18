@@ -31,10 +31,12 @@
 #pragma once
 
 #include "gltf_defines.h"
+
 #include "structures/gltf_node.h"
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 
+#include "core/math/disjoint_set.h"
 #include "core/templates/rb_set.h"
 
 using SkinNodeIndex = int;

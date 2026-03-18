@@ -76,4 +76,6 @@ public:
 	_FORCE_INLINE_ operator String() const {
 		return as_string();
 	}
+
+	StringBuilder() {}
 };

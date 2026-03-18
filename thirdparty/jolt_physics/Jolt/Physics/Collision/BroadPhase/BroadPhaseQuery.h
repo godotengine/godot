@@ -48,9 +48,6 @@ public:
 
 	/// Cast a box and add any hits to ioCollector
 	virtual void		CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter = { }, const ObjectLayerFilter &inObjectLayerFilter = { }) const = 0;
-
-	/// Get the bounding box of all objects in the broadphase
-	virtual AABox		GetBounds() const = 0;
 };
 
 JPH_NAMESPACE_END

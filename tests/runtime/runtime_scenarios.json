@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "default_profile": "release-ci",
+  "profiles": {
+    "release-ci": {
+      "description": "Canonical release-ready runtime validation lane used by baseline QA CI.",
+      "cpp_tests": [
+        "Runtime Modifications",
+        "Animation Persistence"
+      ],
+      "gd_tests": [
+        "Interactive State",
+        "GPU Streaming Stress",
+        "Engine Capability Sanity",
+        "World Streaming Gate",
+        "Streaming Residency API",
+        "Data Flow Recent Window",
+        "Pipeline Trace Freshness",
+        "Monitor Lifecycle Hardening"
+      ],
+      "godot_args": []
+    },
+    "stress-only": {
+      "description": "Stress-focused runtime lane for local and CI soak checks.",
+      "cpp_tests": [],
+      "gd_tests": [
+        "GPU Streaming Stress",
+        "World Streaming Gate",
+        "Streaming Residency API"
+      ],
+      "godot_args": []
+    },
+    "smoke": {
+      "description": "Fast local smoke profile for quick runtime sanity checks.",
+      "cpp_tests": [
+        "Runtime Modifications"
+      ],
+      "gd_tests": [
+        "Engine Capability Sanity",
+        "Interactive State"
+      ],
+      "godot_args": []
+    }
+  }
+}

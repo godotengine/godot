@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource_importer.h"
+
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"

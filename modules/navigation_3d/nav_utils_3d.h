@@ -31,11 +31,11 @@
 #pragma once
 
 #include "core/math/vector3.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-
-#include <cfloat> // FLT_MAX
+#include "servers/navigation/nav_heap.h"
+#include "servers/navigation/navigation_utilities.h"
 
 class NavBaseIteration3D;
 

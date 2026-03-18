@@ -4,7 +4,7 @@
  *
  *   Type 42 objects manager (body).
  *
- * Copyright (C) 2002-2025 by
+ * Copyright (C) 2002-2024 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -510,10 +510,9 @@
 
     error = FT_New_Size( t42face->ttf_face, &ttsize );
     if ( !error )
-    {
       t42size->ttsize = ttsize;
-      FT_Activate_Size( ttsize );
-    }
+
+    FT_Activate_Size( ttsize );
 
     return error;
   }
@@ -658,7 +657,7 @@
     FT_Driver_Class  ttclazz = ((T42_Driver)glyph->face->driver)->ttclazz;
 
 
-    FT_TRACE1(( "T42_GlyphSlot_Load: glyph index %u\n", glyph_index ));
+    FT_TRACE1(( "T42_GlyphSlot_Load: glyph index %d\n", glyph_index ));
 
     /* map T42 glyph index to embedded TTF's glyph index */
     glyph_index = (FT_UInt)ft_strtol(

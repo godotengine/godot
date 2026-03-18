@@ -1,0 +1,40 @@
+{
+  "name": "animated_orbit",
+  "description": "Camera orbit showcasing parallax and painterly accumulation.",
+  "density": "dense",
+  "splat_count": 2048,
+  "radius": 0.28,
+  "fov_degrees": 60.0,
+  "palette": [
+    [0.988, 0.831, 0.435, 0.92],
+    [0.501, 0.623, 0.862, 0.88],
+    [0.196, 0.207, 0.317, 0.9],
+    [0.862, 0.462, 0.384, 0.87]
+  ],
+  "camera_path": [
+    {"time": 0.0, "position": [0.0, 0.4, 6.5], "target": [0.0, 0.0, 0.0]},
+    {"time": 1.0, "position": [1.4, 0.6, 6.2], "target": [0.0, 0.0, 0.0]},
+    {"time": 2.0, "position": [0.0, 0.8, 5.9], "target": [0.0, 0.0, 0.0]},
+    {"time": 3.0, "position": [-1.2, 0.6, 6.3], "target": [0.0, 0.0, 0.0]},
+    {"time": 4.0, "position": [0.0, 0.4, 6.5], "target": [0.0, 0.0, 0.0]}
+  ],
+  "shader_permutations": [
+    {
+      "name": "orbit_brush",
+      "defines": ["PAINTERLY_STYLE_BRUSH", "DENSE_SPLATS", "ENABLE_NOISE_LAYERS", "ENABLE_TEMPORAL_BLEND"]
+    },
+    {
+      "name": "orbit_charcoal",
+      "defines": ["PAINTERLY_STYLE_CHARCOAL", "DENSE_SPLATS", "ENABLE_OUTLINE", "ENABLE_TEMPORAL_BLEND"]
+    }
+  ],
+  "audit": {
+    "coverage_min": 0.16,
+    "luminance_min": 0.01,
+    "delta_min": 0.015,
+    "stability_max": 0.0005,
+    "comparison_camera_index": 2,
+    "artifact_camera_indices": [0, 2, 4],
+    "performance_budget_ms": 140.0
+  }
+}

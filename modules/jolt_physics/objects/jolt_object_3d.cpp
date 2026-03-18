@@ -31,6 +31,8 @@
 #include "jolt_object_3d.h"
 
 #include "../jolt_physics_server_3d.h"
+#include "../jolt_project_settings.h"
+#include "../spaces/jolt_layers.h"
 #include "../spaces/jolt_space_3d.h"
 #include "jolt_group_filter.h"
 

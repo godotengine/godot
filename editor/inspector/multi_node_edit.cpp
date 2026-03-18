@@ -31,8 +31,6 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
@@ -40,7 +38,7 @@ bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
 }
 
-bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field, bool p_undo_redo) {
+bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es) {
 		return false;
@@ -61,29 +59,21 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
-	if (p_undo_redo) {
-		ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
-	}
-
+	ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
 	for (const NodePath &E : nodes) {
 		Node *n = es->get_node_or_null(E);
 		if (!n) {
 			continue;
 		}
 
-		Variant new_value;
 		if (p_value.get_type() == Variant::NODE_PATH) {
 			NodePath path;
 			if (node_path_target) {
 				path = n->get_path_to(node_path_target);
 			}
-
-			if (p_undo_redo) {
-				ur->add_do_property(n, name, path);
-			} else {
-				n->set(name, path);
-			}
+			ur->add_do_property(n, name, path);
 		} else {
+			Variant new_value;
 			if (p_field.is_empty()) {
 				// whole value
 				new_value = p_value;
@@ -91,32 +81,13 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 				// only one field
 				new_value = fieldwise_assign(n->get(name), p_value, p_field);
 			}
-
-			if (p_undo_redo) {
-				ur->add_do_property(n, name, new_value);
-			} else {
-				n->set(name, new_value);
-			}
+			ur->add_do_property(n, name, new_value);
 		}
 
-		if (p_undo_redo) {
-			ur->add_undo_property(n, name, n->get(name));
-			Variant old_value = n->get(p_name);
-			Variant::Type type = old_value.get_type();
-			if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && old_value != new_value) {
-				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, true);
-				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, false);
-				// Perhaps an inefficient way of updating the resource count.
-				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, true);
-				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, false);
-			}
-		}
+		ur->add_undo_property(n, name, n->get(name));
 	}
 
-	if (p_undo_redo) {
-		ur->commit_action();
-	}
+	ur->commit_action();
 	return true;
 }
 
@@ -177,20 +148,18 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				F.name = F.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from MultiNodeEdit.
 			}
 
-			PLData *usage_data = usage.getptr(F.name);
-			if (!usage_data) {
+			if (!usage.has(F.name)) {
 				PLData pld;
 				pld.uses = 0;
 				pld.info = F;
 				pld.info.name = F.name;
-				HashMap<String, MultiNodeEdit::PLData>::Iterator I = usage.insert(F.name, pld);
-				usage_data = &I->value;
-				data_list.push_back(usage_data);
+				usage[F.name] = pld;
+				data_list.push_back(usage.getptr(F.name));
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage_data->info == F) {
-				usage_data->uses++;
+			if (usage[F.name].info == F) {
+				usage[F.name].uses++;
 			}
 		}
 
@@ -203,7 +172,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
 }
 
 String MultiNodeEdit::_get_editor_name() const {
@@ -339,13 +308,7 @@ StringName MultiNodeEdit::get_edited_class_name() const {
 }
 
 void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
-	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
-	Variant::Type type = p_value.get_type();
-	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
-		_set_impl(p_property, p_value, "");
-	} else {
-		_set_impl(p_property, p_value, p_field);
-	}
+	_set_impl(p_property, p_value, p_field);
 }
 
 void MultiNodeEdit::_bind_methods() {

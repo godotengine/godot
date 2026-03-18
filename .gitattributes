@@ -21,3 +21,6 @@ misc/msvs/* eol=crlf
 *.png binary
 *.ttf binary
 *.tza binary
+
+# GodotGS-specific template fixture stays text for reviewability.
+templates/gaussian_splat_template/assets/template_splats.ply text

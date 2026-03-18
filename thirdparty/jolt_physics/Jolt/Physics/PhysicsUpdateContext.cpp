@@ -8,7 +8,6 @@
 
 JPH_NAMESPACE_BEGIN
 
-/// @cond INTERNAL
 PhysicsUpdateContext::PhysicsUpdateContext(TempAllocator &inTempAllocator) :
 	mTempAllocator(&inTempAllocator),
 	mSteps(inTempAllocator)
@@ -20,6 +19,5 @@ PhysicsUpdateContext::~PhysicsUpdateContext()
 	JPH_ASSERT(mBodyPairs == nullptr);
 	JPH_ASSERT(mActiveConstraints == nullptr);
 }
-/// @endcond
 
 JPH_NAMESPACE_END

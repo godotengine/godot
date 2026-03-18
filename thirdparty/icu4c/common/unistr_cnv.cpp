@@ -275,24 +275,20 @@ UnicodeString::doExtract(int32_t start, int32_t length,
     }
 
     // perform the conversion
-    UErrorCode bufferStatus = U_ZERO_ERROR;
-    ucnv_fromUnicode(cnv, &dest, destLimit, &src, srcLimit, nullptr, true, &bufferStatus);
+    ucnv_fromUnicode(cnv, &dest, destLimit, &src, srcLimit, nullptr, true, &errorCode);
     length = static_cast<int32_t>(dest - originalDest);
 
     // if an overflow occurs, then get the preflighting length
-    if(bufferStatus==U_BUFFER_OVERFLOW_ERROR) {
+    if(errorCode==U_BUFFER_OVERFLOW_ERROR) {
         char buffer[1024];
 
         destLimit=buffer+sizeof(buffer);
         do {
             dest=buffer;
-            bufferStatus=U_ZERO_ERROR;
-            ucnv_fromUnicode(cnv, &dest, destLimit, &src, srcLimit, nullptr, true, &bufferStatus);
+            errorCode=U_ZERO_ERROR;
+            ucnv_fromUnicode(cnv, &dest, destLimit, &src, srcLimit, nullptr, true, &errorCode);
             length += static_cast<int32_t>(dest - buffer);
-        } while(bufferStatus==U_BUFFER_OVERFLOW_ERROR);
-    }
-    if (U_FAILURE(bufferStatus)) {
-        errorCode = bufferStatus;
+        } while(errorCode==U_BUFFER_OVERFLOW_ERROR);
     }
 
     return u_terminateChars(originalDest, destCapacity, length, &errorCode);
@@ -393,15 +389,17 @@ UnicodeString::doCodepageCreate(const char *codepageData,
         // perform the conversion
         array = getArrayStart();
         myTarget = array + length();
-        UErrorCode bufferStatus = U_ZERO_ERROR;
         ucnv_toUnicode(converter, &myTarget,  array + getCapacity(),
-            &mySource, mySourceEnd, nullptr, true, &bufferStatus);
+            &mySource, mySourceEnd, nullptr, true, &status);
 
         // update the conversion parameters
         setLength(static_cast<int32_t>(myTarget - array));
 
         // allocate more space and copy data, if needed
-        if(bufferStatus == U_BUFFER_OVERFLOW_ERROR) {
+        if(status == U_BUFFER_OVERFLOW_ERROR) {
+            // reset the error code
+            status = U_ZERO_ERROR;
+
             // keep the previous conversion results
             doCopyArray = true;
 
@@ -409,9 +407,6 @@ UnicodeString::doCodepageCreate(const char *codepageData,
             // try 2 char16_t's per remaining source byte
             arraySize = static_cast<int32_t>(length() + 2 * (mySourceEnd - mySource));
         } else {
-            if (U_FAILURE(bufferStatus)) {
-                status = bufferStatus;
-            }
             break;
         }
     }

@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/qa/qa_sort_multi_instance.gd" id="multi_script"]
+
+[node name="QASortMultiInstance" type="Node3D"]
+script = ExtResource("multi_script")
+
+[node name="NearInstance" type="GaussianSplatNode3D" parent="."]
+quality/max_splat_count = 10
+
+[node name="FarInstance" type="GaussianSplatNode3D" parent="."]
+quality/max_splat_count = 10
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true

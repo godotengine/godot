@@ -196,37 +196,27 @@ public partial class VariantUtils
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return CreateFromGodotObject(UnsafeAs<GodotObject>(from));
 
-        // `typeof(T).IsEnum` is optimized away
+        // `typeof(T).IsValueType` is optimized away
+        // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
+        // Fortunately, `typeof(System.Enum).IsAssignableFrom(typeof(T))` does the job!
 
-        if (typeof(T).IsEnum)
+        if (typeof(T).IsValueType && typeof(System.Enum).IsAssignableFrom(typeof(T)))
         {
-            // `typeof(T).GetEnumUnderlyingType()` is optimized away
+            // `Type.GetTypeCode(typeof(T).GetEnumUnderlyingType())` is not optimized away.
+            // Fortunately, `Unsafe.SizeOf<T>()` works and is optimized away.
+            // We don't need to know whether it's signed or unsigned.
 
-            var enumType = typeof(T).GetEnumUnderlyingType();
-
-            if (enumType == typeof(sbyte))
+            if (Unsafe.SizeOf<T>() == 1)
                 return CreateFromInt(UnsafeAs<sbyte>(from));
 
-            if (enumType == typeof(short))
+            if (Unsafe.SizeOf<T>() == 2)
                 return CreateFromInt(UnsafeAs<short>(from));
 
-            if (enumType == typeof(int))
+            if (Unsafe.SizeOf<T>() == 4)
                 return CreateFromInt(UnsafeAs<int>(from));
 
-            if (enumType == typeof(long))
+            if (Unsafe.SizeOf<T>() == 8)
                 return CreateFromInt(UnsafeAs<long>(from));
-
-            if (enumType == typeof(byte))
-                return CreateFromInt(UnsafeAs<byte>(from));
-
-            if (enumType == typeof(ushort))
-                return CreateFromInt(UnsafeAs<ushort>(from));
-
-            if (enumType == typeof(uint))
-                return CreateFromInt(UnsafeAs<uint>(from));
-
-            if (enumType == typeof(ulong))
-                return CreateFromInt(UnsafeAs<ulong>(from));
 
             throw UnsupportedType<T>();
         }
@@ -397,37 +387,27 @@ public partial class VariantUtils
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return (T)(object)ConvertToGodotObject(variant);
 
-        // `typeof(T).IsEnum` is optimized away
+        // `typeof(T).IsValueType` is optimized away
+        // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
+        // Fortunately, `typeof(System.Enum).IsAssignableFrom(typeof(T))` does the job!
 
-        if (typeof(T).IsEnum)
+        if (typeof(T).IsValueType && typeof(System.Enum).IsAssignableFrom(typeof(T)))
         {
-            // `typeof(T).GetEnumUnderlyingType()` is optimized away
+            // `Type.GetTypeCode(typeof(T).GetEnumUnderlyingType())` is not optimized away.
+            // Fortunately, `Unsafe.SizeOf<T>()` works and is optimized away.
+            // We don't need to know whether it's signed or unsigned.
 
-            var enumType = typeof(T).GetEnumUnderlyingType();
-
-            if (enumType == typeof(sbyte))
+            if (Unsafe.SizeOf<T>() == 1)
                 return UnsafeAsT(ConvertToInt8(variant));
 
-            if (enumType == typeof(short))
+            if (Unsafe.SizeOf<T>() == 2)
                 return UnsafeAsT(ConvertToInt16(variant));
 
-            if (enumType == typeof(int))
+            if (Unsafe.SizeOf<T>() == 4)
                 return UnsafeAsT(ConvertToInt32(variant));
 
-            if (enumType == typeof(long))
+            if (Unsafe.SizeOf<T>() == 8)
                 return UnsafeAsT(ConvertToInt64(variant));
-
-            if (enumType == typeof(byte))
-                return UnsafeAsT(ConvertToUInt8(variant));
-
-            if (enumType == typeof(ushort))
-                return UnsafeAsT(ConvertToUInt16(variant));
-
-            if (enumType == typeof(uint))
-                return UnsafeAsT(ConvertToUInt32(variant));
-
-            if (enumType == typeof(ulong))
-                return UnsafeAsT(ConvertToUInt64(variant));
 
             throw UnsupportedType<T>();
         }

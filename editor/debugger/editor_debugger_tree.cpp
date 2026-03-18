@@ -30,21 +30,17 @@
 
 #include "editor_debugger_tree.h"
 
-#include "core/io/resource_saver.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/debugger/scene_debugger_object.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/display/display_server.h"
+#include "servers/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -70,14 +66,13 @@ void EditorDebuggerTree::_notification(int p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
-			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("multi_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selection_changed));
 			connect("nothing_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_nothing_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
 
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE: {
 			update_icon_max_width();
 		} break;
 	}
@@ -88,27 +83,6 @@ void EditorDebuggerTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("open"));
-}
-
-void EditorDebuggerTree::_scene_tree_selected() {
-	TreeItem *item = get_selected();
-	if (!item) {
-		return;
-	}
-
-	if (!inspected_object_ids.is_empty()) {
-		inspected_object_ids.clear();
-		deselect_all();
-		item->select(0);
-	}
-
-	uint64_t id = uint64_t(item->get_metadata(0));
-	inspected_object_ids.append(id);
-
-	if (!notify_selection_queued) {
-		callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
-		notify_selection_queued = true;
-	}
 }
 
 void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_column, bool p_selected) {
@@ -262,7 +236,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		} else {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node.scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
 		}
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
 		if (icon.is_valid()) {
 			item->set_icon(0, icon);
 		}
@@ -283,12 +257,18 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (inspected_object_ids.has(uint64_t(node.id))) {
 				ids_present.append(node.id);
-				select_items.push_back(item);
-				if (should_scroll) {
+
+				if (selection_uncollapse_all) {
+					selection_uncollapse_all = false;
+
 					// Temporarily set to `false`, to allow caching the unfolds.
 					updating_scene_tree = false;
 					item->uncollapse_tree();
 					updating_scene_tree = true;
+				}
+
+				select_items.push_back(item);
+				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
@@ -394,33 +374,15 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		scroll_to_item(scroll_item, false);
 	}
 
-	if (new_session) {
-		// Some nodes may stay selected between sessions.
-		// Make sure the inspector shows them properly.
-		if (!notify_selection_queued) {
-			callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
-			notify_selection_queued = true;
-		}
-		new_session = false;
-	}
-
 	last_filter = filter;
 	updating_scene_tree = false;
 }
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	selection_uncollapse_all = true;
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
-
-	// If we have not previously selected any of these items, expand the inspector's properties for this item.
-	for (ObjectID id : p_ids) {
-		if (!selection_cache.has(id)) {
-			selection_cache.insert(id);
-
-			InspectorDock::get_inspector_singleton()->expand_all_folding();
-		}
-	}
 
 	if (!updating_scene_tree) {
 		// Request a tree refresh.
@@ -475,11 +437,6 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	}
 
 	return vformat("\"%s\"", path);
-}
-
-void EditorDebuggerTree::set_new_session() {
-	new_session = true;
-	selection_cache.clear();
 }
 
 void EditorDebuggerTree::update_icon_max_width() {

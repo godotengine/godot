@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "servers/display_server.h"
+
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 

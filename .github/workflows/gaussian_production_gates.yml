@@ -1,0 +1,566 @@
+name: Gaussian Production Gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    branches: [master, main]
+    paths:
+      - "core/**"
+      - "drivers/**"
+      - "editor/**"
+      - "main/**"
+      - "modules/**"
+      - "platform/**"
+      - "scene/**"
+      - "servers/**"
+      - "thirdparty/**"
+      - "*.py"
+      - "SConstruct"
+      - "tests/**"
+      - ".github/workflows/gaussian_production_gates.yml"
+  push:
+    branches: [master, main, develop]
+    paths:
+      - "core/**"
+      - "drivers/**"
+      - "editor/**"
+      - "main/**"
+      - "modules/**"
+      - "platform/**"
+      - "scene/**"
+      - "servers/**"
+      - "thirdparty/**"
+      - "*.py"
+      - "SConstruct"
+      - "tests/**"
+      - ".github/workflows/gaussian_production_gates.yml"
+  workflow_dispatch:
+    inputs:
+      run_gpu_lane:
+        description: "Run self-hosted Windows GPU evidence lane"
+        required: false
+        default: false
+        type: boolean
+      enforce_gpu_readiness:
+        description: "Fail if summary.json readiness booleans are not all true"
+        required: false
+        default: false
+        type: boolean
+      runtime_loops:
+        description: "Runtime loop count for evidence collection"
+        required: false
+        default: "3"
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guards:
+    name: Guards (Render Path + Static Safety)
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Run guard checks
+        shell: pwsh
+        run: |
+          python tests/ci/run_module_tests.py --guard-only --skip-render-guards
+
+  gpu-evidence-requirement:
+    name: GPU Evidence Requirement
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    needs: guards
+    outputs:
+      run_windows_gpu: ${{ steps.decide.outputs.run_windows_gpu }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - name: Decide whether Windows GPU evidence is required
+        id: decide
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fallbackLabel = "ci/gpu-runner-unavailable";
+            let runWindowsGpu = false;
+            let reason = "not-required";
+
+            if (context.eventName === "workflow_dispatch") {
+              const requested = String(context.payload.inputs?.run_gpu_lane || "false").toLowerCase();
+              runWindowsGpu = requested === "true";
+              reason = runWindowsGpu ? "manual-dispatch" : "manual-dispatch-disabled";
+            } else if (context.eventName === "pull_request") {
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const pullNumber = context.payload.pull_request.number;
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pullNumber,
+                per_page: 100,
+              });
+              const changedPaths = files.map((file) => String(file.filename || ""));
+              const renderStreamingPrefixes = [
+                "modules/gaussian_splatting/renderer/",
+                "modules/gaussian_splatting/shaders/",
+                "modules/gaussian_splatting/core/gaussian_streaming",
+              ];
+              runWindowsGpu = changedPaths.some((path) =>
+                renderStreamingPrefixes.some((prefix) => path.startsWith(prefix))
+              );
+              reason = runWindowsGpu ? "render-streaming-path-change" : "no-render-streaming-changes";
+
+              const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+              if (runWindowsGpu && labels.includes(fallbackLabel)) {
+                runWindowsGpu = false;
+                reason = `fallback-label:${fallbackLabel}`;
+              }
+            }
+
+            core.info(`run_windows_gpu=${runWindowsGpu} reason=${reason}`);
+            core.setOutput("run_windows_gpu", runWindowsGpu ? "true" : "false");
+            core.setOutput("reason", reason);
+
+      - name: Report decision
+        shell: pwsh
+        run: |
+          echo "run_windows_gpu=${{ steps.decide.outputs.run_windows_gpu }}"
+          echo "reason=${{ steps.decide.outputs.reason }}"
+
+  module-validation:
+    name: Module Build + Runtime Harness (Windows Self-Hosted)
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    needs: guards
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build Godot editor with tests
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+
+      - name: Resolve Godot binary
+        id: godot_bin
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "bin\\godot.windows.editor.dev.x86_64.console.exe",
+            "bin\\godot.windows.editor.dev.x86_64.exe",
+            "bin\\godot.windows.editor.x86_64.console.exe",
+            "bin\\godot.windows.editor.x86_64.exe"
+          )
+          $resolved = $null
+          foreach ($candidate in $candidates) {
+            if (Test-Path -LiteralPath $candidate) {
+              $resolved = (Resolve-Path -LiteralPath $candidate).Path
+              break
+            }
+          }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary under bin."
+          }
+          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Run module tests
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          python tests/ci/run_module_tests.py --godot-binary "$env:GODOT_BINARY" --skip-render-guards
+
+      - name: Run runtime validation harness (headless structural gate)
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          python tests/runtime/run_runtime_validation.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --gd-mode headless `
+            --skip-cpp `
+            --fail-on-skip `
+            --allow-skip-test "Interactive State" `
+            --allow-skip-test "GPU Streaming Stress" `
+            --allow-skip-test "Engine Capability Sanity" `
+            --allow-skip-test "World Streaming Gate" `
+            --allow-skip-test "Data Flow Recent Window" `
+            --allow-skip-test "Pipeline Trace Freshness"
+
+      - name: Run world-streaming runtime gate (blocking, windows-vulkan)
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          python tests/runtime/run_runtime_validation.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --gd-mode windows-vulkan `
+            --skip-cpp `
+            --fail-on-skip `
+            --gd-timeout 420 `
+            --godot-arg=--render-thread `
+            --godot-arg=safe `
+            --gd-script tests/runtime/test_world_streaming_gate.gd
+
+      - name: Run large-scene benchmark gate (streaming churn probe)
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          python tests/runtime/run_runtime_validation.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --gd-mode windows-vulkan `
+            --skip-cpp `
+            --fail-on-skip `
+            --gd-timeout 900 `
+            --godot-arg=--render-thread `
+            --godot-arg=safe `
+            --gd-script tests/runtime/test_gpu_streaming_churn_probe.gd `
+            --report-path tests/runtime/large_scene_benchmark_report.json
+
+      - name: Run eviction-churn benchmark gate (queue-pressure forward-progress probe)
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          python tests/runtime/run_runtime_validation.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --gd-mode windows-vulkan `
+            --skip-cpp `
+            --fail-on-skip `
+            --allow-skip-test "Test Gpu Streaming Eviction Churn Probe" `
+            --gd-timeout 900 `
+            --godot-arg=--render-thread `
+            --godot-arg=safe `
+            --gd-script tests/runtime/test_gpu_streaming_eviction_churn_probe.gd `
+            --report-path tests/runtime/eviction_churn_benchmark_report.json
+
+      - name: Summarize large-scene benchmark metrics
+        if: always()
+        shell: python
+        run: |
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          report_path = Path("tests/runtime/large_scene_benchmark_report.json")
+          if not report_path.exists():
+              print(f"Missing benchmark report: {report_path}", file=sys.stderr)
+              sys.exit(1)
+
+          report = json.loads(report_path.read_text(encoding="utf-8"))
+          tests = report.get("tests", [])
+          if not tests:
+              print("Benchmark report has no test entries.", file=sys.stderr)
+              sys.exit(1)
+
+          benchmark_test = tests[0]
+          metrics = benchmark_test.get("metrics", {})
+          required_metrics = (
+              "fps_avg",
+              "fps_p95",
+              "churn_ratio_evicted_to_loaded",
+              "scheduler_stall_frames",
+          )
+          missing = [key for key in required_metrics if key not in metrics]
+          if missing:
+              print(f"Benchmark report missing required metrics: {', '.join(missing)}", file=sys.stderr)
+              sys.exit(1)
+
+          summary = {
+              "name": benchmark_test.get("name"),
+              "status": benchmark_test.get("status"),
+              "duration": benchmark_test.get("duration"),
+              "fps_avg": metrics.get("fps_avg"),
+              "fps_p95": metrics.get("fps_p95"),
+              "churn_ratio_evicted_to_loaded": metrics.get("churn_ratio_evicted_to_loaded"),
+              "scheduler_stall_frames": metrics.get("scheduler_stall_frames"),
+          }
+          metrics_path = Path("tests/runtime/large_scene_benchmark_metrics.json")
+          metrics_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+          step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if step_summary:
+              with open(step_summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n## Large-Scene Benchmark Metrics\n")
+                  handle.write(f"- Test: `{summary['name']}`\n")
+                  handle.write(f"- Status: `{summary['status']}`\n")
+                  handle.write(f"- Duration (s): `{summary['duration']}`\n")
+                  handle.write(f"- FPS Avg: `{summary['fps_avg']}`\n")
+                  handle.write(f"- FPS P95: `{summary['fps_p95']}`\n")
+                  handle.write(f"- Churn Ratio (evicted/loaded): `{summary['churn_ratio_evicted_to_loaded']}`\n")
+                  handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
+
+      - name: Summarize eviction-churn benchmark metrics
+        if: always()
+        shell: python
+        run: |
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          report_path = Path("tests/runtime/eviction_churn_benchmark_report.json")
+          if not report_path.exists():
+              print(f"Missing eviction benchmark report: {report_path}", file=sys.stderr)
+              sys.exit(1)
+
+          report = json.loads(report_path.read_text(encoding="utf-8"))
+          tests = report.get("tests", [])
+          if not tests:
+              print("Eviction benchmark report has no test entries.", file=sys.stderr)
+              sys.exit(1)
+
+          benchmark_test = tests[0]
+          metrics = benchmark_test.get("metrics", {})
+          required_metrics = (
+              "fps_avg",
+              "fps_p95",
+              "churn_ratio_evicted_to_loaded",
+              "scheduler_stall_frames",
+              "queue_pressure_active_ratio",
+              "queue_pressure_no_progress_ratio",
+              "queue_pressure_scan_starvation_ratio",
+              "queue_pressure_forward_progress_active_ratio_fail",
+              "queue_pressure_forward_progress_no_progress_ratio_fail",
+              "queue_pressure_forward_progress_scan_starved_ratio_fail",
+          )
+          missing = [key for key in required_metrics if key not in metrics]
+          if missing:
+              print(f"Eviction benchmark report missing required metrics: {', '.join(missing)}", file=sys.stderr)
+              sys.exit(1)
+
+          summary = {
+              "name": benchmark_test.get("name"),
+              "status": benchmark_test.get("status"),
+              "duration": benchmark_test.get("duration"),
+              "fps_avg": metrics.get("fps_avg"),
+              "fps_p95": metrics.get("fps_p95"),
+              "churn_ratio_evicted_to_loaded": metrics.get("churn_ratio_evicted_to_loaded"),
+              "scheduler_stall_frames": metrics.get("scheduler_stall_frames"),
+              "queue_pressure_active_ratio": metrics.get("queue_pressure_active_ratio"),
+              "queue_pressure_no_progress_ratio": metrics.get("queue_pressure_no_progress_ratio"),
+              "queue_pressure_scan_starvation_ratio": metrics.get("queue_pressure_scan_starvation_ratio"),
+              "queue_pressure_forward_progress_active_ratio_fail": metrics.get(
+                  "queue_pressure_forward_progress_active_ratio_fail"
+              ),
+              "queue_pressure_forward_progress_no_progress_ratio_fail": metrics.get(
+                  "queue_pressure_forward_progress_no_progress_ratio_fail"
+              ),
+              "queue_pressure_forward_progress_scan_starved_ratio_fail": metrics.get(
+                  "queue_pressure_forward_progress_scan_starved_ratio_fail"
+              ),
+          }
+          metrics_path = Path("tests/runtime/eviction_churn_benchmark_metrics.json")
+          metrics_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+          step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if step_summary:
+              with open(step_summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n## Eviction-Churn Benchmark Metrics\n")
+                  handle.write(f"- Test: `{summary['name']}`\n")
+                  handle.write(f"- Status: `{summary['status']}`\n")
+                  handle.write(f"- Duration (s): `{summary['duration']}`\n")
+                  handle.write(f"- FPS Avg: `{summary['fps_avg']}`\n")
+                  handle.write(f"- FPS P95: `{summary['fps_p95']}`\n")
+                  handle.write(f"- Churn Ratio (evicted/loaded): `{summary['churn_ratio_evicted_to_loaded']}`\n")
+                  handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
+                  handle.write(f"- Queue-Pressure Active Ratio: `{summary['queue_pressure_active_ratio']}`\n")
+                  handle.write(f"- Queue-Pressure No-Progress Ratio: `{summary['queue_pressure_no_progress_ratio']}`\n")
+                  handle.write(f"- Queue-Pressure Scan-Starvation Ratio: `{summary['queue_pressure_scan_starvation_ratio']}`\n")
+                  handle.write(
+                      "- Queue-Pressure Forward-Progress Thresholds: "
+                      f"`active>={summary['queue_pressure_forward_progress_active_ratio_fail']}`, "
+                      f"`no_progress>={summary['queue_pressure_forward_progress_no_progress_ratio_fail']}`, "
+                      f"`scan_starved>={summary['queue_pressure_forward_progress_scan_starved_ratio_fail']}`\n"
+                  )
+
+      - name: Upload runtime validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-validation-report
+          path: repo/tests/runtime/runtime_validation_report.json
+
+      - name: Upload large-scene benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: large-scene-benchmark-report
+          path: |
+            repo/tests/runtime/large_scene_benchmark_report.json
+            repo/tests/runtime/large_scene_benchmark_metrics.json
+
+      - name: Upload eviction-churn benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eviction-churn-benchmark-report
+          path: |
+            repo/tests/runtime/eviction_churn_benchmark_report.json
+            repo/tests/runtime/eviction_churn_benchmark_metrics.json
+
+  windows-gpu-evidence:
+    name: Windows GPU Production Evidence (Self-Hosted)
+    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
+    needs:
+      - guards
+      - gpu-evidence-requirement
+    timeout-minutes: 120
+    if: ${{ needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build Godot editor (Windows, tests enabled)
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes -j12
+
+      - name: Resolve Godot binary
+        id: godot_bin
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "bin\\godot.windows.editor.dev.x86_64.console.exe",
+            "bin\\godot.windows.editor.dev.x86_64.exe",
+            "bin\\godot.windows.editor.x86_64.console.exe",
+            "bin\\godot.windows.editor.x86_64.exe"
+          )
+          $resolved = $null
+          foreach ($candidate in $candidates) {
+            if (Test-Path -LiteralPath $candidate) {
+              $resolved = (Resolve-Path -LiteralPath $candidate).Path
+              break
+            }
+          }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary in bin."
+          }
+          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Collect production evidence
+        id: evidence
+        shell: pwsh
+        env:
+          RUNTIME_LOOPS: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_loops || '3' }}
+        run: |
+          $runtimeLoops = [int]$env:RUNTIME_LOOPS
+          .\tests\ci\collect_production_evidence.ps1 `
+            -Root $PWD `
+            -GodotBinary "${{ steps.godot_bin.outputs.path }}" `
+            -OutputRoot (Join-Path $PWD "artifacts\evidence") `
+            -RuntimeLoops $runtimeLoops
+
+          $latest = Get-ChildItem (Join-Path $PWD "artifacts\evidence") -Directory | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if (-not $latest) {
+            throw "Evidence directory not found after run."
+          }
+          "dir=$($latest.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-gpu-production-evidence
+          path: ${{ steps.evidence.outputs.dir }}
+
+      - name: Enforce readiness booleans
+        if: ${{ inputs.enforce_gpu_readiness == true || inputs.enforce_gpu_readiness == 'true' }}
+        shell: pwsh
+        run: |
+          $summaryPath = Join-Path "${{ steps.evidence.outputs.dir }}" "summary.json"
+          if (-not (Test-Path -LiteralPath $summaryPath)) {
+            throw "Missing summary.json at $summaryPath"
+          }
+
+          $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+          $required = @("897_907_ready", "900_ready", "871_ready", "815_ready", "902_ready")
+          $missing = @()
+          foreach ($key in $required) {
+            if (-not $summary.issues.$key) {
+              $missing += $key
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            throw ("Production readiness checks failed: " + ($missing -join ", "))
+          }

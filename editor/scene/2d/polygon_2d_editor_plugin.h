@@ -35,7 +35,6 @@
 
 class AcceptDialog;
 class ButtonGroup;
-class EditorDock;
 class EditorZoomWidget;
 class HScrollBar;
 class HSlider;
@@ -84,7 +83,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Polygon2D *node = nullptr;
 	Polygon2D *previous_node = nullptr;
 
-	EditorDock *polygon_edit = nullptr;
+	Button *dock_button = nullptr;
+	VBoxContainer *polygon_edit = nullptr;
 	Mode current_mode = MODE_MAX; // Uninitialized.
 	Button *mode_buttons[MODE_MAX];
 	Action selected_action = ACTION_CREATE;
@@ -121,7 +121,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	AcceptDialog *grid_settings = nullptr;
 
 	void _sync_bones();
-	void _update_bone_list(const Polygon2D *p_for_node);
+	void _update_bone_list();
 
 	Vector<Vector2> editing_points;
 	Vector<Vector2> previous_uv;
@@ -135,7 +135,6 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int point_drag_index = -1;
 	bool is_dragging = false;
 	bool is_creating = false;
-	int hovered_point = -1;
 	Vector<int> polygon_create;
 	Action current_action = ACTION_CREATE;
 	Vector2 drag_from;

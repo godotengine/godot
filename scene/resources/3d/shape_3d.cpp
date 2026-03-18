@@ -30,10 +30,9 @@
 
 #include "shape_3d.h"
 
-#include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_server_3d.h"
 
 void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform) {
 	Vector<Vector3> toadd = get_debug_mesh_lines();
@@ -166,5 +165,5 @@ Shape3D::Shape3D(RID p_shape) :
 
 Shape3D::~Shape3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free_rid(shape);
+	PhysicsServer3D::get_singleton()->free(shape);
 }

@@ -37,7 +37,6 @@
 #include <chrono>
 #include <system_error>
 #include <atomic>
-#include <exception>
 #include <mutex> //need for call_once()
 
 #if STDMUTEX_RECURSION_CHECKS || !defined(NDEBUG)

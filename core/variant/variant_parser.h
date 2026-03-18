@@ -56,6 +56,7 @@ public:
 		virtual bool is_utf8() const = 0;
 		bool is_eof() const;
 
+		Stream() {}
 		virtual ~Stream() {}
 	};
 

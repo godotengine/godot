@@ -4,7 +4,7 @@
  *
  *   FreeType synthesizing code for emboldening and slanting (body).
  *
- * Copyright (C) 2000-2025 by
+ * Copyright (C) 2000-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -141,7 +141,7 @@
       /*
        * XXX: overflow check for 16-bit system, for compatibility
        *      with FT_GlyphSlot_Embolden() since FreeType 2.1.10.
-       *      unfortunately, this function returns no information
+       *      unfortunately, this function return no informations
        *      about the cause of error.
        */
       if ( ( ystr >> 6 ) > FT_INT_MAX || ( ystr >> 6 ) < FT_INT_MIN )

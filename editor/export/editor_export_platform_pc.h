@@ -30,9 +30,7 @@
 
 #pragma once
 
-#include "editor/export/editor_export_platform.h"
-
-class ImageTexture;
+#include "editor_export_platform.h"
 
 class EditorExportPlatformPC : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);

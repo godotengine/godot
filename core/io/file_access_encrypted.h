@@ -105,5 +105,6 @@ public:
 
 	static void deinitialize();
 
+	FileAccessEncrypted() {}
 	~FileAccessEncrypted();
 };

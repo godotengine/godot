@@ -1,3 +1,0 @@
-GH-77413
---------
-Validate extension JSON: Error: Field 'classes/GLTFSkin/properties/godot_skin': type changed value in new API, from "Object" to "Skin".

@@ -34,12 +34,7 @@
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-#include "servers/rendering/rendering_server.h"
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wenum-conversion")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wunused-value")
+#include "servers/rendering_server.h"
 
 #include <transcoder/basisu_transcoder.h>
 #ifdef TOOLS_ENABLED
@@ -48,8 +43,6 @@ GODOT_GCC_WARNING_IGNORE("-Wunused-value")
 static Mutex init_mutex;
 static bool initialized = false;
 #endif
-
-GODOT_GCC_WARNING_POP
 
 void basis_universal_init() {
 	basist::basisu_transcoder_init();

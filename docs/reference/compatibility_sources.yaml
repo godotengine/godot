@@ -1,0 +1,26 @@
+platforms:
+  Windows:
+    status: unknown
+    gpu: "-"
+    driver: "-"
+    notes: "No validated data in repo; RenderDoc compatibility fallback uses main RenderingDevice only (modules/gaussian_splatting/core/gaussian_splat_manager.cpp:236)."
+  Linux:
+    status: unknown
+    gpu: "-"
+    driver: "-"
+    notes: "No validated data in repo; no checked-in compatibility matrix entries for Linux GPUs."
+  macOS:
+    status: unknown
+    gpu: "-"
+    driver: "-"
+    notes: "No validated data in repo; no checked-in compatibility matrix entries for Metal/MoltenVK paths."
+  Android:
+    status: unknown
+    gpu: "-"
+    driver: "-"
+    notes: "No validated data in repo; mobile compatibility requires explicit test evidence."
+  iOS:
+    status: unknown
+    gpu: "-"
+    driver: "-"
+    notes: "No validated data in repo; mobile compatibility requires explicit test evidence."

@@ -55,7 +55,7 @@ name is available.
     Angad Kambli (angad-k)
     Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
-    Anish Kumar (syntaxerror247)
+    Anish Mishra (syntaxerror247)
     Anni Ryynänen (anniryynanen)
     Anton Yabchinskiy (a12n)
     Anutrix
@@ -86,7 +86,6 @@ name is available.
     Carl Olsson (not-surt)
     Carter Anderson (cart)
     ChibiDenDen
-    ChocolaMint (chocola-mint)
     Chris Bradfield (cbscribe)
     Chris Cranford (Naros)
     Christian Kaiser (ckaiser)
@@ -138,7 +137,6 @@ name is available.
     Fredia Huya-Kouadio (m4gr3d)
     Geequlim
     George Marques (vnen)
-    Gergely Kis (kisg)
     Gerrit Großkopf (Grosskopf)
     Giganzo
     Gilles Roudiere (groud)
@@ -182,7 +180,6 @@ name is available.
     Johannes Witt (HaSa1002)
     Jonathan Nicholl (jtnicholl)
     Jordan Schidlowsky (winterpixelgames)
-    Jorrit Rouwe (jrouwe)
     Josh Jones (DarkKilauea)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -191,14 +188,12 @@ name is available.
     Jummit
     Justo Delgado (mrcdk)
     K. S. Ernest (iFire) Lee (fire)
-    Kaleb Reid (Kaleb-Reid)
     karroffel
     Kasper Arnklit Frandsen (Arnklit)
     Kassandra Pucher (PucklaJ)
     Kelly Thomas (KellyThomas)
     Kit Bishop (kitbdev)
     kleonc
-    KOGA Mitsuhiro (shiena)
     Koliur Rahman (dugramen)
     Kongfa Waroros (gongpha)
     Kostadin Damyanov (Max-Might)
@@ -242,7 +237,6 @@ name is available.
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
     Matias N. Goldberg (darksylinc)
-    MatheusMDX (matheusmdx)
     Matthew (skyace65)
     Matthew Murphy (mashumafi)
     Matthias Hölzl (hoelzl)
@@ -251,7 +245,6 @@ name is available.
     merumelu
     MewPurPur
     Michael Alexsander (YeldhamDev)
-    Michael Precup (precup)
     Michael Russkikh (Summersay415)
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
@@ -274,7 +267,6 @@ name is available.
     Nicholas Huelin (SirQuartz)
     Nikita Lita (nikitalita)
     Nils André-Chang (NilsIrl)
-    Nintorch
     Noah Beard (TwistedTwigleg)
     Nông Văn Tình (nongvantinh)
     Nuno Donato (nunodonato)
@@ -330,9 +322,7 @@ name is available.
     sersoong
     Shiqing (kawa-yoiko)
     Silc 'Tokage' Renew (TokageItLab)
-    Simon Schoenenberger (detomon)
     Simon Wenner (swenner)
-    Skyth (Asilkan) (blueskythlikesclouds)
     smix8
     snailrhymer
     Sofox (TheSofox)
@@ -358,7 +348,6 @@ name is available.
     Twarit Waikar (IronicallySerious)
     Umang Kalra (theoway)
     V. Vamsi Krishna (vkbsb)
-    vaner (vaner-org)
     Victor Hampel (havi05)
     Vinzenz Feenstra (vinzenz)
     Vitika Soni (Vitika9)
@@ -367,7 +356,6 @@ name is available.
     William Deurwaarder (williamd67)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
-    Xu Huisheng (xuhuisheng)
     Yaohua Xiong (xiongyaohua)
     ydeltastar
     Yevhen Babiichuk (dustdfg)

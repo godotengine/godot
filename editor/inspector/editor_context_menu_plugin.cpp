@@ -31,7 +31,6 @@
 #include "editor_context_menu_plugin.h"
 
 #include "core/input/shortcut.h"
-#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/resources/texture.h"
@@ -118,10 +117,10 @@ bool EditorContextMenuPluginManager::has_plugins_for_slot(ContextMenuSlot p_slot
 	return false;
 }
 
-void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset) {
+void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths) {
 	bool separator_added = false;
 	const int icon_size = p_popup->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
-	int id = EditorContextMenuPlugin::BASE_ID + p_id_offset;
+	int id = EditorContextMenuPlugin::BASE_ID;
 
 	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
 		if (plugin->slot != p_slot) {

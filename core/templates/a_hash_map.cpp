@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "a_hash_map.h"
-
 #include "core/variant/variant.h"
 
 // Explicit instantiation.

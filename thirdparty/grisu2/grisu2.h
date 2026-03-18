@@ -809,14 +809,20 @@ void grisu2_wrap(char *buf, int &len, int &decimal_exponent, FloatType value) {
 */
 inline char *append_exponent(char *buf, int e) {
 
-  bool isNegative = e < 0;
-  e = isNegative ? -e : e;
-  *buf++ = isNegative  ? '-' : '+';
+  if (e < 0) {
+    e = -e;
+    *buf++ = '-';
+  } else {
+    *buf++ = '+';
+  }
 
   auto k = static_cast<std::uint32_t>(e);
-  if (k < 100) {
+  if (k < 10) {
     // Always print at least two digits in the exponent.
     // This is for compatibility with printf("%g").
+    *buf++ = '0';
+    *buf++ = static_cast<char>('0' + k);
+  } else if (k < 100) {
     *buf++ = static_cast<char>('0' + k / 10);
     k %= 10;
     *buf++ = static_cast<char>('0' + k);
@@ -909,7 +915,6 @@ char *to_chars(char *first, FloatType value) {
     value = -value;
     *first++ = '-';
   }
-
   if (value == 0) // +-0
   {
     *first++ = '0';

@@ -33,7 +33,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/os/os.h"
 #include "core/string/string_builder.h"
 
 #define FILESYSTEM_CACHE_VERSION 1

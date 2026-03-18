@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneLodTorture" instance=ExtResource("1")]
+lane_id = "lod_torture"
+lane_name = "LOD Torture"
+lane_description = "Near-far camera pulsing to force frequent LOD transitions."
+lane_preset = "lod_torture"
+default_duration_s = 35.0

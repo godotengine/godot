@@ -30,7 +30,7 @@
 
 #include "stream_peer_tls.h"
 
-#include "core/object/class_db.h"
+#include "core/config/engine.h"
 
 StreamPeerTLS *(*StreamPeerTLS::_create)(bool p_notify_postinitialize) = nullptr;
 

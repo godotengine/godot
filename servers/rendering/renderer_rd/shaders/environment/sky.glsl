@@ -29,8 +29,6 @@ void main() {
 
 #VERSION_DEFINES
 
-#include "../oct_inc.glsl"
-
 #ifdef USE_MULTIVIEW
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
@@ -45,7 +43,7 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec2 border_size;
+	vec2 pad;
 	float luminance_multiplier;
 	float brightness_multiplier;
 }
@@ -102,10 +100,10 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 /* clang-format on */
 #endif
 
-layout(set = 2, binding = 0) uniform texture2D radiance;
+layout(set = 2, binding = 0) uniform textureCube radiance;
 #ifdef USE_CUBEMAP_PASS
-layout(set = 2, binding = 1) uniform texture2D half_res;
-layout(set = 2, binding = 2) uniform texture2D quarter_res;
+layout(set = 2, binding = 1) uniform textureCube half_res;
+layout(set = 2, binding = 2) uniform textureCube quarter_res;
 #elif defined(USE_MULTIVIEW)
 layout(set = 2, binding = 1) uniform texture2DArray half_res;
 layout(set = 2, binding = 2) uniform texture2DArray quarter_res;
@@ -201,11 +199,7 @@ float atan2_approx(float y, float x) {
 }
 
 void main() {
-	vec2 uv = uv_interp * 0.5 + 0.5;
 	vec3 cube_normal;
-#ifdef USE_CUBEMAP_PASS
-	cube_normal = oct_to_vec3_with_border(uv, params.border_size.y);
-#else
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
 	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 0.0, 1.0); // unproject at the far plane
@@ -216,12 +210,13 @@ void main() {
 	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
 #else
 	cube_normal.z = -1.0;
-	cube_normal.x = (uv_interp.x + params.projection.x) / params.projection.y;
-	cube_normal.y = (uv_interp.y + params.projection.z) / params.projection.w;
+	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
+	cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
-#endif
+
+	vec2 uv = uv_interp * 0.5 + 0.5;
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
@@ -240,10 +235,10 @@ void main() {
 #ifdef USE_CUBEMAP_PASS
 
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(sampler2D(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3_to_oct_with_border(cube_normal, params.border_size)) / params.luminance_multiplier;
+	half_res_color = texture(samplerCube(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal) / params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(sampler2D(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3_to_oct_with_border(cube_normal, params.border_size)) / params.luminance_multiplier;
+	quarter_res_color = texture(samplerCube(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal) / params.luminance_multiplier;
 #endif
 
 #else
@@ -286,8 +281,7 @@ void main() {
 
 	if (sky_scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
-		fog.rgb = frag_color.rgb * fog.a + fog.rgb;
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, sky_scene_data.volumetric_fog_sky_affect);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * sky_scene_data.volumetric_fog_sky_affect);
 	}
 
 	if (custom_fog.a > 0.0) {

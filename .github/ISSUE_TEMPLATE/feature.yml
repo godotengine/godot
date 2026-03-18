@@ -1,0 +1,57 @@
+name: Feature Implementation
+description: Track a new Gaussian Splatting feature
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which module does this feature belong to?
+      options:
+        - Core
+        - Rendering
+        - Compute
+        - Editor
+        - Optimization
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the feature to implement
+      placeholder: |
+        Implement OneSweep radix sort for GPU sorting...
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Implementation Tasks
+      description: Break down into subtasks
+      value: |
+        - [ ] Research/understand algorithm
+        - [ ] Implement compute shader
+        - [ ] Integrate with pipeline
+        - [ ] Write unit tests
+        - [ ] Benchmark performance
+        - [ ] Update documentation
+
+  - type: textarea
+    id: performance
+    attributes:
+      label: Performance Requirements
+      description: Target metrics
+      placeholder: |
+        - Must sort 1M Gaussians in <5ms
+        - Memory usage <100MB
+
+  - type: input
+    id: references
+    attributes:
+      label: References
+      description: Papers, code, documentation
+      placeholder: "https://arxiv.org/..."

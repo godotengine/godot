@@ -30,12 +30,8 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.h"
-#include "core/variant/typed_array.h"
-#include "editor/export/editor_export_platform.h"
-#include "editor/export/editor_export_preset.h"
-
-class ImageTexture;
+#include "editor_export_platform.h"
+#include "editor_export_preset.h"
 
 class EditorExportPlatformExtension : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformExtension, EditorExportPlatform);
@@ -154,9 +150,6 @@ public:
 
 	virtual String get_debug_protocol() const override;
 	GDVIRTUAL0RC(String, _get_debug_protocol);
-
-	virtual void initialize() override;
-	GDVIRTUAL0(_initialize);
 
 	EditorExportPlatformExtension();
 	~EditorExportPlatformExtension();

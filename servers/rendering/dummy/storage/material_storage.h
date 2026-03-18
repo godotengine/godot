@@ -30,13 +30,10 @@
 
 #pragma once
 
-#include "core/templates/rid_owner.h"
-#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
-
-class DependencyTracker;
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererDummy {
 
@@ -44,7 +41,7 @@ class MaterialStorage : public RendererMaterialStorage {
 private:
 	static MaterialStorage *singleton;
 
-	HashMap<StringName, RSE::GlobalShaderParameterType> global_shader_variables;
+	HashMap<StringName, RS::GlobalShaderParameterType> global_shader_variables;
 
 	struct DummyShader {
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
@@ -70,14 +67,14 @@ public:
 
 	/* GLOBAL SHADER UNIFORM API */
 
-	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) override;
+	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) override;
 	virtual void global_shader_parameter_remove(const StringName &p_name) override;
 	virtual Vector<StringName> global_shader_parameter_get_list() const override;
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) override {}
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) override {}
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const override { return Variant(); }
-	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
+	virtual RS::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) override;
 	virtual void global_shader_parameters_clear() override {}
@@ -104,7 +101,7 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
 	virtual Variant shader_get_parameter_default(RID p_material, const StringName &p_param) const override { return Variant(); }
 
-	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RenderingServerTypes::ShaderNativeSourceCode(); }
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); }
 	virtual void shader_embedded_set_lock() override {}
 	virtual const HashSet<RID> &shader_embedded_set_get() const override { return dummy_embedded_set; }
 	virtual void shader_embedded_set_unlock() override {}
@@ -127,7 +124,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
-	virtual RSE::CullMode material_get_cull_mode(RID p_material) const override { return RSE::CULL_MODE_DISABLED; }
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const override { return RS::CULL_MODE_DISABLED; }
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}

@@ -31,7 +31,6 @@
 #include "packed_data_container.h"
 
 #include "core/io/marshalls.h"
-#include "core/object/class_db.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 	bool err = false;

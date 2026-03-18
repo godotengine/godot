@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "core/variant/type_info.h"
 
 class HashingContext : public RefCounted {
 	GDCLASS(HashingContext, RefCounted);
@@ -57,6 +56,7 @@ public:
 	Error update(const PackedByteArray &p_chunk);
 	PackedByteArray finish();
 
+	HashingContext() {}
 	~HashingContext();
 };
 

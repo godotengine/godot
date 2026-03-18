@@ -1,21 +1,12 @@
 # https://clangd.llvm.org/config
-
 ---
-
 # Default conditions, apply everywhere.
-
-CompileFlags:
-  Add:
-    # Some thirdparty includes seem to require a high -ferror-limit to pass checks.
-    - -ferror-limit=100
 
 Diagnostics:
   Includes:
     IgnoreHeader:
       - \.compat\.inc
-
 ---
-
 # Header-specific conditions.
 
 If:
@@ -29,19 +20,11 @@ CompileFlags:
     - -Wno-unused-const-variable
     - -Wno-unused-function
     - -Wno-unused-variable
-
 ---
-
-# Suppress warnings for third-party or partial code.
+# Suppress all third-party warnings.
 
 If:
-  PathMatch:
-    - bin/build_deps/.*
-    - misc/dist/apple_embedded_xcode/.*
-    - tests/compatibility_test/.*
-    - thirdparty/.*
-    - .*/thirdparty/.*
-    - .*-so_wrap.[ch]
+  PathMatch: thirdparty/.*
 
 Diagnostics:
   Suppress: "*"

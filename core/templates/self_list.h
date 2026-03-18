@@ -130,6 +130,7 @@ public:
 		// Forbid copying, which has broken behavior.
 		void operator=(const List &) = delete;
 
+		_FORCE_INLINE_ List() {}
 		_FORCE_INLINE_ ~List() {
 			// A self list must be empty on destruction.
 			DEV_ASSERT(_first == nullptr);

@@ -149,7 +149,7 @@ func test_unsafe_void_return() -> void:
 
 @warning_ignore("native_method_override")
 func get_class():
-	return ""
+	pass
 
 # We don't want to execute it because of errors, just analyze.
 func test():

@@ -129,9 +129,6 @@ public:
 	void						SetRPMMeter(Vec3Arg inPosition, float inSize) { mRPMMeterPosition = inPosition; mRPMMeterSize = inSize; }
 #endif // JPH_DEBUG_RENDERER
 
-	// See: VehicleController
-	virtual Ref<VehicleControllerSettings> GetSettings() const override;
-
 protected:
 	/// Synchronize angular velocities of left and right tracks according to their ratios
 	void						SyncLeftRightTracks();

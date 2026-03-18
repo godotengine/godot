@@ -30,7 +30,6 @@
 
 #include "remote_debugger.h"
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
@@ -39,10 +38,9 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/expression.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "servers/display/display_server.h"
+#include "servers/display_server.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -50,9 +48,9 @@ class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	uint64_t last_monitor_modification_time = 0;
 
 public:
-	void toggle(bool p_enable, const Array &p_opts) override {}
-	void add(const Array &p_data) override {}
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) override {
+	void toggle(bool p_enable, const Array &p_opts) {}
+	void add(const Array &p_data) {}
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		if (!performance) {
 			return;
 		}
@@ -64,16 +62,11 @@ public:
 		last_perf_time = pt;
 
 		Array custom_monitor_names = performance->call("get_custom_monitor_names");
-		Array custom_monitor_types = performance->call("get_custom_monitor_types");
-
-		Array custom_monitor_data;
-		custom_monitor_data.push_back(custom_monitor_names);
-		custom_monitor_data.push_back(custom_monitor_types);
 
 		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
 		if (monitor_modification_time > last_monitor_modification_time) {
 			last_monitor_modification_time = monitor_modification_time;
-			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_data);
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
 		}
 
 		int max = performance->get("MONITOR_MAX");
@@ -403,24 +396,24 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			return;
 		}
 
-		if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
-			return;
-		}
-
 		ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
 
 		if (!peer->can_block()) {
 			return; // Peer does not support blocking IO. We could at least send the error though.
 		}
+	}
 
-		threads_in_break.insert(Thread::get_caller_id());
+	if (p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks()) {
+		return;
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
+	ERR_FAIL_NULL(script_lang);
+
 	Array msg = {
 		p_can_continue,
-		script_lang ? script_lang->debug_get_error() : String(),
-		script_lang && (script_lang->debug_get_stack_level_count() > 0),
+		script_lang->debug_get_error(),
+		script_lang->debug_get_stack_level_count() > 0,
 		Thread::get_caller_id()
 	};
 	if (allow_focus_steal_fn) {
@@ -428,12 +421,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 	send_message("debug_enter", msg);
 
-	Input::MouseMode mouse_mode = Input::MouseMode::MOUSE_MODE_VISIBLE;
+	Input::MouseMode mouse_mode = Input::MOUSE_MODE_VISIBLE;
 
-	if (Thread::is_main_thread()) {
+	if (Thread::get_caller_id() == Thread::get_main_id()) {
 		mouse_mode = Input::get_singleton()->get_mouse_mode();
-		if (mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 		}
 	} else {
 		MutexLock mutex_lock(mutex);
@@ -465,11 +458,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_debugger->set_lines_left(1);
 				break;
 
-			} else if (command == "out") {
-				script_debugger->set_depth(1);
-				script_debugger->set_lines_left(1);
-				break;
-
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
@@ -481,24 +469,19 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else if (command == "get_stack_dump") {
 				DebuggerMarshalls::ScriptStackDump dump;
-				if (script_lang) {
-					int slc = script_lang->debug_get_stack_level_count();
-					for (int i = 0; i < slc; i++) {
-						ScriptLanguage::StackInfo frame;
-						frame.file = script_lang->debug_get_stack_level_source(i);
-						frame.line = script_lang->debug_get_stack_level_line(i);
-						frame.func = script_lang->debug_get_stack_level_function(i);
-						dump.frames.push_back(frame);
-					}
+				int slc = script_lang->debug_get_stack_level_count();
+				for (int i = 0; i < slc; i++) {
+					ScriptLanguage::StackInfo frame;
+					frame.file = script_lang->debug_get_stack_level_source(i);
+					frame.line = script_lang->debug_get_stack_level_line(i);
+					frame.func = script_lang->debug_get_stack_level_function(i);
+					dump.frames.push_back(frame);
 				}
 				send_message("stack_dump", dump.serialize());
 
 			} else if (command == "get_stack_frame_vars") {
 				ERR_FAIL_COND(data.size() != 1);
-				if (!script_lang) {
-					send_message("stack_frame_vars", Array{ 0 });
-					continue;
-				}
+				ERR_FAIL_NULL(script_lang);
 				int lv = data[0];
 
 				List<String> members;
@@ -583,25 +566,25 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					input_vals.append(V);
 				}
 
-				LocalVector<StringName> native_types;
-				ClassDB::get_class_list(native_types);
-				for (const StringName &class_name : native_types) {
-					if (!ClassDB::is_class_exposed(class_name) || !Engine::get_singleton()->has_singleton(class_name) || Engine::get_singleton()->is_singleton_editor_only(class_name)) {
+				List<StringName> native_types;
+				ClassDB::get_class_list(&native_types);
+				for (const StringName &E : native_types) {
+					if (!ClassDB::is_class_exposed(E) || !Engine::get_singleton()->has_singleton(E) || Engine::get_singleton()->is_singleton_editor_only(E)) {
 						continue;
 					}
 
-					input_names.append(class_name);
-					input_vals.append(Engine::get_singleton()->get_singleton_object(class_name));
+					input_names.append(E);
+					input_vals.append(Engine::get_singleton()->get_singleton_object(E));
 				}
 
-				LocalVector<StringName> user_types;
-				ScriptServer::get_global_class_list(user_types);
-				for (const StringName &class_name : user_types) {
-					String scr_path = ScriptServer::get_global_class_path(class_name);
+				List<StringName> user_types;
+				ScriptServer::get_global_class_list(&user_types);
+				for (const StringName &S : user_types) {
+					String scr_path = ScriptServer::get_global_class_path(S);
 					Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
-					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", class_name, scr_path));
+					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", S, scr_path));
 
-					input_names.append(class_name);
+					input_names.append(S);
 					input_vals.append(scr);
 				}
 
@@ -624,7 +607,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			}
 		} else {
 			OS::get_singleton()->delay_usec(10000);
-			if (Thread::is_main_thread()) {
+			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				// If this is a busy loop on the main thread, events still need to be processed.
 				DisplayServer::get_singleton()->force_process_and_drop_events();
 			}
@@ -633,28 +616,19 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (Thread::is_main_thread() && mouse_mode != Input::MouseMode::MOUSE_MODE_VISIBLE) {
-		Input::get_singleton()->set_mouse_mode(mouse_mode);
-	}
-
-	{
-		MutexLock mutex_lock(mutex);
-
-		if (!Thread::is_main_thread()) {
-			messages.erase(Thread::get_caller_id());
+	if (Thread::get_caller_id() == Thread::get_main_id()) {
+		if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(mouse_mode);
 		}
-
-		threads_in_break.erase(Thread::get_caller_id());
+	} else {
+		MutexLock mutex_lock(mutex);
+		messages.erase(Thread::get_caller_id());
 	}
 }
 
 void RemoteDebugger::poll_events(bool p_is_idle) {
-	{
-		MutexLock lock(mutex);
-		if (threads_in_break.has(Thread::get_caller_id())) {
-			// We're already in `RemoteDebugger::debug`, so messages should be handled there instead.
-			return;
-		}
+	if (peer.is_null()) {
+		return;
 	}
 
 	flush_output();
@@ -694,18 +668,10 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			reload_all_scripts = false;
 		} else if (!script_paths_to_reload.is_empty()) {
 			Array scripts_to_reload;
-			for (const Variant &v : script_paths_to_reload) {
-				const String &path = v;
+			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
+				String path = script_paths_to_reload[i];
 				Error err = OK;
-				Ref<Script> script = ResourceCache::get_ref(path);
-				if (script.is_null()) {
-					if (path.is_resource_file()) {
-						script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-					} else {
-						// Built-in script that isn't in ResourceCache, no need to reload.
-						continue;
-					}
-				}
+				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));
 				ERR_CONTINUE_MSG(script.is_null(), vformat("Could not reload script '%s': Not a script!", path, error_names[err]));
 				scripts_to_reload.push_back(script);

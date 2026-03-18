@@ -30,17 +30,18 @@
 
 #pragma once
 
+#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
 
 // Always include this as late as possible.
-#include "../../openxr_platform_inc.h" // IWYU pragma: keep.
+#include "../../openxr_platform_inc.h"
 
 class OpenXRMetalExtension : public OpenXRGraphicsExtensionWrapper {
 public:
-	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;

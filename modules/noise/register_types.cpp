@@ -35,8 +35,6 @@
 #include "noise_texture_2d.h"
 #include "noise_texture_3d.h"
 
-#include "core/object/class_db.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/noise_editor_plugin.h"
 #endif

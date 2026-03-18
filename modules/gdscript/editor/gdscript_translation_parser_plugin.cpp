@@ -126,7 +126,7 @@ void GDScriptEditorTranslationParserPlugin::_add_id(const String &p_id, int p_li
 		return;
 	}
 
-	translations->push_back({ p_id, String(), String(), comment, itos(p_line) });
+	translations->push_back({ p_id, String(), String(), comment });
 }
 
 void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line) {
@@ -136,7 +136,7 @@ void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<Stri
 		return;
 	}
 
-	translations->push_back({ p_id_ctx_plural[0], p_id_ctx_plural[1], p_id_ctx_plural[2], comment, itos(p_line) });
+	translations->push_back({ p_id_ctx_plural[0], p_id_ctx_plural[1], p_id_ctx_plural[2], comment });
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
@@ -383,14 +383,9 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 			_add_id(p_call->arguments[1]->reduced_value, p_call->arguments[1]->start_line);
 		}
 	} else if (function_name == fd_add_filter) {
-		if (p_call->arguments.size() == 1) {
-			// The first parameter may contain a description, like `"*.jpg; JPEG Images"`.
+		// Extract the 'JPE Images' in this example - get_node("FileDialog").add_filter("*.jpg; JPE Images").
+		if (!p_call->arguments.is_empty()) {
 			_extract_fd_filter_string(p_call->arguments[0], p_call->arguments[0]->start_line);
-		} else if (p_call->arguments.size() >= 2) {
-			// The second optional parameter can be a description.
-			if (_is_constant_string(p_call->arguments[1])) {
-				_add_id(p_call->arguments[1]->reduced_value, p_call->arguments[1]->start_line);
-			}
 		}
 	} else if (function_name == fd_set_filter) {
 		// Extract from `get_node("FileDialog").set_filters(<filter array>)`.
@@ -401,16 +396,11 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 }
 
 void GDScriptEditorTranslationParserPlugin::_extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression, int p_line) {
-	// Extract the description from `"filter; Description"` format.
-	// The description part is optional, so we skip if it's missing or empty.
+	// Extract the name in "extension ; name".
 	if (_is_constant_string(p_expression)) {
-		const PackedStringArray arr = p_expression->reduced_value.operator String().split(";", true, 1);
-		if (arr.size() >= 2) {
-			const String description = arr[1].strip_edges();
-			if (!description.is_empty()) {
-				_add_id(description, p_line);
-			}
-		}
+		PackedStringArray arr = p_expression->reduced_value.operator String().split(";", true);
+		ERR_FAIL_COND_MSG(arr.size() != 2, "Argument for setting FileDialog has bad format.");
+		_add_id(arr[1].strip_edges(), p_line);
 	}
 }
 
@@ -450,7 +440,6 @@ GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
 	first_arg_patterns.insert("add_radio_check_item");
 	first_arg_patterns.insert("add_separator");
 	first_arg_patterns.insert("add_submenu_item");
-	first_arg_patterns.insert("add_submenu_node_item");
 
 	second_arg_patterns.insert("set_tab_title");
 	second_arg_patterns.insert("add_icon_check_item");

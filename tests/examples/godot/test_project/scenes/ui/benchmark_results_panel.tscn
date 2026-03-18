@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/benchmark_results_panel.gd" id="1"]
+
+[node name="BenchmarkResultsPanel" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+text = "Unified Benchmark"
+horizontal_alignment = 1
+
+[node name="SummaryLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 140)
+size_flags_vertical = 3
+bbcode_enabled = false
+scroll_active = false
+fit_content = true
+
+[node name="PhasesLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 170)
+size_flags_vertical = 3
+bbcode_enabled = false
+fit_content = true
+
+[node name="RecommendationsLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 220)
+size_flags_vertical = 3
+bbcode_enabled = false
+fit_content = true
+
+[node name="FooterLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+text = "Press Esc to quit, R to rerun."
+autowrap_mode = 3

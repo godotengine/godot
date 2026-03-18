@@ -33,7 +33,6 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
@@ -75,7 +74,6 @@ private:
 
 	int resources_total = 0;
 	int resource_current = 0;
-
 	String resource_type;
 	String script_class;
 
@@ -98,7 +96,6 @@ private:
 
 	Error _parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	Error _parse_ext_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
-	void _count_resources();
 
 	struct DummyReadData {
 		bool no_placeholders = false;
@@ -146,8 +143,6 @@ public:
 };
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderText, ResourceFormatLoader);
-
 public:
 	static ResourceFormatLoaderText *singleton;
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
@@ -208,8 +203,6 @@ public:
 };
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
-	GDSOFTCLASS(ResourceFormatSaverText, ResourceFormatSaver);
-
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;

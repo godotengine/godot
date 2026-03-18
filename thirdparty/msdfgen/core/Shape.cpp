@@ -3,7 +3,6 @@
 
 #include <cstdlib>
 #include "arithmetics.hpp"
-#include "convergent-curve-ordering.h"
 
 #define DECONVERGE_OVERSHOOT 1.11111111111111111 // moves control points slightly more than necessary to account for floating-point errors
 
@@ -71,7 +70,7 @@ void Shape::normalize() {
             contour->edges.push_back(EdgeHolder(parts[0]));
             contour->edges.push_back(EdgeHolder(parts[1]));
             contour->edges.push_back(EdgeHolder(parts[2]));
-        } else if (!contour->edges.empty()) {
+        } else {
             // Push apart convergent edge segments
             EdgeHolder *prevEdge = &contour->edges.back();
             for (std::vector<EdgeHolder>::iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
@@ -80,7 +79,8 @@ void Shape::normalize() {
                 if (dotProduct(prevDir, curDir) < MSDFGEN_CORNER_DOT_EPSILON-1) {
                     double factor = DECONVERGE_OVERSHOOT*sqrt(1-(MSDFGEN_CORNER_DOT_EPSILON-1)*(MSDFGEN_CORNER_DOT_EPSILON-1))/(MSDFGEN_CORNER_DOT_EPSILON-1);
                     Vector2 axis = factor*(curDir-prevDir).normalize();
-                    if (convergentCurveOrdering(*prevEdge, *edge) < 0)
+                    // Determine curve ordering using third-order derivative (t = 0) of crossProduct((*prevEdge)->point(1-t)-p0, (*edge)->point(t)-p0) where p0 is the corner (*edge)->point(0)
+                    if (crossProduct((*prevEdge)->directionChange(1), (*edge)->direction(0))+crossProduct((*edge)->directionChange(0), (*prevEdge)->direction(1)) < 0)
                         axis = -axis;
                     deconvergeEdge(*prevEdge, 1, axis.getOrthogonal(true));
                     deconvergeEdge(*edge, 0, axis.getOrthogonal(false));
@@ -91,14 +91,14 @@ void Shape::normalize() {
     }
 }
 
-void Shape::bound(double &xMin, double &yMin, double &xMax, double &yMax) const {
+void Shape::bound(double &l, double &b, double &r, double &t) const {
     for (std::vector<Contour>::const_iterator contour = contours.begin(); contour != contours.end(); ++contour)
-        contour->bound(xMin, yMin, xMax, yMax);
+        contour->bound(l, b, r, t);
 }
 
-void Shape::boundMiters(double &xMin, double &yMin, double &xMax, double &yMax, double border, double miterLimit, int polarity) const {
+void Shape::boundMiters(double &l, double &b, double &r, double &t, double border, double miterLimit, int polarity) const {
     for (std::vector<Contour>::const_iterator contour = contours.begin(); contour != contours.end(); ++contour)
-        contour->boundMiters(xMin, yMin, xMax, yMax, border, miterLimit, polarity);
+        contour->boundMiters(l, b, r, t, border, miterLimit, polarity);
 }
 
 Shape::Bounds Shape::getBounds(double border, double miterLimit, int polarity) const {
@@ -195,14 +195,6 @@ void Shape::orientContours() {
     for (int i = 0; i < (int) contours.size(); ++i)
         if (orientations[i] < 0)
             contours[i].reverse();
-}
-
-YAxisOrientation Shape::getYAxisOrientation() const {
-    return inverseYAxis ? MSDFGEN_Y_AXIS_NONDEFAULT_ORIENTATION : MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION;
-}
-
-void Shape::setYAxisOrientation(YAxisOrientation yAxisOrientation) {
-    inverseYAxis = yAxisOrientation != MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION;
 }
 
 }

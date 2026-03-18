@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include "core/core_bind.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
-#include "core/object/gdvirtual.gen.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/variant/type_info.h"
+#include "core/variant/binder_common.h"
 
 class ImageLoader;
 
@@ -100,8 +101,6 @@ public:
 };
 
 class ResourceFormatLoaderImage : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderImage, ResourceFormatLoader);
-
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;

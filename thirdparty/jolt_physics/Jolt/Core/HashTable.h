@@ -364,8 +364,6 @@ public:
 		using Base = IteratorBase<HashTable, iterator>;
 
 	public:
-		using IteratorBase<HashTable, iterator>::operator ==;
-
 		/// Properties
 		using reference = typename Base::value_type &;
 		using pointer = typename Base::value_type *;
@@ -403,8 +401,6 @@ public:
 		using Base = IteratorBase<const HashTable, const_iterator>;
 
 	public:
-		using IteratorBase<const HashTable, const_iterator>::operator ==;
-
 		/// Properties
 		using reference = const typename Base::value_type &;
 		using pointer = const typename Base::value_type *;
@@ -842,7 +838,7 @@ public:
 
 private:
 	/// If this allocator needs to fall back to aligned allocations because the type requires it
-	static constexpr bool	cNeedsAlignedAllocate = alignof(KeyValue) > JPH_DEFAULT_ALLOCATE_ALIGNMENT;
+	static constexpr bool	cNeedsAlignedAllocate = alignof(KeyValue) > (JPH_CPU_ADDRESS_BITS == 32? 8 : 16);
 
 	/// Max load factor is cMaxLoadFactorNumerator / cMaxLoadFactorDenominator
 	static constexpr uint64	cMaxLoadFactorNumerator = 7;

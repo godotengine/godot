@@ -31,7 +31,6 @@
 #include "check_box.h"
 
 #include "scene/theme/theme_db.h"
-#include "servers/display/accessibility_server.h"
 
 Size2 CheckBox::get_icon_size() const {
 	Size2 tex_size = Size2(0, 0);
@@ -87,9 +86,9 @@ void CheckBox::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			if (is_radio()) {
-				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_RADIO_BUTTON);
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_RADIO_BUTTON);
 			} else {
-				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CHECK_BOX);
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CHECK_BOX);
 			}
 		} break;
 

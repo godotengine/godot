@@ -55,17 +55,11 @@ ShapeSettings::ShapeResult BoxShapeSettings::Create() const
 BoxShape::BoxShape(const BoxShapeSettings &inSettings, ShapeResult &outResult) :
 	ConvexShape(EShapeSubType::Box, inSettings, outResult),
 	mHalfExtent(inSettings.mHalfExtent),
-	mConvexRadius(min(inSettings.mConvexRadius, inSettings.mHalfExtent.ReduceMin()))
+	mConvexRadius(inSettings.mConvexRadius)
 {
-	// Check half extents
-	if (inSettings.mHalfExtent.ReduceMin() < 0.0f)
-	{
-		outResult.SetError("Invalid half extent");
-		return;
-	}
-
 	// Check convex radius
-	if (inSettings.mConvexRadius < 0.0f)
+	if (inSettings.mConvexRadius < 0.0f
+		|| inSettings.mHalfExtent.ReduceMin() < inSettings.mConvexRadius)
 	{
 		outResult.SetError("Invalid convex radius");
 		return;

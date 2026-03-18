@@ -13,7 +13,7 @@
  *
  * @brief ktxTexture implementation.
  *
- * @author Mark Callow, github.com/MarkCallow
+ * @author Mark Callow, www.edgewise-consulting.com
  */
 
 #if defined(_WIN32)

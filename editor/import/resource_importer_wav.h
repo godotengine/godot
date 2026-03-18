@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource_importer.h"
+#include "scene/resources/audio_stream_wav.h"
 
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter);

@@ -328,10 +328,9 @@ int32_t RBBISetBuilder::getTrieSize()  {
             UCPTRIE_TYPE_FAST,
             use8Bits ? UCPTRIE_VALUE_BITS_8 : UCPTRIE_VALUE_BITS_16,
             fStatus);
-        UErrorCode bufferStatus = *fStatus;
-        fTrieSize = ucptrie_toBinary(fTrie, nullptr, 0, &bufferStatus);
-        if (bufferStatus != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(bufferStatus)) {
-            *fStatus = bufferStatus;
+        fTrieSize = ucptrie_toBinary(fTrie, nullptr, 0, fStatus);
+        if (*fStatus == U_BUFFER_OVERFLOW_ERROR) {
+            *fStatus = U_ZERO_ERROR;
         }
     }
     return fTrieSize;

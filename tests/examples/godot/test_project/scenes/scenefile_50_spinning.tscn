@@ -1,0 +1,418 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://fps_camera_controller.gd" id="fps_script"]
+[ext_resource type="Script" path="res://scenes/static_10_spinning.gd" id="spin_script"]
+[ext_resource type="GaussianSplatAsset" path="res://tests/fixtures/test_splats.ply" id="cabin_asset"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="perf_overlay"]
+
+[node name="SceneFile50Spinning" type="Node3D"]
+script = ExtResource("spin_script")
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("perf_overlay")]
+
+[node name="Instance_00" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_01" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_02" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_03" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_04" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_05" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_06" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_07" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_08" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_09" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 225.0, 0, 0.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_10" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_11" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_12" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_13" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_14" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_15" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_16" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_17" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_18" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_19" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 225.0, 0, 25.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_20" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_21" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_22" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_23" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_24" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_25" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_26" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_27" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_28" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_29" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 225.0, 0, 50.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_30" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_31" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_32" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_33" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_34" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_35" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_36" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_37" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_38" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_39" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 225.0, 0, 75.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_40" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_41" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_42" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_43" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_44" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_45" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_46" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_47" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 175.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_48" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Instance_49" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 225.0, 0, 100.0)
+splat_asset = ExtResource("cabin_asset")
+quality/preset = 2
+quality/max_splat_count = 5000000
+quality/lod_bias = 1.0
+quality/max_render_distance = 1000.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112.5, 50, 200)
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

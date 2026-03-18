@@ -191,7 +191,7 @@ static const struct thai_above_state_machine_edge_t {
 };
 
 
-static const enum thai_below_state_t
+static enum thai_below_state_t
 {
   B0, /* No descender */
   B1, /* Removable descender */
@@ -334,7 +334,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 
     /* Is SARA AM. Decompose and reorder. */
     (void) buffer->output_glyph (NIKHAHIT_FROM_SARA_AM (u));
-    _hb_glyph_info_set_continuation (&buffer->prev(), buffer);
+    _hb_glyph_info_set_continuation (&buffer->prev());
     if (unlikely (!buffer->replace_glyph (SARA_AA_FROM_SARA_AM (u)))) break;
 
     /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
@@ -356,11 +356,13 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 	       sizeof (buffer->out_info[0]) * (end - start - 2));
       buffer->out_info[start] = t;
     }
-
-    /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
-     * previous cluster. */
-    if (start)
-      buffer->merge_out_grapheme_clusters (start - 1, end);
+    else
+    {
+      /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
+       * previous cluster. */
+      if (start)
+	buffer->merge_out_clusters (start - 1, end);
+    }
   }
   buffer->sync ();
 

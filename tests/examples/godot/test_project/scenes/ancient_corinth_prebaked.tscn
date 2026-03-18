@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="corinth_world"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="fps_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="perf_overlay"]
+
+[node name="AncientCorinthPrebaked" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 0.9995844, 0.028828844, 0, -0.028828844, 0.9995844, 0, 0, 0)
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("perf_overlay")]
+
+[node name="Corinth" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("corinth_world")
+quality/lod_bias = 0.75
+quality/max_splat_count = 10000000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 15, 30)
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

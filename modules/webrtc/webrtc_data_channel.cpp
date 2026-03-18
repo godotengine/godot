@@ -31,7 +31,6 @@
 #include "webrtc_data_channel.h"
 
 #include "core/config/project_settings.h"
-#include "core/object/class_db.h"
 
 void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &WebRTCDataChannel::poll);
@@ -62,7 +61,7 @@ void WebRTCDataChannel::_bind_methods() {
 }
 
 WebRTCDataChannel::WebRTCDataChannel() {
-	_in_buffer_shift = Math::nearest_shift(uint32_t((int)GLOBAL_GET("network/limits/webrtc/max_channel_in_buffer_kb") - 1)) + (uint32_t)10;
+	_in_buffer_shift = nearest_shift(uint32_t((int)GLOBAL_GET("network/limits/webrtc/max_channel_in_buffer_kb") - 1)) + (uint32_t)10;
 }
 
 WebRTCDataChannel::~WebRTCDataChannel() {

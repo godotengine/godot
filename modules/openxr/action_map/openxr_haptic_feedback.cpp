@@ -30,8 +30,6 @@
 
 #include "openxr_haptic_feedback.h"
 
-#include "core/object/class_db.h"
-
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRHapticBase
 

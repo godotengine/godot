@@ -38,14 +38,16 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-
 /* This module contains functions for serializing and deserializing
 a sequence of compiled codes. */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+
 #include "pcre2_internal.h"
-
-
 
 /* Magic number to provide a small check against being handed junk. */
 

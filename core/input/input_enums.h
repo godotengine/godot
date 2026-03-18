@@ -100,12 +100,7 @@ enum class JoyButton {
 	PADDLE3 = 18,
 	PADDLE4 = 19,
 	TOUCHPAD = 20,
-	MISC2 = 21,
-	MISC3 = 22,
-	MISC4 = 23,
-	MISC5 = 24,
-	MISC6 = 25,
-	SDL_MAX = 26,
+	SDL_MAX = 21,
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 

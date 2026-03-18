@@ -1,0 +1,25 @@
+# Generated test data (regenerated on each run)
+*.ply
+*.obj
+*.glb
+
+# Test outputs
+test_output/
+*.log
+*_report.json
+*_results.json
+ci_test_summary.md
+ci_consolidated_report.json
+
+# Temporary test scripts
+_*.gd
+_*.py
+
+# Cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Downloaded binaries
+godot-*-stable/
+*.zip

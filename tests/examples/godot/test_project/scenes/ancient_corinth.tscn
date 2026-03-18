@@ -1,0 +1,123 @@
+[gd_scene load_steps=14 format=3 uid="uid://c2s4a6jfjggrb"]
+
+[ext_resource type="GaussianSplatAsset" uid="uid://cj2jsug8hxpi0" path="res://tests/fixtures/test_splats.ply" id="corinth_asset"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="fps_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="perf_overlay"]
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_p2jju"]
+display_name = "Gaussian"
+shape = 0
+coverage_mode = 0
+edge_softness = 0.3
+bristle_count = 1
+bristle_spacing = 0.0
+gap_strength = 0.0
+curvature = 0.0
+jitter_amount = 0.0
+rotation_jitter = 0.0
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_1ehjf"]
+display_name = "Round Dab"
+edge_softness = 0.35
+gap_strength = 0.12
+curvature = 0.12
+jitter_amount = 0.1
+rotation_jitter = 0.08
+size_scale = 0.95
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_m1hvu"]
+display_name = "Flat Brush"
+shape = 2
+edge_softness = 0.24
+tip_bias = 0.18
+bristle_count = 5
+bristle_spacing = 0.13
+gap_strength = 0.2
+curvature = 0.1
+rotation_jitter = 0.12
+anisotropy = 1.5
+opacity_response = 1.1
+size_scale = 1.1
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_p2f4f"]
+display_name = "Filbert"
+shape = 3
+edge_softness = 0.28
+tip_bias = 0.3
+bristle_spacing = 0.16
+curvature = 0.22
+jitter_amount = 0.15
+rotation_jitter = 0.12
+anisotropy = 1.25
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_8imsx"]
+display_name = "Rake"
+shape = 4
+coverage_mode = 1
+edge_softness = 0.22
+tip_bias = -0.08
+bristle_count = 6
+bristle_spacing = 0.2
+gap_strength = 0.42
+curvature = 0.05
+jitter_amount = 0.12
+rotation_jitter = 0.15
+anisotropy = 1.35
+opacity_response = 1.2
+size_scale = 1.05
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_caf1p"]
+display_name = "Splatter"
+shape = 6
+coverage_mode = 1
+edge_softness = 0.45
+bristle_count = 7
+bristle_spacing = 0.24
+gap_strength = 0.45
+curvature = 0.18
+jitter_amount = 0.35
+rotation_jitter = 0.18
+size_scale = 1.2
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_nuvtx"]
+brush_profile = 1
+size_tier_mask = 1
+priority = 10
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_rbovv"]
+brush_profile = 3
+size_tier_mask = 2
+priority = 9
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_485no"]
+brush_profile = 2
+size_tier_mask = 4
+priority = 8
+
+[sub_resource type="PainterlyMaterial" id="PainterlyMaterial_m2p48"]
+brush_scale = 1.35
+brush_opacity = 0.8
+brush_softness = 2.065
+brush_rotation_jitter = 0.035000008
+brush_profiles = Array[PainterlyBrushProfile]([SubResource("PainterlyBrushProfile_p2jju"), SubResource("PainterlyBrushProfile_1ehjf"), SubResource("PainterlyBrushProfile_m1hvu"), SubResource("PainterlyBrushProfile_p2f4f"), SubResource("PainterlyBrushProfile_8imsx"), SubResource("PainterlyBrushProfile_caf1p")])
+brush_rules = Array[PainterlyBrushRule]([SubResource("PainterlyBrushRule_nuvtx"), SubResource("PainterlyBrushRule_rbovv"), SubResource("PainterlyBrushRule_485no")])
+temporal_stability = 0.9
+
+[node name="AncientCorinth" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 0.9995844, 0.028828844, 0, -0.028828844, 0.9995844, 0, 0, 0)
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("perf_overlay")]
+
+[node name="Corinth" type="GaussianSplatNode3D" parent="."]
+splat_asset = ExtResource("corinth_asset")
+quality/preset = 3
+quality/lod_bias = 0.75
+quality/max_splat_count = 5000000
+painterly/material = SubResource("PainterlyMaterial_m2p48")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 15, 30)
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

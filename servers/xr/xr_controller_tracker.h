@@ -41,8 +41,9 @@ class XRControllerTracker : public XRPositionalTracker {
 	GDCLASS(XRControllerTracker, XRPositionalTracker);
 	_THREAD_SAFE_CLASS_
 
+protected:
+	static void _bind_methods();
+
 public:
-	XRControllerTracker() {
-		type = XRServer::TRACKER_CONTROLLER;
-	}
+	XRControllerTracker();
 };

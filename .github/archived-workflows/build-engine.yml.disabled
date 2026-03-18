@@ -1,0 +1,159 @@
+name: Build Custom Godot Engine
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  GODOT_VERSION: "4.3-stable"
+  SCONS_CACHE_SIZE: "1024"
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        target: [editor, template_release]
+        arch: [x86_64]
+
+    steps:
+      - name: Checkout GodotGS
+        uses: actions/checkout@v4
+        with:
+          path: GodotGS
+
+      - name: Checkout Godot Engine
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: ${{ env.GODOT_VERSION }}
+          path: godot
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup SCons
+        run: |
+          python -m pip install scons
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Link Module
+        run: |
+          cd godot
+          New-Item -ItemType Junction -Path "modules\gaussian_splatting" -Target "..\GodotGS\modules\gaussian_splatting"
+
+      - name: Setup SCons Cache
+        run: |
+          scons --version
+          echo "SCONS_CACHE=${{ runner.temp }}\scons-cache" >> $env:GITHUB_ENV
+
+      - name: Build Godot Engine
+        run: |
+          cd godot
+          scons platform=windows target=${{ matrix.target }} arch=${{ matrix.arch }} optimize=speed -j2
+        env:
+          SCONS_CACHE: ${{ env.SCONS_CACHE }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-${{ matrix.target }}-windows-${{ matrix.arch }}
+          path: godot/bin/godot*
+          retention-days: 7
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        target: [editor, template_release]
+        arch: [x86_64]
+
+    steps:
+      - name: Checkout GodotGS
+        uses: actions/checkout@v4
+        with:
+          path: GodotGS
+
+      - name: Checkout Godot Engine
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: ${{ env.GODOT_VERSION }}
+          path: godot
+
+      - name: Setup Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
+            libudev-dev libxi-dev libxrandr-dev scons
+
+      - name: Link Module
+        run: |
+          cd godot
+          ln -sf ../GodotGS/modules/gaussian_splatting modules/
+
+      - name: Setup SCons Cache
+        run: |
+          echo "SCONS_CACHE=${{ runner.temp }}/scons-cache" >> $GITHUB_ENV
+
+      - name: Build Godot Engine
+        run: |
+          cd godot
+          scons platform=linuxbsd target=${{ matrix.target }} arch=${{ matrix.arch }} optimize=speed -j2
+        env:
+          SCONS_CACHE: ${{ env.SCONS_CACHE }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-${{ matrix.target }}-linux-${{ matrix.arch }}
+          path: godot/bin/godot*
+          retention-days: 7
+
+  test-module:
+    needs: [build-linux]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout GodotGS
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: godot-editor-linux-x86_64
+          path: ./bin/
+
+      - name: Setup Test Environment
+        run: |
+          chmod +x ./bin/godot*
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Test Module Loading
+        run: |
+          cd test_project
+          xvfb-run -a ../bin/godot* --headless --script test_module_integration.gd
+
+      - name: Performance Tests
+        run: |
+          cd test_project
+          xvfb-run -a ../bin/godot* --headless --script benchmark_engine_module.gd
+
+  performance-comparison:
+    needs: [test-module]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Performance Analysis
+        run: |
+          echo "Engine Module Performance Results:"
+          echo "=================================="
+          # TODO: Add performance comparison with baseline
+          echo "Module loaded successfully ✅"
+          echo "Basic functionality verified ✅"

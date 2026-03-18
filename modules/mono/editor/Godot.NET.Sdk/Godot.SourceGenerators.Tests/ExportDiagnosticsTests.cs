@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ExportDiagnosticsTests
 {
     [Fact]
-    public async Task StaticMembers()
+    public async void StaticMembers()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportDiagnostics_GD0101.cs",
@@ -15,7 +14,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task TypeIsNotSupported()
+    public async void TypeIsNotSupported()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportDiagnostics_GD0102.cs",
@@ -24,7 +23,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ReadOnly()
+    public async void ReadOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportDiagnostics_GD0103.cs",
@@ -33,7 +32,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task WriteOnly()
+    public async void WriteOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportDiagnostics_GD0104.cs",
@@ -42,7 +41,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task Indexer()
+    public async void Indexer()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportDiagnostics_GD0105.cs",
@@ -51,7 +50,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ExplicitInterfaceImplementation()
+    public async void ExplicitInterfaceImplementation()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0106.cs" },
@@ -64,7 +63,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task NodeExports()
+    public async void NodeExports()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0107.cs" },
@@ -77,7 +76,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ExportToolButtonInNonToolClass()
+    public async void ExportToolButtonInNonToolClass()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0108.cs" },
@@ -86,7 +85,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ExportAndExportToolButtonOnSameMember()
+    public async void ExportAndExportToolButtonOnSameMember()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0109.cs" },
@@ -95,7 +94,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ExportToolButtonOnNonCallable()
+    public async void ExportToolButtonOnNonCallable()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0110.cs" },
@@ -104,7 +103,7 @@ public class ExportDiagnosticsTests
     }
 
     [Fact]
-    public async Task ExportToolButtonStoringCallable()
+    public async void ExportToolButtonStoringCallable()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             new string[] { "ExportDiagnostics_GD0111.cs" },
