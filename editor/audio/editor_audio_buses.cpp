@@ -746,12 +746,15 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			paste_at--;
 		}
 	}
+	ur->add_do_method(AudioServer::get_singleton(), "emit_signal", SNAME("effect_moved"), bus, effect, get_index(), paste_at);
+
 	if (!enabled) {
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", get_index(), paste_at, false);
 	}
 
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus_effect", get_index(), paste_at);
 	ur->add_undo_method(AudioServer::get_singleton(), "add_bus_effect", bus, AudioServer::get_singleton()->get_bus_effect(bus, effect), effect);
+	ur->add_undo_method(AudioServer::get_singleton(), "emit_signal", SNAME("effect_moved"), get_index(), paste_at, bus, effect);
 	if (!enabled) {
 		ur->add_undo_method(AudioServer::get_singleton(), "set_bus_effect_enabled", bus, effect, false);
 	}

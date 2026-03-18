@@ -404,6 +404,32 @@
 				Emitted when the audio bus at [param bus_index] is renamed from [param old_name] to [param new_name].
 			</description>
 		</signal>
+		<signal name="effect_created">
+			<param index="0" name="bus_index" type="int" />
+			<param index="1" name="effect_index" type="int" />
+			<description>
+				Emitted after an audio effect has been created on the bus at [param bus_index], at index [param effect_index].
+				[b]Note:[/b] If an effect is moved from to another index and/or bus, this signal is also emitted for its new position.
+			</description>
+		</signal>
+		<signal name="effect_moved">
+			<param index="0" name="old_bus_index" type="int" />
+			<param index="1" name="old_effect_index" type="int" />
+			<param index="2" name="new_bus_index" type="int" />
+			<param index="3" name="new_effect_index" type="int" />
+			<description>
+				Emitted when an audio effect is moved from the bus at [param old_bus_index], at index [param old_effect_index] to the bus at [param new_bus_index], at index [param new_effect_index].
+				[b]Note:[/b] Moving an effect also causes [signal effect_created] to be emitted on its source position and [signal effect_removed] to be emitted on its destination position.
+			</description>
+		</signal>
+		<signal name="effect_removed">
+			<param index="0" name="old_bus_index" type="int" />
+			<param index="1" name="old_effect_index" type="int" />
+			<description>
+				Emitted when the audio effect on the bus at [param old_bus_index], at index [param old_effect_index] is removed.
+				[b]Note:[/b] If an effect is moved to another index and/or bus, this signal is also emitted for its previous position.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
