@@ -6209,6 +6209,10 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		}
 		native_base_class = ClassDB::get_parent_class(native_base_class);
 	}
+	if (GDScriptLanguage::get_singleton()->get_global_map().has(name)) {
+    	parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE, p_context, name, "global constant", "Global Scope");
+    	return;
+	}
 }
 #endif // DEBUG_ENABLED
 
