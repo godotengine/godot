@@ -44,8 +44,8 @@ class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 
 private:
 	// -- Proxy object for an atlas source, needed by the inspector --
-	class TileSetScenesCollectionProxyObject : public Object {
-		GDCLASS(TileSetScenesCollectionProxyObject, Object);
+	class TileSetScenesCollectionProxyObject : public RefCounted {
+		GDCLASS(TileSetScenesCollectionProxyObject, RefCounted);
 
 	private:
 		Ref<TileSet> tile_set;
@@ -66,8 +66,8 @@ private:
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
-	class SceneTileProxyObject : public Object {
-		GDCLASS(SceneTileProxyObject, Object);
+	class SceneTileProxyObject : public RefCounted {
+		GDCLASS(SceneTileProxyObject, RefCounted);
 
 	private:
 		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
@@ -102,12 +102,12 @@ private:
 	bool tile_set_scenes_collection_source_changed_needs_update = false;
 
 	// Source inspector.
-	TileSetScenesCollectionProxyObject *scenes_collection_source_proxy_object = nullptr;
+	Ref<TileSetScenesCollectionProxyObject> scenes_collection_source_proxy_object;
 	Label *scenes_collection_source_inspector_label = nullptr;
 	EditorInspector *scenes_collection_source_inspector = nullptr;
 
 	// Tile inspector.
-	SceneTileProxyObject *tile_proxy_object = nullptr;
+	Ref<SceneTileProxyObject> tile_proxy_object;
 	Label *tile_inspector_label = nullptr;
 	EditorInspector *tile_inspector = nullptr;
 
@@ -117,7 +117,7 @@ private:
 	EditorFileDialog *scene_select_dialog = nullptr;
 
 	void _tile_set_scenes_collection_source_changed();
-	void _scenes_collection_source_proxy_object_changed(const String &p_what);
+	void _scenes_collection_source_proxy_object_changed(const String &p_what, const Ref<TileSetScenesCollectionProxyObject> &p_object);
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx);
 	void _scenes_list_item_activated(int p_index);
 
@@ -142,5 +142,4 @@ protected:
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id);
 	TileSetScenesCollectionSourceEditor();
-	~TileSetScenesCollectionSourceEditor();
 };

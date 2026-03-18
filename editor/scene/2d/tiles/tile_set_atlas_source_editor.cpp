@@ -563,7 +563,17 @@ void TileSetAtlasSourceEditor::_update_tile_id_label() {
 
 void TileSetAtlasSourceEditor::_update_source_inspector() {
 	// Update the proxy object.
+	Object *edited = atlas_source_inspector->get_edited_object();
+	if (edited) {
+		Ref<TileSetAtlasSourceProxyObject> proxy(edited);
+		if (proxy.is_valid() && proxy->get_edited() == tile_set_atlas_source) {
+			return; // Already inspecting it.
+		}
+	}
+	atlas_source_proxy_object.instantiate();
+	atlas_source_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed).bind(atlas_source_proxy_object));
 	atlas_source_proxy_object->edit(tile_set, tile_set_atlas_source, tile_set_atlas_source_id);
+	atlas_source_inspector->edit(atlas_source_proxy_object.ptr());
 }
 
 void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
@@ -599,7 +609,10 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	// Update visibility.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
+			tile_proxy_object.instantiate(this);
+			tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 			tile_proxy_object->edit(tile_set_atlas_source, selection);
+			tile_inspector->edit(tile_proxy_object.ptr());
 		}
 		tile_inspector->set_visible(!selection.is_empty());
 		tile_inspector_no_tile_selected_label->set_visible(selection.is_empty());
@@ -1491,9 +1504,6 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			Rect2i region = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 			region.size += Vector2i(1, 1);
 
-			undo_redo->create_action(TTR("Select tiles"));
-			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
-
 			// Determine if we clear, then add or remove to the selection.
 			bool add_to_selection = true;
 			if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
@@ -1524,8 +1534,6 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			_update_tile_inspector();
 			_update_tile_id_label();
 			_update_current_tile_data_editor();
-			undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
-			undo_redo->commit_action(false);
 		} break;
 		case DRAG_TYPE_MAY_POPUP_MENU: {
 			Vector2 mouse_local_pos = tile_atlas_control->get_local_mouse_position();
@@ -1537,12 +1545,8 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			// Set the selection if needed.
 			if (selection.size() <= 1) {
 				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
-					undo_redo->create_action(TTR("Select tiles"));
-					undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 					selection.clear();
 					selection.insert(selected);
-					undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
-					undo_redo->commit_action(false);
 					_update_tile_inspector();
 					_update_tile_id_label();
 					_update_current_tile_data_editor();
@@ -2126,13 +2130,13 @@ void TileSetAtlasSourceEditor::_tile_proxy_object_changed(const String &p_what) 
 	_update_atlas_view();
 }
 
-void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(const String &p_what) {
-	if (p_what == "texture" && !atlas_source_proxy_object->get("texture").is_null()) {
+void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(const String &p_what, const Ref<TileSetAtlasSourceProxyObject> &p_object) {
+	if (p_what == "texture" && !p_object->get("texture").is_null()) {
 		atlases_to_auto_create_tiles.clear();
-		atlases_to_auto_create_tiles.append(tile_set_atlas_source);
+		atlases_to_auto_create_tiles.append(p_object->get_edited());
 		confirm_auto_create_tiles->popup_centered();
 	} else if (p_what == "id") {
-		emit_signal(SNAME("source_id_changed"), atlas_source_proxy_object->get_id());
+		emit_signal(SNAME("source_id_changed"), p_object->get_id());
 	}
 }
 
@@ -2427,7 +2431,6 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			atlas_source_inspector->edit(atlas_source_proxy_object);
 			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "id", TTRC("The tile's unique identifier within this TileSet. Each tile stores its source ID, so changing one may make tiles invalid."));
 			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "name", TTRC("The human-readable name for the atlas. Use a descriptive name here for organizational purposes (such as \"terrain\", \"decoration\", etc.)."));
 			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "texture", TTRC("The image from which the tiles will be created."));
@@ -2436,7 +2439,6 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "texture_region_size", TTRC("The size of each tile on the atlas in pixels. In most cases, this should match the tile size defined in the TileMap property (although this is not strictly necessary)."));
 			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "use_texture_padding", TTRC("If checked, adds a 1-pixel transparent edge around each tile to prevent texture bleeding when filtering is enabled. It's recommended to leave this enabled unless you're running into rendering issues due to texture padding."));
 
-			tile_inspector->edit(tile_proxy_object);
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "atlas_coords", TTRC("The position of the tile's top-left corner in the atlas. The position and size must be within the atlas and can't overlap another tile.\nEach painted tile has associated atlas coords, so changing this property may cause your TileMaps to not display properly."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "size_in_atlas", TTRC("The unit size of the tile."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "animation_columns", TTRC("Number of columns for the animation grid. If number of columns is lower than number of frames, the animation will automatically adjust row count."));
@@ -2575,9 +2577,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	toolbox->add_child(tool_paint_button);
 
 	// Tile inspector.
-	tile_proxy_object = memnew(AtlasTileProxyObject(this));
-	tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
-
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_inspector->set_show_categories(false, true);
@@ -2632,9 +2631,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_vbox->add_child(tile_data_painting_editor_container);
 
 	// Atlas source inspector.
-	atlas_source_proxy_object = memnew(TileSetAtlasSourceProxyObject());
-	atlas_source_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed));
-
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
@@ -2769,9 +2765,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
-	memdelete(tile_proxy_object);
-	memdelete(atlas_source_proxy_object);
-
 	// Remove listener for old objects, so the TileSet doesn't
 	// try to call the destroyed TileSetAtlasSourceEditor.
 	if (tile_set.is_valid()) {
