@@ -36,11 +36,12 @@
 #include "core/templates/fixed_vector.h"
 #include "drivers/metal/metal_utils.h"
 
+#include <thirdparty/spirv-reflect/spirv_reflect.h>
+
 #include <Metal/Metal.hpp>
 #include <spirv.hpp>
 #include <spirv_msl.hpp>
 #include <spirv_parser.hpp>
-#include <thirdparty/spirv-reflect/spirv_reflect.h>
 
 void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 	if (compiler_props.is_valid()) {

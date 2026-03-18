@@ -33,6 +33,7 @@
 #include "core/io/zip_io.h"
 
 #include <thirdparty/misc/fastlz.h>
+
 #include <zstd.h>
 
 #ifdef BROTLI_ENABLED

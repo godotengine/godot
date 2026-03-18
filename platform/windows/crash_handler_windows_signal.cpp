@@ -40,9 +40,10 @@
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
+#include <thirdparty/libbacktrace/backtrace.h>
+
 #include <cxxabi.h>
 #include <psapi.h>
-#include <thirdparty/libbacktrace/backtrace.h>
 
 #include <csignal>
 #include <cstdlib>
