@@ -69,7 +69,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
 			floor->set_value(floor->get_value() - 1);
 			if (selection.active && input_action == INPUT_SELECT) {
-				selection.current[edit_axis]--;
+				selection.current[_get_edit_axis()]--;
 				_validate_selection();
 			}
 		} break;
@@ -77,7 +77,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_NEXT_LEVEL: {
 			floor->set_value(floor->get_value() + 1);
 			if (selection.active && input_action == INPUT_SELECT) {
-				selection.current[edit_axis]++;
+				selection.current[_get_edit_axis()]++;
 				_validate_selection();
 			}
 		} break;
@@ -90,17 +90,16 @@ void GridMapEditor::_menu_option(int p_option) {
 				int idx = options->get_popup()->get_item_index(MENU_OPTION_X_AXIS + i);
 				options->get_popup()->set_item_checked(idx, i == new_axis);
 			}
+			edit_axis_select = Vector3::Axis(new_axis);
 
-			if (edit_axis != new_axis) {
-				if (edit_axis == Vector3::AXIS_Y) {
-					floor->set_tooltip_text("Change Grid Plane");
-				} else if (new_axis == Vector3::AXIS_Y) {
-					floor->set_tooltip_text("Change Grid Floor");
-				}
-			}
-			edit_axis = Vector3::Axis(new_axis);
-			update_grid();
+			_update_edit_axis();
+		} break;
 
+		case MENU_OPTION_VIEWPORT_OVERRIDE: {
+			allow_viewport_override = !allow_viewport_override;
+			options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_VIEWPORT_OVERRIDE), allow_viewport_override);
+
+			_update_edit_axis();
 		} break;
 
 		case MENU_OPTION_CURSOR_ROTATE_X:
@@ -261,6 +260,7 @@ void GridMapEditor::_update_selection_transform() {
 
 	RenderingServer::get_singleton()->instance_set_transform(selection_instance, node->get_global_transform() * xf);
 
+	Vector3::Axis edit_axis = _get_edit_axis();
 	for (int i = 0; i < 3; i++) {
 		if (i != edit_axis || (edit_floor[edit_axis] < selection.begin[edit_axis]) || (edit_floor[edit_axis] > selection.end[edit_axis] + 1)) {
 			RenderingServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf_zero);
@@ -357,6 +357,67 @@ Array GridMapEditor::_get_selected_cells() const {
 	return ret;
 }
 
+void GridMapEditor::_update_edit_axis() {
+	viewport_axis = edit_axis_select;
+
+	if (allow_viewport_override) {
+		Node3DEditorViewport *editor_viewport = nullptr;
+		for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+			Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
+			if (last_viewport == viewport->get_viewport_node()) {
+				editor_viewport = viewport;
+				break;
+			}
+		}
+
+		if (editor_viewport) {
+			View3DController::ViewType view_type = editor_viewport->get_controller()->get_view_type();
+			switch (view_type) {
+				case View3DController::VIEW_TYPE_TOP:
+				case View3DController::VIEW_TYPE_BOTTOM: {
+					viewport_axis = _get_facing_axis(node->get_global_basis().orthonormalized(), Vector3::UP);
+				} break;
+
+				case View3DController::VIEW_TYPE_LEFT:
+				case View3DController::VIEW_TYPE_RIGHT: {
+					viewport_axis = _get_facing_axis(node->get_global_basis().orthonormalized(), Vector3::LEFT);
+				} break;
+
+				case View3DController::VIEW_TYPE_FRONT:
+				case View3DController::VIEW_TYPE_REAR: {
+					viewport_axis = _get_facing_axis(node->get_global_basis().orthonormalized(), Vector3::FORWARD);
+				} break;
+
+				default: {
+				}
+			}
+		}
+	}
+
+	floor->set_tooltip_text(_get_edit_axis() == Vector3::AXIS_Y ? TTRC("Change Grid Floor") : TTRC("Change Grid Plane"));
+	update_grid();
+}
+
+Vector3::Axis GridMapEditor::_get_facing_axis(const Basis &p_grid_basis, const Vector3 &p_direction) const {
+	float dir_yz = Math::abs(p_grid_basis.get_column(0).dot(p_direction));
+	float dir_xz = Math::abs(p_grid_basis.get_column(1).dot(p_direction));
+	float dir_xy = Math::abs(p_grid_basis.get_column(2).dot(p_direction));
+
+	if (dir_xy >= dir_xz && dir_xy >= dir_yz) {
+		return Vector3::AXIS_Z;
+	}
+	if (dir_xz >= dir_xy && dir_xz >= dir_yz) {
+		return Vector3::AXIS_Y;
+	}
+	return Vector3::AXIS_X;
+}
+
+void GridMapEditor::_view_state_changed(Node3DEditorViewport *p_viewport) {
+	if (node && last_viewport == p_viewport->get_viewport_node()) {
+		_update_edit_axis();
+	}
+}
+
 String GridMapEditor::_get_cursor_coordinates() const {
 	String text;
 	if (cursor_visible || !set_items.is_empty() || !clipboard_items.is_empty()) {
@@ -377,9 +438,6 @@ String GridMapEditor::_get_cursor_coordinates() const {
 }
 
 bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
-	if (!spatial_editor) {
-		return false;
-	}
 	if (input_action == INPUT_TRANSFORM) {
 		return false;
 	}
@@ -400,6 +458,8 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	Vector<Plane> planes = camera->get_frustum();
 	from = local_xform.xform(from);
 	normal = local_xform.basis.xform(normal).normalized();
+
+	Vector3::Axis edit_axis = _get_edit_axis();
 
 	Plane p;
 	p.normal[edit_axis] = 1.0;
@@ -814,6 +874,11 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 	// In this case, disable shortcuts to avoid conflicts with freelook navigation.
 	if (!node || Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
+	}
+
+	if (allow_viewport_override && last_viewport != p_camera->get_viewport()) {
+		last_viewport = p_camera->get_viewport();
+		_update_edit_axis();
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -1369,8 +1434,6 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_selected_plugin());
-
 	if (!node) {
 		set_process(false);
 		for (int i = 0; i < 3; i++) {
@@ -1389,6 +1452,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	update_palette();
 	_update_cursor_instance();
+	_update_edit_axis();
 
 	set_process(true);
 
@@ -1406,6 +1470,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 void GridMapEditor::update_grid() {
 	grid_xform.origin.x -= 1; // Force update in hackish way.
 
+	Vector3::Axis edit_axis = _get_edit_axis();
 	grid_ofs[edit_axis] = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
 	edit_grid_xform.origin = grid_ofs;
@@ -1513,6 +1578,12 @@ void GridMapEditor::_notification(int p_what) {
 
 			_update_selection_transform();
 			_update_paste_indicator();
+
+			last_viewport = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node();
+			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+				Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
+				viewport->get_controller()->connect("view_state_changed", callable_mp(this, &GridMapEditor::_view_state_changed).bind(viewport));
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1529,6 +1600,7 @@ void GridMapEditor::_notification(int p_what) {
 				grid_xform = xf;
 				_update_cursor_transform();
 				_update_selection_transform();
+				_update_edit_axis();
 			}
 		} break;
 
@@ -1637,7 +1709,7 @@ void GridMapEditor::_floor_changed(float p_value) {
 		return;
 	}
 
-	edit_floor[edit_axis] = p_value;
+	edit_floor[_get_edit_axis()] = p_value;
 	node->set_meta("_editor_floor_", Vector3(edit_floor[0], edit_floor[1], edit_floor[2]));
 	update_grid();
 	_update_selection_transform();
@@ -1900,6 +1972,8 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_y_axis"), MENU_OPTION_Y_AXIS);
 	options->get_popup()->add_radio_check_shortcut(ED_GET_SHORTCUT("grid_map/edit_z_axis"), MENU_OPTION_Z_AXIS);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_Y_AXIS), true);
+	options->get_popup()->add_check_item(TTRC("Allow Viewport Override"), MENU_OPTION_VIEWPORT_OVERRIDE);
+	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_VIEWPORT_OVERRIDE), true);
 	options->get_popup()->add_separator();
 	// TRANSLATORS: This is a toggle to select after pasting the new content.
 	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("grid_map/clear_rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION);
@@ -1953,7 +2027,6 @@ GridMapEditor::GridMapEditor() {
 	info_message->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
 
-	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
 	edit_floor[1] = -1;
 	edit_floor[2] = -1;
