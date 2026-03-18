@@ -137,6 +137,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #ifndef DISABLE_DEPRECATED
 		GDREGISTER_VIRTUAL_CLASS(OpenXRExtensionWrapperExtension);
 #endif // DISABLE_DEPRECATED
+		GDREGISTER_CLASS(OpenXRInteractionProfileMetadata);
 		GDREGISTER_ABSTRACT_CLASS(OpenXRFutureResult); // Declared abstract, should never be instantiated by a user (Q or should this be internal?)
 		GDREGISTER_CLASS(OpenXRFrameSynthesisExtension);
 		GDREGISTER_CLASS(OpenXRFutureExtension);
@@ -278,7 +279,6 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRAction);
 		GDREGISTER_CLASS(OpenXRActionSet);
 		GDREGISTER_CLASS(OpenXRActionMap);
-		GDREGISTER_CLASS(OpenXRInteractionProfileMetadata);
 		GDREGISTER_CLASS(OpenXRIPBinding);
 		GDREGISTER_CLASS(OpenXRInteractionProfile);
 
