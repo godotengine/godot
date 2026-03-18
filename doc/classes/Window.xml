@@ -761,9 +761,9 @@
 			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
 		</member>
 		<member name="session_id" type="String" setter="set_session_id" getter="get_session_id" default="&quot;&quot;">
-			The unique id that will be used to restore the properties of the window on restart.
+			The unique ID that will be used to restore the properties of the window on restart.
 			For this property to function it must be set before the window enters the scene tree.
-			If it has been set in time, the position, size, screen and mode will be restored.
+			If it has been set in time, the position, size, screen, and mode will be restored.
 			[b]Note:[/b] This must be [b]unique[/b] across all windows in the app and [b]consistent[/b] across restarts.
 		</member>
 		<member name="sharp_corners" type="bool" setter="set_flag" getter="get_flag" default="false">

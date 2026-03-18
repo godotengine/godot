@@ -2580,7 +2580,7 @@
 			<param index="0" name="session_id" type="String" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Set the key this window will use when restoring its properties after opening and closing this window.
+				Sets the key this window will use when restoring its properties after opening and closing this window.
 				This key must be a string that is [b]unique[/b] across the project and [b]consistent[/b] across restarts.
 			</description>
 		</method>
