@@ -30,12 +30,11 @@
 
 #include "image_compress_betsy.h"
 
-#include "betsy_bc1.h"
-
 #include "alpha_stitch.glsl.gen.h"
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "betsy_bc1.h"
 #include "rgb_to_rgba.glsl.gen.h"
 
 #include "core/config/project_settings.h"

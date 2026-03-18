@@ -29,9 +29,9 @@
 /**************************************************************************/
 
 #include "aim_modifier_3d.h"
-#include "scene/3d/look_at_modifier_3d.h"
 
 #include "core/object/class_db.h"
+#include "scene/3d/look_at_modifier_3d.h"
 
 bool AimModifier3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

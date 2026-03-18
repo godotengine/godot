@@ -30,32 +30,27 @@
 
 #include "register_types.h"
 
-#include "modules/modules_enabled.gen.h"
-
 #include "action_map/openxr_action.h"
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_haptic_feedback.h"
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_metadata.h"
-#include "core/object/class_db.h"
 #include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+
+#include "modules/modules_enabled.gen.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
+
 #include "scene/openxr_hand.h"
 #endif // DISABLE_DEPRECATED
-
-#include "scene/openxr_composition_layer.h"
-#include "scene/openxr_composition_layer_cylinder.h"
-#include "scene/openxr_composition_layer_equirect.h"
-#include "scene/openxr_composition_layer_quad.h"
-#ifdef MODULE_GLTF_ENABLED
-#include "scene/openxr_render_model.h"
-#include "scene/openxr_render_model_manager.h"
-#endif
-#include "scene/openxr_visibility_mask.h"
 
 #include "extensions/openxr_android_thread_settings_extension.h"
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -79,19 +74,28 @@
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
-#ifdef MODULE_GLTF_ENABLED
-#include "extensions/openxr_render_model_extension.h"
-#endif
 #include "extensions/openxr_user_presence_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
-#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
-
 #include "extensions/spatial_entities/openxr_spatial_anchor.h"
+#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
 #include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
 #include "extensions/spatial_entities/openxr_spatial_plane_tracking.h"
+
+#include "scene/openxr_composition_layer.h"
+#include "scene/openxr_composition_layer_cylinder.h"
+#include "scene/openxr_composition_layer_equirect.h"
+#include "scene/openxr_composition_layer_quad.h"
+#include "scene/openxr_visibility_mask.h"
+
+#ifdef MODULE_GLTF_ENABLED
+#include "extensions/openxr_render_model_extension.h"
+
+#include "scene/openxr_render_model.h"
+#include "scene/openxr_render_model_manager.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/openxr_editor_plugin.h"
@@ -101,16 +105,11 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
-
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-
 #include "editor/openxr_binding_modifier_editor.h"
 #include "editor/openxr_interaction_profile_editor.h"
-
+//
+#include "editor/editor_node.h"
 #endif
 
 static OpenXRAPI *openxr_api = nullptr;

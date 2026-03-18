@@ -36,6 +36,7 @@
 #include "sha256_digest.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+
 #include <memory>
 #include <optional>
 

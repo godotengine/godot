@@ -62,9 +62,10 @@
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"
 
+#include <Metal/Metal.hpp>
 #include <os/log.h>
 #include <os/signpost.h>
-#include <Metal/Metal.hpp>
+
 #include <algorithm>
 
 #ifndef MTLGPUAddress

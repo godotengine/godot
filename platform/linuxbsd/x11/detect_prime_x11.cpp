@@ -50,6 +50,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cstdlib>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091

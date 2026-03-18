@@ -59,7 +59,6 @@
 #else // !SOWRAP_ENABLED
 #include <X11/XKBlib.h>
 #include <X11/Xutil.h>
-
 #include <X11/extensions/Xext.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrender.h>

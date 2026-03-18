@@ -34,13 +34,9 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/templates/a_hash_map.h"
-#include "core/templates/pooled_list.h"
-
 #include "protocol/wayland.gen.h"
 
-#include "protocol/linux_dmabuf_v1.gen.h"
-#include "protocol/xdg_shell.gen.h"
+// Keep wayland protocol included first.
 
 #include "protocol/color_management.gen.h"
 #include "protocol/commit_timing_v1.gen.h"
@@ -49,6 +45,7 @@
 #include "protocol/fractional_scale.gen.h"
 #include "protocol/godot_embedding_compositor.gen.h"
 #include "protocol/idle_inhibit.gen.h"
+#include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/linux_drm_syncobj_v1.gen.h"
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
@@ -56,11 +53,11 @@
 #include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
-// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
 #include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
 #include "protocol/wayland-drm.gen.h"
+#include "protocol/wayland.gen.h"
 #include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_foreign_v1.gen.h"
@@ -69,17 +66,21 @@
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
 
+// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
+
+#include "core/io/dir_access.h"
+#include "core/os/thread.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/pooled_list.h"
+
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
-#include <poll.h>
-
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
 
 // TODO: Consider resizing the ancillary buffer dynamically.
 #define EMBED_ANCILLARY_BUF_SIZE 4096

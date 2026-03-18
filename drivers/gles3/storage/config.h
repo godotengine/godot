@@ -34,11 +34,8 @@
 
 #include "core/templates/hash_set.h"
 
-// FIXME: platform_gl.h includes windows.h via egl.h, which defines ConnectFlags.
-// This breaks include project_settings.h in config.cpp, so we include object.h first.
-#include "core/object/object.h" // IWYU pragma: keep.
-
-#include "platform_gl.h"
+#include <platform_gl.h>
+#undef ConnectFlags // Defined by windows.h through egl.h, breaks object.h.
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);

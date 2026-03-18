@@ -39,7 +39,6 @@
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <drivers/d3d12/godot_d3dx12.h>
-
 #include <wrl/client.h>
 
 #ifdef DEV_ENABLED

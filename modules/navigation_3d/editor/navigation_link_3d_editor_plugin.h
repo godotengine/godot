@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
-
 #include "navigation_link_3d_gizmo_plugin.h"
+
+#include "editor/plugins/editor_plugin.h"
 
 class NavigationLink3DEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationLink3DEditorPlugin, EditorPlugin);

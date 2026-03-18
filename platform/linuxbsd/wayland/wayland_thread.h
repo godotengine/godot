@@ -52,7 +52,8 @@
 // These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
-// These four protocol headers name wl_pointer method arguments as `pointer`,
+
+// These protocol headers name wl_pointer method arguments as `pointer`,
 // which is the same name as X11's pointer typedef. This trips some very
 // annoying shadowing warnings. A `#define` works around this issue.
 #define pointer wl_pointer
@@ -62,6 +63,7 @@
 #include "wayland/protocol/pointer_warp.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
+
 #include "wayland/protocol/color_management.gen.h"
 #include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
@@ -75,10 +77,11 @@
 #include "wayland/protocol/xdg_system_bell.gen.h"
 #include "wayland/protocol/xdg_toplevel_icon.gen.h"
 
-#include "wayland/protocol/godot_embedding_compositor.gen.h"
-
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
+
+// Custom internal protocol.
+#include "wayland/protocol/godot_embedding_compositor.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -88,12 +91,12 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "wayland_embedder.h"
+
 #include "core/input/input_event.h"
 #include "core/os/process_id.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server_enums.h"
-
-#include "wayland_embedder.h"
 
 class Image;
 
