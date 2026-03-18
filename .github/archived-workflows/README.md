@@ -24,4 +24,14 @@ git commit -m "Re-enable build workflow"
 - **Triggers:** Pushes and pull requests targeting the `master` and `develop` branches
 - **Status:** Archived to avoid resource-intensive builds during early development
 
+### `test_gaussian_splatting.yml.disabled`
+- **Purpose:** Legacy multi-tier Gaussian test suite using Docker and ad hoc compiled lanes
+- **Triggers:** Pushes, pull requests, and manual dispatch
+- **Status:** Archived after the fork cutover because it depended on Godot 4.3-era tooling and duplicated the canonical validation workflows
+
+### `test_phase4.yml.disabled`
+- **Purpose:** Legacy cross-platform compatibility suite
+- **Triggers:** Manual dispatch
+- **Status:** Archived after the fork cutover because GitHub was still treating it as an active workflow and it is no longer part of the supported CI surface
+
 Workflows can be revisited once the module reaches a functional state and CI resources are available.

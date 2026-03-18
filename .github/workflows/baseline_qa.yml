@@ -2,14 +2,14 @@ name: Baseline QA Automation
 
 on:
   push:
-    branches: [ main, develop, feature/*, phase* ]
+    branches: [ master, develop, feature/*, phase* ]
     paths:
       - 'modules/gaussian_splatting/**'
       - 'tests/**'
       - 'test_*.gd'
       - '.github/workflows/baseline_qa.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   schedule:
     # Nightly baseline refresh run at 03:30 UTC.
     - cron: '30 3 * * *'
@@ -425,7 +425,7 @@ jobs:
     name: Compiled Module QA
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    if: github.event_name == 'push' && (contains(github.ref, 'main') || contains(github.ref, 'develop'))
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
 
     steps:
     - name: Checkout repository
