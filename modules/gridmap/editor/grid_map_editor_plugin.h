@@ -36,16 +36,17 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+class BaseButton;
 class Button;
+class ButtonGroup;
 class ConfirmationDialog;
+class EditorZoomWidget;
 class FilterLineEdit;
 class HSlider;
 class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
-class ButtonGroup;
-class EditorZoomWidget;
-class BaseButton;
+class Node3DEditorViewport;
 class SpinBox;
 
 class GridMapEditor : public EditorDock {
@@ -120,9 +121,14 @@ class GridMapEditor : public EditorDock {
 
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
-	Vector3::Axis edit_axis;
+	Vector3::Axis edit_axis_select = Vector3::AXIS_Y;
 	int edit_floor[3];
+	int edit_main_vp = 0;
 	Vector3 grid_ofs;
+
+	bool allow_viewport_override = true;
+	Viewport *last_viewport = nullptr;
+	Vector3::Axis viewport_axis = edit_axis_select;
 
 	RID grid[3];
 	RID grid_instance[3];
@@ -193,6 +199,7 @@ class GridMapEditor : public EditorDock {
 		MENU_OPTION_X_AXIS,
 		MENU_OPTION_Y_AXIS,
 		MENU_OPTION_Z_AXIS,
+		MENU_OPTION_VIEWPORT_OVERRIDE,
 		MENU_OPTION_CURSOR_ROTATE_Y,
 		MENU_OPTION_CURSOR_ROTATE_X,
 		MENU_OPTION_CURSOR_ROTATE_Z,
@@ -208,8 +215,6 @@ class GridMapEditor : public EditorDock {
 		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
-
-	Node3DEditorPlugin *spatial_editor = nullptr;
 
 	struct AreaDisplay {
 		RID mesh;
@@ -249,6 +254,11 @@ class GridMapEditor : public EditorDock {
 	AABB _get_selection() const;
 	bool _has_selection() const;
 	Array _get_selected_cells() const;
+
+	void _update_edit_axis();
+	Vector3::Axis _get_edit_axis() const { return allow_viewport_override ? viewport_axis : edit_axis_select; }
+
+	void _view_state_changed(Node3DEditorViewport *p_viewport);
 
 	String _get_cursor_coordinates() const;
 

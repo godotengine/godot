@@ -518,6 +518,7 @@ public:
 	SubViewport *get_viewport_node() { return viewport; }
 	Camera3D *get_camera_3d() { return camera; } // return the default camera object.
 	Control *get_surface() { return surface; }
+	Ref<View3DController> get_controller() { return view_3d_controller; }
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index);
 	~Node3DEditorViewport();
