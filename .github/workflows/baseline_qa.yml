@@ -98,6 +98,14 @@ jobs:
         echo "GODOT_BINARY=$GODOT_BIN" >> "$GITHUB_ENV"
         echo "✅ Using module-enabled binary: $GODOT_BIN"
 
+    - name: Upload compiled editor artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: baseline-qa-linux-editor
+        path: bin
+        if-no-files-found: error
+        retention-days: 1
+
     - name: Verify module-enabled Godot installation
       run: |
         "$GODOT_BINARY" --version
@@ -424,6 +432,7 @@ jobs:
   compiled-module-qa:
     name: Compiled Module QA
     runs-on: ubuntu-latest
+    needs: baseline-qa
     timeout-minutes: 90
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
 
@@ -438,7 +447,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install build dependencies
+    - name: Install runtime dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -457,19 +466,24 @@ jobs:
           libudev-dev \
           xvfb
 
-    - name: Cache Godot build
-      uses: actions/cache@v3
+    - name: Download compiled editor artifact
+      uses: actions/download-artifact@v4
       with:
-        path: |
-          bin
-          .scons_cache
-        key: compiled-qa-${{ runner.os }}-${{ hashFiles('modules/gaussian_splatting/**/*.cpp', 'modules/gaussian_splatting/**/*.h') }}
-        restore-keys: |
-          compiled-qa-${{ runner.os }}-
+        name: baseline-qa-linux-editor
+        path: .
 
-    - name: Build Godot with module
+    - name: Resolve downloaded editor binary
+      id: godot_binary
       run: |
-        scons platform=linuxbsd tools=yes target=editor gs_native_arch=no -j2
+        GODOT_BIN="$(find bin -maxdepth 1 -type f -executable -name 'godot*linuxbsd*editor*' | head -n 1)"
+        if [ -z "$GODOT_BIN" ]; then
+          echo "❌ Could not locate downloaded Godot editor binary in bin"
+          ls -la bin
+          exit 1
+        fi
+        echo "path=$GODOT_BIN" >> "$GITHUB_OUTPUT"
+        echo "GODOT_BINARY=$GODOT_BIN" >> "$GITHUB_ENV"
+        echo "✅ Using downloaded binary: $GODOT_BIN"
 
     - name: Setup virtual display
       run: |
@@ -480,9 +494,9 @@ jobs:
     - name: Run QA tests with compiled module
       env:
         DISPLAY: :99
-        GODOT_BINARY: ./bin/godot.linuxbsd.editor.x86_64
+        GODOT_BINARY: ${{ steps.godot_binary.outputs.path }}
       run: |
-        python3 tests/ci/run_baseline_qa.py
+        python3 tests/ci/run_baseline_qa.py --godot "$GODOT_BINARY"
 
     - name: Upload compiled test results
       if: always()

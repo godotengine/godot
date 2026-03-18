@@ -89,9 +89,59 @@ jobs:
         run: |
           python tests/ci/run_module_tests.py --guard-only
 
+  windows-build:
+    name: Windows Editor Build (Self-Hosted)
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    needs: guards
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build Godot editor with tests
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+
+      - name: Upload built editor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-editor-bin
+          path: repo/bin
+          if-no-files-found: error
+          retention-days: 1
+
   gpu-evidence-requirement:
     name: GPU Evidence Requirement
-    runs-on: [self-hosted, Windows, X64, godotgs]
+    runs-on: ubuntu-latest
     needs: guards
     outputs:
       run_windows_gpu: ${{ steps.decide.outputs.run_windows_gpu }}
@@ -151,7 +201,8 @@ jobs:
   module-validation:
     name: Module Build + Runtime Harness (Windows Self-Hosted)
     runs-on: [self-hosted, Windows, X64, godotgs]
-    needs: guards
+    needs:
+      - windows-build
     timeout-minutes: 90
     defaults:
       run:
@@ -176,19 +227,11 @@ jobs:
         run: |
           python --version
 
-      - name: Set up MSVC build env
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install SCons
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install scons
-
-      - name: Build Godot editor with tests
-        shell: pwsh
-        run: |
-          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+      - name: Download built editor artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-editor-bin
+          path: repo
 
       - name: Resolve Godot binary
         id: godot_bin
@@ -211,6 +254,11 @@ jobs:
             throw "Could not find built Godot binary under bin."
           }
           "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Run Gaussian pipeline smoke tests
+        shell: pwsh
+        run: |
+          python tests/ci/run_baseline_qa.py --category pipeline --godot "${{ steps.godot_bin.outputs.path }}"
 
       - name: Run module tests
         env:
@@ -454,7 +502,7 @@ jobs:
     name: Windows GPU Production Evidence (Self-Hosted)
     runs-on: [self-hosted, Windows, X64, godotgs, gpu]
     needs:
-      - guards
+      - windows-build
       - gpu-evidence-requirement
     timeout-minutes: 120
     if: ${{ needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
@@ -481,19 +529,11 @@ jobs:
         run: |
           python --version
 
-      - name: Set up MSVC build env
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install SCons
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install scons
-
-      - name: Build Godot editor (Windows, tests enabled)
-        shell: pwsh
-        run: |
-          python -m SCons platform=windows target=editor dev_build=yes tests=yes -j12
+      - name: Download built editor artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-editor-bin
+          path: repo
 
       - name: Resolve Godot binary
         id: godot_bin

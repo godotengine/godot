@@ -1,14 +1,13 @@
 # GitHub Actions Workflows
 
-This directory contains 4 active workflows.
+This directory contains 3 active workflows.
 
 ## Active Workflows
 
 | Workflow | File | Purpose | Notes |
 | --- | --- | --- | --- |
-| Baseline QA Automation | `baseline_qa.yml` | Runs baseline QA and optional compiled-module QA. | Builds a module-enabled Linux editor; nightly schedule refreshes `qa-regression-baseline`. |
-| Gaussian Pipeline Validation | `gaussian_pipeline_validation.yml` | Builds module and runs pipeline smoke tests. | Broad push/PR coverage. |
-| Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, runtime validation, benchmark probes, and optional Windows GPU evidence lane. | Canonical production gate workflow. |
+| Baseline QA Automation | `baseline_qa.yml` | Runs baseline QA and optional compiled-module QA. | Builds the Linux editor once and reuses that artifact for push-only compiled QA. |
+| Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, pipeline smoke, runtime validation, benchmark probes, and optional Windows GPU evidence lane. | Owns the single Windows build for validation workflows. |
 | Gaussian Shader Validation | `gaussian_shader_validation.yml` | Validates shader compile matrix and host/shader contract checks. | Focused shader CI gate. |
 
 ## Manual Dispatch Inputs
@@ -42,3 +41,4 @@ Disabled workflows are stored in `../archived-workflows/`.
 
 - `test_gaussian_splatting.yml.disabled`
 - `test_phase4.yml.disabled`
+- `gaussian_pipeline_validation.yml.disabled`
