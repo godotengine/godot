@@ -15,8 +15,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Inserts an [InputEvent] into an action. This [InputEvent] will trigger the action.
-				For removing actions instead, see [method action_erase_event].
+				Inserts an [InputEvent] into an action. This [InputEvent] will trigger the action. To remove an action instead, use [method action_erase_event].
 			</description>
 		</method>
 		<method name="action_erase_event">
