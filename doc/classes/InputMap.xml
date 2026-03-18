@@ -31,7 +31,7 @@
 			<param index="0" name="action" type="StringName" />
 			<description>
 				Removes all events from an action. With no binds to an [InputEvent], this action will no longer be able to be triggered until a new [InputEvent] is added. See [method action_add_event].
-				For removing a single [InputEvent] from an action, see [method action_erase_event].
+				To remove a single [InputEvent] from an action, use [method action_erase_event].
 			</description>
 		</method>
 		<method name="action_get_deadzone">
