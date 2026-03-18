@@ -608,7 +608,7 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 				type_name = "Variant";
 				break;
 			case Variant::INT:
-				if ((pi.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && pi.class_name != StringName() && !String(pi.class_name).begins_with("res://")) {
+				if ((pi.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) && pi.class_name != StringName() && !String(pi.class_name).begins_with("res://")) {
 					type_name = pi.class_name;
 				} else {
 					type_name = "int";

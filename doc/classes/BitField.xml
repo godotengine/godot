@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BitField" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A GDScript-only type that represents an integer composed as a bitmask of other flags.
+	</brief_description>
+	<description>
+		A type to define enums as bitfield. Certain warnings that would normally be raised when exporting or returning enums will automatically get ignored. When exporting this type, it will automatically obtain [constant PROPERTY_HINT_FLAGS] and [constant PROPERTY_USAGE_CLASS_IS_BITFIELD], similar to [annotation @GDScript.@export_flags].
+		When passed around, this type behaves like a regular integer. This type supports being nested into other collection types.
+		[b]Note:[/b] This type cannot be inferred, it has to be specified.
+		[b]Note:[/b] Languages other than GDScript may define bitfields in their own way. For example, in C#, enums are marked with the [code][Flags][/code] attribute, which has the same effect.
+		Example:
+		[codeblock]
+		enum Direction {
+			LEFT = 1,
+			RIGHT = 2,
+			UP = 4,
+			DOWN = 8,
+		}
+
+		# Usage:
+		@export var direction: BitField[Direction]
+		@export var regular_enum: Direction # Raises ENUM_VARIABLE_WITHOUT_DEFAULT.
+
+		# Nesting is supported:
+		@export var array: Array[BitField[Direction]]
+		@export var dict: Dictionary[BitField[Direction], BitField[Direction]]
+
+		func return_regular_enum() -&gt; Direction:
+			return Direction.LEFT | Direction.RIGHT # Raises INT_AS_ENUM_WITHOUT_CAST and INT_AS_ENUM_WITHOUT_MATCH.
+
+		func return_bitfield() -&gt; BitField[Direction]:
+			return Direction.LEFT | Direction.RIGHT # No warnings.
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

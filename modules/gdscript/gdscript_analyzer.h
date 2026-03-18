@@ -68,6 +68,7 @@ class GDScriptAnalyzer {
 	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
 	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
+	GDScriptParser::DataType try_resolve_bitfield(GDScriptParser::TypeNode *p_type, GDScriptParser::DataType p_gdtype, const StringName &p_name, String &r_error);
 
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 

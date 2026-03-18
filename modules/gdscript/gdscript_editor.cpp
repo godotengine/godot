@@ -722,8 +722,7 @@ static String _trim_parent_class(const String &p_class, const String &p_base_cla
 
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, const String &p_base_class = "") {
 	String class_name = p_info.class_name;
-	bool is_enum = p_info.type == Variant::INT && p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM;
-	// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
+	bool is_enum = p_info.type == Variant::INT && p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD);
 
 	if ((p_info.type == Variant::OBJECT || is_enum) && !class_name.is_empty()) {
 		if (is_enum && CoreConstants::is_global_enum(p_info.class_name)) {
@@ -1056,6 +1055,12 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	if (!p_inherit_only) {
 		ScriptLanguage::CodeCompletionOption variant_option("Variant", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 		r_result.insert(variant_option.display, variant_option);
+	}
+
+	// BitField meta-type
+	if (!p_inherit_only) {
+		ScriptLanguage::CodeCompletionOption bitfield_option("BitField", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+		r_result.insert(bitfield_option.display, bitfield_option);
 	}
 
 	LocalVector<StringName> native_types;
@@ -4285,6 +4290,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				return ERR_CANT_RESOLVE;
 			} break;
+			case GDScriptParser::DataType::BITFIELD:
 			case GDScriptParser::DataType::RESOLVING:
 			case GDScriptParser::DataType::UNRESOLVED: {
 				return ERR_CANT_RESOLVE;

@@ -808,6 +808,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		class_names[StringName(E)] = basetype_color;
 	}
 	class_names[SNAME("Variant")] = basetype_color;
+	class_names[SNAME("BitField")] = basetype_color;
 	class_names[SNAME("void")] = basetype_color;
 	// `get_core_type_words()` doesn't return primitive types.
 	class_names[SNAME("bool")] = basetype_color;

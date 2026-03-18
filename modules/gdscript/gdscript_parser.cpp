@@ -3875,7 +3875,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	type->type_chain.push_back(type_element);
 
 	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
-		// Typed collection (like Array[int], Dictionary[String, int]).
+		// Typed collection (like Array[int], Dictionary[String, int], BitField[EnumName]).
 		bool first_pass = true;
 		do {
 			TypeNode *container_type = parse_type(false); // Don't allow void for element type.
@@ -3884,7 +3884,9 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 				complete_extents(type);
 				type = nullptr;
 				break;
-			} else if (container_type->container_types.size() > 0) {
+			}
+			// BitField is not a true nested type, so we can allow nesting for it.
+			if (container_type->container_types.size() > 0 && container_type->type_chain[0]->name != SNAME("BitField")) {
 				push_error("Nested typed collections are not supported.");
 			} else {
 				type->container_types.append(container_type);
@@ -4738,6 +4740,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
 		is_array = true;
 		export_type = export_type.get_container_element_type(0);
+		variable->get_datatype().set_container_element_type(0, export_type);
 	} else if (export_type.is_typed_container_type()) {
 		is_array = true;
 		export_type = export_type.get_typed_container_type();
@@ -4831,6 +4834,25 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 				}
 			} break;
+			case GDScriptParser::DataType::BITFIELD: {
+				String enum_hint_string;
+				bool first = true;
+				for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+					if (first) {
+						first = false;
+					} else {
+						enum_hint_string += ",";
+					}
+					enum_hint_string += E.key.operator String().capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E.value).xml_escape();
+				}
+
+				variable->export_info.type = Variant::INT;
+				variable->export_info.hint = PROPERTY_HINT_FLAGS;
+				variable->export_info.hint_string = enum_hint_string;
+				variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
+			} break;
 			case GDScriptParser::DataType::VARIANT: {
 				if (export_type.is_variant()) {
 					variable->export_info.type = Variant::NIL;
@@ -4907,6 +4929,25 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 					}
+				} break;
+				case GDScriptParser::DataType::BITFIELD: {
+					String enum_hint_string;
+					bool first = true;
+					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+						if (first) {
+							first = false;
+						} else {
+							enum_hint_string += ",";
+						}
+						enum_hint_string += E.key.operator String().capitalize().xml_escape();
+						enum_hint_string += ":";
+						enum_hint_string += String::num_int64(E.value).xml_escape();
+					}
+
+					variable->export_info.type = Variant::INT;
+					variable->export_info.hint = PROPERTY_HINT_FLAGS;
+					variable->export_info.hint_string = enum_hint_string;
+					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_BITFIELD;
 				} break;
 				default:
 					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
@@ -5356,6 +5397,7 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return native_type.operator String();
 		}
+		case BITFIELD:
 		case ENUM: {
 			// native_type contains either the native class defining the enum
 			// or the fully qualified class name of the script defining the enum
@@ -5410,6 +5452,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 						}
 						break;
 					case ENUM:
+					case BITFIELD:
 						result.hint = PROPERTY_HINT_ARRAY_TYPE;
 						result.hint_string = String(elem_type.native_type).replace("::", ".");
 						break;
@@ -5448,6 +5491,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 						}
 						break;
 					case ENUM:
+					case BITFIELD:
 						key_hint = String(key_type.native_type).replace("::", ".");
 						break;
 					default:
@@ -5476,6 +5520,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 						}
 						break;
 					case ENUM:
+					case BITFIELD:
 						value_hint = String(value_type.native_type).replace("::", ".");
 						break;
 					default:
@@ -5522,6 +5567,11 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 				result.class_name = String(native_type).replace("::", ".");
 			}
+			break;
+		case BITFIELD:
+			result.type = Variant::INT;
+			result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+			result.class_name = String(native_type).replace("::", ".");
 			break;
 		case VARIANT:
 		case RESOLVING:

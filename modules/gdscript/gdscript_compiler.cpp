@@ -184,6 +184,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 		} break;
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::BITFIELD:
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::BUILTIN;
 				result.builtin_type = Variant::DICTIONARY;

@@ -759,6 +759,14 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		inheriting[""].insert("Variant");
 	}
 
+	// Add a dummy BitField entry.
+	{
+		// This allows us to document the concept of BitField even though it's technically not a real type in GDScript.
+		class_list["BitField"] = DocData::ClassDoc();
+		class_list["BitField"].name = "BitField";
+		inheriting[""].insert("BitField");
+	}
+
 	// Add Variant data types.
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (i == Variant::NIL) {

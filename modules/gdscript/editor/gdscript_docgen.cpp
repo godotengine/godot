@@ -132,6 +132,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			r_type = _get_class_name(*p_gdtype.class_type);
 			return;
 		case GDType::ENUM:
+		case GDType::BITFIELD:
 			if (p_gdtype.is_meta_type) {
 				r_type = "Dictionary";
 				return;
@@ -390,6 +391,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.value = _docvalue_from_variant(m_const->initializer->reduced_value);
 				const_doc.is_value_valid = true;
 				_doctype_from_gdtype(m_const->get_datatype(), const_doc.type, const_doc.enumeration);
+				const_doc.is_bitfield = m_const->get_datatype().kind == GDType::BITFIELD;
 				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
 				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
@@ -411,6 +413,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
 				method_doc.experimental_message = m_func->doc_data.experimental_message;
+				method_doc.return_is_bitfield = m_func->get_datatype().kind == GDType::BITFIELD;
 
 				if (m_func->is_vararg()) {
 					if (!method_doc.qualifiers.is_empty()) {
@@ -448,6 +451,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				for (const GDP::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
+					arg_doc.is_bitfield = p->get_datatype().kind == GDType::BITFIELD;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
 						arg_doc.default_value = docvalue_from_expression(p->initializer);
@@ -475,6 +479,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				for (const GDP::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
+					arg_doc.is_bitfield = p->get_datatype().kind == GDType::BITFIELD;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					signal_doc.arguments.push_back(arg_doc);
 				}
@@ -495,6 +500,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
 				prop_doc.experimental_message = m_var->doc_data.experimental_message;
+				prop_doc.is_bitfield = m_var->get_datatype().kind == GDType::BITFIELD;
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {

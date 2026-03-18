@@ -457,12 +457,10 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 			link_t = link_t.get_slice(", ", 1);
 			display_t = _contextualize_class_specifier(display_t.get_slice(", ", 1), p_class);
 		} else if (is_bitfield) {
-			p_rt->push_color(Color(type_color, 0.5));
-			p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
+			p_rt->push_meta("#BitField", RichTextLabel::META_UNDERLINE_ON_HOVER); // class
 			p_rt->add_text("BitField");
-			p_rt->pop(); // hint
+			p_rt->pop(); // meta
 			p_rt->add_text("[");
-			p_rt->pop(); // color
 		}
 
 		if (is_enum_type) {

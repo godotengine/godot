@@ -763,23 +763,52 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result.builtin_type = builtin_type;
 
 			if (builtin_type == Variant::ARRAY) {
-				GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
+				GDScriptParser::TypeNode *type_node = p_type->get_container_type_or_null(0);
+				GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(type_node));
 				if (container_type.kind != GDScriptParser::DataType::VARIANT) {
 					container_type.is_constant = false;
+					String error;
+					container_type = try_resolve_bitfield(type_node, container_type, type_node->type_chain[0]->name, error);
+					if (!error.is_empty()) {
+						push_error(error, type_node->type_chain[0]);
+						return bad_type;
+					}
 					result.set_container_element_type(0, container_type);
 				}
 			}
 			if (builtin_type == Variant::DICTIONARY) {
-				GDScriptParser::DataType key_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
+				GDScriptParser::TypeNode *type_node = p_type->get_container_type_or_null(0);
+				GDScriptParser::DataType key_type = type_from_metatype(resolve_datatype(type_node));
 				if (key_type.kind != GDScriptParser::DataType::VARIANT) {
 					key_type.is_constant = false;
+					String error;
+					key_type = try_resolve_bitfield(type_node, key_type, type_node->type_chain[0]->name, error);
+					if (!error.is_empty()) {
+						push_error(error, type_node->type_chain[0]);
+						return bad_type;
+					}
 					result.set_container_element_type(0, key_type);
 				}
-				GDScriptParser::DataType value_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(1)));
+
+				type_node = p_type->get_container_type_or_null(1);
+				GDScriptParser::DataType value_type = type_from_metatype(resolve_datatype(type_node));
 				if (value_type.kind != GDScriptParser::DataType::VARIANT) {
 					value_type.is_constant = false;
+					String error;
+					value_type = try_resolve_bitfield(type_node, value_type, type_node->type_chain[0]->name, error);
+					if (!error.is_empty()) {
+						push_error(error, type_node->type_chain[0]);
+						return bad_type;
+					}
 					result.set_container_element_type(1, value_type);
 				}
+			}
+		} else if (first == SNAME("BitField")) {
+			String error;
+			result = try_resolve_bitfield(p_type, result, first, error);
+			if (!error.is_empty()) {
+				push_error(error, p_type->type_chain[0]);
+				return bad_type;
 			}
 		} else if (class_exists(first)) {
 			// Native engine classes.
@@ -949,14 +978,44 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				push_error(R"(Typed dictionaries require exactly two collection element types.)", p_type);
 				return bad_type;
 			}
+		} else if (result.kind == GDScriptParser::DataType::BITFIELD) {
+			if (p_type->container_types.size() != 1) {
+				push_error(R"(BitField requires exactly one collection element type.)", p_type);
+				return bad_type;
+			}
 		} else {
-			push_error(R"(Only arrays and dictionaries can specify collection element types.)", p_type);
+			push_error(R"(Only arrays, dictionaries, and bitfields can specify collection element types.)", p_type);
 			return bad_type;
 		}
 	}
 
 	p_type->set_datatype(result);
 	return result;
+}
+
+GDScriptParser::DataType GDScriptAnalyzer::try_resolve_bitfield(GDScriptParser::TypeNode *p_type, GDScriptParser::DataType p_gdtype, const StringName &p_name, String &r_error) {
+	if (p_name == SNAME("BitField")) {
+		p_gdtype.kind = GDScriptParser::DataType::BITFIELD;
+		p_gdtype.builtin_type = Variant::INT;
+
+		GDScriptParser::TypeNode *type = p_type->get_container_type_or_null(0);
+		if (type) {
+			GDScriptParser::DataType container_type = resolve_datatype(type);
+			if (container_type.kind == GDScriptParser::DataType::ENUM) {
+				container_type.is_constant = false;
+				p_gdtype.enum_values = container_type.enum_values;
+				p_gdtype.enum_type = container_type.enum_type;
+				p_gdtype.native_type = container_type.native_type;
+				p_gdtype.set_container_element_type(0, container_type);
+			} else {
+				r_error = R"(BitField must contain an enum as its element.)";
+			}
+		} else {
+			r_error = R"(BitField must have one collection element type.)";
+		}
+	}
+
+	return p_gdtype;
 }
 
 void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source) {
@@ -5884,7 +5943,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(1, value_elem_type);
 		} else if (p_property.type == Variant::INT) {
 			// Check if it's enum.
-			if ((p_property.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && p_property.class_name != StringName()) {
+			if ((p_property.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) && p_property.class_name != StringName()) {
 				if (CoreConstants::is_global_enum(p_property.class_name)) {
 					result = make_global_enum_type(p_property.class_name, StringName(), false);
 					result.is_constant = false;
@@ -5895,8 +5954,10 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 						result.is_constant = false;
 					}
 				}
+				if (p_property.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD) {
+					result.kind = GDScriptParser::DataType::BITFIELD;
+				}
 			}
-			// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
 		}
 	}
 	return result;
@@ -6361,6 +6422,18 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		return false;
 	}
 
+	if (p_target.kind == GDScriptParser::DataType::BITFIELD) {
+		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
+			return true;
+		}
+		if (p_source.kind == GDScriptParser::DataType::BITFIELD || p_source.kind == GDScriptParser::DataType::ENUM) {
+			if (p_source.native_type == p_target.native_type) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// From here on the target type is an object, so we have to test polymorphism.
 
 	if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::NIL) {
@@ -6415,6 +6488,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::BITFIELD:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
@@ -6452,6 +6526,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::BITFIELD:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
