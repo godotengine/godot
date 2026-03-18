@@ -396,7 +396,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+			for (const KeyValue<StringName, const MethodBind *> &F : t->gdtype->get_method_map(true)) {
 				String name = F.key.operator String();
 
 				ERR_CONTINUE(name.is_empty());
@@ -411,7 +411,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				MethodBind *mb = t->method_map[F];
+				const MethodBind *mb = t->gdtype->get_method_map(true)[F];
 				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
@@ -892,7 +892,7 @@ void ClassDB::_add_class(GDType &p_class, const GDType *p_inherits) {
 	}
 }
 
-static MethodInfo info_from_bind(MethodBind *p_method) {
+static MethodInfo info_from_bind(const MethodBind *p_method) {
 	MethodInfo minfo;
 	minfo.name = p_method->get_name();
 	minfo.id = p_method->get_method_id();
@@ -917,52 +917,40 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
+	for (const KeyValue<StringName, const MethodBind *> &kv : type->gdtype->get_method_map(p_no_inheritance)) {
 		if (type->disabled) {
-			if (p_no_inheritance) {
-				break;
-			}
-
-			type = type->inherits_ptr;
 			continue;
 		}
+#ifdef DEBUG_ENABLED
+		if (p_exclude_from_properties && type->methods_in_properties.has(kv.key)) {
+			continue;
+		}
+#endif
+
+		p_methods->push_back(info_from_bind(kv.value));
+	}
 
 #ifdef DEBUG_ENABLED
-		for (const MethodInfo &E : type->virtual_methods) {
-			p_methods->push_back(E);
-		}
-
-		for (const StringName &E : type->method_order) {
-			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
-				continue;
-			}
-
-			MethodBind *method = type->method_map.get(E);
-			MethodInfo minfo = info_from_bind(method);
-
-			p_methods->push_back(minfo);
-		}
-#else
-		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
-			MethodBind *m = E.value;
-			MethodInfo minfo = info_from_bind(m);
-			p_methods->push_back(minfo);
-		}
-#endif // DEBUG_ENABLED
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
-	}
+	ClassDB::get_virtual_methods(p_class, p_methods, p_no_inheritance);
+#endif
 }
 
 void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	for (const KeyValue<StringName, const MethodBind *> &kv : type->gdtype->get_method_map(p_no_inheritance)) {
+		if (type->disabled) {
+			continue;
+		}
+#ifdef DEBUG_ENABLED
+		if (p_exclude_from_properties && type->methods_in_properties.has(kv.key)) {
+			continue;
+		}
+#endif
+
+		p_methods->push_back(Pair(info_from_bind(kv.value), kv.value->get_hash()));
+	}
 
 	while (type) {
 		if (type->disabled) {
@@ -973,41 +961,18 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			type = type->inherits_ptr;
 			continue;
 		}
-
 #ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
 			Pair<MethodInfo, uint32_t> pair(E, E.get_compatibility_hash());
 			p_methods->push_back(pair);
 		}
-
-		for (const StringName &E : type->method_order) {
-			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
-				continue;
-			}
-
-			MethodBind *method = type->method_map.get(E);
-			MethodInfo minfo = info_from_bind(method);
-
-			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
-			p_methods->push_back(pair);
-		}
-#else
-		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
-			MethodBind *method = E.value;
-			MethodInfo minfo = info_from_bind(method);
-
-			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
-			p_methods->push_back(pair);
-		}
-#endif // DEBUG_ENABLED
-
+#endif
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
 			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
 
-				Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
-				p_methods->push_back(pair);
+				p_methods->push_back(Pair<MethodInfo, uint32_t>(minfo, method->get_hash()));
 			}
 		}
 
@@ -1035,8 +1000,8 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		}
 
 #ifdef DEBUG_ENABLED
-		MethodBind **method = type->method_map.getptr(p_method);
-		if (method && *method) {
+		const MethodBind *const *method = type->gdtype->get_method_map(true).getptr(p_method);
+		if (method) {
 			if (r_info != nullptr) {
 				MethodInfo minfo = info_from_bind(*method);
 				*r_info = minfo;
@@ -1049,9 +1014,9 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			return true;
 		}
 #else
-		if (type->method_map.has(p_method)) {
+		if (type->gdtype->get_method_map(true).has(p_method)) {
 			if (r_info) {
-				MethodBind *m = type->method_map[p_method];
+				const MethodBind *m = type->gdtype->get_method_map(true)[p_method];
 				MethodInfo minfo = info_from_bind(m);
 				*r_info = minfo;
 			}
@@ -1069,19 +1034,16 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 	return false;
 }
 
-MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_name) {
+const MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_name) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
-		MethodBind **method = type->method_map.getptr(p_name);
-		if (method && *method) {
-			return *method;
-		}
-		type = type->inherits_ptr;
+	if (!type) {
+		return nullptr;
 	}
-	return nullptr;
+
+	const MethodBind *const *method = type->gdtype->get_method_map(false).getptr(p_name);
+	return method ? *method : nullptr;
 }
 
 Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
@@ -1103,14 +1065,14 @@ Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_cl
 	return Vector<uint32_t>();
 }
 
-MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists, bool *r_is_deprecated) {
+const MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists, bool *r_is_deprecated) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		MethodBind **method = type->method_map.getptr(p_name);
-		if (method && *method) {
+		const MethodBind *const *method = type->gdtype->get_method_map(true).getptr(p_name);
+		if (method) {
 			if (r_method_exists) {
 				*r_method_exists = true;
 			}
@@ -1367,7 +1329,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 	ERR_FAIL_NULL(type);
 
-	MethodBind *mb_set = nullptr;
+	const MethodBind *mb_set = nullptr;
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_ENABLED
@@ -1379,7 +1341,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 #endif // DEBUG_ENABLED
 	}
 
-	MethodBind *mb_get = nullptr;
+	const MethodBind *mb_get = nullptr;
 	if (p_getter) {
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_ENABLED
@@ -1592,7 +1554,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		if (check->method_map.has(p_property)) { //methods count
+		if (check->gdtype->get_method_map(true).has(p_property)) { //methods count
 			r_value = Callable(p_object, p_property);
 			return true;
 		}
@@ -1708,50 +1670,36 @@ bool ClassDB::has_property(const StringName &p_class, const StringName &p_proper
 void ClassDB::set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	ERR_FAIL_NULL(check);
-	ERR_FAIL_COND(!check->method_map.has(p_method));
-	check->method_map[p_method]->set_hint_flags(p_flags);
+	ERR_FAIL_NULL(type);
+	type->gdtype->set_method_flags(p_method, p_flags);
 }
 
 bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) {
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->method_map.has(p_method)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
-
-	return false;
+	return type->gdtype->get_method_map(p_no_inheritance).has(p_method);
 }
 
 int ClassDB::get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
-		MethodBind **method = type->method_map.getptr(p_method);
-		if (method && *method) {
+	if (type) {
+		const MethodBind *const *method = type->gdtype->get_method_map(p_no_inheritance).getptr(p_method);
+		if (method) {
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
 			return (*method)->get_argument_count();
 		}
-		if (p_no_inheritance) {
-			break;
-		}
-		type = type->inherits_ptr;
 	}
 
 	if (r_is_valid) {
 		*r_is_valid = false;
 	}
+
 	return 0;
 }
 
@@ -1785,17 +1733,7 @@ void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_metho
 		return;
 	}
 
-	if (type->method_map.has(method_name)) {
-		// overloading not supported
-		memdelete(p_method);
-		ERR_FAIL_MSG(vformat("Method already bound '%s::%s'.", p_class, method_name));
-	}
-
-#ifdef DEBUG_ENABLED
-	type->method_order.push_back(method_name);
-#endif // DEBUG_ENABLED
-
-	type->method_map[method_name] = p_method;
+	type->gdtype->bind_method(p_method);
 }
 
 MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility) {
@@ -1816,19 +1754,7 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 		return bind;
 	}
 
-	if (type->method_map.has(p_name)) {
-		memdelete(bind);
-		// Overloading not supported
-		ERR_FAIL_V_MSG(nullptr, vformat("Method already bound: '%s::%s'.", instance_type, p_name));
-	}
-	type->method_map[p_name] = bind;
-#ifdef DEBUG_ENABLED
-	// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
-	//bind->set_return_type("Variant");
-	type->method_order.push_back(p_name);
-#endif // DEBUG_ENABLED
-
-	return bind;
+	return type->gdtype->bind_method(bind) ? bind : nullptr;
 }
 
 #ifdef DEBUG_ENABLED
@@ -1856,12 +1782,6 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 		ERR_FAIL_V_MSG(nullptr, vformat("Couldn't bind method '%s' for instance '%s'.", mdname, instance_type));
 	}
 
-	if (!p_compatibility && type->method_map.has(mdname)) {
-		memdelete(p_bind);
-		// overloading not supported
-		ERR_FAIL_V_MSG(nullptr, vformat("Method already bound '%s::%s'.", instance_type, mdname));
-	}
-
 #ifdef DEBUG_ENABLED
 
 	if (method_name.args.size() > p_bind->get_argument_count()) {
@@ -1875,16 +1795,14 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	}
 
 	p_bind->set_argument_names(method_name.args);
-
-	if (!p_compatibility) {
-		type->method_order.push_back(mdname);
-	}
 #endif // DEBUG_ENABLED
 
 	if (p_compatibility) {
 		_bind_compatibility(type, p_bind);
 	} else {
-		type->method_map[mdname] = p_bind;
+		if (!type->gdtype->bind_method(p_bind)) {
+			return nullptr;
+		}
 	}
 
 	Vector<Variant> defvals;
@@ -2235,9 +2153,7 @@ void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_
 	ClassInfo *c = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(c, vformat("Class '%s' does not exist.", String(p_class)));
 	if (p_free_method_binds) {
-		for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
-			memdelete(F.value);
-		}
+		c->gdtype->free_method_binds();
 	}
 	classes.erase(p_class);
 	default_values_cached.erase(p_class);
@@ -2287,9 +2203,6 @@ void ClassDB::cleanup() {
 	for (KeyValue<StringName, ClassInfo> &E : classes) {
 		ClassInfo &ti = E.value;
 
-		for (KeyValue<StringName, MethodBind *> &F : ti.method_map) {
-			memdelete(F.value);
-		}
 		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
 			for (uint32_t i = 0; i < F.value.size(); i++) {
 				memdelete(F.value[i]);

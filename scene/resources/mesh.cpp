@@ -828,6 +828,16 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Mesh::create_placeholder);
 
+	// TODO Note: These used to be bound in ArrayMesh::_bind_methods, indicating they
+	//            were originally meant to be exposed to ArrayMesh instead of Mesh.
+	//            This should be investigated, to either move the bindings or remove this comment.
+	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &Mesh::create_outline);
+	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Mesh::generate_triangle_mesh);
+#ifndef PHYSICS_3D_DISABLED
+	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &Mesh::create_trimesh_shape);
+	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &Mesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
+#endif
+
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINE_STRIP);
@@ -2314,16 +2324,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
-#ifndef PHYSICS_3D_DISABLED
-	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
-	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
-#endif // PHYSICS_3D_DISABLED
-	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), StringName("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), StringName("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &ArrayMesh::get_custom_aabb);

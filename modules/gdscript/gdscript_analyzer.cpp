@@ -4321,7 +4321,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		MethodInfo method_info;
 		if (ClassDB::has_property(native, name)) {
 			StringName getter_name = ClassDB::get_property_getter(native, name);
-			MethodBind *getter = ClassDB::get_method(native, getter_name);
+			const MethodBind *getter = ClassDB::get_method(native, getter_name);
 			if (getter != nullptr) {
 				bool has_setter = ClassDB::get_property_setter(native, name) != StringName();
 				p_identifier->set_datatype(type_from_property(getter->get_return_info(), false, !has_setter));
@@ -6055,7 +6055,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			r_method_flags.set_flag(METHOD_FLAG_STATIC);
 		}
 #ifdef DEBUG_ENABLED
-		MethodBind *native_method = ClassDB::get_method(base_native, function_name);
+		const MethodBind *native_method = ClassDB::get_method(base_native, function_name);
 		if (native_method && r_native_class) {
 			*r_native_class = native_method->get_instance_class();
 		}

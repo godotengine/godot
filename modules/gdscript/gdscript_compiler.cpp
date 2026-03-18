@@ -642,7 +642,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							// Native method, use faster path.
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::SELF;
-							MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
+							const MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
 
 							if (_can_use_validate_call(method, arguments)) {
 								// Exact arguments, use validated call.
@@ -677,7 +677,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->source == GDScriptParser::IdentifierNode::NATIVE_CLASS && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
 								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
-								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
+								const MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
 								if (_can_use_validate_call(method, arguments)) {
 									// Exact arguments, use validated call.
 									gen->write_call_native_static_validated(result, method, arguments);
@@ -701,7 +701,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
 									if (GDScriptAnalyzer::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
-										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
+										const MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_validate_call(method, arguments)) {
 											// Exact arguments, use validated call.
 											gen->write_call_method_bind_validated(result, base, method, arguments);
@@ -749,7 +749,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(get_node->get_datatype(), codegen.script));
 
-			MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
+			const MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
 			gen->write_call_method_bind_validated(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
 
 			return result;

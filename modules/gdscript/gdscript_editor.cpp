@@ -2670,7 +2670,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 				if (ClassDB::get_property_info(class_name, p_identifier, &prop)) {
 					StringName getter = ClassDB::get_property_getter(class_name, p_identifier);
 					if (getter != StringName()) {
-						MethodBind *g = ClassDB::get_method(class_name, getter);
+						const MethodBind *g = ClassDB::get_method(class_name, getter);
 						if (g) {
 							r_type = _type_from_property(g->get_return_info());
 							return true;
@@ -2854,7 +2854,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				if (!GDScriptAnalyzer::class_exists(base_type.native_type)) {
 					return false;
 				}
-				MethodBind *mb = ClassDB::get_method(base_type.native_type, p_method);
+				const MethodBind *mb = ClassDB::get_method(base_type.native_type, p_method);
 				if (mb) {
 					r_type = _type_from_property(mb->get_return_info());
 					return true;

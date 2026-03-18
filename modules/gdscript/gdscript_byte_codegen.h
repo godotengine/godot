@@ -120,7 +120,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<Variant::ValidatedConstructor, int> constructors_map;
 	RBMap<Variant::ValidatedUtilityFunction, int> utilities_map;
 	RBMap<GDScriptUtilityFunctions::FunctionPtr, int> gds_utilities_map;
-	RBMap<MethodBind *, int> method_bind_map;
+	RBMap<const MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
 #ifdef DEBUG_ENABLED
@@ -335,7 +335,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	int get_method_bind_pos(MethodBind *p_method) {
+	int get_method_bind_pos(const MethodBind *p_method) {
 		if (method_bind_map.has(p_method)) {
 			return method_bind_map[p_method];
 		}
@@ -443,7 +443,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_gds_utility_pos(p_gds_utility));
 	}
 
-	void append(MethodBind *p_method) {
+	void append(const MethodBind *p_method) {
 		opcodes.push_back(get_method_bind_pos(p_method));
 	}
 
@@ -522,9 +522,9 @@ public:
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_native_static_validated(const Address &p_target, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_native_static_validated(const Address &p_target, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
