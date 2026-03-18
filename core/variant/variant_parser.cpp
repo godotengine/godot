@@ -284,6 +284,8 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						r_err_str = "Unterminated string";
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
+					} else if (ch == '\r') {
+						continue;
 					} else if (ch == '"') {
 						break;
 					} else if (ch == '\\') {
