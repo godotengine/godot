@@ -509,6 +509,9 @@ bool Polygon2D::get_invert() const {
 }
 
 void Polygon2D::set_antialiased(bool p_antialiased) {
+	if (antialiased == p_antialiased) {
+		return;
+	}
 	antialiased = p_antialiased;
 	queue_redraw();
 }

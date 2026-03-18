@@ -265,6 +265,9 @@ int Line2D::get_round_precision() const {
 }
 
 void Line2D::set_antialiased(bool p_antialiased) {
+	if (_antialiased == p_antialiased) {
+		return;
+	}
 	_antialiased = p_antialiased;
 	queue_redraw();
 }
