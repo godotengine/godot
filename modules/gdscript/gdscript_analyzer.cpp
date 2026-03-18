@@ -6158,6 +6158,15 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		} else if (GDScriptParser::get_builtin_type(name) < Variant::VARIANT_MAX) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
 			return;
+		} else if (name == "PI" || name == "TAU" || name == "INF" || name == "NAN") {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global constant");
+			return;
+		} else if (CoreConstants::is_global_constant(name)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global constant");
+			return;
+		} else if (CoreConstants::is_global_enum(name)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global enum");
+			return;
 		}
 	}
 
