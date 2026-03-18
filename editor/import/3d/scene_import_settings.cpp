@@ -1091,6 +1091,9 @@ void SceneImportSettingsDialog::_stop_current_animation() {
 }
 
 void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name) {
+	animation_start_label->hide();
+	animation_length_label->hide();
+
 	if (p_animation_name.is_empty()) {
 		animation_preview->hide();
 
@@ -1109,9 +1112,15 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
+			const AnimationData &animation_data = animation_map[p_animation_name];
+			HashMap<StringName, Variant> settings(animation_data.settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
+			}
+			if (animation_data.animation.is_valid()) {
+				animation_start_label->show();
+				animation_length_label->show();
+				animation_length_label->set_text(vformat("%.2f", animation_data.animation->get_length()));
 			}
 		}
 
@@ -1782,6 +1791,9 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
+	animation_start_label = memnew(Label("0.00"));
+	animation_hbox->add_child(animation_start_label);
+
 	animation_slider = memnew(HSlider);
 	animation_hbox->add_child(animation_slider);
 	animation_slider->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1792,6 +1804,12 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_slider->set_accessibility_name(TTRC("Animation"));
 	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
+
+	animation_length_label = memnew(Label());
+	animation_length_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	animation_length_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	animation_length_label->set_tooltip_text(TTR("Animation length (seconds)"));
+	animation_hbox->add_child(animation_length_label);
 
 	animation_toggle_skeleton_visibility = memnew(Button);
 	animation_hbox->add_child(animation_toggle_skeleton_visibility);

@@ -105,6 +105,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	List<Skeleton3D *> skeletons;
 	PanelContainer *animation_preview = nullptr;
 	HSlider *animation_slider = nullptr;
+	Label *animation_start_label = nullptr;
+	Label *animation_length_label = nullptr;
 	Button *animation_play_button = nullptr;
 	Button *animation_stop_button = nullptr;
 	Button *animation_toggle_skeleton_visibility = nullptr;
