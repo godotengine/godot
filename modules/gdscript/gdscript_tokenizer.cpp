@@ -1378,7 +1378,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 
 	if (pending_indents != 0) {
 		// Adjust position for indent.
-		_start -= start_column - 1;
+		_start -= MIN(start_column - 1, _start - _source);
 		start_column = 1;
 		if (pending_indents > 0) {
 			// Indents.
