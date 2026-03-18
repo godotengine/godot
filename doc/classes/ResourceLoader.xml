@@ -64,6 +64,13 @@
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
+		<method name="get_resource_script_class">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the script class for the resource at the given [param path].
+			</description>
+		</method>
 		<method name="get_resource_uid">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
