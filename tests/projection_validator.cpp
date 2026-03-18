@@ -235,7 +235,7 @@ Error ProjectionValidator::project_gpu(const Vector<ProjectionInput> &p_inputs, 
         input_data.write[i] = packed;
     }
 
-    RID input_buffer = rd->storage_buffer_create(input_data.size() * sizeof(GPUInput), input_data.ptr());
+    RID input_buffer = rd->storage_buffer_create(input_data.size() * sizeof(GPUInput), input_data.span().reinterpret<uint8_t>());
     ERR_FAIL_COND_V(!input_buffer.is_valid(), ERR_CANT_CREATE);
 
     RID output_buffer = rd->storage_buffer_create(p_inputs.size() * sizeof(GPUOutput));
@@ -405,10 +405,8 @@ Error ProjectionValidator::generate_visualization(const String &p_path, const Ve
         }
     }
 
-    Ref<Image> image;
-    image.instantiate();
-    image->create(width, height, false, Image::FORMAT_RGBA8);
-    image->lock();
+    Ref<Image> image = Image::create_empty(width, height, false, Image::FORMAT_RGBA8);
+    ERR_FAIL_COND_V(image.is_null(), ERR_CANT_CREATE);
 
     double denom = max_error > 0.0f ? max_error : 1.0f;
     for (int y = 0; y < height; ++y) {
@@ -420,8 +418,6 @@ Error ProjectionValidator::generate_visualization(const String &p_path, const Ve
             image->set_pixel(x, y, color);
         }
     }
-
-    image->unlock();
 
     String base_dir = p_path.get_base_dir();
     if (!base_dir.is_empty()) {
@@ -540,7 +536,7 @@ Error ProjectionValidator::load_ground_truth(const String &p_path, Vector<Projec
     }
 
     Variant data = json.get_data();
-    if (!data.is_dictionary()) {
+    if (data.get_type() != Variant::DICTIONARY) {
         r_error = "Ground truth root must be a dictionary";
         return ERR_PARSE_ERROR;
     }
