@@ -324,6 +324,9 @@ class TextServerAdvanced : public TextServerExtension {
 		PackedColorArray palette_custom_colors;
 		Vector<hb_color_t> palette_custom_colors_hb;
 		unsigned int palette_index = 0;
+
+		hb_raster_paint_t *hb_rdr = nullptr;
+		hb_raster_draw_t *hb_mono = nullptr;
 #endif
 
 		bool face_init = false;
@@ -351,6 +354,14 @@ class TextServerAdvanced : public TextServerExtension {
 				memdelete(E.value);
 			}
 			cache.clear();
+#if HB_VERSION_ATLEAST(13, 0, 0)
+			if (hb_rdr != nullptr) {
+				hb_raster_paint_destroy(hb_rdr);
+			}
+			if (hb_mono != nullptr) {
+				hb_raster_draw_destroy(hb_mono);
+			}
+#endif
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
 				FT_Done_Face(face);
@@ -572,11 +583,6 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable RID_PtrOwner<FontAdvancedLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
-
-#if HB_VERSION_ATLEAST(13, 0, 0)
-	hb_raster_paint_t *hb_rdr = nullptr;
-	hb_raster_draw_t *hb_mono = nullptr;
-#endif
 
 	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
