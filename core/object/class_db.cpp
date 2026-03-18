@@ -457,14 +457,14 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, const MethodInfo *> &F : t->gdtype->get_signal_map(true)) {
 				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				MethodInfo &mi = t->signal_map[F];
+				const MethodInfo &mi = *t->gdtype->get_signal_map(true)[F];
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (const PropertyInfo &pi : mi.arguments) {
 					hash = hash_murmur3_one_64(pi.type, hash);
@@ -1275,17 +1275,7 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
-	StringName sname = p_signal.name;
-
-#ifdef DEBUG_ENABLED
-	ClassInfo *check = type;
-	while (check) {
-		ERR_FAIL_COND_MSG(check->signal_map.has(sname), vformat("Class '%s' already has signal '%s'.", String(p_class), String(sname)));
-		check = check->inherits_ptr;
-	}
-#endif // DEBUG_ENABLED
-
-	type->signal_map[sname] = p_signal;
+	type->gdtype->add_signal(p_signal);
 }
 
 void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance) {
@@ -1294,52 +1284,31 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
-	ClassInfo *check = type;
-
-	while (check) {
-		for (KeyValue<StringName, MethodInfo> &E : check->signal_map) {
-			p_signals->push_back(E.value);
-		}
-
-		if (p_no_inheritance) {
-			return;
-		}
-
-		check = check->inherits_ptr;
+	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
+		p_signals->push_back(*kv.value);
 	}
 }
 
 bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->signal_map.has(p_signal)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
-
-	return false;
+	return type->gdtype->get_signal_map(p_no_inheritance).has(p_signal);
 }
 
 bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal) {
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->signal_map.has(p_signal)) {
-			if (r_signal) {
-				*r_signal = check->signal_map[p_signal];
-			}
-			return true;
-		}
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
-
+	const MethodInfo *const *method_info = type->gdtype->get_signal_map(false).getptr(p_signal);
+	if (method_info) {
+		*r_signal = **method_info;
+		return true;
+	}
 	return false;
 }
 
@@ -1619,7 +1588,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		if (check->signal_map.has(p_property)) { //signals count
+		if (check->gdtype->get_signal_map(true).has(p_property)) { //signals count
 			r_value = Signal(p_object, p_property);
 			return true;
 		}
