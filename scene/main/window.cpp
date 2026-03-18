@@ -1847,6 +1847,20 @@ bool Window::get_keep_title_visible() const {
 	return keep_title_visible;
 }
 
+void Window::set_title_alignment(HorizontalAlignment p_alignment) {
+	if (title_alignment == p_alignment) {
+		return;
+	}
+	title_alignment = p_alignment;
+	if (embedder) {
+		embedder->_sub_window_update(this);
+	}
+}
+
+HorizontalAlignment Window::get_title_alignment() const {
+	return title_alignment;
+}
+
 void Window::set_content_scale_factor(real_t p_factor) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(p_factor <= 0);
@@ -3421,6 +3435,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_keep_title_visible", "title_visible"), &Window::set_keep_title_visible);
 	ClassDB::bind_method(D_METHOD("get_keep_title_visible"), &Window::get_keep_title_visible);
 
+	ClassDB::bind_method(D_METHOD("set_title_alignment", "alignment"), &Window::set_title_alignment);
+	ClassDB::bind_method(D_METHOD("get_title_alignment"), &Window::get_title_alignment);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
@@ -3516,6 +3533,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_title_alignment", "get_title_alignment");
 
 	// Keep the enum values in sync with the `WindowInitialPosition` enum.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");

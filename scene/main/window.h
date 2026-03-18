@@ -146,6 +146,7 @@ private:
 	bool clamp_to_embedder = false;
 	bool unparent_when_invisible = false;
 	bool keep_title_visible = false;
+	HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -400,6 +401,9 @@ public:
 
 	void set_keep_title_visible(bool p_title_visible);
 	bool get_keep_title_visible() const;
+
+	void set_title_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_title_alignment() const;
 
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
