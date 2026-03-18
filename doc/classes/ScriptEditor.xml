@@ -18,6 +18,14 @@
 				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
 			</description>
 		</method>
+		<method name="close_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Closes the file at the given [param path], discarding any unsaved changes.
+				Returns [constant OK] on success or [constant ERR_FILE_NOT_FOUND] if the file is not found.
+			</description>
+		</method>
 		<method name="get_breakpoints">
 			<return type="PackedStringArray" />
 			<description>
