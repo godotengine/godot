@@ -2382,6 +2382,18 @@ PackedStringArray ScriptEditor::get_unsaved_scripts() const {
 	return unsaved_list;
 }
 
+PackedStringArray ScriptEditor::get_unsaved_files() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->is_unsaved()) {
+			unsaved_list.append(seb->get_edited_resource()->get_path());
+		}
+	}
+	return unsaved_list;
+}
+
 void ScriptEditor::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
 	if (!current || _test_script_times_on_disk()) {
@@ -3774,6 +3786,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("goto_help", "topic"), &ScriptEditor::goto_help);
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);
 	ClassDB::bind_method(D_METHOD("clear_docs_from_script", "script"), &ScriptEditor::clear_docs_from_script);
+
+	ClassDB::bind_method(D_METHOD("get_unsaved_files"), &ScriptEditor::get_unsaved_files);
 
 	ClassDB::bind_method(D_METHOD("save_all_scripts"), &ScriptEditor::save_all_scripts);
 
