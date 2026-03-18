@@ -6966,15 +6966,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 	int xrandr_minor = 0;
 	int event_base, error_base;
 	xrandr_ext_ok = XRRQueryExtension(x11_display, &event_base, &error_base);
-	xrandr_handle = dlopen("libXrandr.so.2", RTLD_LAZY);
+#ifdef __OpenBSD__
+#define SONAME "libXrandr.so"
+#elif defined(__NetBSD__)
+#define SONAME "libXrandr.so.3"
+#else
+#define SONAME "libXrandr.so.2"
+#endif
+	xrandr_handle = dlopen(SONAME, RTLD_LAZY);
 	if (!xrandr_handle) {
-		err = dlerror();
-		// For some arcane reason, NetBSD now ships libXrandr.so.3 while the rest of the world has libXrandr.so.2...
-		// In case this happens for other X11 platforms in the future, let's give it a try too before failing.
-		xrandr_handle = dlopen("libXrandr.so.3", RTLD_LAZY);
-		if (!xrandr_handle) {
-			fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
-		}
+		fprintf(stderr, "could not load " SONAME ", Error: %s\n", dlerror());
 	}
 
 	if (xrandr_handle) {
