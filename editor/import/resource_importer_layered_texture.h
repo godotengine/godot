@@ -32,6 +32,7 @@
 
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/ref_counted.h"
 
 class CompressedTexture2D;
@@ -113,7 +114,7 @@ public:
 
 	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2);
 
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;

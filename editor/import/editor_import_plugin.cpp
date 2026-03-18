@@ -148,7 +148,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 	return true;
 }
 
-Error EditorImportPlugin::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error EditorImportPlugin::import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Dictionary options;
 	TypedArray<String> platform_variants, gen_files;
 

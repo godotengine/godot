@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_uid_types.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
@@ -206,7 +207,7 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_AUTOMATIC,
 	};
 
-	static Error _check_resource_save_paths(ResourceUID::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data);
+	static Error _check_resource_save_paths(ResourceUIDTypes::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data);
 	Array _get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
@@ -290,7 +291,7 @@ public:
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
 
 	Node *pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options);
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;

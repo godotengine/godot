@@ -31,6 +31,7 @@
 #include "editor_quick_open_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_uid.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -232,7 +233,7 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 }
 
 void EditorQuickOpenDialog::preview_property() {
-	ERR_FAIL_COND(container->get_selected() == ResourceUID::INVALID_ID);
+	ERR_FAIL_COND(container->get_selected() == ResourceUIDTypes::INVALID_ID);
 	String path = container->get_selected_path();
 
 	Ref<Resource> loaded_resource = ResourceLoader::load(path);
@@ -422,7 +423,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 }
 
 void QuickOpenResultContainer::_menu_option(int p_option) {
-	ERR_FAIL_COND(get_selected() == ResourceUID::INVALID_ID);
+	ERR_FAIL_COND(get_selected() == ResourceUIDTypes::INVALID_ID);
 	String selected_path = get_selected_path();
 
 	switch (p_option) {
@@ -495,27 +496,27 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 			PackedStringArray cleaned_text_uids;
 			cleaned_text_uids.resize(history_uids.size());
 
-			Vector<ResourceUID::ID> cleaned_ids;
+			Vector<ResourceUIDTypes::ID> cleaned_ids;
 			cleaned_ids.resize(history_uids.size());
 
 			{
 				String *text_write = cleaned_text_uids.ptrw();
-				ResourceUID::ID *id_write = cleaned_ids.ptrw();
+				ResourceUIDTypes::ID *id_write = cleaned_ids.ptrw();
 				int i = 0;
 				for (String uid : history_uids) {
 #ifndef DISABLE_DEPRECATED
 					if (!uid.begins_with("uid://")) {
 						// uid might be a path here, if config was written by older editor version
-						ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(uid);
-						if (id == ResourceUID::INVALID_ID) {
+						ResourceUIDTypes::ID id = EditorFileSystem::get_singleton()->get_file_uid(uid);
+						if (id == ResourceUIDTypes::INVALID_ID) {
 							continue;
 						}
 						uid = ResourceUID::get_singleton()->id_to_text(id);
 					}
 #endif
 
-					ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(uid);
-					if (id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id)) {
+					ResourceUIDTypes::ID id = ResourceUID::get_singleton()->text_to_id(uid);
+					if (id == ResourceUIDTypes::INVALID_ID || !ResourceUID::get_singleton()->has_id(id)) {
 						continue;
 					}
 
@@ -541,12 +542,12 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		}
 	} else if (!first_open && base_types.size() == 1) {
 		const StringName &type = base_types[0];
-		Vector<ResourceUID::ID> *history = selected_history.getptr(type);
+		Vector<ResourceUIDTypes::ID> *history = selected_history.getptr(type);
 
 		if (history) {
-			Vector<ResourceUID::ID> clean_history;
+			Vector<ResourceUIDTypes::ID> clean_history;
 
-			for (const ResourceUID::ID &uid : *history) {
+			for (const ResourceUIDTypes::ID &uid : *history) {
 				if (ResourceUID::get_singleton()->has_id(uid)) {
 					clean_history.push_back(uid);
 				} else {
@@ -571,7 +572,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 
 void QuickOpenResultContainer::_sort_uids(int p_max_results) {
 	struct FilepathComparator {
-		bool operator()(const ResourceUID::ID &p_lhs, const ResourceUID::ID &p_rhs) const {
+		bool operator()(const ResourceUIDTypes::ID &p_lhs, const ResourceUIDTypes::ID &p_rhs) const {
 			String lhs_path = ResourceUID::get_singleton()->get_id_path(p_lhs);
 			String rhs_path = ResourceUID::get_singleton()->get_id_path(p_rhs);
 
@@ -580,7 +581,7 @@ void QuickOpenResultContainer::_sort_uids(int p_max_results) {
 		}
 	};
 
-	SortArray<ResourceUID::ID, FilepathComparator> sorter{};
+	SortArray<ResourceUIDTypes::ID, FilepathComparator> sorter{};
 
 	if ((int)uids.size() > p_max_results) {
 		sorter.partial_sort(0, uids.size(), p_max_results, uids.ptr());
@@ -596,9 +597,9 @@ void QuickOpenResultContainer::_create_initial_results() {
 	filetypes.clear();
 	history_set.clear();
 
-	Vector<ResourceUID::ID> *history = _get_history();
+	Vector<ResourceUIDTypes::ID> *history = _get_history();
 	if (history) {
-		for (const ResourceUID::ID &uid : *history) {
+		for (const ResourceUIDTypes::ID &uid : *history) {
 			history_set.insert(uid);
 		}
 	}
@@ -617,8 +618,8 @@ void QuickOpenResultContainer::_find_uids_in_folder(EditorFileSystemDirectory *p
 	}
 
 	for (int i = 0; i < p_directory->get_file_count(); i++) {
-		ResourceUID::ID uid = p_directory->get_file_uid(i);
-		if (uid == ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID uid = p_directory->get_file_uid(i);
+		if (uid == ResourceUIDTypes::INVALID_ID) {
 			continue;
 		}
 
@@ -645,15 +646,15 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 	update_results();
 }
 
-Vector<ResourceUID::ID> *QuickOpenResultContainer::_get_history() {
+Vector<ResourceUIDTypes::ID> *QuickOpenResultContainer::_get_history() {
 	if (base_types.size() == 1) {
 		return selected_history.getptr(base_types[0]);
 	}
 	return nullptr;
 }
 
-QuickOpenResultCandidate QuickOpenResultCandidate::from_uid(const ResourceUID::ID &p_uid, bool &r_success) {
-	if (p_uid == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(p_uid)) {
+QuickOpenResultCandidate QuickOpenResultCandidate::from_uid(const ResourceUIDTypes::ID &p_uid, bool &r_success) {
+	if (p_uid == ResourceUIDTypes::INVALID_ID || !ResourceUID::get_singleton()->has_id(p_uid)) {
 		r_success = false;
 		return QuickOpenResultCandidate();
 	}
@@ -666,7 +667,7 @@ QuickOpenResultCandidate QuickOpenResultCandidate::from_uid(const ResourceUID::I
 }
 
 QuickOpenResultCandidate QuickOpenResultCandidate::from_result(const FuzzySearchResult &p_result, bool &r_success) {
-	ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result.target);
+	ResourceUIDTypes::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result.target);
 
 	QuickOpenResultCandidate candidate = from_uid(uid, r_success);
 	if (!r_success) {
@@ -721,11 +722,11 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	HashSet<ResourceUID::ID> existing_uids;
+	HashSet<ResourceUIDTypes::ID> existing_uids;
 
-	Vector<ResourceUID::ID> *history = _get_history();
+	Vector<ResourceUIDTypes::ID> *history = _get_history();
 	if (history) {
-		for (const ResourceUID::ID &uid : *history) {
+		for (const ResourceUIDTypes::ID &uid : *history) {
 			bool success;
 			QuickOpenResultCandidate candidate = QuickOpenResultCandidate::from_uid(uid, success);
 			if (!success) {
@@ -735,7 +736,7 @@ void QuickOpenResultContainer::_use_default_candidates() {
 		}
 	}
 
-	for (const ResourceUID::ID &uid : uids) {
+	for (const ResourceUIDTypes::ID &uid : uids) {
 		if (candidates.size() >= max_total_results) {
 			break;
 		}
@@ -766,7 +767,7 @@ void QuickOpenResultContainer::_update_fuzzy_search_results() {
 	PackedStringArray paths;
 	paths.reserve_exact(uids.size());
 
-	for (const ResourceUID::ID &uid : uids) {
+	for (const ResourceUIDTypes::ID &uid : uids) {
 		paths.push_back(ResourceUID::get_singleton()->get_id_path(uid));
 	}
 
@@ -1017,8 +1018,8 @@ bool QuickOpenResultContainer::has_nothing_selected() const {
 	return selection_index < 0;
 }
 
-ResourceUID::ID QuickOpenResultContainer::get_selected() const {
-	ERR_FAIL_COND_V_MSG(has_nothing_selected(), ResourceUID::INVALID_ID, "Tried to get selected file, but nothing was selected.");
+ResourceUIDTypes::ID QuickOpenResultContainer::get_selected() const {
+	ERR_FAIL_COND_V_MSG(has_nothing_selected(), ResourceUIDTypes::INVALID_ID, "Tried to get selected file, but nothing was selected.");
 	return candidates[selection_index].uid;
 }
 
@@ -1049,8 +1050,8 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 }
 
 String _get_uid_string(const String &p_filepath) {
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
-	return id == ResourceUID::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
+	ResourceUIDTypes::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
+	return id == ResourceUIDTypes::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
 }
 
 bool QuickOpenResultContainer::is_instant_preview_enabled() const {
@@ -1069,11 +1070,11 @@ void QuickOpenResultContainer::save_selected_item() {
 	}
 
 	const StringName &base_type = base_types[0];
-	ResourceUID::ID selected = get_selected();
-	Vector<ResourceUID::ID> *type_history = selected_history.getptr(base_type);
+	ResourceUIDTypes::ID selected = get_selected();
+	Vector<ResourceUIDTypes::ID> *type_history = selected_history.getptr(base_type);
 
 	if (!type_history) {
-		selected_history.insert(base_type, Vector<ResourceUID::ID>());
+		selected_history.insert(base_type, Vector<ResourceUIDTypes::ID>());
 		type_history = selected_history.getptr(base_type);
 	} else {
 		for (int i = 0; i < type_history->size(); i++) {
@@ -1096,7 +1097,7 @@ void QuickOpenResultContainer::save_selected_item() {
 		String *uids_write = history_uids.ptrw();
 
 		int i = 0;
-		for (const ResourceUID::ID &uid : *type_history) {
+		for (const ResourceUIDTypes::ID &uid : *type_history) {
 			uids_write[i] = ResourceUID::get_singleton()->id_to_text(uid);
 			i++;
 		}

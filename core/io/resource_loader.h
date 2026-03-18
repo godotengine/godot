@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
@@ -64,7 +65,7 @@ protected:
 	GDVIRTUAL1RC(bool, _handles_type, StringName)
 	GDVIRTUAL1RC(String, _get_resource_type, String)
 	GDVIRTUAL1RC(String, _get_resource_script_class, String)
-	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
+	GDVIRTUAL1RC(ResourceUIDTypes::ID, _get_resource_uid, String)
 	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
 	GDVIRTUAL1RC(Vector<String>, _get_classes_used, String)
 	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
@@ -82,7 +83,7 @@ public:
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	virtual String get_resource_type(const String &p_path) const;
 	virtual String get_resource_script_class(const String &p_path) const;
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
+	virtual ResourceUIDTypes::ID get_resource_uid(const String &p_path) const;
 	virtual bool has_custom_uid_support() const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
@@ -250,7 +251,7 @@ public:
 	static void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	static String get_resource_type(const String &p_path);
 	static String get_resource_script_class(const String &p_path);
-	static ResourceUID::ID get_resource_uid(const String &p_path);
+	static ResourceUIDTypes::ID get_resource_uid(const String &p_path);
 	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);

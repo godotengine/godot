@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
@@ -692,8 +694,8 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
 
 	if (enable_uid) {
-		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
-		if (id != ResourceUID::INVALID_ID) {
+		const ResourceUIDTypes::ID id = ResourceLoader::get_resource_uid(full_path);
+		if (id != ResourceUIDTypes::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}

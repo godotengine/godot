@@ -34,6 +34,8 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -2019,8 +2021,8 @@ static String _quote_drop_data(const String &str) {
 static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
 	String path = p_resource->get_path();
 	if (p_allow_uid) {
-		ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
-		if (id != ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID id = ResourceLoader::get_resource_uid(path);
+		if (id != ResourceUIDTypes::INVALID_ID) {
 			path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}

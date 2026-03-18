@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/resource_uid.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/debugger/editor_debugger_node.h"

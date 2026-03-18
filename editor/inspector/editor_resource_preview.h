@@ -35,6 +35,7 @@
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class FileAccess;
 class ImageTexture;
 class Texture2D;
 

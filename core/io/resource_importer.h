@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid_types.h"
 
 class ResourceImporter;
 class ResourceFormatImporter;
@@ -47,7 +48,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String importer;
 		String group_file;
 		Variant metadata;
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 	};
 
 	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool p_load, bool *r_valid = nullptr) const;
@@ -70,7 +71,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual ResourceUIDTypes::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
 	virtual Variant get_resource_metadata(const String &p_path) const;
 	virtual bool is_import_valid(const String &p_path) const override;
@@ -101,7 +102,7 @@ public:
 	String get_import_settings_hash() const;
 
 	String get_import_base_path(const String &p_for_file) const;
-	Error get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const;
+	Error get_resource_import_info(const String &p_path, StringName &r_type, ResourceUIDTypes::ID &r_uid, String &r_import_group_file) const;
 
 	ResourceFormatImporter();
 };
@@ -153,7 +154,7 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 	virtual String get_option_group_file() const { return String(); }
 
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
+	virtual Error import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
 	virtual bool can_import_threaded() const { return false; }
 	virtual void import_threaded_begin() {}
 	virtual void import_threaded_end() {}
@@ -171,5 +172,5 @@ class ResourceFormatImporterSaver : public ResourceFormatSaver {
 	GDCLASS(ResourceFormatImporterSaver, ResourceFormatSaver)
 
 public:
-	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) override;
 };

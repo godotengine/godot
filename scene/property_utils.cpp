@@ -32,6 +32,8 @@
 
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
@@ -292,8 +294,8 @@ void PropertyUtils::assign_custom_type_script(Object *p_object, const Ref<Script
 	const String &path = p_script->get_path();
 	ERR_FAIL_COND(!path.is_resource_file());
 
-	ResourceUID::ID script_uid = ResourceLoader::get_resource_uid(path);
-	if (script_uid != ResourceUID::INVALID_ID) {
+	ResourceUIDTypes::ID script_uid = ResourceLoader::get_resource_uid(path);
+	if (script_uid != ResourceUIDTypes::INVALID_ID) {
 		p_object->set_meta(SceneStringName(_custom_type_script), ResourceUID::get_singleton()->id_to_text(script_uid));
 	}
 }
@@ -308,8 +310,8 @@ Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 		return script_object;
 	}
 #endif
-	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
-	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
+	ResourceUIDTypes::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
+	if (unlikely(id == ResourceUIDTypes::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
 		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));
 		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script.operator String()));
 	} else {

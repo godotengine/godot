@@ -39,6 +39,7 @@
 #include "scene/3d/multimesh_instance_3d.h"
 
 class CSGShape3D;
+class FileAccess;
 class GridMap;
 
 class GLTFDocument : public Resource {

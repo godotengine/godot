@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/gdvirtual.gen.h"
 
 class ResourceFormatSaver : public RefCounted {
@@ -40,14 +41,14 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL3R(Error, _save, Ref<Resource>, String, uint32_t)
-	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
+	GDVIRTUAL2R(Error, _set_uid, String, ResourceUIDTypes::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 	GDVIRTUAL2RC(bool, _recognize_path, Ref<Resource>, String)
 
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
-	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
+	virtual Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const;
@@ -56,7 +57,7 @@ public:
 };
 
 typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
-typedef ResourceUID::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
+typedef ResourceUIDTypes::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
 
 class ResourceSaver {
 	enum {
@@ -88,12 +89,12 @@ public:
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
-	static Error set_uid(const String &p_path, ResourceUID::ID p_uid);
+	static Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid);
 
 	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
 	static bool get_timestamp_on_save() { return timestamp_on_save; }
 
-	static ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+	static ResourceUIDTypes::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 
 	static void set_save_callback(ResourceSavedCallback p_callback);
 	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);

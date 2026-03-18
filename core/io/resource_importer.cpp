@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image.h"
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
@@ -393,12 +394,12 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	return pat.type;
 }
 
-ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
+ResourceUIDTypes::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
 
 	if (err != OK) {
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	return pat.uid;
@@ -408,7 +409,7 @@ bool ResourceFormatImporter::has_custom_uid_support() const {
 	return true;
 }
 
-Error ResourceFormatImporter::get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const {
+Error ResourceFormatImporter::get_resource_import_info(const String &p_path, StringName &r_type, ResourceUIDTypes::ID &r_uid, String &r_import_group_file) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
 
@@ -418,7 +419,7 @@ Error ResourceFormatImporter::get_resource_import_info(const String &p_path, Str
 		r_import_group_file = pat.group_file;
 	} else {
 		r_type = "";
-		r_uid = ResourceUID::INVALID_ID;
+		r_uid = ResourceUIDTypes::INVALID_ID;
 		r_import_group_file = "";
 	}
 
@@ -588,7 +589,7 @@ void ResourceImporter::_bind_methods() {
 
 /////
 
-Error ResourceFormatImporterSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatImporterSaver::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	Error err = cf->load(p_path + ".import");

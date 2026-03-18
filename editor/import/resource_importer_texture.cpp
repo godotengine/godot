@@ -696,7 +696,7 @@ void ResourceImporterTexture::_clamp_hdr_exposure(Ref<Image> &r_image) {
 	}
 }
 
-Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTexture::import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	// Parse import options.
 	int32_t loader_flags = ImageFormatLoader::FLAG_NONE;
 

@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
@@ -220,10 +222,10 @@ static String _get_resolved_dep_path(const String &p_dep) {
 	}
 
 	const String uid_text = p_dep.get_slice("::", 0);
-	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_text);
+	ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(uid_text);
 
 	// Dependency is in UID format, obtain proper path.
-	if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+	if (uid != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
 	}
 

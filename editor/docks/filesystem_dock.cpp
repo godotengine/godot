@@ -35,6 +35,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -2662,8 +2664,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_MENU_COPY_UID: {
 			if (!p_selected.is_empty()) {
-				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
-				if (uid != ResourceUID::INVALID_ID) {
+				ResourceUIDTypes::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
+				if (uid != ResourceUIDTypes::INVALID_ID) {
 					String uid_string = ResourceUID::get_singleton()->id_to_text(uid);
 					DisplayServer::get_singleton()->clipboard_set(uid_string);
 				}
@@ -2826,8 +2828,8 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 
 	const String searched_string = p_text.to_lower();
 	if (searched_string.begins_with("uid://")) {
-		ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(searched_string);
-		if (id != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(id)) {
+		ResourceUIDTypes::ID id = ResourceUID::get_singleton()->text_to_id(searched_string);
+		if (id != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(id)) {
 			navigate_to_path(ResourceUID::get_singleton()->get_id_path(id));
 			return;
 		}
@@ -3499,7 +3501,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_MENU_COPY_PATH);
 		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_MENU_COPY_ABSOLUTE_PATH);
-		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
+		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUIDTypes::INVALID_ID) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_MENU_COPY_UID);
 		}
 		if (root_path_not_selected) {

@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation_server.h"
 
@@ -74,7 +75,7 @@ void ResourceImporterCSVTranslation::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "unescape_translations"), true));
 }
 
-Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterCSVTranslation::import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open file from path '" + p_source_file + "'.");
 
@@ -242,7 +243,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 		}
 
 		String save_path = p_source_file.get_basename() + "." + xlt->get_locale() + ".translation";
-		ResourceUID::ID save_id = hash64_murmur3_64(xlt->get_locale().hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
+		ResourceUIDTypes::ID save_id = hash64_murmur3_64(xlt->get_locale().hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
 		bool uid_already_exists = ResourceUID::get_singleton()->has_id(save_id);
 		if (uid_already_exists) {
 			// Avoid creating a new file with a duplicate UID.

@@ -37,6 +37,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
@@ -744,7 +746,7 @@ bool SceneTree::process(double p_time) {
 		if (env_path.begins_with("uid://")) {
 			// If an uid path, ensure it is mapped to a resource which could not be
 			// the case if the editor is still scanning the filesystem.
-			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(env_path);
+			ResourceUIDTypes::ID id = ResourceUID::get_singleton()->text_to_id(env_path);
 			can_load = ResourceUID::get_singleton()->has_id(id);
 			if (can_load) {
 				env_path = ResourceUID::get_singleton()->get_id_path(id);

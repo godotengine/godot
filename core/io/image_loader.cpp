@@ -30,6 +30,7 @@
 
 #include "image_loader.h"
 
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 
 void ImageFormatLoader::_bind_methods() {

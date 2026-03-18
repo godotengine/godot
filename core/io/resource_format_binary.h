@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid_types.h"
 #include "core/templates/rb_map.h"
 
 class ResourceLoaderBinary {
@@ -47,7 +48,7 @@ class ResourceLoaderBinary {
 
 	uint64_t importmd_ofs = 0;
 
-	ResourceUID::ID uid = ResourceUID::INVALID_ID;
+	ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 
 	Vector<char> str_buf;
 	List<Ref<Resource>> resource_cache;
@@ -59,7 +60,7 @@ class ResourceLoaderBinary {
 	struct ExtResource {
 		String path;
 		String type;
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 		Ref<ResourceLoader::LoadToken> load_token;
 	};
 
@@ -117,7 +118,7 @@ public:
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual String get_resource_script_class(const String &p_path) const override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual ResourceUIDTypes::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) override;
@@ -175,7 +176,7 @@ public:
 		RESERVED_FIELDS = 11
 	};
 	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
-	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
+	Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid);
 	static void write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
@@ -185,7 +186,7 @@ class ResourceFormatSaverBinary : public ResourceFormatSaver {
 public:
 	static inline ResourceFormatSaverBinary *singleton = nullptr;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 

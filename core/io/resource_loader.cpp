@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_uid.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
@@ -115,8 +116,8 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 	return ret;
 }
 
-ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
-	int64_t uid = ResourceUID::INVALID_ID;
+ResourceUIDTypes::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
+	int64_t uid = ResourceUIDTypes::INVALID_ID;
 	if (has_custom_uid_support()) {
 		GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
 	} else {
@@ -475,8 +476,8 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 }
 
 String ResourceLoader::_validate_local_path(const String &p_path) {
-	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
-	if (uid != ResourceUID::INVALID_ID) {
+	ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
+	if (uid != ResourceUIDTypes::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
 	} else if (p_path.is_relative_path()) {
 		return ("res://" + p_path).simplify_path();
@@ -1201,20 +1202,20 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 	return "";
 }
 
-ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
+ResourceUIDTypes::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return ResourceUID::get_singleton()->get_path_id(local_path);
 	}
 
 	for (int i = 0; i < loader_count; i++) {
-		ResourceUID::ID id = loader[i]->get_resource_uid(local_path);
-		if (id != ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID id = loader[i]->get_resource_uid(local_path);
+		if (id != ResourceUIDTypes::INVALID_ID) {
 			return id;
 		}
 	}
 
-	return ResourceUID::INVALID_ID;
+	return ResourceUIDTypes::INVALID_ID;
 }
 
 bool ResourceLoader::should_create_uid_file(const String &p_path) {

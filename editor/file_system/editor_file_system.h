@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid_types.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
@@ -56,7 +57,7 @@ class EditorFileSystemDirectory : public Object {
 		String file;
 		StringName type;
 		StringName resource_script_class; // If any resource has script with a global class name, its found here.
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 		uint64_t modified_time = 0;
 		uint64_t import_modified_time = 0;
 		String import_md5;
@@ -91,7 +92,7 @@ public:
 	int get_file_count() const;
 	String get_file(int p_idx) const;
 	String get_file_path(int p_idx) const;
-	ResourceUID::ID get_file_uid(int p_idx) const;
+	ResourceUIDTypes::ID get_file_uid(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	StringName get_file_resource_script_class(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
@@ -213,7 +214,7 @@ class EditorFileSystem : public Node {
 	struct FileCache {
 		StringName type;
 		String resource_script_class;
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 		uint64_t modification_time = 0;
 		uint64_t import_modification_time = 0;
 		String import_md5;
@@ -357,7 +358,7 @@ class EditorFileSystem : public Node {
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
 
-	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
+	static ResourceUIDTypes::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
 	bool _scan_import_support(const Vector<String> &reimports);
@@ -393,7 +394,7 @@ public:
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
 	EditorFileSystemDirectory *find_file(const String &p_file, int *r_index) const;
-	ResourceUID::ID get_file_uid(const String &p_path) const;
+	ResourceUIDTypes::ID get_file_uid(const String &p_path) const;
 
 	void reimport_files(const Vector<String> &p_files);
 	Error reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters);

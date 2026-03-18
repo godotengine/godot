@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid_types.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
@@ -89,7 +90,7 @@ private:
 
 	mutable int lines = 0;
 
-	ResourceUID::ID res_uid = ResourceUID::INVALID_ID;
+	ResourceUIDTypes::ID res_uid = ResourceUIDTypes::INVALID_ID;
 
 	HashMap<String, String> remaps;
 
@@ -129,7 +130,7 @@ private:
 public:
 	Ref<Resource> get_resource();
 	Error load();
-	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
+	Error set_uid(Ref<FileAccess> p_f, ResourceUIDTypes::ID p_uid);
 	int get_stage() const;
 	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
@@ -137,7 +138,7 @@ public:
 	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
 	String recognize(Ref<FileAccess> p_f);
 	String recognize_script_class(Ref<FileAccess> p_f);
-	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
+	ResourceUIDTypes::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
 	Error get_classes_used(HashSet<StringName> *r_classes);
@@ -158,7 +159,7 @@ public:
 
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual String get_resource_script_class(const String &p_path) const override;
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual ResourceUIDTypes::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) override;
@@ -213,7 +214,7 @@ class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual Error set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 

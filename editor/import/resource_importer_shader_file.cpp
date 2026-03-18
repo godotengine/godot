@@ -89,7 +89,7 @@ static String _include_function(const String &p_path, void *userpointer) {
 	return file_inc->get_as_utf8_string();
 }
 
-Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterShaderFile::import(ResourceUIDTypes::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);

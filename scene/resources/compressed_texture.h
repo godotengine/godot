@@ -35,6 +35,7 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 class BitMap;
+class FileAccess;
 
 class CompressedTexture2D : public Texture2D {
 	GDCLASS(CompressedTexture2D, Texture2D);

@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
@@ -133,8 +134,8 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return get_path().path_join(get_file(p_idx));
 }
 
-ResourceUID::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUID::INVALID_ID);
+ResourceUIDTypes::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUIDTypes::INVALID_ID);
 	return files[p_idx]->uid;
 }
 
@@ -148,8 +149,8 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 		if (sep_idx != -1) {
 			dep = dep.substr(0, sep_idx);
 		}
-		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(dep);
-		if (uid != ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(dep);
+		if (uid != ResourceUIDTypes::INVALID_ID) {
 			//return proper dependency resource from uid
 			if (ResourceUID::get_singleton()->has_id(uid)) {
 				dep = ResourceUID::get_singleton()->get_id_path(uid);
@@ -295,7 +296,7 @@ void EditorFileSystem::_scan_for_uid_directory(const ScannedDirectory *p_scan_di
 		}
 
 		const String path = p_scan_dir->full_path.path_join(scan_file);
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 		if (p_import_extensions.has(ext)) {
 			if (FileAccess::exists(path + ".import")) {
 				uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
@@ -304,7 +305,7 @@ void EditorFileSystem::_scan_for_uid_directory(const ScannedDirectory *p_scan_di
 			uid = ResourceLoader::get_resource_uid(path);
 		}
 
-		if (uid != ResourceUID::INVALID_ID) {
+		if (uid != ResourceUIDTypes::INVALID_ID) {
 			if (!ResourceUID::get_singleton()->has_id(uid)) {
 				ResourceUID::get_singleton()->add_id(uid, path);
 			}
@@ -916,11 +917,11 @@ bool EditorFileSystem::_update_scan_actions() {
 				fs_changed = true;
 
 				const String new_file_path = ia.dir->get_file_path(idx);
-				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
-				if (existing_id != ResourceUID::INVALID_ID) {
+				const ResourceUIDTypes::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
+				if (existing_id != ResourceUIDTypes::INVALID_ID) {
 					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
 					if (old_path != new_file_path && FileAccess::exists(old_path)) {
-						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
+						const ResourceUIDTypes::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
@@ -1289,7 +1290,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 					//note: I think this should not happen any longer..
 				}
 
-				if (fc->uid == ResourceUID::INVALID_ID) {
+				if (fc->uid == ResourceUIDTypes::INVALID_ID) {
 					// imported files should always have a UID, so attempt to fetch it.
 					fi->uid = ResourceLoader::get_resource_uid(path);
 				}
@@ -1372,7 +1373,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				// Create a UID file and new UID, if it's invalid.
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
-					if (fi->uid == ResourceUID::INVALID_ID) {
+					if (fi->uid == ResourceUIDTypes::INVALID_ID) {
 						fi->uid = ResourceUID::get_singleton()->create_id_for_path(path);
 					} else {
 						WARN_PRINT(vformat("Missing .uid file for path \"%s\". The file was re-created from cache.", path));
@@ -1382,7 +1383,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 			}
 		}
 
-		if (fi->uid != ResourceUID::INVALID_ID) {
+		if (fi->uid != ResourceUIDTypes::INVALID_ID) {
 			if (ResourceUID::get_singleton()->has_id(fi->uid)) {
 				// Restrict UID dupe warning to first-scan since we know there are no file moves going on yet.
 				if (first_scan) {
@@ -1998,12 +1999,12 @@ EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int
 	return fs;
 }
 
-ResourceUID::ID EditorFileSystem::get_file_uid(const String &p_path) const {
+ResourceUIDTypes::ID EditorFileSystem::get_file_uid(const String &p_path) const {
 	int file_idx;
 	EditorFileSystemDirectory *directory = find_file(p_path, &file_idx);
 
 	if (!directory) {
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 	return directory->files[file_idx]->uid;
 }
@@ -2405,7 +2406,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			//was removed
 			_delete_internal_files(file);
 			if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
-				if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
+				if (fs->files[cpos]->uid != ResourceUIDTypes::INVALID_ID) {
 					if (ResourceUID::get_singleton()->has_id(fs->files[cpos]->uid)) {
 						ResourceUID::get_singleton()->remove_id(fs->files[cpos]->uid);
 					}
@@ -2436,7 +2437,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			}
 			String script_class = ResourceLoader::get_resource_script_class(file);
 
-			ResourceUID::ID uid = ResourceLoader::get_resource_uid(file);
+			ResourceUIDTypes::ID uid = ResourceLoader::get_resource_uid(file);
 
 			if (cpos == -1) {
 				// The file did not exist, it was added.
@@ -2482,7 +2483,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->deps = _get_dependencies(file);
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
-			if (uid != ResourceUID::INVALID_ID) {
+			if (uid != ResourceUIDTypes::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(uid)) {
 					ResourceUID::get_singleton()->set_id(uid, file);
 				} else {
@@ -2494,7 +2495,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				if (ResourceLoader::should_create_uid_file(file)) {
 					Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
+						const ResourceUIDTypes::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
 						ResourceUID::get_singleton()->add_id(id, file);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
 						fi->uid = id;
@@ -2595,7 +2596,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	String importer_name;
 
 	HashMap<String, HashMap<StringName, Variant>> source_file_options;
-	HashMap<String, ResourceUID::ID> uids;
+	HashMap<String, ResourceUIDTypes::ID> uids;
 	HashMap<String, String> base_paths;
 	for (int i = 0; i < p_files.size(); i++) {
 		Ref<ConfigFile> config;
@@ -2611,7 +2612,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
 
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 
 		if (config->has_section_key("remap", "uid")) {
 			String uidt = config->get_value("remap", "uid");
@@ -2663,7 +2664,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
 		Vector<String> dest_paths;
-		ResourceUID::ID uid = uids[file];
+		ResourceUIDTypes::ID uid = uids[file];
 		{
 			Ref<FileAccess> f = FileAccess::open(file + ".import", FileAccess::WRITE);
 			ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
@@ -2680,7 +2681,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
 
-			if (uid == ResourceUID::INVALID_ID) {
+			if (uid == ResourceUIDTypes::INVALID_ID) {
 				uid = ResourceUID::get_singleton()->create_id_for_path(file);
 			}
 
@@ -2807,7 +2808,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		importer_name = p_custom_importer;
 	}
 
-	ResourceUID::ID uid = ResourceUID::INVALID_ID;
+	ResourceUIDTypes::ID uid = ResourceUIDTypes::INVALID_ID;
 	Variant generator_parameters;
 	String group_file;
 	if (p_generator_parameters) {
@@ -2906,7 +2907,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
-	if (uid == ResourceUID::INVALID_ID) {
+	if (uid == ResourceUIDTypes::INVALID_ID) {
 		uid = ResourceUID::get_singleton()->create_id_for_path(p_file);
 	}
 
@@ -3120,7 +3121,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		}
 
 		// Roll a new uid for this copied .import file to avoid conflict.
-		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
+		ResourceUIDTypes::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
 		err = cfg->save(p_to + ".import");
 		if (err != OK) {
@@ -3129,7 +3130,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
-	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
+	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUIDTypes::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
 		Error err = da->copy(p_from, p_to);
 		if (err != OK) {
@@ -3258,8 +3259,8 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 		String file = p_files[i];
 
-		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
-		if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+		ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(file);
+		if (uid != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 			file = ResourceUID::get_singleton()->get_id_path(uid);
 		}
 
@@ -3645,10 +3646,10 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 	return success ? OK : FAILED;
 }
 
-ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
+ResourceUIDTypes::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		// Saved externally (configuration file) or internal file, do not assign an ID.
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	EditorFileSystemDirectory *fs = nullptr;
@@ -3656,22 +3657,22 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 
 	if (!singleton->_find_file(p_path, &fs, cpos)) {
 		// Fallback to ResourceLoader if filesystem cache fails (can happen during scanning etc.).
-		ResourceUID::ID fallback = ResourceLoader::get_resource_uid(p_path);
-		if (fallback != ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID fallback = ResourceLoader::get_resource_uid(p_path);
+		if (fallback != ResourceUIDTypes::INVALID_ID) {
 			return fallback;
 		}
 
 		if (p_generate) {
 			return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 		} else {
-			return ResourceUID::INVALID_ID;
+			return ResourceUIDTypes::INVALID_ID;
 		}
-	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
+	} else if (fs->files[cpos]->uid != ResourceUIDTypes::INVALID_ID) {
 		return fs->files[cpos]->uid;
 	} else if (p_generate) {
 		return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 	} else {
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 }
 

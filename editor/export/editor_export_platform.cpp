@@ -41,6 +41,7 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
+#include "core/io/resource_uid_types.h"
 #include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
@@ -1879,7 +1880,7 @@ EditorExportPlatform::FilteredCache EditorExportPlatform::_get_filtered_cache(co
 
 	Vector<String> extension_lines;
 	Array global_class_list;
-	Vector<Pair<ResourceUID::ID, String>> uid_entries;
+	Vector<Pair<ResourceUIDTypes::ID, String>> uid_entries;
 	extension_lines.reserve(extension_list_lines.size());
 	global_class_list.reserve(class_by_path.size());
 	uid_entries.reserve(p_paths.size());
@@ -1891,9 +1892,9 @@ EditorExportPlatform::FilteredCache EditorExportPlatform::_get_filtered_cache(co
 		if (class_by_path.has(path)) {
 			global_class_list.push_back(class_by_path[path]);
 		}
-		ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(path);
-		if (uid != ResourceUID::INVALID_ID) {
-			uid_entries.push_back(Pair<ResourceUID::ID, String>(uid, path));
+		ResourceUIDTypes::ID uid = EditorFileSystem::get_singleton()->get_file_uid(path);
+		if (uid != ResourceUIDTypes::INVALID_ID) {
+			uid_entries.push_back(Pair<ResourceUIDTypes::ID, String>(uid, path));
 		}
 	}
 

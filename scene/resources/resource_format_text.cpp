@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/property_utils.h"
@@ -490,8 +491,8 @@ Error ResourceLoaderText::load() {
 
 		if (next_tag.fields.has("uid")) {
 			String uidt = next_tag.fields["uid"];
-			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
-			if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+			ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+			if (uid != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 				// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 				path = ResourceUID::get_singleton()->get_id_path(uid);
 			} else {
@@ -951,8 +952,8 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 		if (next_tag.fields.has("uid")) {
 			// If uid exists, return uid in text format, not the path.
 			String uidt = next_tag.fields["uid"];
-			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
-			if (uid != ResourceUID::INVALID_ID) {
+			ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+			if (uid != ResourceUIDTypes::INVALID_ID) {
 				fallback_path = path; // Used by Dependency Editor, in case uid path fails.
 				path = ResourceUID::get_singleton()->id_to_text(uid);
 				using_uid = true;
@@ -1020,12 +1021,12 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			if (fw.is_null()) {
 				fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 
-				if (res_uid == ResourceUID::INVALID_ID) {
+				if (res_uid == ResourceUIDTypes::INVALID_ID) {
 					res_uid = ResourceSaver::get_resource_id_for_path(p_path);
 				}
 
 				String uid_text = "";
-				if (res_uid != ResourceUID::INVALID_ID) {
+				if (res_uid != ResourceUIDTypes::INVALID_ID) {
 					uid_text = " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"";
 				}
 
@@ -1051,8 +1052,8 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 			if (next_tag.fields.has("uid")) {
 				String uidt = next_tag.fields["uid"];
-				ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
-				if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+				ResourceUIDTypes::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				if (uid != ResourceUIDTypes::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					path = ResourceUID::get_singleton()->get_id_path(uid);
 				}
@@ -1074,8 +1075,8 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 			String s = "[ext_resource type=\"" + type + "\"";
 
-			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(path);
-			if (uid != ResourceUID::INVALID_ID) {
+			ResourceUIDTypes::ID uid = ResourceSaver::get_resource_id_for_path(path);
+			if (uid != ResourceUIDTypes::INVALID_ID) {
 				s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 			}
 			s += " path=\"" + path + "\" id=\"" + id + "\"]";
@@ -1176,7 +1177,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	if (tag.fields.has("uid")) {
 		res_uid = ResourceUID::get_singleton()->text_to_id(tag.fields["uid"]);
 	} else {
-		res_uid = ResourceUID::INVALID_ID;
+		res_uid = ResourceUIDTypes::INVALID_ID;
 	}
 
 	if (!p_skip_first_tag) {
@@ -1391,7 +1392,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	return tag.fields["type"];
 }
 
-ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
+ResourceUIDTypes::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	error = OK;
 
 	lines = 1;
@@ -1406,7 +1407,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 
 	if (err) {
 		_printerr();
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	if (tag.fields.has("uid")) { //field is optional
@@ -1414,7 +1415,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 		return ResourceUID::get_singleton()->text_to_id(uidt);
 	}
 
-	return ResourceUID::INVALID_ID;
+	return ResourceUIDTypes::INVALID_ID;
 }
 
 /////////////////////
@@ -1549,15 +1550,15 @@ String ResourceFormatLoaderText::get_resource_script_class(const String &p_path)
 	return loader.recognize_script_class(f);
 }
 
-ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
+ResourceUIDTypes::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
 	const String ext = p_path.get_extension().to_lower();
 	if (ext != "tscn" && ext != "tres") {
-		return ResourceUID::INVALID_ID;
+		return ResourceUIDTypes::INVALID_ID;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
-		return ResourceUID::INVALID_ID; //could not read
+		return ResourceUIDTypes::INVALID_ID; //could not read
 	}
 
 	ResourceLoaderText loader;
@@ -1798,9 +1799,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
 
-		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
+		ResourceUIDTypes::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
 
-		if (uid != ResourceUID::INVALID_ID) {
+		if (uid != ResourceUIDTypes::INVALID_ID) {
 			title += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
 
@@ -1870,8 +1871,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		String s = "[ext_resource type=\"" + sorted_er[i].resource->get_save_class() + "\"";
 
-		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p, false);
-		if (uid != ResourceUID::INVALID_ID) {
+		ResourceUIDTypes::ID uid = ResourceSaver::get_resource_id_for_path(p, false);
+		if (uid != ResourceUIDTypes::INVALID_ID) {
 			s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
 		s += " path=\"" + p + "\" id=\"" + sorted_er[i].id + "\"]\n";
@@ -2147,7 +2148,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	return OK;
 }
 
-Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
+Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUIDTypes::ID p_uid) {
 	open(p_f, true);
 	ERR_FAIL_COND_V(error != OK, error);
 	ignore_resource_parsing = true;
@@ -2190,7 +2191,7 @@ Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const Strin
 	return saver.save(p_path, p_resource, p_flags);
 }
 
-Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUIDTypes::ID p_uid) {
 	String lc = p_path.to_lower();
 	if (!lc.ends_with(".tscn") && !lc.ends_with(".tres")) {
 		return ERR_FILE_UNRECOGNIZED;

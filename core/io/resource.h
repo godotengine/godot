@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/resource_uid.h" // IWYU pragma: export. Make available to all resources.
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/self_list.h"

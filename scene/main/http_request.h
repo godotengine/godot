@@ -34,9 +34,10 @@
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class FileAccess;
+class StreamPeerGZIP;
 class Thread;
 class Timer;
-class StreamPeerGZIP;
 
 class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);
