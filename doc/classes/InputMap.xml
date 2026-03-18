@@ -23,9 +23,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Removes an [InputEvent] from an action. This [InputEvent] will no longer trigger the action.
-				For removing all [InputEvent]s from an action, see [method action_erase_events].
-				For including actions instead, see [method action_add_event].
+				Removes an [InputEvent] from an action. This [InputEvent] will no longer trigger the action. To remove all [InputEvent]s from an action, use [method action_erase_events]. To include actions instead, use [method action_add_event].
 			</description>
 		</method>
 		<method name="action_erase_events">
