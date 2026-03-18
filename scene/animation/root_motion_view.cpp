@@ -32,8 +32,6 @@
 
 #include "root_motion_view.h"
 
-#include "core/config/engine.h"
-#include "core/object/class_db.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/resources/material.h"
 

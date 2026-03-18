@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "servers/rendering/renderer_rd/effects/spatial_upscaler.h"
-#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
+#include "spatial_upscaler.h"
+
+#include "../storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/fsr_upscale.glsl.gen.h"
-#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 
 namespace RendererRD {
 
@@ -64,12 +64,12 @@ private:
 		float upscaled_height;
 		float sharpness;
 		int pass;
-		int pad[2];
+		int _unused0, _unused1;
 	};
 
 	FsrUpscaleShaderRD fsr_shader;
 	RID shader_version;
-	PipelineDeferredRD pipeline;
+	RID pipeline;
 };
 
 } // namespace RendererRD

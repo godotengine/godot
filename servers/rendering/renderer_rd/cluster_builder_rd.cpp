@@ -29,9 +29,8 @@
 /**************************************************************************/
 
 #include "cluster_builder_rd.h"
-
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_globals.h" // IWYU pragma: keep. RENDER_TIMESTAMP macro uses RSG.
+#include "servers/rendering/rendering_server_globals.h"
 
 ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	RD::VertexFormatID vertex_format;
@@ -288,12 +287,12 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 }
 ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
-	RD::get_singleton()->free_rid(sphere_vertex_buffer);
-	RD::get_singleton()->free_rid(sphere_index_buffer);
-	RD::get_singleton()->free_rid(cone_vertex_buffer);
-	RD::get_singleton()->free_rid(cone_index_buffer);
-	RD::get_singleton()->free_rid(box_vertex_buffer);
-	RD::get_singleton()->free_rid(box_index_buffer);
+	RD::get_singleton()->free(sphere_vertex_buffer);
+	RD::get_singleton()->free(sphere_index_buffer);
+	RD::get_singleton()->free(cone_vertex_buffer);
+	RD::get_singleton()->free(cone_index_buffer);
+	RD::get_singleton()->free(box_vertex_buffer);
+	RD::get_singleton()->free(box_index_buffer);
 
 	cluster_render.cluster_render_shader.version_free(cluster_render.shader_version);
 	cluster_store.cluster_store_shader.version_free(cluster_store.shader_version);
@@ -307,9 +306,9 @@ void ClusterBuilderRD::_clear() {
 		return;
 	}
 
-	RD::get_singleton()->free_rid(cluster_buffer);
-	RD::get_singleton()->free_rid(cluster_render_buffer);
-	RD::get_singleton()->free_rid(element_buffer);
+	RD::get_singleton()->free(cluster_buffer);
+	RD::get_singleton()->free(cluster_render_buffer);
+	RD::get_singleton()->free(element_buffer);
 	cluster_buffer = RID();
 	cluster_render_buffer = RID();
 	element_buffer = RID();
@@ -320,7 +319,7 @@ void ClusterBuilderRD::_clear() {
 	render_element_max = 0;
 	render_element_count = 0;
 
-	RD::get_singleton()->free_rid(framebuffer);
+	RD::get_singleton()->free(framebuffer);
 	framebuffer = RID();
 
 	cluster_render_uniform_set = RID();
@@ -502,7 +501,7 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RendererRD::MaterialStorage::store_camera(adjusted_projection, state.projection);
 			state.inv_z_far = 1.0 / z_far;
-			state.screen_to_clusters_shift = Math::get_shift_from_power_of_2(cluster_size);
+			state.screen_to_clusters_shift = get_shift_from_power_of_2(cluster_size);
 			state.screen_to_clusters_shift -= divisor; //screen is smaller, shift one less
 
 			state.cluster_screen_width = cluster_screen_size.x;
@@ -601,7 +600,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	push_constant.screen_size[1] = screen_size.y;
 	push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 	push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-	push_constant.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
+	push_constant.cluster_shift = get_shift_from_power_of_2(cluster_size);
 	push_constant.cluster_type = p_element;
 	push_constant.orthogonal = camera_orthogonal;
 	push_constant.z_far = z_far;
@@ -637,5 +636,5 @@ ClusterBuilderRD::ClusterBuilderRD() {
 
 ClusterBuilderRD::~ClusterBuilderRD() {
 	_clear();
-	RD::get_singleton()->free_rid(state_uniform);
+	RD::get_singleton()->free(state_uniform);
 }

@@ -38,8 +38,6 @@ class EditorUndoRedoManager : public Object {
 
 	static EditorUndoRedoManager *singleton;
 
-	static constexpr uint64_t UNSAVED_VERSION = 0;
-
 public:
 	enum SpecialHistory {
 		GLOBAL_HISTORY = 0,

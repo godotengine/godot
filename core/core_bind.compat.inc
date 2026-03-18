@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "core_bind.h"
-
-#include "core/object/class_db.h"
-
 namespace CoreBind {
 
 // Semaphore

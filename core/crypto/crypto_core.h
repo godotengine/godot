@@ -30,12 +30,7 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
-
-#include <cstddef>
-#include <cstdint>
-
-class String;
+#include "core/object/ref_counted.h"
 
 class CryptoCore {
 public:

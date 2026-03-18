@@ -54,8 +54,7 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
-	// Orthonormalizable check is done in Vector3 class below.
-	// Gram-Schmidt Process:
+	// Gram-Schmidt Process
 
 	Vector3 x = get_column(0);
 	Vector3 y = get_column(1);

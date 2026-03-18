@@ -32,13 +32,9 @@
 
 #include "mono_gc_handle.h"
 
-#include "core/variant/callable.h"
-
-#ifdef GD_MONO_HOT_RELOAD
 #include "core/os/mutex.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
-#endif
+#include "core/variant/callable.h"
 
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;

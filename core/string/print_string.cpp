@@ -33,8 +33,6 @@
 #include "core/core_globals.h"
 #include "core/os/os.h"
 
-#include <cstdio>
-
 static PrintHandlerList *print_handler_list = nullptr;
 static thread_local bool is_printing = false;
 
@@ -343,14 +341,6 @@ bool is_print_verbose_enabled() {
 	return OS::get_singleton()->is_stdout_verbose();
 }
 
-String stringify_variants(const Span<Variant> &p_vars) {
-	if (p_vars.is_empty()) {
-		return String();
-	}
-	String result = String(p_vars[0]);
-	for (const Variant &v : Span(p_vars.ptr() + 1, p_vars.size() - 1)) {
-		result += ' ';
-		result += v.operator String();
-	}
-	return result;
+String stringify_variants(const Variant &p_var) {
+	return p_var.operator String();
 }

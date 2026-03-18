@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing Windows fnt-specific data.
  *
- * Copyright (C) 2003-2025 by
+ * Copyright (C) 2003-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -93,7 +93,8 @@ FT_BEGIN_HEADER
    *     second default codepage that most international versions of Windows
    *     have.  It is one of the OEM codepages from
    *
-   *     https://learn.microsoft.com/windows/win32/intl/code-page-identifiers ,
+   *     https://docs.microsoft.com/en-us/windows/desktop/intl/code-page-identifiers
+   *     ,
    *
    *     and is used for the 'DOS boxes', to support legacy applications.  A
    *     German Windows version for example usually uses ANSI codepage 1252

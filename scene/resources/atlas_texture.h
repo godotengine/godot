@@ -40,8 +40,7 @@ class AtlasTexture : public Texture2D {
 
 protected:
 	Ref<Texture2D> atlas;
-	Rect2 region; // Only for property value.
-	Rect2 rounded_region; // Region with rounded size (image size is always integer).
+	Rect2 region;
 	Rect2 margin;
 	bool filter_clip = false;
 

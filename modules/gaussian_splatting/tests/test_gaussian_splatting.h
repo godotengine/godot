@@ -1,0 +1,38 @@
+/**************************************************************************/
+/*  test_gaussian_splatting.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+
+#pragma once
+
+// Main test header that includes all Gaussian Splatting tests
+// This file is included by the generated modules_tests.gen.h
+
+#include "tests/test_macros.h"
+
+// Include all test suites
+#include "test_gaussian_data.h"
+#include "test_gpu_streaming.h"
+#include "test_gpu_sorting.h"
+#include "test_compute_infrastructure.h"
+#include "test_phase1_integration.h"
+#include "test_painterly_pipeline.h"
+#include "test_render_validation.h"
+#include "test_diagnostics.h"
+#include "test_logger_rate_limit.h"
+#include "test_vram_budget_regulator.h"
+#include "test_renderer_pipeline.h"
+#include "test_sort_benchmark_metrics.h"
+#include "test_gaussian_splat_world_io.h"
+#include "test_view_transform.h"
+#include "test_memory_leak_detection.h"
+
+namespace TestGaussianSplatting {
+
+// Main test runner that executes all tests when called with --test
+void test();
+
+} // namespace TestGaussianSplatting

@@ -4,7 +4,7 @@
  *
  *   Single object library component (body only).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,6 +19,7 @@
 #define  FT_MAKE_OPTION_SINGLE_OBJECT
 
 #include "ftadvanc.c"
+#include "ftcalc.c"
 #include "ftcolor.c"
 #include "ftdbgmem.c"
 #include "fterrors.c"
@@ -34,7 +35,6 @@
 #include "ftsnames.c"
 #include "ftstream.c"
 #include "fttrigon.c"
-#include "ftcalc.c"  /* included after FT_MulFix callers to inline it */
 #include "ftutil.c"
 
 

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class KeywordClassAndNamespaceTest
 {
     [Fact]
-    public async Task GenerateScriptMethodsTest()
+    public async void GenerateScriptMethodsTest()
     {
         await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
             "KeywordClassNameAndNamespace.cs",

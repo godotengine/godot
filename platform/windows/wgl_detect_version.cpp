@@ -31,10 +31,8 @@
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #include "wgl_detect_version.h"
-
 #include "os_windows.h"
 
-#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/variant/dictionary.h"
@@ -42,7 +40,6 @@
 #include <windows.h>
 
 #include <dwmapi.h>
-
 #include <cstdio>
 #include <cstdlib>
 

@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/qa/qa_sort_tie_breaker.gd" id="tie_script"]
+
+[node name="QASortTieBreaker" type="Node3D"]
+script = ExtResource("tie_script")
+
+[node name="SplatNode" type="GaussianSplatNode3D" parent="."]
+quality/max_splat_count = 10
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true

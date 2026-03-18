@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Todos Reconocidos"
+
 msgid "Save"
 msgstr "Guardar"
 
@@ -38,9 +41,6 @@ msgstr "Seleccionar Carpeta Actual"
 
 msgid "Select This Folder"
 msgstr "Seleccionar Esta Carpeta"
-
-msgid "All Recognized"
-msgstr "Todos Reconocidos"
 
 msgid "Open a File"
 msgstr "Abrir un Archivo"

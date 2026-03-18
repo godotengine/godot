@@ -260,14 +260,10 @@ enum class Type : uint8_t
 
 /**
  * @brief A data structure representing a point in two-dimensional space.
- *
- * This structure defines a single point using Cartesian coordinates.
- * It is typically used for specifying positions or coordinates in 2D graphics.
  */
 struct Point
 {
-    float x;  ///< The x-coordinate of the point.
-    float y;  ///< The y-coordinate of the point.
+    float x, y;
 };
 
 
@@ -457,7 +453,7 @@ public:
      *
      * @return The class type ID of the Paint instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     virtual Type type() const noexcept = 0;
 
@@ -466,7 +462,7 @@ public:
      *
      * This is reserved to specify an paint instance in a scene.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     uint32_t id = 0;
 
@@ -572,7 +568,7 @@ public:
      *
      * @return The class type ID of the Fill instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     virtual Type type() const noexcept = 0;
 
@@ -762,7 +758,7 @@ public:
      *
      * @return The class type ID of the LinearGradient instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 
@@ -827,7 +823,7 @@ public:
      *
      * @return The class type ID of the LinearGradient instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 
@@ -1227,7 +1223,7 @@ public:
      *
      * @return The class type ID of the Shape instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 
@@ -1365,7 +1361,7 @@ public:
      *
      * @return The class type ID of the Picture instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 
@@ -1465,7 +1461,7 @@ public:
      *
      * @return The class type ID of the Scene instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 
@@ -1497,22 +1493,13 @@ public:
      * It sets the font name, size and optionally the style.
      *
      * @param[in] name The name of the font. This should correspond to a font available in the canvas.
-     *                 If set to @c nullptr, ThorVG will attempt to select a fallback font available on the system.
      * @param[in] size The size of the font in points. This determines how large the text will appear.
      * @param[in] style The style of the font. It can be used to set the font to 'italic'.
      *                  If not specified, the default style is used. Only 'italic' style is supported currently.
      *
      * @retval Result::InsufficientCondition when the specified @p name cannot be found.
      *
-     * @note If the @p name is not specified, ThorVG will select any available font candidate.
-     * @since 1.0
-     *
-     * @code
-     * // Tip for fallback support to use any available font.
-     * if (text->font("Arial", 24) != tvg::Result::Success) {
-     *     text->font(nullptr, 24);
-     * }
-     * @endcode
+     * @note Experimental API
      */
     Result font(const char* name, float size, const char* style = nullptr) noexcept;
 
@@ -1632,7 +1619,7 @@ public:
      *
      * @return The class type ID of the Text instance.
      *
-     * @note Experimental API
+     * @since Experimental API
      */
     Type type() const noexcept override;
 

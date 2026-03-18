@@ -495,7 +495,7 @@ public:
      * @return <tt>true</tt> if the specified set is equal to this set.
      * @stable ICU 2.0
      */
-    bool operator==(const UnicodeSet& o) const;
+    virtual bool operator==(const UnicodeSet& o) const;
 
     /**
      * Compares the specified object with this set for equality.  Returns
@@ -522,7 +522,7 @@ public:
      * @see Object#hashCode()
      * @stable ICU 2.0
      */
-    int32_t hashCode() const;
+    virtual int32_t hashCode() const;
 
     /**
      * Get a UnicodeSet pointer from a USet
@@ -792,7 +792,7 @@ public:
      * @stable ICU 2.0
      * @see getRangeCount
      */
-    int32_t size() const;
+    virtual int32_t size() const;
 
     /**
      * Returns <tt>true</tt> if this set contains no elements.
@@ -800,7 +800,7 @@ public:
      * @return <tt>true</tt> if this set contains no elements.
      * @stable ICU 2.0
      */
-    UBool isEmpty() const;
+    virtual UBool isEmpty() const;
 
     /**
      * @return true if this set contains multi-character strings or the empty string.
@@ -825,7 +825,7 @@ public:
      * @return true if the test condition is met
      * @stable ICU 2.0
      */
-    UBool contains(UChar32 start, UChar32 end) const;
+    virtual UBool contains(UChar32 start, UChar32 end) const;
 
     /**
      * Returns <tt>true</tt> if this set contains the given
@@ -843,7 +843,7 @@ public:
      * @return true if the test condition is met
      * @stable ICU 2.4
      */
-    UBool containsAll(const UnicodeSet& c) const;
+    virtual UBool containsAll(const UnicodeSet& c) const;
 
     /**
      * Returns true if this set contains all the characters
@@ -1021,7 +1021,7 @@ public:
      * Implement UnicodeMatcher::matches()
      * @stable ICU 2.4
      */
-    UMatchDegree matches(const Replaceable& text,
+    virtual UMatchDegree matches(const Replaceable& text,
                          int32_t& offset,
                          int32_t limit,
                          UBool incremental) override;
@@ -1102,6 +1102,7 @@ public:
      */
     UChar32 charAt(int32_t index) const;
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Returns a C++ "range" for iterating over the code points of this set.
      *
@@ -1113,7 +1114,7 @@ public:
      * \endcode
      *
      * @return a "range" object for iterating over the code points of this set.
-     * @stable ICU 76
+     * @draft ICU 76
      * @see ranges
      * @see strings
      * @see begin
@@ -1139,7 +1140,7 @@ public:
      * \endcode
      *
      * @return a "range" object for iterating over the code point ranges of this set.
-     * @stable ICU 76
+     * @draft ICU 76
      * @see codePoints
      * @see strings
      * @see begin
@@ -1163,7 +1164,7 @@ public:
      * \endcode
      *
      * @return a "range" object for iterating over the strings of this set.
-     * @stable ICU 76
+     * @draft ICU 76
      * @see codePoints
      * @see ranges
      * @see begin
@@ -1172,6 +1173,7 @@ public:
     inline U_HEADER_NESTED_NAMESPACE::USetStrings strings() const {
         return U_HEADER_NESTED_NAMESPACE::USetStrings(toUSet());
     }
+#endif  // U_HIDE_DRAFT_API
 
 #ifndef U_HIDE_DRAFT_API
     /**
@@ -1229,7 +1231,7 @@ public:
      * to this set.
      * @stable ICU 2.0
      */
-    UnicodeSet& add(UChar32 start, UChar32 end);
+    virtual UnicodeSet& add(UChar32 start, UChar32 end);
 
     /**
      * Adds the specified character to this set if it is not already
@@ -1335,7 +1337,7 @@ public:
      * @param end last character, inclusive, of range
      * @stable ICU 2.0
      */
-    UnicodeSet& retain(UChar32 start, UChar32 end);
+    virtual UnicodeSet& retain(UChar32 start, UChar32 end);
 
 
     /**
@@ -1373,7 +1375,7 @@ public:
      * from this set.
      * @stable ICU 2.0
      */
-    UnicodeSet& remove(UChar32 start, UChar32 end);
+    virtual UnicodeSet& remove(UChar32 start, UChar32 end);
 
     /**
      * Removes the specified character from this set if it is present.
@@ -1410,7 +1412,7 @@ public:
      * A frozen set will not be modified.
      * @stable ICU 2.0
      */
-    UnicodeSet& complement();
+    virtual UnicodeSet& complement();
 
     /**
      * Complements the specified range in this set.  Any character in
@@ -1424,7 +1426,7 @@ public:
      * @param end last character, inclusive, of range
      * @stable ICU 2.0
      */
-    UnicodeSet& complement(UChar32 start, UChar32 end);
+    virtual UnicodeSet& complement(UChar32 start, UChar32 end);
 
     /**
      * Complements the specified character in this set.  The character
@@ -1461,7 +1463,7 @@ public:
      * @see #add(UChar32, UChar32)
      * @stable ICU 2.0
      */
-    UnicodeSet& addAll(const UnicodeSet& c);
+    virtual UnicodeSet& addAll(const UnicodeSet& c);
 
     /**
      * Retains only the elements in this set that are contained in the
@@ -1474,7 +1476,7 @@ public:
      * @param c set that defines which elements this set will retain.
      * @stable ICU 2.0
      */
-    UnicodeSet& retainAll(const UnicodeSet& c);
+    virtual UnicodeSet& retainAll(const UnicodeSet& c);
 
     /**
      * Removes from this set all of its elements that are contained in the
@@ -1487,7 +1489,7 @@ public:
      *          this set.
      * @stable ICU 2.0
      */
-    UnicodeSet& removeAll(const UnicodeSet& c);
+    virtual UnicodeSet& removeAll(const UnicodeSet& c);
 
     /**
      * Complements in this set all elements contained in the specified
@@ -1499,7 +1501,7 @@ public:
      *          this set.
      * @stable ICU 2.4
      */
-    UnicodeSet& complementAll(const UnicodeSet& c);
+    virtual UnicodeSet& complementAll(const UnicodeSet& c);
 
     /**
      * Removes all of the elements from this set.  This set will be
@@ -1507,7 +1509,7 @@ public:
      * A frozen set will not be modified.
      * @stable ICU 2.0
      */
-    UnicodeSet& clear();
+    virtual UnicodeSet& clear();
 
     /**
      * Close this set over the given attribute.  For the attribute
@@ -1544,7 +1546,7 @@ public:
      * @return a reference to this set.
      * @stable ICU 4.2
      */
-    UnicodeSet &removeAllStrings();
+    virtual UnicodeSet &removeAllStrings();
 
     /**
      * Iteration method that returns the number of ranges contained in
@@ -1553,7 +1555,7 @@ public:
      * @see #getRangeEnd
      * @stable ICU 2.4
      */
-    int32_t getRangeCount() const;
+    virtual int32_t getRangeCount() const;
 
     /**
      * Iteration method that returns the first character in the
@@ -1562,7 +1564,7 @@ public:
      * @see #getRangeEnd
      * @stable ICU 2.4
      */
-    UChar32 getRangeStart(int32_t index) const;
+    virtual UChar32 getRangeStart(int32_t index) const;
 
     /**
      * Iteration method that returns the last character in the
@@ -1571,7 +1573,7 @@ public:
      * @see #getRangeEnd
      * @stable ICU 2.4
      */
-    UChar32 getRangeEnd(int32_t index) const;
+    virtual UChar32 getRangeEnd(int32_t index) const;
 
     /**
      * Serializes this set into an array of 16-bit integers.  Serialization
@@ -1629,7 +1631,7 @@ public:
      * A frozen set will not be modified.
      * @stable ICU 2.4
      */
-    UnicodeSet& compact();
+    virtual UnicodeSet& compact();
 
     /**
      * Return the class ID for this class.  This is useful only for

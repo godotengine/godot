@@ -30,21 +30,30 @@
 
 #pragma once
 
+#include "modules/modules_enabled.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
-#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/render_data.h"
+#include "core/templates/local_vector.h"
+
+#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
+#include "core/object/ref_counted.h"
+#endif
+
+#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
+#include "modules/gaussian_splatting/renderer/gaussian_splat_renderer.h"
+#endif
 
 class RenderDataRD : public RenderData {
 	GDCLASS(RenderDataRD, RenderData);
 
 public:
 	// Access methods to expose data externally
-	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override { return render_buffers; }
-	virtual RenderSceneData *get_render_scene_data() const override { return scene_data; }
+	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override;
+	virtual RenderSceneData *get_render_scene_data() const override;
 
-	virtual RID get_environment() const override { return environment; }
-	virtual RID get_camera_attributes() const override { return camera_attributes; }
+	virtual RID get_environment() const override;
+	virtual RID get_camera_attributes() const override;
 
 	// Members are publicly accessible within the render engine.
 	Ref<RenderSceneBuffersRD> render_buffers;
@@ -53,10 +62,14 @@ public:
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
-	const PagedArray<RID> *voxel_gi_instances = nullptr;
-	const PagedArray<RID> *decals = nullptr;
-	const PagedArray<RID> *lightmaps = nullptr;
+        const PagedArray<RID> *voxel_gi_instances = nullptr;
+        const PagedArray<RID> *decals = nullptr;
+        const PagedArray<RID> *lightmaps = nullptr;
 	const PagedArray<RID> *fog_volumes = nullptr;
+        const PagedArray<RID> *gaussian_splats = nullptr;
+#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
+	LocalVector<Ref<GaussianSplatRenderer>> gaussian_splat_renderers;
+#endif
 	RID environment;
 	RID camera_attributes;
 	RID compositor;
@@ -75,9 +88,7 @@ public:
 
 	bool lightmap_bicubic_filter = false;
 
-	float window_output_max_value = 1.0;
-
-	RenderingServerTypes::RenderInfo *render_info = nullptr;
+	RenderingMethod::RenderInfo *render_info = nullptr;
 
 	/* Viewport data */
 	bool transparent_bg = false;

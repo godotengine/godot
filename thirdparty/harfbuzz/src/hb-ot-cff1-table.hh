@@ -326,7 +326,7 @@ struct Charset0
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    mapping->resize (num_glyphs, false);
     for (hb_codepoint_t gid = 1; gid < num_glyphs; gid++)
       mapping->arrayZ[gid] = {sids[gid - 1], gid};
   }
@@ -426,7 +426,7 @@ struct Charset1_2 {
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    mapping->resize (num_glyphs, false);
     hb_codepoint_t gid = 1;
     if (gid >= num_glyphs)
       return;

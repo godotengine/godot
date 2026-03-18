@@ -4,8 +4,7 @@ import os
 import shutil
 import subprocess
 
-from methods import get_version_info
-from platform_methods import lipo
+from platform_methods import get_build_version, lipo
 
 
 def generate_bundle(target, source, env):
@@ -45,14 +44,13 @@ def generate_bundle(target, source, env):
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
         if "mono" in env.module_version_string:
             shutil.copytree(env.Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
-        version = get_version_info("", True)
+        version = get_build_version(False)
+        short_version = get_build_version(True)
         with open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
             with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
-                    line = line.replace("$version", "{major}.{minor}.{patch}.{status}.{build}".format(**version))
-                    line = line.replace("$short_version", "{major}.{minor}.{patch}".format(**version))
-                    if version["build"] != "official" and version["build"] != "steam":
-                        line = line.replace("org.godotengine.godot", "org.godotengine.godot." + version["build"])
+                    line = line.replace("$version", version)
+                    line = line.replace("$short_version", short_version)
                     fout.write(line)
 
         # Sign .app bundle.

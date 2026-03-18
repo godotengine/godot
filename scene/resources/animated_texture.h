@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/os/rw_lock.h"
 #include "scene/resources/texture.h"
 
 class AnimatedTexture : public Texture2D {

@@ -33,8 +33,6 @@
 #include "core/templates/vset.h"
 #include "scene/3d/physics/physics_body_3d.h"
 
-class PhysicsMaterial;
-
 class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 
@@ -137,7 +135,7 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState3D>)
+	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
 
 	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 

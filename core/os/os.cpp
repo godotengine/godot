@@ -35,15 +35,13 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
-#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
-#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include <thirdparty/mingw-std-threads/mingw.thread.h>
+#include "thirdparty/mingw-std-threads/mingw.thread.h"
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -55,16 +53,6 @@ uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
 	return singleton;
-}
-
-bool OS::prefer_meta_over_ctrl() {
-#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
-	return true;
-#elif defined(WEB_ENABLED)
-	return singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
-#else
-	return false;
-#endif
 }
 
 uint64_t OS::get_ticks_msec() const {
@@ -321,13 +309,8 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// Path to macOS .app bundle embedded icon (.icns file).
+// Path to macOS .app bundle embedded icon
 String OS::get_bundle_icon_path() const {
-	return String();
-}
-
-// Name of macOS .app bundle embedded icon (Liquid Glass asset name).
-String OS::get_bundle_icon_name() const {
 	return String();
 }
 
@@ -408,10 +391,6 @@ uint64_t OS::get_static_memory_peak_usage() const {
 
 Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
-}
-
-String OS::get_cwd() const {
-	return ".";
 }
 
 Dictionary OS::get_memory_info() const {
@@ -656,7 +635,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return List<String>(restart_commandline);
+	return restart_commandline;
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {

@@ -20,13 +20,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "src/dec/common_dec.h"
-#include "src/dsp/dsp.h"
 #include "src/enc/cost_enc.h"
 #include "src/enc/vp8i_enc.h"
-#include "src/utils/bit_writer_utils.h"
 #include "src/utils/utils.h"
-#include "src/webp/types.h"
 
 #if !defined(DISABLE_TOKEN_BUFFER)
 
@@ -38,51 +34,51 @@ typedef uint16_t token_t;  // bit #15: bit value
                            // bit #14: flags for constant proba or idx
                            // bits #0..13: slot or constant proba
 struct VP8Tokens {
-  VP8Tokens* next;         // pointer to next page
+  VP8Tokens* next_;        // pointer to next page
 };
-// Token data is located in memory just after the 'next' field.
+// Token data is located in memory just after the next_ field.
 // This macro is used to return their address and hide the trick.
 #define TOKEN_DATA(p) ((const token_t*)&(p)[1])
 
 //------------------------------------------------------------------------------
 
 void VP8TBufferInit(VP8TBuffer* const b, int page_size) {
-  b->tokens = NULL;
-  b->pages = NULL;
-  b->last_page = &b->pages;
-  b->left = 0;
-  b->page_size = (page_size < MIN_PAGE_SIZE) ? MIN_PAGE_SIZE : page_size;
-  b->error = 0;
+  b->tokens_ = NULL;
+  b->pages_ = NULL;
+  b->last_page_ = &b->pages_;
+  b->left_ = 0;
+  b->page_size_ = (page_size < MIN_PAGE_SIZE) ? MIN_PAGE_SIZE : page_size;
+  b->error_ = 0;
 }
 
 void VP8TBufferClear(VP8TBuffer* const b) {
   if (b != NULL) {
-    VP8Tokens* p = b->pages;
+    VP8Tokens* p = b->pages_;
     while (p != NULL) {
-      VP8Tokens* const next = p->next;
+      VP8Tokens* const next = p->next_;
       WebPSafeFree(p);
       p = next;
     }
-    VP8TBufferInit(b, b->page_size);
+    VP8TBufferInit(b, b->page_size_);
   }
 }
 
 static int TBufferNewPage(VP8TBuffer* const b) {
   VP8Tokens* page = NULL;
-  if (!b->error) {
-    const size_t size = sizeof(*page) + b->page_size * sizeof(token_t);
+  if (!b->error_) {
+    const size_t size = sizeof(*page) + b->page_size_ * sizeof(token_t);
     page = (VP8Tokens*)WebPSafeMalloc(1ULL, size);
   }
   if (page == NULL) {
-    b->error = 1;
+    b->error_ = 1;
     return 0;
   }
-  page->next = NULL;
+  page->next_ = NULL;
 
-  *b->last_page = page;
-  b->last_page = &page->next;
-  b->left = b->page_size;
-  b->tokens = (token_t*)TOKEN_DATA(page);
+  *b->last_page_ = page;
+  b->last_page_ = &page->next_;
+  b->left_ = b->page_size_;
+  b->tokens_ = (token_t*)TOKEN_DATA(page);
   return 1;
 }
 
@@ -96,9 +92,9 @@ static WEBP_INLINE uint32_t AddToken(VP8TBuffer* const b, uint32_t bit,
                                      proba_t* const stats) {
   assert(proba_idx < FIXED_PROBA_BIT);
   assert(bit <= 1);
-  if (b->left > 0 || TBufferNewPage(b)) {
-    const int slot = --b->left;
-    b->tokens[slot] = (bit << 15) | proba_idx;
+  if (b->left_ > 0 || TBufferNewPage(b)) {
+    const int slot = --b->left_;
+    b->tokens_[slot] = (bit << 15) | proba_idx;
   }
   VP8RecordStats(bit, stats);
   return bit;
@@ -108,9 +104,9 @@ static WEBP_INLINE void AddConstantToken(VP8TBuffer* const b,
                                          uint32_t bit, uint32_t proba) {
   assert(proba < 256);
   assert(bit <= 1);
-  if (b->left > 0 || TBufferNewPage(b)) {
-    const int slot = --b->left;
-    b->tokens[slot] = (bit << 15) | FIXED_PROBA_BIT | proba;
+  if (b->left_ > 0 || TBufferNewPage(b)) {
+    const int slot = --b->left_;
+    b->tokens_[slot] = (bit << 15) | FIXED_PROBA_BIT | proba;
   }
 }
 
@@ -203,12 +199,12 @@ int VP8RecordCoeffTokens(int ctx, const struct VP8Residual* const res,
 
 int VP8EmitTokens(VP8TBuffer* const b, VP8BitWriter* const bw,
                   const uint8_t* const probas, int final_pass) {
-  const VP8Tokens* p = b->pages;
-  assert(!b->error);
+  const VP8Tokens* p = b->pages_;
+  assert(!b->error_);
   while (p != NULL) {
-    const VP8Tokens* const next = p->next;
-    const int N = (next == NULL) ? b->left : 0;
-    int n = b->page_size;
+    const VP8Tokens* const next = p->next_;
+    const int N = (next == NULL) ? b->left_ : 0;
+    int n = b->page_size_;
     const token_t* const tokens = TOKEN_DATA(p);
     while (n-- > N) {
       const token_t token = tokens[n];
@@ -222,19 +218,19 @@ int VP8EmitTokens(VP8TBuffer* const b, VP8BitWriter* const bw,
     if (final_pass) WebPSafeFree((void*)p);
     p = next;
   }
-  if (final_pass) b->pages = NULL;
+  if (final_pass) b->pages_ = NULL;
   return 1;
 }
 
 // Size estimation
 size_t VP8EstimateTokenSize(VP8TBuffer* const b, const uint8_t* const probas) {
   size_t size = 0;
-  const VP8Tokens* p = b->pages;
-  assert(!b->error);
+  const VP8Tokens* p = b->pages_;
+  assert(!b->error_);
   while (p != NULL) {
-    const VP8Tokens* const next = p->next;
-    const int N = (next == NULL) ? b->left : 0;
-    int n = b->page_size;
+    const VP8Tokens* const next = p->next_;
+    const int N = (next == NULL) ? b->left_ : 0;
+    int n = b->page_size_;
     const token_t* const tokens = TOKEN_DATA(p);
     while (n-- > N) {
       const token_t token = tokens[n];
@@ -263,3 +259,4 @@ void VP8TBufferClear(VP8TBuffer* const b) {
 }
 
 #endif    // !DISABLE_TOKEN_BUFFER
+

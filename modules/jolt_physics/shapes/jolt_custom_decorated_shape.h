@@ -30,10 +30,12 @@
 
 #pragma once
 
-#include <Jolt/Jolt.h>
+#include "jolt_custom_shape_type.h"
 
-#include <Jolt/Physics/Collision/Shape/DecoratedShape.h>
-#include <Jolt/Physics/Collision/TransformedShape.h>
+#include "Jolt/Jolt.h"
+
+#include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+#include "Jolt/Physics/Collision/TransformedShape.h"
 
 class JoltCustomDecoratedShapeSettings : public JPH::DecoratedShapeSettings {
 public:

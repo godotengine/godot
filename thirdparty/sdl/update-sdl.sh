@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.2.28
+VERSION=3.2.16
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -49,19 +49,18 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
-rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
 
 mkdir $target/joystick
 cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
-cp -rv loadso/{dlopen,dummy} $target/loadso
+cp -rv loadso/dlopen $target/loadso
 
 mkdir $target/sensor
-cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor
+cp -rv sensor/{*.{c,h},dummy} $target/sensor
 
 mkdir $target/thread
 cp -rv thread/{*.{c,h},pthread,windows} $target/thread

@@ -30,9 +30,6 @@
 
 #include "skeleton_profile.h"
 
-#include "core/config/engine.h"
-#include "core/object/class_db.h"
-
 bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 	ERR_FAIL_COND_V(is_read_only, false);
 	String path = p_path;
@@ -166,7 +163,7 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < groups.size(); i++) {
 		String path = "groups/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "group_name"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 		if (i > 0) {
 			group_names = group_names + ",";
 		}

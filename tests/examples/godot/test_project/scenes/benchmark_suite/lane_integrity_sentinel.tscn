@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneIntegritySentinel" instance=ExtResource("1")]
+lane_id = "integrity_sentinel"
+lane_name = "Integrity Sentinel"
+lane_description = "Deterministic static viewpoints intended for corruption/regression visual checks."
+lane_preset = "integrity_sentinel"
+default_duration_s = 25.0

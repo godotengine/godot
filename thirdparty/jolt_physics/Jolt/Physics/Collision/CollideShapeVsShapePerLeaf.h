@@ -6,7 +6,6 @@
 
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
-#include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Core/STLLocalAllocator.h>
 
 JPH_NAMESPACE_BEGIN

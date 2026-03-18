@@ -32,8 +32,6 @@
 
 #include "csg_shape.h"
 
-#include "core/object/class_db.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/csg_gizmos.h"
 #endif

@@ -18,7 +18,6 @@
 			<return type="void" />
 			<description>
 				Aligns the camera to the tracked node.
-				[b]Note:[/b] Calling [method force_update_scroll] after this method is not required.
 			</description>
 		</method>
 		<method name="force_update_scroll">

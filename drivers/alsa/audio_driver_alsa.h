@@ -35,10 +35,13 @@
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio_server.h"
 
-typedef struct _snd_pcm snd_pcm_t;
-typedef unsigned long snd_pcm_uframes_t;
+#ifdef SOWRAP_ENABLED
+#include "asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 
 class AudioDriverALSA : public AudioDriver {
 	Thread thread;

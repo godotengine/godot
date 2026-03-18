@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[node name="FormatFixTest" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+current = true
+
+[node name="GaussianSplatNode3D" type="GaussianSplatNode3D" parent="."]
+ply_file_path = "res://tests/fixtures/test_splats.ply"

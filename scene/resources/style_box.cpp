@@ -30,7 +30,6 @@
 
 #include "style_box.h"
 
-#include "core/object/class_db.h"
 #include "scene/main/canvas_item.h"
 
 Size2 StyleBox::get_minimum_size() const {

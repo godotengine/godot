@@ -30,17 +30,16 @@
 
 #pragma once
 
-#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/resource_preloader.h"
 
-class AcceptDialog;
-class Button;
 class EditorFileDialog;
-class ResourcePreloader;
-class Tree;
 
-class ResourcePreloaderEditor : public EditorDock {
-	GDCLASS(ResourcePreloaderEditor, EditorDock);
+class ResourcePreloaderEditor : public PanelContainer {
+	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
 	enum {
 		BUTTON_OPEN_SCENE,
@@ -50,11 +49,8 @@ class ResourcePreloaderEditor : public EditorDock {
 
 	Button *load = nullptr;
 	Button *paste = nullptr;
-	MarginContainer *mc = nullptr;
 	Tree *tree = nullptr;
-
-	bool horizontal = false;
-	bool loading_scene = false;
+	bool loading_scene;
 
 	EditorFileDialog *file = nullptr;
 
@@ -76,9 +72,8 @@ class ResourcePreloaderEditor : public EditorDock {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	static void _bind_methods();
 
 public:
 	void edit(ResourcePreloader *p_preloader);
@@ -89,9 +84,11 @@ class ResourcePreloaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ResourcePreloaderEditorPlugin, EditorPlugin);
 
 	ResourcePreloaderEditor *preloader_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "ResourcePreloader"; }
+	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

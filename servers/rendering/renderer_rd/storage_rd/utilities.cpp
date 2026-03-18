@@ -29,13 +29,13 @@
 /**************************************************************************/
 
 #include "utilities.h"
-
-#include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/environment/gi.h"
-#include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "../environment/fog.h"
+#include "../environment/gi.h"
+#include "gaussian_splat_storage.h"
+#include "light_storage.h"
+#include "mesh_storage.h"
+#include "particles_storage.h"
+#include "texture_storage.h"
 
 using namespace RendererRD;
 
@@ -51,42 +51,45 @@ Utilities::~Utilities() {
 
 /* INSTANCES */
 
-RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
+RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 	if (RendererRD::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-		return RSE::INSTANCE_MESH;
+		return RS::INSTANCE_MESH;
 	}
 	if (RendererRD::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
-		return RSE::INSTANCE_MULTIMESH;
+		return RS::INSTANCE_MULTIMESH;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
-		return RSE::INSTANCE_REFLECTION_PROBE;
+		return RS::INSTANCE_REFLECTION_PROBE;
 	}
 	if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
-		return RSE::INSTANCE_DECAL;
+		return RS::INSTANCE_DECAL;
 	}
 	if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
-		return RSE::INSTANCE_VOXEL_GI;
+		return RS::INSTANCE_VOXEL_GI;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
-		return RSE::INSTANCE_LIGHT;
+		return RS::INSTANCE_LIGHT;
 	}
-	if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
-		return RSE::INSTANCE_LIGHTMAP;
+        if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
+                return RS::INSTANCE_LIGHTMAP;
+        }
+	if (RendererRD::GaussianSplatStorage::get_singleton() && RendererRD::GaussianSplatStorage::get_singleton()->owns_gaussian(p_rid)) {
+		return RS::INSTANCE_GAUSSIAN_SPLAT;
 	}
-	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
-		return RSE::INSTANCE_PARTICLES;
-	}
+        if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
+                return RS::INSTANCE_PARTICLES;
+        }
 	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
-		return RSE::INSTANCE_PARTICLES_COLLISION;
+		return RS::INSTANCE_PARTICLES_COLLISION;
 	}
 	if (RendererRD::Fog::get_singleton()->owns_fog_volume(p_rid)) {
-		return RSE::INSTANCE_FOG_VOLUME;
+		return RS::INSTANCE_FOG_VOLUME;
 	}
 	if (owns_visibility_notifier(p_rid)) {
-		return RSE::INSTANCE_VISIBLITY_NOTIFIER;
+		return RS::INSTANCE_VISIBLITY_NOTIFIER;
 	}
 
-	return RSE::INSTANCE_NONE;
+	return RS::INSTANCE_NONE;
 }
 
 bool Utilities::free(RID p_rid) {
@@ -96,10 +99,13 @@ bool Utilities::free(RID p_rid) {
 		return true;
 	} else if (RendererRD::MeshStorage::get_singleton()->free(p_rid)) {
 		return true;
-	} else if (RendererRD::ParticlesStorage::get_singleton()->free(p_rid)) {
-		return true;
-	} else if (RendererRD::TextureStorage::get_singleton()->free(p_rid)) {
-		return true;
+        } else if (RendererRD::ParticlesStorage::get_singleton()->free(p_rid)) {
+                return true;
+        } else if (RendererRD::GaussianSplatStorage::get_singleton() && RendererRD::GaussianSplatStorage::get_singleton()->owns_gaussian(p_rid)) {
+                RendererRD::GaussianSplatStorage::get_singleton()->gaussian_free(p_rid);
+                return true;
+        } else if (RendererRD::TextureStorage::get_singleton()->free(p_rid)) {
+                return true;
 	} else if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
 		RendererRD::GI::get_singleton()->voxel_gi_free(p_rid);
 		return true;
@@ -300,12 +306,12 @@ void Utilities::update_memory_info() {
 	total_mem_cache = RenderingDevice::get_singleton()->get_memory_usage(RenderingDevice::MEMORY_TOTAL);
 }
 
-uint64_t Utilities::get_rendering_info(RSE::RenderingInfo p_info) {
-	if (p_info == RSE::RENDERING_INFO_TEXTURE_MEM_USED) {
+uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
+	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
 		return texture_mem_cache;
-	} else if (p_info == RSE::RENDERING_INFO_BUFFER_MEM_USED) {
+	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
 		return buffer_mem_cache;
-	} else if (p_info == RSE::RENDERING_INFO_VIDEO_MEM_USED) {
+	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
 		return total_mem_cache;
 	}
 	return 0;
@@ -319,7 +325,7 @@ String Utilities::get_video_adapter_vendor() const {
 	return RenderingDevice::get_singleton()->get_device_vendor_name();
 }
 
-RenderingDeviceEnums::DeviceType Utilities::get_video_adapter_type() const {
+RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
 	return RenderingDevice::get_singleton()->get_device_type();
 }
 

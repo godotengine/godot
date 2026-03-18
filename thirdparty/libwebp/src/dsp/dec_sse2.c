@@ -23,12 +23,9 @@
 #endif
 
 #include <emmintrin.h>
-
-#include "src/dec/vp8i_dec.h"
 #include "src/dsp/common_sse2.h"
-#include "src/dsp/cpu.h"
+#include "src/dec/vp8i_dec.h"
 #include "src/utils/utils.h"
-#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)

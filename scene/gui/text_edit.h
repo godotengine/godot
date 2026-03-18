@@ -288,7 +288,6 @@ private:
 
 	/* Text */
 	Text text;
-	RID text_ci;
 	bool setting_text = false;
 
 	enum AltInputMode {
@@ -333,7 +332,7 @@ private:
 	Array st_args;
 
 	void _clear();
-	void _update_caches(bool p_invalidate_all = false);
+	void _update_caches();
 
 	void _close_ime_window();
 	void _update_ime_window_position();
@@ -457,7 +456,6 @@ private:
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
-	void _set_caret_pos_dirty(bool p_dirty);
 
 	int multicaret_edit_count = 0;
 	bool multicaret_edit_merge_queued = false;
@@ -528,6 +526,7 @@ private:
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	int wrap_at_column = 0;
+	int wrap_right_offset = 10;
 
 	void _update_wrap_at_column(bool p_force = false);
 
@@ -641,14 +640,10 @@ private:
 		Color outline_color = Color(1, 1, 1);
 
 		int line_spacing = 1;
-		int wrap_offset = 10;
 
+		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
-
-#ifndef DISABLE_DEPRECATED
-		Color background_color = Color(1, 1, 1);
-#endif // DISABLE_DEPRECATED
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -660,11 +655,7 @@ private:
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 
-	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
-	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
-
-	/* Theme. */
-	Ref<StyleBox> _get_current_stylebox() const;
+	RID accessibility_text_root_element_nl;
 
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
@@ -792,8 +783,6 @@ public:
 
 	/* Text */
 	// Text properties.
-	RID get_text_canvas_item() const;
-
 	bool has_ime_text() const;
 	void cancel_ime();
 	void apply_ime();
@@ -809,7 +798,7 @@ public:
 
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
-	void set_structured_text_bidi_override_options(const Array &p_args);
+	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_tab_size(const int p_size);
@@ -854,7 +843,6 @@ public:
 	// Text manipulation
 	void clear();
 
-	void _set_text(const String &p_text, bool p_emit_signal = false);
 	void set_text(const String &p_text);
 	String get_text() const;
 
@@ -1094,7 +1082,6 @@ public:
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust
-	bool is_line_in_viewport(int p_line) const;
 	void adjust_viewport_to_caret(int p_caret = 0);
 	void center_viewport_to_caret(int p_caret = 0);
 
@@ -1201,7 +1188,6 @@ public:
 #endif
 
 	TextEdit(const String &p_placeholder = String());
-	~TextEdit();
 };
 
 VARIANT_ENUM_CAST(TextEdit::EditAction);

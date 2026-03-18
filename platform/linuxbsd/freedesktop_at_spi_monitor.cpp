@@ -32,6 +32,8 @@
 
 #ifdef DBUS_ENABLED
 
+#include "core/os/os.h"
+
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
 #else

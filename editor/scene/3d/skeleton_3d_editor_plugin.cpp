@@ -31,8 +31,6 @@
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -48,14 +46,13 @@
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/surface_tool.h"
 
 void BonePropertiesEditor::create_editors() {
 	section = memnew(EditorInspectorSection);
-	section->setup("", "trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
+	section->setup("trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
 	section->unfold();
 	add_child(section);
 
@@ -66,13 +63,8 @@ void BonePropertiesEditor::create_editors() {
 	section->get_vbox()->add_child(enabled_checkbox);
 
 	// Position property.
-	EditorPropertyRangeHint large_range_hint;
-	large_range_hint.min = -10000;
-	large_range_hint.max = 10000;
-	large_range_hint.step = 0.001;
-
 	position_property = memnew(EditorPropertyVector3());
-	position_property->setup(large_range_hint);
+	position_property->setup(-10000, 10000, 0.001, true);
 	position_property->set_label("Position");
 	position_property->set_selectable(false);
 	position_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -81,18 +73,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Rotation property.
 	rotation_property = memnew(EditorPropertyQuaternion());
-	// Quaternions are almost never used for human-readable values that need stepifying,
-	// so we should be more precise with their step, as much as the float precision allows.
-#ifdef REAL_T_IS_DOUBLE
-	constexpr double QUATERNION_STEP = 1e-14;
-#else
-	constexpr double QUATERNION_STEP = 1e-6;
-#endif
-	EditorPropertyRangeHint quaternion_range_hint;
-	quaternion_range_hint.min = -1.0;
-	quaternion_range_hint.max = 1.0;
-	quaternion_range_hint.step = QUATERNION_STEP;
-	rotation_property->setup(quaternion_range_hint);
+	rotation_property->setup(-10000, 10000, 0.001, true);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
 	rotation_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -101,7 +82,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Scale property.
 	scale_property = memnew(EditorPropertyVector3());
-	scale_property->setup(large_range_hint, true);
+	scale_property->setup(-10000, 10000, 0.001, true, true);
 	scale_property->set_label("Scale");
 	scale_property->set_selectable(false);
 	scale_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -110,19 +91,19 @@ void BonePropertiesEditor::create_editors() {
 
 	// Transform/Matrix section.
 	rest_section = memnew(EditorInspectorSection);
-	rest_section->setup("", "trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
+	rest_section->setup("trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
 	section->get_vbox()->add_child(rest_section);
 
 	// Transform/Matrix property.
 	rest_matrix = memnew(EditorPropertyTransform3D());
-	rest_matrix->setup(large_range_hint);
+	rest_matrix->setup(-10000, 10000, 0.001, true);
 	rest_matrix->set_label("Transform");
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);
 
 	// Bone Metadata property
 	meta_section = memnew(EditorInspectorSection);
-	meta_section->setup("", "bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
+	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
 	section->get_vbox()->add_child(meta_section);
 
 	EditorInspectorActionButton *add_metadata_button = memnew(EditorInspectorActionButton(TTRC("Add Bone Metadata"), SNAME("Add")));
@@ -236,33 +217,15 @@ void BonePropertiesEditor::_add_meta_confirm() {
 	undo_redo->commit_action();
 }
 
-BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) {
+BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) :
+		skeleton(p_skeleton) {
 	create_editors();
-	set_skeleton(p_skeleton);
 }
 
 void BonePropertiesEditor::set_keyable(const bool p_keyable) {
 	position_property->set_keying(p_keyable);
 	rotation_property->set_keying(p_keyable);
 	scale_property->set_keying(p_keyable);
-}
-
-void BonePropertiesEditor::set_skeleton(Skeleton3D *p_skeleton) {
-	skeleton = p_skeleton;
-
-	if (skeleton) {
-		return;
-	}
-
-	enabled_checkbox->set_object_and_property(nullptr, String());
-	position_property->set_object_and_property(nullptr, String());
-	rotation_property->set_object_and_property(nullptr, String());
-	scale_property->set_object_and_property(nullptr, String());
-	rest_matrix->set_object_and_property(nullptr, String());
-
-	for (KeyValue<StringName, EditorProperty *> &E : meta_editors) {
-		E.value->set_object_and_property(nullptr, String());
-	}
 }
 
 void BonePropertiesEditor::set_target(const String &p_prop) {
@@ -304,7 +267,7 @@ void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance)
 }
 
 void BonePropertiesEditor::_update_properties() {
-	if (!skeleton || !Skeleton3DEditor::get_singleton()) {
+	if (!skeleton) {
 		return;
 	}
 	int selected = Skeleton3DEditor::get_singleton()->get_selected_bone();
@@ -398,7 +361,9 @@ void Skeleton3DEditor::_bind_methods() {
 }
 
 void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
-	ERR_FAIL_COND(!skeleton);
+	if (!skeleton) {
+		return;
+	}
 
 	switch (p_skeleton_option) {
 		case SKELETON_OPTION_RESET_ALL_POSES: {
@@ -429,8 +394,9 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 }
 
 void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
-	ERR_FAIL_COND(!skeleton);
-
+	if (!skeleton) {
+		return;
+	}
 	const int bone_count = skeleton->get_bone_count();
 	if (!bone_count) {
 		return;
@@ -463,34 +429,10 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 	ur->commit_action();
 }
 
-void Skeleton3DEditor::insert_keys(const bool p_all_bones, const bool p_enable_modifier) {
-	ERR_FAIL_COND(!skeleton);
-
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	bool is_read_only = te->is_read_only();
-	if (is_read_only) {
-		te->popup_read_only_dialog();
+void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
+	if (!skeleton) {
 		return;
 	}
-	if (p_enable_modifier) {
-		if (!skeleton->is_connected(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones))) {
-			skeleton->connect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones), CONNECT_ONE_SHOT);
-		} else {
-			WARN_PRINT_ED("A skeleton_updated signal is already connected with _insert_keys().");
-		}
-		skeleton->force_update_deferred();
-		skeleton->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
-		// Force disconnecting signal if remain the connecting just in case.
-		if (skeleton->is_connected(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones))) {
-			skeleton->disconnect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones));
-		}
-	} else {
-		_insert_keys(p_all_bones);
-	}
-}
-
-void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
-	ERR_FAIL_COND(!skeleton);
 
 	bool pos_enabled = key_loc_button->is_pressed();
 	bool rot_enabled = key_rot_button->is_pressed();
@@ -523,8 +465,9 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
-	ERR_FAIL_COND(!skeleton);
-
+	if (!skeleton) {
+		return;
+	}
 	const int bone_count = skeleton->get_bone_count();
 	if (!bone_count) {
 		return;
@@ -1056,7 +999,7 @@ void Skeleton3DEditor::create_editors() {
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
 	skeleton_options->set_flat(false);
-	skeleton_options->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	skeleton_options->set_theme_type_variation("FlatMenuButton");
 	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
@@ -1100,71 +1043,46 @@ void Skeleton3DEditor::create_editors() {
 	key_loc_button = memnew(Button);
 	key_loc_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_loc_button->set_toggle_mode(true);
-	key_loc_button->set_pressed(editor_plugin->loc_pressed);
+	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
-	if (!key_loc_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled))) {
-		key_loc_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled));
-	}
 
 	key_rot_button = memnew(Button);
 	key_rot_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_rot_button->set_toggle_mode(true);
-	key_rot_button->set_pressed(editor_plugin->rot_pressed);
+	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
-	if (!key_rot_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled))) {
-		key_rot_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled));
-	}
 
 	key_scale_button = memnew(Button);
 	key_scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_scale_button->set_toggle_mode(true);
-	key_scale_button->set_pressed(editor_plugin->scl_pressed);
+	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
-	if (!key_scale_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled))) {
-		key_scale_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled));
-	}
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_insert_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false, false));
+	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip_text(TTRC("Insert key (based on mask) for bones with an existing track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTRC("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
 
-	key_insert_new_button = memnew(Button);
-	key_insert_new_button->set_theme_type_variation(SceneStringName(FlatButton));
-	key_insert_new_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_insert_new_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true, false));
-	key_insert_new_button->set_tooltip_text(TTRC("Insert key (based on mask) for all bones."));
-	key_insert_new_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
-	animation_hb->add_child(key_insert_new_button);
-
-	key_mod_insert_button = memnew(Button);
-	key_mod_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
-	key_mod_insert_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_mod_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false, true));
-	key_mod_insert_button->set_tooltip_text(TTRC("Insert key (based on mask) for modified bones with an existing track."));
-	key_mod_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTRC("Insert Key (Existing Tracks)"), Key::INSERT));
-	animation_hb->add_child(key_mod_insert_button);
-
-	key_mod_insert_new_button = memnew(Button);
-	key_mod_insert_new_button->set_theme_type_variation(SceneStringName(FlatButton));
-	key_mod_insert_new_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_mod_insert_new_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true, true));
-	key_mod_insert_new_button->set_tooltip_text(TTRC("Insert new key (based on mask) for all modified bones."));
-	key_mod_insert_new_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
-	animation_hb->add_child(key_mod_insert_new_button);
+	key_insert_all_button = memnew(Button);
+	key_insert_all_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_insert_all_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_insert_all_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
+	key_insert_all_button->set_tooltip_text(TTRC("Insert key (based on mask) for all bones."));
+	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
+	animation_hb->add_child(key_insert_all_button);
 
 	// Bone tree.
 	bones_section = memnew(EditorInspectorSection);
-	bones_section->setup("", "bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
+	bones_section->setup("bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
 	add_child(bones_section);
 	bones_section->unfold();
 
@@ -1194,25 +1112,6 @@ void Skeleton3DEditor::create_editors() {
 	set_keyable(te->has_keying());
 }
 
-void Skeleton3DEditor::_loc_toggled(bool p_toggled_on) {
-	if (!editor_plugin) {
-		return;
-	}
-	editor_plugin->loc_pressed = p_toggled_on;
-}
-void Skeleton3DEditor::_rot_toggled(bool p_toggled_on) {
-	if (!editor_plugin) {
-		return;
-	}
-	editor_plugin->rot_pressed = p_toggled_on;
-}
-void Skeleton3DEditor::_scl_toggled(bool p_toggled_on) {
-	if (!editor_plugin) {
-		return;
-	}
-	editor_plugin->scl_pressed = p_toggled_on;
-}
-
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1227,7 +1126,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
 			skeleton->connect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed));
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONE_SHOT);
 		} break;
 		case NOTIFICATION_READY: {
 			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
@@ -1239,10 +1138,8 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
 			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
 			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
-			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("InsertKey")));
-			key_insert_new_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
-			key_mod_insert_button->set_button_icon(get_editor_theme_icon(SNAME("InsertModKey")));
-			key_mod_insert_new_button->set_button_icon(get_editor_theme_icon(SNAME("NewModKey")));
+			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
+			key_insert_all_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
 			bones_section->set_bg_color(get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			update_joint_tree();
@@ -1250,7 +1147,10 @@ void Skeleton3DEditor::_notification(int p_what) {
 		case NOTIFICATION_PREDELETE: {
 			if (skeleton) {
 				select_bone(-1); // Requires that the joint_tree has not been deleted.
-				_disconnect_from_skeleton();
+				skeleton->disconnect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+				skeleton->disconnect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
 				skeleton->set_transform_gizmo_visible(true);
 
 				if (handles_mesh_instance->get_parent()) {
@@ -1264,36 +1164,11 @@ void Skeleton3DEditor::_notification(int p_what) {
 
 void Skeleton3DEditor::_node_removed(Node *p_node) {
 	if (skeleton && p_node == skeleton) {
-		_disconnect_from_skeleton();
-		if (pose_editor) {
-			pose_editor->set_skeleton(nullptr);
-			pose_editor->set_visible(false);
-		}
-		edit_mode = false;
 		skeleton = nullptr;
 		skeleton_options->hide();
 	}
 
 	_update_properties();
-}
-
-void Skeleton3DEditor::_disconnect_from_skeleton() {
-	if (!skeleton) {
-		return;
-	}
-
-	if (skeleton->is_connected(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible))) {
-		skeleton->disconnect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
-	}
-	if (skeleton->is_connected(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed))) {
-		skeleton->disconnect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-	}
-	if (skeleton->is_connected(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo))) {
-		skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-	}
-	if (skeleton->is_connected(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties))) {
-		skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
-	}
 }
 
 void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
@@ -1529,10 +1404,18 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 
 EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
+	Node3DEditor *ne = Node3DEditor::get_singleton();
 	if (se && se->is_edit_mode()) {
 		const Ref<InputEventMouseButton> mb = p_event;
-		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-			se->update_bone_original();
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+			if (ne->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
+				if (!ne->is_gizmo_visible()) {
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				}
+			}
+			if (mb->is_pressed()) {
+				se->update_bone_original();
+			}
 		}
 		return EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 	}
@@ -1548,10 +1431,6 @@ void Skeleton3DEditor::_bone_enabled_changed(const int p_bone_id) {
 }
 
 void Skeleton3DEditor::_update_gizmo_visible() {
-	if (!skeleton) {
-		return;
-	}
-
 	_subgizmo_selection_change();
 	if (edit_mode) {
 		if (selected_bone == -1) {
@@ -1590,16 +1469,14 @@ Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled;
-
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)));
+		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
 }
-
 void fragment() {
 	ALBEDO = COLOR.rgb;
 	ALPHA = COLOR.a;
@@ -1635,27 +1512,19 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 		return -1;
 	}
 
-	int closest_idx = skeleton_intersect_ray(skeleton, p_camera, p_point);
-
-	if (closest_idx >= 0) {
-		se->select_bone(closest_idx);
-		se->update_bone_original();
-		return closest_idx;
+	if (Node3DEditor::get_singleton()->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
+		return -1;
 	}
 
-	se->select_bone(-1);
-	return -1;
-}
-
-int Skeleton3DGizmoPlugin::skeleton_intersect_ray(const Skeleton3D *p_skeleton, Camera3D *p_camera, const Vector2 &p_point) {
-	real_t grab_threshold = 8 * EDSCALE;
+	// Select bone.
+	real_t grab_threshold = 4 * EDSCALE;
 	Vector3 ray_from = p_camera->get_global_transform().origin;
-	Transform3D gt = p_skeleton->get_global_transform();
+	Transform3D gt = skeleton->get_global_transform();
 	int closest_idx = -1;
 	real_t closest_dist = 1e10;
-	const int bone_count = p_skeleton->get_bone_count();
+	const int bone_count = skeleton->get_bone_count();
 	for (int i = 0; i < bone_count; i++) {
-		Vector3 joint_pos_3d = gt.xform(p_skeleton->get_bone_global_pose(i).origin);
+		Vector3 joint_pos_3d = gt.xform(skeleton->get_bone_global_pose(i).origin);
 		Vector2 joint_pos_2d = p_camera->unproject_position(joint_pos_3d);
 		real_t dist_3d = ray_from.distance_to(joint_pos_3d);
 		real_t dist_2d = p_point.distance_to(joint_pos_2d);
@@ -1664,7 +1533,14 @@ int Skeleton3DGizmoPlugin::skeleton_intersect_ray(const Skeleton3D *p_skeleton, 
 			closest_idx = i;
 		}
 	}
-	return closest_idx;
+
+	if (closest_idx >= 0) {
+		se->select_bone(closest_idx);
+		return closest_idx;
+	}
+
+	se->select_bone(-1);
+	return -1;
 }
 
 Transform3D Skeleton3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
@@ -1712,35 +1588,25 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Transform"));
-
-	if (p_cancel) {
-		for (int id : p_ids) {
-			ur->add_do_method(skeleton, "set_bone_pose_position", id, se->get_bone_original_position());
-			ur->add_do_method(skeleton, "set_bone_pose_rotation", id, se->get_bone_original_rotation());
-			ur->add_do_method(skeleton, "set_bone_pose_scale", id, se->get_bone_original_scale());
-			ur->add_undo_method(skeleton, "set_bone_pose_position", id, skeleton->get_bone_pose_position(id));
-			ur->add_undo_method(skeleton, "set_bone_pose_rotation", id, skeleton->get_bone_pose_rotation(id));
-			ur->add_undo_method(skeleton, "set_bone_pose_scale", id, skeleton->get_bone_pose_scale(id));
+	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+		for (int i = 0; i < p_ids.size(); i++) {
+			ur->add_do_method(skeleton, "set_bone_pose_position", p_ids[i], skeleton->get_bone_pose_position(p_ids[i]));
+			ur->add_undo_method(skeleton, "set_bone_pose_position", p_ids[i], se->get_bone_original_position());
 		}
-	} else {
-		Node3DEditor::ToolMode tool_mode = ne->get_tool_mode();
-		if (tool_mode == Node3DEditor::TOOL_MODE_MOVE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
-			for (int id : p_ids) {
-				ur->add_do_method(skeleton, "set_bone_pose_position", id, skeleton->get_bone_pose_position(id));
-				ur->add_undo_method(skeleton, "set_bone_pose_position", id, se->get_bone_original_position());
-			}
+	}
+	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+		for (int i = 0; i < p_ids.size(); i++) {
+			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
+			ur->add_undo_method(skeleton, "set_bone_pose_rotation", p_ids[i], se->get_bone_original_rotation());
 		}
-		if (tool_mode == Node3DEditor::TOOL_MODE_ROTATE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
-			for (int id : p_ids) {
-				ur->add_do_method(skeleton, "set_bone_pose_rotation", id, skeleton->get_bone_pose_rotation(id));
-				ur->add_undo_method(skeleton, "set_bone_pose_rotation", id, se->get_bone_original_rotation());
-			}
-		}
-		if (tool_mode == Node3DEditor::TOOL_MODE_SCALE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
-			for (int id : p_ids) {
-				ur->add_do_method(skeleton, "set_bone_pose_scale", id, skeleton->get_bone_pose_scale(id));
-				ur->add_undo_method(skeleton, "set_bone_pose_scale", id, se->get_bone_original_scale());
-			}
+	}
+	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+		for (int i = 0; i < p_ids.size(); i++) {
+			// If the axis is swapped by scaling, the rotation can be changed.
+			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
+			ur->add_undo_method(skeleton, "set_bone_pose_rotation", p_ids[i], se->get_bone_original_rotation());
+			ur->add_do_method(skeleton, "set_bone_pose_scale", p_ids[i], skeleton->get_bone_pose_scale(p_ids[i]));
+			ur->add_undo_method(skeleton, "set_bone_pose_scale", p_ids[i], se->get_bone_original_scale());
 		}
 	}
 
@@ -1840,12 +1706,12 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 				case 0: { // Wire shape.
 					surface_tool->set_color(current_bone_color);
 					bones[0] = current_bone_idx;
-					surface_tool->set_bones(Vector<int>(bones));
-					surface_tool->set_weights(Vector<float>(weights));
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
 					surface_tool->add_vertex(v0);
 					bones[0] = child_bone_idx;
-					surface_tool->set_bones(Vector<int>(bones));
-					surface_tool->set_weights(Vector<float>(weights));
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
 					surface_tool->add_vertex(v1);
 				} break;
 
@@ -1871,19 +1737,19 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 							point += axis * dist * 0.1;
 
 							bones[0] = current_bone_idx;
-							surface_tool->set_bones(Vector<int>(bones));
-							surface_tool->set_weights(Vector<float>(weights));
+							surface_tool->set_bones(bones);
+							surface_tool->set_weights(weights);
 							surface_tool->add_vertex(v0);
-							surface_tool->set_bones(Vector<int>(bones));
-							surface_tool->set_weights(Vector<float>(weights));
+							surface_tool->set_bones(bones);
+							surface_tool->set_weights(weights);
 							surface_tool->add_vertex(point);
 
-							surface_tool->set_bones(Vector<int>(bones));
-							surface_tool->set_weights(Vector<float>(weights));
+							surface_tool->set_bones(bones);
+							surface_tool->set_weights(weights);
 							surface_tool->add_vertex(point);
 							bones[0] = child_bone_idx;
-							surface_tool->set_bones(Vector<int>(bones));
-							surface_tool->set_weights(Vector<float>(weights));
+							surface_tool->set_bones(bones);
+							surface_tool->set_weights(weights);
 							surface_tool->add_vertex(v1);
 							points[point_idx++] = point;
 						}
@@ -1892,11 +1758,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 					SWAP(points[1], points[2]);
 					bones[0] = current_bone_idx;
 					for (int j = 0; j < 6; j++) {
-						surface_tool->set_bones(Vector<int>(bones));
-						surface_tool->set_weights(Vector<float>(weights));
+						surface_tool->set_bones(bones);
+						surface_tool->set_weights(weights);
 						surface_tool->add_vertex(points[j]);
-						surface_tool->set_bones(Vector<int>(bones));
-						surface_tool->set_weights(Vector<float>(weights));
+						surface_tool->set_bones(bones);
+						surface_tool->set_weights(weights);
 						surface_tool->add_vertex(points[(j + 1) % 6]);
 					}
 				} break;
@@ -1906,11 +1772,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 			for (int j = 0; j < 3; j++) {
 				bones[0] = current_bone_idx;
 				surface_tool->set_color(axis_colors[j]);
-				surface_tool->set_bones(Vector<int>(bones));
-				surface_tool->set_weights(Vector<float>(weights));
+				surface_tool->set_bones(bones);
+				surface_tool->set_weights(weights);
 				surface_tool->add_vertex(v0);
-				surface_tool->set_bones(Vector<int>(bones));
-				surface_tool->set_weights(Vector<float>(weights));
+				surface_tool->set_bones(bones);
+				surface_tool->set_weights(weights);
 				surface_tool->add_vertex(v0 + (p_skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 				if (j == closest) {
@@ -1923,11 +1789,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 				for (int j = 0; j < 3; j++) {
 					bones[0] = child_bone_idx;
 					surface_tool->set_color(axis_colors[j]);
-					surface_tool->set_bones(Vector<int>(bones));
-					surface_tool->set_weights(Vector<float>(weights));
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
 					surface_tool->add_vertex(v1);
-					surface_tool->set_bones(Vector<int>(bones));
-					surface_tool->set_weights(Vector<float>(weights));
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
 					surface_tool->add_vertex(v1 + (p_skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 					if (j == closest) {

@@ -14,7 +14,7 @@
 
 #include <brotli/port.h>
 #include <brotli/shared_dictionary.h>
-#include <brotli/types.h>  /* IWYU pragma: export */
+#include <brotli/types.h>
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

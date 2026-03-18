@@ -75,6 +75,8 @@ public:
 	Error pack(const Variant &p_data);
 
 	int size() const;
+
+	PackedDataContainer() {}
 };
 
 class PackedDataContainerRef : public RefCounted {
@@ -94,4 +96,6 @@ public:
 
 	int size() const;
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const override;
+
+	PackedDataContainerRef() {}
 };

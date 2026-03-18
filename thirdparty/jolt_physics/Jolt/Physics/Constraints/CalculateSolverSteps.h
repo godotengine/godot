@@ -8,8 +8,7 @@
 
 JPH_NAMESPACE_BEGIN
 
-/// @cond INTERNAL
-/// Internal class used to calculate the total number of velocity and position steps
+/// Class used to calculate the total number of velocity and position steps
 class CalculateSolverSteps
 {
 public:
@@ -52,9 +51,7 @@ private:
 	bool						mApplyDefaultVelocity = false;
 	bool						mApplyDefaultPosition = false;
 };
-/// @endcond
 
-/// @cond INTERNAL
 /// Dummy class to replace the steps calculator when we don't need the result
 class DummyCalculateSolverSteps
 {
@@ -65,6 +62,5 @@ public:
 		/* Nothing to do */
 	}
 };
-/// @endcond
 
 JPH_NAMESPACE_END

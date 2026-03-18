@@ -30,9 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "a_star_grid_2d.h"
-
-#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 TypedArray<Vector2i> AStarGrid2D::_get_id_path_bind_compat_88047(const Vector2i &p_from_id, const Vector2i &p_to_id) {

@@ -37,8 +37,8 @@
 
 namespace GLTFTemplateConvert {
 template <typename T>
-static TypedArray<T> to_array(const Vector<T> &p_inp) {
-	TypedArray<T> ret;
+static Array to_array(const Vector<T> &p_inp) {
+	Array ret;
 	for (int i = 0; i < p_inp.size(); i++) {
 		ret.push_back(p_inp[i]);
 	}

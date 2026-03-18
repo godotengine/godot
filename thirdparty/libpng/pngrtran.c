@@ -1,6 +1,6 @@
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018-2026 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -25,12 +25,6 @@
 #    else
 #      include <arm_neon.h>
 #    endif
-#  endif
-#endif
-
-#ifdef PNG_RISCV_RVV_IMPLEMENTATION
-#  if PNG_RISCV_RVV_IMPLEMENTATION == 1
-#    define PNG_RISCV_RVV_INTRINSICS_AVAILABLE
 #  endif
 #endif
 
@@ -501,19 +495,9 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
    {
       int i;
 
-      /* Initialize the array to index colors.
-       *
-       * Ensure quantize_index can fit 256 elements (PNG_MAX_PALETTE_LENGTH)
-       * rather than num_palette elements. This is to prevent buffer overflows
-       * caused by malformed PNG files with out-of-range palette indices.
-       *
-       * Be careful to avoid leaking memory. Applications are allowed to call
-       * this function more than once per png_struct.
-       */
-      png_free(png_ptr, png_ptr->quantize_index);
       png_ptr->quantize_index = (png_bytep)png_malloc(png_ptr,
-          PNG_MAX_PALETTE_LENGTH);
-      for (i = 0; i < PNG_MAX_PALETTE_LENGTH; i++)
+          (png_alloc_size_t)num_palette);
+      for (i = 0; i < num_palette; i++)
          png_ptr->quantize_index[i] = (png_byte)i;
    }
 
@@ -525,14 +509,15 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
           * Perhaps not the best solution, but good enough.
           */
 
-         png_bytep quantize_sort;
-         int i, j;
+         int i;
 
-         /* Initialize the local array to sort colors. */
-         quantize_sort = (png_bytep)png_malloc(png_ptr,
+         /* Initialize an array to sort colors */
+         png_ptr->quantize_sort = (png_bytep)png_malloc(png_ptr,
              (png_alloc_size_t)num_palette);
+
+         /* Initialize the quantize_sort array */
          for (i = 0; i < num_palette; i++)
-            quantize_sort[i] = (png_byte)i;
+            png_ptr->quantize_sort[i] = (png_byte)i;
 
          /* Find the least used palette entries by starting a
           * bubble sort, and running it until we have sorted
@@ -544,18 +529,19 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          for (i = num_palette - 1; i >= maximum_colors; i--)
          {
             int done; /* To stop early if the list is pre-sorted */
+            int j;
 
             done = 1;
             for (j = 0; j < i; j++)
             {
-               if (histogram[quantize_sort[j]]
-                   < histogram[quantize_sort[j + 1]])
+               if (histogram[png_ptr->quantize_sort[j]]
+                   < histogram[png_ptr->quantize_sort[j + 1]])
                {
                   png_byte t;
 
-                  t = quantize_sort[j];
-                  quantize_sort[j] = quantize_sort[j + 1];
-                  quantize_sort[j + 1] = t;
+                  t = png_ptr->quantize_sort[j];
+                  png_ptr->quantize_sort[j] = png_ptr->quantize_sort[j + 1];
+                  png_ptr->quantize_sort[j + 1] = t;
                   done = 0;
                }
             }
@@ -567,18 +553,18 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          /* Swap the palette around, and set up a table, if necessary */
          if (full_quantize != 0)
          {
-            j = num_palette;
+            int j = num_palette;
 
             /* Put all the useful colors within the max, but don't
              * move the others.
              */
             for (i = 0; i < maximum_colors; i++)
             {
-               if ((int)quantize_sort[i] >= maximum_colors)
+               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
                {
                   do
                      j--;
-                  while ((int)quantize_sort[j] >= maximum_colors);
+                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
 
                   palette[i] = palette[j];
                }
@@ -586,7 +572,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          }
          else
          {
-            j = num_palette;
+            int j = num_palette;
 
             /* Move all the used colors inside the max limit, and
              * develop a translation table.
@@ -594,13 +580,13 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
             for (i = 0; i < maximum_colors; i++)
             {
                /* Only move the colors we need to */
-               if ((int)quantize_sort[i] >= maximum_colors)
+               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
                {
                   png_color tmp_color;
 
                   do
                      j--;
-                  while ((int)quantize_sort[j] >= maximum_colors);
+                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
 
                   tmp_color = palette[j];
                   palette[j] = palette[i];
@@ -638,7 +624,8 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
                }
             }
          }
-         png_free(png_ptr, quantize_sort);
+         png_free(png_ptr, png_ptr->quantize_sort);
+         png_ptr->quantize_sort = NULL;
       }
       else
       {
@@ -708,8 +695,8 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
                          break;
 
                      t->next = hash[d];
-                     t->left = png_ptr->palette_to_index[i];
-                     t->right = png_ptr->palette_to_index[j];
+                     t->left = (png_byte)i;
+                     t->right = (png_byte)j;
                      hash[d] = t;
                   }
                }
@@ -1120,8 +1107,8 @@ png_set_rgb_to_gray(png_structrp png_ptr, int error_action, double red,
 #if defined(PNG_READ_USER_TRANSFORM_SUPPORTED) || \
     defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
 void PNGAPI
-png_set_read_user_transform_fn(png_structrp png_ptr,
-    png_user_transform_ptr read_user_transform_fn)
+png_set_read_user_transform_fn(png_structrp png_ptr, png_user_transform_ptr
+    read_user_transform_fn)
 {
    png_debug(1, "in png_set_read_user_transform_fn");
 
@@ -1781,51 +1768,19 @@ png_init_read_transformations(png_structrp png_ptr)
                   }
                   else /* if (png_ptr->trans_alpha[i] != 0xff) */
                   {
-                     if ((png_ptr->flags & PNG_FLAG_OPTIMIZE_ALPHA) != 0)
-                     {
-                        /* Premultiply only:
-                         * component = round((component * alpha) / 255)
-                         */
-                        png_uint_32 component;
+                     png_byte v, w;
 
-                        component = png_ptr->gamma_to_1[palette[i].red];
-                        component =
-                            (component * png_ptr->trans_alpha[i] + 128) / 255;
-                        palette[i].red = png_ptr->gamma_from_1[component];
+                     v = png_ptr->gamma_to_1[palette[i].red];
+                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.red);
+                     palette[i].red = png_ptr->gamma_from_1[w];
 
-                        component = png_ptr->gamma_to_1[palette[i].green];
-                        component =
-                            (component * png_ptr->trans_alpha[i] + 128) / 255;
-                        palette[i].green = png_ptr->gamma_from_1[component];
+                     v = png_ptr->gamma_to_1[palette[i].green];
+                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.green);
+                     palette[i].green = png_ptr->gamma_from_1[w];
 
-                        component = png_ptr->gamma_to_1[palette[i].blue];
-                        component =
-                            (component * png_ptr->trans_alpha[i] + 128) / 255;
-                        palette[i].blue = png_ptr->gamma_from_1[component];
-                     }
-                     else
-                     {
-                        /* Composite with background color:
-                         * component =
-                         *    alpha * component + (1 - alpha) * background
-                         */
-                        png_byte v, w;
-
-                        v = png_ptr->gamma_to_1[palette[i].red];
-                        png_composite(w, v,
-                            png_ptr->trans_alpha[i], back_1.red);
-                        palette[i].red = png_ptr->gamma_from_1[w];
-
-                        v = png_ptr->gamma_to_1[palette[i].green];
-                        png_composite(w, v,
-                            png_ptr->trans_alpha[i], back_1.green);
-                        palette[i].green = png_ptr->gamma_from_1[w];
-
-                        v = png_ptr->gamma_to_1[palette[i].blue];
-                        png_composite(w, v,
-                            png_ptr->trans_alpha[i], back_1.blue);
-                        palette[i].blue = png_ptr->gamma_from_1[w];
-                     }
+                     v = png_ptr->gamma_to_1[palette[i].blue];
+                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.blue);
+                     palette[i].blue = png_ptr->gamma_from_1[w];
                   }
                }
                else
@@ -1843,7 +1798,6 @@ png_init_read_transformations(png_structrp png_ptr)
              * transformations elsewhere.
              */
             png_ptr->transformations &= ~(PNG_COMPOSE | PNG_GAMMA);
-            png_ptr->flags &= ~PNG_FLAG_OPTIMIZE_ALPHA;
          } /* color_type == PNG_COLOR_TYPE_PALETTE */
 
          /* if (png_ptr->background_gamma_type!=PNG_BACKGROUND_GAMMA_UNKNOWN) */
@@ -5049,8 +5003,13 @@ png_do_read_transformations(png_structrp png_ptr, png_row_infop row_info)
 
 #ifdef PNG_READ_QUANTIZE_SUPPORTED
    if ((png_ptr->transformations & PNG_QUANTIZE) != 0)
+   {
       png_do_quantize(row_info, png_ptr->row_buf + 1,
           png_ptr->palette_lookup, png_ptr->quantize_index);
+
+      if (row_info->rowbytes == 0)
+         png_error(png_ptr, "png_do_quantize returned rowbytes=0");
+   }
 #endif /* READ_QUANTIZE */
 
 #ifdef PNG_READ_EXPAND_16_SUPPORTED

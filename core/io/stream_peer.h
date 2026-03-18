@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "core/extension/ext_wrappers.gen.h"
-#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
+
+#include "core/extension/ext_wrappers.gen.inc"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
 
 class StreamPeer : public RefCounted {
@@ -96,6 +97,8 @@ public:
 	String get_string(int p_bytes = -1);
 	String get_utf8_string(int p_bytes = -1);
 	Variant get_var(bool p_allow_objects = false);
+
+	StreamPeer() {}
 };
 
 class StreamPeerExtension : public StreamPeer {
@@ -149,4 +152,6 @@ public:
 	void clear();
 
 	Ref<StreamPeerBuffer> duplicate() const;
+
+	StreamPeerBuffer() {}
 };

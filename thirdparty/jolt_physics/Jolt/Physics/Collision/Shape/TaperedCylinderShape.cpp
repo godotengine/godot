@@ -55,12 +55,12 @@ ShapeSettings::ShapeResult TaperedCylinderShapeSettings::Create() const
 			settings.mRadius = mTopRadius;
 			settings.mMaterial = mMaterial;
 			settings.mConvexRadius = mConvexRadius;
-			shape = new CylinderShape(settings, mCachedResult);
+			new CylinderShape(settings, mCachedResult);
 		}
 		else
 		{
 			// Normal tapered cylinder shape
-			shape = new TaperedCylinderShape(*this, mCachedResult);
+			new TaperedCylinderShape(*this, mCachedResult);
 		}
 	}
 	return mCachedResult;
@@ -79,7 +79,7 @@ TaperedCylinderShape::TaperedCylinderShape(const TaperedCylinderShapeSettings &i
 	ConvexShape(EShapeSubType::TaperedCylinder, inSettings, outResult),
 	mTopRadius(inSettings.mTopRadius),
 	mBottomRadius(inSettings.mBottomRadius),
-	mConvexRadius(min(inSettings.mConvexRadius, min(inSettings.mTopRadius, inSettings.mBottomRadius)))
+	mConvexRadius(inSettings.mConvexRadius)
 {
 	if (mTopRadius < 0.0f)
 	{
@@ -93,15 +93,27 @@ TaperedCylinderShape::TaperedCylinderShape(const TaperedCylinderShapeSettings &i
 		return;
 	}
 
-	if (mConvexRadius < 0.0f)
+	if (inSettings.mHalfHeight <= 0.0f)
+	{
+		outResult.SetError("Invalid height");
+		return;
+	}
+
+	if (inSettings.mConvexRadius < 0.0f)
 	{
 		outResult.SetError("Invalid convex radius");
 		return;
 	}
 
-	if (inSettings.mHalfHeight <= 0.0f)
+	if (inSettings.mTopRadius < inSettings.mConvexRadius)
 	{
-		outResult.SetError("Invalid height");
+		outResult.SetError("Convex radius must be smaller than convex radius");
+		return;
+	}
+
+	if (inSettings.mBottomRadius < inSettings.mConvexRadius)
+	{
+		outResult.SetError("Convex radius must be smaller than bottom radius");
 		return;
 	}
 
@@ -524,7 +536,7 @@ void TaperedCylinderShape::GetTrianglesStart(GetTrianglesContext &ioContext, con
 	JPH_ASSERT(IsAligned(&ioContext, alignof(TCSGetTrianglesContext)));
 
 	// Make sure the scale is not inside out
-	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? inScale.FlipSign<-1, 1, 1>() : inScale;
+	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? Vec3(-1, 1, 1) * inScale : inScale;
 
 	// Mark top and bottom processed if their radius is too small
 	TCSGetTrianglesContext *context = new (&ioContext) TCSGetTrianglesContext(Mat44::sRotationTranslation(inRotation, inPositionCOM) * Mat44::sScale(scale));
@@ -633,7 +645,7 @@ int TaperedCylinderShape::GetTrianglesNext(GetTrianglesContext &ioContext, int i
 void TaperedCylinderShape::Draw(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, Vec3Arg inScale, ColorArg inColor, bool inUseMaterialColors, bool inDrawWireframe) const
 {
 	// Preserve flip along y axis but make sure we're not inside out
-	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? inScale.FlipSign<-1, 1, 1>() : inScale;
+	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? Vec3(-1, 1, 1) * inScale : inScale;
 	RMat44 world_transform = inCenterOfMassTransform * Mat44::sScale(scale);
 
 	DebugRenderer::EDrawMode draw_mode = inDrawWireframe? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid;

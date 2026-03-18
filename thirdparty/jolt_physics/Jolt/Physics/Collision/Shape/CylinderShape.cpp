@@ -91,15 +91,15 @@ CylinderShape::CylinderShape(const CylinderShapeSettings &inSettings, ShapeResul
 	ConvexShape(EShapeSubType::Cylinder, inSettings, outResult),
 	mHalfHeight(inSettings.mHalfHeight),
 	mRadius(inSettings.mRadius),
-	mConvexRadius(min(inSettings.mConvexRadius, min(inSettings.mHalfHeight, inSettings.mRadius)))
+	mConvexRadius(inSettings.mConvexRadius)
 {
-	if (inSettings.mHalfHeight < 0.0f)
+	if (inSettings.mHalfHeight < inSettings.mConvexRadius)
 	{
 		outResult.SetError("Invalid height");
 		return;
 	}
 
-	if (inSettings.mRadius < 0.0f)
+	if (inSettings.mRadius < inSettings.mConvexRadius)
 	{
 		outResult.SetError("Invalid radius");
 		return;
@@ -118,10 +118,10 @@ CylinderShape::CylinderShape(float inHalfHeight, float inRadius, float inConvexR
 	ConvexShape(EShapeSubType::Cylinder, inMaterial),
 	mHalfHeight(inHalfHeight),
 	mRadius(inRadius),
-	mConvexRadius(min(inConvexRadius, min(inHalfHeight, inRadius)))
+	mConvexRadius(inConvexRadius)
 {
-	JPH_ASSERT(inHalfHeight >= 0.0f);
-	JPH_ASSERT(inRadius >= 0.0f);
+	JPH_ASSERT(inHalfHeight >= inConvexRadius);
+	JPH_ASSERT(inRadius >= inConvexRadius);
 	JPH_ASSERT(inConvexRadius >= 0.0f);
 }
 

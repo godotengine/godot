@@ -30,10 +30,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "mesh_data_tool.h"
-
-#include "core/object/class_db.h"
-
 Error MeshDataTool::commit_to_surface_bind_compat_81138(const Ref<ArrayMesh> &p_mesh) {
 	return commit_to_surface(p_mesh, 0);
 }
@@ -42,4 +38,4 @@ void MeshDataTool::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface_bind_compat_81138);
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

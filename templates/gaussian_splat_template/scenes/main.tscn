@@ -1,0 +1,70 @@
+[gd_scene load_steps=6 format=3 uid="uid://gaussian_template_main"]
+
+[ext_resource type="Script" path="res://scripts/main_scene.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/camera/orbit_camera_rig.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="3"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(20, 0.25, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.08, 0.09, 0.12, 1)
+roughness = 0.5
+metallic = 0.0
+
+[node name="GaussianTemplate" type="Node3D" script=ExtResource("1")]
+
+[node name="GaussianSplatNode3D" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+ply_file_path = "res://assets/template_splats.ply"
+auto_load = true
+quality/preset = 1
+quality/lod_bias = 1.0
+quality/max_render_distance = 150.0
+quality/max_splat_count = 750000
+painterly/enabled = false
+painterly/edge_threshold = 0.25
+painterly/stroke_opacity = 0.85
+painterly/stroke_width = 1.1
+painterly/color_variation = 0.12
+painterly/temporal_blend = 0.35
+painterly/seed = 1337
+rendering/update_mode = 1
+rendering/cast_shadow = true
+rendering/frustum_culling = true
+rendering/occlusion_culling = true
+rendering/opacity = 1.0
+debug/preview_enabled = true
+debug/show_bounds = false
+debug/show_statistics = false
+debug/show_tile_grid = false
+debug/show_density_heatmap = false
+debug/show_performance_hud = false
+debug/show_performance_overlay = false
+debug/debug_draw_mode = 2
+debug/runtime_preview = false
+debug/show_residency_hud = false
+
+[node name="CameraRig" type="Node3D" parent="." script=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 10)
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 2, 8)
+fov = 60.0
+near = 0.05
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.872, -0.359, 0.332, 0, 0.679, 0.734, -0.489, -0.641, 0.592, 0, 6, 0)
+light_energy = 2.0
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+mesh = SubResource("BoxMesh_1")
+material_override = SubResource("StandardMaterial3D_1")
+cast_shadow = 0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PerformanceOverlay" parent="CanvasLayer" instance=ExtResource("3")]
+layer = 1

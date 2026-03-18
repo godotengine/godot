@@ -32,21 +32,21 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
-#import "drivers/apple_embedded/apple_embedded.h"
+#import "apple_embedded.h"
+
+#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "drivers/apple_embedded/rendering_context_driver_vulkan_apple_embedded.h"
+#import "rendering_context_driver_vulkan_apple_embedded.h"
 #endif
 #endif
-
-class JoypadSDL;
 
 class OS_AppleEmbedded : public OS_Unix {
 private:
@@ -57,9 +57,7 @@ private:
 
 	AppleEmbedded *apple_embedded = nullptr;
 
-#ifdef SDL_ENABLED
-	JoypadSDL *joypad_sdl = nullptr;
-#endif
+	JoypadApple *joypad_apple = nullptr;
 
 	MainLoop *main_loop = nullptr;
 
@@ -120,7 +118,6 @@ public:
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
 	virtual String get_resource_dir() const override;
-	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
 
@@ -143,17 +140,6 @@ public:
 
 	virtual bool request_permission(const String &p_name) override;
 	virtual Vector<String> get_granted_permissions() const override;
-
-	virtual String get_platform_string(PlatformString p_platform_string) const override {
-		switch (p_platform_string) {
-			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
-				return ETR("Open in Files");
-			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
-				return ETR("Show in Files");
-			default:
-				return OS::get_platform_string(p_platform_string);
-		}
-	}
 };
 
 #endif // APPLE_EMBEDDED_ENABLED

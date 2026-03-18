@@ -6,7 +6,7 @@ func test():
 	print(var_to_str(COLOR))
 	print(var_to_str(color))
 
-	var string := "A"
-	var string_name := &"A"
-	print(ord(string))
-	print(ord(string_name))
+	var string := "Node"
+	var string_name := &"Node"
+	print(type_exists(string))
+	print(type_exists(string_name))

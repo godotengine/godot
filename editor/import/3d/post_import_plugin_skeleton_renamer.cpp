@@ -95,7 +95,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 		TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 		while (nodes.size()) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-			for (const StringName &name : ap->get_sorted_animation_list()) {
+			List<StringName> anims;
+			ap->get_animation_list(&anims);
+			for (const StringName &name : anims) {
 				Ref<Animation> anim = ap->get_animation(name);
 				int len = anim->get_track_count();
 				for (int i = 0; i < len; i++) {
@@ -185,15 +187,15 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		// Main process of renaming bones.
 		{
 			// Apply pre-renaming result to prepared main rename map.
-			LocalVector<String> remove_queue;
-			for (const KeyValue<String, String> &kv : main_rename_map) {
-				if (pre_rename_map.has(kv.key)) {
-					remove_queue.push_back(kv.key);
+			Vector<String> remove_queue;
+			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
+				if (pre_rename_map.has(E->key)) {
+					remove_queue.push_back(E->key);
 				}
 			}
-			for (const String &key : remove_queue) {
-				main_rename_map.insert(pre_rename_map[key], main_rename_map[key]);
-				main_rename_map.erase(key);
+			for (int i = 0; i < remove_queue.size(); i++) {
+				main_rename_map.insert(pre_rename_map[remove_queue[i]], main_rename_map[remove_queue[i]]);
+				main_rename_map.erase(remove_queue[i]);
 			}
 			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, main_rename_map);
 		}
@@ -206,7 +208,9 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				for (const StringName &name : ap->get_sorted_animation_list()) {
+				List<StringName> anims;
+				ap->get_animation_list(&anims);
+				for (const StringName &name : anims) {
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatRenderer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		RefCounted renderer backend used to draw Gaussian splat datasets.
+	</brief_description>
+	<description>
+		GaussianSplatRenderer owns the GPU-side pipeline for culling, sorting, and rasterizing Gaussian splats.
+		It is typically created by scene integration code and configured with GaussianData resources and render settings.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

@@ -1,0 +1,58 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/performance_overlay.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.08, 0.1, 0.13, 0.92)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+border_color = Color(0.2, 0.4, 0.7, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+
+[node name="PerformanceOverlay" type="MarginContainer"]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 16.0
+offset_top = 16.0
+size_flags_horizontal = 3
+size_flags_vertical = 1
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(360, 0)
+custom_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+anchors_preset = 15
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+text = "Gaussian Splatting"
+label_settings/font_size = 18
+label_settings/font_color = Color(0.85, 0.95, 1, 1)
+
+[node name="Body" type="RichTextLabel" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 120)
+bbcode_enabled = true
+scroll_active = false
+scroll_following = true
+text = "Initializing..."
+
+[node name="Footer" type="Label" parent="Panel/VBox"]
+text = ""
+label_settings/font_size = 12
+label_settings/font_color = Color(0.7, 0.8, 0.9, 1)

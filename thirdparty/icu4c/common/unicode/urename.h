@@ -33,9 +33,8 @@
 
 #if !U_DISABLE_RENAMING
 
-// Disable Renaming for Visual Studio's IntelliSense feature and for LLVM's Clang-Tidy tool, so that
-// 'Go-to-Definition' (F12) and 'include-cleaner' respectively will work.
-#if !(defined(_MSC_VER) && defined(__INTELLISENSE__)) && !defined(__clang_analyzer__)
+// Disable Renaming for Visual Studio's IntelliSense feature, so that 'Go-to-Definition' (F12) will work.
+#if !(defined(_MSC_VER) && defined(__INTELLISENSE__))
 
 /* We need the U_ICU_ENTRY_POINT_RENAME definition. There's a default one in unicode/uvernum.h we can use, but we will give
    the platform a chance to define it first.
@@ -1393,7 +1392,6 @@
 #define uprops_getSource U_ICU_ENTRY_POINT_RENAME(uprops_getSource)
 #define upropsvec_addPropertyStarts U_ICU_ENTRY_POINT_RENAME(upropsvec_addPropertyStarts)
 #define uprv_add32_overflow U_ICU_ENTRY_POINT_RENAME(uprv_add32_overflow)
-#define uprv_addScriptExtensionsCodePoints U_ICU_ENTRY_POINT_RENAME(uprv_addScriptExtensionsCodePoints)
 #define uprv_aestrncpy U_ICU_ENTRY_POINT_RENAME(uprv_aestrncpy)
 #define uprv_asciiFromEbcdic U_ICU_ENTRY_POINT_RENAME(uprv_asciiFromEbcdic)
 #define uprv_asciitolower U_ICU_ENTRY_POINT_RENAME(uprv_asciitolower)
@@ -2039,7 +2037,7 @@
 #define ztrans_setTime U_ICU_ENTRY_POINT_RENAME(ztrans_setTime)
 #define ztrans_setTo U_ICU_ENTRY_POINT_RENAME(ztrans_setTo)
 
-#endif /* !(defined(_MSC_VER) && defined(__INTELLISENSE__)) && !defined(__clang_analyzer__) */
+#endif /* !(defined(_MSC_VER) && defined(__INTELLISENSE__)) */
 #endif /* U_DISABLE_RENAMING */
 #endif /* URENAME_H */
 

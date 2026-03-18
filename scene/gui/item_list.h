@@ -50,13 +50,6 @@ public:
 		SELECT_TOGGLE,
 	};
 
-	enum ScrollHintMode {
-		SCROLL_HINT_MODE_DISABLED,
-		SCROLL_HINT_MODE_BOTH,
-		SCROLL_HINT_MODE_TOP,
-		SCROLL_HINT_MODE_BOTTOM,
-	};
-
 private:
 	struct Item {
 		mutable RID accessibility_item_element;
@@ -130,9 +123,6 @@ private:
 	HScrollBar *scroll_bar_h = nullptr;
 	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
-	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
-	bool tile_scroll_hint = false;
-
 	uint64_t search_time_msec = 0;
 	String search_string;
 
@@ -142,6 +132,7 @@ private:
 	int max_columns = 1;
 
 	Size2 fixed_icon_size;
+	Size2 max_item_size_cache;
 	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
@@ -186,9 +177,6 @@ protected:
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
 		Color guide_color;
-
-		Ref<Texture2D> scroll_hint;
-		Color scroll_hint_color;
 	} theme_cache;
 
 	void _notification(int p_what);
@@ -319,7 +307,6 @@ public:
 	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
-	void center_on_current(bool p_center_verically = true, bool p_center_horizontally = true);
 
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
@@ -349,16 +336,9 @@ public:
 	VScrollBar *get_v_scroll_bar() { return scroll_bar_v; }
 	HScrollBar *get_h_scroll_bar() { return scroll_bar_h; }
 
-	void set_scroll_hint_mode(ScrollHintMode p_mode);
-	ScrollHintMode get_scroll_hint_mode() const;
-
-	void set_tile_scroll_hint(bool p_enable);
-	bool is_scroll_hint_tiled();
-
 	ItemList();
 	~ItemList();
 };
 
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
-VARIANT_ENUM_CAST(ItemList::ScrollHintMode);

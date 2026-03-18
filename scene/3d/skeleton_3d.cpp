@@ -31,13 +31,10 @@
 #include "skeleton_3d.h"
 #include "skeleton_3d.compat.inc"
 
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
-#include "servers/rendering/rendering_server.h"
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
@@ -64,7 +61,7 @@ SkinReference::~SkinReference() {
 	if (skeleton_node) {
 		skeleton_node->skin_bindings.erase(this);
 	}
-	RS::get_singleton()->free_rid(skeleton);
+	RS::get_singleton()->free(skeleton);
 }
 
 ///////////////////////////////////////
@@ -320,11 +317,11 @@ void Skeleton3D::_notification(int p_what) {
 			Bone *bonesptr = bones.ptr();
 			int len = bones.size();
 
-			LocalVector<bool> bone_global_pose_dirty_backup;
+			thread_local LocalVector<bool> bone_global_pose_dirty_backup;
 
 			// Process modifiers.
 
-			LocalVector<BonePoseBackup> bones_backup;
+			thread_local LocalVector<BonePoseBackup> bones_backup;
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
 				bones_backup.resize(bones.size());
@@ -945,7 +942,7 @@ void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 			return;
 		}
-#endif // TOOLS_ENABLED
+#endif //TOOLS_ENABLED
 		if (update_flags == UPDATE_FLAG_NONE && !updating) {
 			notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON); // It must never be called more than once in a single frame.
 		}
@@ -1180,7 +1177,7 @@ void Skeleton3D::_process_modifiers() {
 		if (saving && !mod->is_processed_on_saving()) {
 			continue;
 		}
-#endif // TOOLS_ENABLED
+#endif //TOOLS_ENABLED
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
 			LocalVector<Transform3D> old_poses;

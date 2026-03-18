@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="GaussianSplatAsset" path="res://tests/fixtures/test_splats.ply" id="baseline_asset"]
+[ext_resource type="Script" path="res://scenes/qa/qa_performance_budget.gd" id="perf_script"]
+[ext_resource type="Script" path="res://fps_camera_controller.gd" id="fps_script"]
+
+[node name="QAPerformanceBudget" type="Node3D"]
+script = ExtResource("perf_script")
+test_name = "Performance Budget"
+test_duration = 15.0
+min_fps = 30.0
+max_frame_time_ms = 33.3
+
+[node name="SplatNode" type="GaussianSplatNode3D" parent="."]
+splat_asset = ExtResource("baseline_asset")
+quality/max_splat_count = 50000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 3, 8)
+current = true
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

@@ -95,6 +95,9 @@ public:
 	/// Same as BroadPhaseQuery::CastAABox but can be implemented in a way to take no broad phase locks.
 	virtual void		CastAABoxNoLock(const AABoxCast &inBox, CastShapeBodyCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter) const = 0;
 
+	/// Get the bounding box of all objects in the broadphase
+	virtual AABox		GetBounds() const = 0;
+
 #ifdef JPH_TRACK_BROADPHASE_STATS
 	/// Trace the collected broadphase stats in CSV form.
 	/// This report can be used to judge and tweak the efficiency of the broadphase.

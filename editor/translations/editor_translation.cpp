@@ -42,20 +42,26 @@
 Vector<String> get_editor_locales() {
 	Vector<String> locales;
 
-	for (const EditorTranslationList *etl = _editor_translations; etl->data; etl++) {
+	const EditorTranslationList *etl = _editor_translations;
+	while (etl->data) {
 		const String &locale = etl->lang;
 		locales.push_back(locale);
+
+		etl++;
 	}
 
 	return locales;
 }
 
-static void _load(const Ref<TranslationDomain> p_domain, const String &p_locale, const EditorTranslationList *p_etl) {
-	for (const EditorTranslationList *etl = p_etl; etl->data; etl++) {
+void load_editor_translations(const String &p_locale) {
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
+
+	const EditorTranslationList *etl = _editor_translations;
+	while (etl->data) {
 		if (etl->lang == p_locale) {
-			LocalVector<uint8_t> data;
-			data.resize_uninitialized(etl->uncomp_size);
-			const int64_t ret = Compression::decompress(data.ptr(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			Vector<uint8_t> data;
+			data.resize(etl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
 			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
 			Ref<FileAccessMemory> fa;
@@ -63,45 +69,115 @@ static void _load(const Ref<TranslationDomain> p_domain, const String &p_locale,
 			fa->open_custom(data.ptr(), data.size());
 
 			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				p_domain->add_translation(tr);
+				domain->add_translation(tr);
 				break;
 			}
 		}
+
+		etl++;
 	}
 }
 
-void load_editor_translations(const String &p_locale) {
-	Ref<TranslationDomain> domain;
+void load_property_translations(const String &p_locale) {
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.properties");
 
-	domain = TranslationServer::get_singleton()->get_editor_domain();
-	domain->clear();
-	_load(domain, p_locale, _editor_translations);
-	_load(domain, p_locale, _extractable_translations);
+	const PropertyTranslationList *etl = _property_translations;
+	while (etl->data) {
+		if (etl->lang == p_locale) {
+			Vector<uint8_t> data;
+			data.resize(etl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 
-	domain = TranslationServer::get_singleton()->get_property_domain();
-	domain->clear();
-	_load(domain, p_locale, _property_translations);
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
+			if (tr.is_valid()) {
+				tr->set_locale(etl->lang);
+				domain->add_translation(tr);
+				break;
+			}
+		}
+
+		etl++;
+	}
 }
 
 void load_doc_translations(const String &p_locale) {
-	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_doc_domain();
-	domain->clear();
-	_load(domain, p_locale, _doc_translations);
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.documentation");
+
+	const DocTranslationList *dtl = _doc_translations;
+	while (dtl->data) {
+		if (dtl->lang == p_locale) {
+			Vector<uint8_t> data;
+			data.resize(dtl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
+
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
+			if (tr.is_valid()) {
+				tr->set_locale(dtl->lang);
+				domain->add_translation(tr);
+				break;
+			}
+		}
+
+		dtl++;
+	}
+}
+
+void load_extractable_translations(const String &p_locale) {
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
+
+	const ExtractableTranslationList *etl = _extractable_translations;
+	while (etl->data) {
+		if (etl->lang == p_locale) {
+			Vector<uint8_t> data;
+			data.resize(etl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
+
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
+			if (tr.is_valid()) {
+				tr->set_locale(etl->lang);
+				domain->add_translation(tr);
+				break;
+			}
+		}
+
+		etl++;
+	}
 }
 
 Vector<Vector<String>> get_extractable_message_list() {
+	const ExtractableTranslationList *etl = _extractable_translations;
 	Vector<Vector<String>> list;
 
-	for (const EditorTranslationList *etl = _extractable_translations; etl->data; etl++) {
+	while (etl->data) {
 		if (strcmp(etl->lang, "source")) {
+			etl++;
 			continue;
 		}
 
-		LocalVector<uint8_t> data;
-		data.resize_uninitialized(etl->uncomp_size);
-		const int64_t ret = Compression::decompress(data.ptr(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+		Vector<uint8_t> data;
+		data.resize(etl->uncomp_size);
+		const int64_t ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
 		ERR_FAIL_COND_V_MSG(ret == -1, list, "Compressed file is corrupt.");
 
 		Ref<FileAccessMemory> fa;
@@ -246,6 +322,8 @@ Vector<Vector<String>> get_extractable_message_list() {
 				line++;
 			}
 		}
+
+		etl++;
 	}
 
 	return list;

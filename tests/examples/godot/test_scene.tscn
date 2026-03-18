@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3 uid="uid://bm7xdqc0x2s7p"]
+
+[sub_resource type="GDScript" id="GDScript_1"]
+script/source = "extends Node3D
+
+# Simple test script to add GaussianSplatRenderer to the scene
+func _ready():
+	print('[Test Scene] Creating GaussianSplatRenderer...')
+
+	# Create the Gaussian Splat Renderer
+	var gaussian_renderer = GaussianSplatRenderer.new()
+	add_child(gaussian_renderer)
+
+	# Position camera to view the splats
+	var camera = get_viewport().get_camera_3d()
+	if camera:
+		camera.position = Vector3(0, 0, 10)
+		camera.look_at(Vector3.ZERO, Vector3.UP)
+
+	print('[Test Scene] GaussianSplatRenderer added successfully!')
+"
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.1, 0.1, 0.2, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.3
+
+[node name="TestScene" type="Node3D"]
+script = SubResource("GDScript_1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866, 0.5, 0, -0.5, 0.866, 0, 5, 10)
+fov = 60.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707, -0.5, 0.5, 0, 0.707, 0.707, -0.707, -0.5, 0.5, 0, 5, 0)
+light_energy = 0.8
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")

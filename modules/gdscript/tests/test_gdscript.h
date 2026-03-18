@@ -30,6 +30,10 @@
 
 #pragma once
 
+#include "gdscript_test_runner.h"
+
+#include "tests/test_macros.h"
+
 namespace GDScriptTests {
 
 enum TestType {

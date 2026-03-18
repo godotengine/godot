@@ -1,0 +1,141 @@
+[gd_scene load_steps=7 format=3 uid="uid://gaussian_demo_scene"]
+
+[ext_resource type="Script" path="res://test_data/demo_controller.gd" id="1_demo"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.1, 0.1, 0.2, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.3, 0.4, 1)
+ambient_light_energy = 0.5
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_1"]
+dof_blur_far_enabled = false
+dof_blur_near_enabled = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(20, 0.1, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.2, 0.2, 0.3, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(20, 0.1, 20)
+
+[node name="GaussianSplatDemo" type="Node3D"]
+script = ExtResource("1_demo")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+camera_attributes = SubResource("CameraAttributesPractical_1")
+
+[node name="CameraController" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 10)
+
+[node name="Camera3D" type="Camera3D" parent="CameraController"]
+fov = 60
+near = 0.1
+far = 1000
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Controls" type="Control" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="InfoPanel" type="PanelContainer" parent="UI/Controls"]
+anchor_top = 0.0
+anchor_left = 0.0
+offset_right = 400
+offset_bottom = 200
+modulate = Color(1, 1, 1, 0.9)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Controls/InfoPanel"]
+
+[node name="Title" type="Label" parent="UI/Controls/InfoPanel/VBoxContainer"]
+text = "Gaussian Splatting Demo"
+add_theme_font_size_override = 24
+
+[node name="HSeparator" type="HSeparator" parent="UI/Controls/InfoPanel/VBoxContainer"]
+
+[node name="Stats" type="Label" parent="UI/Controls/InfoPanel/VBoxContainer"]
+text = "FPS: 0
+Splats: 0
+Memory: 0 MB
+Quality: Ultra"
+
+[node name="HSeparator2" type="HSeparator" parent="UI/Controls/InfoPanel/VBoxContainer"]
+
+[node name="Controls" type="Label" parent="UI/Controls/InfoPanel/VBoxContainer"]
+text = "Controls:
+WASD - Move camera
+Mouse - Look around
+Q/E - Move up/down
+1-4 - Change quality preset
+Space - Toggle rotation"
+
+[node name="QualityButtons" type="HBoxContainer" parent="UI/Controls"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+anchor_left = 0.0
+anchor_right = 1.0
+offset_top = -60
+alignment = 1
+
+[node name="LowBtn" type="Button" parent="UI/Controls/QualityButtons"]
+text = "Low (1)"
+custom_minimum_size = Vector2(100, 40)
+
+[node name="MediumBtn" type="Button" parent="UI/Controls/QualityButtons"]
+text = "Medium (2)"
+custom_minimum_size = Vector2(100, 40)
+
+[node name="HighBtn" type="Button" parent="UI/Controls/QualityButtons"]
+text = "High (3)"
+custom_minimum_size = Vector2(100, 40)
+
+[node name="UltraBtn" type="Button" parent="UI/Controls/QualityButtons"]
+text = "Ultra (4)"
+custom_minimum_size = Vector2(100, 40)
+modulate = Color(0.5, 1, 0.5, 1)
+
+[node name="LoadButtons" type="HBoxContainer" parent="UI/Controls"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+anchor_left = 0.0
+anchor_right = 1.0
+offset_top = -110
+alignment = 1
+
+[node name="Load1K" type="Button" parent="UI/Controls/LoadButtons"]
+text = "Load 1K Splats"
+custom_minimum_size = Vector2(120, 40)
+
+[node name="Load100K" type="Button" parent="UI/Controls/LoadButtons"]
+text = "Load 100K Splats"
+custom_minimum_size = Vector2(120, 40)
+
+[node name="Load1M" type="Button" parent="UI/Controls/LoadButtons"]
+text = "Load 1M Splats"
+custom_minimum_size = Vector2(120, 40)
+
+[node name="LoadMulti" type="Button" parent="UI/Controls/LoadButtons"]
+text = "Load Multiple"
+custom_minimum_size = Vector2(120, 40)
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_1")
+
+[node name="SplatContainer" type="Node3D" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 10, 0)
+light_energy = 0.5
+shadow_enabled = true

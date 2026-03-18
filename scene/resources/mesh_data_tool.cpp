@@ -31,8 +31,6 @@
 #include "mesh_data_tool.h"
 #include "mesh_data_tool.compat.inc"
 
-#include "core/object/class_db.h"
-
 void MeshDataTool::clear() {
 	vertices.clear();
 	edges.clear();

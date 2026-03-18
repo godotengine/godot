@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+from misc.utility.scons_hints import *
+
+import os
+from SCons.Errors import StopError
+
+Import("env")
+
+required_tile_shaders = {
+    "tile_binning.glsl",
+    "tile_prefix_scan.glsl",
+    "tile_rasterizer.glsl",
+    "tile_resolve.glsl",
+}
+
+if "RD_GLSL" not in env["BUILDERS"]:
+    raise StopError(
+        "Gaussian Splatting shaders require the RenderingDevice GLSL builder. "
+        "Build the engine with the Vulkan RenderingDevice enabled."
+    )
+
+gl_include_files = [str(f) for f in Glob("includes/*.glsl")]
+glsl_files = [str(f) for f in Glob("*.glsl")]
+
+# Painterly shaders (sobel_outline.glsl, brush_accumulate.glsl) are now in main shader dir
+
+glsl_file_names = {os.path.basename(path) for path in glsl_files}
+
+viewport_blit_shader = "viewport_blit.glsl"
+if viewport_blit_shader not in glsl_file_names:
+    if not os.path.isfile(viewport_blit_shader):
+        raise StopError(
+            "Missing viewport blit shader source: {}".format(viewport_blit_shader)
+        )
+    glsl_files.append(viewport_blit_shader)
+    glsl_file_names.add(viewport_blit_shader)
+
+missing_tile_sources = sorted(required_tile_shaders - glsl_file_names)
+if missing_tile_sources:
+    raise StopError(
+        "Missing tile renderer shader sources: {}".format(
+            ", ".join(missing_tile_sources)
+        )
+    )
+
+env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files + ["#glsl_builders.py"])
+
+for glsl_file in gl_include_files:
+    env.GLSL_HEADER(glsl_file)
+
+generated_nodes = {}
+for glsl_file in glsl_files:
+    target = env.RD_GLSL(glsl_file)
+    generated_nodes[os.path.basename(glsl_file)] = target
+
+
+def _node_abspath(node):
+    if isinstance(node, (list, tuple)):
+        node = node[0]
+    return node.abspath
+
+
+def _validate_generated_shaders(target, source, env):
+    """Ensure each generated shader header exists on disk."""
+
+    for node in target:
+        output_path = _node_abspath(node)
+        if not os.path.exists(output_path):
+            raise StopError(
+                "Failed to generate {} – the tile renderer cannot compile without it.".format(
+                    os.path.basename(output_path)
+                )
+            )
+    return 0
+
+
+tile_nodes = []
+for shader_name in required_tile_shaders:
+    node = generated_nodes[shader_name]
+    if isinstance(node, (list, tuple)):
+        tile_nodes.extend(node)
+    else:
+        tile_nodes.append(node)
+env.AddPostAction(tile_nodes, env.Action(_validate_generated_shaders, "Validating tile renderer shaders"))
+
+# Painterly shaders are included in glsl_files above
+
+generated_headers = []
+for node in generated_nodes.values():
+    if isinstance(node, (list, tuple)):
+        generated_headers.extend(node)
+    else:
+        generated_headers.append(node)
+
+Return("generated_headers")

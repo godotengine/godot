@@ -32,8 +32,6 @@
 
 #include "scene/resources/multimesh.h"
 
-class Image;
-
 class Voxelizer {
 public:
 	enum BakeResult {
@@ -54,6 +52,7 @@ private:
 		float albedo[3] = {}; //albedo in RGB24
 		float emission[3] = {}; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float normal[3] = {};
+		uint32_t used_sides = 0;
 		float alpha = 0.0; //used for upsampling
 		uint16_t x = 0;
 		uint16_t y = 0;

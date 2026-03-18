@@ -30,8 +30,6 @@
 
 #include "inspector_dock.h"
 
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"
@@ -42,10 +40,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_object_selector.h"
 #include "editor/script/script_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/box_container.h"
+
+InspectorDock *InspectorDock::singleton = nullptr;
 
 void InspectorDock::_prepare_menu() {
 	PopupMenu *menu = object_menu->get_popup();
@@ -163,7 +161,8 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					unique_resources_confirmation->popup_centered();
 				} else {
 					current_option = -1;
-					EditorNode::get_singleton()->show_warning(TTR("This object has no resources to duplicate."));
+					unique_resources_label->set_text(TTRC("This object has no resources."));
+					unique_resources_confirmation->popup_centered();
 				}
 			} else {
 				editor_data->apply_changes_in_editors();
@@ -338,7 +337,7 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "Object");
 
 		String text;
 		if (obj->has_method("_get_editor_name")) {
@@ -495,16 +494,6 @@ void InspectorDock::_notification(int p_what) {
 			} else {
 				info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
-			}
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
-				property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
-				inspector->set_property_name_style(property_name_style);
-
-				bool disable_folding = EDITOR_GET("interface/inspector/disable_folding");
-				inspector->set_use_folding(!disable_folding);
 			}
 		} break;
 	}
@@ -718,20 +707,14 @@ void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	singleton = this;
-	set_name(TTRC("Inspector"));
-	set_icon_name("AnimationTrackList");
-	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
-	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
-
-	VBoxContainer *main_vb = memnew(VBoxContainer);
-	add_child(main_vb);
+	set_name("Inspector");
 
 	editor_data = &p_editor_data;
 
 	property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
-	main_vb->add_child(general_options_hb);
+	add_child(general_options_hb);
 
 	resource_new_button = memnew(Button);
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
@@ -776,14 +759,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_spacer();
 
 	backward_button = memnew(Button);
-	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
+	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTRC("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
-	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
+	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
 	forward_button->set_disabled(true);
@@ -799,7 +782,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	history_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_select_history));
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
-	main_vb->add_child(subresource_hb);
+	add_child(subresource_hb);
 	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
 	object_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subresource_hb->add_child(object_selector);
@@ -818,7 +801,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	new_resource_dialog->connect("create", callable_mp(this, &InspectorDock::_resource_created));
 
 	HBoxContainer *property_tools_hb = memnew(HBoxContainer);
-	main_vb->add_child(property_tools_hb);
+	add_child(property_tools_hb);
 
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -835,14 +818,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
 	info = memnew(Button);
-	main_vb->add_child(info);
+	add_child(info);
 	info->set_clip_text(true);
 	info->set_accessibility_name(TTRC("Information"));
 	info->hide();
 	info->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_info_pressed));
 
 	unique_resources_confirmation = memnew(ConfirmationDialog);
-	main_vb->add_child(unique_resources_confirmation);
+	add_child(unique_resources_confirmation);
 
 	VBoxContainer *container = memnew(VBoxContainer);
 	unique_resources_confirmation->add_child(container);
@@ -869,19 +852,15 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);
 
 	load_resource_dialog = memnew(EditorFileDialog);
-	main_vb->add_child(load_resource_dialog);
+	add_child(load_resource_dialog);
 	load_resource_dialog->set_current_dir("res://");
 	load_resource_dialog->connect("file_selected", callable_mp(this, &InspectorDock::_resource_file_selected));
 
-	MarginContainer *mc = memnew(MarginContainer);
-	main_vb->add_child(mc);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
 	inspector = memnew(EditorInspector);
-	mc->add_child(inspector);
+	add_child(inspector);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true, true);
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
 	inspector->set_hide_metadata(false);
@@ -889,7 +868,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_property_name_style(property_name_style);
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
-	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
 
 	inspector->set_use_filter(true);
 

@@ -31,7 +31,6 @@
 #include "resource_importer_wav.h"
 
 #include "core/io/resource_saver.h"
-#include "scene/resources/audio_stream_wav.h"
 
 String ResourceImporterWAV::get_importer_name() const {
 	return "wav";

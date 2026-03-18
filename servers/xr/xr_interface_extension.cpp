@@ -29,8 +29,6 @@
 /**************************************************************************/
 
 #include "xr_interface_extension.h"
-
-#include "core/object/class_db.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 
 void XRInterfaceExtension::_bind_methods() {
@@ -272,7 +270,7 @@ RID XRInterfaceExtension::get_velocity_texture() {
 }
 
 void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, double p_k1, double p_k2, double p_upscale, double p_aspect_ratio) {
-	RenderingServerTypes::BlitToScreen blit;
+	BlitToScreen blit;
 
 	ERR_FAIL_COND_MSG(!can_add_blits, "add_blit can only be called from an XR plugin from within _post_draw_viewport!");
 
@@ -307,7 +305,7 @@ bool XRInterfaceExtension::pre_draw_viewport(RID p_render_target) {
 	return do_render; // If not implemented we're returning true.
 }
 
-Vector<RenderingServerTypes::BlitToScreen> XRInterfaceExtension::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> XRInterfaceExtension::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	// This is just so our XR plugin can add blits...
 	blits.clear();
 	can_add_blits = true;

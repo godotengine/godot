@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.h"
-#include "core/object/object.h"
+#include "core/input/input_event.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
@@ -57,8 +58,6 @@ public:
 		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
 		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
-		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
-		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 	};
 
 	virtual void initialize();
@@ -68,5 +67,6 @@ public:
 	virtual bool process(double p_time);
 	virtual void finalize();
 
+	MainLoop() {}
 	virtual ~MainLoop() {}
 };

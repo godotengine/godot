@@ -33,11 +33,9 @@
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
 
-#include <zlib.h>
-// zlib should come before including tinyexr.
-#include <thirdparty/tinyexr/tinyexr.h>
+#include <zlib.h> // Should come before including tinyexr.
 
-#include <cstdlib>
+#include "thirdparty/tinyexr/tinyexr.h"
 
 static bool is_supported_format(Image::Format p_format) {
 	// This is checked before anything else.

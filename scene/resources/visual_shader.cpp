@@ -30,18 +30,14 @@
 
 #include "visual_shader.h"
 
-#include "core/config/engine.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant_utility.h"
-#include "scene/resources/visual_shader_nodes.h"
-#include "scene/resources/visual_shader_particle_nodes.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "visual_shader_nodes.h"
+#include "visual_shader_particle_nodes.h"
 
 String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
-	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog", "texture_blit" };
+	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
 	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
 }
 
@@ -971,37 +967,6 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	g->nodes[p_id].position = p_position;
 }
 
-// Returns 0 if no embeds, 1 if external embeds, 2 if builtin embeds
-int VisualShader::has_node_embeds() const {
-	bool external_embeds = false;
-	for (int i = 0; i < TYPE_MAX; i++) {
-		for (const KeyValue<int, Node> &E : graph[i].nodes) {
-			List<PropertyInfo> props;
-			E.value.node->get_property_list(&props);
-			// For classes that inherit from VisualShaderNode, the class properties start at the 12th, and the last value is always 'script'
-			for (int j = 12; j < props.size() - 1; j++) {
-				// VisualShaderNodeCustom cannot have embeds
-				if (props.get(j).name == "VisualShaderNodeCustom") {
-					break;
-				}
-				// Ref<Resource> properties get classed as type Variant::Object
-				if (props.get(j).type == Variant::OBJECT) {
-					Ref<Resource> res = E.value.node->get(props.get(j).name);
-					if (res.is_valid()) {
-						if (res->is_built_in()) {
-							return 2;
-						} else {
-							external_embeds = true;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return external_embeds;
-}
-
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector2());
 	const Graph *g = &graph[p_type];
@@ -1296,10 +1261,6 @@ String VisualShader::get_reroute_parameter_name(Type p_type, int p_reroute_node)
 		Ref<VisualShaderNodeParameter> parameter_node = node->node;
 		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
 			return parameter_node->get_parameter_name();
-		}
-		Ref<VisualShaderNodeParameterRef> parameter_ref_node = node->node;
-		if (parameter_ref_node.is_valid() && parameter_ref_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
-			return parameter_ref_node->get_parameter_name();
 		}
 		Ref<VisualShaderNodeInput> input_node = node->node;
 		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
@@ -1722,7 +1683,6 @@ static const char *type_string[VisualShader::TYPE_MAX] = {
 	"process_custom",
 	"sky",
 	"fog",
-	"texture_blit",
 };
 
 bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
@@ -1963,13 +1923,13 @@ void VisualShader::reset_state() {
 
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
-	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles,Sky,Fog,TextureBlit"));
+	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles,Sky,Fog"));
 	//render modes
 
 	HashMap<String, String> blend_mode_enums;
 	HashSet<String> toggles;
 
-	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader_mode));
+	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
 
 	for (int i = 0; i < rmodes.size(); i++) {
 		const ShaderLanguage::ModeInfo &info = rmodes[i];
@@ -2022,11 +1982,14 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E)));
 	}
 
-	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader_mode));
+	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader_mode));
 
 	if (smodes.size() > 0) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil"), PNAME("enabled")), PROPERTY_HINT_GROUP_ENABLE));
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil"), PNAME("reference")), PROPERTY_HINT_RANGE, "0,255,1"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil"), PNAME("enabled"))));
+
+		uint32_t stencil_prop_usage = stencil_enabled ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil"), PNAME("reference")), PROPERTY_HINT_RANGE, "0,255,1", stencil_prop_usage));
 
 		HashMap<String, String> stencil_enums;
 		HashSet<String> stencil_toggles;
@@ -2050,11 +2013,11 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (const KeyValue<String, String> &E : stencil_enums) {
-			p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil_modes"), E.key), PROPERTY_HINT_ENUM, E.value));
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil_modes"), E.key), PROPERTY_HINT_ENUM, E.value, stencil_prop_usage));
 		}
 
 		for (const String &E : stencil_toggles) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil_flags"), E)));
+			p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil_flags"), E), PROPERTY_HINT_NONE, "", stencil_prop_usage));
 		}
 	}
 
@@ -2077,7 +2040,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			prop_name += "/" + itos(E.key);
 
 			if (E.key != NODE_ID_OUTPUT) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, VisualShaderNode::get_class_static(), PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 			}
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
@@ -2091,12 +2054,6 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 		}
 		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	}
-}
-
-void VisualShader::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "code") {
-		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -2661,9 +2618,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 	return OK;
 }
 
-bool VisualShader::has_func_name(RSE::ShaderMode p_mode, const String &p_func_name) const {
+bool VisualShader::has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const {
 	if (!ShaderTypes::get_singleton()->get_functions(p_mode).has(p_func_name)) {
-		if (p_mode == RSE::ShaderMode::SHADER_PARTICLES) {
+		if (p_mode == RenderingServer::ShaderMode::SHADER_PARTICLES) {
 			if (p_func_name == "start_custom" || p_func_name == "process_custom" || p_func_name == "collide") {
 				return true;
 			}
@@ -2688,14 +2645,14 @@ void VisualShader::_update_shader() const {
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
 	HashSet<StringName> classes;
 	HashMap<int, int> insertion_pos;
-	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog", "texture_blit" };
+	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
 
 	global_code += String() + "shader_type " + shader_mode_str[shader_mode] + ";\n";
 
 	String render_mode;
 
 	{
-		const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader_mode));
+		const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
 		Vector<String> flag_names;
 
 		// Add enum modes first.
@@ -2751,7 +2708,7 @@ void VisualShader::_update_shader() const {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
-	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader_mode));
+	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader_mode));
 
 	if (stencil_enabled && smodes.size() > 0 && (stencil_flags.has("read") || stencil_flags.has("write") || stencil_flags.has("write_depth_fail"))) {
 		String stencil_mode;
@@ -2791,7 +2748,7 @@ void VisualShader::_update_shader() const {
 		global_code += "stencil_mode " + stencil_mode + ";\n\n";
 	}
 
-	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog", "blit" };
+	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
 
 	String global_expressions;
 	HashSet<String> used_parameter_names;
@@ -2799,15 +2756,8 @@ void VisualShader::_update_shader() const {
 	HashMap<int, List<int>> emitters;
 	HashMap<int, List<int>> varying_setters;
 
-	if (shader_mode == Shader::MODE_TEXTURE_BLIT) {
-		global_code += "uniform sampler2D source_texture0 : hint_blit_source0;\n";
-		global_code += "uniform sampler2D source_texture1 : hint_blit_source1;\n";
-		global_code += "uniform sampler2D source_texture2 : hint_blit_source2;\n";
-		global_code += "uniform sampler2D source_texture3 : hint_blit_source3;\n\n";
-	}
-
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
-		if (!has_func_name(RSE::ShaderMode(shader_mode), func_name[i])) {
+		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
 		}
 
@@ -2906,7 +2856,7 @@ void VisualShader::_update_shader() const {
 	HashSet<int> empty_funcs;
 
 	for (int i = 0; i < TYPE_MAX; i++) {
-		if (!has_func_name(RSE::ShaderMode(shader_mode), func_name[i])) {
+		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
 		}
 
@@ -2917,7 +2867,7 @@ void VisualShader::_update_shader() const {
 		HashSet<int> processed;
 
 		bool is_empty_func = false;
-		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG && shader_mode != Shader::MODE_TEXTURE_BLIT) {
+		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG) {
 			is_empty_func = true;
 		}
 
@@ -3140,7 +3090,7 @@ void VisualShader::_update_shader() const {
 	final_code += global_expressions;
 	String tcode = shader_code;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		if (!has_func_name(RSE::ShaderMode(shader_mode), func_name[i])) {
+		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
 		}
 		String func_code = global_code_per_func[Type(i)].as_string();
@@ -3233,7 +3183,6 @@ void VisualShader::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_PROCESS_CUSTOM);
 	BIND_ENUM_CONSTANT(TYPE_SKY);
 	BIND_ENUM_CONSTANT(TYPE_FOG);
-	BIND_ENUM_CONSTANT(TYPE_TEXTURE_BLIT);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(VARYING_MODE_VERTEX_TO_FRAG_LIGHT);
@@ -3293,7 +3242,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom3", "CUSTOM3" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "exposure", "EXPOSURE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "eye_offset", "EYE_OFFSET" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "in_shadow_pass", "IN_SHADOW_PASS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "instance_custom", "INSTANCE_CUSTOM" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "instance_id", "INSTANCE_ID" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_projection_matrix", "INV_PROJECTION_MATRIX" },
@@ -3313,7 +3261,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv2", "UV2" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "vertex", "VERTEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "vertex_id", "VERTEX_ID" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "is_multiview", "IS_MULTIVIEW" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "view_matrix", "VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
@@ -3331,7 +3278,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "eye_offset", "EYE_OFFSET" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "front_facing", "FRONT_FACING" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "in_shadow_pass", "IN_SHADOW_PASS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_projection_matrix", "INV_PROJECTION_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_view_matrix", "INV_VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_TRANSFORM, "model_matrix", "MODEL_MATRIX" },
@@ -3348,7 +3294,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv2", "UV2" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "vertex", "VERTEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "view", "VIEW" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "is_multiview", "IS_MULTIVIEW" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_TRANSFORM, "view_matrix", "VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
@@ -3364,7 +3309,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "diffuse", "DIFFUSE_LIGHT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "exposure", "EXPOSURE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_BOOLEAN, "in_shadow_pass", "IN_SHADOW_PASS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_projection_matrix", "INV_PROJECTION_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_TRANSFORM, "inv_view_matrix", "INV_VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "light", "LIGHT" },
@@ -3378,14 +3322,12 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "roughness", "ROUGHNESS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "SCREEN_UV" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "specular", "SPECULAR_LIGHT" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "specular_amount", "SPECULAR_AMOUNT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv2", "UV2" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "view", "VIEW" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_TRANSFORM, "view_matrix", "VIEW_MATRIX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "viewport_size", "VIEWPORT_SIZE" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_BOOLEAN, "is_multiview", "IS_MULTIVIEW" },
 
 	// Canvas Item
 
@@ -3445,6 +3387,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 
 	// Particles, Start
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_BOOLEAN, "active", "ACTIVE" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_VECTOR_3D, "attractor_force", "ATTRACTOR_FORCE" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_VECTOR_4D, "color", "COLOR" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom", "CUSTOM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
@@ -3453,12 +3396,14 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_BOOLEAN, "restart", "RESTART" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_VECTOR_3D, "velocity", "VELOCITY" },
 
 	// Particles, Start (Custom)
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_BOOLEAN, "active", "ACTIVE" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_VECTOR_3D, "attractor_force", "ATTRACTOR_FORCE" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_VECTOR_4D, "color", "COLOR" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom", "CUSTOM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
@@ -3467,6 +3412,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_BOOLEAN, "restart", "RESTART" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_VECTOR_3D, "velocity", "VELOCITY" },
@@ -3559,15 +3505,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "uvw", "UVW" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "world_position", "WORLD_POSITION" },
 
-	// Blit, Blit
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "modulate", "MODULATE" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture0", "source_texture0" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture1", "source_texture1" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture2", "source_texture2" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture3", "source_texture3" },
-
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
@@ -3647,11 +3584,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	// Fog
 
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
-
-	// Blit
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "modulate", "MODULATE" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture", "source_texture" },
 
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
@@ -4289,14 +4221,6 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "Emission", "EMISSION" },
 
 	////////////////////////////////////////////////////////////////////////
-	// Blit, Blit.
-	////////////////////////////////////////////////////////////////////////
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color0", "COLOR0" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color1", "COLOR1" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color2", "COLOR2" },
-	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color3", "COLOR3" },
-
-	////////////////////////////////////////////////////////////////////////
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
@@ -4431,16 +4355,6 @@ VisualShaderNodeParameter::Qualifier VisualShaderNodeParameter::get_qualifier() 
 	return qualifier;
 }
 
-void VisualShaderNodeParameter::set_instance_index(int p_index) {
-	ERR_FAIL_INDEX(p_index, 16);
-	instance_index = p_index;
-	emit_changed();
-}
-
-int VisualShaderNodeParameter::get_instance_index() const {
-	return instance_index;
-}
-
 void VisualShaderNodeParameter::set_global_code_generated(bool p_enabled) {
 	global_code_generated = p_enabled;
 }
@@ -4467,17 +4381,12 @@ void VisualShaderNodeParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_qualifier", "qualifier"), &VisualShaderNodeParameter::set_qualifier);
 	ClassDB::bind_method(D_METHOD("get_qualifier"), &VisualShaderNodeParameter::get_qualifier);
 
-	ClassDB::bind_method(D_METHOD("set_instance_index", "instance_index"), &VisualShaderNodeParameter::set_instance_index);
-	ClassDB::bind_method(D_METHOD("get_instance_index"), &VisualShaderNodeParameter::get_instance_index);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "parameter_name"), "set_parameter_name", "get_parameter_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance,Instance + Index"), "set_qualifier", "get_qualifier");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_index", PROPERTY_HINT_RANGE, "0,15,1"), "set_instance_index", "get_instance_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance"), "set_qualifier", "get_qualifier");
 
 	BIND_ENUM_CONSTANT(QUAL_NONE);
 	BIND_ENUM_CONSTANT(QUAL_GLOBAL);
 	BIND_ENUM_CONSTANT(QUAL_INSTANCE);
-	BIND_ENUM_CONSTANT(QUAL_INSTANCE_INDEX);
 	BIND_ENUM_CONSTANT(QUAL_MAX);
 }
 
@@ -4488,7 +4397,6 @@ String VisualShaderNodeParameter::_get_qual_str() const {
 				break;
 			case QUAL_GLOBAL:
 				return "global ";
-			case QUAL_INSTANCE_INDEX:
 			case QUAL_INSTANCE:
 				return "instance ";
 			default:
@@ -4512,7 +4420,6 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 			case QUAL_GLOBAL:
 				qualifier_str = "global";
 				break;
-			case QUAL_INSTANCE_INDEX:
 			case QUAL_INSTANCE:
 				qualifier_str = "instance";
 				break;
@@ -4521,63 +4428,63 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 		}
 		return vformat(RTR("This parameter type does not support the '%s' qualifier."), qualifier_str);
 	} else if (qualifier == Qualifier::QUAL_GLOBAL) {
-		RSE::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(parameter_name);
-		if (gvt == RSE::GLOBAL_VAR_TYPE_MAX) {
+		RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(parameter_name);
+		if (gvt == RS::GLOBAL_VAR_TYPE_MAX) {
 			return vformat(RTR("Global parameter '%s' does not exist.\nCreate it in the Project Settings."), parameter_name);
 		}
 		bool incompatible_type = false;
 		switch (gvt) {
-			case RSE::GLOBAL_VAR_TYPE_FLOAT: {
+			case RS::GLOBAL_VAR_TYPE_FLOAT: {
 				if (!Object::cast_to<VisualShaderNodeFloatParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_INT: {
+			case RS::GLOBAL_VAR_TYPE_INT: {
 				if (!Object::cast_to<VisualShaderNodeIntParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_BOOL: {
+			case RS::GLOBAL_VAR_TYPE_BOOL: {
 				if (!Object::cast_to<VisualShaderNodeBooleanParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_COLOR: {
+			case RS::GLOBAL_VAR_TYPE_COLOR: {
 				if (!Object::cast_to<VisualShaderNodeColorParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_VEC3: {
+			case RS::GLOBAL_VAR_TYPE_VEC3: {
 				if (!Object::cast_to<VisualShaderNodeVec3Parameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_VEC4: {
+			case RS::GLOBAL_VAR_TYPE_VEC4: {
 				if (!Object::cast_to<VisualShaderNodeVec4Parameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_TRANSFORM: {
+			case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 				if (!Object::cast_to<VisualShaderNodeTransformParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_SAMPLER2D: {
+			case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
 				if (!Object::cast_to<VisualShaderNodeTextureParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_SAMPLER3D: {
+			case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 				if (!Object::cast_to<VisualShaderNodeTexture3DParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+			case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 				if (!Object::cast_to<VisualShaderNodeTexture2DArrayParameter>(this)) {
 					incompatible_type = true;
 				}
 			} break;
-			case RSE::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
+			case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 				if (!Object::cast_to<VisualShaderNodeCubemapParameter>(this)) {
 					incompatible_type = true;
 				}
@@ -4596,9 +4503,6 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 Vector<StringName> VisualShaderNodeParameter::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("qualifier");
-	if (qualifier == QUAL_INSTANCE_INDEX) {
-		props.push_back("instance_index");
-	}
 	return props;
 }
 
@@ -4900,7 +4804,8 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < inputs_strings.size(); i++) {
-		if (inputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
+		Vector<String> arr = inputs_strings[i].split(",");
+		if (arr[0].to_int() == p_id) {
 			count = inputs_strings[i].size();
 			break;
 		}
@@ -4912,7 +4817,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	inputs = inputs.substr(0, index);
 
 	for (int i = p_id; i < inputs_strings.size(); i++) {
-		inputs += inputs_strings[i].replace_first(inputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
+		inputs += inputs_strings[i].replace_first(inputs_strings[i].split(",")[0], itos(i)) + ";";
 	}
 
 	_apply_port_changes();
@@ -4974,7 +4879,8 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < outputs_strings.size(); i++) {
-		if (outputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
+		Vector<String> arr = outputs_strings[i].split(",");
+		if (arr[0].to_int() == p_id) {
 			count = outputs_strings[i].size();
 			break;
 		}
@@ -4986,7 +4892,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	outputs = outputs.substr(0, index);
 
 	for (int i = p_id; i < outputs_strings.size(); i++) {
-		outputs += outputs_strings[i].replace_first(outputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
+		outputs += outputs_strings[i].replace_first(outputs_strings[i].split(",")[0], itos(i)) + ";";
 	}
 
 	_apply_port_changes();

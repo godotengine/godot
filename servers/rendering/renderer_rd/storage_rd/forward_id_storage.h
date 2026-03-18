@@ -48,13 +48,13 @@ enum ForwardIDType {
 
 class ForwardIDStorage {
 private:
-	static inline ForwardIDStorage *singleton = nullptr;
+	static ForwardIDStorage *singleton;
 
 public:
 	static ForwardIDStorage *get_singleton() { return singleton; }
 
-	ForwardIDStorage() { singleton = this; }
-	virtual ~ForwardIDStorage() { singleton = nullptr; }
+	ForwardIDStorage();
+	virtual ~ForwardIDStorage();
 
 	virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) { return -1; }
 	virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) {}

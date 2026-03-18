@@ -1,0 +1,37 @@
+{
+  "name": "sparse_gallery",
+  "description": "Sparse airy arrangement with isolated splats for readability checks.",
+  "density": "sparse",
+  "splat_count": 640,
+  "radius": 0.35,
+  "fov_degrees": 45.0,
+  "palette": [
+    [0.823, 0.901, 0.956, 0.9],
+    [0.337, 0.486, 0.678, 0.8],
+    [0.862, 0.760, 0.541, 0.85],
+    [0.239, 0.274, 0.325, 0.75]
+  ],
+  "camera_path": [
+    {"time": 0.0, "position": [-1.5, 0.8, 7.0], "target": [0.0, 0.5, 0.0]},
+    {"time": 3.5, "position": [1.2, 0.4, 7.5], "target": [0.0, 0.3, 0.0]}
+  ],
+  "shader_permutations": [
+    {
+      "name": "sparse_watercolor",
+      "defines": ["PAINTERLY_STYLE_WATERCOLOR", "SPARSE_SPLATS", "ENABLE_TRANSPARENCY_FALLOFF"]
+    },
+    {
+      "name": "sparse_charcoal",
+      "defines": ["PAINTERLY_STYLE_CHARCOAL", "SPARSE_SPLATS", "ENABLE_OUTLINE", "ENABLE_PAPER_GRAIN"]
+    }
+  ],
+  "audit": {
+    "coverage_min": 0.05,
+    "luminance_min": 0.01,
+    "delta_min": 0.01,
+    "stability_max": 0.0005,
+    "comparison_camera_index": 1,
+    "artifact_camera_indices": [0, 1],
+    "performance_budget_ms": 120.0
+  }
+}

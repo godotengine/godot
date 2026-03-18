@@ -32,6 +32,9 @@
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
+#include <cstdio>
+#include <cstdlib>
+
 const char *GLManagerEGL_X11::_get_platform_extension_name() const {
 	return "EGL_KHR_platform_x11";
 }
@@ -57,4 +60,4 @@ Vector<EGLint> GLManagerEGL_X11::_get_platform_context_attribs() const {
 	return ret;
 }
 
-#endif // X11_ENABLED && GLES3_ENABLED
+#endif // WINDOWS_ENABLED && GLES3_ENABLED

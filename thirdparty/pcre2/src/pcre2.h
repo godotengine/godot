@@ -42,21 +42,25 @@ POSSIBILITY OF SUCH DAMAGE.
 /* The current PCRE version information. */
 
 #define PCRE2_MAJOR           10
-#define PCRE2_MINOR           47
+#define PCRE2_MINOR           45
 #define PCRE2_PRERELEASE      
-#define PCRE2_DATE            2025-10-21
+#define PCRE2_DATE            2025-02-05
 
-/* When an application links to a PCRE2 DLL in Windows, the symbols that are
+/* When an application links to a PCRE DLL in Windows, the symbols that are
 imported have to be identified as such. When building PCRE2, the appropriate
-export setting is defined in pcre2_internal.h, which includes this file. So, we
-don't change existing definitions of PCRE2_EXP_DECL.
+export setting is defined in pcre2_internal.h, which includes this file. So we
+don't change existing definitions of PCRE2_EXP_DECL. */
 
-By default, we use the standard "extern" declarations. */
+#if defined(_WIN32) && !defined(PCRE2_STATIC)
+#  ifndef PCRE2_EXP_DECL
+#    define PCRE2_EXP_DECL  extern __declspec(dllimport)
+#  endif
+#endif
+
+/* By default, we use the standard "extern" declarations. */
 
 #ifndef PCRE2_EXP_DECL
-#  if defined(_WIN32) && !defined(PCRE2_STATIC)
-#    define PCRE2_EXP_DECL  extern __declspec(dllimport)
-#  elif defined __cplusplus
+#  ifdef __cplusplus
 #    define PCRE2_EXP_DECL  extern "C"
 #  else
 #    define PCRE2_EXP_DECL  extern
@@ -64,15 +68,14 @@ By default, we use the standard "extern" declarations. */
 #endif
 
 /* When compiling with the MSVC compiler, it is sometimes necessary to include
-a "calling convention" before exported function names. For example:
+a "calling convention" before exported function names. (This is secondhand
+information; I know nothing about MSVC myself). For example, something like
 
   void __cdecl function(....)
 
-might be needed. In order to make this easy, all the exported functions have
-PCRE2_CALL_CONVENTION just before their names.
-
-PCRE2 normally uses the platform's standard calling convention, so this should
-not be set unless you know you need it. */
+might be needed. In order so make this easy, all the exported functions have
+PCRE2_CALL_CONVENTION just before their names. It is rarely needed; if not
+set, we ensure here that it has no effect. */
 
 #ifndef PCRE2_CALL_CONVENTION
 #define PCRE2_CALL_CONVENTION
@@ -340,10 +343,6 @@ pcre2_pattern_convert(). */
 #define PCRE2_ERROR_PERL_ECLASS_EMPTY_EXPR         214
 #define PCRE2_ERROR_PERL_ECLASS_MISSING_CLOSE      215
 #define PCRE2_ERROR_PERL_ECLASS_UNEXPECTED_CHAR    216
-#define PCRE2_ERROR_EXPECTED_CAPTURE_GROUP         217
-#define PCRE2_ERROR_MISSING_OPENING_PARENTHESIS    218
-#define PCRE2_ERROR_MISSING_NUMBER_TERMINATOR      219
-#define PCRE2_ERROR_NULL_ERROROFFSET               220
 
 /* "Expected" matching error codes: no match and partial match. */
 
@@ -433,11 +432,6 @@ released, the numbers must not be changed. */
 #define PCRE2_ERROR_JIT_UNSUPPORTED   (-68)
 #define PCRE2_ERROR_REPLACECASE       (-69)
 #define PCRE2_ERROR_TOOLARGEREPLACE   (-70)
-#define PCRE2_ERROR_DIFFSUBSPATTERN   (-71)
-#define PCRE2_ERROR_DIFFSUBSSUBJECT   (-72)
-#define PCRE2_ERROR_DIFFSUBSOFFSET    (-73)
-#define PCRE2_ERROR_DIFFSUBSOPTIONS   (-74)
-#define PCRE2_ERROR_BAD_BACKSLASH_K   (-75)
 
 
 /* Request types for pcre2_pattern_info() */
@@ -490,7 +484,6 @@ released, the numbers must not be changed. */
 #define PCRE2_CONFIG_NEVER_BACKSLASH_C      13
 #define PCRE2_CONFIG_COMPILED_WIDTHS        14
 #define PCRE2_CONFIG_TABLES_LENGTH          15
-#define PCRE2_CONFIG_EFFECTIVE_LINKSIZE     16
 
 /* Optimization directives for pcre2_set_optimize().
 For binary compatibility, only add to this list; do not renumber. */
@@ -750,14 +743,14 @@ PCRE2_EXP_DECL pcre2_match_data *PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL pcre2_match_data *PCRE2_CALL_CONVENTION \
   pcre2_match_data_create_from_pattern(const pcre2_code *, \
     pcre2_general_context *); \
-PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
-  pcre2_match_data_free(pcre2_match_data *); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_dfa_match(const pcre2_code *, PCRE2_SPTR, PCRE2_SIZE, PCRE2_SIZE, \
     uint32_t, pcre2_match_data *, pcre2_match_context *, int *, PCRE2_SIZE); \
 PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
   pcre2_match(const pcre2_code *, PCRE2_SPTR, PCRE2_SIZE, PCRE2_SIZE, \
     uint32_t, pcre2_match_data *, pcre2_match_context *); \
+PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
+  pcre2_match_data_free(pcre2_match_data *); \
 PCRE2_EXP_DECL PCRE2_SPTR PCRE2_CALL_CONVENTION \
   pcre2_get_mark(pcre2_match_data *); \
 PCRE2_EXP_DECL PCRE2_SIZE PCRE2_CALL_CONVENTION \
@@ -769,9 +762,7 @@ PCRE2_EXP_DECL uint32_t PCRE2_CALL_CONVENTION \
 PCRE2_EXP_DECL PCRE2_SIZE *PCRE2_CALL_CONVENTION \
   pcre2_get_ovector_pointer(pcre2_match_data *); \
 PCRE2_EXP_DECL PCRE2_SIZE PCRE2_CALL_CONVENTION \
-  pcre2_get_startchar(pcre2_match_data *); \
-PCRE2_EXP_DECL int PCRE2_CALL_CONVENTION \
-  pcre2_next_match(pcre2_match_data *, PCRE2_SIZE *, uint32_t *);
+  pcre2_get_startchar(pcre2_match_data *);
 
 
 /* Convenience functions for handling matched substrings. */
@@ -951,7 +942,6 @@ pcre2_compile are called by application code. */
 #define pcre2_match_data_create               PCRE2_SUFFIX(pcre2_match_data_create_)
 #define pcre2_match_data_create_from_pattern  PCRE2_SUFFIX(pcre2_match_data_create_from_pattern_)
 #define pcre2_match_data_free                 PCRE2_SUFFIX(pcre2_match_data_free_)
-#define pcre2_next_match                      PCRE2_SUFFIX(pcre2_next_match_)
 #define pcre2_pattern_convert                 PCRE2_SUFFIX(pcre2_pattern_convert_)
 #define pcre2_pattern_info                    PCRE2_SUFFIX(pcre2_pattern_info_)
 #define pcre2_serialize_decode                PCRE2_SUFFIX(pcre2_serialize_decode_)

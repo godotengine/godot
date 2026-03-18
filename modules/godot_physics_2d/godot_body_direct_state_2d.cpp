@@ -235,7 +235,7 @@ Vector2 GodotPhysicsDirectBodyState2D::get_contact_impulse(int p_contact_idx) co
 	return body->contacts[p_contact_idx].impulse;
 }
 
-RequiredResult<PhysicsDirectSpaceState2D> GodotPhysicsDirectBodyState2D::get_space_state() {
+PhysicsDirectSpaceState2D *GodotPhysicsDirectBodyState2D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
 

@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="world_resource"]
+[ext_resource type="Script" path="res://scenes/qa/qa_stream_chunk_loading.gd" id="stream_script"]
+
+[node name="QAStreamChunkLoading" type="Node3D"]
+script = ExtResource("stream_script")
+
+[node name="World" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("world_resource")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true

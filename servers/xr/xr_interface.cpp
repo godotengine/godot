@@ -30,9 +30,6 @@
 
 #include "xr_interface.h"
 
-#include "core/object/class_db.h"
-#include "servers/xr/xr_server.h"
-
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
 
@@ -226,5 +223,6 @@ void XRInterface::trigger_haptic_pulse(const String &p_action_name, const String
 }
 
 Array XRInterface::get_supported_environment_blend_modes() {
-	return Array{ XR_ENV_BLEND_MODE_OPAQUE };
+	Array default_blend_modes = { XR_ENV_BLEND_MODE_OPAQUE };
+	return default_blend_modes;
 }

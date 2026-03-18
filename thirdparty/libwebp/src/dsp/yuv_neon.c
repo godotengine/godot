@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "src/dsp/dsp.h"
 #include "src/dsp/neon.h"
 
 //-----------------------------------------------------------------------------

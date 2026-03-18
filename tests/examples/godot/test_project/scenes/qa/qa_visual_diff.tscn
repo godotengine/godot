@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="cabin_world"]
+[ext_resource type="GaussianSplatAsset" uid="uid://dufbqibv4cxau" path="res://tests/fixtures/test_splats.ply" id="cabin_asset"]
+[ext_resource type="Script" path="res://scenes/qa/qa_visual_diff.gd" id="visual_diff_script"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="fps_script"]
+
+[node name="QAVisualDiff" type="Node3D"]
+script = ExtResource("visual_diff_script")
+test_name = "World Path vs Instance Path Visual Diff Test"
+test_duration = 5.0
+ssim_threshold = 0.95
+
+[node name="WorldPath" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("cabin_world")
+
+[node name="InstancePath" type="GaussianSplatNode3D" parent="."]
+splat_asset = ExtResource("cabin_asset")
+quality/max_splat_count = 100000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 3, 8)
+current = true
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

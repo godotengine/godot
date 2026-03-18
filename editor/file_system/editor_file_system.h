@@ -91,7 +91,6 @@ public:
 	int get_file_count() const;
 	String get_file(int p_idx) const;
 	String get_file_path(int p_idx) const;
-	ResourceUID::ID get_file_uid(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	StringName get_file_resource_script_class(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
@@ -121,7 +120,11 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(bool, _is_active)
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_file_extensions)
 	GDVIRTUAL0RC_REQUIRED(bool, _query)
-	static void _bind_methods();
+	static void _bind_methods() {
+		GDVIRTUAL_BIND(_is_active);
+		GDVIRTUAL_BIND(_get_file_extensions);
+		GDVIRTUAL_BIND(_query);
+	}
 
 public:
 	virtual bool is_active() const {

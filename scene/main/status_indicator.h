@@ -31,8 +31,7 @@
 #pragma once
 
 #include "scene/main/node.h"
-#include "scene/resources/texture.h"
-#include "servers/display/display_server_enums.h"
+#include "servers/display_server.h"
 
 class StatusIndicator : public Node {
 	GDCLASS(StatusIndicator, Node);
@@ -40,7 +39,7 @@ class StatusIndicator : public Node {
 	Ref<Texture2D> icon;
 	String tooltip;
 	bool visible = true;
-	DisplayServerEnums::IndicatorID iid = DisplayServerEnums::INVALID_INDICATOR_ID;
+	DisplayServer::IndicatorID iid = DisplayServer::INVALID_INDICATOR_ID;
 	NodePath menu;
 
 protected:

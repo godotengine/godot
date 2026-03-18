@@ -79,19 +79,13 @@ namespace Godot
 
         private const int VarArgsSpanThreshold = 10;
 
-        /// <inheritdoc cref="Call(ReadOnlySpan{Variant})"/>
-        public Variant Call(params Variant[] args)
-        {
-            return Call(args.AsSpan());
-        }
-
         /// <summary>
         /// Calls the method represented by this <see cref="Callable"/>.
         /// Arguments can be passed and should match the method's signature.
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
         /// <returns>The value returned by the method.</returns>
-        public unsafe Variant Call(scoped ReadOnlySpan<Variant> args)
+        public unsafe Variant Call(params Variant[] args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 
@@ -121,18 +115,12 @@ namespace Godot
             }
         }
 
-        /// <inheritdoc cref="CallDeferred(ReadOnlySpan{Variant})"/>
-        public void CallDeferred(params Variant[] args)
-        {
-            CallDeferred(args.AsSpan());
-        }
-
         /// <summary>
         /// Calls the method represented by this <see cref="Callable"/> in deferred mode, i.e. during the idle frame.
         /// Arguments can be passed and should match the method's signature.
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
-        public unsafe void CallDeferred(scoped ReadOnlySpan<Variant> args)
+        public unsafe void CallDeferred(params Variant[] args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 

@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/benchmark_small_baseline.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="2"]
+
+[node name="BenchmarkSmallBaseline" type="Node3D"]
+script = ExtResource("1")
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("2")]
+
+[node name="InstanceRoot" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.981627, 0.190809, 0, -0.190809, 0.981627, 0, 12, 30)
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)
+shadow_enabled = false

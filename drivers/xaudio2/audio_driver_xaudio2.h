@@ -33,10 +33,11 @@
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio_server.h"
 
+#include <mmsystem.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <wrl/client.h>
 #include <xaudio2.h>
 
@@ -47,14 +48,8 @@ class AudioDriverXAudio2 : public AudioDriver {
 
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
 		HANDLE buffer_end_event;
-
 		XAudio2DriverVoiceCallback() :
 				buffer_end_event(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
-
-		virtual ~XAudio2DriverVoiceCallback() {
-			CloseHandle(buffer_end_event);
-		}
-
 		void STDMETHODCALLTYPE OnBufferEnd(void *pBufferContext) {
 			SetEvent(buffer_end_event);
 		}
@@ -86,7 +81,7 @@ class AudioDriverXAudio2 : public AudioDriver {
 	SafeFlag exit_thread;
 	bool pcm_open = false;
 
-	WAVEFORMATEX wave_format = {};
+	WAVEFORMATEX wave_format = { 0 };
 	Microsoft::WRL::ComPtr<IXAudio2> xaudio;
 	int current_buffer = 0;
 	IXAudio2MasteringVoice *mastering_voice = nullptr;

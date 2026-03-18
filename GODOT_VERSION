@@ -1,0 +1,22 @@
+# Godot Engine Base Version
+#
+# This file records the exact upstream Godot commit that the GodotGS fork root
+# is based on. It is used to reproduce builds and to rebase engine patches onto
+# new Godot versions.
+#
+# To verify: clone godotengine/godot at the commit below, then compare against
+# this repository root, accounting for the in-tree module and files listed in
+# ENGINE_PATCHES.md.
+
+version:  4.5.0-rc
+upstream: https://github.com/godotengine/godot
+commit:   2dd26a027a99633231184616d4dd287bbdd1c0a3
+date:     2025-09-08
+tag:      (between 4.5-rc bump and 4.5-stable; post "Update AUTHORS and DONORS list")
+
+# How this was determined:
+# - version.py says status="rc", docs="latest" (not "stable"/"4.5")
+# - DONORS.md blob hash (47117ee7ced...) matches upstream at this commit
+# - .clang-format, .editorconfig, core/core_bind.cpp blob hashes all match
+# - AUTHORS.md includes volzhs/scgm0 (added in this commit), confirming it's >= 2dd26a02
+# - SConstruct was modified by GodotGS (doesn't match upstream), which is expected

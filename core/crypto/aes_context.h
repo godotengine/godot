@@ -32,7 +32,6 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/object/ref_counted.h"
-#include "core/variant/type_info.h"
 
 class AESContext : public RefCounted {
 	GDCLASS(AESContext, RefCounted);
@@ -59,6 +58,8 @@ public:
 	PackedByteArray update(const PackedByteArray &p_src);
 	PackedByteArray get_iv_state();
 	void finish();
+
+	AESContext();
 };
 
 VARIANT_ENUM_CAST(AESContext::Mode);

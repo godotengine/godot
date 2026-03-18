@@ -14,12 +14,9 @@
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "src/enc/vp8i_enc.h"
 #include "src/utils/utils.h"
-#include "src/webp/encode.h"
-#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // WebPPicture
@@ -229,7 +226,9 @@ int WebPMemoryWrite(const uint8_t* data, size_t data_size,
 void WebPMemoryWriterClear(WebPMemoryWriter* writer) {
   if (writer != NULL) {
     WebPSafeFree(writer->mem);
-    WebPMemoryWriterInit(writer);
+    writer->mem = NULL;
+    writer->size = 0;
+    writer->max_size = 0;
   }
 }
 

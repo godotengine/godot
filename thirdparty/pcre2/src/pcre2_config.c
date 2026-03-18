@@ -38,10 +38,17 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+/* Save the configured link size, which is in bytes. In 16-bit and 32-bit modes
+its value gets changed by pcre2_intmodedep.h (included by pcre2_internal.h) to
+be in code units. */
+
+static int configured_link_size = LINK_SIZE;
 
 #include "pcre2_internal.h"
-
-
 
 /* These macros are the standard way of turning unquoted text into C strings.
 They allow macros like PCRE2_MAJOR to be defined without quotes, which is
@@ -72,7 +79,7 @@ pcre2_config(uint32_t what, void *where)
 {
 if (where == NULL)  /* Requests a length */
   {
-  switch (what)
+  switch(what)
     {
     default:
     return PCRE2_ERROR_BADOPTION;
@@ -80,7 +87,6 @@ if (where == NULL)  /* Requests a length */
     case PCRE2_CONFIG_BSR:
     case PCRE2_CONFIG_COMPILED_WIDTHS:
     case PCRE2_CONFIG_DEPTHLIMIT:
-    case PCRE2_CONFIG_EFFECTIVE_LINKSIZE:
     case PCRE2_CONFIG_HEAPLIMIT:
     case PCRE2_CONFIG_JIT:
     case PCRE2_CONFIG_LINKSIZE:
@@ -118,23 +124,19 @@ switch (what)
   case PCRE2_CONFIG_COMPILED_WIDTHS:
   *((uint32_t *)where) = 0
 #ifdef SUPPORT_PCRE2_8
-  + (1 << 0)
+  + 1
 #endif
 #ifdef SUPPORT_PCRE2_16
-  + (1 << 1)
+  + 2
 #endif
 #ifdef SUPPORT_PCRE2_32
-  + (1 << 2)
+  + 4
 #endif
   ;
   break;
 
   case PCRE2_CONFIG_DEPTHLIMIT:
   *((uint32_t *)where) = MATCH_LIMIT_DEPTH;
-  break;
-
-  case PCRE2_CONFIG_EFFECTIVE_LINKSIZE:
-  *((uint32_t *)where) = LINK_SIZE * sizeof(PCRE2_UCHAR);
   break;
 
   case PCRE2_CONFIG_HEAPLIMIT:
@@ -161,7 +163,7 @@ switch (what)
 #endif
 
   case PCRE2_CONFIG_LINKSIZE:
-  *((uint32_t *)where) = (uint32_t)CONFIGURED_LINK_SIZE;
+  *((uint32_t *)where) = (uint32_t)configured_link_size;
   break;
 
   case PCRE2_CONFIG_MATCHLIMIT:
@@ -204,7 +206,8 @@ switch (what)
 #endif
     return (int)(1 + ((where == NULL)?
       strlen(v) : PRIV(strcpy_c8)((PCRE2_UCHAR *)where, v)));
-    }
+   }
+  break;
 
   case PCRE2_CONFIG_UNICODE:
 #if defined SUPPORT_UNICODE
@@ -241,7 +244,6 @@ switch (what)
     return (int)(1 + ((where == NULL)?
       strlen(v) : PRIV(strcpy_c8)((PCRE2_UCHAR *)where, v)));
     }
-
   }
 
 return 0;

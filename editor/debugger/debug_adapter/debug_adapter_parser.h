@@ -32,7 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/remote_debugger.h"
-#include "editor/debugger/debug_adapter/debug_adapter_types.h"
+#include "debug_adapter_protocol.h"
+#include "debug_adapter_types.h"
 
 struct DAPeer;
 class DebugAdapterProtocol;
@@ -85,7 +86,6 @@ public:
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
 	// Internal requests
-	Vector<String> _extract_play_arguments(const Dictionary &p_args) const;
 	Dictionary _launch_process(const Dictionary &p_params) const;
 
 	// Events

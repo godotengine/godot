@@ -30,15 +30,11 @@
 
 #pragma once
 
-#include "core/crypto/crypto.h"
-#include "core/io/http_client.h"
-#include "core/io/ip.h"
+#include "http_client.h"
 
-class StreamPeerTCP;
+#include "core/crypto/crypto.h"
 
 class HTTPClientTCP : public HTTPClient {
-	GDSOFTCLASS(HTTPClientTCP, HTTPClient);
-
 private:
 	Status status = STATUS_DISCONNECTED;
 	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;

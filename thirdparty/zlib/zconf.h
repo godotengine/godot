@@ -1,5 +1,5 @@
 /* zconf.h -- configuration of the zlib compression library
- * Copyright (C) 1995-2025 Jean-loup Gailly, Mark Adler
+ * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -59,7 +59,6 @@
 #  define deflateSetDictionary  z_deflateSetDictionary
 #  define deflateSetHeader      z_deflateSetHeader
 #  define deflateTune           z_deflateTune
-#  define deflateUsed           z_deflateUsed
 #  define deflate_copyright     z_deflate_copyright
 #  define get_crc_table         z_get_crc_table
 #  ifndef Z_SOLO
@@ -235,12 +234,10 @@
 #  endif
 #endif
 
-#ifndef z_const
-#  ifdef ZLIB_CONST
-#    define z_const const
-#  else
-#    define z_const
-#  endif
+#if defined(ZLIB_CONST) && !defined(z_const)
+#  define z_const const
+#else
+#  define z_const
 #endif
 
 #ifdef Z_SOLO
@@ -436,11 +433,11 @@ typedef uLong FAR uLongf;
    typedef unsigned long z_crc_t;
 #endif
 
-#if HAVE_UNISTD_H-0     /* may be set to #if 1 by ./configure */
+#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
 #  define Z_HAVE_UNISTD_H
 #endif
 
-#if HAVE_STDARG_H-0     /* may be set to #if 1 by ./configure */
+#ifdef HAVE_STDARG_H    /* may be set to #if 1 by ./configure */
 #  define Z_HAVE_STDARG_H
 #endif
 
@@ -473,8 +470,12 @@ typedef uLong FAR uLongf;
 #endif
 
 #ifndef Z_HAVE_UNISTD_H
-#  if defined(__WATCOMC__) || defined(__GO32__) || \
-      (defined(_LARGEFILE64_SOURCE) && !defined(_WIN32))
+#  ifdef __WATCOMC__
+#    define Z_HAVE_UNISTD_H
+#  endif
+#endif
+#ifndef Z_HAVE_UNISTD_H
+#  if defined(_LARGEFILE64_SOURCE) && !defined(_WIN32)
 #    define Z_HAVE_UNISTD_H
 #  endif
 #endif
@@ -509,19 +510,17 @@ typedef uLong FAR uLongf;
 #endif
 
 #ifndef z_off_t
-#  define z_off_t long long
+#  define z_off_t long
 #endif
 
 #if !defined(_WIN32) && defined(Z_LARGE64)
 #  define z_off64_t off64_t
-#elif defined(__MINGW32__)
-#  define z_off64_t long long
-#elif defined(_WIN32) && !defined(__GNUC__)
-#  define z_off64_t __int64
-#elif defined(__GO32__)
-#  define z_off64_t offset_t
 #else
-#  define z_off64_t z_off_t
+#  if defined(_WIN32) && !defined(__GNUC__)
+#    define z_off64_t __int64
+#  else
+#    define z_off64_t z_off_t
+#  endif
 #endif
 
 /* MVS linker does not support external names larger than 8 bytes */

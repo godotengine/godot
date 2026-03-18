@@ -1,0 +1,110 @@
+name: Gaussian Pipeline Validation
+
+on:
+  push:
+    branches: [master, main, develop]
+    paths:
+      - "modules/gaussian_splatting/**"
+      - "modules/gaussian_splatting/**"
+      - "tests/**"
+      - ".github/workflows/gaussian_pipeline_validation.yml"
+  pull_request:
+    branches: [master, main]
+    paths:
+      - "modules/gaussian_splatting/**"
+      - "modules/gaussian_splatting/**"
+      - "tests/**"
+      - ".github/workflows/gaussian_pipeline_validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gaussian-pipeline:
+    name: Gaussian Pipeline Tests (Windows Self-Hosted)
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: repo
+
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Run guard checks
+        shell: pwsh
+        run: |
+          python tests/ci/run_module_tests.py --guard-only --skip-render-guards
+
+      - name: Build Godot editor with Gaussian module
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+
+      - name: Resolve Godot binary path
+        id: godot_bin
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "bin\\godot.windows.editor.dev.x86_64.console.exe",
+            "bin\\godot.windows.editor.dev.x86_64.exe",
+            "bin\\godot.windows.editor.x86_64.console.exe",
+            "bin\\godot.windows.editor.x86_64.exe"
+          )
+          $resolved = $null
+          foreach ($candidate in $candidates) {
+            if (Test-Path -LiteralPath $candidate) {
+              $resolved = (Resolve-Path -LiteralPath $candidate).Path
+              break
+            }
+          }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary under bin."
+          }
+          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Verify Godot binary
+        shell: pwsh
+        run: |
+          & "${{ steps.godot_bin.outputs.path }}" --version
+
+      - name: Run Gaussian pipeline smoke tests
+        shell: pwsh
+        run: |
+          python tests/ci/run_baseline_qa.py --category pipeline --godot "${{ steps.godot_bin.outputs.path }}"
+
+      - name: Upload pipeline test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gaussian-pipeline-results
+          path: |
+            repo/baseline_qa_results.json
+            repo/tests/ci/test_results.json

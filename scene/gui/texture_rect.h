@@ -88,8 +88,6 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	PackedStringArray get_configuration_warnings() const override;
-
 	TextureRect();
 	~TextureRect();
 };

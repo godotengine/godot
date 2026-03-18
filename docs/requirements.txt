@@ -1,0 +1,3 @@
+matplotlib>=3.8
+pandas>=2.1
+pyyaml>=6.0

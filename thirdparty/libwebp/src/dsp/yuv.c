@@ -11,14 +11,10 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include "src/dsp/yuv.h"
+
 #include <assert.h>
 #include <stdlib.h>
-
-#include "src/dsp/cpu.h"
-#include "src/webp/types.h"
-#include "src/dsp/dsp.h"
-#include "src/dsp/yuv.h"
-#include "src/webp/decode.h"
 
 //-----------------------------------------------------------------------------
 // Plain-C version

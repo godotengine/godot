@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneLongSoak" instance=ExtResource("1")]
+lane_id = "long_soak"
+lane_name = "Long Soak"
+lane_description = "Slow long-horizon lane for drift/churn and long-tail stability checks."
+lane_preset = "long_soak"
+default_duration_s = 120.0

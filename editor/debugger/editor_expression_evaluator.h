@@ -36,12 +36,15 @@ class Button;
 class CheckBox;
 class EditorDebuggerInspector;
 class LineEdit;
+class RemoteDebuggerPeer;
 class ScriptEditorDebugger;
 
 class EditorExpressionEvaluator : public VBoxContainer {
 	GDCLASS(EditorExpressionEvaluator, VBoxContainer)
 
 private:
+	Ref<RemoteDebuggerPeer> peer;
+
 	LineEdit *expression_input = nullptr;
 	CheckBox *clear_on_run_checkbox = nullptr;
 	Button *evaluate_btn = nullptr;
@@ -49,10 +52,6 @@ private:
 
 	EditorDebuggerInspector *inspector = nullptr;
 
-	LocalVector<String> expression_history;
-	int expression_index = -1;
-
-	void _line_edit_gui_input(const Ref<InputEvent> &p_event);
 	void _evaluate();
 	void _clear();
 

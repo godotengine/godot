@@ -39,6 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "pcre2_internal.h"
 
 
@@ -122,7 +126,7 @@ PCRE2_SIZE size;
 rc = pcre2_substring_length_bynumber(match_data, stringnumber, &size);
 if (rc < 0) return rc;
 if (size + 1 > *sizeptr) return PCRE2_ERROR_NOMEMORY;
-if (size != 0) memcpy(buffer, match_data->subject + match_data->ovector[stringnumber*2],
+memcpy(buffer, match_data->subject + match_data->ovector[stringnumber*2],
   CU2BYTES(size));
 buffer[size] = 0;
 *sizeptr = size;
@@ -214,7 +218,7 @@ yield = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
   (size + 1)*PCRE2_CODE_UNIT_WIDTH, (pcre2_memctl *)match_data);
 if (yield == NULL) return PCRE2_ERROR_NOMEMORY;
 yield = (PCRE2_UCHAR *)(((char *)yield) + sizeof(pcre2_memctl));
-if (size != 0) memcpy(yield, match_data->subject + match_data->ovector[stringnumber*2],
+memcpy(yield, match_data->subject + match_data->ovector[stringnumber*2],
   CU2BYTES(size));
 yield[size] = 0;
 *stringptr = yield;
@@ -255,7 +259,7 @@ permits duplicate names, the first substring that is set is chosen.
 Arguments:
   match_data      pointer to match data
   stringname      the name of the required substring
-  sizeptr         where to put the length, if not NULL
+  sizeptr         where to put the length
 
 Returns:          0 if successful, else a negative error number
 */
@@ -338,15 +342,8 @@ else  /* Matched using pcre2_dfa_match() */
 
 left = match_data->ovector[stringnumber*2];
 right = match_data->ovector[stringnumber*2+1];
-/* LCOV_EXCL_START - this appears to be unreachable, as the ovector and
-subject_length should always be set consistently, no matter what misbehaviour
-the caller has committed. */
 if (left > match_data->subject_length || right > match_data->subject_length)
-  {
-  PCRE2_DEBUG_UNREACHABLE();
   return PCRE2_ERROR_INVALIDOFFSET;
-  }
-/* LCOV_EXCL_STOP */
 if (sizeptr != NULL) *sizeptr = (left > right)? 0 : right - left;
 return 0;
 }

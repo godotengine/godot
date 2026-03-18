@@ -136,6 +136,7 @@ template <int Tag>
 class MutexLock<SafeBinaryMutex<Tag>> {
 public:
 	MutexLock(const SafeBinaryMutex<Tag> &p_mutex) {}
+	~MutexLock() {}
 
 	void temp_relock() const {}
 	void temp_unlock() const {}

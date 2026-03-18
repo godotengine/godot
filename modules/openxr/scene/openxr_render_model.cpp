@@ -30,13 +30,11 @@
 
 #include "openxr_render_model.h"
 
-#ifdef MODULE_GLTF_ENABLED
-
 #include "../extensions/openxr_render_model_extension.h"
-
 #include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/xr/xr_nodes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 void OpenXRRenderModel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_top_level_path"), &OpenXRRenderModel::get_top_level_path);
@@ -168,4 +166,3 @@ void OpenXRRenderModel::set_render_model(RID p_render_model) {
 		_load_render_model_scene();
 	}
 }
-#endif // MODULE_GLTF_ENABLED

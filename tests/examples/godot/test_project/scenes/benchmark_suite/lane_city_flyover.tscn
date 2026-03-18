@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneCityFlyover" instance=ExtResource("1")]
+lane_id = "city_flyover"
+lane_name = "City Flyover"
+lane_description = "High-altitude orbit with broad visibility change and large camera parallax."
+lane_preset = "city_flyover"
+default_duration_s = 35.0

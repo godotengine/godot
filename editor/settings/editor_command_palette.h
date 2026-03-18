@@ -30,17 +30,15 @@
 
 #pragma once
 
+#include "core/input/shortcut.h"
 #include "scene/gui/dialogs.h"
-
-class FilterLineEdit;
-class Shortcut;
-class Tree;
+#include "scene/gui/tree.h"
 
 class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);
 
 	static EditorCommandPalette *singleton;
-	FilterLineEdit *command_search_box = nullptr;
+	LineEdit *command_search_box = nullptr;
 	Tree *search_options = nullptr;
 
 	struct Command {
@@ -80,6 +78,7 @@ class EditorCommandPalette : public ConfirmationDialog {
 
 	void _update_command_search(const String &search_text);
 	float _score_path(const String &p_search, const String &p_path);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _confirmed();
 	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
 	void _save_history() const;
@@ -93,7 +92,7 @@ protected:
 public:
 	void open_popup();
 	void get_actions_list(List<String> *p_list) const;
-	void add_command(String p_command_name, String p_key_name, Callable p_action, const Ref<Shortcut> &p_shortcut = Ref<Shortcut>());
+	void add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, const Ref<Shortcut> &p_shortcut);
 	void execute_command(const String &p_command_name);
 	void register_shortcuts_as_command();
 	Ref<Shortcut> add_shortcut_command(const String &p_command, const String &p_key, Ref<Shortcut> p_shortcut);

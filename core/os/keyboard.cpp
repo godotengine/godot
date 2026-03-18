@@ -31,7 +31,6 @@
 #include "keyboard.h"
 
 #include "core/os/os.h"
-#include "core/string/ustring.h"
 
 struct _KeyCodeText {
 	Key code;
@@ -361,45 +360,51 @@ bool keycode_has_unicode(Key p_keycode) {
 }
 
 String keycode_get_string(Key p_code) {
-	Vector<String> keycode_string;
-	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && !OS::prefer_meta_over_ctrl()) {
-		keycode_string.push_back(find_keycode_name(Key::CTRL));
-	}
-	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {
-		keycode_string.push_back(find_keycode_name(Key::CTRL));
+	String codestr;
+	if ((p_code & KeyModifierMask::SHIFT) != Key::NONE) {
+		codestr += find_keycode_name(Key::SHIFT);
+		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::ALT) != Key::NONE) {
-		keycode_string.push_back(find_keycode_name(Key::ALT));
+		codestr += find_keycode_name(Key::ALT);
+		codestr += "+";
 	}
-	if ((p_code & KeyModifierMask::SHIFT) != Key::NONE) {
-		keycode_string.push_back(find_keycode_name(Key::SHIFT));
+	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			codestr += find_keycode_name(Key::META);
+		} else {
+			codestr += find_keycode_name(Key::CTRL);
+		}
+		codestr += "+";
 	}
-	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && OS::prefer_meta_over_ctrl()) {
-		keycode_string.push_back(find_keycode_name(Key::META));
+	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {
+		codestr += find_keycode_name(Key::CTRL);
+		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::META) != Key::NONE) {
-		keycode_string.push_back(find_keycode_name(Key::META));
+		codestr += find_keycode_name(Key::META);
+		codestr += "+";
 	}
 
 	p_code &= KeyModifierMask::CODE_MASK;
 	if ((char32_t)p_code == 0) {
 		// The key was just a modifier without any code.
-		return String("+").join(keycode_string);
+		return codestr;
 	}
 
-	// The key is a named keycode.
 	const _KeyCodeText *kct = &_keycodes[0];
+
 	while (kct->text) {
 		if (kct->code == p_code) {
-			keycode_string.push_back(kct->text);
-			return String("+").join(keycode_string);
+			codestr += kct->text;
+			return codestr;
 		}
 		kct++;
 	}
 
-	// The key is a single character.
-	keycode_string.push_back(String::chr((char32_t)p_code));
-	return String("+").join(keycode_string);
+	codestr += String::chr((char32_t)p_code);
+
+	return codestr;
 }
 
 Key find_keycode(const String &p_codestr) {

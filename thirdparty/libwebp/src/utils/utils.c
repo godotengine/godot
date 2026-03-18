@@ -13,11 +13,9 @@
 
 #include "src/utils/utils.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
 
-#include "src/webp/types.h"
 #include "src/utils/palette.h"
 #include "src/webp/encode.h"
 
@@ -62,9 +60,9 @@ static int countdown_to_fail = 0;     // 0 = off
 
 typedef struct MemBlock MemBlock;
 struct MemBlock {
-  void* ptr;
-  size_t size;
-  MemBlock* next;
+  void* ptr_;
+  size_t size_;
+  MemBlock* next_;
 };
 
 static MemBlock* all_blocks = NULL;
@@ -85,7 +83,7 @@ static void PrintMemInfo(void) {
   fprintf(stderr, "high-water mark: %u\n", (uint32_t)high_water_mark);
   while (all_blocks != NULL) {
     MemBlock* b = all_blocks;
-    all_blocks = b->next;
+    all_blocks = b->next_;
     free(b);
   }
 }
@@ -123,10 +121,10 @@ static void AddMem(void* ptr, size_t size) {
   if (ptr != NULL) {
     MemBlock* const b = (MemBlock*)malloc(sizeof(*b));
     if (b == NULL) abort();
-    b->next = all_blocks;
+    b->next_ = all_blocks;
     all_blocks = b;
-    b->ptr = ptr;
-    b->size = size;
+    b->ptr_ = ptr;
+    b->size_ = size;
     total_mem += size;
     total_mem_allocated += size;
 #if defined(PRINT_MEM_TRAFFIC)
@@ -145,18 +143,18 @@ static void SubMem(void* ptr) {
   if (ptr != NULL) {
     MemBlock** b = &all_blocks;
     // Inefficient search, but that's just for debugging.
-    while (*b != NULL && (*b)->ptr != ptr) b = &(*b)->next;
+    while (*b != NULL && (*b)->ptr_ != ptr) b = &(*b)->next_;
     if (*b == NULL) {
       fprintf(stderr, "Invalid pointer free! (%p)\n", ptr);
       abort();
     }
     {
       MemBlock* const block = *b;
-      *b = block->next;
-      total_mem -= block->size;
+      *b = block->next_;
+      total_mem -= block->size_;
 #if defined(PRINT_MEM_TRAFFIC)
       fprintf(stderr, "Mem: %u (-%u)\n",
-              (uint32_t)total_mem, (uint32_t)block->size);
+              (uint32_t)total_mem, (uint32_t)block->size_);
 #endif
       free(block);
     }

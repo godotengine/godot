@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "scene/resources/gradient.h"
 #include "scene/resources/texture.h"
 
 class GradientTexture1D : public Texture2D {
@@ -78,7 +77,6 @@ public:
 		FILL_LINEAR,
 		FILL_RADIAL,
 		FILL_SQUARE,
-		FILL_CONIC,
 	};
 	enum Repeat {
 		REPEAT_NONE,

@@ -772,9 +772,8 @@ struct hb_iota_iter_t :
   template <typename S2 = S>
   auto
   inc (hb_type_identity<S2> s, hb_priority<1>)
-    -> hb_void_t<decltype (hb_invoke (std::forward<hb_type_identity<S2>> (s),
-                                      hb_declval<T&> ()))>
-  { v = hb_invoke (std::forward<hb_type_identity<S2>> (s), v); }
+    -> hb_void_t<decltype (hb_invoke (std::forward<S2> (s), hb_declval<T&> ()))>
+  { v = hb_invoke (std::forward<S2> (s), v); }
 
   void
   inc (S s, hb_priority<0>)
@@ -973,7 +972,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (!hb_match (p, hb_get (f, *it)))
+      if (!hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return false;
     return true;
   }
@@ -990,7 +989,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (p, hb_get (f, *it)))
+      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return true;
     return false;
   }
@@ -1007,7 +1006,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (p, hb_get (f, *it)))
+      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return false;
     return true;
   }

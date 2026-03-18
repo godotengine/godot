@@ -1,0 +1,2348 @@
+diff --git a/godot-source/core/config/engine.cpp b/godot-source/core/config/engine.cpp
+index fa1be2d3..2dab0fb3 100644
+--- a/godot-source/core/config/engine.cpp
++++ b/godot-source/core/config/engine.cpp
+@@ -247,6 +247,10 @@ bool Engine::is_abort_on_gpu_errors_enabled() const {
+ 	return abort_on_gpu_errors;
+ }
+ 
++void Engine::set_validation_layers_enabled(bool p_enabled) {
++	use_validation_layers = p_enabled;
++}
++
+ int32_t Engine::get_gpu_index() const {
+ 	return gpu_idx;
+ }
+diff --git a/godot-source/core/config/engine.h b/godot-source/core/config/engine.h
+index ab03111f..816c44de 100644
+--- a/godot-source/core/config/engine.h
++++ b/godot-source/core/config/engine.h
+@@ -192,12 +192,13 @@ public:
+ 	String get_architecture_name() const;
+ 
+ 	void set_shader_cache_path(const String &p_path);
+-	String get_shader_cache_path() const;
++        String get_shader_cache_path() const;
+ 
+-	bool is_abort_on_gpu_errors_enabled() const;
+-	bool is_validation_layers_enabled() const;
+-	bool is_generate_spirv_debug_info_enabled() const;
+-	bool is_extra_gpu_memory_tracking_enabled() const;
++        bool is_abort_on_gpu_errors_enabled() const;
++        void set_validation_layers_enabled(bool p_enabled);
++        bool is_validation_layers_enabled() const;
++        bool is_generate_spirv_debug_info_enabled() const;
++        bool is_extra_gpu_memory_tracking_enabled() const;
+ #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+ 	bool is_accurate_breadcrumbs_enabled() const;
+ #endif
+diff --git a/godot-source/drivers/gles3/rasterizer_gles3.h b/godot-source/drivers/gles3/rasterizer_gles3.h
+index 375a1588..467ff12a 100644
+--- a/godot-source/drivers/gles3/rasterizer_gles3.h
++++ b/godot-source/drivers/gles3/rasterizer_gles3.h
+@@ -92,11 +92,12 @@ public:
+ 	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
+ 	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+ 	RendererGI *get_gi() { return gi; }
+-	RendererFog *get_fog() { return fog; }
+-	RendererCanvasRender *get_canvas() { return canvas; }
+-	RendererSceneRender *get_scene() { return scene; }
++        RendererFog *get_fog() { return fog; }
++        RendererCanvasRender *get_canvas() { return canvas; }
++        RendererSceneRender *get_scene() { return scene; }
++        RendererRD::GaussianSplatStorage *get_gaussian_storage() { return nullptr; }
+ 
+-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
++        void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+ 
+ 	void initialize();
+ 	void begin_frame(double frame_step);
+diff --git a/godot-source/drivers/gles3/rasterizer_scene_gles3.cpp b/godot-source/drivers/gles3/rasterizer_scene_gles3.cpp
+index 79bfe2e5..1437aa1b 100644
+--- a/godot-source/drivers/gles3/rasterizer_scene_gles3.cpp
++++ b/godot-source/drivers/gles3/rasterizer_scene_gles3.cpp
+@@ -2236,7 +2236,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
+ 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+ }
+ 
+-void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
++void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+ 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+ 	GLES3::Config *config = GLES3::Config::get_singleton();
+ 	RENDER_TIMESTAMP("Setup 3D Scene");
+diff --git a/godot-source/drivers/gles3/rasterizer_scene_gles3.h b/godot-source/drivers/gles3/rasterizer_scene_gles3.h
+index 3a705010..da245906 100644
+--- a/godot-source/drivers/gles3/rasterizer_scene_gles3.h
++++ b/godot-source/drivers/gles3/rasterizer_scene_gles3.h
+@@ -903,7 +903,7 @@ public:
+ 
+ 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
+ 
+-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
++	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+ 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+ 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
+ 
+diff --git a/godot-source/editor/docks/scene_tree_dock.cpp b/godot-source/editor/docks/scene_tree_dock.cpp
+index 0abeaac0..487ea996 100644
+--- a/godot-source/editor/docks/scene_tree_dock.cpp
++++ b/godot-source/editor/docks/scene_tree_dock.cpp
+@@ -67,6 +67,10 @@
+ #include "scene/resources/packed_scene.h"
+ #include "servers/display_server.h"
+ 
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "modules/gaussian_splatting/nodes/gaussian_splat_node_3d.h"
++#endif
++
+ void SceneTreeDock::_nodes_drag_begin() {
+ 	pending_click_select = nullptr;
+ }
+@@ -436,6 +440,61 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
+ 	undo_redo->commit_action();
+ }
+ 
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++void SceneTreeDock::_perform_create_gaussian_splats(const Vector<String> &p_files, Node *p_parent, int p_pos) {
++	ERR_FAIL_NULL(p_parent);
++
++	Vector<Node *> nodes;
++
++	for (const String &path : p_files) {
++		GaussianSplatNode3D *splat_node = memnew(GaussianSplatNode3D);
++		String node_name = Node::adjust_name_casing(path.get_file().get_basename());
++		if (!node_name.is_empty()) {
++			splat_node->set_name(node_name);
++		}
++
++		String resource_path = ProjectSettings::get_singleton()->localize_path(path);
++		splat_node->set_ply_file_path(resource_path);
++		splat_node->set_auto_load(true);
++
++		nodes.push_back(splat_node);
++	}
++
++	if (nodes.is_empty()) {
++		return;
++	}
++
++	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
++	undo_redo->create_action_for_history(TTRN("Create Gaussian Splat", "Create Gaussian Splats", nodes.size()), editor_data->get_current_edited_scene_history_id());
++	undo_redo->add_do_method(editor_selection, "clear");
++
++	for (int i = 0; i < nodes.size(); i++) {
++		Node *node = nodes[i];
++		undo_redo->add_do_method(p_parent, "add_child", node, true);
++		if (p_pos >= 0) {
++			undo_redo->add_do_method(p_parent, "move_child", node, p_pos + i);
++		}
++		undo_redo->add_do_method(node, "set_owner", edited_scene);
++		undo_redo->add_do_method(editor_selection, "add_node", node);
++		undo_redo->add_do_reference(node);
++		undo_redo->add_undo_method(p_parent, "remove_child", node);
++
++		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
++		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), node->get_class(), node->get_name());
++		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(node->get_name())));
++	}
++
++	undo_redo->commit_action();
++
++	if (!nodes.is_empty()) {
++		_push_item(nodes[nodes.size() - 1]);
++		for (Node *node : nodes) {
++			emit_signal(SNAME("node_created"), node);
++		}
++	}
++}
++#endif
++
+ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
+ 	// `move_child` + `get_index` doesn't really work for internal nodes.
+ 	ERR_FAIL_COND_MSG(base->is_internal(), "Trying to replace internal node, this is not supported.");
+@@ -3642,9 +3701,24 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
+ 		}
+ 	}
+ 
+-	// Either instantiate scenes or create AudioStreamPlayers.
++	// Either instantiate scenes or create specialized nodes.
+ 	int to_pos = -1;
+ 	_normalize_drop(node, to_pos, p_type);
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++	bool gaussian_drop = true;
++	for (const String &path : p_files) {
++		String extension = path.get_extension().to_lower();
++		StringName file_type = EditorFileSystem::get_singleton()->get_file_type(path);
++		if (extension != "ply" && file_type != StringName("GaussianSplatAsset")) {
++			gaussian_drop = false;
++			break;
++		}
++	}
++	if (gaussian_drop) {
++		_perform_create_gaussian_splats(p_files, node, to_pos);
++		return;
++	}
++#endif
+ 	if (is_dropping_scene) {
+ 		_perform_instantiate_scenes(p_files, node, to_pos);
+ 	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
+diff --git a/godot-source/editor/docks/scene_tree_dock.h b/godot-source/editor/docks/scene_tree_dock.h
+index 4425a895..e2a6a8f3 100644
+--- a/godot-source/editor/docks/scene_tree_dock.h
++++ b/godot-source/editor/docks/scene_tree_dock.h
+@@ -273,6 +273,9 @@ class SceneTreeDock : public VBoxContainer {
+ 
+ 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
+ 	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++	void _perform_create_gaussian_splats(const Vector<String> &p_files, Node *p_parent, int p_pos);
++#endif
+ 	void _replace_with_branch_scene(const String &p_file, Node *base);
+ 
+ 	void _remote_tree_selected();
+diff --git a/godot-source/glsl_builders.py b/godot-source/glsl_builders.py
+index dbe9d5ad..80129594 100644
+--- a/godot-source/glsl_builders.py
++++ b/godot-source/glsl_builders.py
+@@ -2,6 +2,8 @@
+ 
+ import os.path
+ 
++from typing import List
++
+ from methods import generated_wrapper, print_error, to_raw_cstring
+ 
+ 
+@@ -91,8 +93,27 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
+     return header_data
+ 
+ 
++def _sanitize_glsl_lines(lines: List[str]) -> List[str]:
++    sanitized: List[str] = []
++    for line in lines:
++        stripped = line.strip()
++        if stripped.startswith("#extension"):
++            if "GL_KHR_vulkan_glsl" in stripped or "GL_GOOGLE_include_directive" in stripped:
++                # Godot's RenderingDevice GLSL compiler rejects these directives. The
++                # include directive is redundant because includes are resolved by the
++                # builder and the Vulkan GLSL directive is unnecessary for SPIR-V
++                # generation. Skip them to keep the resulting shader portable.
++                continue
++        sanitized.append(line)
++    return sanitized
++
++
+ def build_rd_header(filename: str, shader: str) -> None:
+     include_file_in_rd_header(shader, header_data := RDHeaderStruct(), 0)
++
++    header_data.vertex_lines = _sanitize_glsl_lines(header_data.vertex_lines)
++    header_data.fragment_lines = _sanitize_glsl_lines(header_data.fragment_lines)
++    header_data.compute_lines = _sanitize_glsl_lines(header_data.compute_lines)
+     class_name = os.path.basename(shader).replace(".glsl", "").title().replace("_", "").replace(".", "") + "ShaderRD"
+ 
+     with generated_wrapper(filename) as file:
+diff --git a/godot-source/main/main.cpp b/godot-source/main/main.cpp
+index 62dafe88..9389f330 100644
+--- a/godot-source/main/main.cpp
++++ b/godot-source/main/main.cpp
+@@ -629,9 +629,10 @@ void Main::print_help(const char *p_binary) {
+ 	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
+ 	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
+ 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
+-	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
++        print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
++        print_help_option("--diagnose-gaussian-rendering", "Generate Gaussian Splatting renderer diagnostics at startup.\n");
+ #ifdef DEBUG_ENABLED
+-	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
++        print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+ #endif
+ 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+ #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+@@ -4744,7 +4745,8 @@ bool Main::iteration() {
+ 		PhysicsServer2D::get_singleton()->flush_queries();
+ #endif // PHYSICS_2D_DISABLED
+ 
+-		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
++		bool phys_exit = OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale);
++		if (phys_exit) {
+ #ifndef PHYSICS_3D_DISABLED
+ 			PhysicsServer3D::get_singleton()->end_sync();
+ #endif // PHYSICS_3D_DISABLED
+@@ -4799,7 +4801,8 @@ bool Main::iteration() {
+ 
+ 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
+ 
+-	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
++	bool process_exit = OS::get_singleton()->get_main_loop()->process(process_step * time_scale);
++	if (process_exit) {
+ 		exit = true;
+ 	}
+ 	message_queue->flush();
+@@ -4908,6 +4911,7 @@ bool Main::iteration() {
+ 
+ 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
+ 
++
+ #ifdef TOOLS_ENABLED
+ 	if (auto_build_solutions) {
+ 		auto_build_solutions = false;
+diff --git a/godot-source/platform/windows/os_windows.cpp b/godot-source/platform/windows/os_windows.cpp
+index b79ad487..53546b6a 100644
+--- a/godot-source/platform/windows/os_windows.cpp
++++ b/godot-source/platform/windows/os_windows.cpp
+@@ -2248,8 +2248,9 @@ void OS_Windows::run() {
+ 	main_loop->initialize();
+ 
+ 	while (true) {
+-		DisplayServer::get_singleton()->process_events(); // get rid of pending events
+-		if (Main::iteration()) {
++		DisplayServer::get_singleton()->process_events();
++		bool exit_requested = Main::iteration();
++		if (exit_requested) {
+ 			break;
+ 		}
+ 	}
+diff --git a/godot-source/servers/rendering/dummy/rasterizer_dummy.h b/godot-source/servers/rendering/dummy/rasterizer_dummy.h
+index 93f0b731..737edbf7 100644
+--- a/godot-source/servers/rendering/dummy/rasterizer_dummy.h
++++ b/godot-source/servers/rendering/dummy/rasterizer_dummy.h
+@@ -69,9 +69,10 @@ public:
+ 	RendererLightStorage *get_light_storage() override { return &light_storage; }
+ 	RendererMaterialStorage *get_material_storage() override { return &material_storage; }
+ 	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; }
+-	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; }
+-	RendererTextureStorage *get_texture_storage() override { return &texture_storage; }
+-	RendererGI *get_gi() override { return &gi; }
++    RendererParticlesStorage *get_particles_storage() override { return &particles_storage; }
++    RendererTextureStorage *get_texture_storage() override { return &texture_storage; }
++    RendererRD::GaussianSplatStorage *get_gaussian_storage() override { return nullptr; }
++    RendererGI *get_gi() override { return &gi; }
+ 	RendererFog *get_fog() override { return &fog; }
+ 	RendererCanvasRender *get_canvas() override { return &canvas; }
+ 	RendererSceneRender *get_scene() override { return &scene; }
+diff --git a/godot-source/servers/rendering/dummy/rasterizer_scene_dummy.h b/godot-source/servers/rendering/dummy/rasterizer_scene_dummy.h
+index 4e86732d..e7eb6159 100644
+--- a/godot-source/servers/rendering/dummy/rasterizer_scene_dummy.h
++++ b/godot-source/servers/rendering/dummy/rasterizer_scene_dummy.h
+@@ -151,7 +151,7 @@ public:
+ 
+ 	void voxel_gi_set_quality(RS::VoxelGIQuality) override {}
+ 
+-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_info = nullptr) override {}
++    void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_info = nullptr) override {}
+ 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
+ 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override {}
+ 
+diff --git a/godot-source/servers/rendering/renderer_compositor.h b/godot-source/servers/rendering/renderer_compositor.h
+index c5819bb2..ea5cc56f 100644
+--- a/godot-source/servers/rendering/renderer_compositor.h
++++ b/godot-source/servers/rendering/renderer_compositor.h
+@@ -40,6 +40,10 @@
+ #include "servers/rendering/storage/texture_storage.h"
+ #include "servers/rendering/storage/utilities.h"
+ 
++namespace RendererRD {
++class GaussianSplatStorage;
++}
++
+ class RendererSceneRender;
+ struct BlitToScreen {
+ 	RID render_target;
+@@ -80,9 +84,10 @@ public:
+ 	virtual RendererLightStorage *get_light_storage() = 0;
+ 	virtual RendererMaterialStorage *get_material_storage() = 0;
+ 	virtual RendererMeshStorage *get_mesh_storage() = 0;
+-	virtual RendererParticlesStorage *get_particles_storage() = 0;
+-	virtual RendererTextureStorage *get_texture_storage() = 0;
+-	virtual RendererGI *get_gi() = 0;
++        virtual RendererParticlesStorage *get_particles_storage() = 0;
++        virtual RendererTextureStorage *get_texture_storage() = 0;
++        virtual RendererRD::GaussianSplatStorage *get_gaussian_storage() = 0;
++        virtual RendererGI *get_gi() = 0;
+ 	virtual RendererFog *get_fog() = 0;
+ 	virtual RendererCanvasRender *get_canvas() = 0;
+ 	virtual RendererSceneRender *get_scene() = 0;
+diff --git a/godot-source/servers/rendering/renderer_rd/effects/SCsub b/godot-source/servers/rendering/renderer_rd/effects/SCsub
+index 7f85cfdf..26ce7c1d 100644
+--- a/godot-source/servers/rendering/renderer_rd/effects/SCsub
++++ b/godot-source/servers/rendering/renderer_rd/effects/SCsub
+@@ -16,6 +16,7 @@ thirdparty_sources = ["ffx_assert.cpp", "ffx_fsr2.cpp"]
+ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+ 
+ env_effects.Prepend(CPPEXTPATH=[thirdparty_dir])
++env_effects.Prepend(CPPPATH=["#thirdparty/vulkan/include"])
+ 
+ 
+ def areatex_builder(target, source, env):
+diff --git a/godot-source/servers/rendering/renderer_rd/effects/copy_effects.cpp b/godot-source/servers/rendering/renderer_rd/effects/copy_effects.cpp
+index a3a873a2..796e5bcc 100644
+--- a/godot-source/servers/rendering/renderer_rd/effects/copy_effects.cpp
++++ b/godot-source/servers/rendering/renderer_rd/effects/copy_effects.cpp
+@@ -119,16 +119,54 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
+ 
+ 		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
+ 
+-		//use additive
+-
+-		for (int i = 0; i < COPY_TO_FB_MAX; i++) {
+-			if (copy_to_fb.shader.is_variant_enabled(i)) {
+-				copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+-			} else {
+-				copy_to_fb.pipelines[i].clear();
+-			}
+-		}
+-	}
++                RD::PipelineColorBlendState disabled_state = RD::PipelineColorBlendState::create_disabled();
++                RD::PipelineColorBlendState alpha_blend_state = disabled_state;
++                RD::PipelineColorBlendState premult_blend_state = disabled_state;
++
++                if (alpha_blend_state.attachments.is_empty()) {
++                        RD::PipelineColorBlendState::Attachment attachment;
++                        alpha_blend_state.attachments.push_back(attachment);
++                }
++                if (premult_blend_state.attachments.is_empty()) {
++                        RD::PipelineColorBlendState::Attachment attachment;
++                        premult_blend_state.attachments.push_back(attachment);
++                }
++
++                for (int j = 0; j < alpha_blend_state.attachments.size(); j++) {
++                        RD::PipelineColorBlendState::Attachment &attachment = alpha_blend_state.attachments.write[j];
++                        attachment.enable_blend = true;
++                        attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
++                        attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
++                        attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
++                        attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
++                        attachment.color_blend_op = RD::BLEND_OP_ADD;
++                        attachment.alpha_blend_op = RD::BLEND_OP_ADD;
++                }
++
++                for (int j = 0; j < premult_blend_state.attachments.size(); j++) {
++                        RD::PipelineColorBlendState::Attachment &attachment = premult_blend_state.attachments.write[j];
++                        attachment.enable_blend = true;
++                        attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
++                        attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
++                        attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
++                        attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
++                        attachment.color_blend_op = RD::BLEND_OP_ADD;
++                        attachment.alpha_blend_op = RD::BLEND_OP_ADD;
++                }
++
++                for (int i = 0; i < COPY_TO_FB_MAX; i++) {
++                        if (copy_to_fb.shader.is_variant_enabled(i)) {
++                                RID shader_variant = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i);
++                                copy_to_fb.pipelines[i][COPY_TO_FB_PIPELINE_OPAQUE].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), disabled_state, 0);
++                                copy_to_fb.pipelines[i][COPY_TO_FB_PIPELINE_ALPHA].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), alpha_blend_state, 0);
++                                copy_to_fb.pipelines[i][COPY_TO_FB_PIPELINE_PREMULT_ALPHA].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), premult_blend_state, 0);
++                        } else {
++                                for (int j = 0; j < COPY_TO_FB_PIPELINE_MAX; j++) {
++                                        copy_to_fb.pipelines[i][j].clear();
++                                }
++                        }
++                }
++        }
+ 
+ 	{
+ 		// Initialize copier
+@@ -525,19 +563,19 @@ void CopyEffects::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuff
+ 	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);
+ 	ERR_FAIL_COND(shader.is_null());
+ 
+-	RD::DrawListID draw_list = p_draw_list;
+-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
++        RD::DrawListID draw_list = p_draw_list;
++        RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode][COPY_TO_FB_PIPELINE_OPAQUE].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+ 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+ 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+ 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+ 	RD::get_singleton()->draw_list_draw(draw_list, true);
+ }
+ 
+-void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview, bool p_alpha_to_one, bool p_linear, bool p_normal, const Rect2 &p_src_rect) {
+-	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+-	ERR_FAIL_NULL(uniform_set_cache);
+-	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+-	ERR_FAIL_NULL(material_storage);
++void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview, bool p_alpha_to_one, bool p_linear, bool p_normal, const Rect2 &p_src_rect, bool p_enable_blend, bool p_use_premultiplied_alpha) {
++        UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
++        ERR_FAIL_NULL(uniform_set_cache);
++        MaterialStorage *material_storage = MaterialStorage::get_singleton();
++        ERR_FAIL_NULL(material_storage);
+ 
+ 	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
+ 	copy_to_fb.push_constant.luminance_multiplier = 1.0;
+@@ -591,8 +629,13 @@ void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffe
+ 	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);
+ 	ERR_FAIL_COND(shader.is_null());
+ 
+-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
+-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
++        CopyToFBPipelineType pipeline_type = COPY_TO_FB_PIPELINE_OPAQUE;
++        if (p_enable_blend) {
++                pipeline_type = p_use_premultiplied_alpha ? COPY_TO_FB_PIPELINE_PREMULT_ALPHA : COPY_TO_FB_PIPELINE_ALPHA;
++        }
++
++        RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
++        RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode][pipeline_type].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+ 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+ 	if (p_secondary.is_valid()) {
+ 		// TODO may need to do this differently when reading from depth buffer for multiview
+@@ -632,7 +675,7 @@ void CopyEffects::copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFo
+ 	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);
+ 	ERR_FAIL_COND(shader.is_null());
+ 
+-	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_fb_format));
++    RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, copy_to_fb.pipelines[mode][COPY_TO_FB_PIPELINE_OPAQUE].get_render_pipeline(RD::INVALID_ID, p_fb_format));
+ 	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+ 	RD::get_singleton()->draw_list_bind_index_array(p_draw_list, material_storage->get_quad_index_array());
+ 	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+@@ -988,8 +1031,8 @@ void CopyEffects::set_color_raster(RID p_dest_texture, const Color &p_color, con
+ 	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);
+ 	ERR_FAIL_COND(shader.is_null());
+ 
+-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_region);
+-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
++    RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_region);
++    RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode][COPY_TO_FB_PIPELINE_OPAQUE].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
+ 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+ 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+ 	RD::get_singleton()->draw_list_draw(draw_list, true);
+diff --git a/godot-source/servers/rendering/renderer_rd/effects/copy_effects.h b/godot-source/servers/rendering/renderer_rd/effects/copy_effects.h
+index caf0e846..611630cc 100644
+--- a/godot-source/servers/rendering/renderer_rd/effects/copy_effects.h
++++ b/godot-source/servers/rendering/renderer_rd/effects/copy_effects.h
+@@ -202,13 +202,20 @@ private:
+ 		float set_color[4];
+ 	};
+ 
+-	struct CopyToFb {
+-		CopyToFbPushConstant push_constant;
+-		CopyToFbShaderRD shader;
+-		RID shader_version;
+-		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
++        enum CopyToFBPipelineType {
++                COPY_TO_FB_PIPELINE_OPAQUE,
++                COPY_TO_FB_PIPELINE_ALPHA,
++                COPY_TO_FB_PIPELINE_PREMULT_ALPHA,
++                COPY_TO_FB_PIPELINE_MAX,
++        };
++
++        struct CopyToFb {
++                CopyToFbPushConstant push_constant;
++                CopyToFbShaderRD shader;
++                RID shader_version;
++                PipelineCacheRD pipelines[COPY_TO_FB_MAX][COPY_TO_FB_PIPELINE_MAX];
+ 
+-	} copy_to_fb;
++        } copy_to_fb;
+ 
+ 	// Copy to DP
+ 
+@@ -327,8 +334,8 @@ public:
+ 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
+ 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
+ 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
+-	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
+-	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false, const Rect2 &p_src_rect = Rect2());
++        void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
++        void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false, const Rect2 &p_src_rect = Rect2(), bool p_enable_blend = false, bool p_use_premultiplied_alpha = false);
+ 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
+ 	void copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_source_rd_texture, bool p_linear = false);
+ 	void copy_raster(RID p_source_texture, RID p_dest_framebuffer);
+diff --git a/godot-source/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp b/godot-source/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+index 8ca87360..31a06b08 100644
+--- a/godot-source/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
++++ b/godot-source/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+@@ -39,6 +39,9 @@
+ #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+ #include "servers/rendering/rendering_device.h"
+ #include "servers/rendering/rendering_server_default.h"
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "modules/gaussian_splatting/renderer/gaussian_splat_renderer.h"
++#endif
+ 
+ using namespace RendererSceneRenderImplementation;
+ 
+@@ -46,6 +49,202 @@ using namespace RendererSceneRenderImplementation;
+ 
+ #define FADE_ALPHA_PASS_THRESHOLD 0.999
+ 
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++struct GaussianShadowAtlasData {
++	Rect2i rect;
++	uint32_t shadow_id = 0;
++	uint32_t subdivision = 0;
++};
++
++struct GaussianShadowDispatch {
++	Projection projection;
++	Transform3D transform;
++	Rect2i rect;
++	RID framebuffer;
++	bool flip_y = true;
++	GaussianShadowAtlasData atlas_data;
++};
++
++static bool _gaussian_shadow_is_directional_light(const RS::LightType p_light_type) {
++	return p_light_type == RS::LIGHT_DIRECTIONAL;
++}
++
++static bool _gaussian_shadow_is_omni_cube_light(RendererRD::LightStorage *p_light_storage, RID p_base_light, const RS::LightType p_light_type) {
++	return p_light_type == RS::LIGHT_OMNI && p_light_storage->light_omni_get_shadow_mode(p_base_light) == RS::LIGHT_OMNI_SHADOW_CUBE;
++}
++
++static Vector2i _gaussian_shadow_get_dual_paraboloid_offset(uint32_t p_shadow_id, uint32_t p_subdivision) {
++	const bool wrap = (p_shadow_id + 1) % p_subdivision == 0;
++	return wrap ? Vector2i(1 - int(p_subdivision), 1) : Vector2i(1, 0);
++}
++
++static Rect2i _gaussian_shadow_get_directional_rect(RendererRD::LightStorage *p_light_storage, RID p_light_instance, RID p_base_light, int p_pass) {
++	Rect2i atlas_rect = p_light_storage->light_instance_get_directional_rect(p_light_instance);
++	if (p_light_storage->light_directional_get_shadow_mode(p_base_light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
++		atlas_rect.size.width /= 2;
++		atlas_rect.size.height /= 2;
++
++		if (p_pass == 1) {
++			atlas_rect.position.x += atlas_rect.size.width;
++		} else if (p_pass == 2) {
++			atlas_rect.position.y += atlas_rect.size.height;
++		} else if (p_pass == 3) {
++			atlas_rect.position += atlas_rect.size;
++		}
++	} else if (p_light_storage->light_directional_get_shadow_mode(p_base_light) == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
++		atlas_rect.size.height /= 2;
++		if (p_pass == 1) {
++			atlas_rect.position.y += atlas_rect.size.height;
++		}
++	}
++	return atlas_rect;
++}
++
++static bool _gaussian_shadow_prepare_atlas(RendererRD::LightStorage *p_light_storage, RID p_shadow_atlas, RID &r_atlas_fb, uint32_t &r_atlas_size) {
++	if (!p_shadow_atlas.is_valid() || !p_light_storage->owns_shadow_atlas(p_shadow_atlas)) {
++		return false;
++	}
++
++	p_light_storage->shadow_atlas_update(p_shadow_atlas);
++	r_atlas_fb = p_light_storage->shadow_atlas_get_fb(p_shadow_atlas);
++	r_atlas_size = p_light_storage->shadow_atlas_get_size(p_shadow_atlas);
++	return r_atlas_fb.is_valid() && r_atlas_size > 0;
++}
++
++static bool _gaussian_shadow_get_atlas_data(RendererRD::LightStorage *p_light_storage, RID p_shadow_atlas, RID p_light_instance, uint32_t p_atlas_size, GaussianShadowAtlasData &r_data) {
++	if (!p_light_storage->shadow_atlas_owns_light_instance(p_shadow_atlas, p_light_instance)) {
++		return false;
++	}
++
++	const uint32_t key = p_light_storage->shadow_atlas_get_light_instance_key(p_shadow_atlas, p_light_instance);
++	const uint32_t quadrant = (key >> RendererRD::LightStorage::QUADRANT_SHIFT) & 0x3;
++	r_data.shadow_id = key & RendererRD::LightStorage::SHADOW_INDEX_MASK;
++	r_data.subdivision = p_light_storage->shadow_atlas_get_quadrant_subdivision(p_shadow_atlas, quadrant);
++	if (r_data.subdivision == 0) {
++		return false;
++	}
++
++	const uint32_t quadrant_size = p_atlas_size >> 1;
++	const uint32_t shadow_size = quadrant_size / r_data.subdivision;
++	r_data.rect.position.x = (quadrant & 1) * quadrant_size;
++	r_data.rect.position.y = (quadrant >> 1) * quadrant_size;
++	r_data.rect.position.x += (r_data.shadow_id % r_data.subdivision) * shadow_size;
++	r_data.rect.position.y += (r_data.shadow_id / r_data.subdivision) * shadow_size;
++	r_data.rect.size.width = shadow_size;
++	r_data.rect.size.height = shadow_size;
++	return true;
++}
++
++static bool _gaussian_shadow_setup_directional(RendererRD::LightStorage *p_light_storage, RID p_directional_fb, const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++	if (!_gaussian_shadow_is_directional_light(p_light_type)) {
++		return false;
++	}
++
++	r_dispatch.projection = p_light_storage->light_instance_get_shadow_camera(p_light_instance, p_shadow.pass);
++	r_dispatch.transform = p_light_storage->light_instance_get_shadow_transform(p_light_instance, p_shadow.pass);
++	r_dispatch.rect = _gaussian_shadow_get_directional_rect(p_light_storage, p_light_instance, p_base_light, p_shadow.pass);
++	r_dispatch.framebuffer = p_directional_fb;
++	r_dispatch.flip_y = true;
++	return true;
++}
++
++static bool _gaussian_shadow_setup_positional(RendererRD::LightStorage *p_light_storage, RID p_shadow_atlas, RID p_atlas_fb, uint32_t p_atlas_size, const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++	if (_gaussian_shadow_is_omni_cube_light(p_light_storage, p_base_light, p_light_type)) {
++		return false;
++	}
++	if (!_gaussian_shadow_get_atlas_data(p_light_storage, p_shadow_atlas, p_light_instance, p_atlas_size, r_dispatch.atlas_data)) {
++		return false;
++	}
++
++	r_dispatch.projection = p_light_storage->light_instance_get_shadow_camera(p_light_instance, 0);
++	r_dispatch.transform = p_light_storage->light_instance_get_shadow_transform(p_light_instance, 0);
++	r_dispatch.rect = r_dispatch.atlas_data.rect;
++	if (p_light_type == RS::LIGHT_OMNI) {
++		const Vector2i dual_paraboloid_offset = _gaussian_shadow_get_dual_paraboloid_offset(r_dispatch.atlas_data.shadow_id, r_dispatch.atlas_data.subdivision);
++		r_dispatch.rect.position.x += 1;
++		r_dispatch.rect.position.y += 1;
++		r_dispatch.rect.size.x -= 2;
++		r_dispatch.rect.size.y -= 2;
++		r_dispatch.rect.position += p_shadow.pass * r_dispatch.rect.size * dual_paraboloid_offset;
++	}
++	r_dispatch.framebuffer = p_atlas_fb;
++	r_dispatch.flip_y = true;
++	return true;
++}
++
++static bool _gaussian_shadow_setup_omni_cube(RendererRD::LightStorage *p_light_storage, RID p_shadow_atlas, uint32_t p_atlas_size, const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++	if (!_gaussian_shadow_is_omni_cube_light(p_light_storage, p_base_light, p_light_type)) {
++		return false;
++	}
++	if (!_gaussian_shadow_get_atlas_data(p_light_storage, p_shadow_atlas, p_light_instance, p_atlas_size, r_dispatch.atlas_data)) {
++		return false;
++	}
++	if (r_dispatch.atlas_data.rect.size.width < 2) {
++		return false;
++	}
++
++	const uint32_t face_size = uint32_t(r_dispatch.atlas_data.rect.size.width) / 2;
++	r_dispatch.framebuffer = p_light_storage->get_cubemap_fb(face_size, p_shadow.pass);
++	if (!r_dispatch.framebuffer.is_valid()) {
++		return false;
++	}
++
++	r_dispatch.projection = p_light_storage->light_instance_get_shadow_camera(p_light_instance, p_shadow.pass);
++	r_dispatch.transform = p_light_storage->light_instance_get_shadow_transform(p_light_instance, p_shadow.pass);
++	r_dispatch.rect = Rect2i(0, 0, int(face_size), int(face_size));
++	r_dispatch.flip_y = false;
++	return true;
++}
++
++static void _gaussian_shadow_submit(const LocalVector<Ref<GaussianSplatRenderer>> &p_renderers, const GaussianShadowDispatch &p_dispatch) {
++	for (int renderer_index = 0; renderer_index < p_renderers.size(); renderer_index++) {
++		const Ref<GaussianSplatRenderer> &renderer = p_renderers[renderer_index];
++		if (renderer.is_valid()) {
++			renderer->render_directional_shadow_map(p_dispatch.projection, p_dispatch.transform, p_dispatch.rect, p_dispatch.framebuffer, p_dispatch.flip_y);
++		}
++	}
++}
++
++static void _gaussian_shadow_finalize_omni_cube(RendererRD::LightStorage *p_light_storage, RendererRD::CopyEffects *p_copy_effects, RID p_atlas_fb, uint32_t p_atlas_size, const RendererSceneRender::RenderShadowData &p_shadow, RID p_base_light, const GaussianShadowDispatch &p_dispatch) {
++	if (p_shadow.pass != 5) {
++		return;
++	}
++
++	const uint32_t face_size = uint32_t(p_dispatch.rect.size.width);
++	const RID cubemap_tex = p_light_storage->get_cubemap(face_size);
++	if (!cubemap_tex.is_valid()) {
++		return;
++	}
++
++	Rect2 atlas_rect_norm = p_dispatch.atlas_data.rect;
++	atlas_rect_norm.position /= float(p_atlas_size);
++	atlas_rect_norm.size /= float(p_atlas_size);
++	const float zfar = p_light_storage->light_get_param(p_base_light, RS::LIGHT_PARAM_RANGE);
++	p_copy_effects->copy_cubemap_to_dp(cubemap_tex, p_atlas_fb, atlas_rect_norm, p_dispatch.atlas_data.rect.size, p_dispatch.projection.get_z_near(), zfar, false);
++	atlas_rect_norm.position += Vector2(_gaussian_shadow_get_dual_paraboloid_offset(p_dispatch.atlas_data.shadow_id, p_dispatch.atlas_data.subdivision)) * atlas_rect_norm.size;
++	p_copy_effects->copy_cubemap_to_dp(cubemap_tex, p_atlas_fb, atlas_rect_norm, p_dispatch.atlas_data.rect.size, p_dispatch.projection.get_z_near(), zfar, true);
++}
++
++template <typename SetupFunc, typename FinalizeFunc>
++static void _gaussian_shadow_dispatch(const RenderDataRD *p_render_data, const LocalVector<int> &p_shadow_list, RendererRD::LightStorage *p_light_storage, SetupFunc &&p_setup_func, FinalizeFunc &&p_finalize_func) {
++	for (uint32_t i = 0; i < p_shadow_list.size(); i++) {
++		const int shadow_index = p_shadow_list[i];
++		const RendererSceneRender::RenderShadowData &shadow = p_render_data->render_shadows[shadow_index];
++		const RID light_instance = shadow.light;
++		const RID base_light = p_light_storage->light_instance_get_base_light(light_instance);
++		const RS::LightType light_type = p_light_storage->light_get_type(base_light);
++
++		GaussianShadowDispatch dispatch;
++		if (!p_setup_func(shadow, light_instance, base_light, light_type, dispatch)) {
++			continue;
++		}
++
++		_gaussian_shadow_submit(p_render_data->gaussian_splat_renderers, dispatch);
++		p_finalize_func(shadow, light_instance, base_light, light_type, dispatch);
++	}
++}
++#endif
++
+ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular() {
+ 	ERR_FAIL_NULL(render_buffers);
+ 
+@@ -1535,7 +1734,59 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 
+ 	if (render_shadows) {
+ 		_render_shadow_end();
+-	}
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++		if (!p_render_data->gaussian_splat_renderers.is_empty()) {
++			if (p_render_data->directional_shadows.size()) {
++				const RID directional_fb = light_storage->direction_shadow_get_fb();
++				if (directional_fb.is_valid()) {
++					_gaussian_shadow_dispatch(
++							p_render_data,
++							p_render_data->directional_shadows,
++							light_storage,
++							[light_storage, directional_fb](const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++								return _gaussian_shadow_setup_directional(light_storage, directional_fb, p_shadow, p_light_instance, p_base_light, p_light_type, r_dispatch);
++							},
++							[](const RendererSceneRender::RenderShadowData &, RID, RID, RS::LightType, const GaussianShadowDispatch &) {});
++				}
++			}
++
++			// Gaussian splat shadow casting for positional lights (spot + omni DP).
++			if (p_render_data->shadows.size()) {
++				RID atlas_fb;
++				uint32_t atlas_size = 0;
++				if (_gaussian_shadow_prepare_atlas(light_storage, p_render_data->shadow_atlas, atlas_fb, atlas_size)) {
++					_gaussian_shadow_dispatch(
++							p_render_data,
++							p_render_data->shadows,
++							light_storage,
++							[light_storage, shadow_atlas = p_render_data->shadow_atlas, atlas_fb, atlas_size](const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++								return _gaussian_shadow_setup_positional(light_storage, shadow_atlas, atlas_fb, atlas_size, p_shadow, p_light_instance, p_base_light, p_light_type, r_dispatch);
++							},
++							[](const RendererSceneRender::RenderShadowData &, RID, RID, RS::LightType, const GaussianShadowDispatch &) {});
++				}
++			}
++
++			// Gaussian splat shadow casting for omni cube lights.
++			if (p_render_data->cube_shadows.size()) {
++				RID atlas_fb;
++				uint32_t atlas_size = 0;
++				if (_gaussian_shadow_prepare_atlas(light_storage, p_render_data->shadow_atlas, atlas_fb, atlas_size)) {
++					RendererRD::CopyEffects *gaussian_copy_effects = copy_effects;
++					_gaussian_shadow_dispatch(
++							p_render_data,
++							p_render_data->cube_shadows,
++							light_storage,
++							[light_storage, shadow_atlas = p_render_data->shadow_atlas, atlas_size](const RendererSceneRender::RenderShadowData &p_shadow, RID p_light_instance, RID p_base_light, RS::LightType p_light_type, GaussianShadowDispatch &r_dispatch) {
++								return _gaussian_shadow_setup_omni_cube(light_storage, shadow_atlas, atlas_size, p_shadow, p_light_instance, p_base_light, p_light_type, r_dispatch);
++							},
++							[light_storage, gaussian_copy_effects, atlas_fb, atlas_size](const RendererSceneRender::RenderShadowData &p_shadow, RID, RID p_base_light, RS::LightType, const GaussianShadowDispatch &p_dispatch) {
++								_gaussian_shadow_finalize_omni_cube(light_storage, gaussian_copy_effects, atlas_fb, atlas_size, p_shadow, p_base_light, p_dispatch);
++							});
++				}
++			}
++		}
++#endif
++		}
+ 
+ 	if (rb_data.is_valid() && ss_effects) {
+ 		// Note, in multiview we're allocating buffers for each eye/view we're rendering.
+diff --git a/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.cpp b/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.cpp
+index 8642d717..5b846d4a 100644
+--- a/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.cpp
++++ b/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.cpp
+@@ -322,9 +322,10 @@ RendererCompositorRD::RendererCompositorRD() {
+ 	singleton = this;
+ 
+ 	utilities = memnew(RendererRD::Utilities);
+-	texture_storage = memnew(RendererRD::TextureStorage);
+-	material_storage = memnew(RendererRD::MaterialStorage);
+-	mesh_storage = memnew(RendererRD::MeshStorage);
++        texture_storage = memnew(RendererRD::TextureStorage);
++        gaussian_storage = memnew(RendererRD::GaussianSplatStorage);
++        material_storage = memnew(RendererRD::MaterialStorage);
++        mesh_storage = memnew(RendererRD::MeshStorage);
+ 	light_storage = memnew(RendererRD::LightStorage);
+ 	particles_storage = memnew(RendererRD::ParticlesStorage);
+ 	fog = memnew(RendererRD::Fog);
+@@ -350,9 +351,10 @@ RendererCompositorRD::RendererCompositorRD() {
+ }
+ 
+ RendererCompositorRD::~RendererCompositorRD() {
+-	singleton = nullptr;
+-	memdelete(uniform_set_cache);
+-	memdelete(framebuffer_cache);
+-	ShaderRD::set_shader_cache_user_dir(String());
+-	ShaderRD::set_shader_cache_res_dir(String());
++        singleton = nullptr;
++        memdelete(gaussian_storage);
++        memdelete(uniform_set_cache);
++        memdelete(framebuffer_cache);
++        ShaderRD::set_shader_cache_user_dir(String());
++        ShaderRD::set_shader_cache_res_dir(String());
+ }
+diff --git a/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.h b/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.h
+index dd9e420d..afa27b4f 100644
+--- a/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.h
++++ b/godot-source/servers/rendering/renderer_rd/renderer_compositor_rd.h
+@@ -37,6 +37,7 @@
+ #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
+ #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
+ #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
++#include "servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h"
+ #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
+ #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+ #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+@@ -51,12 +52,13 @@ protected:
+ 	FramebufferCacheRD *framebuffer_cache = nullptr;
+ 	RendererCanvasRenderRD *canvas = nullptr;
+ 	RendererRD::Utilities *utilities = nullptr;
+-	RendererRD::LightStorage *light_storage = nullptr;
+-	RendererRD::MaterialStorage *material_storage = nullptr;
+-	RendererRD::MeshStorage *mesh_storage = nullptr;
+-	RendererRD::ParticlesStorage *particles_storage = nullptr;
+-	RendererRD::TextureStorage *texture_storage = nullptr;
+-	RendererRD::Fog *fog = nullptr;
++        RendererRD::LightStorage *light_storage = nullptr;
++        RendererRD::MaterialStorage *material_storage = nullptr;
++        RendererRD::MeshStorage *mesh_storage = nullptr;
++        RendererRD::ParticlesStorage *particles_storage = nullptr;
++        RendererRD::TextureStorage *texture_storage = nullptr;
++        RendererRD::GaussianSplatStorage *gaussian_storage = nullptr;
++        RendererRD::Fog *fog = nullptr;
+ 	RendererSceneRenderRD *scene = nullptr;
+ 
+ 	enum BlitMode {
+@@ -106,11 +108,12 @@ protected:
+ 
+ public:
+ 	RendererUtilities *get_utilities() { return utilities; }
+-	RendererLightStorage *get_light_storage() { return light_storage; }
+-	RendererMaterialStorage *get_material_storage() { return material_storage; }
+-	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
+-	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
+-	RendererTextureStorage *get_texture_storage() { return texture_storage; }
++        RendererLightStorage *get_light_storage() { return light_storage; }
++        RendererMaterialStorage *get_material_storage() { return material_storage; }
++        RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
++        RendererParticlesStorage *get_particles_storage() { return particles_storage; }
++        RendererTextureStorage *get_texture_storage() { return texture_storage; }
++        RendererRD::GaussianSplatStorage *get_gaussian_storage() { return gaussian_storage; }
+ 	RendererGI *get_gi() {
+ 		ERR_FAIL_NULL_V(scene, nullptr);
+ 		return scene->get_gi();
+diff --git a/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp b/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp
+index 19311d4c..1c466dbd 100644
+--- a/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp
++++ b/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp
+@@ -29,11 +29,66 @@
+ /**************************************************************************/
+ 
+ #include "renderer_scene_render_rd.h"
++#include "modules/modules_enabled.gen.h"
+ 
+ #include "core/config/project_settings.h"
+ #include "core/io/image.h"
++#include "core/object/object_id.h"
++#include "core/templates/hash_set.h"
+ #include "renderer_compositor_rd.h"
+ #include "servers/rendering/renderer_rd/environment/fog.h"
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h"
++#include "modules/gaussian_splatting/renderer/gaussian_splat_renderer.h"
++static constexpr bool kLogForwardPlusGaussian = false;
++#endif
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++void RendererSceneRenderRD::render_gaussian_splats_forward(RenderDataRD &p_render_data) {
++
++	if (kLogForwardPlusGaussian) {
++		// print_line(vformat("[Forward+] render_gaussian_splats_forward() called with %d renderers", p_render_data.gaussian_splat_renderers.size()));
++	}
++	for (uint32_t i = 0; i < p_render_data.gaussian_splat_renderers.size(); i++) {
++		const Ref<GaussianSplatRenderer> &renderer = p_render_data.gaussian_splat_renderers[i];
++		if (renderer.is_null()) {
++#ifdef DEBUG_ENABLED
++			if (kLogForwardPlusGaussian) {
++				// print_line("[Forward+] Gaussian splat renderer reference is null during render.");
++			}
++#endif
++			continue;
++		}
++#ifdef DEBUG_ENABLED
++	if (kLogForwardPlusGaussian) {
++		// print_line("[Forward+] render_scene_instance start");
++	}
++#endif
++		renderer->render_scene_instance(&p_render_data);
++	}
++}
++
++void RendererSceneRenderRD::commit_gaussian_splats(RenderDataRD &p_render_data) {
++	for (uint32_t i = 0; i < p_render_data.gaussian_splat_renderers.size(); i++) {
++		const Ref<GaussianSplatRenderer> &renderer = p_render_data.gaussian_splat_renderers[i];
++		if (renderer.is_null()) {
++#ifdef DEBUG_ENABLED
++			if (kLogForwardPlusGaussian) {
++				// print_line("[Forward+] Gaussian splat renderer reference is null during commit.");
++			}
++#endif
++			continue;
++		}
++#ifdef DEBUG_ENABLED
++		if (kLogForwardPlusGaussian) {
++			// print_line("[Forward+] commit_to_render_buffers start");
++		}
++#endif
++		renderer->commit_to_render_buffers(&p_render_data);
++	}
++	p_render_data.gaussian_splat_renderers.clear();
++}
++#endif
+ #include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
+ #include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
+ #include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
+@@ -1300,7 +1355,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
+ 	}
+ }
+ 
+-void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
++void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+ 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+ 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+ 
+@@ -1378,10 +1433,11 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
+ 		render_data.instances = &p_instances;
+ 		render_data.lights = &p_lights;
+ 		render_data.reflection_probes = &p_reflection_probes;
+-		render_data.voxel_gi_instances = &p_voxel_gi_instances;
+-		render_data.decals = &p_decals;
+-		render_data.lightmaps = &p_lightmaps;
+-		render_data.fog_volumes = &p_fog_volumes;
++                render_data.voxel_gi_instances = &p_voxel_gi_instances;
++                render_data.decals = &p_decals;
++                render_data.lightmaps = &p_lightmaps;
++                render_data.fog_volumes = &p_fog_volumes;
++                render_data.gaussian_splats = &p_gaussian_splats;
+ 		render_data.environment = p_environment;
+ 		render_data.compositor = p_compositor;
+ 		render_data.camera_attributes = p_camera_attributes;
+@@ -1428,8 +1484,62 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
+ 		clear_color = RSG::texture_storage->get_default_clear_color();
+ 	}
+ 
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++		render_data.gaussian_splat_renderers.clear();
++		RendererRD::GaussianSplatStorage *gaussian_storage = RendererRD::GaussianSplatStorage::get_singleton();
++
++		if (gaussian_storage != nullptr && render_data.gaussian_splats != nullptr) {
++			if (kLogForwardPlusGaussian) {
++				// print_line(vformat("[Forward+] Found %d gaussian splat RIDs to process", render_data.gaussian_splats->size()));
++			}
++			HashSet<ObjectID> seen_renderers;
++			seen_renderers.reserve(render_data.gaussian_splats->size());
++			for (uint64_t i = 0; i < render_data.gaussian_splats->size(); i++) {
++			const RID &gaussian_rid = (*render_data.gaussian_splats)[i];
++				if (!gaussian_rid.is_valid()) {
++					continue;
++				}
++
++				Ref<GaussianSplatRenderer> gaussian_renderer = gaussian_storage->gaussian_get_renderer(gaussian_rid);
++				if (gaussian_renderer.is_null()) {
++					if (kLogForwardPlusGaussian) {
++						// print_line(vformat("[Forward+] Gaussian splat RID=%s has no renderer.", String::num_uint64(gaussian_rid.get_id())));
++					}
++					continue;
++				}
++
++				ObjectID renderer_id = gaussian_renderer->get_instance_id();
++				if (seen_renderers.has(renderer_id)) {
++					continue;
++				}
++				seen_renderers.insert(renderer_id);
++
++				if (p_camera_data) {
++					gaussian_renderer->update_depth_range(p_camera_data->main_projection.get_z_near(), p_camera_data->main_projection.get_z_far());
++				}
++
++				render_data.gaussian_splat_renderers.push_back(gaussian_renderer);
++			}
++		}
++
++#endif
++
+ 	//calls _pre_opaque_render between depth pre-pass and opaque pass
+ 	_render_scene(&render_data, clear_color);
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++		if (!render_data.gaussian_splat_renderers.is_empty()) {
++			if (kLogForwardPlusGaussian) {
++				// print_line(vformat("[Forward+] Rendering %d gaussian splat renderers after scene.", render_data.gaussian_splat_renderers.size()));
++			}
++			render_gaussian_splats_forward(render_data);
++			if (kLogForwardPlusGaussian) {
++				// print_line("[Forward+] Committing gaussian splat renderers immediately after post-scene render.");
++			}
++			commit_gaussian_splats(render_data);
++		}
++#endif
++
+ }
+ 
+ void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+@@ -1687,12 +1797,12 @@ void RendererSceneRenderRD::init() {
+ 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
+ 
+ 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+-	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+-	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
++        light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
++        lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+ 
+-	cull_argument.set_page_pool(&cull_argument_pool);
++        cull_argument.set_page_pool(&cull_argument_pool);
+ 
+-	bool can_use_storage = _render_buffers_can_be_storage();
++        bool can_use_storage = _render_buffers_can_be_storage();
+ 	bool can_use_vrs = is_vrs_supported();
+ 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
+ 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
+diff --git a/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.h b/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.h
+index 3588d6ba..610f7fb9 100644
+--- a/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.h
++++ b/godot-source/servers/rendering/renderer_rd/renderer_scene_render_rd.h
+@@ -30,6 +30,7 @@
+ 
+ #pragma once
+ 
++#include "modules/modules_enabled.gen.h"
+ #include "servers/rendering/renderer_compositor.h"
+ #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
+ #include "servers/rendering/renderer_rd/effects/copy_effects.h"
+@@ -128,14 +129,19 @@ protected:
+ 	RendererRD::SkyRD sky;
+ 	RendererRD::GI gi;
+ 
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++	void render_gaussian_splats_forward(RenderDataRD &p_render_data);
++	void commit_gaussian_splats(RenderDataRD &p_render_data);
++#endif
++
+ 	virtual void _update_shader_quality_settings() {}
+ 	static bool _debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw);
+ 
+ private:
+-	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
+-	static RendererSceneRenderRD *singleton;
++        RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
++        static RendererSceneRenderRD *singleton;
+ 
+-	/* Shadow atlas */
++        /* Shadow atlas */
+ 	RS::ShadowQuality shadows_quality = RS::SHADOW_QUALITY_MAX; //So it always updates when first set
+ 	RS::ShadowQuality directional_shadow_quality = RS::SHADOW_QUALITY_MAX;
+ 	float shadows_quality_radius = 1.0;
+@@ -252,7 +258,7 @@ public:
+ 
+ 	virtual void base_uniforms_changed() = 0;
+ 
+-	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
++        virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+ 
+ 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+ 
+diff --git a/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.cpp b/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.cpp
+new file mode 100644
+index 00000000..c0344b45
+--- /dev/null
++++ b/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.cpp
+@@ -0,0 +1,94 @@
++/**************************************************************************/
++/*  gaussian_splat_storage.cpp                                            */
++/**************************************************************************/
++/*                         This file is part of:                          */
++/*                             GODOT ENGINE                               */
++/*                        https://godotengine.org                         */
++/**************************************************************************/
++/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
++/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
++/*                                                                        */
++/* Permission is hereby granted, free of charge, to any person obtaining  */
++/* a copy of this software and associated documentation files (the        */
++/* "Software"), to deal in the Software without restriction, including    */
++/* without limitation the rights to use, copy, modify, merge, publish,    */
++/* distribute, sublicense, and/or sell copies of the Software, and to     */
++/* permit persons to whom the Software is furnished to do so, subject to  */
++/* the following conditions:                                              */
++/*                                                                        */
++/* The above copyright notice and this permission notice shall be         */
++/* included in all copies or substantial portions of the Software.        */
++/*                                                                        */
++/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
++/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
++/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
++/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
++/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
++/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
++/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
++/**************************************************************************/
++
++#include "gaussian_splat_storage.h"
++
++using namespace RendererRD;
++
++GaussianSplatStorage *GaussianSplatStorage::singleton = nullptr;
++
++GaussianSplatStorage *GaussianSplatStorage::get_singleton() {
++        return singleton;
++}
++
++GaussianSplatStorage::GaussianSplatStorage() {
++        ERR_FAIL_COND(singleton != nullptr);
++        singleton = this;
++}
++
++GaussianSplatStorage::~GaussianSplatStorage() {
++        singleton = nullptr;
++}
++
++RID GaussianSplatStorage::gaussian_allocate() {
++        return gaussian_owner.allocate_rid();
++}
++
++void GaussianSplatStorage::gaussian_initialize(RID p_rid) {
++        gaussian_owner.initialize_rid(p_rid, GaussianSplat());
++}
++
++void GaussianSplatStorage::gaussian_free(RID p_rid) {
++        gaussian_owner.free(p_rid);
++}
++
++bool GaussianSplatStorage::owns_gaussian(RID p_rid) const {
++        return gaussian_owner.owns(p_rid);
++}
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++void GaussianSplatStorage::gaussian_set_renderer(RID p_rid, const Ref<GaussianSplatRenderer> &p_renderer) {
++        GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
++        ERR_FAIL_NULL(splat);
++        splat->renderer = p_renderer;
++        if (p_renderer.is_valid()) {
++                splat->aabb = p_renderer->get_aabb();
++        }
++}
++
++Ref<GaussianSplatRenderer> GaussianSplatStorage::gaussian_get_renderer(RID p_rid) const {
++        const GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
++        ERR_FAIL_NULL_V(splat, Ref<GaussianSplatRenderer>());
++        return splat->renderer;
++}
++#endif
++
++void GaussianSplatStorage::gaussian_set_aabb(RID p_rid, const AABB &p_aabb) {
++        GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
++        ERR_FAIL_NULL(splat);
++        splat->aabb = p_aabb;
++}
++
++AABB GaussianSplatStorage::gaussian_get_aabb(RID p_rid) const {
++        const GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
++        ERR_FAIL_NULL_V(splat, AABB());
++        return splat->aabb;
++}
++
+diff --git a/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h b/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h
+new file mode 100644
+index 00000000..63f81737
+--- /dev/null
++++ b/godot-source/servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h
+@@ -0,0 +1,76 @@
++/**************************************************************************/
++/*  gaussian_splat_storage.h                                              */
++/**************************************************************************/
++/*                         This file is part of:                          */
++/*                             GODOT ENGINE                               */
++/*                        https://godotengine.org                         */
++/**************************************************************************/
++/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
++/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
++/*                                                                        */
++/* Permission is hereby granted, free of charge, to any person obtaining  */
++/* a copy of this software and associated documentation files (the        */
++/* "Software"), to deal in the Software without restriction, including    */
++/* without limitation the rights to use, copy, modify, merge, publish,    */
++/* distribute, sublicense, and/or sell copies of the Software, and to     */
++/* permit persons to whom the Software is furnished to do so, subject to  */
++/* the following conditions:                                              */
++/*                                                                        */
++/* The above copyright notice and this permission notice shall be         */
++/* included in all copies or substantial portions of the Software.        */
++/*                                                                        */
++/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
++/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
++/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
++/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
++/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
++/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
++/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
++/**************************************************************************/
++
++#pragma once
++
++#include "modules/modules_enabled.gen.h"
++#include "core/templates/rid_owner.h"
++#include "core/templates/vector.h"
++#include "servers/rendering/storage/utilities.h"
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "modules/gaussian_splatting/renderer/gaussian_splat_renderer.h"
++#endif
++
++namespace RendererRD {
++
++class GaussianSplatStorage {
++        struct GaussianSplat {
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++                Ref<GaussianSplatRenderer> renderer;
++#endif
++                AABB aabb;
++        };
++
++        static GaussianSplatStorage *singleton;
++        mutable RID_Owner<GaussianSplat> gaussian_owner;
++
++public:
++        static GaussianSplatStorage *get_singleton();
++
++        GaussianSplatStorage();
++        ~GaussianSplatStorage();
++
++        RID gaussian_allocate();
++        void gaussian_initialize(RID p_rid);
++        void gaussian_free(RID p_rid);
++
++        bool owns_gaussian(RID p_rid) const;
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++        void gaussian_set_renderer(RID p_rid, const Ref<GaussianSplatRenderer> &p_renderer);
++        Ref<GaussianSplatRenderer> gaussian_get_renderer(RID p_rid) const;
++#endif
++        void gaussian_set_aabb(RID p_rid, const AABB &p_aabb);
++        AABB gaussian_get_aabb(RID p_rid) const;
++};
++
++} // namespace RendererRD
++
+diff --git a/godot-source/servers/rendering/renderer_rd/storage_rd/light_storage.h b/godot-source/servers/rendering/renderer_rd/storage_rd/light_storage.h
+index 75a9a566..42210165 100644
+--- a/godot-source/servers/rendering/renderer_rd/storage_rd/light_storage.h
++++ b/godot-source/servers/rendering/renderer_rd/storage_rd/light_storage.h
+@@ -805,6 +805,8 @@ public:
+ 	void set_max_lights(const uint32_t p_max_lights);
+ 	RID get_omni_light_buffer() { return omni_light_buffer; }
+ 	RID get_spot_light_buffer() { return spot_light_buffer; }
++	uint32_t get_omni_light_count() const { return omni_light_count; }
++	uint32_t get_spot_light_count() const { return spot_light_count; }
+ 	RID get_directional_light_buffer() { return directional_light_buffer; }
+ 	uint32_t get_max_directional_lights() { return max_directional_lights; }
+ 	uint32_t get_directional_light_blend_splits(uint32_t p_directional_light_count) const {
+diff --git a/godot-source/servers/rendering/renderer_rd/storage_rd/render_data_rd.h b/godot-source/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
+index 5f33f588..e8961bb5 100644
+--- a/godot-source/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
++++ b/godot-source/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
+@@ -30,9 +30,19 @@
+ 
+ #pragma once
+ 
++#include "modules/modules_enabled.gen.h"
+ #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+ #include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
+ #include "servers/rendering/storage/render_data.h"
++#include "core/templates/local_vector.h"
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "core/object/ref_counted.h"
++#endif
++
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++#include "modules/gaussian_splatting/renderer/gaussian_splat_renderer.h"
++#endif
+ 
+ class RenderDataRD : public RenderData {
+ 	GDCLASS(RenderDataRD, RenderData);
+@@ -52,10 +62,14 @@ public:
+ 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
+ 	const PagedArray<RID> *lights = nullptr;
+ 	const PagedArray<RID> *reflection_probes = nullptr;
+-	const PagedArray<RID> *voxel_gi_instances = nullptr;
+-	const PagedArray<RID> *decals = nullptr;
+-	const PagedArray<RID> *lightmaps = nullptr;
++        const PagedArray<RID> *voxel_gi_instances = nullptr;
++        const PagedArray<RID> *decals = nullptr;
++        const PagedArray<RID> *lightmaps = nullptr;
+ 	const PagedArray<RID> *fog_volumes = nullptr;
++        const PagedArray<RID> *gaussian_splats = nullptr;
++#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
++	LocalVector<Ref<GaussianSplatRenderer>> gaussian_splat_renderers;
++#endif
+ 	RID environment;
+ 	RID camera_attributes;
+ 	RID compositor;
+diff --git a/godot-source/servers/rendering/renderer_rd/storage_rd/utilities.cpp b/godot-source/servers/rendering/renderer_rd/storage_rd/utilities.cpp
+index 374eeb69..6fbdc5a9 100644
+--- a/godot-source/servers/rendering/renderer_rd/storage_rd/utilities.cpp
++++ b/godot-source/servers/rendering/renderer_rd/storage_rd/utilities.cpp
+@@ -31,6 +31,7 @@
+ #include "utilities.h"
+ #include "../environment/fog.h"
+ #include "../environment/gi.h"
++#include "gaussian_splat_storage.h"
+ #include "light_storage.h"
+ #include "mesh_storage.h"
+ #include "particles_storage.h"
+@@ -69,12 +70,15 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
+ 	if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
+ 		return RS::INSTANCE_LIGHT;
+ 	}
+-	if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
+-		return RS::INSTANCE_LIGHTMAP;
+-	}
+-	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
+-		return RS::INSTANCE_PARTICLES;
++        if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
++                return RS::INSTANCE_LIGHTMAP;
++        }
++	if (RendererRD::GaussianSplatStorage::get_singleton() && RendererRD::GaussianSplatStorage::get_singleton()->owns_gaussian(p_rid)) {
++		return RS::INSTANCE_GAUSSIAN_SPLAT;
+ 	}
++        if (RendererRD::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
++                return RS::INSTANCE_PARTICLES;
++        }
+ 	if (RendererRD::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
+ 		return RS::INSTANCE_PARTICLES_COLLISION;
+ 	}
+@@ -95,10 +99,13 @@ bool Utilities::free(RID p_rid) {
+ 		return true;
+ 	} else if (RendererRD::MeshStorage::get_singleton()->free(p_rid)) {
+ 		return true;
+-	} else if (RendererRD::ParticlesStorage::get_singleton()->free(p_rid)) {
+-		return true;
+-	} else if (RendererRD::TextureStorage::get_singleton()->free(p_rid)) {
+-		return true;
++        } else if (RendererRD::ParticlesStorage::get_singleton()->free(p_rid)) {
++                return true;
++        } else if (RendererRD::GaussianSplatStorage::get_singleton() && RendererRD::GaussianSplatStorage::get_singleton()->owns_gaussian(p_rid)) {
++                RendererRD::GaussianSplatStorage::get_singleton()->gaussian_free(p_rid);
++                return true;
++        } else if (RendererRD::TextureStorage::get_singleton()->free(p_rid)) {
++                return true;
+ 	} else if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
+ 		RendererRD::GI::get_singleton()->voxel_gi_free(p_rid);
+ 		return true;
+diff --git a/godot-source/servers/rendering/renderer_scene_cull.cpp b/godot-source/servers/rendering/renderer_scene_cull.cpp
+index 0c84348b..9839bbbf 100644
+--- a/godot-source/servers/rendering/renderer_scene_cull.cpp
++++ b/godot-source/servers/rendering/renderer_scene_cull.cpp
+@@ -34,6 +34,10 @@
+ #include "core/object/worker_thread_pool.h"
+ #include "rendering_light_culler.h"
+ #include "rendering_server_default.h"
++#include "servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h"
++
++// Debug logging for Gaussian Splat instances (always defined to avoid #ifdef clutter)
++static constexpr bool kLogGaussianSplatDebug = false;
+ 
+ #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+ // This is used only to obtain node paths for user-friendly physics interpolation warnings.
+@@ -69,6 +73,22 @@ void RendererSceneCull::pre_draw(bool p_will_draw) {
+ 	}
+ }
+ 
++bool RendererSceneCull::allows_hidden_visibility_indexing(HiddenVisibilityIndexingPolicy p_policy, RS::InstanceType p_base_type) {
++	if (p_policy == HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS) {
++		return p_base_type == RS::INSTANCE_GAUSSIAN_SPLAT;
++	}
++	return false;
++}
++
++bool RendererSceneCull::should_skip_visibility_indexing(bool p_has_scenario, bool p_is_visible, float p_transform_determinant, bool p_allow_hidden_visibility_indexing) {
++	// Note: We intentionally compare determinant to zero directly here.
++	// Using approximate checks incorrectly rejects valid very-small determinants.
++	if (!p_has_scenario || p_transform_determinant == 0.0f) {
++		return true;
++	}
++	return !p_is_visible && !p_allow_hidden_visibility_indexing;
++}
++
+ /* CAMERA API */
+ 
+ RID RendererSceneCull::camera_allocate() {
+@@ -681,6 +701,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
+ 	}
+ 
+ 	instance->base_type = RS::INSTANCE_NONE;
++	instance->allow_hidden_visibility_indexing = false;
+ 	instance->base = RID();
+ 
+ 	if (p_base.is_valid()) {
+@@ -691,6 +712,8 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
+ 			instance->base_type = RS::INSTANCE_OCCLUDER;
+ 		}
+ 
++		instance->allow_hidden_visibility_indexing = allows_hidden_visibility_indexing(hidden_visibility_indexing_policy, instance->base_type);
++
+ 		switch (instance->base_type) {
+ 			case RS::INSTANCE_NONE: {
+ 				ERR_PRINT_ONCE("unimplemented base type encountered in renderer scene cull");
+@@ -747,17 +770,30 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
+ 				RSG::particles_storage->particles_collision_instance_set_active(collision->instance, instance->visible);
+ 				instance->base_data = collision;
+ 			} break;
+-			case RS::INSTANCE_FOG_VOLUME: {
+-				InstanceFogVolumeData *volume = memnew(InstanceFogVolumeData);
+-				volume->instance = scene_render->fog_volume_instance_create(p_base);
+-				scene_render->fog_volume_instance_set_active(volume->instance, instance->visible);
+-				instance->base_data = volume;
+-			} break;
+-			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+-				InstanceVisibilityNotifierData *vnd = memnew(InstanceVisibilityNotifierData);
+-				vnd->base = p_base;
+-				instance->base_data = vnd;
+-			} break;
++                        case RS::INSTANCE_FOG_VOLUME: {
++                                InstanceFogVolumeData *volume = memnew(InstanceFogVolumeData);
++                                volume->instance = scene_render->fog_volume_instance_create(p_base);
++                                scene_render->fog_volume_instance_set_active(volume->instance, instance->visible);
++                                instance->base_data = volume;
++                        } break;
++                        case RS::INSTANCE_GAUSSIAN_SPLAT: {
++                                InstanceGaussianSplatData *splat = memnew(InstanceGaussianSplatData);
++                                splat->base_rid = p_base;
++                                instance->base_data = splat;
++                                // Gaussian splats need continuous redraw (sorting changes with camera)
++                                instance->redraw_if_visible = true;
++                                if (instance->scenario && instance->array_index >= 0) {
++                                        InstanceData &idata = instance->scenario->instance_data[instance->array_index];
++                                        idata.instance_data_rid = p_base.get_id();
++                                        // Gaussian splats need continuous redraw (sorting changes with camera)
++                                        idata.flags |= InstanceData::FLAG_REDRAW_IF_VISIBLE;
++                                }
++                        } break;
++                        case RS::INSTANCE_VISIBLITY_NOTIFIER: {
++                                InstanceVisibilityNotifierData *vnd = memnew(InstanceVisibilityNotifierData);
++                                vnd->base = p_base;
++                                instance->base_data = vnd;
++                        } break;
+ 			case RS::INSTANCE_REFLECTION_PROBE: {
+ 				InstanceReflectionProbeData *reflection_probe = memnew(InstanceReflectionProbeData);
+ 				reflection_probe->owner = instance;
+@@ -1695,7 +1731,16 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
+ 	new_aabb = instance_xform->xform(p_instance->aabb);
+ 	p_instance->transformed_aabb = new_aabb;
+ 
+-	if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
++	if (kLogGaussianSplatDebug && p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++		print_line(vformat("[GSP UPDATE_INSTANCE] scenario=%s visible=%s det=%f aabb_pos=%s size=%s",
++				p_instance->scenario ? "set" : "null",
++				p_instance->visible ? "true" : "false",
++				instance_xform->basis.determinant(),
++				new_aabb.position,
++				new_aabb.size));
++	}
++
++    if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+ 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
+ 		//make sure lights are updated if it casts shadow
+ 
+@@ -1726,20 +1771,36 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
+ 		}
+ 	}
+ 
+-	// note: we had to remove is equal approx check here, it meant that det == 0.000004 won't work, which is the case for some of our scenes.
+-	if (p_instance->scenario == nullptr || !p_instance->visible || instance_xform->basis.determinant() == 0) {
++	const float transform_determinant = instance_xform->basis.determinant();
++	const bool skip_indexing = should_skip_visibility_indexing(
++			p_instance->scenario != nullptr,
++			p_instance->visible,
++			transform_determinant,
++			p_instance->allow_hidden_visibility_indexing);
++
++	if (skip_indexing) {
++		if (kLogGaussianSplatDebug && p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++			print_line(vformat("[GSP GUARD EARLY] scenario=%s visible=%s det=%f",
++					p_instance->scenario ? "set" : "null",
++					p_instance->visible ? "true" : "false",
++					transform_determinant));
++		}
+ 		p_instance->prev_transformed_aabb = p_instance->transformed_aabb;
+ 		return;
+ 	}
+ 
++	if (kLogGaussianSplatDebug && p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++		print_line("[GSP GUARD PASS]");
++	}
++
+ 	//quantize to improve moving object performance
+ 	AABB bvh_aabb = p_instance->transformed_aabb;
+ 
+-	if (p_instance->indexer_id.is_valid() && bvh_aabb != p_instance->prev_transformed_aabb) {
+-		//assume motion, see if bounds need to be quantized
+-		AABB motion_aabb = bvh_aabb.merge(p_instance->prev_transformed_aabb);
+-		float motion_longest_axis = motion_aabb.get_longest_axis_size();
+-		float longest_axis = p_instance->transformed_aabb.get_longest_axis_size();
++    if (p_instance->indexer_id.is_valid() && bvh_aabb != p_instance->prev_transformed_aabb) {
++        //assume motion, see if bounds need to be quantized
++        AABB motion_aabb = bvh_aabb.merge(p_instance->prev_transformed_aabb);
++        float motion_longest_axis = motion_aabb.get_longest_axis_size();
++        float longest_axis = p_instance->transformed_aabb.get_longest_axis_size();
+ 
+ 		if (motion_longest_axis < longest_axis * 2) {
+ 			//moved but not a lot, use motion aabb quantizing
+@@ -1753,6 +1814,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
+ 			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].insert(bvh_aabb, p_instance);
+ 		} else {
+ 			p_instance->indexer_id = p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].insert(bvh_aabb, p_instance);
++			if (kLogGaussianSplatDebug && p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++				print_line("[GSP INDEXER] inserted into volumes indexer");
++			}
+ 		}
+ 
+ 		p_instance->array_index = p_instance->scenario->instance_data.size();
+@@ -1798,12 +1862,15 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
+ 			case RS::INSTANCE_VOXEL_GI: {
+ 				idata.instance_data_rid = static_cast<InstanceVoxelGIData *>(p_instance->base_data)->probe_instance.get_id();
+ 			} break;
+-			case RS::INSTANCE_FOG_VOLUME: {
+-				idata.instance_data_rid = static_cast<InstanceFogVolumeData *>(p_instance->base_data)->instance.get_id();
+-			} break;
+-			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+-				idata.visibility_notifier = static_cast<InstanceVisibilityNotifierData *>(p_instance->base_data);
+-			} break;
++                        case RS::INSTANCE_FOG_VOLUME: {
++                                idata.instance_data_rid = static_cast<InstanceFogVolumeData *>(p_instance->base_data)->instance.get_id();
++                        } break;
++                        case RS::INSTANCE_GAUSSIAN_SPLAT: {
++                                idata.instance_data_rid = p_instance->base.is_valid() ? p_instance->base.get_id() : RID().get_id();
++                        } break;
++                        case RS::INSTANCE_VISIBLITY_NOTIFIER: {
++                                idata.visibility_notifier = static_cast<InstanceVisibilityNotifierData *>(p_instance->base_data);
++                        } break;
+ 			default: {
+ 			}
+ 		}
+@@ -1838,18 +1905,26 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
+ 		p_instance->scenario->instance_data.push_back(idata);
+ 		p_instance->scenario->instance_aabbs.push_back(InstanceBounds(p_instance->transformed_aabb));
+ 		_update_instance_visibility_dependencies(p_instance);
++		if (kLogGaussianSplatDebug && p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++			print_line(vformat("[GSP INSTANCE DATA] array_index=%d total=%d", p_instance->array_index, p_instance->scenario->instance_data.size()));
++		}
+ 	} else {
+-		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+-			p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].update(p_instance->indexer_id, bvh_aabb);
+-		} else {
+-			p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].update(p_instance->indexer_id, bvh_aabb);
++			if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
++				p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY].update(p_instance->indexer_id, bvh_aabb);
++			} else {
++				p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].update(p_instance->indexer_id, bvh_aabb);
++			}
++			p_instance->scenario->instance_aabbs[p_instance->array_index] = InstanceBounds(p_instance->transformed_aabb);
+ 		}
+-		p_instance->scenario->instance_aabbs[p_instance->array_index] = InstanceBounds(p_instance->transformed_aabb);
+-	}
+ 
+-	if (p_instance->visibility_index != -1) {
+-		p_instance->scenario->instance_visibility[p_instance->visibility_index].position = p_instance->transformed_aabb.get_center();
+-	}
++		if (p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++			InstanceData &idata = p_instance->scenario->instance_data[p_instance->array_index];
++			idata.instance_data_rid = p_instance->base.is_valid() ? p_instance->base.get_id() : RID().get_id();
++		}
++
++		if (p_instance->visibility_index != -1) {
++			p_instance->scenario->instance_visibility[p_instance->visibility_index].position = p_instance->transformed_aabb.get_center();
++		}
+ 
+ 	//move instance and repair
+ 	pair_pass++;
+@@ -1946,6 +2021,9 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
+ 	}
+ 
+ 	// pop last
++	if (p_instance->base_type == RS::INSTANCE_GAUSSIAN_SPLAT && swap_with_index >= 0) {
++		p_instance->scenario->instance_data[swap_with_index].instance_data_rid = RID().get_id();
++	}
+ 	p_instance->scenario->instance_data.pop_back();
+ 	p_instance->scenario->instance_aabbs.pop_back();
+ 
+@@ -2013,12 +2091,17 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) const {
+ 			new_aabb = RSG::particles_storage->particles_collision_get_aabb(p_instance->base);
+ 
+ 		} break;
+-		case RenderingServer::INSTANCE_FOG_VOLUME: {
+-			new_aabb = RSG::fog->fog_volume_get_aabb(p_instance->base);
+-		} break;
+-		case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
+-			new_aabb = RSG::utilities->visibility_notifier_get_aabb(p_instance->base);
+-		} break;
++                case RenderingServer::INSTANCE_FOG_VOLUME: {
++                        new_aabb = RSG::fog->fog_volume_get_aabb(p_instance->base);
++                } break;
++                case RenderingServer::INSTANCE_GAUSSIAN_SPLAT: {
++                        if (RendererRD::GaussianSplatStorage::get_singleton()) {
++                                new_aabb = RendererRD::GaussianSplatStorage::get_singleton()->gaussian_get_aabb(p_instance->base);
++                        }
++                } break;
++                case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
++                        new_aabb = RSG::utilities->visibility_notifier_get_aabb(p_instance->base);
++                } break;
+ 		case RenderingServer::INSTANCE_LIGHT: {
+ 			new_aabb = RSG::light_storage->light_get_aabb(p_instance->base);
+ 
+@@ -2825,6 +2908,23 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
+ 	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
+ 	float z_near = cull_data.camera_matrix->get_z_near();
+ 
++	// DEBUG: Count Gaussian splats in the entire instance_data array
++	if (kLogGaussianSplatDebug) {
++		static bool printed_debug = false;
++		if (!printed_debug) {
++			int total_gaussian_splats = 0;
++			for (uint64_t idx = 0; idx < cull_data.scenario->instance_data.size(); idx++) {
++				InstanceData &test_idata = cull_data.scenario->instance_data[idx];
++				if ((test_idata.flags & InstanceData::FLAG_BASE_TYPE_MASK) == RS::INSTANCE_GAUSSIAN_SPLAT) {
++					total_gaussian_splats++;
++				}
++			}
++			// print_line(vformat("[CULL_RANGE] Culling range: p_from=%d, p_to=%d, total_instance_data=%d, total_gaussian_splats=%d",
++//					p_from, p_to, cull_data.scenario->instance_data.size(), total_gaussian_splats));
++			printed_debug = true;
++		}
++	}
++
+ 	for (uint64_t i = p_from; i < p_to; i++) {
+ 		bool mesh_visible = false;
+ 
+@@ -2841,6 +2941,17 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
+ #define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near, cull_data.scenario->instance_data[i].occlusion_timeout))
+ 
+ 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
++			// Check if this is a Gaussian splat BEFORE the visibility check to diagnose failures
++			uint32_t base_type_check = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
++			if (kLogGaussianSplatDebug && base_type_check == RS::INSTANCE_GAUSSIAN_SPLAT) {
++				print_line(vformat("[CULL_CHECK] Gaussian splat before vis check: LAYER_CHECK=%d, IN_FRUSTUM=%d, VIS_CHECK=%d, OCCLUSION_CULLED=%d, IGNORE_ALL=%d",
++					LAYER_CHECK ? 1 : 0,
++					IN_FRUSTUM(cull_data.cull->frustum) ? 1 : 0,
++					VIS_CHECK ? 1 : 0,
++					OCCLUSION_CULLED ? 1 : 0,
++					(cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING) ? 1 : 0));
++			}
++
+ 			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
+ 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
+ 				if (base_type == RS::INSTANCE_LIGHT) {
+@@ -2884,9 +2995,19 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
+ 
+ 				} else if (base_type == RS::INSTANCE_LIGHTMAP) {
+ 					cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
+-				} else if (base_type == RS::INSTANCE_FOG_VOLUME) {
+-					cull_result.fog_volumes.push_back(RID::from_uint64(idata.instance_data_rid));
+-				} else if (base_type == RS::INSTANCE_VISIBLITY_NOTIFIER) {
++                                } else if (base_type == RS::INSTANCE_FOG_VOLUME) {
++                                        cull_result.fog_volumes.push_back(RID::from_uint64(idata.instance_data_rid));
++				} else if (base_type == RS::INSTANCE_GAUSSIAN_SPLAT) {
++					cull_result.gaussian_splats.push_back(RID::from_uint64(idata.instance_data_rid));
++					// Gaussian splats need continuous redraw (sorting/streaming)
++					RenderingServerDefault::redraw_request();
++					if (kLogGaussianSplatDebug) {
++						print_line(vformat("[GSP CULL COLLECT] collected rid=%d current_total=%d",
++								(int64_t)idata.instance_data_rid,
++								(int)cull_result.gaussian_splats.size()));
++						print_line(vformat("[CULL_COLLECT] Added Gaussian splat RID to cull_result, total=%d", cull_result.gaussian_splats.size()));
++					}
++                                } else if (base_type == RS::INSTANCE_VISIBLITY_NOTIFIER) {
+ 					InstanceVisibilityNotifierData *vnd = idata.visibility_notifier;
+ 					if (!vnd->list_element.in_list()) {
+ 						visible_notifier_list_lock.lock();
+@@ -3483,7 +3604,17 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
+ 	}
+ 
+ 	RENDER_TIMESTAMP("Render 3D Scene");
+-	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
++	// static int render_scene_call_count = 0;
++	// if (++render_scene_call_count % 60 == 1) {
++	// print_line(vformat("[RENDER-SCENE-CALL] Frame %d, gaussian_splats=%d", render_scene_call_count, (int)scene_cull_result.gaussian_splats.size()));
++	// }
++	// // print_line(vformat("[CULL -> RENDER] gaussian_splats size = %d", scene_cull_result.gaussian_splats.size()));
++#ifdef DEBUG_ENABLED
++if (kLogGaussianSplatDebug) {
++	// // print_line(vformat("[GSP BEFORE RENDER] gaussian splats = %d", (int)scene_cull_result.gaussian_splats.size()));
++}
++#endif
++	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, scene_cull_result.gaussian_splats, p_environment, camera_attributes, p_compositor, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
+ 
+ 	if (p_viewport.is_valid()) {
+ 		RSG::viewport->viewport_set_prev_camera_data(p_viewport, p_camera_data);
+@@ -3550,7 +3681,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
+ 	RendererSceneRender::CameraData camera_data;
+ 	camera_data.set_camera(Transform3D(), Projection(), true, false, false);
+ 
+-	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
++        scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+ #endif
+ }
+ 
+@@ -4296,6 +4427,9 @@ RendererSceneCull::RendererSceneCull() {
+ 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
+ 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
+ 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
++	const int hidden_visibility_indexing_policy_setting = GLOBAL_DEF("rendering/limits/spatial_indexer/hidden_visibility_indexing_policy", int(HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS));
++	hidden_visibility_indexing_policy = static_cast<HiddenVisibilityIndexingPolicy>(
++			CLAMP(hidden_visibility_indexing_policy_setting, int(HIDDEN_VISIBILITY_INDEXING_DISABLED), int(HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS)));
+ 	RendererSceneOcclusionCull::HZBuffer::occlusion_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
+ 
+ 	dummy_occlusion_culling = memnew(RendererSceneOcclusionCull);
+diff --git a/godot-source/servers/rendering/renderer_scene_cull.h b/godot-source/servers/rendering/renderer_scene_cull.h
+index 6f7c303f..a11ef17d 100644
+--- a/godot-source/servers/rendering/renderer_scene_cull.h
++++ b/godot-source/servers/rendering/renderer_scene_cull.h
+@@ -59,10 +59,18 @@ public:
+ 		MAX_UPDATE_SHADOWS = 512
+ 	};
+ 
++	enum HiddenVisibilityIndexingPolicy {
++		HIDDEN_VISIBILITY_INDEXING_DISABLED = 0,
++		HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS = 1,
++	};
++
+ 	uint64_t render_pass;
+ 
+ 	static RendererSceneCull *singleton;
+ 
++	static bool allows_hidden_visibility_indexing(HiddenVisibilityIndexingPolicy p_policy, RS::InstanceType p_base_type);
++	static bool should_skip_visibility_indexing(bool p_has_scenario, bool p_is_visible, float p_transform_determinant, bool p_allow_hidden_visibility_indexing);
++
+ 	/* EVENT QUEUING */
+ 
+ 	void tick();
+@@ -428,6 +436,7 @@ public:
+ 		bool baked_light : 1; // This flag is only to know if it actually did use baked light.
+ 		bool dynamic_gi : 1; // Same as above for dynamic objects.
+ 		bool redraw_if_visible : 1;
++		bool allow_hidden_visibility_indexing : 1;
+ 
+ 		Instance *lightmap = nullptr;
+ 		Rect2 lightmap_uv_scale;
+@@ -569,6 +578,7 @@ public:
+ 			baked_light = true;
+ 			dynamic_gi = false;
+ 			redraw_if_visible = false;
++			allow_hidden_visibility_indexing = false;
+ 
+ 			lightmap_slice_index = 0;
+ 			lightmap = nullptr;
+@@ -666,15 +676,19 @@ public:
+ 
+ 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
+ 
+-	struct InstanceParticlesCollisionData : public InstanceBaseData {
+-		RID instance;
+-		uint32_t cull_mask = 0xFFFFFFFF;
+-	};
++        struct InstanceParticlesCollisionData : public InstanceBaseData {
++                RID instance;
++                uint32_t cull_mask = 0xFFFFFFFF;
++        };
+ 
+-	struct InstanceFogVolumeData : public InstanceBaseData {
+-		RID instance;
+-		bool is_global;
+-	};
++        struct InstanceGaussianSplatData : public InstanceBaseData {
++                RID base_rid;
++        };
++
++        struct InstanceFogVolumeData : public InstanceBaseData {
++                RID instance;
++                bool is_global;
++        };
+ 
+ 	struct InstanceVisibilityNotifierData : public InstanceBaseData {
+ 		bool just_visible = false;
+@@ -884,11 +898,12 @@ public:
+ 		PagedArray<Instance *> lights;
+ 		PagedArray<RID> light_instances;
+ 		PagedArray<RID> lightmaps;
+-		PagedArray<RID> reflections;
+-		PagedArray<RID> decals;
+-		PagedArray<RID> voxel_gi_instances;
+-		PagedArray<RID> mesh_instances;
+-		PagedArray<RID> fog_volumes;
++                PagedArray<RID> reflections;
++                PagedArray<RID> decals;
++                PagedArray<RID> voxel_gi_instances;
++                PagedArray<RID> mesh_instances;
++                PagedArray<RID> fog_volumes;
++                PagedArray<RID> gaussian_splats;
+ 
+ 		struct DirectionalShadow {
+ 			PagedArray<RenderGeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+@@ -904,9 +919,10 @@ public:
+ 			lightmaps.clear();
+ 			reflections.clear();
+ 			decals.clear();
+-			voxel_gi_instances.clear();
+-			mesh_instances.clear();
+-			fog_volumes.clear();
++                        voxel_gi_instances.clear();
++                        mesh_instances.clear();
++                        fog_volumes.clear();
++                        gaussian_splats.clear();
+ 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+ 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+ 					directional_shadows[i].cascade_geometry_instances[j].clear();
+@@ -929,9 +945,10 @@ public:
+ 			lightmaps.reset();
+ 			reflections.reset();
+ 			decals.reset();
+-			voxel_gi_instances.reset();
+-			mesh_instances.reset();
+-			fog_volumes.reset();
++                        voxel_gi_instances.reset();
++                        mesh_instances.reset();
++                        fog_volumes.reset();
++                        gaussian_splats.reset();
+ 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+ 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+ 					directional_shadows[i].cascade_geometry_instances[j].reset();
+@@ -954,9 +971,10 @@ public:
+ 			lightmaps.merge_unordered(p_cull_result.lightmaps);
+ 			reflections.merge_unordered(p_cull_result.reflections);
+ 			decals.merge_unordered(p_cull_result.decals);
+-			voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
+-			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+-			fog_volumes.merge_unordered(p_cull_result.fog_volumes);
++                        voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
++                        mesh_instances.merge_unordered(p_cull_result.mesh_instances);
++                        fog_volumes.merge_unordered(p_cull_result.fog_volumes);
++                        gaussian_splats.merge_unordered(p_cull_result.gaussian_splats);
+ 
+ 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+ 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+@@ -980,9 +998,10 @@ public:
+ 			lightmaps.set_page_pool(p_rid_pool);
+ 			reflections.set_page_pool(p_rid_pool);
+ 			decals.set_page_pool(p_rid_pool);
+-			voxel_gi_instances.set_page_pool(p_rid_pool);
+-			mesh_instances.set_page_pool(p_rid_pool);
+-			fog_volumes.set_page_pool(p_rid_pool);
++                        voxel_gi_instances.set_page_pool(p_rid_pool);
++                        mesh_instances.set_page_pool(p_rid_pool);
++                        fog_volumes.set_page_pool(p_rid_pool);
++                        gaussian_splats.set_page_pool(p_rid_pool);
+ 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
+ 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
+ 					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
+@@ -1009,6 +1028,7 @@ public:
+ 	RendererSceneRender::RenderSDFGIUpdateData sdfgi_update_data;
+ 
+ 	uint32_t thread_cull_threshold = 200;
++	HiddenVisibilityIndexingPolicy hidden_visibility_indexing_policy = HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS;
+ 
+ 	mutable RID_Owner<Instance, true> instance_owner{ 65536, 4194304 };
+ 
+diff --git a/godot-source/servers/rendering/renderer_scene_render.h b/godot-source/servers/rendering/renderer_scene_render.h
+index c31c68c9..204bb8b2 100644
+--- a/godot-source/servers/rendering/renderer_scene_render.h
++++ b/godot-source/servers/rendering/renderer_scene_render.h
+@@ -315,7 +315,7 @@ public:
+ 		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect);
+ 	};
+ 
+-	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
++        virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, const PagedArray<RID> &p_gaussian_splats, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
+ 
+ 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+ 	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
+diff --git a/godot-source/servers/rendering/renderer_viewport.cpp b/godot-source/servers/rendering/renderer_viewport.cpp
+index 1ff3b2d9..e8a2c752 100644
+--- a/godot-source/servers/rendering/renderer_viewport.cpp
++++ b/godot-source/servers/rendering/renderer_viewport.cpp
+@@ -731,6 +731,10 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
+ }
+ 
+ void RendererViewport::draw_viewports(bool p_swap_buffers) {
++	// static int draw_viewports_count = 0;
++	// if (++draw_viewports_count % 60 == 1) {
++	//	print_line(vformat("[DRAW-VIEWPORTS] Frame %d, active=%d", draw_viewports_count, (int)sorted_active_viewports.size()));
++	// }
+ 	timestamp_vp_map.clear();
+ 
+ #ifndef XR_DISABLED
+diff --git a/godot-source/servers/rendering/rendering_device.cpp b/godot-source/servers/rendering/rendering_device.cpp
+index eb7d27e4..d5177daf 100644
+--- a/godot-source/servers/rendering/rendering_device.cpp
++++ b/godot-source/servers/rendering/rendering_device.cpp
+@@ -135,6 +135,7 @@ static uint32_t _get_device_type_score(const RenderingContextDriver::Device &p_d
+ #define SECONDARY_COMMAND_BUFFERS_PER_FRAME 0
+ 
+ RenderingDevice *RenderingDevice::singleton = nullptr;
++SafeNumeric<uint64_t> RenderingDevice::device_instance_counter;
+ 
+ RenderingDevice *RenderingDevice::get_singleton() {
+ 	return singleton;
+@@ -821,6 +822,16 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t>
+ 	return id;
+ }
+ 
++bool RenderingDevice::buffer_is_valid(RID p_buffer) const {
++	_THREAD_SAFE_METHOD_
++
++	return vertex_buffer_owner.owns(p_buffer) ||
++			index_buffer_owner.owns(p_buffer) ||
++			uniform_buffer_owner.owns(p_buffer) ||
++			texture_buffer_owner.owns(p_buffer) ||
++			storage_buffer_owner.owns(p_buffer);
++}
++
+ RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data) {
+ 	uint32_t element_size = get_format_vertex_size(p_format);
+ 	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
+@@ -6120,6 +6131,7 @@ void RenderingDevice::_free_internal(RID p_id) {
+ 		index_array_owner.free(p_id);
+ 	} else if (shader_owner.owns(p_id)) {
+ 		Shader *shader = shader_owner.get_or_null(p_id);
++
+ 		if (shader->driver_id) { // Not placeholder?
+ 			frames[frame].shaders_to_dispose_of.push_back(*shader);
+ 		}
+@@ -6163,7 +6175,26 @@ void RenderingDevice::_free_internal(RID p_id) {
+ 		compute_pipeline_owner.free(p_id);
+ 	} else {
+ #ifdef DEV_ENABLED
+-		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()) + " " + resource_name);
++		// Diagnostic: Track invalid free attempts with sampling
++		static thread_local uint64_t invalid_free_count = 0;
++		static thread_local uint64_t last_logged_count = 0;
++		invalid_free_count++;
++
++		// Log every 100th error and first 10
++		bool should_log_detail = (invalid_free_count <= 10) || (invalid_free_count % 100 == 0);
++
++		if (should_log_detail) {
++			// Decode RID structure: validator in upper 32 bits, slot_index in lower 32 bits
++			uint64_t raw = p_id.get_id();
++			uint32_t slot_index = raw & 0xFFFFFFFF; // Lower 32 bits
++			uint32_t validator = raw >> 32;
++			ERR_PRINT(vformat("Attempted to free invalid ID: 0x%X validator=%d slot=%d name='%s' [error #%d]",
++					(uint64_t)p_id.get_id(), validator, slot_index, resource_name, invalid_free_count));
++		} else if (invalid_free_count - last_logged_count >= 1000) {
++			// Periodic summary every 1000 errors
++			ERR_PRINT(vformat("[RD] Invalid free count: %d (suppressing detailed logs)", invalid_free_count));
++			last_logged_count = invalid_free_count;
++		}
+ #else
+ 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
+ #endif
+@@ -6646,6 +6677,8 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
+ 			frames[p_frame].download_texture_mipmap_offsets.clear();
+ 			frames[p_frame].download_texture_get_data_requests.clear();
+ 		}
++
++
+ 	}
+ }
+ 
+@@ -7396,6 +7429,7 @@ void RenderingDevice::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+ 	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage", "creation_bits"), &RenderingDevice::_storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0), DEFVAL(0));
+ 	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::_texture_buffer_create, DEFVAL(Vector<uint8_t>()));
++	ClassDB::bind_method(D_METHOD("buffer_is_valid", "buffer"), &RenderingDevice::buffer_is_valid);
+ 
+ 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
+ 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
+@@ -8106,11 +8140,12 @@ RenderingDevice::~RenderingDevice() {
+ }
+ 
+ RenderingDevice::RenderingDevice() {
+-	if (singleton == nullptr) {
+-		singleton = this;
+-	}
++        if (singleton == nullptr) {
++                singleton = this;
++        }
+ 
+-	render_thread_id = Thread::get_caller_id();
++        device_instance_id = device_instance_counter.increment();
++        render_thread_id = Thread::get_caller_id();
+ }
+ 
+ /*****************/
+diff --git a/godot-source/servers/rendering/rendering_device.h b/godot-source/servers/rendering/rendering_device.h
+index b6e589e7..396b77dc 100644
+--- a/godot-source/servers/rendering/rendering_device.h
++++ b/godot-source/servers/rendering/rendering_device.h
+@@ -35,6 +35,7 @@
+ #include "core/os/thread_safe.h"
+ #include "core/templates/local_vector.h"
+ #include "core/templates/rid_owner.h"
++#include "core/templates/safe_refcount.h"
+ #include "core/variant/typed_array.h"
+ #include "servers/display_server.h"
+ #include "servers/rendering/rendering_device_commons.h"
+@@ -71,14 +72,16 @@ public:
+ 	typedef void (*InvalidationCallback)(void *);
+ 
+ private:
+-	static RenderingDevice *singleton;
++        static RenderingDevice *singleton;
++        static SafeNumeric<uint64_t> device_instance_counter;
+ 
+-	RenderingContextDriver *context = nullptr;
+-	RenderingDeviceDriver *driver = nullptr;
+-	RenderingContextDriver::Device device;
++        RenderingContextDriver *context = nullptr;
++        RenderingDeviceDriver *driver = nullptr;
++        RenderingContextDriver::Device device;
+ 
+-	bool local_device_processing = false;
+-	bool is_main_instance = false;
++        bool local_device_processing = false;
++        bool is_main_instance = false;
++        uint64_t device_instance_id = 0;
+ 
+ protected:
+ 	static void _bind_methods();
+@@ -985,6 +988,7 @@ public:
+ 	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
+ 		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
+ 	}
++	bool buffer_is_valid(RID p_buffer) const;
+ 
+ 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data = {});
+ 	RID _texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
+@@ -1654,7 +1658,10 @@ public:
+ 
+ 	bool is_composite_alpha_supported() const;
+ 
+-	uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
++        uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
++
++        uint64_t get_device_instance_id() const { return device_instance_id; }
++        bool is_main_rendering_device() const { return is_main_instance; }
+ 
+ 	String get_driver_and_device_memory_report() const;
+ 
+diff --git a/godot-source/servers/rendering/rendering_server_default.cpp b/godot-source/servers/rendering/rendering_server_default.cpp
+index 6d9d647a..58cf1caa 100644
+--- a/godot-source/servers/rendering/rendering_server_default.cpp
++++ b/godot-source/servers/rendering/rendering_server_default.cpp
+@@ -226,10 +226,11 @@ void RenderingServerDefault::_init() {
+ 	RSG::rasterizer->initialize();
+ 	RSG::light_storage = RSG::rasterizer->get_light_storage();
+ 	RSG::material_storage = RSG::rasterizer->get_material_storage();
+-	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
+-	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
+-	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+-	RSG::gi = RSG::rasterizer->get_gi();
++        RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
++        RSG::particles_storage = RSG::rasterizer->get_particles_storage();
++        RSG::texture_storage = RSG::rasterizer->get_texture_storage();
++        RSG::gaussian_storage = RSG::rasterizer->get_gaussian_storage();
++        RSG::gi = RSG::rasterizer->get_gi();
+ 	RSG::fog = RSG::rasterizer->get_fog();
+ 	RSG::canvas_render = RSG::rasterizer->get_canvas();
+ 	sr->set_scene_render(RSG::rasterizer->get_scene());
+diff --git a/godot-source/servers/rendering/rendering_server_globals.cpp b/godot-source/servers/rendering/rendering_server_globals.cpp
+index 1d1de2bf..9f5e3119 100644
+--- a/godot-source/servers/rendering/rendering_server_globals.cpp
++++ b/godot-source/servers/rendering/rendering_server_globals.cpp
+@@ -38,6 +38,7 @@ RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
+ RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
+ RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
+ RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
++RendererRD::GaussianSplatStorage *RenderingServerGlobals::gaussian_storage = nullptr;
+ RendererGI *RenderingServerGlobals::gi = nullptr;
+ RendererFog *RenderingServerGlobals::fog = nullptr;
+ RendererCameraAttributes *RenderingServerGlobals::camera_attributes = nullptr;
+diff --git a/godot-source/servers/rendering/rendering_server_globals.h b/godot-source/servers/rendering/rendering_server_globals.h
+index c571ecca..da4704c7 100644
+--- a/godot-source/servers/rendering/rendering_server_globals.h
++++ b/godot-source/servers/rendering/rendering_server_globals.h
+@@ -43,6 +43,10 @@
+ #include "servers/rendering/storage/texture_storage.h"
+ #include "servers/rendering/storage/utilities.h"
+ 
++namespace RendererRD {
++class GaussianSplatStorage;
++}
++
+ class RendererCanvasCull;
+ class RendererViewport;
+ class RenderingMethod;
+@@ -55,9 +59,10 @@ public:
+ 	static RendererLightStorage *light_storage;
+ 	static RendererMaterialStorage *material_storage;
+ 	static RendererMeshStorage *mesh_storage;
+-	static RendererParticlesStorage *particles_storage;
+-	static RendererTextureStorage *texture_storage;
+-	static RendererGI *gi;
++        static RendererParticlesStorage *particles_storage;
++        static RendererTextureStorage *texture_storage;
++        static RendererRD::GaussianSplatStorage *gaussian_storage;
++        static RendererGI *gi;
+ 	static RendererFog *fog;
+ 	static RendererCameraAttributes *camera_attributes;
+ 	static RendererCanvasRender *canvas_render;
+diff --git a/godot-source/servers/rendering_server.h b/godot-source/servers/rendering_server.h
+index a5a62b96..4e676c2e 100644
+--- a/godot-source/servers/rendering_server.h
++++ b/godot-source/servers/rendering_server.h
+@@ -1434,11 +1434,12 @@ public:
+ 		INSTANCE_LIGHTMAP,
+ 		INSTANCE_OCCLUDER,
+ 		INSTANCE_VISIBLITY_NOTIFIER, // TODO: Fix typo in "VISIBILITY" (in 5.0).
+-		INSTANCE_FOG_VOLUME,
+-		INSTANCE_MAX,
++                INSTANCE_FOG_VOLUME,
++                INSTANCE_GAUSSIAN_SPLAT,
++                INSTANCE_MAX,
+ 
+-		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_PARTICLES)
+-	};
++                INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_PARTICLES)
++        };
+ 
+ 	virtual RID instance_create2(RID p_base, RID p_scenario);
+ 
+diff --git a/godot-source/tests/servers/rendering/test_renderer_scene_cull.h b/godot-source/tests/servers/rendering/test_renderer_scene_cull.h
+new file mode 100644
+index 00000000..87403568
+--- /dev/null
++++ b/godot-source/tests/servers/rendering/test_renderer_scene_cull.h
+@@ -0,0 +1,131 @@
++/**************************************************************************/
++/*  test_renderer_scene_cull.h                                            */
++/**************************************************************************/
++/*                         This file is part of:                          */
++/*                             GODOT ENGINE                               */
++/*                        https://godotengine.org                         */
++/**************************************************************************/
++/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
++/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
++/*                                                                        */
++/* Permission is hereby granted, free of charge, to any person obtaining  */
++/* a copy of this software and associated documentation files (the        */
++/* "Software"), to deal in the Software without restriction, including    */
++/* without limitation the rights to use, copy, modify, merge, publish,    */
++/* distribute, sublicense, and/or sell copies of the Software, and to     */
++/* permit persons to whom the Software is furnished to do so, subject to  */
++/* the following conditions:                                              */
++/*                                                                        */
++/* The above copyright notice and this permission notice shall be         */
++/* included in all copies or substantial portions of the Software.        */
++/*                                                                        */
++/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
++/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
++/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
++/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
++/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
++/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
++/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
++/**************************************************************************/
++
++#pragma once
++
++#include "servers/rendering/renderer_scene_cull.h"
++
++#include "tests/test_macros.h"
++
++namespace TestRendererSceneCull {
++
++TEST_CASE("[RendererSceneCull] Hidden indexing policy gates Gaussian exemption") {
++	CHECK(RendererSceneCull::allows_hidden_visibility_indexing(
++			RendererSceneCull::HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS,
++			RS::INSTANCE_GAUSSIAN_SPLAT));
++	CHECK_FALSE(RendererSceneCull::allows_hidden_visibility_indexing(
++			RendererSceneCull::HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS,
++			RS::INSTANCE_MESH));
++	CHECK_FALSE(RendererSceneCull::allows_hidden_visibility_indexing(
++			RendererSceneCull::HIDDEN_VISIBILITY_INDEXING_DISABLED,
++			RS::INSTANCE_GAUSSIAN_SPLAT));
++	CHECK(RendererSceneCull::should_skip_visibility_indexing(false, true, 1.0f, true));
++	CHECK(RendererSceneCull::should_skip_visibility_indexing(true, true, 0.0f, true));
++}
++
++TEST_CASE("[RendererSceneCull] Hidden-visible transitions stay deterministic across threaded merge/reset") {
++	PagedArrayPool<RID> rid_pool;
++	PagedArrayPool<RenderGeometryInstance *> geometry_pool;
++	PagedArrayPool<RendererSceneCull::Instance *> instance_pool;
++
++	RendererSceneCull::InstanceCullResult merged_result;
++	RendererSceneCull::InstanceCullResult thread_results[2];
++
++	merged_result.init(&rid_pool, &geometry_pool, &instance_pool);
++	thread_results[0].init(&rid_pool, &geometry_pool, &instance_pool);
++	thread_results[1].init(&rid_pool, &geometry_pool, &instance_pool);
++
++	auto simulate_frame = [&](bool p_gaussian_visible, bool p_non_gaussian_visible, bool p_allow_hidden_gaussian, uint64_t p_frame_id) {
++		merged_result.clear();
++		thread_results[0].clear();
++		thread_results[1].clear();
++
++		if (!RendererSceneCull::should_skip_visibility_indexing(true, p_gaussian_visible, 1.0f, p_allow_hidden_gaussian)) {
++			thread_results[0].gaussian_splats.push_back(RID::from_uint64(1000 + p_frame_id));
++		}
++		if (!RendererSceneCull::should_skip_visibility_indexing(true, p_non_gaussian_visible, 1.0f, false)) {
++			thread_results[1].fog_volumes.push_back(RID::from_uint64(2000 + p_frame_id));
++		}
++
++		merged_result.append_from(thread_results[0]);
++		merged_result.append_from(thread_results[1]);
++	};
++
++	SUBCASE("Policy enabled keeps Gaussian indexed while hidden") {
++		const bool allow_hidden_gaussian = RendererSceneCull::allows_hidden_visibility_indexing(
++				RendererSceneCull::HIDDEN_VISIBILITY_INDEXING_ALLOW_GAUSSIAN_SPLATS,
++				RS::INSTANCE_GAUSSIAN_SPLAT);
++
++		simulate_frame(false, false, allow_hidden_gaussian, 1);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 1);
++		CHECK(merged_result.gaussian_splats[0] == RID::from_uint64(1001));
++		CHECK_EQ(merged_result.fog_volumes.size(), 0);
++
++		simulate_frame(true, true, allow_hidden_gaussian, 2);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 1);
++		CHECK(merged_result.gaussian_splats[0] == RID::from_uint64(1002));
++		CHECK_EQ(merged_result.fog_volumes.size(), 1);
++		CHECK(merged_result.fog_volumes[0] == RID::from_uint64(2002));
++
++		simulate_frame(false, false, allow_hidden_gaussian, 3);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 1);
++		CHECK(merged_result.gaussian_splats[0] == RID::from_uint64(1003));
++		CHECK_EQ(merged_result.fog_volumes.size(), 0);
++	}
++
++	SUBCASE("Policy disabled matches non-Gaussian hidden behavior") {
++		const bool allow_hidden_gaussian = RendererSceneCull::allows_hidden_visibility_indexing(
++				RendererSceneCull::HIDDEN_VISIBILITY_INDEXING_DISABLED,
++				RS::INSTANCE_GAUSSIAN_SPLAT);
++
++		simulate_frame(false, false, allow_hidden_gaussian, 4);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 0);
++		CHECK_EQ(merged_result.fog_volumes.size(), 0);
++
++		simulate_frame(true, true, allow_hidden_gaussian, 5);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 1);
++		CHECK(merged_result.gaussian_splats[0] == RID::from_uint64(1005));
++		CHECK_EQ(merged_result.fog_volumes.size(), 1);
++		CHECK(merged_result.fog_volumes[0] == RID::from_uint64(2005));
++
++		simulate_frame(false, false, allow_hidden_gaussian, 6);
++		CHECK_EQ(merged_result.gaussian_splats.size(), 0);
++		CHECK_EQ(merged_result.fog_volumes.size(), 0);
++	}
++
++	merged_result.reset();
++	thread_results[0].reset();
++	thread_results[1].reset();
++	rid_pool.reset();
++	geometry_pool.reset();
++	instance_pool.reset();
++}
++
++} // namespace TestRendererSceneCull
+diff --git a/godot-source/tests/test_main.cpp b/godot-source/tests/test_main.cpp
+index 46453d2f..94bab99f 100644
+--- a/godot-source/tests/test_main.cpp
++++ b/godot-source/tests/test_main.cpp
+@@ -149,6 +149,9 @@
+ #include "tests/scene/test_viewport.h"
+ #include "tests/scene/test_visual_shader.h"
+ #include "tests/scene/test_window.h"
++#ifndef _3D_DISABLED
++#include "tests/servers/rendering/test_renderer_scene_cull.h"
++#endif // _3D_DISABLED
+ #include "tests/servers/rendering/test_shader_preprocessor.h"
+ #include "tests/servers/test_nav_heap.h"
+ #include "tests/servers/test_text_server.h"

@@ -38,15 +38,9 @@ void Plane::set_normal(const Vector3 &p_normal) {
 }
 
 void Plane::normalize() {
-#ifdef MATH_CHECKS
-	if (!is_finite()) {
-		WARN_PRINT("Plane cannot be normalized, the distance and the normal should be finite.");
-	}
-#endif // MATH_CHECKS
-
 	real_t l = normal.length();
 	if (l == 0) {
-		zero();
+		*this = Plane(0, 0, 0, 0);
 		return;
 	}
 	normal /= l;

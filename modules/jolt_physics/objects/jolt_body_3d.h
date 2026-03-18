@@ -92,6 +92,7 @@ private:
 	float angular_damp = 0.0f;
 	float total_linear_damp = 0.0f;
 	float total_angular_damp = 0.0f;
+	float gravity_scale = 1.0f;
 	float collision_priority = 1.0f;
 
 	int contact_count = 0;
@@ -275,7 +276,7 @@ public:
 	float get_friction() const;
 	void set_friction(float p_friction);
 
-	float get_gravity_scale() const;
+	float get_gravity_scale() const { return gravity_scale; }
 	void set_gravity_scale(float p_scale);
 
 	Vector3 get_gravity() const { return gravity; }

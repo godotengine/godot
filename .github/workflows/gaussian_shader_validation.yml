@@ -1,0 +1,141 @@
+name: Gaussian Shader Validation
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - "modules/gaussian_splatting/shaders/**"
+      - "modules/gaussian_splatting/compute/**"
+      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
+      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
+      - "modules/gaussian_splatting/renderer/tile_render_types.h"
+      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
+      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
+      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
+      - "modules/gaussian_splatting/shaders/**"
+      - "modules/gaussian_splatting/compute/**"
+      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
+      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
+      - "modules/gaussian_splatting/renderer/tile_render_types.h"
+      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
+      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
+      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
+      - ".github/workflows/gaussian_shader_validation.yml"
+  push:
+    branches: [master, main, develop]
+    paths:
+      - "modules/gaussian_splatting/shaders/**"
+      - "modules/gaussian_splatting/compute/**"
+      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
+      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
+      - "modules/gaussian_splatting/renderer/tile_render_types.h"
+      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
+      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
+      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
+      - "modules/gaussian_splatting/shaders/**"
+      - "modules/gaussian_splatting/compute/**"
+      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
+      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
+      - "modules/gaussian_splatting/renderer/tile_render_types.h"
+      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
+      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
+      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
+      - ".github/workflows/gaussian_shader_validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shader-validation:
+    name: Runtime Shader Matrix + Contracts
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    timeout-minutes: 20
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        run: git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          set-safe-directory: false
+
+      - name: Verify local Python availability
+        run: |
+          $python = Get-Command python -ErrorAction SilentlyContinue
+          if (-not $python) {
+            throw "python executable was not found on the self-hosted runner."
+          }
+          python --version
+
+      - name: Verify shader compiler availability
+        run: |
+          $glslc = Get-Command glslc -ErrorAction SilentlyContinue
+          $validator = Get-Command glslangValidator -ErrorAction SilentlyContinue
+          if (-not $glslc -and -not $validator) {
+            throw "No shader compiler found on the self-hosted runner. Install glslc or glslangValidator and retry."
+          }
+          if ($glslc) {
+            glslc --version
+          }
+          if ($validator) {
+            glslangValidator --version
+          }
+
+      - name: Run shader matrix validation
+        run: |
+          $outDir = Join-Path $env:RUNNER_TEMP "gaussian_shader_validation"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          $scriptCandidates = @(
+            "repo/modules/gaussian_splatting/shaders/compile_shaders.py"
+          )
+          $scriptPath = $scriptCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $scriptPath) {
+            throw "compile_shaders.py not found in expected locations: $($scriptCandidates -join ', ')"
+          }
+          python $scriptPath `
+            --output-dir (Join-Path $outDir "spv") `
+            --summary-json (Join-Path $outDir "summary.json")
+
+      - name: Print validation summary
+        if: always()
+        run: |
+          $env:OUT_DIR = Join-Path $env:RUNNER_TEMP "gaussian_shader_validation"
+          $script = @'
+          import json
+          import os
+          from pathlib import Path
+
+          summary_path = Path(os.environ["OUT_DIR"]) / "summary.json"
+          if not summary_path.exists():
+              print("summary.json not found; skipping summary output because an earlier step failed.")
+              raise SystemExit(0)
+
+          summary = json.loads(summary_path.read_text(encoding="utf-8"))
+          compile_results = summary.get("compile_results", [])
+          failures = [r for r in compile_results if not r.get("ok")]
+          print(f"checks_success={summary.get('checks_success')}")
+          print(f"compile_success={summary.get('compile_success')}")
+          print(f"compile_attempts={len(compile_results)}")
+          print(f"compile_failures={len(failures)}")
+          print(f"issues={','.join(summary.get('issues', []))}")
+          '@
+          $script | python -
+
+      - name: Upload shader validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gaussian-shader-validation
+          path: |
+            ${{ runner.temp }}/gaussian_shader_validation/summary.json
+            ${{ runner.temp }}/gaussian_shader_validation/spv
+          if-no-files-found: warn

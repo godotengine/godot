@@ -15,12 +15,8 @@
 struct SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
-	mat3x4 inv_view_matrix;
-	mat3x4 view_matrix;
-
-#ifdef USE_DOUBLE_PRECISION
-	vec4 inv_view_precision;
-#endif
+	mat4 inv_view_matrix;
+	mat4 view_matrix;
 
 	// only used for multiview
 	mat4 projection_matrix_view[MAX_VIEWS];
@@ -41,10 +37,6 @@ struct SceneData {
 
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
-
-	float radiance_pixel_size;
-	float radiance_border_size;
-	vec2 reflection_atlas_border_size;
 
 	uint directional_light_count;
 	float dual_paraboloid_side;

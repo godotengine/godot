@@ -30,11 +30,8 @@
 
 #include "character_body_2d.h"
 
-#include "core/config/engine.h"
-#include "core/object/class_db.h"
-
 #ifndef DISABLE_DEPRECATED
-#include "servers/physics_2d/physics_server_2d_extension.h"
+#include "servers/extensions/physics_server_2d_extension.h"
 #endif
 
 // So, if you pass 45 as limit, avoid numerical precision errors when angle is 45.

@@ -1,0 +1,91 @@
+# Bengali translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-26 06:01+0000\n"
+"Last-Translator: Rakib Ryan <rakib.remon12@gmail.com>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
+"godot/bn/>\n"
+"Language: bn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "সব ফাইল পরিচিতি সম্পন্ন"
+
+msgid "Open"
+msgstr "খুলুন"
+
+msgid "Save"
+msgstr "সংরক্ষন করুন"
+
+msgid "Open a File"
+msgstr "একটি ফাইল খুলুন"
+
+msgid "Open File(s)"
+msgstr "এক বা একাধিক ফাইল খুলুন"
+
+msgid "Open a Directory"
+msgstr "পথ/ডিরেক্টরি খুলুন"
+
+msgid "Open a File or Directory"
+msgstr "ফাইল বা পথ/ডিরেক্টরি খুলুন"
+
+msgid "Save a File"
+msgstr "ফাইল সংরক্ষন করুন"
+
+msgid "Path:"
+msgstr "পথ:"
+
+msgid "Directories & Files:"
+msgstr "পথ এবং ফাইল:"
+
+msgid "File:"
+msgstr "ফাইল:"
+
+msgid "Create Folder"
+msgstr "ফোল্ডার তৈরি করুন"
+
+msgid "Name:"
+msgstr "নাম:"
+
+msgid "Could not create folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
+
+msgid "Zoom Out"
+msgstr "সংকুচিত করুন (জুম্ আউট)"
+
+msgid "Zoom In"
+msgstr "সম্প্রসারিত করুন (জুম্ ইন)"
+
+msgid "Cut"
+msgstr "কর্তন/কাট করুন"
+
+msgid "Copy"
+msgstr "প্রতিলিপি/কপি করুন"
+
+msgid "Paste"
+msgstr "প্রতিলেপন/পেস্ট করুন"
+
+msgid "Select All"
+msgstr "সবগুলি বাছাই করুন"
+
+msgid "Clear"
+msgstr "পরিস্কার করুন/ক্লীয়ার"
+
+msgid "Undo"
+msgstr "সাবেক অবস্থায় যান/আনডু"
+
+msgid "Redo"
+msgstr "পুনরায় করুন"
+
+msgid "(Other)"
+msgstr "(অন্যান্য)"

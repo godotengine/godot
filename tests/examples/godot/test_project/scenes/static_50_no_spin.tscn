@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://fps_camera_controller.gd" id="fps_script"]
+[ext_resource type="Script" path="res://scenes/static_50_no_spin.gd" id="test_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="perf_overlay"]
+
+[node name="Static50NoSpin" type="Node3D"]
+script = ExtResource("test_script")
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("perf_overlay")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112.5, 50, 200)
+script = ExtResource("fps_script")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

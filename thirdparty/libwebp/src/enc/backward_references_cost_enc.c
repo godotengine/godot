@@ -22,8 +22,6 @@
 #include "src/enc/histogram_enc.h"
 #include "src/utils/color_cache_utils.h"
 #include "src/utils/utils.h"
-#include "src/webp/format_constants.h"
-#include "src/webp/types.h"
 
 #define VALUES_IN_BYTE 256
 
@@ -33,11 +31,11 @@ extern void VP8LBackwardRefsCursorAdd(VP8LBackwardRefs* const refs,
                                       const PixOrCopy v);
 
 typedef struct {
-  uint32_t alpha[VALUES_IN_BYTE];
-  uint32_t red[VALUES_IN_BYTE];
-  uint32_t blue[VALUES_IN_BYTE];
-  uint32_t distance[NUM_DISTANCE_CODES];
-  uint32_t* literal;
+  uint32_t alpha_[VALUES_IN_BYTE];
+  uint32_t red_[VALUES_IN_BYTE];
+  uint32_t blue_[VALUES_IN_BYTE];
+  uint32_t distance_[NUM_DISTANCE_CODES];
+  uint32_t* literal_;
 } CostModel;
 
 static void ConvertPopulationCountTableToBitEstimates(
@@ -64,25 +62,30 @@ static void ConvertPopulationCountTableToBitEstimates(
 static int CostModelBuild(CostModel* const m, int xsize, int cache_bits,
                           const VP8LBackwardRefs* const refs) {
   int ok = 0;
+  VP8LRefsCursor c = VP8LRefsCursorInit(refs);
   VP8LHistogram* const histo = VP8LAllocateHistogram(cache_bits);
   if (histo == NULL) goto Error;
 
   // The following code is similar to VP8LHistogramCreate but converts the
   // distance to plane code.
   VP8LHistogramInit(histo, cache_bits, /*init_arrays=*/ 1);
-  VP8LHistogramStoreRefs(refs, VP8LDistanceToPlaneCode, xsize, histo);
+  while (VP8LRefsCursorOk(&c)) {
+    VP8LHistogramAddSinglePixOrCopy(histo, c.cur_pos, VP8LDistanceToPlaneCode,
+                                    xsize);
+    VP8LRefsCursorNext(&c);
+  }
 
   ConvertPopulationCountTableToBitEstimates(
-      VP8LHistogramNumCodes(histo->palette_code_bits), histo->literal,
-      m->literal);
+      VP8LHistogramNumCodes(histo->palette_code_bits_), histo->literal_,
+      m->literal_);
   ConvertPopulationCountTableToBitEstimates(
-      VALUES_IN_BYTE, histo->red, m->red);
+      VALUES_IN_BYTE, histo->red_, m->red_);
   ConvertPopulationCountTableToBitEstimates(
-      VALUES_IN_BYTE, histo->blue, m->blue);
+      VALUES_IN_BYTE, histo->blue_, m->blue_);
   ConvertPopulationCountTableToBitEstimates(
-      VALUES_IN_BYTE, histo->alpha, m->alpha);
+      VALUES_IN_BYTE, histo->alpha_, m->alpha_);
   ConvertPopulationCountTableToBitEstimates(
-      NUM_DISTANCE_CODES, histo->distance, m->distance);
+      NUM_DISTANCE_CODES, histo->distance_, m->distance_);
   ok = 1;
 
  Error:
@@ -92,21 +95,21 @@ static int CostModelBuild(CostModel* const m, int xsize, int cache_bits,
 
 static WEBP_INLINE int64_t GetLiteralCost(const CostModel* const m,
                                           uint32_t v) {
-  return (int64_t)m->alpha[v >> 24] + m->red[(v >> 16) & 0xff] +
-         m->literal[(v >> 8) & 0xff] + m->blue[v & 0xff];
+  return (int64_t)m->alpha_[v >> 24] + m->red_[(v >> 16) & 0xff] +
+         m->literal_[(v >> 8) & 0xff] + m->blue_[v & 0xff];
 }
 
 static WEBP_INLINE int64_t GetCacheCost(const CostModel* const m,
                                         uint32_t idx) {
   const int literal_idx = VALUES_IN_BYTE + NUM_LENGTH_CODES + idx;
-  return (int64_t)m->literal[literal_idx];
+  return (int64_t)m->literal_[literal_idx];
 }
 
 static WEBP_INLINE int64_t GetLengthCost(const CostModel* const m,
                                          uint32_t length) {
   int code, extra_bits;
   VP8LPrefixEncodeBits(length, &code, &extra_bits);
-  return (int64_t)m->literal[VALUES_IN_BYTE + code] +
+  return (int64_t)m->literal_[VALUES_IN_BYTE + code] +
          ((int64_t)extra_bits << LOG_2_PRECISION_BITS);
 }
 
@@ -114,7 +117,7 @@ static WEBP_INLINE int64_t GetDistanceCost(const CostModel* const m,
                                            uint32_t distance) {
   int code, extra_bits;
   VP8LPrefixEncodeBits(distance, &code, &extra_bits);
-  return (int64_t)m->distance[code] +
+  return (int64_t)m->distance_[code] +
          ((int64_t)extra_bits << LOG_2_PRECISION_BITS);
 }
 
@@ -144,84 +147,84 @@ static WEBP_INLINE void AddSingleLiteralWithCostModel(
 // Empirical value to avoid high memory consumption but good for performance.
 #define COST_CACHE_INTERVAL_SIZE_MAX 500
 
-// To perform backward reference every pixel at index 'index' is considered and
+// To perform backward reference every pixel at index index_ is considered and
 // the cost for the MAX_LENGTH following pixels computed. Those following pixels
-// at index 'index' + k (k from 0 to MAX_LENGTH) have a cost of:
-//     cost = distance cost at index + GetLengthCost(cost_model, k)
+// at index index_ + k (k from 0 to MAX_LENGTH) have a cost of:
+//     cost_ = distance cost at index + GetLengthCost(cost_model, k)
 // and the minimum value is kept. GetLengthCost(cost_model, k) is cached in an
 // array of size MAX_LENGTH.
 // Instead of performing MAX_LENGTH comparisons per pixel, we keep track of the
 // minimal values using intervals of constant cost.
-// An interval is defined by the 'index' of the pixel that generated it and
-// is only useful in a range of indices from 'start' to 'end' (exclusive), i.e.
-// it contains the minimum value for pixels between start and end.
-// Intervals are stored in a linked list and ordered by 'start'. When a new
+// An interval is defined by the index_ of the pixel that generated it and
+// is only useful in a range of indices from start_ to end_ (exclusive), i.e.
+// it contains the minimum value for pixels between start_ and end_.
+// Intervals are stored in a linked list and ordered by start_. When a new
 // interval has a better value, old intervals are split or removed. There are
 // therefore no overlapping intervals.
 typedef struct CostInterval CostInterval;
 struct CostInterval {
-  int64_t cost;
-  int start;
-  int end;
-  int index;
-  CostInterval* previous;
-  CostInterval* next;
+  int64_t cost_;
+  int start_;
+  int end_;
+  int index_;
+  CostInterval* previous_;
+  CostInterval* next_;
 };
 
 // The GetLengthCost(cost_model, k) are cached in a CostCacheInterval.
 typedef struct {
-  int64_t cost;
-  int start;
-  int end;       // Exclusive.
+  int64_t cost_;
+  int start_;
+  int end_;       // Exclusive.
 } CostCacheInterval;
 
 // This structure is in charge of managing intervals and costs.
 // It caches the different CostCacheInterval, caches the different
-// GetLengthCost(cost_model, k) in cost_cache and the CostInterval's (whose
-// 'count' is limited by COST_CACHE_INTERVAL_SIZE_MAX).
+// GetLengthCost(cost_model, k) in cost_cache_ and the CostInterval's (whose
+// count_ is limited by COST_CACHE_INTERVAL_SIZE_MAX).
 #define COST_MANAGER_MAX_FREE_LIST 10
 typedef struct {
-  CostInterval* head;
-  int count;  // The number of stored intervals.
-  CostCacheInterval* cache_intervals;
-  size_t cache_intervals_size;
+  CostInterval* head_;
+  int count_;  // The number of stored intervals.
+  CostCacheInterval* cache_intervals_;
+  size_t cache_intervals_size_;
   // Contains the GetLengthCost(cost_model, k).
-  int64_t cost_cache[MAX_LENGTH];
-  int64_t* costs;
-  uint16_t* dist_array;
+  int64_t cost_cache_[MAX_LENGTH];
+  int64_t* costs_;
+  uint16_t* dist_array_;
   // Most of the time, we only need few intervals -> use a free-list, to avoid
   // fragmentation with small allocs in most common cases.
-  CostInterval intervals[COST_MANAGER_MAX_FREE_LIST];
-  CostInterval* free_intervals;
+  CostInterval intervals_[COST_MANAGER_MAX_FREE_LIST];
+  CostInterval* free_intervals_;
   // These are regularly malloc'd remains. This list can't grow larger than than
   // size COST_CACHE_INTERVAL_SIZE_MAX - COST_MANAGER_MAX_FREE_LIST, note.
-  CostInterval* recycled_intervals;
+  CostInterval* recycled_intervals_;
 } CostManager;
 
 static void CostIntervalAddToFreeList(CostManager* const manager,
                                       CostInterval* const interval) {
-  interval->next = manager->free_intervals;
-  manager->free_intervals = interval;
+  interval->next_ = manager->free_intervals_;
+  manager->free_intervals_ = interval;
 }
 
 static int CostIntervalIsInFreeList(const CostManager* const manager,
                                     const CostInterval* const interval) {
-  return (interval >= &manager->intervals[0] &&
-          interval <= &manager->intervals[COST_MANAGER_MAX_FREE_LIST - 1]);
+  return (interval >= &manager->intervals_[0] &&
+          interval <= &manager->intervals_[COST_MANAGER_MAX_FREE_LIST - 1]);
 }
 
 static void CostManagerInitFreeList(CostManager* const manager) {
   int i;
-  manager->free_intervals = NULL;
+  manager->free_intervals_ = NULL;
   for (i = 0; i < COST_MANAGER_MAX_FREE_LIST; ++i) {
-    CostIntervalAddToFreeList(manager, &manager->intervals[i]);
+    CostIntervalAddToFreeList(manager, &manager->intervals_[i]);
   }
 }
 
 static void DeleteIntervalList(CostManager* const manager,
                                const CostInterval* interval) {
   while (interval != NULL) {
-    const CostInterval* const next = interval->next;
+    const CostInterval* const next = interval->next_;
     if (!CostIntervalIsInFreeList(manager, interval)) {
       WebPSafeFree((void*)interval);
     }  // else: do nothing
@@ -232,16 +235,16 @@ static void DeleteIntervalList(CostManager* const manager,
 static void CostManagerClear(CostManager* const manager) {
   if (manager == NULL) return;
 
-  WebPSafeFree(manager->costs);
-  WebPSafeFree(manager->cache_intervals);
+  WebPSafeFree(manager->costs_);
+  WebPSafeFree(manager->cache_intervals_);
 
   // Clear the interval lists.
-  DeleteIntervalList(manager, manager->head);
-  manager->head = NULL;
-  DeleteIntervalList(manager, manager->recycled_intervals);
-  manager->recycled_intervals = NULL;
+  DeleteIntervalList(manager, manager->head_);
+  manager->head_ = NULL;
+  DeleteIntervalList(manager, manager->recycled_intervals_);
+  manager->recycled_intervals_ = NULL;
 
-  // Reset pointers, 'count' and 'cache_intervals_size'.
+  // Reset pointers, count_ and cache_intervals_size_.
   memset(manager, 0, sizeof(*manager));
   CostManagerInitFreeList(manager);
 }
@@ -252,25 +255,25 @@ static int CostManagerInit(CostManager* const manager,
   int i;
   const int cost_cache_size = (pix_count > MAX_LENGTH) ? MAX_LENGTH : pix_count;
 
-  manager->costs = NULL;
-  manager->cache_intervals = NULL;
-  manager->head = NULL;
-  manager->recycled_intervals = NULL;
-  manager->count = 0;
-  manager->dist_array = dist_array;
+  manager->costs_ = NULL;
+  manager->cache_intervals_ = NULL;
+  manager->head_ = NULL;
+  manager->recycled_intervals_ = NULL;
+  manager->count_ = 0;
+  manager->dist_array_ = dist_array;
   CostManagerInitFreeList(manager);
 
-  // Fill in the 'cost_cache'.
+  // Fill in the cost_cache_.
   // Has to be done in two passes due to a GCC bug on i686
   // related to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=323
   for (i = 0; i < cost_cache_size; ++i) {
-    manager->cost_cache[i] = GetLengthCost(cost_model, i);
+    manager->cost_cache_[i] = GetLengthCost(cost_model, i);
   }
-  manager->cache_intervals_size = 1;
+  manager->cache_intervals_size_ = 1;
   for (i = 1; i < cost_cache_size; ++i) {
     // Get the number of bound intervals.
-    if (manager->cost_cache[i] != manager->cost_cache[i - 1]) {
-      ++manager->cache_intervals_size;
+    if (manager->cost_cache_[i] != manager->cost_cache_[i - 1]) {
+      ++manager->cache_intervals_size_;
     }
   }
 
@@ -278,46 +281,46 @@ static int CostManagerInit(CostManager* const manager,
   // The worst case scenario with a cost model would be if every length has a
   // different cost, hence MAX_LENGTH but that is impossible with the current
   // implementation that spirals around a pixel.
-  assert(manager->cache_intervals_size <= MAX_LENGTH);
-  manager->cache_intervals = (CostCacheInterval*)WebPSafeMalloc(
-      manager->cache_intervals_size, sizeof(*manager->cache_intervals));
-  if (manager->cache_intervals == NULL) {
+  assert(manager->cache_intervals_size_ <= MAX_LENGTH);
+  manager->cache_intervals_ = (CostCacheInterval*)WebPSafeMalloc(
+      manager->cache_intervals_size_, sizeof(*manager->cache_intervals_));
+  if (manager->cache_intervals_ == NULL) {
     CostManagerClear(manager);
     return 0;
   }
 
-  // Fill in the 'cache_intervals'.
+  // Fill in the cache_intervals_.
   {
-    CostCacheInterval* cur = manager->cache_intervals;
+    CostCacheInterval* cur = manager->cache_intervals_;
 
-    // Consecutive values in 'cost_cache' are compared and if a big enough
+    // Consecutive values in cost_cache_ are compared and if a big enough
     // difference is found, a new interval is created and bounded.
-    cur->start = 0;
-    cur->end = 1;
-    cur->cost = manager->cost_cache[0];
+    cur->start_ = 0;
+    cur->end_ = 1;
+    cur->cost_ = manager->cost_cache_[0];
     for (i = 1; i < cost_cache_size; ++i) {
-      const int64_t cost_val = manager->cost_cache[i];
-      if (cost_val != cur->cost) {
+      const int64_t cost_val = manager->cost_cache_[i];
+      if (cost_val != cur->cost_) {
         ++cur;
         // Initialize an interval.
-        cur->start = i;
-        cur->cost = cost_val;
+        cur->start_ = i;
+        cur->cost_ = cost_val;
       }
-      cur->end = i + 1;
+      cur->end_ = i + 1;
     }
-    assert((size_t)(cur - manager->cache_intervals) + 1 ==
-           manager->cache_intervals_size);
+    assert((size_t)(cur - manager->cache_intervals_) + 1 ==
+           manager->cache_intervals_size_);
   }
 
-  manager->costs =
-      (int64_t*)WebPSafeMalloc(pix_count, sizeof(*manager->costs));
-  if (manager->costs == NULL) {
+  manager->costs_ =
+      (int64_t*)WebPSafeMalloc(pix_count, sizeof(*manager->costs_));
+  if (manager->costs_ == NULL) {
     CostManagerClear(manager);
     return 0;
   }
-  // Set the initial 'costs' to INT64_MAX for every pixel as we will keep the
+  // Set the initial costs_ to INT64_MAX for every pixel as we will keep the
   // minimum.
-  for (i = 0; i < pix_count; ++i) manager->costs[i] = WEBP_INT64_MAX;
+  for (i = 0; i < pix_count; ++i) manager->costs_[i] = WEBP_INT64_MAX;
 
   return 1;
 }
@@ -329,9 +332,9 @@ static WEBP_INLINE void UpdateCost(CostManager* const manager, int i,
   const int k = i - position;
   assert(k >= 0 && k < MAX_LENGTH);
 
-  if (manager->costs[i] > cost) {
-    manager->costs[i] = cost;
-    manager->dist_array[i] = k + 1;
+  if (manager->costs_[i] > cost) {
+    manager->costs_[i] = cost;
+    manager->dist_array_[i] = k + 1;
   }
 }
 
@@ -349,12 +352,12 @@ static WEBP_INLINE void ConnectIntervals(CostManager* const manager,
                                          CostInterval* const prev,
                                          CostInterval* const next) {
   if (prev != NULL) {
-    prev->next = next;
+    prev->next_ = next;
   } else {
-    manager->head = next;
+    manager->head_ = next;
   }
 
-  if (next != NULL) next->previous = prev;
+  if (next != NULL) next->previous_ = prev;
 }
 
 // Pop an interval in the manager.
@@ -362,15 +365,15 @@ static WEBP_INLINE void PopInterval(CostManager* const manager,
                                     CostInterval* const interval) {
   if (interval == NULL) return;
 
-  ConnectIntervals(manager, interval->previous, interval->next);
+  ConnectIntervals(manager, interval->previous_, interval->next_);
   if (CostIntervalIsInFreeList(manager, interval)) {
     CostIntervalAddToFreeList(manager, interval);
   } else {  // recycle regularly malloc'd intervals too
-    interval->next = manager->recycled_intervals;
-    manager->recycled_intervals = interval;
+    interval->next_ = manager->recycled_intervals_;
+    manager->recycled_intervals_ = interval;
   }
-  --manager->count;
-  assert(manager->count >= 0);
+  --manager->count_;
+  assert(manager->count_ >= 0);
 }
 
 // Update the cost at index i by going over all the stored intervals that
@@ -379,17 +382,17 @@ static WEBP_INLINE void PopInterval(CostManager* const manager,
 // end before 'i' will be popped.
 static WEBP_INLINE void UpdateCostAtIndex(CostManager* const manager, int i,
                                           int do_clean_intervals) {
-  CostInterval* current = manager->head;
+  CostInterval* current = manager->head_;
 
-  while (current != NULL && current->start <= i) {
-    CostInterval* const next = current->next;
-    if (current->end <= i) {
+  while (current != NULL && current->start_ <= i) {
+    CostInterval* const next = current->next_;
+    if (current->end_ <= i) {
       if (do_clean_intervals) {
         // We have an outdated interval, remove it.
         PopInterval(manager, current);
       }
     } else {
-      UpdateCost(manager, i, current->index, current->cost);
+      UpdateCost(manager, i, current->index_, current->cost_);
     }
     current = next;
   }
@@ -397,31 +400,31 @@ static WEBP_INLINE void UpdateCostAtIndex(CostManager* const manager, int i,
 
 // Given a current orphan interval and its previous interval, before
 // it was orphaned (which can be NULL), set it at the right place in the list
-// of intervals using the 'start' ordering and the previous interval as a hint.
+// of intervals using the start_ ordering and the previous interval as a hint.
 static WEBP_INLINE void PositionOrphanInterval(CostManager* const manager,
                                                CostInterval* const current,
                                                CostInterval* previous) {
   assert(current != NULL);
 
-  if (previous == NULL) previous = manager->head;
-  while (previous != NULL && current->start < previous->start) {
-    previous = previous->previous;
+  if (previous == NULL) previous = manager->head_;
+  while (previous != NULL && current->start_ < previous->start_) {
+    previous = previous->previous_;
   }
-  while (previous != NULL && previous->next != NULL &&
-         previous->next->start < current->start) {
-    previous = previous->next;
+  while (previous != NULL && previous->next_ != NULL &&
+         previous->next_->start_ < current->start_) {
+    previous = previous->next_;
   }
 
   if (previous != NULL) {
-    ConnectIntervals(manager, current, previous->next);
+    ConnectIntervals(manager, current, previous->next_);
   } else {
-    ConnectIntervals(manager, current, manager->head);
+    ConnectIntervals(manager, current, manager->head_);
   }
   ConnectIntervals(manager, previous, current);
 }
 
 // Insert an interval in the list contained in the manager by starting at
-// 'interval_in' as a hint. The intervals are sorted by 'start' value.
+// interval_in as a hint. The intervals are sorted by start_ value.
 static WEBP_INLINE void InsertInterval(CostManager* const manager,
                                        CostInterval* const interval_in,
                                        int64_t cost, int position, int start,
@@ -429,17 +432,17 @@ static WEBP_INLINE void InsertInterval(CostManager* const manager,
   CostInterval* interval_new;
 
   if (start >= end) return;
-  if (manager->count >= COST_CACHE_INTERVAL_SIZE_MAX) {
+  if (manager->count_ >= COST_CACHE_INTERVAL_SIZE_MAX) {
     // Serialize the interval if we cannot store it.
     UpdateCostPerInterval(manager, start, end, position, cost);
     return;
   }
-  if (manager->free_intervals != NULL) {
-    interval_new = manager->free_intervals;
-    manager->free_intervals = interval_new->next;
-  } else if (manager->recycled_intervals != NULL) {
-    interval_new = manager->recycled_intervals;
-    manager->recycled_intervals = interval_new->next;
+  if (manager->free_intervals_ != NULL) {
+    interval_new = manager->free_intervals_;
+    manager->free_intervals_ = interval_new->next_;
+  } else if (manager->recycled_intervals_ != NULL) {
+    interval_new = manager->recycled_intervals_;
+    manager->recycled_intervals_ = interval_new->next_;
   } else {  // malloc for good
     interval_new = (CostInterval*)WebPSafeMalloc(1, sizeof(*interval_new));
     if (interval_new == NULL) {
@@ -449,13 +452,13 @@ static WEBP_INLINE void InsertInterval(CostManager* const manager,
     }
   }
 
-  interval_new->cost = cost;
-  interval_new->index = position;
-  interval_new->start = start;
-  interval_new->end = end;
+  interval_new->cost_ = cost;
+  interval_new->index_ = position;
+  interval_new->start_ = start;
+  interval_new->end_ = end;
   PositionOrphanInterval(manager, interval_new, interval_in);
 
-  ++manager->count;
+  ++manager->count_;
 }
 
 // Given a new cost interval defined by its start at position, its length value
@@ -466,10 +469,10 @@ static WEBP_INLINE void PushInterval(CostManager* const manager,
                                      int64_t distance_cost, int position,
                                      int len) {
   size_t i;
-  CostInterval* interval = manager->head;
+  CostInterval* interval = manager->head_;
   CostInterval* interval_next;
   const CostCacheInterval* const cost_cache_intervals =
-      manager->cache_intervals;
+      manager->cache_intervals_;
   // If the interval is small enough, no need to deal with the heavy
   // interval logic, just serialize it right away. This constant is empirical.
   const int kSkipDistance = 10;
@@ -480,84 +483,84 @@ static WEBP_INLINE void PushInterval(CostManager* const manager,
       const int k = j - position;
       int64_t cost_tmp;
       assert(k >= 0 && k < MAX_LENGTH);
-      cost_tmp = distance_cost + manager->cost_cache[k];
+      cost_tmp = distance_cost + manager->cost_cache_[k];
 
-      if (manager->costs[j] > cost_tmp) {
-        manager->costs[j] = cost_tmp;
-        manager->dist_array[j] = k + 1;
+      if (manager->costs_[j] > cost_tmp) {
+        manager->costs_[j] = cost_tmp;
+        manager->dist_array_[j] = k + 1;
       }
     }
     return;
   }
 
-  for (i = 0; i < manager->cache_intervals_size &&
-              cost_cache_intervals[i].start < len;
+  for (i = 0; i < manager->cache_intervals_size_ &&
+              cost_cache_intervals[i].start_ < len;
        ++i) {
     // Define the intersection of the ith interval with the new one.
-    int start = position + cost_cache_intervals[i].start;
-    const int end = position + (cost_cache_intervals[i].end > len
+    int start = position + cost_cache_intervals[i].start_;
+    const int end = position + (cost_cache_intervals[i].end_ > len
                                  ? len
-                                 : cost_cache_intervals[i].end);
-    const int64_t cost = distance_cost + cost_cache_intervals[i].cost;
+                                 : cost_cache_intervals[i].end_);
+    const int64_t cost = distance_cost + cost_cache_intervals[i].cost_;
 
-    for (; interval != NULL && interval->start < end;
+    for (; interval != NULL && interval->start_ < end;
          interval = interval_next) {
-      interval_next = interval->next;
+      interval_next = interval->next_;
 
       // Make sure we have some overlap
-      if (start >= interval->end) continue;
+      if (start >= interval->end_) continue;
 
-      if (cost >= interval->cost) {
+      if (cost >= interval->cost_) {
         // When intervals are represented, the lower, the better.
         // [**********************************************************[
         // start                                                    end
         //                   [----------------------------------[
-        //                   interval->start        interval->end
+        //                   interval->start_       interval->end_
         // If we are worse than what we already have, add whatever we have so
         // far up to interval.
-        const int start_new = interval->end;
+        const int start_new = interval->end_;
         InsertInterval(manager, interval, cost, position, start,
-                       interval->start);
+                       interval->start_);
         start = start_new;
         if (start >= end) break;
         continue;
       }
 
-      if (start <= interval->start) {
-        if (interval->end <= end) {
+      if (start <= interval->start_) {
+        if (interval->end_ <= end) {
           //                   [----------------------------------[
-          //                   interval->start        interval->end
+          //                   interval->start_       interval->end_
           // [**************************************************************[
           // start                                                        end
           // We can safely remove the old interval as it is fully included.
           PopInterval(manager, interval);
         } else {
           //              [------------------------------------[
-          //              interval->start          interval->end
+          //              interval->start_        interval->end_
           // [*****************************[
           // start                       end
-          interval->start = end;
+          interval->start_ = end;
           break;
         }
       } else {
-        if (end < interval->end) {
+        if (end < interval->end_) {
           // [--------------------------------------------------------------[
-          // interval->start                                    interval->end
+          // interval->start_                                  interval->end_
           //                     [*****************************[
           //                     start                       end
           // We have to split the old interval as it fully contains the new one.
-          const int end_original = interval->end;
-          interval->end = start;
-          InsertInterval(manager, interval, interval->cost, interval->index,
+          const int end_original = interval->end_;
+          interval->end_ = start;
+          InsertInterval(manager, interval, interval->cost_, interval->index_,
                          end, end_original);
-          interval = interval->next;
+          interval = interval->next_;
           break;
         } else {
           // [------------------------------------[
-          // interval->start          interval->end
+          // interval->start_        interval->end_
           //                     [*****************************[
           //                     start                       end
-          interval->end = start;
+          interval->end_ = start;
         }
       }
     }
@@ -576,7 +579,7 @@ static int BackwardReferencesHashChainDistanceOnly(
   const int pix_count = xsize * ysize;
   const int use_color_cache = (cache_bits > 0);
   const size_t literal_array_size =
-      sizeof(*((CostModel*)NULL)->literal) * VP8LHistogramNumCodes(cache_bits);
+      sizeof(*((CostModel*)NULL)->literal_) * VP8LHistogramNumCodes(cache_bits);
   const size_t cost_model_size = sizeof(CostModel) + literal_array_size;
   CostModel* const cost_model =
       (CostModel*)WebPSafeCalloc(1ULL, cost_model_size);
@@ -590,7 +593,7 @@ static int BackwardReferencesHashChainDistanceOnly(
 
   if (cost_model == NULL || cost_manager == NULL) goto Error;
 
-  cost_model->literal = (uint32_t*)(cost_model + 1);
+  cost_model->literal_ = (uint32_t*)(cost_model + 1);
   if (use_color_cache) {
     cc_init = VP8LColorCacheInit(&hashers, cache_bits);
     if (!cc_init) goto Error;
@@ -610,17 +613,17 @@ static int BackwardReferencesHashChainDistanceOnly(
   // Add first pixel as literal.
   AddSingleLiteralWithCostModel(argb, &hashers, cost_model, /*idx=*/0,
                                 use_color_cache, /*prev_cost=*/0,
-                                cost_manager->costs, dist_array);
+                                cost_manager->costs_, dist_array);
 
   for (i = 1; i < pix_count; ++i) {
-    const int64_t prev_cost = cost_manager->costs[i - 1];
+    const int64_t prev_cost = cost_manager->costs_[i - 1];
     int offset, len;
     VP8LHashChainFindCopy(hash_chain, i, &offset, &len);
 
     // Try adding the pixel as a literal.
     AddSingleLiteralWithCostModel(argb, &hashers, cost_model, i,
                                   use_color_cache, prev_cost,
-                                  cost_manager->costs, dist_array);
+                                  cost_manager->costs_, dist_array);
 
     // If we are dealing with a non-literal.
     if (len >= 2) {
@@ -668,7 +671,7 @@ static int BackwardReferencesHashChainDistanceOnly(
           UpdateCostAtIndex(cost_manager, j - 1, 0);
           UpdateCostAtIndex(cost_manager, j, 0);
 
-          PushInterval(cost_manager, cost_manager->costs[j - 1] + offset_cost,
+          PushInterval(cost_manager, cost_manager->costs_[j - 1] + offset_cost,
                        j, len_j);
           reach = j + len_j - 1;
         }
@@ -680,7 +683,7 @@ static int BackwardReferencesHashChainDistanceOnly(
     len_prev = len;
   }
 
-  ok = !refs->error;
+  ok = !refs->error_;
  Error:
   if (cc_init) VP8LColorCacheClear(&hashers);
   CostManagerClear(cost_manager);
@@ -753,7 +756,7 @@ static int BackwardReferencesHashChainFollowChosenPath(
       ++i;
     }
   }
-  ok = !refs->error;
+  ok = !refs->error_;
  Error:
   if (cc_init) VP8LColorCacheClear(&hashers);
   return ok;

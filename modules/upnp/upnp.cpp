@@ -30,8 +30,6 @@
 
 #include "upnp.h"
 
-#include "core/object/class_db.h"
-
 UPNP *(*UPNP::_create)(bool p_notify_postinitialize) = nullptr;
 
 void UPNP::_bind_methods() {

@@ -1,0 +1,394 @@
+name: Phase 4C Test Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ply
+          - pipeline
+          - sorting
+          - runtime
+          - module
+          - qa
+
+jobs:
+  test-windows:
+    name: Windows Tests
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    timeout-minutes: 60
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pillow
+
+    - name: Setup build environment
+      run: |
+        choco install scons -y
+        choco install vulkan-sdk -y
+
+    - name: Cache Godot build
+      uses: actions/cache@v3
+      with:
+        path: |
+          bin
+          .scons_cache
+        key: ${{ runner.os }}-godot-${{ hashFiles('core/**/*.cpp', 'core/**/*.h', 'drivers/**/*.cpp', 'drivers/**/*.h', 'editor/**/*.cpp', 'editor/**/*.h', 'main/**/*.cpp', 'main/**/*.h', 'modules/**/*.cpp', 'modules/**/*.h', 'platform/**/*.cpp', 'platform/**/*.h', 'scene/**/*.cpp', 'scene/**/*.h', 'servers/**/*.cpp', 'servers/**/*.h', '*.py', 'SConstruct') }}
+        restore-keys: |
+          ${{ runner.os }}-godot-
+
+    - name: Build Godot with tests
+      run: |
+        scons platform=windows tools=yes tests=yes target=editor use_llvm=no werror=no gs_native_arch=no -j12
+      shell: cmd
+
+    - name: Generate test data
+      run: |
+        cd test_data
+        python generate_test_data.py
+
+    - name: Run test suite
+      run: |
+        cd test_data
+        $testCategory = "${{ github.event.inputs.test_category || 'all' }}"
+        $validCategories = @("ply", "pipeline", "sorting", "runtime", "module", "qa")
+        if ($testCategory -eq "all") {
+          python run_all_tests.py
+        } elseif ($validCategories -contains $testCategory) {
+          python run_all_tests.py --category "$testCategory"
+        } else {
+          Write-Error "Unsupported test category: $testCategory"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-windows
+        path: |
+          test_data/test_results.json
+          test_data/benchmark_results.json
+          test_data/visual_quality_results.json
+          test_data/test_output/*.png
+
+    - name: Performance Report
+      if: always()
+      run: |
+        cd test_data
+        python -c "
+        import json
+        with open('benchmark_results.json', 'r') as f:
+            data = json.load(f)
+            results = data.get('results', {})
+            print('## Performance Results')
+            for key in ['render_1000', 'render_100000', 'render_1000000']:
+                if key in results and 'fps' in results[key]:
+                    splats = int(key.split('_')[1])
+                    fps = results[key]['fps']
+                    status = '✓' if fps >= 60 else '⚠'
+                    print(f'{status} {splats:,} splats: {fps:.1f} FPS')
+        "
+      continue-on-error: true
+
+  test-linux:
+    name: Linux Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Setup dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          scons \
+          pkg-config \
+          libx11-dev \
+          libxcursor-dev \
+          libxinerama-dev \
+          libxi-dev \
+          libxrandr-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          libasound2-dev \
+          libpulse-dev \
+          libudev-dev \
+          libvulkan-dev \
+          mesa-vulkan-drivers
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pillow scikit-image
+
+    - name: Build Godot with tests
+      run: |
+        scons platform=linuxbsd tools=yes tests=yes target=editor use_llvm=no werror=no gs_native_arch=no -j2
+
+    - name: Generate test data
+      run: |
+        cd test_data
+        python generate_test_data.py
+
+    - name: Setup virtual display
+      run: |
+        export DISPLAY=:99
+        sudo Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+
+    - name: Run test suite
+      env:
+        DISPLAY: :99
+      run: |
+        cd test_data
+        TEST_CATEGORY="${{ github.event.inputs.test_category || 'all' }}"
+        case "$TEST_CATEGORY" in
+          all)
+            python run_all_tests.py
+            ;;
+          ply|pipeline|sorting|runtime|module|qa)
+            python run_all_tests.py --category "$TEST_CATEGORY"
+            ;;
+          *)
+            echo "❌ Unsupported test category: $TEST_CATEGORY"
+            exit 1
+            ;;
+        esac
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-linux
+        path: |
+          test_data/test_results.json
+          test_data/benchmark_results.json
+          test_data/visual_quality_results.json
+
+  report:
+    name: Test Report
+    needs: [test-windows, test-linux]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Download Windows results
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results-windows
+        path: results/windows
+
+    - name: Download Linux results
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results-linux
+        path: results/linux
+
+    - name: Generate summary report
+      run: |
+        echo "# Phase 4C Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "## Platform Results" >> $GITHUB_STEP_SUMMARY
+        echo "| Platform | Status | Tests Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|--------|--------------|" >> $GITHUB_STEP_SUMMARY
+
+        # Parse results for each platform
+        for platform in windows linux; do
+          PLATFORM="$platform" python3 - <<'PY' >> $GITHUB_STEP_SUMMARY
+import json
+import os
+from pathlib import Path
+
+platform = os.environ["PLATFORM"]
+path = Path("results") / platform / "test_results.json"
+
+if not path.exists():
+    print(f"| {platform.capitalize()} | ⚠️ | No results |")
+    raise SystemExit(0)
+
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    print(f"| {platform.capitalize()} | ⚠️ | Invalid JSON |")
+    raise SystemExit(0)
+
+summary = data.get("summary")
+passed = summary.get("passed") if isinstance(summary, dict) else None
+failed = summary.get("failed") if isinstance(summary, dict) else None
+total = summary.get("total") if isinstance(summary, dict) else None
+
+if all(isinstance(value, int) for value in (passed, failed, total)) and passed >= 0 and failed >= 0 and total >= 0 and (passed + failed) <= total:
+    status = "✅" if failed == 0 else "❌"
+    tests_passed = f"{passed}/{total}"
+else:
+    status = "⚠️"
+    tests_passed = "N/A"
+
+print(f"| {platform.capitalize()} | {status} | {tests_passed} |")
+PY
+        done
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Success Metrics" >> $GITHUB_STEP_SUMMARY
+        for platform in windows linux; do
+          PLATFORM="$platform" python3 - <<'PY' >> $GITHUB_STEP_SUMMARY
+import json
+import os
+from pathlib import Path
+
+platform = os.environ["PLATFORM"]
+root = Path("results") / platform
+
+def _load_json(path: Path):
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+tests = _load_json(root / "test_results.json")
+bench = _load_json(root / "benchmark_results.json")
+visual = _load_json(root / "visual_quality_results.json")
+
+integration = "N/A"
+test_entries = []
+if isinstance(tests, dict):
+    summary = tests.get("summary")
+    passed = summary.get("passed") if isinstance(summary, dict) else None
+    total = summary.get("total") if isinstance(summary, dict) else None
+    failed = summary.get("failed") if isinstance(summary, dict) else None
+    if all(isinstance(value, int) for value in (passed, total, failed)) and passed >= 0 and total >= 0 and failed >= 0 and (passed + failed) <= total:
+        integration = f"{passed}/{total} ({'PASS' if failed == 0 else 'FAIL'})"
+    entries = tests.get("tests")
+    if isinstance(entries, list):
+        test_entries = entries
+
+performance = "N/A"
+fps_1m = None
+fps_10m = None
+fixture_splats = None
+depth_sort_ms = None
+if isinstance(bench, dict):
+    # Legacy benchmark schema: { "results": { "render_1000000": { "fps": ... } } }.
+    fps = (((bench.get("results") or {}).get("render_1000000") or {}).get("fps"))
+    if isinstance(fps, (int, float)):
+        fps_1m = float(fps)
+    fps = (((bench.get("results") or {}).get("render_10000000") or {}).get("fps"))
+    if isinstance(fps, (int, float)):
+        fps_10m = float(fps)
+
+    # Current benchmark schema: { "metrics": { "splat_count": ..., "depth_sort_ms": ... } }.
+    metrics = bench.get("metrics")
+    if isinstance(metrics, dict):
+        splat_count = metrics.get("splat_count")
+        if isinstance(splat_count, int) and splat_count >= 0:
+            fixture_splats = splat_count
+        depth_sort = metrics.get("depth_sort_ms")
+        if isinstance(depth_sort, (int, float)):
+            depth_sort_ms = float(depth_sort)
+
+if fps_1m is not None:
+    performance = f"1M FPS={fps_1m:.1f}"
+elif depth_sort_ms is not None and fixture_splats is not None:
+    performance = f"Depth sort ({fixture_splats} splats)={depth_sort_ms:.4f} ms"
+elif depth_sort_ms is not None:
+    performance = f"Depth sort={depth_sort_ms:.4f} ms"
+
+visual_status = "N/A"
+if isinstance(visual, dict):
+    result = visual.get("result")
+    if isinstance(result, dict) and isinstance(result.get("matches_reference"), bool):
+        visual_status = "PASS" if result["matches_reference"] else f"DRIFT (max_delta={result.get('max_channel_delta', 'unknown')})"
+    elif isinstance(visual.get("ssim"), (int, float)):
+        visual_status = f"SSIM={float(visual['ssim']):.3f}"
+
+def _status_from_named_tests(entries, tokens):
+    if not isinstance(entries, list):
+        return "N/A"
+    matched = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        name = str(entry.get("name", "")).lower()
+        if any(token in name for token in tokens):
+            matched.append(entry)
+    if not matched:
+        return "N/A"
+    if not all(isinstance(entry.get("success"), bool) for entry in matched):
+        return "N/A"
+    return "PASS" if all(entry["success"] for entry in matched) else "FAIL"
+
+memory_status = _status_from_named_tests(test_entries, ("memory", "leak"))
+handling_10m = "N/A"
+if fps_10m is not None:
+    handling_10m = f"{fps_10m:.1f} FPS"
+else:
+    handling_10m = _status_from_named_tests(test_entries, ("10m", "10 m", "10000000"))
+
+print(f"- {platform.capitalize()} integration tests: {integration}")
+print(f"- {platform.capitalize()} performance metric: {performance}")
+print(f"- {platform.capitalize()} visual quality: {visual_status}")
+print(f"- {platform.capitalize()} memory leak status: {memory_status}")
+print(f"- {platform.capitalize()} 10M splat handling: {handling_10m}")
+PY
+        done
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          let comment = '## 🧪 Phase 4C Test Results\n\n';
+
+          // Check if Windows results exist
+          if (fs.existsSync('results/windows/test_results.json')) {
+            const data = JSON.parse(fs.readFileSync('results/windows/test_results.json', 'utf8'));
+            const summary = data.summary || {};
+            comment += `### Windows: ${summary.failed === 0 ? '✅' : '❌'} ${summary.passed}/${summary.total} tests passed\n`;
+          }
+
+          // Check if Linux results exist
+          if (fs.existsSync('results/linux/test_results.json')) {
+            const data = JSON.parse(fs.readFileSync('results/linux/test_results.json', 'utf8'));
+            const summary = data.summary || {};
+            comment += `### Linux: ${summary.failed === 0 ? '✅' : '❌'} ${summary.passed}/${summary.total} tests passed\n`;
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

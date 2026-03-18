@@ -30,10 +30,7 @@
 
 #include "audio_stream_player_internal.h"
 
-#include "core/config/engine.h"
-#include "core/object/callable_mp.h"
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
@@ -117,8 +114,7 @@ void AudioStreamPlayerInternal::notification(int p_what) {
 
 		case Node::NOTIFICATION_SUSPENDED:
 		case Node::NOTIFICATION_PAUSED: {
-			bool can_process = node->is_inside_tree() && node->can_process();
-			if (!can_process) {
+			if (!node->can_process()) {
 				// Node can't process so we start fading out to silence
 				set_stream_paused(true);
 			}

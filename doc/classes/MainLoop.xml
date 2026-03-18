@@ -121,7 +121,7 @@
 		</constant>
 		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
-			Implemented on desktop and web platforms.
+			Specific to the macOS platform.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
 			Notification received from the OS when the application is resumed.
@@ -142,12 +142,6 @@
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.
-		</constant>
-		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_ENTERED" value="2019">
-			Notification received when the application enters picture-in-picture mode.
-		</constant>
-		<constant name="NOTIFICATION_APPLICATION_PIP_MODE_EXITED" value="2020">
-			Notification received when the application exits picture-in-picture mode.
 		</constant>
 	</constants>
 </class>

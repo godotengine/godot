@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptPropertyDefValGeneratorTests
 {
     [Fact]
-    public async Task ExportedFields()
+    public async void ExportedFields()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             new string[] { "ExportedFields.cs", "MoreExportedFields.cs" },
@@ -15,7 +14,7 @@ public class ScriptPropertyDefValGeneratorTests
     }
 
     [Fact]
-    public async Task ExportedProperties()
+    public async void ExportedProperties()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportedProperties.cs",
@@ -24,14 +23,14 @@ public class ScriptPropertyDefValGeneratorTests
     }
 
     [Fact]
-    public async Task ExportedProperties2()
+    public async void ExportedProperties2()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportedProperties2.cs", "ExportedProperties2_ScriptPropertyDefVal.generated.cs");
     }
 
     [Fact]
-    public async Task ExportedComplexStrings()
+    public async void ExportedComplexStrings()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
             "ExportedComplexStrings.cs",

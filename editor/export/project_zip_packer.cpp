@@ -33,10 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
-#include "core/string/ustring.h"
 
 String ProjectZIPPacker::get_project_zip_safe_name() {
 	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
@@ -74,8 +72,8 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 
-	String path = p_path.trim_prefix(p_base_path);
-	zipOpenNewFileInZip4(p_zip,
+	String path = p_path.replace_first(p_base_path, "");
+	zipOpenNewFileInZip(p_zip,
 			path.utf8().get_data(),
 			nullptr,
 			nullptr,
@@ -84,15 +82,7 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 			0,
 			nullptr,
 			Z_DEFLATED,
-			Z_DEFAULT_COMPRESSION,
-			0,
-			-MAX_WBITS,
-			DEF_MEM_LEVEL,
-			Z_DEFAULT_STRATEGY,
-			nullptr,
-			0,
-			0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+			Z_DEFAULT_COMPRESSION);
 	zipWriteInFileInZip(p_zip, data.ptr(), data.size());
 	zipCloseFileInZip(p_zip);
 }
@@ -111,8 +101,8 @@ void ProjectZIPPacker::_zip_recursive(const String &p_path, const String &p_base
 		if (cur == "." || cur == ".." || cur == project_data_dir_name) {
 			// Skip
 		} else if (dir->current_is_dir()) {
-			String path = cs.trim_prefix(p_base_path) + "/";
-			zipOpenNewFileInZip4(p_zip,
+			String path = cs.replace_first(p_base_path, "") + "/";
+			zipOpenNewFileInZip(p_zip,
 					path.utf8().get_data(),
 					nullptr,
 					nullptr,
@@ -121,15 +111,7 @@ void ProjectZIPPacker::_zip_recursive(const String &p_path, const String &p_base
 					0,
 					nullptr,
 					Z_DEFLATED,
-					Z_DEFAULT_COMPRESSION,
-					0,
-					-MAX_WBITS,
-					DEF_MEM_LEVEL,
-					Z_DEFAULT_STRATEGY,
-					nullptr,
-					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					Z_DEFAULT_COMPRESSION);
 			zipCloseFileInZip(p_zip);
 			_zip_recursive(cs, p_base_path, p_zip);
 		} else {

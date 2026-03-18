@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneStreamingCorridor" instance=ExtResource("1")]
+lane_id = "streaming_corridor"
+lane_name = "Streaming Corridor"
+lane_description = "Forward camera sweep through a long corridor layout to pressure streaming turnover."
+lane_preset = "streaming_corridor"
+default_duration_s = 30.0

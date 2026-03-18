@@ -46,6 +46,7 @@ struct DebuggerMarshalls {
 
 	struct ScriptStackDump {
 		List<ScriptLanguage::StackInfo> frames;
+		ScriptStackDump() {}
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);

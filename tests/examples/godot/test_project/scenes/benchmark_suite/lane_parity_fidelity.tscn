@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneParityFidelity" instance=ExtResource("1")]
+lane_id = "parity_fidelity"
+lane_name = "Parity Fidelity"
+lane_description = "Locked high-fidelity lane for parity captures and regressions."
+lane_preset = "parity_fidelity"
+default_duration_s = 35.0

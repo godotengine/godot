@@ -20,7 +20,7 @@
 */
 
 /**
- * Main include header for the SDL library, version 3.2.28
+ * Main include header for the SDL library, version 3.2.16
  *
  * It is almost always best to include just this one header instead of
  * picking out individual headers included here. There are exceptions to

@@ -31,7 +31,11 @@
 /*
  * External stuff.
  */
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern HWND SDL_HelperWindow;
+#else
+static const HWND SDL_HelperWindow = NULL;
+#endif
 
 /*
  * Internal stuff.

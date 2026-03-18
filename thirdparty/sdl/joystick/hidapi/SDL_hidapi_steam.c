@@ -706,6 +706,13 @@ static void RotatePad(int *pX, int *pY, float flAngleInRad)
     *pX = (int)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
     *pY = (int)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
 }
+static void RotatePadShort(short *pX, short *pY, float flAngleInRad)
+{
+    int origX = *pX, origY = *pY;
+
+    *pX = (short)(SDL_cosf(flAngleInRad) * origX - SDL_sinf(flAngleInRad) * origY);
+    *pY = (short)(SDL_sinf(flAngleInRad) * origX + SDL_cosf(flAngleInRad) * origY);
+}
 
 //---------------------------------------------------------------------------
 // Format the first part of the state packet
@@ -829,15 +836,8 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
 //---------------------------------------------------------------------------
 static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, SteamControllerStateInternal_t *pState)
 {
-    int nLeftPadX;
-    int nLeftPadY;
-    int nRightPadX;
-    int nRightPadY;
-    int nPadOffset;
-    uint32_t ucOptionDataMask;
-
-    // 15 degrees in rad
     const float flRotationAngle = 0.261799f;
+    uint32_t ucOptionDataMask;
 
     pState->unPacketNum++;
     ucOptionDataMask = (*pData++ & 0xF0);
@@ -867,6 +867,7 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
     }
     if (ucOptionDataMask & k_EBLELeftTrackpadChunk) {
         int nLength = sizeof(pState->sLeftPadX) + sizeof(pState->sLeftPadY);
+        int nPadOffset;
         SDL_memcpy(&pState->sLeftPadX, pData, nLength);
         if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
             nPadOffset = 1000;
@@ -874,15 +875,14 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
             nPadOffset = 0;
         }
 
-        nLeftPadX = pState->sLeftPadX;
-        nLeftPadY = pState->sLeftPadY;
-        RotatePad(&nLeftPadX, &nLeftPadY, -flRotationAngle);
-        pState->sLeftPadX = (short)clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sLeftPadY = (short)clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        RotatePadShort(&pState->sLeftPadX, &pState->sLeftPadY, -flRotationAngle);
+        pState->sLeftPadX = (short)clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sLeftPadY = (short)clamp(pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLERightTrackpadChunk) {
         int nLength = sizeof(pState->sRightPadX) + sizeof(pState->sRightPadY);
+        int nPadOffset = 0;
 
         SDL_memcpy(&pState->sRightPadX, pData, nLength);
 
@@ -892,11 +892,9 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
             nPadOffset = 0;
         }
 
-        nRightPadX = pState->sRightPadX;
-        nRightPadY = pState->sRightPadY;
-        RotatePad(&nRightPadX, &nRightPadY, flRotationAngle);
-        pState->sRightPadX = (short)clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
-        pState->sRightPadY = (short)clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        RotatePadShort(&pState->sRightPadX, &pState->sRightPadY, flRotationAngle);
+        pState->sRightPadX = (short)clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
+        pState->sRightPadY = (short)clamp(pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
         pData += nLength;
     }
     if (ucOptionDataMask & k_EBLEIMUAccelChunk) {
@@ -1038,11 +1036,6 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
 {
     if (!SDL_IsJoystickSteamController(vendor_id, product_id)) {
         return false;
-    }
-
-    if (!device) {
-        // Might be supported by this driver, enumerate and find out
-        return true;
     }
 
     if (device->is_bluetooth) {

@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "../zip_packer.h"
-#include "../zip_reader.h"
-
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
+
+#include "../zip_packer.h"
+#include "../zip_reader.h"
 
 namespace TestZip {
 

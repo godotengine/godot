@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-
 set -uo pipefail
 shopt -s globstar
 

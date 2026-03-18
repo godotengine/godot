@@ -1,0 +1,562 @@
+[gd_scene load_steps=49 format=3 uid="uid://srni0tqxr1cl"]
+
+[ext_resource type="Script" uid="uid://bba2w01344a41" path="res://scenes/lighting_test.gd" id="1_6ewva"]
+[ext_resource type="GaussianSplatAsset" uid="uid://8seem6j6xwtx" path="res://tests/fixtures/test_splats.ply" id="2_6kl7x"]
+[ext_resource type="Script" uid="uid://dg380v6a1qpek" path="res://fps_camera_controller.gd" id="2_jiwm1"]
+[ext_resource type="GaussianSplatAsset" uid="uid://vnhu3dprb1x1" path="res://tests/fixtures/test_splats.ply" id="4_6kl7x"]
+[ext_resource type="GaussianSplatAsset" uid="uid://t7cmysupgr3i" path="res://tests/fixtures/test_splats.ply" id="5_7ixgg"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.1, 0.1, 0.15, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.2, 0.2, 0.25, 1)
+ambient_light_energy = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(30, 0.2, 30)
+
+[sub_resource type="StandardMaterial3D" id="FloorMaterial"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_caster"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="StandardMaterial3D" id="CasterMaterial"]
+albedo_color = Color(0.8, 0.2, 0.2, 1)
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_6kl7x"]
+display_name = "Gaussian"
+shape = 0
+coverage_mode = 0
+edge_softness = 0.3
+bristle_count = 1
+bristle_spacing = 0.0
+gap_strength = 0.0
+curvature = 0.0
+jitter_amount = 0.0
+rotation_jitter = 0.0
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_7ixgg"]
+display_name = "Round Dab"
+edge_softness = 0.35
+gap_strength = 0.12
+curvature = 0.12
+jitter_amount = 0.1
+rotation_jitter = 0.08
+size_scale = 0.95
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_hyqgw"]
+display_name = "Flat Brush"
+shape = 2
+edge_softness = 0.24
+tip_bias = 0.18
+bristle_count = 5
+bristle_spacing = 0.13
+gap_strength = 0.2
+curvature = 0.1
+rotation_jitter = 0.12
+anisotropy = 1.5
+opacity_response = 1.1
+size_scale = 1.1
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_bx6wm"]
+display_name = "Filbert"
+shape = 3
+edge_softness = 0.28
+tip_bias = 0.3
+bristle_spacing = 0.16
+curvature = 0.22
+jitter_amount = 0.15
+rotation_jitter = 0.12
+anisotropy = 1.25
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_fljaa"]
+display_name = "Rake"
+shape = 4
+coverage_mode = 1
+edge_softness = 0.22
+tip_bias = -0.08
+bristle_count = 6
+bristle_spacing = 0.2
+gap_strength = 0.42
+curvature = 0.05
+jitter_amount = 0.12
+rotation_jitter = 0.15
+anisotropy = 1.35
+opacity_response = 1.2
+size_scale = 1.05
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_cu7rf"]
+display_name = "Splatter"
+shape = 6
+coverage_mode = 1
+edge_softness = 0.45
+bristle_count = 7
+bristle_spacing = 0.24
+gap_strength = 0.45
+curvature = 0.18
+jitter_amount = 0.35
+rotation_jitter = 0.18
+size_scale = 1.2
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_o40l3"]
+brush_profile = 1
+size_tier_mask = 1
+priority = 10
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_ihbyj"]
+brush_profile = 3
+size_tier_mask = 2
+priority = 9
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_ifqpo"]
+brush_profile = 2
+size_tier_mask = 4
+priority = 8
+
+[sub_resource type="PainterlyMaterial" id="PainterlyMaterial_2bxju"]
+brush_modulation_enabled = true
+lighting_stylization_enabled = true
+shading_style = 1
+painterly_mix_strength = 0.35
+brush_texture_influence = 0.15
+brush_scale = 0.675
+brush_softness = 1.0105
+brush_rotation_jitter = 0.0
+raster_brush_enabled = false
+brush_profiles = Array[PainterlyBrushProfile]([SubResource("PainterlyBrushProfile_6kl7x"), SubResource("PainterlyBrushProfile_7ixgg"), SubResource("PainterlyBrushProfile_hyqgw"), SubResource("PainterlyBrushProfile_bx6wm"), SubResource("PainterlyBrushProfile_fljaa"), SubResource("PainterlyBrushProfile_cu7rf")])
+brush_rules = Array[PainterlyBrushRule]([SubResource("PainterlyBrushRule_o40l3"), SubResource("PainterlyBrushRule_ihbyj"), SubResource("PainterlyBrushRule_ifqpo")])
+diffuse_strength = 0.95
+specular_strength = 0.15
+rim_strength = 0.45
+rim_power = 2.0
+rim_color = Color(1, 0.9, 0.7, 1)
+shadow_color = Color(0.2, 0.22, 0.32, 0.6)
+highlight_color = Color(1.1, 1.05, 0.95, 0.85)
+temporal_stability = 1.0
+gooch_cool_mix = 0.4
+gooch_warm_mix = 0.6
+lighting_intensity = 1.15
+
+[sub_resource type="ColorGradingResource" id="ColorGradingResource_w07b1"]
+enabled = false
+exposure = 1.46
+contrast = 0.19
+saturation = 0.56
+temperature = -45.0
+tint = -17.0
+hue_shift = -4.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_indicator"]
+radius = 0.2
+height = 0.4
+
+[sub_resource type="StandardMaterial3D" id="IndicatorMat_White"]
+shading_mode = 0
+albedo_color = Color(1, 0.95, 0.85, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_arrow"]
+top_radius = 0.0
+bottom_radius = 0.15
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="IndicatorMat_Red"]
+shading_mode = 0
+albedo_color = Color(1, 0.2, 0.1, 1)
+
+[sub_resource type="StandardMaterial3D" id="IndicatorMat_Green"]
+shading_mode = 0
+albedo_color = Color(0.2, 1, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="IndicatorMat_Blue"]
+shading_mode = 0
+albedo_color = Color(0.2, 0.4, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="IndicatorMat_Yellow"]
+shading_mode = 0
+albedo_color = Color(1, 1, 0.4, 1)
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_uows2"]
+display_name = "Gaussian"
+shape = 0
+coverage_mode = 0
+edge_softness = 0.3
+bristle_count = 1
+bristle_spacing = 0.0
+gap_strength = 0.0
+curvature = 0.0
+jitter_amount = 0.0
+rotation_jitter = 0.0
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_jyu13"]
+display_name = "Round Dab"
+edge_softness = 0.35
+gap_strength = 0.12
+curvature = 0.12
+jitter_amount = 0.1
+rotation_jitter = 0.08
+size_scale = 0.95
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_d1tnr"]
+display_name = "Flat Brush"
+shape = 2
+edge_softness = 0.24
+tip_bias = 0.18
+bristle_count = 5
+bristle_spacing = 0.13
+gap_strength = 0.2
+curvature = 0.1
+rotation_jitter = 0.12
+anisotropy = 1.5
+opacity_response = 1.1
+size_scale = 1.1
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_ylnb8"]
+display_name = "Filbert"
+shape = 3
+edge_softness = 0.28
+tip_bias = 0.3
+bristle_spacing = 0.16
+curvature = 0.22
+jitter_amount = 0.15
+rotation_jitter = 0.12
+anisotropy = 1.25
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_4k8th"]
+display_name = "Rake"
+shape = 4
+coverage_mode = 1
+edge_softness = 0.22
+tip_bias = -0.08
+bristle_count = 6
+bristle_spacing = 0.2
+gap_strength = 0.42
+curvature = 0.05
+jitter_amount = 0.12
+rotation_jitter = 0.15
+anisotropy = 1.35
+opacity_response = 1.2
+size_scale = 1.05
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_86ygi"]
+display_name = "Splatter"
+shape = 6
+coverage_mode = 1
+edge_softness = 0.45
+bristle_count = 7
+bristle_spacing = 0.24
+gap_strength = 0.45
+curvature = 0.18
+jitter_amount = 0.35
+rotation_jitter = 0.18
+size_scale = 1.2
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_sptfc"]
+brush_profile = 1
+size_tier_mask = 1
+priority = 10
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_xnipy"]
+brush_profile = 3
+size_tier_mask = 2
+priority = 9
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_ovtu5"]
+brush_profile = 2
+size_tier_mask = 4
+priority = 8
+
+[sub_resource type="PainterlyMaterial" id="PainterlyMaterial_13qpb"]
+brush_scale = 1.35
+brush_opacity = 0.8
+brush_softness = 2.065
+brush_rotation_jitter = 0.035000008
+brush_profiles = Array[PainterlyBrushProfile]([SubResource("PainterlyBrushProfile_uows2"), SubResource("PainterlyBrushProfile_jyu13"), SubResource("PainterlyBrushProfile_d1tnr"), SubResource("PainterlyBrushProfile_ylnb8"), SubResource("PainterlyBrushProfile_4k8th"), SubResource("PainterlyBrushProfile_86ygi")])
+brush_rules = Array[PainterlyBrushRule]([SubResource("PainterlyBrushRule_sptfc"), SubResource("PainterlyBrushRule_xnipy"), SubResource("PainterlyBrushRule_ovtu5")])
+temporal_stability = 0.9
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_o40l3"]
+display_name = "Gaussian"
+shape = 0
+coverage_mode = 0
+edge_softness = 0.3
+bristle_count = 1
+bristle_spacing = 0.0
+gap_strength = 0.0
+curvature = 0.0
+jitter_amount = 0.0
+rotation_jitter = 0.0
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_ihbyj"]
+display_name = "Round Dab"
+edge_softness = 0.35
+gap_strength = 0.12
+curvature = 0.12
+jitter_amount = 0.1
+rotation_jitter = 0.08
+size_scale = 0.95
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_ifqpo"]
+display_name = "Flat Brush"
+shape = 2
+edge_softness = 0.24
+tip_bias = 0.18
+bristle_count = 5
+bristle_spacing = 0.13
+gap_strength = 0.2
+curvature = 0.1
+rotation_jitter = 0.12
+anisotropy = 1.5
+opacity_response = 1.1
+size_scale = 1.1
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_2bxju"]
+display_name = "Filbert"
+shape = 3
+edge_softness = 0.28
+tip_bias = 0.3
+bristle_spacing = 0.16
+curvature = 0.22
+jitter_amount = 0.15
+rotation_jitter = 0.12
+anisotropy = 1.25
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_sptfc"]
+display_name = "Rake"
+shape = 4
+coverage_mode = 1
+edge_softness = 0.22
+tip_bias = -0.08
+bristle_count = 6
+bristle_spacing = 0.2
+gap_strength = 0.42
+curvature = 0.05
+jitter_amount = 0.12
+rotation_jitter = 0.15
+anisotropy = 1.35
+opacity_response = 1.2
+size_scale = 1.05
+
+[sub_resource type="PainterlyBrushProfile" id="PainterlyBrushProfile_xnipy"]
+display_name = "Splatter"
+shape = 6
+coverage_mode = 1
+edge_softness = 0.45
+bristle_count = 7
+bristle_spacing = 0.24
+gap_strength = 0.45
+curvature = 0.18
+jitter_amount = 0.35
+rotation_jitter = 0.18
+size_scale = 1.2
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_13qpb"]
+brush_profile = 1
+size_tier_mask = 1
+priority = 10
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_eghoi"]
+brush_profile = 3
+size_tier_mask = 2
+priority = 9
+
+[sub_resource type="PainterlyBrushRule" id="PainterlyBrushRule_xhaer"]
+brush_profile = 2
+size_tier_mask = 4
+priority = 8
+
+[sub_resource type="PainterlyMaterial" id="PainterlyMaterial_csw3h"]
+brush_scale = 1.35
+brush_opacity = 0.8
+brush_softness = 2.065
+brush_rotation_jitter = 0.035000008
+brush_profiles = Array[PainterlyBrushProfile]([SubResource("PainterlyBrushProfile_o40l3"), SubResource("PainterlyBrushProfile_ihbyj"), SubResource("PainterlyBrushProfile_ifqpo"), SubResource("PainterlyBrushProfile_2bxju"), SubResource("PainterlyBrushProfile_sptfc"), SubResource("PainterlyBrushProfile_xnipy")])
+brush_rules = Array[PainterlyBrushRule]([SubResource("PainterlyBrushRule_13qpb"), SubResource("PainterlyBrushRule_eghoi"), SubResource("PainterlyBrushRule_xhaer")])
+temporal_stability = 0.9
+
+[node name="LightingTest" type="Node3D"]
+script = ExtResource("1_6ewva")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+mesh = SubResource("BoxMesh_floor")
+surface_material_override/0 = SubResource("FloorMaterial")
+
+[node name="ShadowCaster" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4, 0)
+mesh = SubResource("BoxMesh_caster")
+surface_material_override/0 = SubResource("CasterMaterial")
+
+[node name="Cabin" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(50, 0, 0, 0, -1.1928164, 49.98577, 0, -49.98577, -1.1928164, 18.22118, 28.796387, -42.12814)
+splat_asset = ExtResource("2_6kl7x")
+quality/preset = 3
+quality/lod_bias = 0.75
+quality/max_splat_count = 5000000
+painterly/edge_threshold = 0.67
+painterly/stroke_opacity = 1.0
+painterly/stroke_width = 0.5
+painterly/temporal_blend = 1.0
+painterly/seed = 1343
+painterly/material = SubResource("PainterlyMaterial_2bxju")
+rendering/cast_shadow = true
+rendering/opacity = 0.17
+rendering/wind_override_enabled = true
+rendering/color_grading = SubResource("ColorGradingResource_w07b1")
+debug/show_tile_grid = false
+debug/show_density_heatmap = false
+debug/debug_draw_mode = 3
+debug/show_residency_hud = false
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9, 0.44, 0, -0.44, 0.9, 0, 10, 15)
+current = true
+fov = 60.0
+script = ExtResource("2_jiwm1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 20, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 0.75
+light_indirect_energy = 0.25
+
+[node name="Indicator" type="MeshInstance3D" parent="DirectionalLight3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_indicator")
+surface_material_override/0 = SubResource("IndicatorMat_White")
+
+[node name="Arrow" type="MeshInstance3D" parent="DirectionalLight3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9.5)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_arrow")
+surface_material_override/0 = SubResource("IndicatorMat_White")
+
+[node name="OmniRed" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3, 0)
+light_color = Color(1, 0.2, 0.1, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 12.0
+omni_attenuation = 1.5
+
+[node name="Indicator" type="MeshInstance3D" parent="OmniRed"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_indicator")
+surface_material_override/0 = SubResource("IndicatorMat_Red")
+
+[node name="OmniGreen" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 3, 4.33)
+light_color = Color(0.2, 1, 0.3, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 12.0
+omni_attenuation = 1.5
+
+[node name="Indicator" type="MeshInstance3D" parent="OmniGreen"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_indicator")
+surface_material_override/0 = SubResource("IndicatorMat_Green")
+
+[node name="OmniBlue" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 3, -4.33)
+light_color = Color(0.2, 0.4, 1, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 12.0
+omni_attenuation = 1.5
+
+[node name="Indicator" type="MeshInstance3D" parent="OmniBlue"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_indicator")
+surface_material_override/0 = SubResource("IndicatorMat_Blue")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 12, 0)
+light_color = Color(1, 1, 0.8, 1)
+light_energy = 7.5
+shadow_enabled = true
+spot_range = 20.0
+spot_attenuation = 2.0
+spot_angle = 15.0
+spot_angle_attenuation = 2.0
+
+[node name="Indicator" type="MeshInstance3D" parent="SpotLight3D"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_indicator")
+surface_material_override/0 = SubResource("IndicatorMat_Yellow")
+
+[node name="Arrow" type="MeshInstance3D" parent="SpotLight3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_arrow")
+surface_material_override/0 = SubResource("IndicatorMat_Yellow")
+
+[node name="WhiteSpots" type="Node3D" parent="."]
+
+[node name="WhiteSpot1" type="SpotLight3D" parent="WhiteSpots"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 15, 0)
+light_energy = 25.0
+spot_range = 25.0
+spot_angle = 40.0
+spot_angle_attenuation = 1.5
+
+[node name="WhiteSpot2" type="SpotLight3D" parent="WhiteSpots"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 10, 15, 10)
+light_energy = 25.0
+spot_range = 25.0
+spot_angle = 40.0
+spot_angle_attenuation = 1.5
+
+[node name="WhiteSpot3" type="SpotLight3D" parent="WhiteSpots"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -10, 15, 10)
+light_energy = 25.0
+spot_range = 25.0
+spot_angle = 40.0
+spot_angle_attenuation = 1.5
+
+[node name="WhiteSpot4" type="SpotLight3D" parent="WhiteSpots"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 10, 15, -10)
+light_energy = 25.0
+spot_range = 25.0
+spot_angle = 40.0
+spot_angle_attenuation = 1.5
+
+[node name="WhiteSpot5" type="SpotLight3D" parent="WhiteSpots"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -10, 15, -10)
+light_energy = 25.0
+spot_range = 25.0
+spot_angle = 40.0
+spot_angle_attenuation = 1.5
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Label" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 250.0
+offset_bottom = 200.0
+text = "Lighting Test (FPS Camera)
+WASD: Move, Mouse: Look
+Shift: Fast, ESC: Quit
+
+F1-F4: Toggle Lights
+F5-F9: Debug Modes"
+
+[node name="GaussianSplatNode3D" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.742278e-08, 0, -8.742278e-08, -1, -10.421262, 0, 0)
+splat_asset = ExtResource("4_6kl7x")
+painterly/material = SubResource("PainterlyMaterial_13qpb")
+
+[node name="GaussianSplatNode3D2" type="GaussianSplatNode3D" parent="."]
+transform = Transform3D(5, 0, 0, 0, -1.0927847e-06, -5, 0, 5, -1.0927847e-06, -153.80814, 0, 0)
+splat_asset = ExtResource("5_7ixgg")
+painterly/material = SubResource("PainterlyMaterial_csw3h")
+debug/show_tile_grid = false
+debug/show_density_heatmap = false
+debug/show_performance_hud = false
+debug/show_residency_hud = false

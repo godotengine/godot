@@ -24,10 +24,6 @@
 
 #include "hb-subset-instancer-iup.hh"
 
-#include "hb-bit-page.hh"
-
-using hb_iup_set_t = hb_bit_page_t;
-
 /* This file is a straight port of the following:
  *
  * https://github.com/fonttools/fonttools/blob/main/Lib/fontTools/varLib/iup.py
@@ -41,7 +37,7 @@ constexpr static unsigned MAX_LOOKBACK = 8;
 static void _iup_contour_bound_forced_set (const hb_array_t<const contour_point_t> contour_points,
                                            const hb_array_t<const int> x_deltas,
                                            const hb_array_t<const int> y_deltas,
-                                           hb_iup_set_t& forced_set, /* OUT */
+                                           hb_set_t& forced_set, /* OUT */
                                            double tolerance = 0.0)
 {
   unsigned len = contour_points.length;
@@ -140,7 +136,7 @@ static bool rotate_array (const hb_array_t<const T>& org_array,
 {
   unsigned n = org_array.length;
   if (!n) return true;
-  if (unlikely (!out.resize_dirty  (n)))
+  if (unlikely (!out.resize (n, false)))
     return false;
 
   unsigned item_size = hb_static_size (T);
@@ -154,10 +150,10 @@ static bool rotate_array (const hb_array_t<const T>& org_array,
   return true;
 }
 
-static bool rotate_set (const hb_iup_set_t& org_set,
+static bool rotate_set (const hb_set_t& org_set,
                         int k,
                         unsigned n,
-                        hb_iup_set_t& out)
+                        hb_set_t& out)
 {
   if (!n) return false;
   k %= n;
@@ -166,14 +162,14 @@ static bool rotate_set (const hb_iup_set_t& org_set,
 
   if (k == 0)
   {
-    out = org_set;
+    out.set (org_set);
   }
   else
   {
-    for (unsigned v : org_set)
+    for (auto v : org_set)
       out.add ((v + k) % n);
   }
-  return true;
+  return !out.in_error ();
 }
 
 /* Given two reference coordinates (start and end of contour_points array),
@@ -184,39 +180,32 @@ static bool _iup_segment (const hb_array_t<const contour_point_t> contour_points
                           const contour_point_t& p1, const contour_point_t& p2,
                           int p1_dx, int p2_dx,
                           int p1_dy, int p2_dy,
-			  double tolerance_sq,
                           hb_vector_t<double>& interp_x_deltas, /* OUT */
                           hb_vector_t<double>& interp_y_deltas /* OUT */)
 {
   unsigned n = contour_points.length;
-  if (unlikely (!interp_x_deltas.resize_dirty  (n) ||
-                !interp_y_deltas.resize_dirty  (n)))
+  if (unlikely (!interp_x_deltas.resize (n, false) ||
+                !interp_y_deltas.resize (n, false)))
     return false;
 
   for (unsigned j = 0; j < 2; j++)
   {
-    float contour_point_t::* xp;
     double x1, x2, d1, d2;
-    const int *in;
     double *out;
     if (j == 0)
     {
-      xp = &contour_point_t::x;
       x1 = static_cast<double> (p1.x);
       x2 = static_cast<double> (p2.x);
       d1 = p1_dx;
       d2 = p2_dx;
-      in = x_deltas.arrayZ;
       out = interp_x_deltas.arrayZ;
     }
     else
     {
-      xp = &contour_point_t::y;
       x1 = static_cast<double> (p1.y);
       x2 = static_cast<double> (p2.y);
       d1 = p1_dy;
       d2 = p2_dy;
-      in = y_deltas.arrayZ;
       out = interp_y_deltas.arrayZ;
     }
 
@@ -244,7 +233,7 @@ static bool _iup_segment (const hb_array_t<const contour_point_t> contour_points
     double scale = (d2 - d1) / (x2 - x1);
     for (unsigned i = 0; i < n; i++)
     {
-      double x = (double) (contour_points.arrayZ[i].*xp);
+      double x = (j == 0 ? static_cast<double> (contour_points.arrayZ[i].x) : static_cast<double> (contour_points.arrayZ[i].y));
       double d;
       if (x <= x1)
         d = d1;
@@ -254,9 +243,6 @@ static bool _iup_segment (const hb_array_t<const contour_point_t> contour_points
         d = d1 + (x - x1) * scale;
 
       out[i] = d;
-      double err = d - in[i];
-      if (err * err > tolerance_sq)
-	return false;
     }
   }
   return true;
@@ -268,13 +254,11 @@ static bool _can_iup_in_between (const hb_array_t<const contour_point_t> contour
                                  const contour_point_t& p1, const contour_point_t& p2,
                                  int p1_dx, int p2_dx,
                                  int p1_dy, int p2_dy,
-                                 double tolerance_sq,
-				 hb_vector_t<double> &interp_x_deltas, /* scratch */
-				 hb_vector_t<double> &interp_y_deltas /* scratch */)
+                                 double tolerance)
 {
+  hb_vector_t<double> interp_x_deltas, interp_y_deltas;
   if (!_iup_segment (contour_points, x_deltas, y_deltas,
                      p1, p2, p1_dx, p2_dx, p1_dy, p2_dy,
-		     tolerance_sq,
                      interp_x_deltas, interp_y_deltas))
     return false;
 
@@ -284,8 +268,8 @@ static bool _can_iup_in_between (const hb_array_t<const contour_point_t> contour
   {
     double dx = static_cast<double> (x_deltas.arrayZ[i]) - interp_x_deltas.arrayZ[i];
     double dy = static_cast<double> (y_deltas.arrayZ[i]) - interp_y_deltas.arrayZ[i];
-
-    if (dx * dx + dy * dy > tolerance_sq)
+  
+    if (sqrt (dx * dx + dy * dy) > tolerance)
       return false;
   }
   return true;
@@ -294,17 +278,15 @@ static bool _can_iup_in_between (const hb_array_t<const contour_point_t> contour
 static bool _iup_contour_optimize_dp (const contour_point_vector_t& contour_points,
                                       const hb_vector_t<int>& x_deltas,
                                       const hb_vector_t<int>& y_deltas,
-                                      const hb_iup_set_t& forced_set,
-                                      double tolerance_sq,
+                                      const hb_set_t& forced_set,
+                                      double tolerance,
                                       unsigned lookback,
                                       hb_vector_t<unsigned>& costs, /* OUT */
-                                      hb_vector_t<int>& chain, /* OUT */
-				      hb_vector_t<double> &interp_x_deltas_scratch,
-				      hb_vector_t<double> &interp_y_deltas_scratch)
+                                      hb_vector_t<int>& chain /* OUT */)
 {
   unsigned n = contour_points.length;
-  if (unlikely (!costs.resize_dirty  (n) ||
-                !chain.resize_dirty  (n)))
+  if (unlikely (!costs.resize (n, false) ||
+                !chain.resize (n, false)))
     return false;
 
   lookback = hb_min (lookback, MAX_LOOKBACK);
@@ -312,7 +294,7 @@ static bool _iup_contour_optimize_dp (const contour_point_vector_t& contour_poin
   for (unsigned i = 0; i < n; i++)
   {
     unsigned best_cost = (i == 0 ? 1 : costs.arrayZ[i-1] + 1);
-
+    
     costs.arrayZ[i] = best_cost;
     chain.arrayZ[i] = (i == 0 ? -1 : i - 1);
 
@@ -333,8 +315,7 @@ static bool _iup_contour_optimize_dp (const contour_point_vector_t& contour_poin
                                contour_points.arrayZ[p1], contour_points.arrayZ[i],
                                x_deltas.arrayZ[p1], x_deltas.arrayZ[i],
                                y_deltas.arrayZ[p1], y_deltas.arrayZ[i],
-                               tolerance_sq,
-			       interp_x_deltas_scratch, interp_y_deltas_scratch))
+                               tolerance))
       {
         best_cost = cost;
         costs.arrayZ[i] = best_cost;
@@ -352,8 +333,7 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
                                    const hb_array_t<const int> x_deltas,
                                    const hb_array_t<const int> y_deltas,
                                    hb_array_t<bool> opt_indices, /* OUT */
-                                   double tolerance,
-				   iup_scratch_t &scratch)
+                                   double tolerance = 0.0)
 {
   unsigned n = contour_points.length;
   if (opt_indices.length != n ||
@@ -361,16 +341,12 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
       y_deltas.length != n)
     return false;
 
-  if (unlikely (n > hb_iup_set_t::PAGE_BITS))
-    return true; // Refuse to work
-
   bool all_within_tolerance = true;
-  double tolerance_sq = tolerance * tolerance;
   for (unsigned i = 0; i < n; i++)
   {
     int dx = x_deltas.arrayZ[i];
     int dy = y_deltas.arrayZ[i];
-    if ((double) dx * dx + (double) dy * dy > tolerance_sq)
+    if (sqrt ((double) dx * dx + (double) dy * dy) > tolerance)
     {
       all_within_tolerance = false;
       break;
@@ -406,11 +382,8 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
   }
 
   /* else, solve the general problem using Dynamic Programming */
-  hb_iup_set_t forced_set;
+  hb_set_t forced_set;
   _iup_contour_bound_forced_set (contour_points, x_deltas, y_deltas, forced_set, tolerance);
-
-  hb_vector_t<unsigned> &costs = scratch.costs.reset ();
-  hb_vector_t<int> &chain = scratch.chain.reset ();
 
   if (!forced_set.is_empty ())
   {
@@ -418,24 +391,24 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
     if (k < 0)
       return false;
 
-    hb_vector_t<int> &rot_x_deltas = scratch.rot_x_deltas.reset ();
-    hb_vector_t<int> &rot_y_deltas = scratch.rot_y_deltas.reset ();
-    contour_point_vector_t &rot_points = scratch.rot_points;
-    rot_points.reset ();
-    hb_iup_set_t rot_forced_set;
+    hb_vector_t<int> rot_x_deltas, rot_y_deltas;
+    contour_point_vector_t rot_points;
+    hb_set_t rot_forced_set;
     if (!rotate_array (contour_points, k, rot_points) ||
         !rotate_array (x_deltas, k, rot_x_deltas) ||
         !rotate_array (y_deltas, k, rot_y_deltas) ||
         !rotate_set (forced_set, k, n, rot_forced_set))
       return false;
 
+    hb_vector_t<unsigned> costs;
+    hb_vector_t<int> chain;
+
     if (!_iup_contour_optimize_dp (rot_points, rot_x_deltas, rot_y_deltas,
-                                   rot_forced_set, tolerance_sq, n,
-                                   costs, chain,
-				   scratch.interp_x_deltas, scratch.interp_y_deltas))
+                                   rot_forced_set, tolerance, n,
+                                   costs, chain))
       return false;
 
-    hb_iup_set_t solution;
+    hb_set_t solution;
     int index = n - 1;
     while (index != -1)
     {
@@ -450,7 +423,7 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
     for (unsigned i : solution)
       opt_indices.arrayZ[i] = true;
 
-    hb_vector_t<bool> &rot_indices = scratch.rot_indices.reset ();
+    hb_vector_t<bool> rot_indices;
     const hb_array_t<const bool> opt_indices_array (opt_indices.arrayZ, opt_indices.length);
     rotate_array (opt_indices_array, -k, rot_indices);
 
@@ -462,9 +435,9 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
     hb_vector_t<int> repeat_x_deltas, repeat_y_deltas;
     contour_point_vector_t repeat_points;
 
-    if (unlikely (!repeat_x_deltas.resize_dirty  (n * 2) ||
-                  !repeat_y_deltas.resize_dirty  (n * 2) ||
-                  !repeat_points.resize_dirty  (n * 2)))
+    if (unlikely (!repeat_x_deltas.resize (n * 2, false) ||
+                  !repeat_y_deltas.resize (n * 2, false) ||
+                  !repeat_points.resize (n * 2, false)))
       return false;
 
     unsigned contour_point_size = hb_static_size (contour_point_t);
@@ -480,18 +453,19 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
       hb_memcpy ((void *) (repeat_points.arrayZ + n), (const void *) contour_points.arrayZ, n * contour_point_size);
     }
 
+    hb_vector_t<unsigned> costs;
+    hb_vector_t<int> chain;
     if (!_iup_contour_optimize_dp (repeat_points, repeat_x_deltas, repeat_y_deltas,
-                                   forced_set, tolerance_sq, n,
-                                   costs, chain,
-				   scratch.interp_x_deltas, scratch.interp_y_deltas))
+                                   forced_set, tolerance, n,
+                                   costs, chain))
       return false;
 
     unsigned best_cost = n + 1;
     int len = costs.length;
-    hb_iup_set_t best_sol;
+    hb_set_t best_sol;
     for (int start = n - 1; start < len; start++)
     {
-      hb_iup_set_t solution;
+      hb_set_t solution;
       int i = start;
       int lookback = start - (int) n;
       while (i > lookback)
@@ -505,7 +479,7 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
         unsigned cost = costs.arrayZ[start] - cost_i;
         if (cost <= best_cost)
         {
-          best_sol = solution;
+          best_sol.set (solution);
           best_cost = cost;
         }
       }
@@ -522,14 +496,12 @@ bool iup_delta_optimize (const contour_point_vector_t& contour_points,
                          const hb_vector_t<int>& x_deltas,
                          const hb_vector_t<int>& y_deltas,
                          hb_vector_t<bool>& opt_indices, /* OUT */
-			 iup_scratch_t &scratch,
                          double tolerance)
 {
   if (!opt_indices.resize (contour_points.length))
       return false;
 
-  hb_vector_t<unsigned> &end_points = scratch.end_points.reset ();
-
+  hb_vector_t<unsigned> end_points;
   unsigned count = contour_points.length;
   if (unlikely (!end_points.alloc (count)))
     return false;
@@ -552,8 +524,7 @@ bool iup_delta_optimize (const contour_point_vector_t& contour_points,
                                 x_deltas.as_array ().sub_array (start, len),
                                 y_deltas.as_array ().sub_array (start, len),
                                 opt_indices.as_array ().sub_array (start, len),
-                                tolerance,
-				scratch))
+                                tolerance))
       return false;
     start = end + 1;
   }

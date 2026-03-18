@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://modules/gaussian_splatting/tests/painterly_scenes/painterly_demo_scene.gd" type="Script" id="1"]
+
+[node name="AnimatedPainterlyDemo" type="Node2D"]
+script = ExtResource("1")
+definition_path = "res://modules/gaussian_splatting/tests/painterly_scenes/animated_orbit.json"
+animate_camera = true
+animation_duration = 4.0
+output_size = Vector2i(512, 512)

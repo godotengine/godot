@@ -57,7 +57,6 @@
 
 
 
-#include <cstdlib>
 #include <string>
 #include <memory.h>
 #include "tvgCompressor.h"

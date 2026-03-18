@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include <cstdlib>
 #include <cstring>
 #include "tvgSvgUtil.h"
 

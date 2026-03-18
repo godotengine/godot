@@ -38,14 +38,15 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-
 /* This module contains functions for scanning a compiled pattern and
 collecting data (e.g. minimum matching length). */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "pcre2_internal.h"
-
-
 
 /* The maximum remembered capturing brackets minimum. */
 
@@ -138,7 +139,7 @@ for (;;)
   PCRE2_UCHAR op;
   PCRE2_SPTR cs, ce;
 
-  if (branchlength >= (int)UINT16_MAX)
+  if (branchlength >= UINT16_MAX)
     {
     branchlength = UINT16_MAX;
     cc = nextbranch;
@@ -175,7 +176,7 @@ for (;;)
       cc += 1 + LINK_SIZE;
       break;
       }
-    PCRE2_FALLTHROUGH /* Fall through */
+    /* Fall through */
 
     case OP_ONCE:
     case OP_SCRIPT_RUN:
@@ -252,7 +253,7 @@ for (;;)
     case OP_ASSERT_SCS:
     case OP_ASSERTBACK_NA:
     do cc += GET(cc, 1); while (*cc == OP_ALT);
-    PCRE2_FALLTHROUGH /* Fall through */
+    /* Fall through */
 
     /* Skip over things that don't match chars */
 
@@ -352,7 +353,7 @@ for (;;)
     case OP_PROP:
     case OP_NOTPROP:
     cc += 2;
-    PCRE2_FALLTHROUGH /* Fall through */
+    /* Fall through */
 
     case OP_NOT_DIGIT:
     case OP_DIGIT:
@@ -433,7 +434,7 @@ for (;;)
       case OP_CRMINPLUS:
       case OP_CRPOSPLUS:
       branchlength++;
-      PCRE2_FALLTHROUGH /* Fall through */
+      /* Fall through */
 
       case OP_CRSTAR:
       case OP_CRMINSTAR:
@@ -627,11 +628,11 @@ for (;;)
       break;
       }
 
-    /* Take care not to overflow: (1) min and d are ints, so check that their
-    product is not greater than INT_MAX. (2) branchlength is limited to
-    UINT16_MAX (checked at the top of the loop). */
+     /* Take care not to overflow: (1) min and d are ints, so check that their
+     product is not greater than INT_MAX. (2) branchlength is limited to
+     UINT16_MAX (checked at the top of the loop). */
 
-    if ((d > 0 && (INT_MAX/d) < min) || (int)UINT16_MAX - branchlength < min*d)
+    if ((d > 0 && (INT_MAX/d) < min) || UINT16_MAX - branchlength < min*d)
       branchlength = UINT16_MAX;
     else branchlength += min * d;
     break;
@@ -752,18 +753,14 @@ for (;;)
     /* This should not occur: we list all opcodes explicitly so that when
     new ones get added they are properly considered. */
 
-    /* LCOV_EXCL_START */
     default:
     PCRE2_DEBUG_UNREACHABLE();
     return -3;
-    /* LCOV_EXCL_STOP */
     }
   }
 
-/* LCOV_EXCL_START */
 PCRE2_DEBUG_UNREACHABLE(); /* Control should never reach here */
 return -3;                 /* Avoid compiler warnings */
-/* LCOV_EXCL_STOP */
 }
 
 
@@ -1307,7 +1304,7 @@ do
 
         case OP_PROP:
         if (ncode[1] != PT_CLIST) break;
-        PCRE2_FALLTHROUGH /* Fall through */
+        /* Fall through */
         case OP_ANYNL:
         case OP_CHAR:
         case OP_CHARI:
@@ -1331,7 +1328,7 @@ do
         tcode = ncode;
         continue;   /* With the following significant opcode */
         }
-      PCRE2_FALLTHROUGH /* Fall through */
+      /* Fall through */
 
       /* For a group bracket or a positive assertion without an immediately
       following mandatory setting, recurse to set bits from within the
@@ -1459,7 +1456,7 @@ do
 
       case OP_EXACT:
       tcode += IMM2_SIZE;
-      PCRE2_FALLTHROUGH /* Fall through */
+      /* Fall through */
       case OP_CHAR:
       case OP_PLUS:
       case OP_MINPLUS:
@@ -1470,7 +1467,7 @@ do
 
       case OP_EXACTI:
       tcode += IMM2_SIZE;
-      PCRE2_FALLTHROUGH /* Fall through */
+      /* Fall through */
       case OP_CHARI:
       case OP_PLUSI:
       case OP_MINPLUSI:
@@ -1490,10 +1487,10 @@ do
       SET_BIT(CHAR_SPACE);
 
       /* For the 16-bit and 32-bit libraries (which can never be EBCDIC), set
-      the bits for NBSP and for code units >= 255, independently of UTF. */
+      the bits for 0xA0 and for code units >= 255, independently of UTF. */
 
 #if PCRE2_CODE_UNIT_WIDTH != 8
-      SET_BIT(CHAR_NBSP);
+      SET_BIT(0xA0);
       SET_BIT(0xFF);
 #else
       /* For the 8-bit library in UTF-8 mode, set the bits for the first code
@@ -1509,9 +1506,12 @@ do
         }
       else
 #endif
-      /* For the 8-bit library not in UTF-8 mode, set the bit for NBSP. */
+      /* For the 8-bit library not in UTF-8 mode, set the bit for 0xA0, unless
+      the code is EBCDIC. */
         {
-        SET_BIT(CHAR_NBSP);
+#ifndef EBCDIC
+        SET_BIT(0xA0);
+#endif  /* Not EBCDIC */
         }
 #endif  /* 8-bit support */
 
@@ -1606,8 +1606,7 @@ do
       case OP_TYPEUPTO:
       case OP_TYPEMINUPTO:
       case OP_TYPEPOSUPTO:
-      tcode += IMM2_SIZE;
-      PCRE2_FALLTHROUGH /* Fall through */
+      tcode += IMM2_SIZE;  /* Fall through */
 
       case OP_TYPESTAR:
       case OP_TYPEMINSTAR:
@@ -1627,10 +1626,10 @@ do
         SET_BIT(CHAR_SPACE);
 
         /* For the 16-bit and 32-bit libraries (which can never be EBCDIC), set
-        the bits for NBSP and for code units >= 255, independently of UTF. */
+        the bits for 0xA0 and for code units >= 255, independently of UTF. */
 
 #if PCRE2_CODE_UNIT_WIDTH != 8
-        SET_BIT(CHAR_NBSP);
+        SET_BIT(0xA0);
         SET_BIT(0xFF);
 #else
         /* For the 8-bit library in UTF-8 mode, set the bits for the first code
@@ -1646,9 +1645,12 @@ do
           }
         else
 #endif
-        /* For the 8-bit library not in UTF-8 mode, set the bit for NBSP. */
+        /* For the 8-bit library not in UTF-8 mode, set the bit for 0xA0, unless
+        the code is EBCDIC. */
           {
-          SET_BIT(CHAR_NBSP);
+#ifndef EBCDIC
+          SET_BIT(0xA0);
+#endif  /* Not EBCDIC */
           }
 #endif  /* 8-bit support */
         break;
@@ -1777,11 +1779,9 @@ do
           case XCL_END:
           goto HANDLE_CLASSMAP;
 
-          /* LCOV_EXCL_START */
           default:
           PCRE2_DEBUG_UNREACHABLE();
           return SSB_UNKNOWN;   /* Internal error, should not occur */
-          /* LCOV_EXCL_STOP */
           }
         }
 #endif  /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8 */
@@ -1790,7 +1790,7 @@ do
       /* It seems that the fall through comment must be outside the #ifdef if
       it is to avoid the gcc compiler warning. */
 
-      PCRE2_FALLTHROUGH /* Fall through */
+      /* Fall through */
 
       /* Enter here for a negative non-XCLASS. In the 8-bit library, if we are
       in UTF mode, any byte with a value >= 0xc4 is a potentially valid starter
@@ -1805,15 +1805,14 @@ do
         re->start_bitmap[24] |= 0xf0;            /* Bits for 0xc4 - 0xc8 */
         memset(re->start_bitmap+25, 0xff, 7);    /* Bits for 0xc9 - 0xff */
         }
-      PCRE2_FALLTHROUGH /* Fall through */
 #elif PCRE2_CODE_UNIT_WIDTH != 8
       SET_BIT(0xFF);                             /* For characters >= 255 */
-      PCRE2_FALLTHROUGH /* Fall through */
 #endif
+      /* Fall through */
 
       /* Enter here for a positive non-XCLASS. If we have fallen through from
       an XCLASS, classmap will already be set; just advance the code pointer.
-      Otherwise, set up classmap for a non-XCLASS and advance past it. */
+      Otherwise, set up classmap for a a non-XCLASS and advance past it. */
 
       case OP_CLASS:
       if (*tcode == OP_XCLASS) tcode += GET(tcode, 1); else
@@ -1931,13 +1930,11 @@ if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
   {
   int depth = 0;
   int rc = set_start_bits(re, code, utf, ucp, &depth);
-  /* LCOV_EXCL_START */
   if (rc == SSB_UNKNOWN)
     {
     PCRE2_DEBUG_UNREACHABLE();
     return 1;
     }
-  /* LCOV_EXCL_STOP */
 
   /* If a list of starting code units was set up, scan the list to see if only
   one or two were listed. Having only one listed is rare because usually a
@@ -2005,16 +2002,6 @@ if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
 
           if (d != a) goto DONE;   /* Not the other case of a */
           b = c;                   /* Save second in b */
-
-#ifdef EBCDIC
-          /* To match ASCII (which puts the uppercase one in a), swap a & b
-          if needed. This doesn't really matter, but neatens the tests. */
-          if (TABLE_GET((unsigned int)a, re->tables + lcc_offset, a) == a)
-            {
-            b = a;
-            a = c;
-            }
-#endif
           }
         else goto DONE;   /* More than two characters found */
         }
@@ -2062,20 +2049,16 @@ if ((re->flags & (PCRE2_MATCH_EMPTY|PCRE2_HASACCEPT)) == 0 &&
     case -1:  /* \C in UTF mode or over-complex regex */
     break;    /* Leave minlength unchanged (will be zero) */
 
-    /* LCOV_EXCL_START */
     case -2:
     PCRE2_DEBUG_UNREACHABLE();
     return 2; /* missing capturing bracket */
-    /* LCOV_EXCL_STOP */
 
-    /* LCOV_EXCL_START */
     case -3:
     PCRE2_DEBUG_UNREACHABLE();
     return 3; /* unrecognized opcode */
-    /* LCOV_EXCL_STOP */
 
     default:
-    re->minlength = (min > (int)UINT16_MAX)? (int)UINT16_MAX : min;
+    re->minlength = (min > UINT16_MAX)? UINT16_MAX : min;
     break;
     }
   }

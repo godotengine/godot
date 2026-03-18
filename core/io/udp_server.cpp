@@ -30,8 +30,6 @@
 
 #include "udp_server.h"
 
-#include "core/object/class_db.h"
-
 void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
@@ -101,7 +99,7 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -109,8 +107,7 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
-	NetSocket::Address addr(p_bind_address, p_port);
-	err = _sock->bind(addr);
+	err = _sock->bind(p_bind_address, p_port);
 
 	if (err != OK) {
 		stop();
@@ -120,9 +117,9 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 }
 
 int UDPServer::get_local_port() const {
-	NetSocket::Address addr;
-	_sock->get_socket_address(&addr);
-	return addr.port();
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
 }
 
 bool UDPServer::is_listening() const {

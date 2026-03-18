@@ -121,10 +121,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 }
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
-	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create_tcp); // TCP is the default protocol. Platforms/modules can add more.
-#ifdef UNIX_ENABLED
-	register_uri_handler("unix://", RemoteDebuggerPeerTCP::create_unix);
-#endif
+	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.is_empty()) {
 		return;
 	}
@@ -135,10 +132,10 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		OS::get_singleton()->initialize_debugging();
 	} else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
-		CreatePeerFunc *create_fn = protocols.getptr(proto);
-		ERR_FAIL_NULL_MSG(create_fn, vformat("Invalid protocol: %s.", proto));
-
-		RemoteDebuggerPeer *peer = (*create_fn)(p_uri);
+		if (!protocols.has(proto)) {
+			return;
+		}
+		RemoteDebuggerPeer *peer = protocols[proto](p_uri);
 		if (!peer) {
 			return;
 		}

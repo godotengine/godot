@@ -1,0 +1,9 @@
+{
+  "fixture_set": "godot-core-minimal",
+  "version": "1.0.0",
+  "description": "Deterministic, tiny fixture assets for benchmark/QA smoke and CI preflight.",
+  "assets": {
+    "default_world": "res://tests/fixtures/test_splats.gsplatworld",
+    "default_asset": "res://tests/fixtures/test_splats.ply"
+  }
+}

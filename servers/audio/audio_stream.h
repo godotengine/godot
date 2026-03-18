@@ -31,11 +31,12 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.h"
+#include "scene/property_list_helper.h"
+#include "servers/audio_server.h"
+
+#include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
-#include "scene/property_list_helper.h"
-#include "servers/audio/audio_server.h"
 
 class AudioStream;
 
@@ -80,11 +81,11 @@ class AudioStreamPlayback : public RefCounted {
 protected:
 	static void _bind_methods();
 	PackedVector2Array _mix_audio_bind(float p_rate_scale, int p_frames);
-	GDVIRTUAL1_REQUIRED(_start, double)
-	GDVIRTUAL0_REQUIRED(_stop)
-	GDVIRTUAL0RC_REQUIRED(bool, _is_playing)
+	GDVIRTUAL1(_start, double)
+	GDVIRTUAL0(_stop)
+	GDVIRTUAL0RC(bool, _is_playing)
 	GDVIRTUAL0RC(int, _get_loop_count)
-	GDVIRTUAL0RC_REQUIRED(double, _get_playback_position)
+	GDVIRTUAL0RC(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R_REQUIRED(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
@@ -169,7 +170,7 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
+	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
@@ -323,9 +324,6 @@ public:
 
 	void set_streams_count(int p_count);
 	int get_streams_count() const;
-
-	void set_random_pitch_semitones(float p_pitch_semitones);
-	float get_random_pitch_semitones() const;
 
 	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;

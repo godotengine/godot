@@ -35,21 +35,14 @@
 #include "../Include/Common.h"
 #include "../Include/PoolAlloc.h"
 
-// Mostly here for target that do not support threads such as WASI.
-#ifdef DISABLE_THREAD_SUPPORT
-#define THREAD_LOCAL 
-#else
-#define THREAD_LOCAL thread_local
-#endif
-
 namespace glslang {
 
 namespace {
-THREAD_LOCAL TPoolAllocator* threadPoolAllocator = nullptr;
+thread_local TPoolAllocator* threadPoolAllocator = nullptr;
 
 TPoolAllocator* GetDefaultThreadPoolAllocator()
 {
-    THREAD_LOCAL TPoolAllocator defaultAllocator;
+    thread_local TPoolAllocator defaultAllocator;
     return &defaultAllocator;
 }
 } // anonymous namespace

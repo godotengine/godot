@@ -32,7 +32,7 @@
 
 
 /* buffer var allocations, used during the normalization process */
-#define normalizer_glyph_index()	var1.u32
+#define glyph_index()	var1.u32
 
 struct hb_ot_shape_plan_t;
 

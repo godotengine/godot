@@ -30,9 +30,6 @@
 
 #include "sky.h"
 
-#include "core/object/class_db.h"
-#include "servers/rendering/rendering_server.h"
-
 void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);
 
@@ -49,7 +46,7 @@ Sky::RadianceSize Sky::get_radiance_size() const {
 
 void Sky::set_process_mode(ProcessMode p_mode) {
 	mode = p_mode;
-	RS::get_singleton()->sky_set_mode(sky, RSE::SkyMode(mode));
+	RS::get_singleton()->sky_set_mode(sky, RS::SkyMode(mode));
 }
 
 Sky::ProcessMode Sky::get_process_mode() const {
@@ -108,5 +105,5 @@ Sky::Sky() {
 
 Sky::~Sky() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free_rid(sky);
+	RS::get_singleton()->free(sky);
 }

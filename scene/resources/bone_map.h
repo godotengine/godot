@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/resources/skeleton_profile.h"
+#include "skeleton_profile.h"
 
 class BoneMap : public Resource {
 	GDCLASS(BoneMap, Resource);

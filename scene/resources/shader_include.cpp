@@ -30,9 +30,6 @@
 
 #include "shader_include.h"
 
-#include "core/io/file_access.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "servers/rendering/shader_preprocessor.h"
 
 void ShaderInclude::_dependency_changed() {
@@ -123,7 +120,8 @@ bool ResourceFormatLoaderShaderInclude::handles_type(const String &p_type) const
 }
 
 String ResourceFormatLoaderShaderInclude::get_resource_type(const String &p_path) const {
-	if (p_path.has_extension("gdshaderinc")) {
+	String extension = p_path.get_extension().to_lower();
+	if (extension == "gdshaderinc") {
 		return "ShaderInclude";
 	}
 	return "";

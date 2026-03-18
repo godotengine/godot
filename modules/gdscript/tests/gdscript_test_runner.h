@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include "../gdscript.h"
+
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
-#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 

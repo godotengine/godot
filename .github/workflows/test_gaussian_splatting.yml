@@ -1,0 +1,336 @@
+name: Gaussian Splatting Tests
+
+on:
+  push:
+    branches: [ main, develop, feat/*, phase* ]
+    paths:
+      - 'modules/gaussian_splatting/**'
+      - 'test_data/**'
+      - '.github/workflows/test_gaussian_splatting.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ply
+          - pipeline
+          - sorting
+          - runtime
+          - module
+          - qa
+
+jobs:
+  # Fast tests using pre-built Docker image
+  docker-tests:
+    name: Docker Tests (Fast)
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3  # Note: 4.5 not available yet, using 4.3 for compatibility
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      run: |
+        apt-get update
+        apt-get install -y python3-pip python3-numpy python3-pil
+
+    - name: Import Godot project
+      run: |
+        mkdir -p ~/.config/godot
+        mkdir -p ~/.local/share/godot
+        godot --headless --verbose --import --path . --quit
+
+    - name: Generate test data
+      run: |
+        cd test_data
+        python3 generate_test_data.py
+
+    - name: Run unit tests
+      run: |
+        if godot --help 2>&1 | grep -q -- "--test"; then
+          godot --headless --path . --test --test-case="*GaussianSplatting*"
+        else
+          echo "Godot binary does not support --test; running Python unit fallback."
+          python3 tests/test_gpu_pipeline_sim.py
+        fi
+
+    - name: Run integration tests
+      run: |
+        failed=0
+        ran=0
+        for test_file in test_data/test_*.gd tests/test_*.gd; do
+          if [ -f "$test_file" ]; then
+            ran=1
+            echo "Running test: $test_file"
+            if ! timeout 30 godot --headless --path . --script "$test_file"; then
+              echo "Test $test_file failed"
+              failed=1
+            fi
+          fi
+        done
+        if [ "$ran" -eq 0 ]; then
+          echo "No integration tests found (expected test_data/test_*.gd or tests/test_*.gd)."
+          exit 1
+        fi
+        exit $failed
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-test-results
+        path: |
+          test_data/test_results.json
+          test_data/*.log
+
+  # Tests with module compilation (slower but more thorough)
+  compiled-module-tests:
+    name: Module Compilation Tests
+    strategy:
+      matrix:
+        include:
+          - os_name: ubuntu-latest
+            runner: ubuntu-latest
+          - os_name: windows-self-hosted
+            runner: [self-hosted, Windows, X64, godotgs]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pillow pytest pytest-cov
+
+    - name: Setup build tools (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install scons -y
+        choco install vulkan-sdk -y
+      shell: cmd
+
+    - name: Setup build tools (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          scons \
+          pkg-config \
+          libx11-dev \
+          libxcursor-dev \
+          libxinerama-dev \
+          libxi-dev \
+          libxrandr-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          libasound2-dev \
+          libpulse-dev \
+          libudev-dev \
+          libvulkan-dev \
+          mesa-vulkan-drivers
+
+    - name: Cache Godot build
+      uses: actions/cache@v3
+      with:
+        path: |
+          bin
+          .scons_cache
+          modules/gaussian_splatting/obj
+        key: ${{ runner.os }}-godot-${{ hashFiles('modules/gaussian_splatting/**/*.cpp', 'modules/gaussian_splatting/**/*.h') }}
+        restore-keys: |
+          ${{ runner.os }}-godot-
+
+    - name: Build Godot with module (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        scons platform=windows tools=yes tests=yes target=editor gs_native_arch=no -j12
+      shell: cmd
+
+    - name: Build Godot with module (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        scons platform=linuxbsd tools=yes tests=yes target=editor gs_native_arch=no -j2
+      shell: bash
+
+    - name: Generate test data
+      run: |
+        cd test_data
+        python generate_test_data.py
+
+    - name: Setup virtual display (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        export DISPLAY=:99
+        sudo Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+
+    - name: Run compiled tests
+      env:
+        DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
+      shell: bash
+      run: |
+        cd test_data
+        TEST_CATEGORY="${{ github.event.inputs.test_category || 'all' }}"
+        case "$TEST_CATEGORY" in
+          all)
+            python run_all_tests.py
+            ;;
+          ply|pipeline|sorting|runtime|module|qa)
+            python run_all_tests.py --category "$TEST_CATEGORY"
+            ;;
+          *)
+            echo "❌ Unsupported test category: $TEST_CATEGORY"
+            exit 1
+            ;;
+        esac
+
+    - name: Upload compiled test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: compiled-test-results-${{ matrix.os_name }}
+        path: |
+          test_data/test_results.json
+          test_data/benchmark_results.json
+          test_data/visual_quality_results.json
+
+  # Lightweight tests for external tools (ChatGPT Codex, etc)
+  external-tool-tests:
+    name: External Tool Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pillow pytest pytest-cov black flake8 mypy
+
+    - name: Download pre-built Godot binary
+      run: |
+        # Download official Godot 4.3 binary for testing (4.5 binary may not be in Docker repos yet)
+        wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+        unzip -q Godot_v4.3-stable_linux.x86_64.zip
+        chmod +x Godot_v4.3-stable_linux.x86_64
+        sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+
+    - name: Verify Godot installation
+      run: |
+        godot --version
+
+    - name: Run Python unit tests
+      run: |
+        python -m pytest -v tests/test_gpu_pipeline_sim.py
+
+    - name: Run static code analysis
+      run: |
+        # Lint Python test files
+        cd test_data
+        python -m flake8 .
+        python -m black --check .
+
+    - name: Generate test data
+      run: |
+        cd test_data
+        python generate_test_data.py
+
+    - name: Run headless smoke tests
+      run: |
+        # Simple smoke test that external tools can run
+        godot --headless --verbose --quit
+        echo "✅ Godot binary is accessible and functional"
+
+    - name: Test PLY file loading
+      run: |
+        cd test_data
+        python validate_ply_files.py
+
+    - name: Upload external test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: external-test-results
+        path: |
+          test_data/*.log
+
+  # Summary report
+  test-summary:
+    name: Test Summary
+    needs: [docker-tests, compiled-module-tests, external-tool-tests]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Generate summary
+      run: |
+        echo "# 🧪 Gaussian Splatting Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "## Test Execution Matrix" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Suite | Status | Runtime |" >> $GITHUB_STEP_SUMMARY
+        echo "|------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Docker Tests | ${{ needs.docker-tests.result == 'success' && '✅' || '❌' }} | Fast |" >> $GITHUB_STEP_SUMMARY
+        echo "| Compiled Tests | ${{ needs.compiled-module-tests.result == 'success' && '✅' || '⚠️' }} | Full |" >> $GITHUB_STEP_SUMMARY
+        echo "| External Tools | ${{ needs.external-tool-tests.result == 'success' && '✅' || '⚠️' }} | Quick |" >> $GITHUB_STEP_SUMMARY
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Key Metrics" >> $GITHUB_STEP_SUMMARY
+        echo "- 🚀 **Docker tests**: Pre-built binary, runs in ~5 minutes" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 **Compiled tests**: Full module build, comprehensive validation" >> $GITHUB_STEP_SUMMARY
+        echo "- 🤖 **External tests**: Compatible with ChatGPT Codex and other tools" >> $GITHUB_STEP_SUMMARY
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const dockerResult = '${{ needs.docker-tests.result }}';
+          const compiledResult = '${{ needs.compiled-module-tests.result }}';
+          const externalResult = '${{ needs.external-tool-tests.result }}';
+
+          let comment = '## 🧪 Test Results\n\n';
+          comment += '| Suite | Status |\n';
+          comment += '|-------|--------|\n';
+          comment += `| Docker Tests | ${dockerResult === 'success' ? '✅' : '❌'} |\n`;
+          comment += `| Compiled Tests | ${compiledResult === 'success' ? '✅' : '⚠️'} |\n`;
+          comment += `| External Tools | ${externalResult === 'success' ? '✅' : '⚠️'} |\n`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

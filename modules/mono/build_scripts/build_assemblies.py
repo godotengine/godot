@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
-
-from __future__ import annotations
+#!/usr/bin/python3
 
 import os
 import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
+from typing import List, Optional
 
 
 def find_dotnet_cli():
@@ -152,7 +151,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: list[str] | None = None):
+def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Optional[List[str]] = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -183,11 +182,13 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: lis
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
         # building with Mono's MSBuild. They must point to the batch files
         # in Mono's bin directory to make sure they are executed with Mono.
-        msbuild_env.update({
-            "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
-            "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
-            "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
-        })
+        msbuild_env.update(
+            {
+                "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
+                "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
+                "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
+            }
+        )
 
     # We want to control cwd when running msbuild, because that's where the search for global.json begins.
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)

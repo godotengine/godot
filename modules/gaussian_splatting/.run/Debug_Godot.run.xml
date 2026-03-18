@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Debug Godot" type="Native" factoryName="Native Application">
+    <option name="PROGRAM_PARAMS" value="--path &quot;C:/Projects/GodotGS/test_project&quot; --verbose" />
+    <option name="EXECUTABLE_PATH" value="C:/Projects/GodotGS/godot-source/bin/godot.windows.editor.x86_64.exe" />
+    <option name="WORKING_DIRECTORY" value="C:/Projects/GodotGS/godot-source" />
+    <option name="PASS_PARENT_ENVS_2" value="true" />
+    <option name="USE_EXTERNAL_CONSOLE" value="false" />
+    <envs>
+      <env name="GODOT_DEV" value="1" />
+    </envs>
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_Build Module" />
+    </method>
+  </configuration>
+</component>

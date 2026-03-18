@@ -1,0 +1,69 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/benchmark_unified.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/benchmark_results_panel.tscn" id="3"]
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="4"]
+[ext_resource type="GaussianSplatAsset" path="res://tests/fixtures/test_splats.ply" id="5"]
+
+[sub_resource type="Environment" id="1"]
+background_mode = 2
+ambient_light_source = 2
+ambient_light_energy = 0.6
+tonemap_exposure = 1.0
+adjustment_enabled = false
+glow_enabled = false
+
+[node name="BenchmarkUnified" type="Node3D"]
+script = ExtResource("1")
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("2")]
+
+[node name="BenchmarkResultsPanel" parent="." instance=ExtResource("3")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("1")
+
+[node name="StreamingWorld" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("4")
+quality/lod_bias = 0.75
+quality/max_splat_count = 10000000
+
+[node name="InstanceRoot" type="Node3D" parent="."]
+visible = false
+
+[node name="HeroEffectsAsset" type="GaussianSplatNode3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
+splat_asset = ExtResource("5")
+quality/preset = 2
+quality/lod_bias = 0.75
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 16, 45)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866026, -0.25, 0.433014, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 12, 0)
+light_energy = 1.15
+
+[node name="OmniLightA" type="OmniLight3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 8, 14)
+light_color = Color(1, 0.7, 0.55, 1)
+light_energy = 2.4
+omni_range = 35.0
+
+[node name="OmniLightB" type="OmniLight3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 10, 14)
+light_color = Color(0.55, 0.75, 1, 1)
+light_energy = 2.2
+omni_range = 35.0
+
+[node name="SpotLight" type="SpotLight3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 12, 0)
+spot_range = 55.0
+spot_angle = 48.0
+light_energy = 2.8
+light_color = Color(1, 0.95, 0.8, 1)

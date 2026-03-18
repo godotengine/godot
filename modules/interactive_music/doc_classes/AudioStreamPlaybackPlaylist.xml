@@ -4,7 +4,6 @@
 		Playback class used for [AudioStreamPlaylist].
 	</brief_description>
 	<description>
-		Playback component of [AudioStreamPlaylist]. Handles the playback of multiple [AudioStream]s in sequence.
 	</description>
 	<tutorials>
 	</tutorials>

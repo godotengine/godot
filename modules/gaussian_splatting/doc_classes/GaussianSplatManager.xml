@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Singleton manager coordinating module-wide Gaussian splatting state.
+	</brief_description>
+	<description>
+		GaussianSplatManager centralizes shared resources and runtime settings for the module, including GPU resource
+		lifecycle, performance telemetry, and cross-node coordination points used by GaussianSplatRenderer instances.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

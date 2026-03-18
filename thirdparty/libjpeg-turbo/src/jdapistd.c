@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2020, 2022-2025, D. R. Commander.
+ * Copyright (C) 2010, 2015-2020, 2022-2024, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -128,28 +128,19 @@ output_pass_setup(j_decompress_ptr cinfo)
       }
       /* Process some data */
       last_scanline = cinfo->output_scanline;
-      if (cinfo->data_precision <= 8) {
-        if (cinfo->main->process_data == NULL)
-          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      if (cinfo->data_precision <= 8)
         (*cinfo->main->process_data) (cinfo, (JSAMPARRAY)NULL,
                                       &cinfo->output_scanline, (JDIMENSION)0);
-      } else if (cinfo->data_precision <= 12) {
-        if (cinfo->main->process_data_12 == NULL)
-          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      else if (cinfo->data_precision <= 12)
         (*cinfo->main->process_data_12) (cinfo, (J12SAMPARRAY)NULL,
                                          &cinfo->output_scanline,
                                          (JDIMENSION)0);
-      } else {
 #ifdef D_LOSSLESS_SUPPORTED
-        if (cinfo->main->process_data_16 == NULL)
-          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
+      else
         (*cinfo->main->process_data_16) (cinfo, (J16SAMPARRAY)NULL,
                                          &cinfo->output_scanline,
                                          (JDIMENSION)0);
-#else
-        ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 #endif
-      }
       if (cinfo->output_scanline == last_scanline)
         return FALSE;           /* No progress made, must suspend */
     }
@@ -354,8 +345,6 @@ _jpeg_read_scanlines(j_decompress_ptr cinfo, _JSAMPARRAY scanlines,
 
   /* Process some data */
   row_ctr = 0;
-  if (cinfo->main->_process_data == NULL)
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
   (*cinfo->main->_process_data) (cinfo, scanlines, &row_ctr, max_lines);
   cinfo->output_scanline += row_ctr;
   return row_ctr;
@@ -408,8 +397,7 @@ read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
   void (*color_quantize) (j_decompress_ptr cinfo, _JSAMPARRAY input_buf,
                           _JSAMPARRAY output_buf, int num_rows) = NULL;
 
-  if (!master->using_merged_upsample && cinfo->cconvert &&
-      cinfo->cconvert->_color_convert) {
+  if (cinfo->cconvert && cinfo->cconvert->_color_convert) {
     color_convert = cinfo->cconvert->_color_convert;
     cinfo->cconvert->_color_convert = noop_convert;
     /* This just prevents UBSan from complaining about adding 0 to a NULL
@@ -418,8 +406,7 @@ read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
     scanlines = &dummy_row;
   }
 
-  if (cinfo->quantize_colors && cinfo->cquantize &&
-      cinfo->cquantize->_color_quantize) {
+  if (cinfo->cquantize && cinfo->cquantize->_color_quantize) {
     color_quantize = cinfo->cquantize->_color_quantize;
     cinfo->cquantize->_color_quantize = noop_quantize;
   }
@@ -704,8 +691,6 @@ _jpeg_read_raw_data(j_decompress_ptr cinfo, _JSAMPIMAGE data,
     ERREXIT(cinfo, JERR_BUFFER_SIZE);
 
   /* Decompress directly into user's buffer. */
-  if (cinfo->coef->_decompress_data == NULL)
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
   if (!(*cinfo->coef->_decompress_data) (cinfo, data))
     return 0;                   /* suspension forced, can do nothing more */
 

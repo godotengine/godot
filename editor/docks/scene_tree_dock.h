@@ -30,26 +30,22 @@
 
 #pragma once
 
-#include "editor/docks/editor_dock.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/script/script_create_dialog.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
 
 class CheckBox;
 class EditorData;
 class EditorSelection;
-class HBoxContainer;
 class MenuButton;
 class RenameDialog;
 class ReparentDialog;
-class Shader;
 class ShaderCreateDialog;
-class ShaderMaterial;
 class TextureRect;
-class VBoxContainer;
 
-class SceneTreeDock : public EditorDock {
-	GDCLASS(SceneTreeDock, EditorDock);
+class SceneTreeDock : public VBoxContainer {
+	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
 		TOOL_NEW,
@@ -59,10 +55,9 @@ class SceneTreeDock : public EditorDock {
 		TOOL_COPY,
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
-		TOOL_PASTE_AS_REPLACEMENT,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
-		TOOL_CHANGE_TYPE,
+		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_DETACH_SCRIPT,
@@ -105,9 +100,6 @@ class SceneTreeDock : public EditorDock {
 	bool reset_create_dialog = false;
 
 	int current_option = 0;
-
-	MarginContainer *main_mc = nullptr;
-
 	CreateDialog *create_dialog = nullptr;
 	RenameDialog *rename_dialog = nullptr;
 
@@ -131,8 +123,9 @@ class SceneTreeDock : public EditorDock {
 	HBoxContainer *button_hb = nullptr;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree = nullptr;
-	Tree *remote_tree = nullptr;
+	Control *remote_tree = nullptr;
 
+	HBoxContainer *tool_hbc = nullptr;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
 
@@ -148,7 +141,7 @@ class SceneTreeDock : public EditorDock {
 	List<Node *> node_clipboard;
 	HashSet<Node *> node_clipboard_edited_scene_owned;
 	String clipboard_source_scene;
-	HashMap<String, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>>> clipboard_resource_remap;
+	HashMap<String, HashMap<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	ShaderCreateDialog *shader_create_dialog = nullptr;
@@ -169,6 +162,7 @@ class SceneTreeDock : public EditorDock {
 
 	LineEdit *filter = nullptr;
 	PopupMenu *filter_quick_menu = nullptr;
+	TextureRect *filter_icon = nullptr;
 
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_subresources = nullptr;
@@ -242,7 +236,8 @@ class SceneTreeDock : public EditorDock {
 	TreeItem *tree_item_inspected = nullptr;
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
-	Object *edited_object_at_drag_start = nullptr;
+	bool select_node_hovered_at_end_of_drag = false;
+	bool hovered_but_reparenting = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -274,17 +269,19 @@ class SceneTreeDock : public EditorDock {
 	void _filter_changed(const String &p_filter);
 	void _filter_gui_input(const Ref<InputEvent> &p_event);
 	void _filter_option_selected(int option);
-	void _append_filter_options_to(PopupMenu *p_menu);
+	void _append_filter_options_to(PopupMenu *p_menu, bool p_include_separator = true);
 
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
-	void _replace_with_branch_scene(const String &p_file, Node *p_base);
+#ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
+	void _perform_create_gaussian_splats(const Vector<String> &p_files, Node *p_parent, int p_pos);
+#endif
+	void _replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
 
 	void _update_create_root_dialog(bool p_initializing = false);
-	void _update_create_root_dialog_visibility();
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
@@ -307,7 +304,7 @@ class SceneTreeDock : public EditorDock {
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
-	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true);
+	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
 private:
 	static SceneTreeDock *singleton;
@@ -339,7 +336,7 @@ public:
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
 
-	void add_remote_tree_editor(Tree *p_remote);
+	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();
 	void hide_remote_tree();
 	void show_tab_buttons();
@@ -357,7 +354,6 @@ public:
 	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
-	void paste_node_as_replacement();
 	List<Node *> get_node_clipboard() const;
 
 	ScriptCreateDialog *get_script_create_dialog() {

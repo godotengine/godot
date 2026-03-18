@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptPropertiesGeneratorTests
 {
     [Fact]
-    public async Task ExportedFields()
+    public async void ExportedFields()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             new string[] { "ExportedFields.cs", "MoreExportedFields.cs" },
@@ -15,7 +14,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task ExportedProperties()
+    public async void ExportedProperties()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "ExportedProperties.cs",
@@ -24,7 +23,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task OneWayPropertiesAllReadOnly()
+    public async void OneWayPropertiesAllReadOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "AllReadOnly.cs",
@@ -33,7 +32,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task OneWayPropertiesAllWriteOnly()
+    public async void OneWayPropertiesAllWriteOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "AllWriteOnly.cs",
@@ -42,7 +41,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task OneWayPropertiesMixedReadOnlyWriteOnly()
+    public async void OneWayPropertiesMixedReadOnlyWriteOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "MixedReadOnlyWriteOnly.cs",
@@ -51,7 +50,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task ScriptBoilerplate()
+    public async void ScriptBoilerplate()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "ScriptBoilerplate.cs",
@@ -60,7 +59,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task AbstractGenericNode()
+    public async void AbstractGenericNode()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "AbstractGenericNode.cs",
@@ -69,7 +68,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async Task ExportedButtons()
+    public async void ExportedButtons()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "ExportedToolButtons.cs",

@@ -19,10 +19,7 @@ class Constraint;
 class TempAllocator;
 class SoftBodyUpdateContext;
 
-/// @cond INTERNAL
-/// Internal information used during the PhysicsSystem::Update call
-///
-/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
+/// Information used during the Update call
 class PhysicsUpdateContext : public NonCopyable
 {
 public:
@@ -171,6 +168,5 @@ public:
 	SoftBodyUpdateContext *	mSoftBodyUpdateContexts = nullptr;						///< Contexts for updating soft bodies
 	atomic<uint>			mSoftBodyToCollide { 0 };								///< Next soft body to take when running SoftBodyCollide jobs
 };
-/// @endcond
 
 JPH_NAMESPACE_END

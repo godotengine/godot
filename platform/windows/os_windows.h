@@ -31,22 +31,31 @@
 #pragma once
 
 #include "crash_handler_windows.h"
+#include "key_mapping_windows.h"
 
-#include "core/input/input_event.h"
+#include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
+#include "servers/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#include <windows.h>
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
 
-#include <dwrite.h>
-#include <dwrite_2.h>
 #include <io.h>
 #include <shellapi.h>
+#include <cstdio>
+
+#define WIN32_LEAN_AND_MEAN
+#include <dwrite.h>
+#include <dwrite_2.h>
+#include <windows.h>
 #include <windowsx.h>
 
 #ifdef DEBUG_ENABLED
@@ -61,8 +70,8 @@
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
 	if (x != nullptr) { \
-		x->Release(); \
-		x = nullptr; \
+		x->Release();   \
+		x = nullptr;    \
 	}
 #endif
 
@@ -136,9 +145,6 @@ class OS_Windows : public OS {
 	HashMap<String, int> encodings;
 	void _init_encodings();
 
-	Vector<String> _get_video_adapter_driver_info_reg(const String &p_name) const;
-	Vector<String> _get_video_adapter_driver_info_wmi(const String &p_name) const;
-
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -192,7 +198,6 @@ public:
 	virtual double get_unix_time() const override;
 
 	virtual Error set_cwd(const String &p_cwd) override;
-	virtual String get_cwd() const override;
 
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 	virtual void delay_usec(uint32_t p_usec) const override;
@@ -257,17 +262,6 @@ public:
 	virtual String get_system_ca_certificates() override;
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
-
-	virtual String get_platform_string(PlatformString p_platform_string) const override {
-		switch (p_platform_string) {
-			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
-				return ETR("Open in File Explorer");
-			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
-				return ETR("Show in File Explorer");
-			default:
-				return OS::get_platform_string(p_platform_string);
-		}
-	}
 
 #ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;

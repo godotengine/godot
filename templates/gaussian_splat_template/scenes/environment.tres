@@ -1,0 +1,18 @@
+[gd_resource type="Environment" load_steps=2 format=3]
+
+[sub_resource type="Sky" id="Sky_1"]
+ground_color = Color(0.04, 0.05, 0.08, 1)
+top_color = Color(0.05, 0.06, 0.1, 1)
+energy_multiplier = 1.1
+
+[resource]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.9, 1, 1)
+ambient_light_energy = 0.35
+fog_enabled = true
+fog_density = 0.0012
+fog_height = 80.0
+fog_sky_affect = 0.5
+fog_light_color = Color(0.9, 0.95, 1, 1)

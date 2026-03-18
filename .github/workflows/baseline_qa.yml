@@ -1,0 +1,495 @@
+name: Baseline QA Automation
+
+on:
+  push:
+    branches: [ main, develop, feature/*, phase* ]
+    paths:
+      - 'modules/gaussian_splatting/**'
+      - 'tests/**'
+      - 'test_*.gd'
+      - '.github/workflows/baseline_qa.yml'
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Nightly baseline refresh run at 03:30 UTC.
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      debug_mode:
+        description: 'Enable debug mode with detailed logging'
+        required: false
+        default: false
+        type: boolean
+      baseline_mode:
+        description: 'QA baseline mode (compare against stored baseline or refresh it)'
+        required: false
+        default: compare
+        type: choice
+        options:
+          - compare
+          - update
+
+env:
+  GODOT_BINARY: "godot"
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  baseline-qa:
+    name: Baseline QA Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy pillow
+
+    - name: Install build and runtime dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          scons \
+          pkg-config \
+          libx11-dev \
+          libxcursor-dev \
+          libxinerama-dev \
+          libxi-dev \
+          libxrandr-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          libasound2-dev \
+          libpulse-dev \
+          libudev-dev \
+          libvulkan-dev \
+          mesa-vulkan-drivers \
+          xvfb
+
+    - name: Build module-enabled Godot editor
+      run: |
+        scons platform=linuxbsd target=editor dev_build=yes -j"$(nproc)"
+
+    - name: Resolve module-enabled Godot binary
+      id: godot_binary
+      run: |
+        GODOT_BIN="$(find bin -maxdepth 1 -type f -executable -name 'godot*linuxbsd*editor*' | head -n 1)"
+        if [ -z "$GODOT_BIN" ]; then
+          echo "❌ Could not locate built Godot editor binary in bin"
+          ls -la bin
+          exit 1
+        fi
+        echo "path=$GODOT_BIN" >> "$GITHUB_OUTPUT"
+        echo "GODOT_BINARY=$GODOT_BIN" >> "$GITHUB_ENV"
+        echo "✅ Using module-enabled binary: $GODOT_BIN"
+
+    - name: Verify module-enabled Godot installation
+      run: |
+        "$GODOT_BINARY" --version
+        echo "✅ Module-enabled Godot binary is accessible"
+
+    - name: Setup virtual display
+      run: |
+        export DISPLAY=:99
+        sudo Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+
+    - name: Import Godot project
+      env:
+        DISPLAY: :99
+      run: |
+        mkdir -p ~/.config/godot
+        mkdir -p ~/.local/share/godot
+        "$GODOT_BINARY" --headless --verbose --import --path . --quit
+        echo "✅ Project imported successfully"
+
+    - name: Generate test data
+      run: |
+        if [ -f "test_data/generate_test_data.py" ]; then
+          cd test_data
+          python3 generate_test_data.py
+          echo "✅ Test data generated"
+        else
+          echo "⚠️ No test data generator found, proceeding without pre-generated data"
+        fi
+
+    - name: Resolve baseline mode
+      id: baseline_mode
+      run: |
+        MODE="compare"
+        REASON="default-compare"
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          MODE="update"
+          REASON="nightly-schedule-update"
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.baseline_mode }}" = "update" ]; then
+          MODE="update"
+          REASON="manual-update"
+        fi
+
+        echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+        echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+        echo "baseline_artifact=qa-regression-baseline" >> "$GITHUB_OUTPUT"
+        echo "qa_baseline=tests/ci/baselines/qa_results.json" >> "$GITHUB_OUTPUT"
+        echo "baseline_report=baseline_qa_regression_report.json" >> "$GITHUB_OUTPUT"
+        echo "baseline_summary=baseline_qa_regression_summary.md" >> "$GITHUB_OUTPUT"
+        echo "Resolved baseline mode: $MODE ($REASON)"
+
+    - name: Resolve stored baseline artifact run
+      if: steps.baseline_mode.outputs.mode == 'compare'
+      id: baseline_run
+      uses: actions/github-script@v7
+      env:
+        BASELINE_ARTIFACT_NAME: ${{ steps.baseline_mode.outputs.baseline_artifact }}
+      with:
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const workflowId = 'baseline_qa.yml';
+          const baselineArtifactName = process.env.BASELINE_ARTIFACT_NAME;
+          const branch = context.payload.repository.default_branch;
+          const currentRunId = Number(process.env.GITHUB_RUN_ID);
+
+          const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+            owner,
+            repo,
+            workflow_id: workflowId,
+            branch,
+            status: 'completed',
+            per_page: 50,
+          });
+
+          let selected = null;
+          for (const run of runs) {
+            if (run.id === currentRunId || run.conclusion !== 'success') {
+              continue;
+            }
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner,
+              repo,
+              run_id: run.id,
+              per_page: 100,
+            });
+
+            const hasBaseline = artifacts.data.artifacts.some((artifact) => (
+              artifact.name === baselineArtifactName && !artifact.expired
+            ));
+
+            if (hasBaseline) {
+              selected = run;
+              break;
+            }
+          }
+
+          if (!selected) {
+            core.warning(`No successful ${workflowId} run with ${baselineArtifactName} artifact found on ${branch}.`);
+            core.setOutput('run_found', 'false');
+            core.setOutput('run_id', '');
+            core.setOutput('run_url', '');
+            return;
+          }
+
+          core.setOutput('run_found', 'true');
+          core.setOutput('run_id', String(selected.id));
+          core.setOutput('run_url', selected.html_url);
+          core.info(`Using baseline artifact from ${selected.html_url}`);
+
+    - name: Download stored baseline artifact
+      if: steps.baseline_mode.outputs.mode == 'compare' && steps.baseline_run.outputs.run_found == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ steps.baseline_mode.outputs.baseline_artifact }}
+        path: tests/ci/baselines
+        run-id: ${{ steps.baseline_run.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Require stored baseline artifact in compare mode
+      if: steps.baseline_mode.outputs.mode == 'compare' && steps.baseline_run.outputs.run_found != 'true'
+      run: |
+        echo "❌ Compare mode requires a stored baseline artifact, but none was found."
+        echo "❌ Expected artifact: ${{ steps.baseline_mode.outputs.baseline_artifact }}"
+        exit 1
+
+    - name: Verify baseline artifact
+      if: steps.baseline_mode.outputs.mode == 'compare' && steps.baseline_run.outputs.run_found == 'true'
+      run: |
+        EXPECTED_BASELINE="${{ steps.baseline_mode.outputs.qa_baseline }}"
+        if [ ! -f "$EXPECTED_BASELINE" ]; then
+          CANDIDATE="$(find tests/ci/baselines -type f -name 'qa_results.json' | head -n 1)"
+          if [ -n "$CANDIDATE" ]; then
+            mkdir -p "$(dirname "$EXPECTED_BASELINE")"
+            cp "$CANDIDATE" "$EXPECTED_BASELINE"
+            echo "ℹ️ Normalized downloaded baseline artifact from $CANDIDATE"
+          fi
+        fi
+
+        if [ ! -f "$EXPECTED_BASELINE" ]; then
+          echo "❌ Missing baseline file at $EXPECTED_BASELINE"
+          find tests/ci/baselines -maxdepth 5 -type f || true
+          exit 1
+        fi
+        echo "✅ Loaded baseline from run: ${{ steps.baseline_run.outputs.run_url }}"
+
+    - name: Run baseline QA tests
+      env:
+        DISPLAY: :99
+      run: |
+        MODE="${{ steps.baseline_mode.outputs.mode }}"
+        ARGS=(
+          "--qa-baseline" "${{ steps.baseline_mode.outputs.qa_baseline }}"
+          "--baseline-report" "${{ steps.baseline_mode.outputs.baseline_report }}"
+          "--baseline-summary" "${{ steps.baseline_mode.outputs.baseline_summary }}"
+        )
+        if [ "$MODE" = "update" ]; then
+          ARGS+=("--update-qa-baseline")
+        else
+          ARGS+=("--require-qa-baseline")
+        fi
+        python3 tests/ci/run_baseline_qa.py "${ARGS[@]}"
+      continue-on-error: false
+
+    - name: Publish refreshed QA baseline artifact
+      if: success() && steps.baseline_mode.outputs.mode == 'update'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.baseline_mode.outputs.baseline_artifact }}
+        path: ${{ steps.baseline_mode.outputs.qa_baseline }}
+        if-no-files-found: error
+        retention-days: 30
+
+    - name: Collect test results
+      if: always()
+      run: |
+        echo "📊 Collecting test result files..."
+
+        # Collect JSON results from user directory
+        if [ -d "$HOME/.local/share/godot/app_userdata" ]; then
+          find "$HOME/.local/share/godot/app_userdata" -name "*test_results.json" -exec cp {} . \;
+        fi
+
+        # Collect main test result
+        if [ -f "baseline_qa_results.json" ]; then
+          echo "✅ Main test results found"
+        else
+          echo "⚠️ Main test results not found"
+        fi
+
+        if [ -f "${{ steps.baseline_mode.outputs.baseline_report }}" ]; then
+          echo "✅ Baseline comparison JSON report found"
+        else
+          echo "⚠️ Baseline comparison JSON report missing"
+        fi
+
+        if [ -f "${{ steps.baseline_mode.outputs.baseline_summary }}" ]; then
+          echo "✅ Baseline comparison Markdown summary found"
+        else
+          echo "⚠️ Baseline comparison Markdown summary missing"
+        fi
+
+        # List all collected files
+        ls -la *.json || echo "No JSON files found"
+
+    - name: Generate test summary
+      if: always()
+      run: |
+        echo "# 🧪 Baseline QA Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- Trigger: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Baseline mode: \`${{ steps.baseline_mode.outputs.mode }}\` (${{ steps.baseline_mode.outputs.reason }})" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.baseline_mode.outputs.mode }}" = "compare" ] && [ -n "${{ steps.baseline_run.outputs.run_url }}" ]; then
+          echo "- Baseline source: [${{ steps.baseline_run.outputs.run_url }}](${{ steps.baseline_run.outputs.run_url }})" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f "baseline_qa_results.json" ]; then
+          # Parse JSON results
+          TOTAL=$(python3 -c "import json; data=json.load(open('baseline_qa_results.json')); print(data['total_tests'])")
+          PASSED=$(python3 -c "import json; data=json.load(open('baseline_qa_results.json')); print(data['passed_tests'])")
+          FAILED=$(python3 -c "import json; data=json.load(open('baseline_qa_results.json')); print(data['failed_tests'])")
+
+          echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Passed | $PASSED ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed | $FAILED ❌ |" >> $GITHUB_STEP_SUMMARY
+
+          SUCCESS_RATE=$(python3 -c "print(round($PASSED/$TOTAL*100, 1) if $TOTAL > 0 else 0)")
+          echo "| Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Details" >> $GITHUB_STEP_SUMMARY
+
+        # List individual test results
+        python3 - <<'PY' >> $GITHUB_STEP_SUMMARY
+        import json
+
+        data = json.load(open("baseline_qa_results.json", encoding="utf-8"))
+        for test in data["tests"]:
+            status = "✅" if test["success"] else "❌"
+            print(f"- {status} **{test['name']}** ({test['duration']:.1f}s)")
+            if not test["success"] and test.get("stderr"):
+                print(f"  - Error: {test['stderr'][:100]}...")
+        PY
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 🔍 Failure Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the job logs for actionable failure analysis." >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "❌ Test results file not found" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ -f "${{ steps.baseline_mode.outputs.baseline_summary }}" ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat "${{ steps.baseline_mode.outputs.baseline_summary }}" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload test artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: baseline-qa-results
+        path: |
+          baseline_qa_results.json
+          tests/ci/qa_results.json
+          ${{ steps.baseline_mode.outputs.qa_baseline }}
+          ${{ steps.baseline_mode.outputs.baseline_report }}
+          ${{ steps.baseline_mode.outputs.baseline_summary }}
+          *test_results.json
+          *.log
+        if-no-files-found: warn
+        retention-days: 30
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          let comment = '## 🧪 Baseline QA Test Results\n\n';
+
+          try {
+            const results = JSON.parse(fs.readFileSync('baseline_qa_results.json', 'utf8'));
+
+            const total = results.total_tests;
+            const passed = results.passed_tests;
+            const failed = results.failed_tests;
+            const successRate = total > 0 ? (passed/total*100).toFixed(1) : 0;
+
+            comment += '| Test Suite | Status | Details |\n';
+            comment += '|------------|--------|---------|\n';
+
+            for (const test of results.tests) {
+              const status = test.success ? '✅ PASS' : '❌ FAIL';
+              const duration = test.duration.toFixed(1);
+              comment += `| ${test.name} | ${status} | ${duration}s |\n`;
+            }
+
+            comment += `\n**Summary:** ${passed}/${total} tests passed (${successRate}%)\n`;
+
+            if (failed > 0) {
+              comment += '\n⚠️ Some tests failed. Check the [job logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n';
+            }
+
+          } catch (error) {
+            comment += '❌ Could not parse test results. Check the job logs for details.\n';
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # Job to validate tests work with compiled module (slower but more thorough)
+  compiled-module-qa:
+    name: Compiled Module QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.event_name == 'push' && (contains(github.ref, 'main') || contains(github.ref, 'develop'))
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          scons \
+          pkg-config \
+          libx11-dev \
+          libxcursor-dev \
+          libxinerama-dev \
+          libxi-dev \
+          libxrandr-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          libasound2-dev \
+          libpulse-dev \
+          libudev-dev \
+          xvfb
+
+    - name: Cache Godot build
+      uses: actions/cache@v3
+      with:
+        path: |
+          bin
+          .scons_cache
+        key: compiled-qa-${{ runner.os }}-${{ hashFiles('modules/gaussian_splatting/**/*.cpp', 'modules/gaussian_splatting/**/*.h') }}
+        restore-keys: |
+          compiled-qa-${{ runner.os }}-
+
+    - name: Build Godot with module
+      run: |
+        scons platform=linuxbsd tools=yes target=editor gs_native_arch=no -j2
+
+    - name: Setup virtual display
+      run: |
+        export DISPLAY=:99
+        sudo Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+
+    - name: Run QA tests with compiled module
+      env:
+        DISPLAY: :99
+        GODOT_BINARY: ./bin/godot.linuxbsd.editor.x86_64
+      run: |
+        python3 tests/ci/run_baseline_qa.py
+
+    - name: Upload compiled test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-module-qa-results
+        path: |
+          baseline_qa_results.json
+          *test_results.json
+        if-no-files-found: warn

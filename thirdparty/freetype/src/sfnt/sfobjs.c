@@ -4,7 +4,7 @@
  *
  *   SFNT object management (base).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -579,9 +579,6 @@
     if ( face_instance_index < 0 && face_index > 0 )
       face_index--;
 
-    /* Note that `face_index` is also used to enumerate elements */
-    /* of containers like a Mac Resource; this means we must     */
-    /* check whether we actually have a TTC.                     */
     if ( face_index >= face->ttc_header.count )
     {
       if ( face_instance_index >= 0 )
@@ -1130,9 +1127,9 @@
         flags |= FT_FACE_FLAG_VERTICAL;
 
       /* kerning available ? */
-      if ( face->kern_avail_bits
+      if ( TT_FACE_HAS_KERNING( face )
 #ifdef TT_CONFIG_OPTION_GPOS_KERNING
-           || face->num_gpos_lookups_kerning
+           || face->gpos_kerning_available
 #endif
          )
         flags |= FT_FACE_FLAG_KERNING;

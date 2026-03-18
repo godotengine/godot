@@ -32,7 +32,6 @@
 #include "jsonrpc.compat.inc"
 
 #include "core/io/json.h"
-#include "core/object/class_db.h"
 
 JSONRPC::JSONRPC() {
 }

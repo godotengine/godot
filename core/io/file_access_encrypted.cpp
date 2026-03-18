@@ -140,7 +140,7 @@ void FileAccessEncrypted::_close() {
 	}
 
 	if (writing) {
-		LocalVector<uint8_t> compressed;
+		Vector<uint8_t> compressed;
 		uint64_t len = data.size();
 		if (len % 16) {
 			len += 16 - (len % 16);
@@ -150,8 +150,10 @@ void FileAccessEncrypted::_close() {
 		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
-		memcpy(compressed.ptr(), data.ptr(), data.size());
-		memset(compressed.ptr() + data.size(), 0, len - data.size());
+		memset(compressed.ptrw(), 0, len);
+		for (int i = 0; i < data.size(); i++) {
+			compressed.write[i] = data[i];
+		}
 
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
@@ -164,7 +166,7 @@ void FileAccessEncrypted::_close() {
 		file->store_64(data.size());
 		file->store_buffer(iv.ptr(), 16);
 
-		ctx.encrypt_cfb(len, iv.ptrw(), compressed.ptr(), compressed.ptr());
+		ctx.encrypt_cfb(len, iv.ptrw(), compressed.ptrw(), compressed.ptrw());
 
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();

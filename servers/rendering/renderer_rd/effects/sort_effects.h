@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "servers/rendering/renderer_rd/shader_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/sort.glsl.gen.h"
 
 namespace RendererRD {

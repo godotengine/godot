@@ -32,9 +32,8 @@
 
 #include "file_access_windows_pipe.h"
 
-#include "core/string/ustring.h"
-
-#include <winbase.h>
+#include "core/os/os.h"
+#include "core/string/print_string.h"
 
 Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd, bool p_blocking) {
 	// Open pipe using handles created by CreatePipe(rfd, wfd, NULL, 4096) call in the OS.execute_with_pipe.

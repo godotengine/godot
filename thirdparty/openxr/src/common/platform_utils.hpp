@@ -361,7 +361,7 @@ static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std:
     return false;
 }
 
-// Android system properties are sufficiently different from environment variables that we are not reusing
+// Android system properties are sufficiently different from environment variables that we are not re-using
 // PlatformUtilsGetEnv for this purpose
 static inline std::string PlatformUtilsGetAndroidSystemProperty(const char* name) {
     std::string result;

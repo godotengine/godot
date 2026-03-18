@@ -83,7 +83,6 @@ void SoftBodyShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCa
 		return;
 
 	uint num_triangle_bits = GetSubShapeIDBits();
-	bool check_backfaces = inRayCastSettings.mBackFaceModeTriangles == EBackFaceMode::IgnoreBackFaces && !mSoftBodyMotionProperties->GetFacesDoubleSided();
 
 	const Array<SoftBodyVertex> &vertices = mSoftBodyMotionProperties->GetVertices();
 	for (const SoftBodyMotionProperties::Face &f : mSoftBodyMotionProperties->GetFaces())
@@ -93,7 +92,7 @@ void SoftBodyShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCa
 		Vec3 x3 = vertices[f.mVertex[2]].mPosition;
 
 		// Back facing check
-		if (check_backfaces && (x2 - x1).Cross(x3 - x1).Dot(inRay.mDirection) > 0.0f)
+		if (inRayCastSettings.mBackFaceModeTriangles == EBackFaceMode::IgnoreBackFaces && (x2 - x1).Cross(x3 - x1).Dot(inRay.mDirection) > 0.0f)
 			continue;
 
 		// Test ray against triangle
@@ -246,10 +245,7 @@ void SoftBodyShape::sCollideConvexVsSoftBody(const Shape *inShape1, const Shape 
 	const Array<SoftBodyMotionProperties::Face> &faces = shape2->mSoftBodyMotionProperties->GetFaces();
 	uint num_triangle_bits = shape2->GetSubShapeIDBits();
 
-	CollideShapeSettings settings(inCollideShapeSettings);
-	if (shape2->mSoftBodyMotionProperties->GetFacesDoubleSided())
-		settings.mBackFaceMode = EBackFaceMode::CollideWithBackFaces;
-	CollideConvexVsTriangles collider(shape1, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1.GetID(), settings, ioCollector);
+	CollideConvexVsTriangles collider(shape1, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1.GetID(), inCollideShapeSettings, ioCollector);
 	for (const SoftBodyMotionProperties::Face &f : faces)
 	{
 		Vec3 x1 = vertices[f.mVertex[0]].mPosition;
@@ -271,10 +267,7 @@ void SoftBodyShape::sCollideSphereVsSoftBody(const Shape *inShape1, const Shape 
 	const Array<SoftBodyMotionProperties::Face> &faces = shape2->mSoftBodyMotionProperties->GetFaces();
 	uint num_triangle_bits = shape2->GetSubShapeIDBits();
 
-	CollideShapeSettings settings(inCollideShapeSettings);
-	if (shape2->mSoftBodyMotionProperties->GetFacesDoubleSided())
-		settings.mBackFaceMode = EBackFaceMode::CollideWithBackFaces;
-	CollideSphereVsTriangles collider(shape1, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1.GetID(), settings, ioCollector);
+	CollideSphereVsTriangles collider(shape1, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1.GetID(), inCollideShapeSettings, ioCollector);
 	for (const SoftBodyMotionProperties::Face &f : faces)
 	{
 		Vec3 x1 = vertices[f.mVertex[0]].mPosition;
@@ -294,10 +287,7 @@ void SoftBodyShape::sCastConvexVsSoftBody(const ShapeCast &inShapeCast, const Sh
 	const Array<SoftBodyMotionProperties::Face> &faces = shape->mSoftBodyMotionProperties->GetFaces();
 	uint num_triangle_bits = shape->GetSubShapeIDBits();
 
-	ShapeCastSettings settings(inShapeCastSettings);
-	if (shape->mSoftBodyMotionProperties->GetFacesDoubleSided())
-		settings.mBackFaceModeTriangles = EBackFaceMode::CollideWithBackFaces;
-	CastConvexVsTriangles caster(inShapeCast, settings, inScale, inCenterOfMassTransform2, inSubShapeIDCreator1, ioCollector);
+	CastConvexVsTriangles caster(inShapeCast, inShapeCastSettings, inScale, inCenterOfMassTransform2, inSubShapeIDCreator1, ioCollector);
 	for (const SoftBodyMotionProperties::Face &f : faces)
 	{
 		Vec3 x1 = vertices[f.mVertex[0]].mPosition;
@@ -317,10 +307,7 @@ void SoftBodyShape::sCastSphereVsSoftBody(const ShapeCast &inShapeCast, const Sh
 	const Array<SoftBodyMotionProperties::Face> &faces = shape->mSoftBodyMotionProperties->GetFaces();
 	uint num_triangle_bits = shape->GetSubShapeIDBits();
 
-	ShapeCastSettings settings(inShapeCastSettings);
-	if (shape->mSoftBodyMotionProperties->GetFacesDoubleSided())
-		settings.mBackFaceModeTriangles = EBackFaceMode::CollideWithBackFaces;
-	CastSphereVsTriangles caster(inShapeCast, settings, inScale, inCenterOfMassTransform2, inSubShapeIDCreator1, ioCollector);
+	CastSphereVsTriangles caster(inShapeCast, inShapeCastSettings, inScale, inCenterOfMassTransform2, inSubShapeIDCreator1, ioCollector);
 	for (const SoftBodyMotionProperties::Face &f : faces)
 	{
 		Vec3 x1 = vertices[f.mVertex[0]].mPosition;

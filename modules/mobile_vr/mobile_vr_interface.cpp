@@ -31,10 +31,9 @@
 #include "mobile_vr_interface.h"
 
 #include "core/input/input.h"
-#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "servers/display/display_server.h"
-#include "servers/rendering/rendering_server_types.h"
+#include "servers/display_server.h"
+#include "servers/rendering/renderer_compositor.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
@@ -510,10 +509,10 @@ Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_
 	return eye;
 }
 
-Vector<RenderingServerTypes::BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
-	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
+	Vector<BlitToScreen> blit_to_screen;
 
 	// We must have a valid render target.
 	ERR_FAIL_COND_V(!p_render_target.is_valid(), blit_to_screen);
@@ -529,7 +528,7 @@ Vector<RenderingServerTypes::BlitToScreen> MobileVRInterface::post_draw_viewport
 	Rect2 modified_screen_rect = Rect2(p_screen_rect.position + offset_rect.position * p_screen_rect.size, p_screen_rect.size * offset_rect.size);
 
 	// and add our blits
-	RenderingServerTypes::BlitToScreen blit;
+	BlitToScreen blit;
 	blit.render_target = p_render_target;
 	blit.multi_view.use_layer = true;
 	blit.lens_distortion.apply = true;

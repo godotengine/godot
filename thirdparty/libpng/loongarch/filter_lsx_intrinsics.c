@@ -102,9 +102,8 @@
    out0  = __lsx_vadd_b(out0, _in3);                             \
 }
 
-void
-png_read_filter_row_up_lsx(png_row_infop row_info, png_bytep row,
-    png_const_bytep prev_row)
+void png_read_filter_row_up_lsx(png_row_infop row_info, png_bytep row,
+                                png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    png_bytep rp = row;
@@ -166,9 +165,8 @@ png_read_filter_row_up_lsx(png_row_infop row_info, png_bytep row,
    }
 }
 
-void
-png_read_filter_row_sub3_lsx(png_row_infop row_info, png_bytep row,
-    png_const_bytep prev_row)
+void png_read_filter_row_sub3_lsx(png_row_infop row_info, png_bytep row,
+                                  png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    png_uint_32 tmp;
@@ -201,9 +199,8 @@ png_read_filter_row_sub3_lsx(png_row_infop row_info, png_bytep row,
    }
 }
 
-void
-png_read_filter_row_sub4_lsx(png_row_infop row_info, png_bytep row,
-    png_const_bytep prev_row)
+void png_read_filter_row_sub4_lsx(png_row_infop row_info, png_bytep row,
+                                  png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    __m128i vec_0, vec_1;
@@ -225,9 +222,8 @@ png_read_filter_row_sub4_lsx(png_row_infop row_info, png_bytep row,
    }
 }
 
-void
-png_read_filter_row_avg3_lsx(png_row_infop row_info, png_bytep row,
-    png_const_bytep prev_row)
+void png_read_filter_row_avg3_lsx(png_row_infop row_info, png_bytep row,
+                                  png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    png_bytep nxt = row;
@@ -279,9 +275,8 @@ png_read_filter_row_avg3_lsx(png_row_infop row_info, png_bytep row,
    }
 }
 
-void
-png_read_filter_row_avg4_lsx(png_row_infop row_info, png_bytep row,
-    png_const_bytep prev_row)
+void png_read_filter_row_avg4_lsx(png_row_infop row_info, png_bytep row,
+                                  png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    __m128i vec_0, vec_1, vec_2;
@@ -311,9 +306,9 @@ png_read_filter_row_avg4_lsx(png_row_infop row_info, png_bytep row,
    }
 }
 
-void
-png_read_filter_row_paeth3_lsx(png_row_infop row_info,
-    png_bytep row, png_const_bytep prev_row)
+void png_read_filter_row_paeth3_lsx(png_row_infop row_info,
+                                    png_bytep row,
+                                    png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    png_bytep nxt = row;
@@ -376,9 +371,9 @@ png_read_filter_row_paeth3_lsx(png_row_infop row_info,
    }
 }
 
-void
-png_read_filter_row_paeth4_lsx(png_row_infop row_info,
-    png_bytep row, png_const_bytep prev_row)
+void png_read_filter_row_paeth4_lsx(png_row_infop row_info,
+                                    png_bytep row,
+                                    png_const_bytep prev_row)
 {
    size_t n = row_info->rowbytes;
    __m128i vec_a, vec_b, vec_c, vec_d;

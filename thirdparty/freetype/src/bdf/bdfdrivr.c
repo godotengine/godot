@@ -349,6 +349,7 @@ THE SOFTWARE.
     FT_Memory      memory  = FT_FACE_MEMORY( face );
 
     bdf_font_t*    font = NULL;
+    bdf_options_t  options;
 
     FT_UNUSED( num_params );
     FT_UNUSED( params );
@@ -359,8 +360,12 @@ THE SOFTWARE.
     if ( FT_STREAM_SEEK( 0 ) )
       goto Exit;
 
-    error = bdf_load_font( stream, memory,
-                           BDF_CORRECT_METRICS | BDF_KEEP_UNENCODED, &font );
+    options.correct_metrics = 1;   /* FZ XXX: options semantics */
+    options.keep_unencoded  = 1;
+    options.keep_comments   = 0;
+    options.font_spacing    = BDF_PROPORTIONAL;
+
+    error = bdf_load_font( stream, memory, &options, &font );
     if ( FT_ERR_EQ( error, Missing_Startfont_Field ) )
     {
       FT_TRACE2(( "  not a BDF file\n" ));
@@ -389,10 +394,10 @@ THE SOFTWARE.
       bdf_property_t*  prop = NULL;
 
 
-      FT_TRACE4(( "  number of glyphs: allocated %lu (used %lu)\n",
+      FT_TRACE4(( "  number of glyphs: allocated %ld (used %ld)\n",
                   font->glyphs_size,
                   font->glyphs_used ));
-      FT_TRACE4(( "  number of unencoded glyphs: allocated %lu (used %lu)\n",
+      FT_TRACE4(( "  number of unencoded glyphs: allocated %ld (used %ld)\n",
                   font->unencoded_size,
                   font->unencoded_used ));
 
@@ -403,18 +408,10 @@ THE SOFTWARE.
                           FT_FACE_FLAG_HORIZONTAL;
 
       prop = bdf_get_font_property( font, "SPACING" );
-      if ( prop && prop->value.atom )
-      {
-        if      ( prop->value.atom[0] == 'p' || prop->value.atom[0] == 'P' )
-          font->spacing = BDF_PROPORTIONAL;
-        else if ( prop->value.atom[0] == 'm' || prop->value.atom[0] == 'M' )
-          font->spacing = BDF_MONOWIDTH;
-        else if ( prop->value.atom[0] == 'c' || prop->value.atom[0] == 'C' )
-          font->spacing = BDF_CHARCELL;
-      }
-
-      if ( font->spacing == BDF_MONOWIDTH ||
-           font->spacing == BDF_CHARCELL  )
+      if ( prop && prop->format == BDF_ATOM                             &&
+           prop->value.atom                                             &&
+           ( *(prop->value.atom) == 'M' || *(prop->value.atom) == 'm' ||
+             *(prop->value.atom) == 'C' || *(prop->value.atom) == 'c' ) )
         face->face_flags |= FT_FACE_FLAG_FIXED_WIDTH;
 
       /* FZ XXX: TO DO: FT_FACE_FLAGS_VERTICAL   */
@@ -447,25 +444,19 @@ THE SOFTWARE.
         long             value;
 
 
-        prop = bdf_get_font_property( font, "FONT_ASCENT" );
-        if ( prop )
-          font->font_ascent = prop->value.l;
-        else
-          font->font_ascent = font->bbx.ascent;
-        if ( font->font_ascent > 0x7FFF )
-          font->font_ascent = 0x7FFF;
-        else if ( font->font_ascent < 0 )
-          font->font_ascent = 0;
-
-        prop = bdf_get_font_property( font, "FONT_DESCENT" );
-        if ( prop )
-          font->font_descent = prop->value.l;
-        else
-          font->font_descent = font->bbx.descent;
-        if ( font->font_descent > 0x7FFF )
-          font->font_descent = 0x7FFF;
-        else if ( font->font_descent < 0 )
-          font->font_descent = 0;
+        /* sanity checks */
+        if ( font->font_ascent > 0x7FFF || font->font_ascent < -0x7FFF )
+        {
+          font->font_ascent = font->font_ascent < 0 ? -0x7FFF : 0x7FFF;
+          FT_TRACE0(( "BDF_Face_Init: clamping font ascent to value %ld\n",
+                      font->font_ascent ));
+        }
+        if ( font->font_descent > 0x7FFF || font->font_descent < -0x7FFF )
+        {
+          font->font_descent = font->font_descent < 0 ? -0x7FFF : 0x7FFF;
+          FT_TRACE0(( "BDF_Face_Init: clamping font descent to value %ld\n",
+                      font->font_descent ));
+        }
 
         bsize->height = (FT_Short)( font->font_ascent + font->font_descent );
 
@@ -600,12 +591,6 @@ THE SOFTWARE.
                                      resolution_y );
         else
           bsize->x_ppem = bsize->y_ppem;
-
-        prop = bdf_get_font_property( font, "DEFAULT_CHAR" );
-        if ( prop )
-          font->default_char = prop->value.ul;
-        else
-          font->default_char = ~0UL;
       }
 
       /* encoding table */
@@ -621,7 +606,7 @@ THE SOFTWARE.
         for ( n = 0; n < font->glyphs_size; n++ )
         {
           (bdfface->en_table[n]).enc = cur[n].encoding;
-          FT_TRACE4(( "  idx %lu, val 0x%lX\n", n, cur[n].encoding ));
+          FT_TRACE4(( "  idx %ld, val 0x%lX\n", n, cur[n].encoding ));
           (bdfface->en_table[n]).glyph = (FT_UShort)n;
 
           if ( cur[n].encoding == font->default_char )
@@ -630,7 +615,7 @@ THE SOFTWARE.
               bdfface->default_glyph = (FT_UInt)n;
             else
               FT_TRACE1(( "BDF_Face_Init:"
-                          " idx %lu is too large for this system\n", n ));
+                          " idx %ld is too large for this system\n", n ));
           }
         }
       }
@@ -817,7 +802,7 @@ THE SOFTWARE.
       goto Exit;
     }
 
-    FT_TRACE1(( "BDF_Glyph_Load: glyph index %u\n", glyph_index ));
+    FT_TRACE1(( "BDF_Glyph_Load: glyph index %d\n", glyph_index ));
 
     /* index 0 is the undefined glyph */
     if ( glyph_index == 0 )
@@ -831,7 +816,7 @@ THE SOFTWARE.
     bitmap->rows  = glyph.bbx.height;
     bitmap->width = glyph.bbx.width;
     if ( glyph.bpr > FT_INT_MAX )
-      FT_TRACE1(( "BDF_Glyph_Load: too large pitch %lu is truncated\n",
+      FT_TRACE1(( "BDF_Glyph_Load: too large pitch %ld is truncated\n",
                    glyph.bpr ));
     bitmap->pitch = (int)glyph.bpr; /* same as FT_Bitmap.pitch */
 

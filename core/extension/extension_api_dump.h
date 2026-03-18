@@ -30,11 +30,9 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
+#include "core/extension/gdextension.h"
 
-#include "core/error/error_list.h"
-#include "core/string/ustring.h"
-#include "core/variant/dictionary.h"
+#ifdef TOOLS_ENABLED
 
 class GDExtensionAPIDump {
 public:
@@ -42,5 +40,4 @@ public:
 	static void generate_extension_json_file(const String &p_path, bool p_include_docs = false);
 	static Error validate_extension_json_file(const String &p_path);
 };
-
 #endif

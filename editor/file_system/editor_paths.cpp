@@ -33,8 +33,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "main/main.h"
 
@@ -84,7 +82,6 @@ String EditorPaths::get_debug_keystore_path() const {
 #endif
 }
 
-// This returns paths like "res://.godot/editor".
 String EditorPaths::get_project_settings_dir() const {
 	return get_project_data_dir().path_join("editor");
 }

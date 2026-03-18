@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneLightingStress" instance=ExtResource("1")]
+lane_id = "lighting_stress"
+lane_name = "Lighting Stress"
+lane_description = "Animated key/local lights over splats for shading and compositing pressure."
+lane_preset = "lighting_stress"
+default_duration_s = 35.0

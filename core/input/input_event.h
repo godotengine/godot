@@ -32,7 +32,9 @@
 
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
+#include "core/math/transform_2d.h"
 #include "core/os/keyboard.h"
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
 
 /**
@@ -41,8 +43,6 @@
  */
 
 class Shortcut;
-class String;
-struct Transform2D;
 
 /**
  * Input Modifier Status
@@ -63,8 +63,6 @@ protected:
 public:
 	static constexpr int DEVICE_ID_EMULATION = -1;
 	static constexpr int DEVICE_ID_INTERNAL = -2;
-	static constexpr int DEVICE_ID_KEYBOARD = 16; // IDs 0-15 are reserved for joypads.
-	static constexpr int DEVICE_ID_MOUSE = 32; // IDs 17-31 are reserved for multiple keyboard support in the future.
 
 	void set_device(int p_device);
 	int get_device() const;
@@ -82,7 +80,7 @@ public:
 
 	virtual String as_text() const = 0;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
@@ -92,6 +90,8 @@ public:
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 
 	virtual InputEventType get_type() const { return InputEventType::INVALID; }
+
+	InputEvent() {}
 };
 
 class InputEventFromWindow : public InputEvent {
@@ -105,6 +105,8 @@ protected:
 public:
 	void set_window_id(int64_t p_id);
 	int64_t get_window_id() const;
+
+	InputEventFromWindow() {}
 };
 
 class InputEventWithModifiers : public InputEventFromWindow {
@@ -144,7 +146,9 @@ public:
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
+
+	InputEventWithModifiers() {}
 };
 
 class InputEventKey : public InputEventWithModifiers {
@@ -196,13 +200,13 @@ public:
 	virtual String as_text_key_label() const;
 	virtual String as_text_location() const;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
 	InputEventType get_type() const final override { return InputEventType::KEY; }
 
-	InputEventKey();
+	InputEventKey() {}
 };
 
 class InputEventMouse : public InputEventWithModifiers {
@@ -226,7 +230,7 @@ public:
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
 
-	InputEventMouse();
+	InputEventMouse() {}
 };
 
 class InputEventMouseButton : public InputEventMouse {
@@ -252,16 +256,18 @@ public:
 	void set_double_click(bool p_double_click);
 	bool is_double_click() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
+
+	InputEventMouseButton() {}
 };
 
 class InputEventMouseMotion : public InputEventMouse {
@@ -300,13 +306,15 @@ public:
 	void set_screen_velocity(const Vector2 &p_velocity);
 	Vector2 get_screen_velocity() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
 	InputEventType get_type() const final override { return InputEventType::MOUSE_MOTION; }
+
+	InputEventMouseMotion() {}
 };
 
 class InputEventJoypadMotion : public InputEvent {
@@ -329,12 +337,13 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
-	// The default device ID is `InputMap::ALL_DEVICES`.
-	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value, int p_device = -1);
+	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
+
+	InputEventJoypadMotion() {}
 };
 
 class InputEventJoypadButton : public InputEvent {
@@ -360,12 +369,13 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
-	// The default device ID is `InputMap::ALL_DEVICES`.
-	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index, int p_device = -1);
+	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
+
+	InputEventJoypadButton() {}
 };
 
 class InputEventScreenTouch : public InputEventFromWindow {
@@ -390,11 +400,13 @@ public:
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
+
+	InputEventScreenTouch() {}
 };
 
 class InputEventScreenDrag : public InputEventFromWindow {
@@ -440,13 +452,15 @@ public:
 	void set_screen_velocity(const Vector2 &p_velocity);
 	Vector2 get_screen_velocity() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
 	InputEventType get_type() const final override { return InputEventType::SCREEN_DRAG; }
+
+	InputEventScreenDrag() {}
 };
 
 class InputEventAction : public InputEvent {
@@ -479,9 +493,11 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::ACTION; }
+
+	InputEventAction() {}
 };
 
 class InputEventGesture : public InputEventWithModifiers {
@@ -508,11 +524,13 @@ public:
 	void set_factor(real_t p_factor);
 	real_t get_factor() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
+
+	InputEventMagnifyGesture() {}
 };
 
 class InputEventPanGesture : public InputEventGesture {
@@ -526,11 +544,13 @@ public:
 	void set_delta(const Vector2 &p_delta);
 	Vector2 get_delta() const;
 
-	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
+
+	InputEventPanGesture() {}
 };
 
 class InputEventMIDI : public InputEvent {
@@ -574,9 +594,11 @@ public:
 	int get_controller_value() const;
 
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MIDI; }
+
+	InputEventMIDI() {}
 };
 
 class InputEventShortcut : public InputEvent {
@@ -592,7 +614,7 @@ public:
 	Ref<Shortcut> get_shortcut();
 
 	virtual String as_text() const override;
-	virtual String _to_string() override;
+	virtual String to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::SHORTCUT; }
 

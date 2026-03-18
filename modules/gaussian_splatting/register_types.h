@@ -1,0 +1,9 @@
+#ifndef GAUSSIAN_SPLATTING_REGISTER_TYPES_H
+#define GAUSSIAN_SPLATTING_REGISTER_TYPES_H
+
+#include "modules/register_module_types.h"
+
+void initialize_gaussian_splatting_module(ModuleInitializationLevel p_level);
+void uninitialize_gaussian_splatting_module(ModuleInitializationLevel p_level);
+
+#endif // GAUSSIAN_SPLATTING_REGISTER_TYPES_H

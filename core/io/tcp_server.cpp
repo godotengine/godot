@@ -30,12 +30,13 @@
 
 #include "tcp_server.h"
 
-#include "core/object/class_db.h"
-
 void TCPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
+	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCPServer::is_connection_available);
+	ClassDB::bind_method(D_METHOD("is_listening"), &TCPServer::is_listening);
 	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
 	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
+	ClassDB::bind_method(D_METHOD("stop"), &TCPServer::stop);
 }
 
 Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
@@ -51,21 +52,81 @@ Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_TCP, ip_type);
+	err = _sock->open(NetSocket::TYPE_TCP, ip_type);
 
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
+	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
 
-	return _listen(NetSocket::Address(p_bind_address, p_port));
+	err = _sock->bind(p_bind_address, p_port);
+
+	if (err != OK) {
+		_sock->close();
+		return ERR_ALREADY_IN_USE;
+	}
+
+	err = _sock->listen(MAX_PENDING_CONNECTIONS);
+
+	if (err != OK) {
+		_sock->close();
+		return FAILED;
+	}
+	return OK;
 }
 
 int TCPServer::get_local_port() const {
-	NetSocket::Address addr;
-	_sock->get_socket_address(&addr);
-	return addr.port();
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
+}
+
+bool TCPServer::is_listening() const {
+	ERR_FAIL_COND_V(_sock.is_null(), false);
+
+	return _sock->is_open();
+}
+
+bool TCPServer::is_connection_available() const {
+	ERR_FAIL_COND_V(_sock.is_null(), false);
+
+	if (!_sock->is_open()) {
+		return false;
+	}
+
+	Error err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
+	return (err == OK);
 }
 
 Ref<StreamPeerTCP> TCPServer::take_connection() {
-	return _take_connection<StreamPeerTCP>();
+	Ref<StreamPeerTCP> conn;
+	if (!is_connection_available()) {
+		return conn;
+	}
+
+	Ref<NetSocket> ns;
+	IPAddress ip;
+	uint16_t port = 0;
+	ns = _sock->accept(ip, port);
+	if (ns.is_null()) {
+		return conn;
+	}
+
+	conn.instantiate();
+	conn->accept_socket(ns, ip, port);
+	return conn;
+}
+
+void TCPServer::stop() {
+	if (_sock.is_valid()) {
+		_sock->close();
+	}
+}
+
+TCPServer::TCPServer() :
+		_sock(Ref<NetSocket>(NetSocket::create())) {
+}
+
+TCPServer::~TCPServer() {
+	stop();
 }

@@ -30,18 +30,14 @@
 
 #include "csharp_script.h"
 
-#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
+#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/string_utils.h"
-
-#ifdef GD_MONO_HOT_RELOAD
-#include "managed_callable.h"
 #include "utils/path_utils.h"
-#endif
+#include "utils/string_utils.h"
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -52,27 +48,22 @@
 #include "editor/script_templates/templates.gen.h"
 #endif
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/file_access.h"
-#include "core/object/class_db.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "servers/text/text_server.h"
+#include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/node_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
-
-#ifdef GD_MONO_HOT_RELOAD
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
-#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
@@ -407,6 +398,10 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	}
 
 	return "";
+}
+
+Script *CSharpLanguage::create_script() const {
+	return memnew(CSharpScript);
 }
 
 bool CSharpLanguage::supports_builtin_mode() const {
@@ -1031,7 +1026,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		InspectorDock::get_inspector_singleton()->update_tree();
-		SignalsDock::get_singleton()->update_lists();
+		NodeDock::get_singleton()->update_lists();
 	}
 #endif
 }
@@ -1158,12 +1153,12 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
 	ERR_FAIL_NULL_V(classinfo, false);
-	type_name = classinfo->gdtype->get_name();
+	type_name = classinfo->name;
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
@@ -1437,7 +1432,7 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
-	p_unmanaged->set_script_instance(csharp_instance);
+	p_unmanaged->set_script_and_instance(script, csharp_instance);
 
 	csharp_instance->connect_event_signals();
 }
@@ -2897,7 +2892,7 @@ bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const 
 }
 
 String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-	return p_path.has_extension("cs") ? CSharpLanguage::get_singleton()->get_type() : "";
+	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
 Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {

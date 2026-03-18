@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -6,7 +5,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptSignalsGeneratorTests
 {
     [Fact]
-    public async Task EventSignals()
+    public async void EventSignals()
     {
         await CSharpSourceGeneratorVerifier<ScriptSignalsGenerator>.Verify(
             "EventSignals.cs",

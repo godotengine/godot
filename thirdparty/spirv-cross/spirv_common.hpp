@@ -27,17 +27,8 @@
 #ifndef SPV_ENABLE_UTILITY_CODE
 #define SPV_ENABLE_UTILITY_CODE
 #endif
-
-// Pragmatic hack to avoid symbol conflicts when including both hpp11 and hpp headers in same translation unit.
-// This is an unfortunate SPIRV-Headers issue that we cannot easily deal with ourselves.
-#ifdef SPIRV_CROSS_SPV_HEADER_NAMESPACE_OVERRIDE
-#define spv SPIRV_CROSS_SPV_HEADER_NAMESPACE_OVERRIDE
-#define SPIRV_CROSS_SPV_HEADER_NAMESPACE SPIRV_CROSS_SPV_HEADER_NAMESPACE_OVERRIDE
-#else
-#define SPIRV_CROSS_SPV_HEADER_NAMESPACE spv
-#endif
-
 #include "spirv.hpp"
+
 #include "spirv_cross_containers.hpp"
 #include "spirv_cross_error_handling.hpp"
 #include <functional>
@@ -583,7 +574,6 @@ struct SPIRType : IVariant
 		Sampler,
 		AccelerationStructure,
 		RayQuery,
-		CoopVecNV,
 
 		// Keep internal types at the end.
 		ControlPointArray,
@@ -593,9 +583,7 @@ struct SPIRType : IVariant
 		MeshGridProperties,
 		BFloat16,
 		FloatE4M3,
-		FloatE5M2,
-
-		Tensor
+		FloatE5M2
 	};
 
 	// Scalar/vector/matrix support.
@@ -620,29 +608,13 @@ struct SPIRType : IVariant
 	bool pointer = false;
 	bool forward_pointer = false;
 
-	union
+	struct
 	{
-		struct
-		{
-			uint32_t use_id;
-			uint32_t rows_id;
-			uint32_t columns_id;
-			uint32_t scope_id;
-		} cooperative;
-
-		struct
-		{
-			uint32_t component_type_id;
-			uint32_t component_count_id;
-		} coopVecNV;
-
-		struct
-		{
-			uint32_t type;
-			uint32_t rank;
-			uint32_t shape;
-		} tensor;
-	} ext;
+		uint32_t use_id = 0;
+		uint32_t rows_id = 0;
+		uint32_t columns_id = 0;
+		uint32_t scope_id = 0;
+	} cooperative;
 
 	spv::StorageClass storage = spv::StorageClassGeneric;
 
@@ -700,12 +672,6 @@ struct SPIRExtension : IVariant
 		NonSemanticGeneric
 	};
 
-	enum ShaderDebugInfoOps
-	{
-		DebugLine = 103,
-		DebugSource = 35
-	};
-
 	explicit SPIRExtension(Extension ext_)
 	    : ext(ext_)
 	{
@@ -732,10 +698,6 @@ struct SPIREntryPoint
 	std::string name;
 	std::string orig_name;
 	std::unordered_map<uint32_t, uint32_t> fp_fast_math_defaults;
-	bool signed_zero_inf_nan_preserve_8 = false;
-	bool signed_zero_inf_nan_preserve_16 = false;
-	bool signed_zero_inf_nan_preserve_32 = false;
-	bool signed_zero_inf_nan_preserve_64 = false;
 	SmallVector<VariableID> interface_variables;
 
 	Bitset flags;
@@ -968,7 +930,6 @@ struct SPIRBlock : IVariant
 	// All access to these variables are dominated by this block,
 	// so before branching anywhere we need to make sure that we declare these variables.
 	SmallVector<VariableID> dominated_variables;
-	SmallVector<bool> rearm_dominated_variables;
 
 	// These are variables which should be declared in a for loop header, if we
 	// fail to use a classic for-loop,
@@ -1864,8 +1825,7 @@ private:
 
 static inline bool type_is_floating_point(const SPIRType &type)
 {
-	return type.basetype == SPIRType::Half || type.basetype == SPIRType::Float || type.basetype == SPIRType::Double ||
-	       type.basetype == SPIRType::BFloat16 || type.basetype == SPIRType::FloatE5M2 || type.basetype == SPIRType::FloatE4M3;
+	return type.basetype == SPIRType::Half || type.basetype == SPIRType::Float || type.basetype == SPIRType::Double;
 }
 
 static inline bool type_is_integral(const SPIRType &type)
@@ -2050,7 +2010,4 @@ struct hash<SPIRV_CROSS_NAMESPACE::TypedID<type>>
 };
 } // namespace std
 
-#ifdef SPIRV_CROSS_SPV_HEADER_NAMESPACE_OVERRIDE
-#undef spv
-#endif
 #endif

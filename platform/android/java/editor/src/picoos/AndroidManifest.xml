@@ -16,10 +16,16 @@
 
         <activity
             android:name=".GodotEditor"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="landscape"
             tools:node="merge"
-            tools:replace="android:screenOrientation"/>
+            tools:replace="android:screenOrientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".GodotXRGame"

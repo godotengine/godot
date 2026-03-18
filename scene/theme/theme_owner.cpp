@@ -30,7 +30,6 @@
 
 #include "theme_owner.h"
 
-#include "core/object/callable_mp.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -38,8 +37,33 @@
 // Theme owner node.
 
 void ThemeOwner::set_owner_node(Node *p_node) {
-	ERR_FAIL_COND(p_node && !Object::cast_to<Control>(p_node) && !Object::cast_to<Window>(p_node));
-	owner_node = p_node;
+	owner_control = nullptr;
+	owner_window = nullptr;
+
+	Control *c = Object::cast_to<Control>(p_node);
+	if (c) {
+		owner_control = c;
+		return;
+	}
+
+	Window *w = Object::cast_to<Window>(p_node);
+	if (w) {
+		owner_window = w;
+		return;
+	}
+}
+
+Node *ThemeOwner::get_owner_node() const {
+	if (owner_control) {
+		return owner_control;
+	} else if (owner_window) {
+		return owner_window;
+	}
+	return nullptr;
+}
+
+bool ThemeOwner::has_owner_node() const {
+	return bool(owner_control || owner_window);
 }
 
 void ThemeOwner::set_owner_context(ThemeContext *p_context, bool p_propagate) {
@@ -195,16 +219,16 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 		// and eventually the chain must lead to native types).
 
 		// First, look through themes owned by nodes in the tree.
-		Node *current_owner = owner_node;
+		Node *owner_node = get_owner_node();
 
-		while (current_owner) {
-			Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+		while (owner_node) {
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 			if (owner_theme.is_valid() && owner_theme->get_type_variation_base(type_variation) != StringName()) {
 				owner_theme->get_type_dependencies(type_name, type_variation, r_result);
 				return;
 			}
 
-			current_owner = _get_next_owner_node(current_owner);
+			owner_node = _get_next_owner_node(owner_node);
 		}
 
 		// Second, check global contexts.
@@ -230,19 +254,19 @@ Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const S
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
-	Node *current_owner = owner_node;
+	Node *owner_node = get_owner_node();
 
-	while (current_owner) {
+	while (owner_node) {
 		// For each theme resource check the theme types provided and see if p_name exists with any of them.
 		for (const StringName &E : p_theme_types) {
-			Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 			if (owner_theme.is_valid() && owner_theme->has_theme_item(p_data_type, p_name, E)) {
 				return owner_theme->get_theme_item(p_data_type, p_name, E);
 			}
 		}
 
-		current_owner = _get_next_owner_node(current_owner);
+		owner_node = _get_next_owner_node(owner_node);
 	}
 
 	// Second, check global themes from the appropriate context.
@@ -266,19 +290,19 @@ bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const Stri
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
-	Node *current_owner = owner_node;
+	Node *owner_node = get_owner_node();
 
-	while (current_owner) {
+	while (owner_node) {
 		// For each theme resource check the theme types provided and see if p_name exists with any of them.
 		for (const StringName &E : p_theme_types) {
-			Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 			if (owner_theme.is_valid() && owner_theme->has_theme_item(p_data_type, p_name, E)) {
 				return true;
 			}
 		}
 
-		current_owner = _get_next_owner_node(current_owner);
+		owner_node = _get_next_owner_node(owner_node);
 	}
 
 	// Second, check global themes from the appropriate context.
@@ -301,16 +325,16 @@ float ThemeOwner::get_theme_default_base_scale() {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
-	Node *current_owner = owner_node;
+	Node *owner_node = get_owner_node();
 
-	while (current_owner) {
-		Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+	while (owner_node) {
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_base_scale()) {
 			return owner_theme->get_default_base_scale();
 		}
 
-		current_owner = _get_next_owner_node(current_owner);
+		owner_node = _get_next_owner_node(owner_node);
 	}
 
 	// Second, check global themes from the appropriate context.
@@ -331,16 +355,16 @@ Ref<Font> ThemeOwner::get_theme_default_font() {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
-	Node *current_owner = owner_node;
+	Node *owner_node = get_owner_node();
 
-	while (current_owner) {
-		Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+	while (owner_node) {
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_font()) {
 			return owner_theme->get_default_font();
 		}
 
-		current_owner = _get_next_owner_node(current_owner);
+		owner_node = _get_next_owner_node(owner_node);
 	}
 
 	// Second, check global themes from the appropriate context.
@@ -361,16 +385,16 @@ int ThemeOwner::get_theme_default_font_size() {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
-	Node *current_owner = owner_node;
+	Node *owner_node = get_owner_node();
 
-	while (current_owner) {
-		Ref<Theme> owner_theme = _get_owner_node_theme(current_owner);
+	while (owner_node) {
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_font_size()) {
 			return owner_theme->get_default_font_size();
 		}
 
-		current_owner = _get_next_owner_node(current_owner);
+		owner_node = _get_next_owner_node(owner_node);
 	}
 
 	// Second, check global themes from the appropriate context.

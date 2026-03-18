@@ -34,15 +34,11 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -621,7 +617,6 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	es.history_current = -1;
 	es.live_edit_root = NodePath(String("/root"));
 	es.history_id = last_created_scene++;
-	es.time_opened = Time::get_singleton()->get_unix_time_from_system();
 
 	if (p_at_pos == edited_scene.size()) {
 		edited_scene.push_back(es);
@@ -648,9 +643,6 @@ void EditorData::remove_scene(int p_idx) {
 			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_scene_file_path());
 		}
 
-		if (edited_scene[p_idx].root == SceneTree::get_singleton()->get_edited_scene_root()) {
-			SceneTree::get_singleton()->set_edited_scene_root(nullptr);
-		}
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = nullptr;
 	}
@@ -676,7 +668,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 	if (p_node == p_root) {
 		ss = p_node->get_scene_inherited_state();
-	} else if (p_node->is_instance()) {
+	} else if (!p_node->get_scene_file_path().is_empty()) {
 		ss = p_node->get_scene_instance_state();
 	}
 
@@ -714,52 +706,38 @@ bool EditorData::check_and_update_scene(int p_idx) {
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 
 	if (must_reload) {
-		reload_scene_from_memory(p_idx, false);
+		Ref<PackedScene> pscene;
+		pscene.instantiate();
+
+		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
+		ep.step(TTR("Storing local changes..."), 0);
+		// Pack first, so it stores diffs to previous version of saved scene.
+		Error err = pscene->pack(edited_scene[p_idx].root);
+		ERR_FAIL_COND_V(err != OK, false);
+		ep.step(TTR("Updating scene..."), 1);
+		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		ERR_FAIL_NULL_V(new_scene, false);
+
+		// Transfer selection.
+		List<Node *> new_selection;
+		for (const Node *E : edited_scene.write[p_idx].selection) {
+			NodePath p = edited_scene[p_idx].root->get_path_to(E);
+			Node *new_node = new_scene->get_node(p);
+			if (new_node) {
+				new_selection.push_back(new_node);
+			}
+		}
+
+		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
+		Node *old_root = edited_scene[p_idx].root;
+		EditorNode::get_singleton()->set_edited_scene(new_scene);
+		memdelete(old_root);
+		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
 	}
 
 	return false;
-}
-
-bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
-	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
-	if (!edited_scene[p_idx].root) {
-		return false;
-	}
-
-	Ref<PackedScene> pscene;
-	pscene.instantiate();
-
-	EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
-	ep.step(TTR("Storing local changes..."), 0);
-	// Pack first, so it stores diffs to previous version of saved scene.
-	Error err = pscene->pack(edited_scene[p_idx].root);
-	ERR_FAIL_COND_V(err != OK, false);
-	ep.step(TTR("Updating scene..."), 1);
-	Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
-	ERR_FAIL_NULL_V(new_scene, false);
-
-	// Transfer selection.
-	List<Node *> new_selection;
-	for (const Node *E : edited_scene.write[p_idx].selection) {
-		NodePath p = edited_scene[p_idx].root->get_path_to(E);
-		Node *new_node = new_scene->get_node(p);
-		if (new_node) {
-			new_selection.push_back(new_node);
-		}
-	}
-
-	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-	Node *old_root = edited_scene[p_idx].root;
-	EditorNode::get_singleton()->set_edited_scene(new_scene);
-	memdelete(old_root);
-	edited_scene.write[p_idx].selection = new_selection;
-
-	if (p_mark_unsaved) {
-		EditorUndoRedoManager::get_singleton()->clear_history(get_scene_history_id(p_idx));
-	}
-	return true;
 }
 
 int EditorData::get_edited_scene() const {
@@ -795,7 +773,7 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	edited_scene.write[current_edited_scene].root = p_root;
 	if (p_root) {
-		if (p_root->is_instance()) {
+		if (!p_root->get_scene_file_path().is_empty()) {
 			edited_scene.write[current_edited_scene].path = p_root->get_scene_file_path();
 		} else {
 			p_root->set_scene_file_path(edited_scene[current_edited_scene].path);
@@ -819,11 +797,6 @@ Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 	}
 
 	return out_edited_scenes_list;
-}
-
-uint64_t EditorData::get_scene_time_opened(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
-	return edited_scene[p_idx].time_opened;
 }
 
 void EditorData::set_scene_modified_time(int p_idx, uint64_t p_time) {
@@ -866,7 +839,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
 	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (s.is_null() && n && !n->is_instance()) {
+		while (s.is_null() && n && n->get_scene_file_path().is_empty()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}
@@ -1072,8 +1045,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_global_classes() {
-	LocalVector<StringName> global_classes;
-	ScriptServer::get_global_class_list(global_classes);
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
 	Array array_classes;
 	for (const StringName &class_name : global_classes) {
 		Dictionary d;
@@ -1224,15 +1197,15 @@ EditorData::~EditorData() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void EditorSelection::_node_removed(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
-	ObjectID nid = p_node->get_instance_id();
-	if (!selection.has(nid)) {
+	if (!selection.has(p_node)) {
 		return;
 	}
 
-	Object *meta = selection[nid];
-	memdelete_notnull(meta);
-	selection.erase(nid);
+	Object *meta = selection[p_node];
+	if (meta) {
+		memdelete(meta);
+	}
+	selection.erase(p_node);
 	changed = true;
 	node_list_changed = true;
 }
@@ -1240,8 +1213,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 void EditorSelection::add_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!p_node->is_inside_tree());
-	ObjectID nid = p_node->get_instance_id();
-	if (selection.has(nid)) {
+	if (selection.has(p_node)) {
 		return;
 	}
 
@@ -1254,32 +1226,30 @@ void EditorSelection::add_node(Node *p_node) {
 			break;
 		}
 	}
-	selection[nid] = meta;
+	selection[p_node] = meta;
 
 	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
-	ObjectID nid = p_node->get_instance_id();
-	if (!selection.has(nid)) {
+	if (!selection.has(p_node)) {
 		return;
 	}
 
 	changed = true;
 	node_list_changed = true;
-	Object *meta = selection[nid];
-	memdelete_notnull(meta);
-	selection.erase(nid);
+	Object *meta = selection[p_node];
+	if (meta) {
+		memdelete(meta);
+	}
+	selection.erase(p_node);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
-	if (!p_node) {
-		return false;
-	}
-	return selection.has(p_node->get_instance_id());
+	return selection.has(p_node);
 }
 
 void EditorSelection::_bind_methods() {
@@ -1308,15 +1278,12 @@ void EditorSelection::_update_node_list() {
 	// If the selection does not have the parent of the selected node, then add the node to the node list.
 	// However, if the parent is already selected, then adding this node is redundant as
 	// it is included with the parent, so skip it.
-	for (const KeyValue<ObjectID, Object *> &E : selection) {
-		Node *parent = ObjectDB::get_instance<Node>(E.key);
-		if (!parent) {
-			continue;
-		}
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node *parent = E.key;
 		parent = parent->get_parent();
 		bool skip = false;
 		while (parent) {
-			if (selection.has(parent->get_instance_id())) {
+			if (selection.has(parent)) {
 				skip = true;
 				break;
 			}
@@ -1329,23 +1296,19 @@ void EditorSelection::_update_node_list() {
 		top_selected_node_list.push_back(E.key);
 	}
 
-	node_list_changed = false;
+	node_list_changed = true;
 }
 
-void EditorSelection::update(bool p_deferred) {
+void EditorSelection::update() {
 	_update_node_list();
 
 	if (!changed) {
 		return;
 	}
 	changed = false;
-	if (p_deferred) {
-		if (!emitted) {
-			emitted = true;
-			callable_mp(this, &EditorSelection::_emit_change).call_deferred();
-		}
-	} else {
-		_emit_change();
+	if (!emitted) {
+		emitted = true;
+		callable_mp(this, &EditorSelection::_emit_change).call_deferred();
 	}
 }
 
@@ -1357,11 +1320,8 @@ void EditorSelection::_emit_change() {
 TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const ObjectID &nid : top_selected_node_list) {
-		Node *node = ObjectDB::get_instance<Node>(nid);
-		if (node) {
-			ret.push_back(node);
-		}
+	for (const Node *E : top_selected_node_list) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -1370,39 +1330,26 @@ TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 TypedArray<Node> EditorSelection::get_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const KeyValue<ObjectID, Object *> &E : selection) {
-		Node *node = ObjectDB::get_instance<Node>(E.key);
-		if (node) {
-			ret.push_back(node);
-		}
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
 }
 
-List<Node *> EditorSelection::get_top_selected_node_list() {
+const List<Node *> &EditorSelection::get_top_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
 		_update_node_list();
 	}
-	List<Node *> node_list;
-	for (const ObjectID &nid : top_selected_node_list) {
-		Node *node = ObjectDB::get_instance<Node>(nid);
-		if (node) {
-			node_list.push_back(node);
-		}
-	}
-	return node_list;
+	return top_selected_node_list;
 }
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
 	List<Node *> node_list;
-	for (const KeyValue<ObjectID, Object *> &E : selection) {
-		Node *node = ObjectDB::get_instance<Node>(E.key);
-		if (node) {
-			node_list.push_back(node);
-		}
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		node_list.push_back(E.key);
 	}
 
 	return node_list;
@@ -1410,10 +1357,7 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 
 void EditorSelection::clear() {
 	while (!selection.is_empty()) {
-		Node *node = ObjectDB::get_instance<Node>(selection.begin()->key);
-		if (node) {
-			remove_node(node);
-		}
+		remove_node(selection.begin()->key);
 	}
 
 	changed = true;

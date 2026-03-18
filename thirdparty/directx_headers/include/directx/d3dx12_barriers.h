@@ -190,4 +190,3 @@ public:
 #endif // defined( __cplusplus )
 
 #endif // __D3DX12_BARRIERS_H__
-

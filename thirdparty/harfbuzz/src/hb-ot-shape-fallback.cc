@@ -409,13 +409,16 @@ position_around_base (const hb_ot_shape_plan_t *plan,
 }
 
 static inline void
-position_cluster_impl (const hb_ot_shape_plan_t *plan,
-		       hb_font_t *font,
-		       hb_buffer_t  *buffer,
-		       unsigned int start,
-		       unsigned int end,
-		       bool adjust_offsets_when_zeroing)
+position_cluster (const hb_ot_shape_plan_t *plan,
+		  hb_font_t *font,
+		  hb_buffer_t  *buffer,
+		  unsigned int start,
+		  unsigned int end,
+		  bool adjust_offsets_when_zeroing)
 {
+  if (end - start < 2)
+    return;
+
   /* Find the base glyph */
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = start; i < end; i++)
@@ -436,20 +439,6 @@ position_cluster_impl (const hb_ot_shape_plan_t *plan,
 
       i = j - 1;
     }
-}
-
-static HB_ALWAYS_INLINE void
-position_cluster (const hb_ot_shape_plan_t *plan,
-		  hb_font_t *font,
-		  hb_buffer_t  *buffer,
-		  unsigned int start,
-		  unsigned int end,
-		  bool adjust_offsets_when_zeroing)
-{
-  if (end - start < 2)
-    return;
-
-  position_cluster_impl (plan, font, buffer, start, end, adjust_offsets_when_zeroing);
 }
 
 void

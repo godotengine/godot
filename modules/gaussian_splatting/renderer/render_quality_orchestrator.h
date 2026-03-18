@@ -1,0 +1,48 @@
+#ifndef GAUSSIAN_RENDER_QUALITY_ORCHESTRATOR_H
+#define GAUSSIAN_RENDER_QUALITY_ORCHESTRATOR_H
+
+#include "gaussian_splat_renderer.h"
+
+// Manages quality settings (LOD, culling parameters, presets) and
+// executes the GPU culling pass. Merged from the former
+// RenderQualityOrchestrator + RenderCullingOrchestrator (ISSUE-016).
+class RenderQualityOrchestrator {
+public:
+	RenderQualityOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler);
+
+	// Quality / LOD settings
+	void set_lod_enabled(bool p_enabled);
+	void set_lod_bias(float p_bias);
+	void set_lod_min_screen_size(float p_pixels);
+	void set_lod_max_distance(float p_distance);
+	void set_importance_cull_threshold(float p_threshold);
+	void set_cull_radius_multiplier(float p_multiplier);
+	void set_cull_frustum_plane_slack(float p_slack);
+	void set_cull_near_tolerance(float p_tolerance);
+	void set_cull_far_tolerance(float p_tolerance);
+	void set_tiny_splat_screen_radius(float p_pixels);
+	void set_opacity_aware_culling(bool p_enabled);
+	void set_visibility_threshold(float p_threshold);
+	void set_distance_cull_enabled(bool p_enabled);
+	void set_distance_cull_start(float p_distance);
+	void set_distance_cull_max_rate(float p_rate);
+	void set_overflow_autotune_enabled(bool p_enabled);
+	void set_max_splats(int p_count);
+	void set_frustum_culling(bool p_enabled);
+	void set_quality_preset(const String &p_preset);
+	String get_quality_preset() const;
+
+	// GPU culling pass (absorbed from RenderCullingOrchestrator)
+	GaussianRenderState::CullStageOutput cull_for_view(const Transform3D &p_world_to_camera_transform,
+			const Projection &p_projection, const Size2i &p_viewport_size);
+
+	GaussianSplatRenderer::PerformanceSettings &get_performance_settings() { return performance_settings; }
+	const GaussianSplatRenderer::PerformanceSettings &get_performance_settings() const { return performance_settings; }
+
+private:
+	GaussianSplatRenderer::PerformanceSettings performance_settings;
+	GaussianSplatRenderer *renderer = nullptr;
+	GPUCuller *gpu_culler = nullptr;
+};
+
+#endif

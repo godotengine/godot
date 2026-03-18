@@ -149,11 +149,14 @@ hb_shape_full (hb_font_t          *font,
 
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
 
+  if (buffer->max_ops <= 0)
+    buffer->shaping_failed = true;
+
   hb_shape_plan_destroy (shape_plan);
 
   if (text_buffer)
   {
-    if (res && buffer->successful
+    if (res && buffer->successful && !buffer->shaping_failed
 	    && text_buffer->successful
 	    && !buffer->verify (text_buffer,
 				font,
@@ -196,7 +199,6 @@ hb_shape (hb_font_t           *font,
 
 
 #ifdef HB_EXPERIMENTAL_API
-#ifndef HB_NO_VAR
 
 static float
 buffer_advance (hb_buffer_t *buffer)
@@ -438,7 +440,7 @@ hb_shape_justify (hb_font_t          *font,
 
   return true;
 }
-#endif
+
 #endif
 
 

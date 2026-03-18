@@ -97,6 +97,8 @@ uint32 IslandBuilder::GetLowestBodyIndex(uint32 inActiveBodyIndex) const
 
 void IslandBuilder::LinkBodies(uint32 inFirst, uint32 inSecond)
 {
+	JPH_PROFILE_FUNCTION();
+
 	// Both need to be active, we don't want to create an island with static objects
 	if (inFirst >= mMaxActiveBodies || inSecond >= mMaxActiveBodies)
 		return;
@@ -382,12 +384,6 @@ void IslandBuilder::Finalize(const BodyID *inActiveBodies, uint32 inNumActiveBod
 	SortIslands(inTempAllocator);
 
 	mNumPositionSteps = (uint8 *)inTempAllocator->Allocate(mNumIslands * sizeof(uint8));
-
-#ifdef JPH_TRACK_SIMULATION_STATS
-	mIslandStats = (IslandStats *)inTempAllocator->Allocate(mNumIslands * sizeof(IslandStats));
-	for (uint32 i = 0; i < mNumIslands; ++i)
-		new (&mIslandStats[i]) IslandStats();
-#endif
 }
 
 void IslandBuilder::GetBodiesInIsland(uint32 inIslandIndex, BodyID *&outBodiesBegin, BodyID *&outBodiesEnd) const
@@ -437,10 +433,6 @@ bool IslandBuilder::GetContactsInIsland(uint32 inIslandIndex, uint32 *&outContac
 void IslandBuilder::ResetIslands(TempAllocator *inTempAllocator)
 {
 	JPH_PROFILE_FUNCTION();
-
-#ifdef JPH_TRACK_SIMULATION_STATS
-	inTempAllocator->Free(mIslandStats, mNumIslands * sizeof(IslandStats));
-#endif
 
 	inTempAllocator->Free(mNumPositionSteps, mNumIslands * sizeof(uint8));
 

@@ -32,7 +32,6 @@
 
 #include "texture_loader_ktx.h"
 
-#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 static Ref<ResourceFormatKTX> resource_loader_ktx;
@@ -42,7 +41,7 @@ void initialize_ktx_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	if constexpr (GD_IS_CLASS_ENABLED(ImageTexture)) {
+	if (GD_IS_CLASS_ENABLED(ImageTexture)) {
 		resource_loader_ktx.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_ktx);
 	}
@@ -53,7 +52,7 @@ void uninitialize_ktx_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	if constexpr (GD_IS_CLASS_ENABLED(ImageTexture)) {
+	if (GD_IS_CLASS_ENABLED(ImageTexture)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_ktx);
 		resource_loader_ktx.unref();
 	}

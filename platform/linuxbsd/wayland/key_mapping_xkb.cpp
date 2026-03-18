@@ -30,12 +30,6 @@
 
 #include "key_mapping_xkb.h"
 
-#ifdef SOWRAP_ENABLED
-#include "xkbcommon-so_wrap.h"
-#else
-#include <xkbcommon/xkbcommon.h>
-#endif // SOWRAP_ENABLED
-
 void KeyMappingXKB::initialize() {
 	// XKB keycode to Godot Key map.
 

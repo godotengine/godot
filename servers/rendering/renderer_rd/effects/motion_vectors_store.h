@@ -30,8 +30,11 @@
 
 #pragma once
 
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/motion_vectors_store.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering_server.h"
 
 namespace RendererRD {
 class MotionVectorsStore {

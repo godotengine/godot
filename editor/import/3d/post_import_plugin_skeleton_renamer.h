@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/import/3d/resource_importer_scene.h"
+#include "resource_importer_scene.h"
 
 class PostImportPluginSkeletonRenamer : public EditorScenePostImportPlugin {
 	GDCLASS(PostImportPluginSkeletonRenamer, EditorScenePostImportPlugin);

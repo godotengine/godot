@@ -32,8 +32,6 @@
 
 #include "scene/3d/physics/physics_body_3d.h"
 
-class PhysicsMaterial;
-
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;

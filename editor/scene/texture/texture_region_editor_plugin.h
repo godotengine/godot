@@ -138,8 +138,6 @@ class TextureRegionEditor : public AcceptDialog {
 
 	void _set_grid_parameters_clamping(bool p_enabled);
 
-	void _commit_drag();
-
 protected:
 	void _notification(int p_what);
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -148,8 +146,6 @@ protected:
 	void _texture_preview_draw();
 	void _texture_overlay_draw();
 	void _texture_overlay_input(const Ref<InputEvent> &p_input);
-
-	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	Vector2 snap_point(Vector2 p_target) const;
 

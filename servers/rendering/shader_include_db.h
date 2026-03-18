@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "core/object/class_db.h"
 
 class ShaderIncludeDB : public Object {
 	GDCLASS(ShaderIncludeDB, Object)

@@ -30,8 +30,6 @@
 
 #include "font_config_plugin.h"
 
-#include "core/object/callable_mp.h"
-#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/settings/editor_settings.h"
@@ -467,12 +465,7 @@ void EditorPropertyOTVariation::update_property() {
 			Vector3i range = supported.get_value_at_index(i);
 
 			EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
-			EditorPropertyRangeHint hint;
-			hint.min = range.x;
-			hint.max = range.y;
-			hint.or_greater = false;
-			hint.or_less = false;
-			prop->setup(hint);
+			prop->setup(range.x, range.y, false, true, false, false);
 			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
 
 			String name = TS->tag_to_name(name_tag);
@@ -753,13 +746,7 @@ void EditorPropertyOTFeatures::update_property() {
 					} break;
 					case Variant::INT: {
 						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-						EditorPropertyRangeHint hint;
-						hint.min = 0;
-						hint.max = 255;
-						hint.hide_control = false;
-						hint.or_greater = false;
-						hint.or_less = false;
-						editor->setup(hint);
+						editor->setup(0, 255, 1, false, false, false);
 						prop = editor;
 					} break;
 					default: {
@@ -947,6 +934,8 @@ void FontPreview::_notification(int p_what) {
 		} break;
 	}
 }
+
+void FontPreview::_bind_methods() {}
 
 Size2 FontPreview::get_minimum_size() const {
 	return Vector2(64, 64) * EDSCALE;

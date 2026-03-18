@@ -7,15 +7,9 @@ namespace Godot
     /// </summary>
     public interface IAwaiter : INotifyCompletion
     {
-        /// <summary>
-        /// The completion status of this <see cref="IAwaiter"/>.
-        /// </summary>
-        public bool IsCompleted { get; }
+        bool IsCompleted { get; }
 
-        /// <summary>
-        /// Gets the result of completion for this <see cref="IAwaiter"/>.
-        /// </summary>
-        public void GetResult();
+        void GetResult();
     }
 
     /// <summary>
@@ -24,14 +18,8 @@ namespace Godot
     /// <typeparam name="TResult">A reference to the result to be passed out.</typeparam>
     public interface IAwaiter<out TResult> : INotifyCompletion
     {
-        /// <summary>
-        /// The completion status of this <see cref="IAwaiter{TResult}"/>.
-        /// </summary>
-        public bool IsCompleted { get; }
+        bool IsCompleted { get; }
 
-        /// <summary>
-        /// Gets the result of completion for this <see cref="IAwaiter{TResult}"/>.
-        /// </summary>
-        public TResult GetResult();
+        TResult GetResult();
     }
 }

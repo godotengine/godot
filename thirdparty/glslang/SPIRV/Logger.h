@@ -37,13 +37,12 @@
 
 #include <string>
 #include <vector>
-#include "glslang/Include/visibility.h"
 
 namespace spv {
 
 // A class for holding all SPIR-V build status messages, including
 // missing/TBD functionalities, warnings, and errors.
-class GLSLANG_EXPORT SpvBuildLogger {
+class SpvBuildLogger {
 public:
     SpvBuildLogger() {}
 

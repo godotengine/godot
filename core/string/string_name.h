@@ -51,6 +51,7 @@ class [[nodiscard]] StringName {
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
 		_Data *next = nullptr;
+		_Data() {}
 	};
 
 	_Data *_data = nullptr;

@@ -46,7 +46,7 @@ struct Coverage
 
   protected:
   union {
-  struct { HBUINT16 v; }        format;         /* Format identifier */
+  HBUINT16                      format;         /* Format identifier */
   CoverageFormat1_3<SmallTypes> format1;
   CoverageFormat2_4<SmallTypes> format2;
 #ifndef HB_NO_BEYOND_64K
@@ -55,7 +55,7 @@ struct Coverage
 #endif
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format.v);
+  DEFINE_SIZE_UNION (2, format);
 
 #ifndef HB_OPTIMIZE_SIZE
   HB_ALWAYS_INLINE
@@ -63,9 +63,9 @@ struct Coverage
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.v.sanitize (c)) return_trace (false);
+    if (!u.format.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -86,7 +86,7 @@ struct Coverage
   unsigned int get (hb_codepoint_t k) const { return get_coverage (k); }
   unsigned int get_coverage (hb_codepoint_t glyph_id) const
   {
-    switch (u.format.v) {
+    switch (u.format) {
     case 1: return u.format1.get_coverage (glyph_id);
     case 2: return u.format2.get_coverage (glyph_id);
 #ifndef HB_NO_BEYOND_64K
@@ -97,38 +97,18 @@ struct Coverage
     }
   }
   unsigned int get_coverage (hb_codepoint_t glyph_id,
-			     hb_ot_layout_mapping_cache_t *cache) const
+			     hb_ot_lookup_cache_t *cache) const
   {
     unsigned coverage;
-    if (cache && cache->get (glyph_id, &coverage)) return coverage < cache->MAX_VALUE ? coverage : NOT_COVERED;
+    if (cache && cache->get (glyph_id, &coverage)) return coverage;
     coverage = get_coverage (glyph_id);
-    if (cache) {
-      if (coverage == NOT_COVERED)
-	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
-      else if (likely (coverage < cache->MAX_VALUE))
-	cache->set_unchecked (glyph_id, coverage);
-    }
-    return coverage;
-  }
-
-  unsigned int get_coverage_binary (hb_codepoint_t glyph_id,
-				    hb_ot_layout_binary_cache_t *cache) const
-  {
-    unsigned coverage;
-    if (cache && cache->get (glyph_id, &coverage)) return coverage < cache->MAX_VALUE ? coverage : NOT_COVERED;
-    coverage = get_coverage (glyph_id);
-    if (cache) {
-      if (coverage == NOT_COVERED)
-	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
-      else
-	cache->set_unchecked (glyph_id, 0);
-    }
+    if (cache) cache->set (glyph_id, coverage);
     return coverage;
   }
 
   unsigned get_population () const
   {
-    switch (u.format.v) {
+    switch (u.format) {
     case 1: return u.format1.get_population ();
     case 2: return u.format2.get_population ();
 #ifndef HB_NO_BEYOND_64K
@@ -160,11 +140,11 @@ struct Coverage
       last = g;
       if (g > max) max = g;
     }
-    u.format.v = !unsorted && count <= num_ranges * 3 ? 1 : 2;
+    u.format = !unsorted && count <= num_ranges * 3 ? 1 : 2;
 
 #ifndef HB_NO_BEYOND_64K
     if (max > 0xFFFFu)
-      u.format.v += 2;
+      u.format += 2;
     if (unlikely (max > 0xFFFFFFu))
 #else
     if (unlikely (max > 0xFFFFu))
@@ -174,7 +154,7 @@ struct Coverage
       return_trace (false);
     }
 
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return_trace (u.format1.serialize (c, glyphs));
     case 2: return_trace (u.format2.serialize (c, glyphs));
@@ -205,7 +185,7 @@ struct Coverage
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return u.format1.intersects (glyphs);
     case 2: return u.format2.intersects (glyphs);
@@ -218,7 +198,7 @@ struct Coverage
   }
   bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
   {
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return u.format1.intersects_coverage (glyphs, index);
     case 2: return u.format2.intersects_coverage (glyphs, index);
@@ -232,7 +212,7 @@ struct Coverage
 
   unsigned cost () const
   {
-    switch (u.format.v) {
+    switch (u.format) {
     case 1: hb_barrier (); return u.format1.cost ();
     case 2: hb_barrier (); return u.format2.cost ();
 #ifndef HB_NO_BEYOND_64K
@@ -248,7 +228,7 @@ struct Coverage
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
   {
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return u.format1.collect_coverage (glyphs);
     case 2: return u.format2.collect_coverage (glyphs);
@@ -264,7 +244,7 @@ struct Coverage
 	    hb_requires (hb_is_sink_of (IterableOut, hb_codepoint_t))>
   void intersect_set (const hb_set_t &glyphs, IterableOut&& intersect_glyphs) const
   {
-    switch (u.format.v)
+    switch (u.format)
     {
     case 1: return u.format1.intersect_set (glyphs, intersect_glyphs);
     case 2: return u.format2.intersect_set (glyphs, intersect_glyphs);
@@ -282,7 +262,7 @@ struct Coverage
     iter_t (const Coverage &c_ = Null (Coverage))
     {
       hb_memset (this, 0, sizeof (*this));
-      format = c_.u.format.v;
+      format = c_.u.format;
       switch (format)
       {
       case 1: u.format1.init (c_.u.format1); return;
@@ -352,7 +332,7 @@ struct Coverage
     }
     iter_t __end__ () const
     {
-      iter_t it;
+      iter_t it = {};
       it.format = format;
       switch (format)
       {

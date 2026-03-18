@@ -38,7 +38,11 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/vector.h"
 
-typedef struct _snd_rawmidi snd_rawmidi_t;
+#ifdef SOWRAP_ENABLED
+#include "../alsa/asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 
 class MIDIDriverALSAMidi : public MIDIDriver {
 	Thread thread;

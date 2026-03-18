@@ -32,6 +32,7 @@
 
 #include "enet_connection.h"
 
+#include "core/crypto/crypto.h"
 #include "scene/main/multiplayer_peer.h"
 
 #include <enet/enet.h>

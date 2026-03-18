@@ -30,7 +30,7 @@
 
 #include "camera_feed_linux.h"
 
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering_server.h"
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -350,7 +350,8 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 	return true;
 }
 
-CameraFeedLinux::CameraFeedLinux(const String &p_device_name) {
+CameraFeedLinux::CameraFeedLinux(const String &p_device_name) :
+		CameraFeed() {
 	device_name = p_device_name;
 	_query_device(device_name);
 }

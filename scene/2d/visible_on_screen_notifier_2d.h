@@ -36,6 +36,8 @@ class Viewport;
 class VisibleOnScreenNotifier2D : public Node2D {
 	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
 
+	HashSet<Viewport *> viewports;
+
 	Rect2 rect;
 	bool show_rect = true;
 

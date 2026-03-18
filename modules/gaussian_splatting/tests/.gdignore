@@ -1,0 +1,1 @@
+# Ignore test scripts during editor-wide GDScript scans to avoid noisy parse errors.

@@ -113,7 +113,7 @@ will_overflow (graph_t& graph,
 
   hb_hashmap_t<overflow_record_t*, bool> record_set;
   const auto& vertices = graph.vertices_;
-  for (unsigned parent_idx : graph.ordering_)
+  for (int parent_idx = vertices.length - 1; parent_idx >= 0; parent_idx--)
   {
     // Don't need to check virtual links for overflow
     for (const auto& link : vertices.arrayZ[parent_idx].obj.real_links)
@@ -173,7 +173,6 @@ template <typename O> inline void
 serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
                         char* head,
                         unsigned size,
-                        const hb_vector_t<unsigned>& id_map,
                         hb_serialize_context_t* c)
 {
   assert(link.position + link.width <= size);
@@ -181,7 +180,9 @@ serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
   OT::Offset<O>* offset = reinterpret_cast<OT::Offset<O>*> (head + link.position);
   *offset = 0;
   c->add_link (*offset,
-               id_map[link.objidx],
+               // serializer has an extra nil object at the start of the
+               // object array. So all id's are +1 of what our id's are.
+               link.objidx + 1,
                (hb_serialize_context_t::whence_t) link.whence,
                link.bias);
 }
@@ -190,7 +191,6 @@ inline
 void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
                      char* head,
                      unsigned size,
-                     const hb_vector_t<unsigned>& id_map,
                      hb_serialize_context_t* c)
 {
   switch (link.width)
@@ -201,21 +201,21 @@ void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
     case 4:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT32> (link, head, size, id_map, c);
+        serialize_link_of_type<OT::HBINT32> (link, head, size, c);
       } else {
-        serialize_link_of_type<OT::HBUINT32> (link, head, size, id_map, c);
+        serialize_link_of_type<OT::HBUINT32> (link, head, size, c);
       }
       return;
     case 2:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT16> (link, head, size, id_map, c);
+        serialize_link_of_type<OT::HBINT16> (link, head, size, c);
       } else {
-        serialize_link_of_type<OT::HBUINT16> (link, head, size, id_map, c);
+        serialize_link_of_type<OT::HBUINT16> (link, head, size, c);
       }
       return;
     case 3:
-      serialize_link_of_type<OT::HBUINT24> (link, head, size, id_map, c);
+      serialize_link_of_type<OT::HBUINT24> (link, head, size, c);
       return;
     default:
       // Unexpected link width.
@@ -241,36 +241,25 @@ inline hb_blob_t* serialize (const graph_t& graph)
 
   c.start_serialize<void> ();
   const auto& vertices = graph.vertices_;
-
-  // Objects are placed in the serializer in reverse order since children need
-  // to be inserted before their parents.
-
-  // Maps from our obj id's to the id's used during this serialization.
-  hb_vector_t<unsigned> id_map;
-  id_map.resize(graph.ordering_.length);
-  for (int pos = graph.ordering_.length - 1; pos >= 0; pos--) {
-    unsigned i = graph.ordering_[pos];
+  for (unsigned i = 0; i < vertices.length; i++) {
     c.push ();
 
-    auto& v = vertices[i];
-
-    size_t size = v.obj.tail - v.obj.head;
-
+    size_t size = vertices[i].obj.tail - vertices[i].obj.head;
     char* start = c.allocate_size <char> (size);
     if (!start) {
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Buffer out of space.");
       return nullptr;
     }
 
-    hb_memcpy (start, v.obj.head, size);
+    hb_memcpy (start, vertices[i].obj.head, size);
 
     // Only real links needs to be serialized.
-    for (const auto& link : v.obj.real_links)
-      serialize_link (link, start, size, id_map, &c);
+    for (const auto& link : vertices[i].obj.real_links)
+      serialize_link (link, start, size, &c);
 
     // All duplications are already encoded in the graph, so don't
     // enable sharing during packing.
-    id_map[i] = c.pop_pack (false);
+    c.pop_pack (false);
   }
   c.end_serialize ();
 

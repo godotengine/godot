@@ -84,7 +84,8 @@ hb_face_count (hb_blob_t *blob)
 
   hb_sanitize_context_t c (blob);
 
-  auto *ot = blob->as<OT::OpenTypeFontFile> ();
+  const char *start = hb_blob_get_data (blob, nullptr);
+  auto *ot = reinterpret_cast<OT::OpenTypeFontFile *> (const_cast<char *> (start));
   if (unlikely (!ot->sanitize (&c)))
     return 0;
 

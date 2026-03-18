@@ -1,0 +1,25 @@
+# Doxygen configuration for Godot Gaussian Splatting
+PROJECT_NAME           = "Godot Gaussian Splatting"
+PROJECT_NUMBER         =
+OUTPUT_DIRECTORY       = docs/api/cpp
+GENERATE_HTML          = YES
+GENERATE_LATEX         = YES
+FULL_PATH_NAMES        = NO
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = NO
+OPTIMIZE_FOR_FORTRAN   = NO
+OPTIMIZE_OUTPUT_VHDL   = NO
+EXTRACT_ALL            = YES
+RECURSIVE              = YES
+INPUT                  = ../modules/gaussian_splatting ../scripts
+FILE_PATTERNS          = *.h *.hpp *.cpp
+EXCLUDE_PATTERNS       = */tests/*
+WARN_IF_UNDOCUMENTED   = YES
+WARNINGS               = YES
+WARN_LOGFILE           = docs/api/doxygen-warnings.log
+GENERATE_TREEVIEW      = YES
+USE_MDFILE_AS_MAINPAGE = README.md
+LATEX_BATCHMODE        = YES
+QUIET                  = NO
+JAVADOC_AUTOBRIEF      = YES
+ALIASES               += note="@par Note:"

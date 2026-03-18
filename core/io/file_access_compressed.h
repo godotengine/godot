@@ -106,5 +106,6 @@ public:
 
 	virtual void close() override;
 
+	FileAccessCompressed() {}
 	virtual ~FileAccessCompressed();
 };

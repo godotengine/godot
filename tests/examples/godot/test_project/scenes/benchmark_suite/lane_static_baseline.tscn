@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/benchmark_suite/lane_template.tscn" id="1"]
+
+[node name="LaneStaticBaseline" instance=ExtResource("1")]
+lane_id = "static_baseline"
+lane_name = "Static Baseline"
+lane_description = "Low-noise raster baseline with one placeholder Gaussian asset."
+lane_preset = "static_baseline"
+default_duration_s = 20.0

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.gen.h"
+#include "core/extension/gdextension_interface.h"
 
 enum ModuleInitializationLevel {
 	MODULE_INITIALIZATION_LEVEL_CORE = GDEXTENSION_INITIALIZATION_CORE,

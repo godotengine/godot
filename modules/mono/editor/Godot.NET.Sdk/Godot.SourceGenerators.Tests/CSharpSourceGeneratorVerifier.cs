@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators.Tests;
@@ -13,7 +14,7 @@ namespace Godot.SourceGenerators.Tests;
 public static class CSharpSourceGeneratorVerifier<TSourceGenerator>
 where TSourceGenerator : ISourceGenerator, new()
 {
-    public class Test : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
+    public class Test : CSharpSourceGeneratorTest<TSourceGenerator, XUnitVerifier>
     {
         public Test()
         {

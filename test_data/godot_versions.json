@@ -1,0 +1,33 @@
+{
+  "versions": {
+    "local_development": "4.5",
+    "docker_ci": "4.3",
+    "github_actions": "4.3",
+    "fallback": "4.3"
+  },
+  "docker_images": {
+    "stable": "barichello/godot-ci:4.3",
+    "mono": "barichello/godot-ci:mono-4.3",
+    "experimental": "barichello/godot-ci:4.4.1",
+    "future": "barichello/godot-ci:4.5"
+  },
+  "download_urls": {
+    "4.3": {
+      "linux": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip",
+      "windows": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win64.exe.zip",
+      "macos": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_macos.universal.zip"
+    },
+    "4.5": {
+      "linux": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip",
+      "windows": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_win64.exe.zip",
+      "macos": "https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_macos.universal.zip"
+    }
+  },
+  "compatibility_notes": {
+    "4.3_to_4.5": "GDScript and core API are largely compatible. Module may need recompilation.",
+    "docker_availability": "Docker images typically lag 1-2 weeks behind stable releases.",
+    "testing_strategy": "Use 4.3 for CI/CD, 4.5 for local development until Docker images update."
+  },
+  "last_updated": "2024-12-20",
+  "check_for_updates": "https://hub.docker.com/r/barichello/godot-ci/tags"
+}

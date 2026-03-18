@@ -33,7 +33,6 @@
 #include "scene/main/node.h"
 
 class Viewport;
-
 class CanvasLayer : public Node {
 	GDCLASS(CanvasLayer, Node);
 

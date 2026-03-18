@@ -145,8 +145,7 @@ void Transform2D::translate_local(const Vector2 &p_translation) {
 }
 
 void Transform2D::orthonormalize() {
-	// Orthonormalizable check is done in Vector2 class below.
-	// Gram-Schmidt Process:
+	// Gram-Schmidt Process
 
 	Vector2 x = columns[0];
 	Vector2 y = columns[1];

@@ -78,4 +78,6 @@ public:
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
 	virtual void close() override {}
+
+	FileAccessMemory() {}
 };

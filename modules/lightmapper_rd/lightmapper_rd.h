@@ -32,10 +32,10 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/lightmapper.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_device.h"
 
-class RenderingDevice;
 class RDShaderFile;
-
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)
 
@@ -281,8 +281,7 @@ class LightmapperRD : public Lightmapper {
 
 		int half_search_window;
 		float filter_strength;
-		uint32_t slice_count;
-		uint32_t pad;
+		float pad[2];
 	};
 
 	BakeError _blit_meshes_into_atlas(int p_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata);

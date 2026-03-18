@@ -78,44 +78,52 @@ struct LigatureSubstFormat1_2
     return lig_set.would_apply (c);
   }
 
-  struct external_cache_t
+  unsigned cache_cost () const
   {
-    hb_ot_layout_mapping_cache_t coverage;
-    hb_set_digest_t seconds;
-  };
-  void *external_cache_create () const
+    return (this+coverage).cost ();
+  }
+  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
   {
-    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
-    if (likely (cache))
+    switch (op)
     {
-      cache->coverage.clear ();
-
-      cache->seconds.init ();
-      + hb_iter (ligatureSet)
-      | hb_map (hb_add (this))
-      | hb_apply ([cache] (const LigatureSet<Types> &_) { _.collect_seconds (cache->seconds); })
-      ;
+      case hb_ot_lookup_cache_op_t::CREATE:
+      {
+	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) hb_malloc (sizeof (hb_ot_lookup_cache_t));
+	if (likely (cache))
+	  cache->clear ();
+	return cache;
+      }
+      case hb_ot_lookup_cache_op_t::ENTER:
+	return (void *) true;
+      case hb_ot_lookup_cache_op_t::LEAVE:
+	return nullptr;
+      case hb_ot_lookup_cache_op_t::DESTROY:
+      {
+	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) p;
+	hb_free (cache);
+	return nullptr;
+      }
     }
-    return cache;
+    return nullptr;
   }
 
-  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
     hb_buffer_t *buffer = c->buffer;
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    external_cache_t *cache = (external_cache_t *) external_cache;
-    const hb_set_digest_t *seconds = cache ? &cache->seconds : nullptr;
-    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+    hb_ot_lookup_cache_t *cache = cached ? (hb_ot_lookup_cache_t *) c->lookup_accel->cache : nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache);
 #else
-    const hb_set_digest_t *seconds = nullptr;
-    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
 #endif
     if (index == NOT_COVERED) return_trace (false);
 
     const auto &lig_set = this+ligatureSet[index];
-    return_trace (lig_set.apply (c, seconds));
+    return_trace (lig_set.apply (c));
   }
 
   bool serialize (hb_serialize_context_t *c,

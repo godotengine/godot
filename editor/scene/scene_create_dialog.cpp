@@ -31,8 +31,6 @@
 #include "scene_create_dialog.h"
 
 #include "core/io/dir_access.h"
-#include "core/io/resource_saver.h"
-#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
@@ -64,11 +62,11 @@ void SceneCreateDialog::_notification(int p_what) {
 	}
 }
 
-void SceneCreateDialog::config(const String &p_dir, const String &p_scene_name) {
+void SceneCreateDialog::config(const String &p_dir) {
 	directory = p_dir;
 	root_name_edit->set_text("");
-	scene_name_edit->set_text(p_scene_name.get_basename());
-	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred(false);
+	scene_name_edit->set_text("");
+	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
 
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
@@ -92,7 +90,7 @@ void SceneCreateDialog::browse_types() {
 }
 
 void SceneCreateDialog::on_type_picked() {
-	other_type_display->set_text(select_node_dialog->get_selected_type());
+	other_type_display->set_text(select_node_dialog->get_selected_type().get_slicec(' ', 0));
 	if (node_type_other->is_pressed()) {
 		validation_panel->update();
 	} else {
@@ -104,7 +102,7 @@ void SceneCreateDialog::update_dialog() {
 	scene_name = scene_name_edit->get_text().strip_edges();
 
 	if (scene_name.is_empty()) {
-		validation_panel->set_message(MSG_ID_PATH, TTRC("Scene name is empty."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTR("Scene name is empty."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid()) {
@@ -115,16 +113,16 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (validation_panel->is_valid() && !scene_name.is_valid_filename()) {
-		validation_panel->set_message(MSG_ID_PATH, TTRC("File name invalid."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTR("File name invalid."), EditorValidationPanel::MSG_ERROR);
 	} else if (validation_panel->is_valid() && scene_name[0] == '.') {
-		validation_panel->set_message(MSG_ID_PATH, TTRC("File name begins with a dot."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PATH, TTR("File name begins with a dot."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid()) {
 		scene_name = directory.path_join(scene_name);
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(scene_name)) {
-			validation_panel->set_message(MSG_ID_PATH, TTRC("File already exists."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_PATH, TTR("File already exists."), EditorValidationPanel::MSG_ERROR);
 		}
 	}
 
@@ -149,18 +147,14 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (root_name.is_empty()) {
-		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_ROOT, TTR("Invalid root node name."), EditorValidationPanel::MSG_ERROR);
 	} else if (root_name != root_name.validate_node_name()) {
-		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name characters have been replaced."), EditorValidationPanel::MSG_WARNING);
+		validation_panel->set_message(MSG_ID_ROOT, TTR("Invalid root node name characters have been replaced."), EditorValidationPanel::MSG_WARNING);
 	}
 }
 
 String SceneCreateDialog::get_scene_path() const {
 	return scene_name;
-}
-
-String SceneCreateDialog::get_root_name() const {
-	return root_name;
 }
 
 Node *SceneCreateDialog::create_scene_root() {
@@ -218,7 +212,6 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_2d = memnew(CheckBox);
 		vb->add_child(node_type_2d);
 		node_type_2d->set_text(TTR("2D Scene"));
-		node_type_2d->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_2d->set_button_group(node_type_group);
 		node_type_2d->set_meta(type_meta, ROOT_2D_SCENE);
 		node_type_2d->set_pressed(true);
@@ -226,14 +219,12 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_3d = memnew(CheckBox);
 		vb->add_child(node_type_3d);
 		node_type_3d->set_text(TTR("3D Scene"));
-		node_type_3d->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_3d->set_button_group(node_type_group);
 		node_type_3d->set_meta(type_meta, ROOT_3D_SCENE);
 
 		node_type_gui = memnew(CheckBox);
 		vb->add_child(node_type_gui);
 		node_type_gui->set_text(TTR("User Interface"));
-		node_type_gui->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_gui->set_button_group(node_type_group);
 		node_type_gui->set_meta(type_meta, ROOT_USER_INTERFACE);
 
@@ -243,7 +234,6 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_other = memnew(CheckBox);
 		hb->add_child(node_type_other);
 		node_type_other->set_accessibility_name(TTRC("Other Type"));
-		node_type_other->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_other->set_button_group(node_type_group);
 		node_type_other->set_meta(type_meta, ROOT_OTHER);
 
@@ -308,8 +298,8 @@ SceneCreateDialog::SceneCreateDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	main_vb->add_child(validation_panel);
-	validation_panel->add_line(MSG_ID_PATH, TTRC("Scene name is valid."));
-	validation_panel->add_line(MSG_ID_ROOT, TTRC("Root node valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTR("Scene name is valid."));
+	validation_panel->add_line(MSG_ID_ROOT, TTR("Root node valid."));
 	validation_panel->set_update_callback(callable_mp(this, &SceneCreateDialog::update_dialog));
 	validation_panel->set_accept_button(get_ok_button());
 

@@ -56,7 +56,7 @@ class PhysicalBoneSimulator3D : public SkeletonModifier3D {
 		}
 	};
 
-	LocalVector<SimulatedBone> bones;
+	Vector<SimulatedBone> bones;
 
 	/// This is a slow API, so it's cached
 	PhysicalBone3D *_get_physical_bone_parent(int p_bone);

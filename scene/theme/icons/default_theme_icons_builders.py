@@ -22,6 +22,8 @@ def make_default_theme_icons_action(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(f"""\
+#include "modules/modules_enabled.gen.h"
+
 inline constexpr int default_theme_icons_count = {len(icons_names)};
 inline constexpr const char *default_theme_icons_sources[] = {{
 	{icons_raw_str}

@@ -414,12 +414,8 @@ void TriangleShape::sRegister()
 		CollisionDispatch::sRegisterCollideShape(s, EShapeSubType::Triangle, sCollideConvexVsTriangle);
 		CollisionDispatch::sRegisterCastShape(s, EShapeSubType::Triangle, sCastConvexVsTriangle);
 
-		// Avoid registering triangle vs triangle as a reversed test to prevent infinite recursion
-		if (s != EShapeSubType::Triangle)
-		{
-			CollisionDispatch::sRegisterCollideShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCollideShape);
-			CollisionDispatch::sRegisterCastShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCastShape);
-		}
+		CollisionDispatch::sRegisterCollideShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCollideShape);
+		CollisionDispatch::sRegisterCastShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCastShape);
 	}
 
 	// Specialized collision functions
