@@ -65,7 +65,7 @@ protected:
 	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
 
-	int _get_configured_mix_rate();
+	static int get_configured_mix_rate();
 
 #ifdef DEBUG_ENABLED
 	void start_counting_ticks();

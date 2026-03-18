@@ -15,6 +15,7 @@ SConscript("windows/SCsub")
 # Sounds drivers
 SConscript("alsa/SCsub")
 SConscript("pulseaudio/SCsub")
+SConscript("sndio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
     if not env.msvc:

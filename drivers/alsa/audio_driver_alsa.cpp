@@ -51,7 +51,7 @@ extern int initialize_pulse(int verbose);
 #endif
 
 Error AudioDriverALSA::init_output_device() {
-	mix_rate = _get_configured_mix_rate();
+	mix_rate = get_configured_mix_rate();
 
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;

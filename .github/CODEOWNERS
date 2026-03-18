@@ -23,6 +23,7 @@
 /drivers/coreaudio/                           @godotengine/audio
 /drivers/coremidi/                            @godotengine/audio
 /drivers/pulseaudio/                          @godotengine/audio
+/drivers/sndio/                               @godotengine/audio
 /drivers/wasapi/                              @godotengine/audio
 /drivers/winmidi/                             @godotengine/audio
 /drivers/xaudio2/                             @godotengine/audio
