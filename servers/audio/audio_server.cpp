@@ -127,7 +127,7 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 	}
 }
 
-int AudioDriver::_get_configured_mix_rate() {
+int AudioDriver::get_configured_mix_rate() {
 	StringName audio_driver_setting = "audio/driver/mix_rate";
 	int mix_rate = GLOBAL_GET(audio_driver_setting);
 
