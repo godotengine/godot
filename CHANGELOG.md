@@ -7,7 +7,294 @@ previous feature release. It is equivalent to the listings on our
 Changelogs for earlier feature releases are available in their respective Git
 branches, and linked at the [end of this file](#Past-releases).
 
-## 4.5 - 2025-10-13
+## 4.5.2 - 2026-03-19
+
+- [Release announcement](https://godotengine.org/article/maintenance-release-godot-4-5-2)
+- [Interactive changelog](https://godotengine.github.io/godot-interactive-changelog/#4.5.2)
+
+#### 2D
+
+- Fix Atlas Merge Tool crash ([GH-101407](https://github.com/godotengine/godot/pull/101407)).
+- Fix Polygon2D editor undo crash ([GH-112241](https://github.com/godotengine/godot/pull/112241)).
+- Check for tiles outside texture on TileSet atlas settings changes ([GH-112271](https://github.com/godotengine/godot/pull/112271)).
+- Change `TileSetScenesCollectionSource` raw pointers in the TileSet editor to ref ([GH-112739](https://github.com/godotengine/godot/pull/112739)).
+- Fix pattern corruption in `TileMapLayer` ([GH-114653](https://github.com/godotengine/godot/pull/114653)).
+- Geometry2D: Remove `arc_tolerance` scaling and the comment related to that ([GH-115293](https://github.com/godotengine/godot/pull/115293)).
+
+#### 3D
+
+- Fix GridMap `cursor_instance` transparency error spam ([GH-112301](https://github.com/godotengine/godot/pull/112301)).
+- Don't redraw `Sprite3D`/`AnimatedSprite3D` outside the tree ([GH-112593](https://github.com/godotengine/godot/pull/112593)).
+- Prevent BonePropertiesEditor crash due to skeleton use-after-release ([GH-113631](https://github.com/godotengine/godot/pull/113631)).
+- Fix crash when selecting SplineIK3D ([GH-114668](https://github.com/godotengine/godot/pull/114668)).
+- Fix `Sprite3D` modulate propagation on reparenting ([GH-115037](https://github.com/godotengine/godot/pull/115037)).
+
+#### Animation
+
+- Fix `_validate_property()` in `RetargetModifier3D` ([GH-110380](https://github.com/godotengine/godot/pull/110380)).
+- Show marker lines/sections in the animation bezier editor ([GH-110676](https://github.com/godotengine/godot/pull/110676)).
+- Set step before set value, to fix animation length issue ([GH-111398](https://github.com/godotengine/godot/pull/111398)).
+- Fix crash when rearranging filtered animation tracks ([GH-111427](https://github.com/godotengine/godot/pull/111427)).
+- Separate branching ping-pong time and delta ([GH-112047](https://github.com/godotengine/godot/pull/112047)).
+- Make AnimationLibrary use RBMap instead of HashMap ([GH-112692](https://github.com/godotengine/godot/pull/112692)).
+- Fix empty 2D skeleton modification keeps printing error messages ([GH-113176](https://github.com/godotengine/godot/pull/113176)).
+- Fix Animation Editor erroring when animating SpriteAnimation3D `frame` but not `animation` ([GH-113786](https://github.com/godotengine/godot/pull/113786)).
+- Make `base_height_adjustment` apply to global position & Fix false warning `Animated extra bone between mapped bones detected` ([GH-114543](https://github.com/godotengine/godot/pull/114543)).
+
+#### Audio
+
+- Fix AudioStreamPolyphonic to honor `AudioStreamPlayer.pitch_scale` ([GH-110525](https://github.com/godotengine/godot/pull/110525)).
+- macOS: Fix microphone issue ([GH-111691](https://github.com/godotengine/godot/pull/111691)).
+- Check if on tree before calling `can_process()` ([GH-114966](https://github.com/godotengine/godot/pull/114966)).
+- AudioStreamWAV: Check for `eof_reached` when reading LIST INFO tags ([GH-116719](https://github.com/godotengine/godot/pull/116719)).
+
+#### Buildsystem
+
+- MSVC: Check `catalog_productSemanticVersion` instead of `catalog_productDisplayVersion` ([GH-111918](https://github.com/godotengine/godot/pull/111918)).
+- Fix broken screenshot link in Appstream metadata ([GH-112004](https://github.com/godotengine/godot/pull/112004)).
+- Use pkg-config for recast flags ([GH-112030](https://github.com/godotengine/godot/pull/112030)).
+- macOS: Update clang version check ([GH-112034](https://github.com/godotengine/godot/pull/112034)).
+- Update Android build tools to version 35.0.1 ([GH-112437](https://github.com/godotengine/godot/pull/112437)).
+- CI: Remove cache clean action ([GH-112924](https://github.com/godotengine/godot/pull/112924)).
+- CI: Build Windows without D3D12 if install fails ([GH-113112](https://github.com/godotengine/godot/pull/113112)).
+- Add missing `cstdlib` include for `EXIT_SUCCESS` and `free` ([GH-114072](https://github.com/godotengine/godot/pull/114072)).
+- BasisUniversal: Disable strict aliasing to fix GCC optimization issue ([GH-114839](https://github.com/godotengine/godot/pull/114839)).
+- Windows: Add missing `extern "C"` for `hidsdi.h` on MinGW < 12.0.0 ([GH-115010](https://github.com/godotengine/godot/pull/115010)).
+- CI: Restore godot-cpp caching ([GH-116586](https://github.com/godotengine/godot/pull/116586)).
+- CI: Bump JavaScript actions to Node 24 ([GH-117428](https://github.com/godotengine/godot/pull/117428)).
+
+#### C#
+
+- Use explicit public access modifier in C# code ([GH-108885](https://github.com/godotengine/godot/pull/108885)).
+- Update GodotTools .NET version from 6.0 to 8.0 ([GH-110799](https://github.com/godotengine/godot/pull/110799)).
+- Fix dotnet class lookup returning modified names instead of engine names ([GH-112023](https://github.com/godotengine/godot/pull/112023)).
+- Ensure .NET editor supports Visual Studio 2026 ([GH-112961](https://github.com/godotengine/godot/pull/112961)).
+
+#### Codestyle
+
+- Copyright: Fix spelling of license ([GH-109339](https://github.com/godotengine/godot/pull/109339)).
+
+#### Core
+
+- Ensure all MovieWriter frames have the same resolution as the first frame ([GH-108954](https://github.com/godotengine/godot/pull/108954)).
+- Fix duplicate minus in print output ([GH-110354](https://github.com/godotengine/godot/pull/110354)).
+- Fix `load_threaded_get` returning `null` when used with `CACHE_MODE_IGNORE` ([GH-111387](https://github.com/godotengine/godot/pull/111387)).
+- Improve determinism of UIDs ([GH-111858](https://github.com/godotengine/godot/pull/111858)).
+- Fix duplicating node references of custom node type properties ([GH-112076](https://github.com/godotengine/godot/pull/112076)).
+- Sidestep MinGW-GCC false-positive warnings ([GH-112103](https://github.com/godotengine/godot/pull/112103)).
+- Main: Fix typo in `--gpu-profile` CLI argument ([GH-112113](https://github.com/godotengine/godot/pull/112113)).
+- Do not attempt deleting local cache in `Resource::_teardown_duplicate_from_variant` ([GH-113179](https://github.com/godotengine/godot/pull/113179)).
+- RingBuffer: Fix overreading on methods that take an offset as an argument ([GH-117151](https://github.com/godotengine/godot/pull/117151)).
+- Fix `String::split_` crash on empty string ([GH-117353](https://github.com/godotengine/godot/pull/117353)).
+- RingBuffer: Fix `T read()` method reading empty buffer ([GH-117388](https://github.com/godotengine/godot/pull/117388)).
+
+#### Documentation
+
+- Fix ItemList docs for the focus Stylebox's draw order ([GH-103672](https://github.com/godotengine/godot/pull/103672)).
+- Update tutorial link for calling Javascript from script ([GH-111310](https://github.com/godotengine/godot/pull/111310)).
+- Correct Array `remove_at()` class reference ([GH-111817](https://github.com/godotengine/godot/pull/111817)).
+- Fix `NOTIFICATION_OS_IME_UPDATE` docs on platform availability ([GH-111863](https://github.com/godotengine/godot/pull/111863)).
+- Fix copyright documentation oversights ([GH-112006](https://github.com/godotengine/godot/pull/112006)).
+- Fix GDScript code sample for `@GlobalScope.instance_from_id()` ([GH-112486](https://github.com/godotengine/godot/pull/112486)).
+- Fix `display/window/size/initial_position_type` project setting description ([GH-112962](https://github.com/godotengine/godot/pull/112962)).
+- Fix typos in VectorNi docs (float division examples) ([GH-113782](https://github.com/godotengine/godot/pull/113782)).
+- Remove link for consoles in EditorExportPlatform ([GH-114979](https://github.com/godotengine/godot/pull/114979)).
+
+#### Editor
+
+- Fix various editor easing property issues ([GH-97753](https://github.com/godotengine/godot/pull/97753)).
+- Fix pressed keys reset when hiding a window on Windows ([GH-104802](https://github.com/godotengine/godot/pull/104802)).
+- Fix editing resources in the inspector when inside an array or dictionary ([GH-106099](https://github.com/godotengine/godot/pull/106099)).
+- Fix scrolling to bottom panel selected button ([GH-109502](https://github.com/godotengine/godot/pull/109502)).
+- Fix the text editor confusing resource files of class JSON with json files ([GH-109549](https://github.com/godotengine/godot/pull/109549)).
+- Fix Clear option not visible when a Resource's `@export`-ed property is a Script ([GH-110189](https://github.com/godotengine/godot/pull/110189)).
+- Fix editor crash caused by `EditorFileSystem::get_singleton` access in theme initialization path ([GH-110242](https://github.com/godotengine/godot/pull/110242)).
+- Set language encoding flag when using Pack Project as ZIP ([GH-110387](https://github.com/godotengine/godot/pull/110387)).
+- Fix editor log search ignoring BBCode formatting in messages ([GH-110972](https://github.com/godotengine/godot/pull/110972)).
+- Project Manager: Prohibit duplicating a project into itself ([GH-111273](https://github.com/godotengine/godot/pull/111273)).
+- Fix 'More Info…' link in Export/Encryption ([GH-111302](https://github.com/godotengine/godot/pull/111302)).
+- Fix editor inline color display of color from `Color.from_rgba8` ([GH-111527](https://github.com/godotengine/godot/pull/111527)).
+- Fix error when editing multifield values inside arrays and dictionaries ([GH-111606](https://github.com/godotengine/godot/pull/111606)).
+- Save editor settings when modified from code ([GH-111791](https://github.com/godotengine/godot/pull/111791)).
+- Fix switch to GameView when closing game window ([GH-111811](https://github.com/godotengine/godot/pull/111811)).
+- EditorRun: Load `override.cfg` to get window configuration for embedded mode ([GH-111847](https://github.com/godotengine/godot/pull/111847)).
+- Add donate button to project manager ([GH-111969](https://github.com/godotengine/godot/pull/111969)).
+- Fix file duplication making random UID ([GH-112015](https://github.com/godotengine/godot/pull/112015)).
+- Fix verbose running message ([GH-112016](https://github.com/godotengine/godot/pull/112016)).
+- Update documentation pages when switching themes ([GH-112141](https://github.com/godotengine/godot/pull/112141)).
+- Fix cannot edit property material for new Instance PackedScene ([GH-112334](https://github.com/godotengine/godot/pull/112334)).
+- Android editor: Fix editor crash on exit ([GH-112556](https://github.com/godotengine/godot/pull/112556)).
+- Fix crash during POT generation due to scene dependency issues ([GH-112587](https://github.com/godotengine/godot/pull/112587)).
+- Fix `ProjectManager` UI going below window ([GH-112717](https://github.com/godotengine/godot/pull/112717)).
+- Fix the returned controls of `EditorHelpBitTooltip::show_tooltip()` were not freed in `ScriptTextEditor` ([GH-113080](https://github.com/godotengine/godot/pull/113080)).
+- Fix stale error highlighting when navigating script history ([GH-113246](https://github.com/godotengine/godot/pull/113246)).
+- Fix unexpected name when favoriting nodes from keyword matches ([GH-113546](https://github.com/godotengine/godot/pull/113546)).
+- Fix FileDialog icon scale in editor ([GH-114133](https://github.com/godotengine/godot/pull/114133)).
+- Split `EmbeddedProcess::reset` to allow stopping timers without full reset ([GH-114978](https://github.com/godotengine/godot/pull/114978)).
+
+#### Export
+
+- Disable shader baker when exporting as dedicated server ([GH-112361](https://github.com/godotengine/godot/pull/112361)).
+- Shader Baker: Fix Linux export warning ([GH-112465](https://github.com/godotengine/godot/pull/112465)).
+- Fix shader baker freezing if there are errors in the shader compilation process ([GH-112803](https://github.com/godotengine/godot/pull/112803)).
+- iOS: Automatically enable `iphone-ipad-minimum-performance-a12` if project is using Forward+/Mobile renderer ([GH-114098](https://github.com/godotengine/godot/pull/114098)).
+- Fix Android export with multiple architectures failing when GDExtension includes native dependencies ([GH-114483](https://github.com/godotengine/godot/pull/114483)).
+- Android/Gradle: Do not ignore asset folders starting with `_` ([GH-114537](https://github.com/godotengine/godot/pull/114537)).
+
+#### GDExtension
+
+- iOS: Fix loading of xcframework dynamic libraries ([GH-112784](https://github.com/godotengine/godot/pull/112784)).
+
+#### GDScript
+
+- LSP: Fix goto native declaration ([GH-111478](https://github.com/godotengine/godot/pull/111478)).
+
+#### GUI
+
+- Fix update order for `exclusive` child window ([GH-94488](https://github.com/godotengine/godot/pull/94488)).
+- Make POT generation use `tooltip_auto_translate_mode` ([GH-109977](https://github.com/godotengine/godot/pull/109977)).
+- Use placeholder instead of value for tooltips of `PROPERTY_HINT_PASSWORD` properties ([GH-110164](https://github.com/godotengine/godot/pull/110164)).
+- TextServer: Do not add extra spacing to zero-width glyphs ([GH-110317](https://github.com/godotengine/godot/pull/110317)).
+- Shader Editor: Show "File" menu when no shaders are opened ([GH-110404](https://github.com/godotengine/godot/pull/110404)).
+- FoldableContainer: Override `has_point` to use title rect when folded ([GH-110847](https://github.com/godotengine/godot/pull/110847)).
+- Reduce repetitive code in FoldableContainer ([GH-110871](https://github.com/godotengine/godot/pull/110871)).
+- Fix incorrect margins in `ScrollContainer` with focus border enabled ([GH-111386](https://github.com/godotengine/godot/pull/111386)).
+- PopupMenu: Update global menu shortcuts when shortcut is externally changed ([GH-111711](https://github.com/godotengine/godot/pull/111711)).
+- Fix crash when operating on newly created font RIDs ([GH-111810](https://github.com/godotengine/godot/pull/111810)).
+- TextServer: Do not add empty lines if space trimming flag is set ([GH-111839](https://github.com/godotengine/godot/pull/111839)).
+- Fix IME input in multiple windows at once ([GH-111865](https://github.com/godotengine/godot/pull/111865)).
+- TextServer: Fix range for zero-width glyphs extra spacing ([GH-111964](https://github.com/godotengine/godot/pull/111964)).
+- Fix drawing of slot icons in `GraphNode` when slots are not continuous ([GH-112245](https://github.com/godotengine/godot/pull/112245)).
+- Fix `grab_focus` incorrectly handling `FOCUS_ACCESSIBILITY` ([GH-112251](https://github.com/godotengine/godot/pull/112251)).
+- TextServer: Fix line wrapping underflow ([GH-114189](https://github.com/godotengine/godot/pull/114189)).
+- Fix binary BMFont flags handling ([GH-114412](https://github.com/godotengine/godot/pull/114412)).
+
+#### Import
+
+- Fix texture atlas import deadlock by keeping `group_file=` on failed `import_file()` attempts ([GH-106532](https://github.com/godotengine/godot/pull/106532)).
+- Image: Fix normalization of mipmaps for half and float formats ([GH-110308](https://github.com/godotengine/godot/pull/110308)).
+- Fix setting mesh blend shape properties in dummy mesh storage ([GH-114356](https://github.com/godotengine/godot/pull/114356)).
+
+#### Input
+
+- Fix Android back gesture failing after keyboard dismissal ([GH-110127](https://github.com/godotengine/godot/pull/110127)).
+- Fix out of control area mouse events crash, if nothing have mouse focus ([GH-110162](https://github.com/godotengine/godot/pull/110162)).
+- Fix `Input.is_joy_known` response for SDL joypads ([GH-111503](https://github.com/godotengine/godot/pull/111503)).
+- Fix not releasing action when actions are erased ([GH-111747](https://github.com/godotengine/godot/pull/111747)).
+- X11: Fix `keyboard_get_label_from_physical` errors when used on key without label ([GH-111795](https://github.com/godotengine/godot/pull/111795)).
+- macOS: Fix mouse enter events sent to wrong popup window ([GH-112383](https://github.com/godotengine/godot/pull/112383)).
+- Fix emulated touch events using the incorrect window ID ([GH-112995](https://github.com/godotengine/godot/pull/112995)).
+- X11: Fix input delay regression ([GH-113537](https://github.com/godotengine/godot/pull/113537)).
+
+#### Multiplayer
+
+- Remove `_spawn_custom` from error message ([GH-111983](https://github.com/godotengine/godot/pull/111983)).
+
+#### Network
+
+- mbedTLS: Update to version 3.6.5 ([GH-111845](https://github.com/godotengine/godot/pull/111845)).
+- Fix HTTPRequest timeout being scaled with `Engine.time_scale` ([GH-112686](https://github.com/godotengine/godot/pull/112686)).
+- Normalize IP parsing, fix IPv6, tests ([GH-114827](https://github.com/godotengine/godot/pull/114827)).
+
+#### Particles
+
+- Fix CPUParticle3D not randomizing ([GH-112514](https://github.com/godotengine/godot/pull/112514)).
+
+#### Physics
+
+- JoltPhysics: Fix orphan StringName ([GH-110329](https://github.com/godotengine/godot/pull/110329)).
+- Fix crash when box selecting remote 3D physics nodes ([GH-111960](https://github.com/godotengine/godot/pull/111960)).
+- Jolt: Add null checks to `jolt_free` and `jolt_aligned_free` ([GH-112363](https://github.com/godotengine/godot/pull/112363)).
+- Fix `SoftBody3D`'s position influences its physics in Jolt ([GH-112483](https://github.com/godotengine/godot/pull/112483)).
+- Fix transform updates sometimes being discarded when using Jolt ([GH-115364](https://github.com/godotengine/godot/pull/115364)).
+
+#### Platforms
+
+- Silence warnings about DisplayServer icons on iOS and visionOS ([GH-94542](https://github.com/godotengine/godot/pull/94542)).
+- Configure SDL assuming we, in fact, have a libc ([GH-110198](https://github.com/godotengine/godot/pull/110198)).
+- macOS: Make embedded window focus behavior more similar to Windows/X11 ([GH-110219](https://github.com/godotengine/godot/pull/110219)).
+- Web: Fix clipboard text encoding in `update_clipboard_callback` ([GH-110544](https://github.com/godotengine/godot/pull/110544)).
+- Suppress SIGPIPE when writing to a pipe ([GH-111114](https://github.com/godotengine/godot/pull/111114)).
+- X11: Fix memory leak in `screen_get_refresh_rate()` ([GH-111639](https://github.com/godotengine/godot/pull/111639)).
+- macOS: Fix ~500ms hang on transparent OpenGL window creation on macOS 26 ([GH-111657](https://github.com/godotengine/godot/pull/111657)).
+- macOS/Embedded: Release/recapture mouse on window focus change and exit ([GH-112236](https://github.com/godotengine/godot/pull/112236)).
+- Linux: Add SSE4.2 support runtime check ([GH-112279](https://github.com/godotengine/godot/pull/112279)).
+- Android: Fix root window shrinking when keyboard appears ([GH-112585](https://github.com/godotengine/godot/pull/112585)).
+- Android editor: Add support for Android XR devices to the Godot XR Editor ([GH-112776](https://github.com/godotengine/godot/pull/112776)).
+- Windows: Fix EnumDevices stall using IAT hooks ([GH-113013](https://github.com/godotengine/godot/pull/113013)).
+- Wayland: Misc keyboard touchups ([GH-113256](https://github.com/godotengine/godot/pull/113256)).
+- Fix storage scope for the obb directory ([GH-113878](https://github.com/godotengine/godot/pull/113878)).
+- Wayland: Fix accidental copy during global remove ([GH-113946](https://github.com/godotengine/godot/pull/113946)).
+- macOS: Disable window embedding code in export templates ([GH-113966](https://github.com/godotengine/godot/pull/113966)).
+- Ensure that the permission requests results are dispatched on the render thread ([GH-113969](https://github.com/godotengine/godot/pull/113969)).
+- Android: Fix ANRs when shutting down the engine due to the render thread ([GH-114207](https://github.com/godotengine/godot/pull/114207)).
+- Android: Trigger save of the RD pipeline cache on application pause ([GH-114463](https://github.com/godotengine/godot/pull/114463)).
+- Windows: Disable MSVC control flow check on IAT hooks ([GH-115430](https://github.com/godotengine/godot/pull/115430)).
+- Fix crash in `StorageScope.kt` on Android ([GH-115515](https://github.com/godotengine/godot/pull/115515)).
+- Windows: Set current driver when ANGLE init fails ([GH-117253](https://github.com/godotengine/godot/pull/117253)).
+- Apple Embedded: Fix static .a/.xcframework library loading in `open_dynamic_library` ([GH-117469](https://github.com/godotengine/godot/pull/117469)).
+
+#### Rendering
+
+- Use Viewport's 3D Scaling in the 3D editor's Half Resolution option ([GH-93436](https://github.com/godotengine/godot/pull/93436)).
+- Move D3D12's automatic texture clears to RenderingDevice ([GH-108871](https://github.com/godotengine/godot/pull/108871)).
+- Fix spotlight's shadow peter-panning with volumetric fog ([GH-109567](https://github.com/godotengine/godot/pull/109567)).
+- Fix rounding error in clustered vertex light culling ([GH-110184](https://github.com/godotengine/godot/pull/110184)).
+- Clamp minimum size of 3D texture view in D3D12 ([GH-110203](https://github.com/godotengine/godot/pull/110203)).
+- Fix `CompositorEffect` not setting post-transparent callback on init ([GH-110249](https://github.com/godotengine/godot/pull/110249)).
+- Fix `TileMapLayer` tiles displaying incorrectly with `y_sort` based on visibility layer ([GH-110550](https://github.com/godotengine/godot/pull/110550)).
+- Ensure reflection atlas is valid before rendering ([GH-110853](https://github.com/godotengine/godot/pull/110853)).
+- Use correct AABB for SpotLight3Ds when `spot_angle > 90` ([GH-110884](https://github.com/godotengine/godot/pull/110884)).
+- Clear intermediate buffers when not in use in Compatibility ([GH-110915](https://github.com/godotengine/godot/pull/110915)).
+- Fix D3D12 not checking for fullscreen clear region correctly ([GH-111321](https://github.com/godotengine/godot/pull/111321)).
+- Add all PowerVR devices to the transform feedback shader cache ban list ([GH-111329](https://github.com/godotengine/godot/pull/111329)).
+- Fix specialization constant patching on D3D12 ([GH-111356](https://github.com/godotengine/godot/pull/111356)).
+- Use correct ndc for proximity fade in Compatibility ([GH-111437](https://github.com/godotengine/godot/pull/111437)).
+- FTI - Fix `SceneTreeFTI` depth limit behavior ([GH-111444](https://github.com/godotengine/godot/pull/111444)).
+- Apply luminance multiplier in `copy_cubemap_to_panorama` ([GH-111577](https://github.com/godotengine/godot/pull/111577)).
+- Use correct shadow material in some cases in Mobile ([GH-111578](https://github.com/godotengine/godot/pull/111578)).
+- Fix the LODs array returned by `mesh_get_surface` ([GH-111745](https://github.com/godotengine/godot/pull/111745)).
+- D3D12: Greatly reduce shader conversion time & fix spec constant bitmasking ([GH-111762](https://github.com/godotengine/godot/pull/111762)).
+- Use `GL_FRAMEBUFFER` instead of `GL_DRAW_FRAMEBUFFER` when doing final blit to the screen framebuffer to work around OBS bug ([GH-111834](https://github.com/godotengine/godot/pull/111834)).
+- Round values after renormalization when generating mipmaps ([GH-111841](https://github.com/godotengine/godot/pull/111841)).
+- Force disable SPIRV debug info on D3D12 ([GH-111912](https://github.com/godotengine/godot/pull/111912)).
+- Add missing mipmaps to `RB_TEX_BACK_COLOR` ([GH-112932](https://github.com/godotengine/godot/pull/112932)).
+- Check for Typed UAV Load Additional Formats capability when creating D3D12 device ([GH-112989](https://github.com/godotengine/godot/pull/112989)).
+- Check for pending clears in every RD texture function ([GH-113236](https://github.com/godotengine/godot/pull/113236)).
+- Set shader path before compilation ([GH-113432](https://github.com/godotengine/godot/pull/113432)).
+- Use AABB center instead of origin for visibility fade ([GH-113486](https://github.com/godotengine/godot/pull/113486)).
+- RenderingDevice: Add null checks when retrieving uniform sets ([GH-114073](https://github.com/godotengine/godot/pull/114073)).
+- Create new pools when they become fragmented on Vulkan ([GH-114313](https://github.com/godotengine/godot/pull/114313)).
+- Implement workaround for GPU driver crash on Adreno 5XX ([GH-114416](https://github.com/godotengine/godot/pull/114416)).
+- Create separate graphics queue instead of reusing the main queue when transfer queue family is unsupported ([GH-114476](https://github.com/godotengine/godot/pull/114476)).
+- Remove amplification & mesh shader deny flags on D3D12 ([GH-114615](https://github.com/godotengine/godot/pull/114615)).
+- Always add Vulkan descriptor count for immutable samplers to descriptor pool ([GH-114657](https://github.com/godotengine/godot/pull/114657)).
+
+#### Shaders
+
+- Visual Shader: Fix nodes' relative positions changed in a different display scale ([GH-97620](https://github.com/godotengine/godot/pull/97620)).
+- Fix VisualShader conversion failing with subresources ([GH-109375](https://github.com/godotengine/godot/pull/109375)).
+- Fix invalid suggested file name when saving resource from a scene that hasn't been saved yet ([GH-110231](https://github.com/godotengine/godot/pull/110231)).
+- Fix shader compilation errors in Compatibility when using `depth_texture` ([GH-110241](https://github.com/godotengine/godot/pull/110241)).
+- Apply `PREMUL_ALPHA_FACTOR` only in non-split-specular shader variants ([GH-112801](https://github.com/godotengine/godot/pull/112801)).
+- Move initialization check for CanvasMaterial ([GH-113650](https://github.com/godotengine/godot/pull/113650)).
+- VisualShader: Fix new node spawning position with display scaling ([GH-113974](https://github.com/godotengine/godot/pull/113974)).
+
+#### Thirdparty
+
+- libpng: Update to 1.6.51 ([GH-108135](https://github.com/godotengine/godot/pull/108135)).
+- libpng: Update to 1.6.53 ([GH-113961](https://github.com/godotengine/godot/pull/113961)).
+- pcre2: Update to 10.46 ([GH-114766](https://github.com/godotengine/godot/pull/114766)).
+- libpng: Update to 1.6.54 ([GH-115714](https://github.com/godotengine/godot/pull/115714)).
+- libpng: Update to 1.6.55 ([GH-117564](https://github.com/godotengine/godot/pull/117564)).
+
+#### XR
+
+- Fix XR tracker name changing at runtime ([GH-110703](https://github.com/godotengine/godot/pull/110703)).
+- OpenXR: Don't create a visibility mask mesh without data ([GH-114181](https://github.com/godotengine/godot/pull/114181)).
+
+
+## 4.5.1 - 2025-10-13
 
 - [Release announcement](https://godotengine.org/article/maintenance-release-godot-4-5-1)
 - [Interactive changelog](https://godotengine.github.io/godot-interactive-changelog/#4.5.1)
@@ -74,7 +361,6 @@ branches, and linked at the [end of this file](#Past-releases).
 - Tweak macOS notarization export message in the editor ([GH-110793](https://github.com/godotengine/godot/pull/110793)).
 - Fix Quick Open history ([GH-111068](https://github.com/godotengine/godot/pull/111068)).
 - Set correct saved history after clearing ([GH-111136](https://github.com/godotengine/godot/pull/111136)).
-- Cherry-picks for the 4.5 branch (future 4.5.1) - 3rd batch ([GH-111388](https://github.com/godotengine/godot/pull/111388)).
 - Enable script templates by default ([GH-111454](https://github.com/godotengine/godot/pull/111454)).
 
 #### Export
@@ -118,7 +404,7 @@ branches, and linked at the [end of this file](#Past-releases).
 
 #### Navigation
 
-- [Navigation 2D] Fix sign of cross product ([GH-110815](https://github.com/godotengine/godot/pull/110815)).
+- Navigation 2D: Fix sign of cross product ([GH-110815](https://github.com/godotengine/godot/pull/110815)).
 - Make navmesh rasterization errors more lenient ([GH-110841](https://github.com/godotengine/godot/pull/110841)).
 
 #### Physics
@@ -157,6 +443,7 @@ branches, and linked at the [end of this file](#Past-releases).
 #### XR
 
 - Fix late destruction access violation with OpenXRAPIExtension object ([GH-110868](https://github.com/godotengine/godot/pull/110868)).
+
 
 ## 4.5 - 2025-09-15
 
@@ -1457,7 +1744,7 @@ Table of contents:
 - When code signing, specify which keystore is not found ([GH-103000](https://github.com/godotengine/godot/pull/103000)).
 - Updates and fixes to the Android prebuilt export logic ([GH-103173](https://github.com/godotengine/godot/pull/103173)).
 - Add "Go Online" button on Export Template Manager ([GH-103235](https://github.com/godotengine/godot/pull/103235)).
-- [iOS export] Restore one-click deploy device enumeration using Xcode ([GH-103590](https://github.com/godotengine/godot/pull/103590)).
+- iOS export: Restore one-click deploy device enumeration using Xcode ([GH-103590](https://github.com/godotengine/godot/pull/103590)).
 - Use `text_overrun` for project export errors ([GH-103598](https://github.com/godotengine/godot/pull/103598)).
 - Android: Convert `compress_native_libraries` to a basic export option ([GH-104301](https://github.com/godotengine/godot/pull/104301)).
 - Change unportable `echo` in the Linux/macOS debug launcher script ([GH-104415](https://github.com/godotengine/godot/pull/104415)).
@@ -1474,8 +1761,8 @@ Table of contents:
 - Apple: Improve Apple embedded export and debugging ([GH-107574](https://github.com/godotengine/godot/pull/107574)).
 - Fix export fail on Android if `shader_baker` is enabled ([GH-107600](https://github.com/godotengine/godot/pull/107600)).
 - Move Web export threads options out of variant mk2 ([GH-108172](https://github.com/godotengine/godot/pull/108172)).
-- [Windows export] Move debug symbol sections on export ([GH-108455](https://github.com/godotengine/godot/pull/108455)).
-- [Windows export] Use project version as fallback ([GH-108472](https://github.com/godotengine/godot/pull/108472)).
+- Windows export: Move debug symbol sections on export ([GH-108455](https://github.com/godotengine/godot/pull/108455)).
+- Windows export: Use project version as fallback ([GH-108472](https://github.com/godotengine/godot/pull/108472)).
 - Remove selective shader baking ([GH-108914](https://github.com/godotengine/godot/pull/108914)).
 - Reduce log spam during headless import/export ([GH-109334](https://github.com/godotengine/godot/pull/109334)).
 - Android: Thread Synchronization for FileAccessHandler ([GH-109340](https://github.com/godotengine/godot/pull/109340)).
@@ -1602,7 +1889,7 @@ Table of contents:
 - Fix incorrect submenu icon and accelerator text positions involving margins ([GH-90832](https://github.com/godotengine/godot/pull/90832)).
 - Fix wrong tooltip behavior in `PopupMenu`s that have styles  with top borders ([GH-90922](https://github.com/godotengine/godot/pull/90922)).
 - Add theme cache to the inspector ([GH-93246](https://github.com/godotengine/godot/pull/93246)).
-- [TextEdit / LineEdit] Add support for OEM Alt codes input ([GH-93466](https://github.com/godotengine/godot/pull/93466)).
+- TextEdit / LineEdit: Add support for OEM Alt codes input ([GH-93466](https://github.com/godotengine/godot/pull/93466)).
 - Fix unfocused windows can't be dragged ([GH-95606](https://github.com/godotengine/godot/pull/95606)).
 - Allow changing the color for the Checkbox's checked and unchecked icons ([GH-95736](https://github.com/godotengine/godot/pull/95736)).
 - Consider search keywords in `CreateDialog` ([GH-96169](https://github.com/godotengine/godot/pull/96169)).
@@ -1730,7 +2017,7 @@ Table of contents:
 - Fix incorrect title bar sorting in RTL layout ([GH-105481](https://github.com/godotengine/godot/pull/105481)).
 - Fix regression causing jittery canvas transforms ([GH-105482](https://github.com/godotengine/godot/pull/105482)).
 - RichTextLabel: Add methods to compute the height and width of a line ([GH-105504](https://github.com/godotengine/godot/pull/105504)).
-- [ColorPicker, macOS] Add link to request required screen recording permission ([GH-105507](https://github.com/godotengine/godot/pull/105507)).
+- ColorPicker: Add link to request required screen recording permission on macOS ([GH-105507](https://github.com/godotengine/godot/pull/105507)).
 - Unify ScrollBar/ScrollContainer scroll delta ([GH-105516](https://github.com/godotengine/godot/pull/105516)).
 - Add [br] to bbcode parsing for `rich_text_label` ([GH-105524](https://github.com/godotengine/godot/pull/105524)).
 - Improve default OK text in AcceptDialog ([GH-105547](https://github.com/godotengine/godot/pull/105547)).
@@ -1739,7 +2026,7 @@ Table of contents:
 - SvgTexture not in 3D ([GH-105640](https://github.com/godotengine/godot/pull/105640)).
 - Change FileDialog's Tree to ItemList ([GH-105641](https://github.com/godotengine/godot/pull/105641)).
 - Improve FileDialog options ([GH-105647](https://github.com/godotengine/godot/pull/105647)).
-- [LineEdit/TextEdit] Add composite character backspace delete and get composite character positions ([GH-105656](https://github.com/godotengine/godot/pull/105656)).
+- LineEdit/TextEdit: Add composite character backspace delete and get composite character positions ([GH-105656](https://github.com/godotengine/godot/pull/105656)).
 - Add favorites and recent directories to FileDialog ([GH-105680](https://github.com/godotengine/godot/pull/105680)).
 - Add file sort to FileDialog ([GH-105723](https://github.com/godotengine/godot/pull/105723)).
 - Use same oversampling granularity as fonts use for `SVGTexture`s  ([GH-105725](https://github.com/godotengine/godot/pull/105725)).
@@ -1799,7 +2086,7 @@ Table of contents:
 - Accessibility: Always auto-translation mode for names/descriptions ([GH-106966](https://github.com/godotengine/godot/pull/106966)).
 - Check script sample characters to filter out incorrect script support information ([GH-107030](https://github.com/godotengine/godot/pull/107030)).
 - Fix LineEdit continues to force showing the caret after drag is aborted ([GH-107055](https://github.com/godotengine/godot/pull/107055)).
-- [SVG in OT] Fix rendering of some glyphs using "defs" with "#glyphXXXXX.X" id ([GH-107079](https://github.com/godotengine/godot/pull/107079)).
+- SVG in OT: Fix rendering of some glyphs using "defs" with "#glyphXXXXX.X" id ([GH-107079](https://github.com/godotengine/godot/pull/107079)).
 - Make `BaseButton`s' shortcut feedback timers internal ([GH-107088](https://github.com/godotengine/godot/pull/107088)).
 - RTL: Fix outline offset ([GH-107092](https://github.com/godotengine/godot/pull/107092)).
 - Unify `get_[_visible]paragraph/line_count` behavior ([GH-107110](https://github.com/godotengine/godot/pull/107110)).
@@ -1839,7 +2126,7 @@ Table of contents:
 - Deactivate orientation gizmo on window exit ([GH-108374](https://github.com/godotengine/godot/pull/108374)).
 - RTL: Add option to scroll follow visible characters ([GH-108399](https://github.com/godotengine/godot/pull/108399)).
 - Draw guide lines over selection and focus styleboxes ([GH-108401](https://github.com/godotengine/godot/pull/108401)).
-- [Code Editor] Fix "Pick Color" menu option replacing multiple color items ([GH-108431](https://github.com/godotengine/godot/pull/108431)).
+- Code Editor: Fix "Pick Color" menu option replacing multiple color items ([GH-108431](https://github.com/godotengine/godot/pull/108431)).
 - RTL: Add method to get visible content bounding box ([GH-108466](https://github.com/godotengine/godot/pull/108466)).
 - RTL: Fix padding and alignment of embedded image clicks ([GH-108469](https://github.com/godotengine/godot/pull/108469)).
 - Fix export path "leaking" between presets ([GH-108478](https://github.com/godotengine/godot/pull/108478)).
@@ -1991,7 +2278,7 @@ Table of contents:
 - GLTF: Don't export AnimationPlayer nodes as glTF nodes ([GH-106803](https://github.com/godotengine/godot/pull/106803)).
 - Implement UID references in VariantParser ([GH-106902](https://github.com/godotengine/godot/pull/106902)).
 - Make svg files respect `interface/theme/icon_saturation` setting when imported for editor use ([GH-107051](https://github.com/godotengine/godot/pull/107051)).
-- [Image font import] Allow comma separated lists as a character range ([GH-107111](https://github.com/godotengine/godot/pull/107111)).
+- Image font import: Allow comma separated lists as a character range ([GH-107111](https://github.com/godotengine/godot/pull/107111)).
 - GLTF: Align accessor buffer `byteOffset` to multiple of component size ([GH-107193](https://github.com/godotengine/godot/pull/107193)).
 - GLTF: Don't save unnecessary zero "byteOffset" on export ([GH-107194](https://github.com/godotengine/godot/pull/107194)).
 - Restore 3.x style material auto-extraction import option ([GH-107211](https://github.com/godotengine/godot/pull/107211)).
@@ -2020,7 +2307,7 @@ Table of contents:
 - Fix Android mouse capture issues ([GH-103413](https://github.com/godotengine/godot/pull/103413)).
 - Fix macOS mouse tracking in tooltip popups ([GH-103788](https://github.com/godotengine/godot/pull/103788)).
 - Fix "Unicode parsing error" spam when opening editor ([GH-104107](https://github.com/godotengine/godot/pull/104107)).
-- [macOS/iOS] Ensure only one axis change event is produced during single `process_joypads()` call ([GH-104314](https://github.com/godotengine/godot/pull/104314)).
+- macOS/iOS: Ensure only one axis change event is produced during single `process_joypads()` call ([GH-104314](https://github.com/godotengine/godot/pull/104314)).
 - Fix EditorProperty shortcuts being global and unintentionally triggering ([GH-104485](https://github.com/godotengine/godot/pull/104485)).
 - Support more controllers on macOS 11+ ([GH-104619](https://github.com/godotengine/godot/pull/104619)).
 - macOS: Release keys and regenerate mouse events after native popup menu tracking ([GH-104644](https://github.com/godotengine/godot/pull/104644)).
@@ -2213,7 +2500,7 @@ Table of contents:
 - Android: Skip non-existing system font files ([GH-103384](https://github.com/godotengine/godot/pull/103384)).
 - Android: Fix editor crash after changing device language ([GH-103419](https://github.com/godotengine/godot/pull/103419)).
 - X11: Fix check for `is_maximized` to require both horizontal and vertical ([GH-103526](https://github.com/godotengine/godot/pull/103526)).
-- [Linux/BSD] Offload RenderingDevice creation test to subprocess ([GH-103560](https://github.com/godotengine/godot/pull/103560)).
+- Linux/BSD: Offload RenderingDevice creation test to subprocess ([GH-103560](https://github.com/godotengine/godot/pull/103560)).
 - Improve error message from `JavaClassWrapper.wrap()` ([GH-103571](https://github.com/godotengine/godot/pull/103571)).
 - Windows: Fix `get_modified_time` on locked files ([GH-103622](https://github.com/godotengine/godot/pull/103622)).
 - Swap Nintendo face buttons on macOS ([GH-103661](https://github.com/godotengine/godot/pull/103661)).
@@ -2221,7 +2508,7 @@ Table of contents:
 - Set `unsupported` to true on error in `FreeDesktopScreenSaver` ([GH-103802](https://github.com/godotengine/godot/pull/103802)).
 - X11: Fix native dialog parent selection condition ([GH-103815](https://github.com/godotengine/godot/pull/103815)).
 - macOS: Enable transparency for windows with decorations ([GH-103857](https://github.com/godotengine/godot/pull/103857)).
-- [macOS/iOS] Fix system font family descriptor leak ([GH-103872](https://github.com/godotengine/godot/pull/103872)).
+- macOS/iOS: Fix system font family descriptor leak ([GH-103872](https://github.com/godotengine/godot/pull/103872)).
 - macOS: Fix editor loading crash on native menu click ([GH-103892](https://github.com/godotengine/godot/pull/103892)).
 - DisplayServer: Implement `get_accent_color` on Linux ([GH-104106](https://github.com/godotengine/godot/pull/104106)).
 - macOS: Update mouse-entered state when subwindow closes ([GH-104328](https://github.com/godotengine/godot/pull/104328)).
@@ -2299,7 +2586,7 @@ Table of contents:
 - macOS: Forward application focus events to the embedded process ([GH-109724](https://github.com/godotengine/godot/pull/109724)).
 - Use `org.a11y.Status/ScreenReaderEnabled` on Linux ([GH-109739](https://github.com/godotengine/godot/pull/109739)).
 - SCons: Use gnu++20 in metal driver ([GH-109786](https://github.com/godotengine/godot/pull/109786)).
-- [Linux/BSD] Initialize DBus only once ([GH-109857](https://github.com/godotengine/godot/pull/109857)).
+- Linux/BSD: Initialize DBus only once ([GH-109857](https://github.com/godotengine/godot/pull/109857)).
 - Windows: Save and restore window rect when switching to/from maximized+borderless mode ([GH-110010](https://github.com/godotengine/godot/pull/110010)).
 
 #### Rendering

@@ -48,7 +48,7 @@ class RingBuffer {
 
 public:
 	T read() {
-		ERR_FAIL_COND_V(space_left() < 1, T());
+		ERR_FAIL_COND_V(data_left() < 1, T());
 		return data.ptr()[inc(read_pos, 1)];
 	}
 
@@ -78,7 +78,7 @@ public:
 	int copy(T *p_buf, int p_offset, int p_size) const {
 		int left = data_left();
 		if ((p_offset + p_size) > left) {
-			p_size -= left - p_offset;
+			p_size = left - p_offset;
 			if (p_size <= 0) {
 				return 0;
 			}
@@ -104,7 +104,7 @@ public:
 	int find(const T &t, int p_offset, int p_max_size) const {
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
-			p_max_size -= left - p_offset;
+			p_max_size = left - p_offset;
 			if (p_max_size <= 0) {
 				return 0;
 			}
