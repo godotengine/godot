@@ -3,7 +3,7 @@ name: Gaussian Production Gates
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-    branches: [master, main]
+    branches: [master]
     paths:
       - "core/**"
       - "drivers/**"
@@ -19,7 +19,7 @@ on:
       - "tests/**"
       - ".github/workflows/gaussian_production_gates.yml"
   push:
-    branches: [master, main, develop]
+    branches: [master, develop]
     paths:
       - "core/**"
       - "drivers/**"
@@ -87,7 +87,7 @@ jobs:
       - name: Run guard checks
         shell: pwsh
         run: |
-          python tests/ci/run_module_tests.py --guard-only --skip-render-guards
+          python tests/ci/run_module_tests.py --guard-only
 
   gpu-evidence-requirement:
     name: GPU Evidence Requirement
@@ -217,7 +217,7 @@ jobs:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
         run: |
-          python tests/ci/run_module_tests.py --godot-binary "$env:GODOT_BINARY" --skip-render-guards
+          python tests/ci/run_module_tests.py --godot-binary "$env:GODOT_BINARY"
 
       - name: Run runtime validation harness (headless structural gate)
         env:

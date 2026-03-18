@@ -61,4 +61,5 @@ This is the canonical documentation entrypoint for this repository.
 
 - Public beta readiness audit (2026-03-18): `release/public-beta-readiness-audit-2026-03-18.md`
 - Real fork migration plan: `release/real-fork-migration-plan.md`
+- Fork cutover follow-up runbook: `release/fork-cutover-follow-up.md`
 - History rewrite runbook (artifact bloat cleanup): `release/history-rewrite-artifact-cleanup.md`

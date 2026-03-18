@@ -2,16 +2,8 @@ name: Gaussian Shader Validation
 
 on:
   pull_request:
-    branches: [master, main]
+    branches: [master]
     paths:
-      - "modules/gaussian_splatting/shaders/**"
-      - "modules/gaussian_splatting/compute/**"
-      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
-      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
-      - "modules/gaussian_splatting/renderer/tile_render_types.h"
-      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
-      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
-      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
       - "modules/gaussian_splatting/shaders/**"
       - "modules/gaussian_splatting/compute/**"
       - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
@@ -22,16 +14,8 @@ on:
       - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
       - ".github/workflows/gaussian_shader_validation.yml"
   push:
-    branches: [master, main, develop]
+    branches: [master, develop]
     paths:
-      - "modules/gaussian_splatting/shaders/**"
-      - "modules/gaussian_splatting/compute/**"
-      - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"
-      - "modules/gaussian_splatting/renderer/tile_render_stages.h"
-      - "modules/gaussian_splatting/renderer/tile_render_types.h"
-      - "modules/gaussian_splatting/renderer/tile_renderer.cpp"
-      - "modules/gaussian_splatting/interfaces/gpu_culler.cpp"
-      - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
       - "modules/gaussian_splatting/shaders/**"
       - "modules/gaussian_splatting/compute/**"
       - "modules/gaussian_splatting/renderer/pipeline_io_contracts.h"

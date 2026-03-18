@@ -2,16 +2,14 @@ name: Gaussian Pipeline Validation
 
 on:
   push:
-    branches: [master, main, develop]
+    branches: [master, develop]
     paths:
-      - "modules/gaussian_splatting/**"
       - "modules/gaussian_splatting/**"
       - "tests/**"
       - ".github/workflows/gaussian_pipeline_validation.yml"
   pull_request:
-    branches: [master, main]
+    branches: [master]
     paths:
-      - "modules/gaussian_splatting/**"
       - "modules/gaussian_splatting/**"
       - "tests/**"
       - ".github/workflows/gaussian_pipeline_validation.yml"
@@ -61,7 +59,7 @@ jobs:
       - name: Run guard checks
         shell: pwsh
         run: |
-          python tests/ci/run_module_tests.py --guard-only --skip-render-guards
+          python tests/ci/run_module_tests.py --guard-only
 
       - name: Build Godot editor with Gaussian module
         shell: pwsh
