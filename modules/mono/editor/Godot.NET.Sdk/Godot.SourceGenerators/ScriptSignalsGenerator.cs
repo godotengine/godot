@@ -64,10 +64,13 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
@@ -190,8 +193,9 @@ namespace Godot.SourceGenerators
                 .Append("    /// Cached StringNames for the signals contained in this class, for fast lookup.\n")
                 .Append("    /// </summary>\n");
 
-            source.Append(
-                $"    public new class SignalName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
+            source.Append("    public new class SignalName : ")
+                .Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal())
+                .Append(".SignalName {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -212,7 +216,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class SignalName
 
             // Generate GetGodotSignalList
 
@@ -226,7 +230,8 @@ namespace Godot.SourceGenerators
                     .Append("    /// Do not call this method.\n")
                     .Append("    /// </summary>\n");
 
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append(
+                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
                     .Append(ListType)
@@ -246,6 +251,29 @@ namespace Godot.SourceGenerators
 
                 source.Append("        return signals;\n");
                 source.Append("    }\n");
+            }
+
+            // Generate GetGodotMethodTrampolines
+
+            {
+                source.Append("    private static partial class GodotInternal\n    {\n");
+
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.RaiseSignalTrampolineCollector";
+
+                source.Append("        internal new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotRaiseSignalTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n        {\n");
+
+                foreach (var signal in godotSignalDelegates)
+                {
+                    GenerateRaiseSignalTrampoline(symbol, signal, source);
+                    AppendRaiseSignalTrampoline(source, signal, isUnsafeAllowed);
+                }
+
+                source.Append("        }\n");
+
+                source.Append("    }\n"); // partial class GodotInternal
             }
 
             source.Append("#pragma warning restore CS0109\n");
@@ -280,16 +308,15 @@ namespace Godot.SourceGenerators
                     .Append("        remove => backing_")
                     .Append(signalName)
                     .Append(" -= value;\n")
-                    .Append("}\n");
+                    .Append("    }\n");
 
                 // Generate EmitSignal{EventName} method to raise the event
 
                 var invokeMethodSymbol = signalDelegate.InvokeMethodData.Method;
                 int paramCount = invokeMethodSymbol.Parameters.Length;
 
-                string raiseMethodModifiers = signalDelegate.DelegateSymbol.ContainingType.IsSealed ?
-                    "private" :
-                    "protected";
+                string raiseMethodModifiers =
+                    signalDelegate.DelegateSymbol.ContainingType.IsSealed ? "private" : "protected";
 
                 source.Append($"    {raiseMethodModifiers} void EmitSignal{signalName}(");
                 for (int i = 0; i < paramCount; i++)
@@ -301,6 +328,7 @@ namespace Godot.SourceGenerators
                         source.Append(", ");
                     }
                 }
+
                 source.Append(")\n");
                 source.Append("    {\n");
                 source.Append($"        EmitSignal(SignalName.{signalName}");
@@ -316,46 +344,8 @@ namespace Godot.SourceGenerators
 
                     source.Append($", @{paramSymbol.Name}");
                 }
+
                 source.Append(");\n");
-                source.Append("    }\n");
-            }
-
-            // Generate RaiseGodotClassSignalCallbacks
-
-            if (godotSignalDelegates.Count > 0)
-            {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append(
-                    "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
-                source.Append("NativeVariantPtrArgs args)\n    {\n");
-
-                foreach (var signal in godotSignalDelegates)
-                {
-                    GenerateSignalEventInvoker(signal, source);
-                }
-
-                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args);\n");
-
-                source.Append("    }\n");
-            }
-
-            // Generate HasGodotClassSignal
-
-            if (godotSignalDelegates.Count > 0)
-            {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append(
-                    "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
-
-                foreach (var signal in godotSignalDelegates)
-                {
-                    GenerateHasSignalEntry(signal.Name, source);
-                }
-
-                source.Append("        return base.HasGodotClassSignal(signal);\n");
-
                 source.Append("    }\n");
             }
 
@@ -435,6 +425,7 @@ namespace Godot.SourceGenerators
                     .Append(propertyInfo.ClassName)
                     .Append("\")");
             }
+
             source.Append(")");
         }
 
@@ -499,33 +490,69 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
-        private static void GenerateHasSignalEntry(
-            string signalName,
-            StringBuilder source
-        )
+        private static void AppendRaiseSignalTrampoline(StringBuilder source, GodotSignalDelegateData signal,
+            bool isUnsafeAllowed)
         {
-            source.Append("        ");
-            source.Append("if (signal == SignalName.@");
-            source.Append(signalName);
-            source.Append(") {\n           return true;\n        }\n");
+            string signalName = signal.Name;
+            int parameterCount = signal.InvokeMethodData.ParamTypes.Length;
+
+            if (!isUnsafeAllowed)
+            {
+                source.Append("            var aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(" = ")
+                    .Append("trampoline_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(";\n");
+            }
+
+            source.Append("            collector.TryAdd(new(SignalName.@")
+                .Append(signalName).Append(", ").Append(parameterCount)
+                .Append("), new(");
+
+            if (isUnsafeAllowed)
+            {
+                source
+                    .Append("&trampoline_")
+                    .Append(parameterCount).Append("_").Append(signalName);
+            }
+            else
+            {
+                source
+                    .Append("aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(signalName)
+                    .Append(".Method.MethodHandle.GetFunctionPointer()");
+            }
+
+            source.Append("));\n");
         }
 
-        private static void GenerateSignalEventInvoker(
+        private static void GenerateRaiseSignalTrampoline(
+            INamedTypeSymbol classSymbol,
             GodotSignalDelegateData signal,
             StringBuilder source
         )
         {
             string signalName = signal.Name;
             var invokeMethodData = signal.InvokeMethodData;
+            int parameterCount = invokeMethodData.ParamTypes.Length;
 
-            source.Append("        if (signal == SignalName.@");
-            source.Append(signalName);
-            source.Append(" && args.Count == ");
-            source.Append(invokeMethodData.ParamTypes.Length);
+            source
+                .Append("            static void trampoline_")
+                .Append(parameterCount).Append("_").Append(signalName)
+                .Append("(object godotObject, NativeVariantPtrArgs args)\n            {\n");
+
+            source.Append("                if (args.Count != ");
+            source.Append(parameterCount);
             source.Append(") {\n");
-            source.Append("            backing_");
-            source.Append(signalName);
-            source.Append("?.Invoke(");
+            source.Append("                    return;\n");
+            source.Append("                }\n");
+
+            source
+                .Append("                ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).backing_")
+                .Append(signalName)
+                .Append("?.Invoke(");
 
             for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
             {
@@ -538,9 +565,7 @@ namespace Godot.SourceGenerators
 
             source.Append(");\n");
 
-            source.Append("            return;\n");
-
-            source.Append("        }\n");
+            source.Append("            }\n");
         }
     }
 }

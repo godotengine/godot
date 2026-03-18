@@ -22,19 +22,29 @@ namespace Godot.Bridge
         public delegate* unmanaged<godot_string*, godot_string*, godot_string*, godot_bool*, godot_bool*, godot_string*, void> ScriptManagerBridge_GetGlobalClassName;
         public delegate* unmanaged<IntPtr, IntPtr, void> ScriptManagerBridge_SetGodotObjectPtr;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_bool*, void> ScriptManagerBridge_RaiseEventSignal;
+        public delegate* unmanaged<RaiseSignalTrampolineDelegate, IntPtr, godot_variant**, int, godot_bool*, void> ScriptManagerBridge_RaiseEventSignalViaTrampoline;
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
         public delegate* unmanaged<godot_string*, godot_ref*, void> ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
         public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+        public delegate* unmanaged<IntPtr, godot_bool*,
+            delegate* unmanaged<IntPtr, godot_string_name*, int, void*, godot_bool, void>,
+            delegate* unmanaged<IntPtr, godot_string_name*, void*, void*, void>,
+            delegate* unmanaged<IntPtr, godot_string_name*, int, void*, void>,
+            void> ScriptManagerBridge_UpdateScriptTrampolines;
         public delegate* unmanaged<IntPtr, godot_csharp_type_info*, godot_array*, godot_dictionary*, godot_dictionary*, godot_ref*, void> ScriptManagerBridge_UpdateScriptClassInfo;
         public delegate* unmanaged<IntPtr, IntPtr*, godot_bool, godot_bool> ScriptManagerBridge_SwapGCHandleForType;
         public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, godot_string*, void*, int, void>, void> ScriptManagerBridge_GetPropertyInfoList;
         public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, void*, int, void>, void> ScriptManagerBridge_GetPropertyDefaultValues;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> ScriptManagerBridge_CallStatic;
+        public delegate* unmanaged<MethodTrampolineDelegate, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> ScriptManagerBridge_CallStaticWithTrampoline;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> CSharpInstanceBridge_Call;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Set;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Get;
+        public delegate* unmanaged<MethodTrampolineDelegate, IntPtr, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> CSharpInstanceBridge_CallViaTrampoline;
+        public delegate* unmanaged<PropertySetterTrampolineDelegate, IntPtr, godot_variant*, godot_bool> CSharpInstanceBridge_SetViaTrampoline;
+        public delegate* unmanaged<PropertyGetterTrampolineDelegate, IntPtr, godot_variant*, godot_bool> CSharpInstanceBridge_GetViaTrampoline;
         public delegate* unmanaged<IntPtr, godot_bool, void> CSharpInstanceBridge_CallDispose;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool*, void> CSharpInstanceBridge_CallToString;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
@@ -66,19 +76,25 @@ namespace Godot.Bridge
                 ScriptManagerBridge_GetGlobalClassName = &ScriptManagerBridge.GetGlobalClassName,
                 ScriptManagerBridge_SetGodotObjectPtr = &ScriptManagerBridge.SetGodotObjectPtr,
                 ScriptManagerBridge_RaiseEventSignal = &ScriptManagerBridge.RaiseEventSignal,
+                ScriptManagerBridge_RaiseEventSignalViaTrampoline = &ScriptManagerBridge.RaiseEventSignalViaTrampoline,
                 ScriptManagerBridge_ScriptIsOrInherits = &ScriptManagerBridge.ScriptIsOrInherits,
                 ScriptManagerBridge_AddScriptBridge = &ScriptManagerBridge.AddScriptBridge,
                 ScriptManagerBridge_GetOrCreateScriptBridgeForPath = &ScriptManagerBridge.GetOrCreateScriptBridgeForPath,
                 ScriptManagerBridge_RemoveScriptBridge = &ScriptManagerBridge.RemoveScriptBridge,
                 ScriptManagerBridge_TryReloadRegisteredScriptWithClass = &ScriptManagerBridge.TryReloadRegisteredScriptWithClass,
+                ScriptManagerBridge_UpdateScriptTrampolines = &ScriptManagerBridge.UpdateScriptTrampolines,
                 ScriptManagerBridge_UpdateScriptClassInfo = &ScriptManagerBridge.UpdateScriptClassInfo,
                 ScriptManagerBridge_SwapGCHandleForType = &ScriptManagerBridge.SwapGCHandleForType,
                 ScriptManagerBridge_GetPropertyInfoList = &ScriptManagerBridge.GetPropertyInfoList,
                 ScriptManagerBridge_GetPropertyDefaultValues = &ScriptManagerBridge.GetPropertyDefaultValues,
                 ScriptManagerBridge_CallStatic = &ScriptManagerBridge.CallStatic,
+                ScriptManagerBridge_CallStaticWithTrampoline = &ScriptManagerBridge.CallStaticWithTrampoline,
                 CSharpInstanceBridge_Call = &CSharpInstanceBridge.Call,
                 CSharpInstanceBridge_Set = &CSharpInstanceBridge.Set,
                 CSharpInstanceBridge_Get = &CSharpInstanceBridge.Get,
+                CSharpInstanceBridge_CallViaTrampoline = &CSharpInstanceBridge.CallViaTrampoline,
+                CSharpInstanceBridge_SetViaTrampoline = &CSharpInstanceBridge.SetViaTrampoline,
+                CSharpInstanceBridge_GetViaTrampoline = &CSharpInstanceBridge.GetViaTrampoline,
                 CSharpInstanceBridge_CallDispose = &CSharpInstanceBridge.CallDispose,
                 CSharpInstanceBridge_CallToString = &CSharpInstanceBridge.CallToString,
                 CSharpInstanceBridge_HasMethodUnknownParams = &CSharpInstanceBridge.HasMethodUnknownParams,

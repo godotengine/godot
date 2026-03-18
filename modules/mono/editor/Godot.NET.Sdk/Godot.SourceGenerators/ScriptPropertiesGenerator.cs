@@ -39,6 +39,7 @@ namespace Godot.SourceGenerators
 
                                 return true;
                             }
+
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -63,10 +64,13 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
@@ -129,11 +133,13 @@ namespace Godot.SourceGenerators
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
             source.Append("    /// <summary>\n")
-                .Append("    /// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n")
+                .Append(
+                    "    /// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n")
                 .Append("    /// </summary>\n");
 
-            source.Append(
-                $"    public new class PropertyName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
+            source.Append("    public new class PropertyName : ")
+                .Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal())
+                .Append(".PropertyName {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -171,86 +177,86 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class PropertyName
+
+            source.Append("    private static partial class GodotInternal\n    {\n");
+
+            // Generate GetGodotMethodTrampolines
+            {
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector";
+
+                source.Append("        internal new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotPropertyTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n        {\n");
+
+                // Generate trampolines
+
+                foreach (var property in godotClassProperties)
+                {
+                    if (!property.PropertySymbol.IsWriteOnly)
+                    {
+                        GeneratePropertyGetterTrampoline(symbol, property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source);
+                    }
+
+                    if (!property.PropertySymbol.IsReadOnly && !property.PropertySymbol.SetMethod!.IsInitOnly)
+                    {
+                        GeneratePropertySetterTrampoline(symbol, property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source);
+                    }
+                }
+
+                foreach (var field in godotClassFields)
+                {
+                    GeneratePropertyGetterTrampoline(symbol, field.FieldSymbol.Name,
+                        field.FieldSymbol.Type, field.Type, source);
+
+                    if (!field.FieldSymbol.IsReadOnly)
+                    {
+                        GeneratePropertySetterTrampoline(symbol, field.FieldSymbol.Name,
+                            field.FieldSymbol.Type, field.Type, source);
+                    }
+                }
+
+                // Append trampolines
+
+                foreach (var property in godotClassProperties)
+                {
+                    AppendPropertyTrampolines(source, property.PropertySymbol.Name, isUnsafeAllowed,
+                        hasGetter: !property.PropertySymbol.IsWriteOnly,
+                        hasSetter: !property.PropertySymbol.IsReadOnly &&
+                                   !property.PropertySymbol.SetMethod!.IsInitOnly);
+                }
+
+                foreach (var field in godotClassFields)
+                {
+                    AppendPropertyTrampolines(source, field.FieldSymbol.Name, isUnsafeAllowed,
+                        hasGetter: true,
+                        hasSetter: !field.FieldSymbol.IsReadOnly);
+                }
+
+                source.Append("        }\n");
+            }
+
+            source.Append("    }\n"); // partial class GodotInternal
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-
-                // Generate SetGodotClassPropertyValue
-
-                bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
-                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
-
-                if (!allPropertiesAreReadOnly)
-                {
-                    source.Append("    /// <inheritdoc/>\n");
-                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
-                    source.Append("in godot_variant value)\n    {\n");
-
-                    foreach (var property in godotClassProperties)
-                    {
-                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
-                            continue;
-
-                        GeneratePropertySetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source);
-                    }
-
-                    foreach (var field in godotClassFields)
-                    {
-                        if (field.FieldSymbol.IsReadOnly)
-                            continue;
-
-                        GeneratePropertySetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source);
-                    }
-
-                    source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
-
-                    source.Append("    }\n");
-                }
-
-                // Generate GetGodotClassPropertyValue
-                bool allPropertiesAreWriteOnly = godotClassFields.Length == 0 && godotClassProperties.All(pi => pi.PropertySymbol.IsWriteOnly);
-
-                if (!allPropertiesAreWriteOnly)
-                {
-                    source.Append("    /// <inheritdoc/>\n");
-                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
-                    source.Append("out godot_variant value)\n    {\n");
-
-                    foreach (var property in godotClassProperties)
-                    {
-                        if (property.PropertySymbol.IsWriteOnly)
-                            continue;
-
-                        GeneratePropertyGetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source);
-                    }
-
-                    foreach (var field in godotClassFields)
-                    {
-                        GeneratePropertyGetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source);
-                    }
-
-                    source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
-
-                    source.Append("    }\n");
-                }
                 // Generate GetGodotPropertyList
 
-                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                const string DictionaryType =
+                    "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
-                    .Append("    /// This method is used by Godot to register the available properties in the editor.\n")
+                    .Append(
+                        "    /// This method is used by Godot to register the available properties in the editor.\n")
                     .Append("    /// Do not call this method.\n")
                     .Append("    /// </summary>\n");
 
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append(
+                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
                     .Append(DictionaryType)
@@ -294,9 +300,9 @@ namespace Godot.SourceGenerators
 
                 source.Append("        return properties;\n");
                 source.Append("    }\n");
-
-                source.Append("#pragma warning restore CS0109\n");
             }
+
+            source.Append("#pragma warning restore CS0109\n");
 
             source.Append("}\n"); // partial class
 
@@ -320,45 +326,116 @@ namespace Godot.SourceGenerators
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
-        private static void GeneratePropertySetter(
+        private static void AppendPropertyTrampolines(StringBuilder source,
+            string propertyMemberName, bool isUnsafeAllowed, bool hasGetter, bool hasSetter)
+        {
+            if (!isUnsafeAllowed)
+            {
+                if (hasGetter)
+                {
+                    source.Append("            var aux_delegate_get_").Append(propertyMemberName)
+                        .Append(" = ")
+                        .Append("trampoline_get_").Append(propertyMemberName)
+                        .Append(";\n");
+                }
+
+                if (hasSetter)
+                {
+                    source.Append("            var aux_delegate_set_").Append(propertyMemberName)
+                        .Append(" = ")
+                        .Append("trampoline_set_").Append(propertyMemberName)
+                        .Append(";\n");
+                }
+            }
+
+            source.Append("            collector.TryAdd(PropertyName.@")
+                .Append(propertyMemberName)
+                .Append(", (new(");
+
+            if (hasGetter)
+            {
+                if (isUnsafeAllowed)
+                {
+                    source.Append("&trampoline_get_").Append(propertyMemberName);
+                }
+                else
+                {
+                    source.Append("aux_delegate_get_").Append(propertyMemberName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+            }
+            else
+            {
+                source.Append(isUnsafeAllowed ? "null" : "global::System.IntPtr.Zero");
+            }
+
+            source.Append("), new(");
+
+            if (hasSetter)
+            {
+                if (isUnsafeAllowed)
+                {
+                    source.Append("&trampoline_set_").Append(propertyMemberName);
+                }
+                else
+                {
+                    source.Append("aux_delegate_set_").Append(propertyMemberName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+            }
+            else
+            {
+                source.Append(isUnsafeAllowed ? "null" : "global::System.IntPtr.Zero");
+            }
+
+            source.Append(")));\n");
+        }
+
+        private static void GeneratePropertyGetterTrampoline(
+            INamedTypeSymbol classSymbol,
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
             StringBuilder source
         )
         {
-            source.Append("        ");
+            source
+                .Append("            static godot_variant trampoline_get_").Append(propertyMemberName)
+                .Append("(object godotObject)\n            {\n");
 
-            source.Append("if (name == PropertyName.@")
-                .Append(propertyMemberName)
-                .Append(") {\n")
-                .Append("            this.@")
+            source
+                .Append("                var ret = ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).@")
+                .Append(propertyMemberName).Append(";\n");
+            source
+                .Append("                return ")
+                .AppendManagedToNativeVariantExpr("ret", propertyTypeSymbol, propertyMarshalType)
+                .Append(";\n");
+
+            source.Append("            }\n");
+        }
+
+        private static void GeneratePropertySetterTrampoline(
+            INamedTypeSymbol classSymbol,
+            string propertyMemberName,
+            ITypeSymbol propertyTypeSymbol,
+            MarshalType propertyMarshalType,
+            StringBuilder source
+        )
+        {
+            source
+                .Append("            static void trampoline_set_").Append(propertyMemberName)
+                .Append("(object godotObject, in godot_variant value)\n            {\n");
+
+            source
+                .Append("                ((").Append(classSymbol.FullQualifiedNameIncludeGlobal())
+                .Append(")godotObject).@")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
-                .Append(";\n")
-                .Append("            return true;\n")
-                .Append("        }\n");
-        }
+                .Append(";\n");
 
-        private static void GeneratePropertyGetter(
-            string propertyMemberName,
-            ITypeSymbol propertyTypeSymbol,
-            MarshalType propertyMarshalType,
-            StringBuilder source
-        )
-        {
-            source.Append("        ");
-
-            source.Append("if (name == PropertyName.@")
-                .Append(propertyMemberName)
-                .Append(") {\n")
-                .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this.@" + propertyMemberName,
-                    propertyTypeSymbol, propertyMarshalType)
-                .Append(";\n")
-                .Append("            return true;\n")
-                .Append("        }\n");
+            source.Append("            }\n");
         }
 
         private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
@@ -448,7 +525,8 @@ namespace Godot.SourceGenerators
 
             if (exportAttr != null && propertySymbol != null)
             {
-                if (propertySymbol.GetMethod == null || propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
+                if (propertySymbol.GetMethod == null || propertySymbol.SetMethod == null ||
+                    propertySymbol.SetMethod.IsInitOnly)
                 {
                     // Exports can be neither read-only nor write-only but the diagnostic errors for properties are already
                     // reported by ScriptPropertyDefValGenerator.cs so just quit early here.
@@ -478,7 +556,8 @@ namespace Godot.SourceGenerators
                     return null;
                 }
 
-                static bool PropertyIsExpressionBodiedAndReturnsNewCallable(Compilation compilation, IPropertySymbol? propertySymbol)
+                static bool PropertyIsExpressionBodiedAndReturnsNewCallable(Compilation compilation,
+                    IPropertySymbol? propertySymbol)
                 {
                     if (propertySymbol == null)
                     {
@@ -517,7 +596,8 @@ namespace Godot.SourceGenerators
                     return true;
                 }
 
-                static bool ExpressionBodyReturnsNewCallable(Compilation compilation, ArrowExpressionClauseSyntax? expressionSyntax)
+                static bool ExpressionBodyReturnsNewCallable(Compilation compilation,
+                    ArrowExpressionClauseSyntax? expressionSyntax)
                 {
                     if (expressionSyntax == null)
                     {
@@ -539,14 +619,18 @@ namespace Godot.SourceGenerators
                             {
                                 return typeSymbol.FullQualifiedNameOmitGlobal() == GodotClasses.Callable;
                             }
+
                             break;
 
                         case InvocationExpressionSyntax invocationExpression:
-                            var methodSymbol = semanticModel.GetSymbolInfo(invocationExpression).Symbol as IMethodSymbol;
+                            var methodSymbol =
+                                semanticModel.GetSymbolInfo(invocationExpression).Symbol as IMethodSymbol;
                             if (methodSymbol != null && methodSymbol.Name == "From")
                             {
-                                return methodSymbol.ContainingType.FullQualifiedNameOmitGlobal() == GodotClasses.Callable;
+                                return methodSymbol.ContainingType.FullQualifiedNameOmitGlobal() ==
+                                       GodotClasses.Callable;
                             }
+
                             break;
                     }
 
@@ -608,9 +692,9 @@ namespace Godot.SourceGenerators
                         _ => (PropertyHint)(long)hintValue
                     };
 
-                    hintString = constructorArguments.Length > 1 ?
-                        exportAttr.ConstructorArguments[1].Value?.ToString() :
-                        null;
+                    hintString = constructorArguments.Length > 1
+                        ? exportAttr.ConstructorArguments[1].Value?.ToString()
+                        : null;
                 }
                 else
                 {
@@ -699,8 +783,9 @@ namespace Godot.SourceGenerators
                     hintStringBuilder.Append(val);
                 }
 
-                hintString = !usesDefaultValues ?
-                    hintStringBuilder.ToString() :
+                hintString = !usesDefaultValues
+                    ? hintStringBuilder.ToString()
+                    :
                     // If we use the format NAME:VAL, that's what the editor displays.
                     // That's annoying if the user is not using custom values for the enum constants.
                     // This may not be needed in the future if the editor is changed to not display values.
@@ -733,7 +818,8 @@ namespace Godot.SourceGenerators
                 }
             }
 
-            static bool TryGetNodeOrResourceType(AttributeData exportAttr, out PropertyHint hint, out string? hintString)
+            static bool TryGetNodeOrResourceType(AttributeData exportAttr, out PropertyHint hint,
+                out string? hintString)
             {
                 hint = PropertyHint.None;
                 hintString = null;
@@ -793,9 +879,9 @@ namespace Godot.SourceGenerators
 
                     if (presetHint == PropertyHint.Enum)
                     {
-                        string? presetHintString = constructorArguments.Length > 1 ?
-                            exportAttr.ConstructorArguments[1].Value?.ToString() :
-                            null;
+                        string? presetHintString = constructorArguments.Length > 1
+                            ? exportAttr.ConstructorArguments[1].Value?.ToString()
+                            : null;
 
                         hintString = (int)elementVariantType + "/" + (int)PropertyHint.Enum + ":";
 
@@ -881,7 +967,8 @@ namespace Godot.SourceGenerators
                     return false;
                 }
 
-                var keyElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType.Value)!.Value;
+                var keyElementVariantType =
+                    MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType.Value)!.Value;
                 var keyIsPresetHint = false;
                 var keyHintString = (string?)null;
 
@@ -908,12 +995,14 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                var valueElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType.Value)!.Value;
+                var valueElementVariantType =
+                    MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType.Value)!.Value;
                 var valueIsPresetHint = false;
                 var valueHintString = (string?)null;
 
                 if (valueElementVariantType == VariantType.String || valueElementVariantType == VariantType.StringName)
-                    valueIsPresetHint = GetStringArrayEnumHint(valueElementVariantType, exportAttr, out valueHintString);
+                    valueIsPresetHint =
+                        GetStringArrayEnumHint(valueElementVariantType, exportAttr, out valueHintString);
 
                 if (!valueIsPresetHint)
                 {
@@ -937,7 +1026,9 @@ namespace Godot.SourceGenerators
 
                 hint = PropertyHint.TypeString;
 
-                hintString = keyHintString != null && valueHintString != null ? $"{keyHintString};{valueHintString}" : null;
+                hintString = keyHintString != null && valueHintString != null
+                    ? $"{keyHintString};{valueHintString}"
+                    : null;
                 return hintString != null;
             }
 

@@ -33,45 +33,50 @@ partial class MixedReadOnlyWriteOnly
         /// </summary>
         public new static readonly global::Godot.StringName @_writeOnlyBackingField = "_writeOnlyBackingField";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    private static partial class GodotInternal
     {
-        if (name == PropertyName.@WriteOnlyProperty) {
-            this.@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
+        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_ReadOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_ReadOnlyProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_InitOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@InitOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_WriteOnlyProperty(object godotObject, in godot_variant value)
+            {
+                ((global::MixedReadOnlyWriteOnly)godotObject).@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            static godot_variant trampoline_get_ReadOnlyField(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get__writeOnlyBackingField(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@_writeOnlyBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            }
+            static void trampoline_set__writeOnlyBackingField(object godotObject, in godot_variant value)
+            {
+                ((global::MixedReadOnlyWriteOnly)godotObject).@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            collector.TryAdd(PropertyName.@ReadOnlyAutoProperty, (new(&trampoline_get_ReadOnlyAutoProperty), new(null)));
+            collector.TryAdd(PropertyName.@ReadOnlyProperty, (new(&trampoline_get_ReadOnlyProperty), new(null)));
+            collector.TryAdd(PropertyName.@InitOnlyAutoProperty, (new(&trampoline_get_InitOnlyAutoProperty), new(null)));
+            collector.TryAdd(PropertyName.@WriteOnlyProperty, (new(null), new(&trampoline_set_WriteOnlyProperty)));
+            collector.TryAdd(PropertyName.@ReadOnlyField, (new(&trampoline_get_ReadOnlyField), new(null)));
+            collector.TryAdd(PropertyName.@_writeOnlyBackingField, (new(&trampoline_get__writeOnlyBackingField), new(&trampoline_set__writeOnlyBackingField)));
         }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            this.@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@ReadOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyProperty);
-            return true;
-        }
-        if (name == PropertyName.@InitOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@InitOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyField);
-            return true;
-        }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@_writeOnlyBackingField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

@@ -68,6 +68,10 @@ struct godotsharp_property_def_val_pair {
 };
 
 struct ManagedCallbacks {
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name,
+			godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline);
+	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline);
 	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, void *p_props, int32_t p_count);
 	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
 
@@ -85,19 +89,28 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_GetGlobalClassName = void(GD_CLR_STDCALL *)(const String *, String *, String *, bool *, bool *, String *);
 	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
 	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, bool *);
+	using FuncScriptManagerBridge_RaiseEventSignalViaTrampoline = void(GD_CLR_STDCALL *)(godotsharp::RaiseSignalTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, bool *r_owner_is_null);
 	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
 	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
 	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_UpdateScriptTrampolines = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddProperty,
+			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddRaiseSignal);
 	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, CSharpScript::TypeInfo *, Array *, Dictionary *, Dictionary *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
 	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
 	using FuncScriptManagerBridge_GetPropertyDefaultValues = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add);
 	using FuncScriptManagerBridge_CallStatic = bool(GD_CLR_STDCALL *)(const CSharpScript *, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncScriptManagerBridge_CallStaticWithTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::MethodTrampoline p_trampoline, const Variant **, int32_t, Callable::CallError *, Variant *);
 	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
 	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
 	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
+	using FuncCSharpInstanceBridge_CallViaTrampoline = void(GD_CLR_STDCALL *)(godotsharp::MethodTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, Callable::CallError *r_ref_call_error, Variant *r_ret);
+	using FuncCSharpInstanceBridge_SetViaTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::PropertySetterTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant *p_args);
+	using FuncCSharpInstanceBridge_GetViaTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::PropertyGetterTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, Variant *r_args);
 	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
 	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
 	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
@@ -123,19 +136,25 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_GetGlobalClassName ScriptManagerBridge_GetGlobalClassName;
 	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;
 	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
+	FuncScriptManagerBridge_RaiseEventSignalViaTrampoline ScriptManagerBridge_RaiseEventSignalViaTrampoline;
 	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
 	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
 	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
 	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
 	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+	FuncScriptManagerBridge_UpdateScriptTrampolines ScriptManagerBridge_UpdateScriptTrampolines;
 	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
 	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
 	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;
 	FuncScriptManagerBridge_GetPropertyDefaultValues ScriptManagerBridge_GetPropertyDefaultValues;
 	FuncScriptManagerBridge_CallStatic ScriptManagerBridge_CallStatic;
+	FuncScriptManagerBridge_CallStaticWithTrampoline ScriptManagerBridge_CallStaticWithTrampoline;
 	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
 	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
 	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
+	FuncCSharpInstanceBridge_CallViaTrampoline CSharpInstanceBridge_CallViaTrampoline;
+	FuncCSharpInstanceBridge_SetViaTrampoline CSharpInstanceBridge_SetViaTrampoline;
+	FuncCSharpInstanceBridge_GetViaTrampoline CSharpInstanceBridge_GetViaTrampoline;
 	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
 	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
 	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;

@@ -37,6 +37,7 @@ namespace Godot.SourceGenerators
 
                                 return true;
                             }
+
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -75,10 +76,13 @@ namespace Godot.SourceGenerators
             INamedTypeSymbol symbol
         )
         {
+            var options = context.Compilation.Options as Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions;
+            bool isUnsafeAllowed = options?.AllowUnsafe ?? false;
+
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
@@ -140,8 +144,9 @@ namespace Godot.SourceGenerators
                 .Append("    /// Cached StringNames for the methods contained in this class, for fast lookup.\n")
                 .Append("    /// </summary>\n");
 
-            source.Append(
-                $"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+            source.Append("    public new class MethodName : ")
+                .Append(symbol.BaseType!.FullQualifiedNameIncludeGlobal())
+                .Append(".MethodName {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -165,7 +170,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n"); // end of class MethodName
 
             // Generate GetGodotMethodList
 
@@ -179,7 +184,8 @@ namespace Godot.SourceGenerators
                     .Append("    /// Do not call this method.\n")
                     .Append("    /// </summary>\n");
 
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append(
+                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
                     .Append(ListType)
@@ -201,67 +207,29 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            source.Append("#pragma warning restore CS0109\n");
+            source.Append("    private static partial class GodotInternal\n    {\n");
 
-            // Generate InvokeGodotClassMethod
-
-            if (godotClassMethods.Length > 0)
+            // Generate GetGodotMethodTrampolines
             {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
+                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.MethodTrampolineCollector";
+
+                source.Append("        public new static ")
+                    .Append(isUnsafeAllowed ? "unsafe " : "")
+                    .Append("void GetGodotMethodTrampolines(")
+                    .Append(CollectorType).Append(" collector)\n        {\n");
 
                 foreach (var method in godotClassMethods)
                 {
-                    GenerateMethodInvoker(method, source);
+                    GenerateMethodTrampoline(symbol, method, source);
+                    AppendMethodTrampoline(source, method, isUnsafeAllowed);
                 }
 
-                source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
-
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
 
-            // Generate InvokeGodotClassStaticMethod
+            source.Append("    }\n"); // partial class GodotInternal
 
-            var godotClassStaticMethods = godotClassMethods.Where(m => m.Method.IsStatic).ToArray();
-
-            if (godotClassStaticMethods.Length > 0)
-            {
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    internal new static bool InvokeGodotClassStaticMethod(in godot_string_name method, ");
-                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
-
-                foreach (var method in godotClassStaticMethods)
-                {
-                    GenerateMethodInvoker(method, source);
-                }
-
-                source.Append("        ret = default;\n");
-                source.Append("        return false;\n");
-                source.Append("    }\n");
-
-                source.Append("#pragma warning restore CS0109\n");
-            }
-
-            // Generate HasGodotClassMethod
-
-            if (distinctMethodNames.Length > 0)
-            {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
-
-                foreach (string methodName in distinctMethodNames)
-                {
-                    GenerateHasMethodEntry(methodName, source);
-                }
-
-                source.Append("        return base.HasGodotClassMethod(method);\n");
-
-                source.Append("    }\n");
-            }
+            source.Append("#pragma warning restore CS0109\n");
 
             source.Append("}\n"); // partial class
 
@@ -339,6 +307,7 @@ namespace Godot.SourceGenerators
                     .Append(propertyInfo.ClassName)
                     .Append("\")");
             }
+
             source.Append(")");
         }
 
@@ -408,35 +377,128 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
-        private static void GenerateHasMethodEntry(
-            string methodName,
-            StringBuilder source
-        )
+        private static void AppendMethodTrampoline(StringBuilder source, GodotMethodData method, bool isUnsafeAllowed)
         {
-            source.Append("        ");
-            source.Append("if (method == MethodName.@");
-            source.Append(methodName);
-            source.Append(") {\n           return true;\n        }\n");
+            string methodName = method.Method.Name;
+            int parameterCount = method.ParamTypes.Length;
+            bool isStatic = method.Method.IsStatic;
+
+            if (!isUnsafeAllowed)
+            {
+                source.Append("            var aux_delegate_")
+                    .Append(parameterCount).Append("_").Append(methodName)
+                    .Append(" = ")
+                    .Append("trampoline_")
+                    .Append(parameterCount).Append("_").Append(methodName)
+                    .Append(";\n");
+            }
+
+            DoAppendTrampoline(source, methodName, parameterCount, isStatic, isUnsafeAllowed);
+
+            if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
+                method.Method.OverriddenMethod.ContainingType
+                    .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
+            {
+                // Only do this for native virtual methods by checking that it is also in MethodName.
+                if (method.Method.OverriddenMethod.ContainingType.GetTypeMembers()
+                        .FirstOrDefault(s => s.Name == "MethodName")?
+                        .MemberNames.Any(name => name == method.Method.Name) ?? false)
+                {
+                    INamedTypeSymbol overriddenContainingType =
+                        method.Method.OverriddenMethod.ContainingType;
+
+                    DoAppendTrampoline(source, methodName, parameterCount,
+                        isStatic, isUnsafeAllowed, overriddenContainingType);
+                }
+            }
+
+            static void DoAppendTrampoline(StringBuilder source,
+                string methodName, int parameterCount,
+                bool isStatic, bool isUnsafeAllowed,
+                INamedTypeSymbol? overriddenContainingType = null)
+            {
+                source.Append("            collector.TryAdd(new(");
+
+                if (overriddenContainingType != null)
+                    source.Append(overriddenContainingType.FullQualifiedNameIncludeGlobal()).Append(".");
+
+                source.Append("MethodName.@")
+                    .Append(methodName).Append(", ").Append(parameterCount)
+                    .Append("), new(");
+
+                if (isUnsafeAllowed)
+                {
+                    source
+                        .Append("&trampoline_")
+                        .Append(parameterCount).Append("_").Append(methodName);
+                }
+                else
+                {
+                    source
+                        .Append("aux_delegate_")
+                        .Append(parameterCount).Append("_").Append(methodName)
+                        .Append(".Method.MethodHandle.GetFunctionPointer()");
+                }
+
+                source.Append(", isStatic: ").Append(isStatic ? "true" : "false");
+                source.Append("));\n");
+            }
         }
 
-        private static void GenerateMethodInvoker(
+        private static void GenerateMethodTrampoline(
+            INamedTypeSymbol classSymbol,
             GodotMethodData method,
             StringBuilder source
         )
         {
             string methodName = method.Method.Name;
+            int parameterCount = method.ParamTypes.Length;
 
-            source.Append("        if (method == MethodName.@");
-            source.Append(methodName);
-            source.Append(" && args.Count == ");
-            source.Append(method.ParamTypes.Length);
+            INamedTypeSymbol castClassSymbol = classSymbol;
+
+            // To match the behavior of InvokeGodotClassMethod, native virtual methods must
+            // be invoked on a variable of the method declaring type, not the overriding type.
+            // e.g.: '((Node)obj)._EnterTree' vs '((DerivedScriptClass)obj)._EnterTree'.
+            // These two will behave differently if the derived class hides the method
+            // (with the 'new' keyword) instead of overriding it.
+            if (method.Method is { IsOverride: true, OverriddenMethod: not null } &&
+                method.Method.OverriddenMethod.ContainingType
+                    .ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
+            {
+                // Only do this for native virtual methods by checking that it is also in MethodName.
+                // This is not only for correctness, but to also avoid issues with protected functions like Dispose(bool).
+                if (method.Method.OverriddenMethod.ContainingType.GetTypeMembers()
+                        .FirstOrDefault(s => s.Name == "MethodName")?
+                        .MemberNames.Any(name => name == method.Method.Name) ?? false)
+                {
+                    castClassSymbol = method.Method.OverriddenMethod.ContainingType;
+                }
+            }
+
+            bool isStaticMethod = method.Method.IsStatic;
+
+            source
+                .Append("            static godot_variant trampoline_")
+                .Append(parameterCount).Append("_").Append(methodName)
+                .Append("(object godotObject, NativeVariantPtrArgs args, ")
+                .Append("ref godot_variant_call_error callError)\n            {\n");
+
+            source.Append("                if (args.Count != ");
+            source.Append(parameterCount);
             source.Append(") {\n");
+            source.Append("                    callError = ")
+                .Append("godot_variant_call_error.CreateInvalidArgumentCountError(expected: ")
+                .Append(parameterCount).Append(", provided: args.Count);\n");
+            source.Append("                    return default;\n");
+            source.Append("                }\n");
 
             if (method.RetType != null)
-                source.Append("            var callRet = ");
+                source.Append("                var callRet = ");
             else
-                source.Append("            ");
+                source.Append("                ");
 
+            if (!isStaticMethod)
+                source.Append("((").Append(castClassSymbol.FullQualifiedNameIncludeGlobal()).Append(")godotObject).");
             source.Append("@");
             source.Append(methodName);
             source.Append("(");
@@ -454,21 +516,17 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                source.Append("            ret = ");
-
+                source.Append("                return ");
                 source.AppendManagedToNativeVariantExpr("callRet",
                     method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
                 source.Append(";\n");
-
-                source.Append("            return true;\n");
             }
             else
             {
-                source.Append("            ret = default;\n");
-                source.Append("            return true;\n");
+                source.Append("                return default;\n");
             }
 
-            source.Append("        }\n");
+            source.Append("            }\n");
         }
     }
 }
