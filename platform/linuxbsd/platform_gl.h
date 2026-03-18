@@ -39,6 +39,6 @@
 #endif
 
 // IWYU pragma: begin_exports.
-#include "thirdparty/glad/glad/egl.h"
-#include "thirdparty/glad/glad/gl.h"
+#include <thirdparty/glad/glad/egl.h>
+#include <thirdparty/glad/glad/gl.h>
 // IWYU pragma: end_exports.

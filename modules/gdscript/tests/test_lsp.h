@@ -47,7 +47,7 @@
 
 #include "modules/regex/regex.h"
 
-#include "thirdparty/doctest/doctest.h"
+#include <thirdparty/doctest/doctest.h>
 
 class TestGDScriptLanguageProtocolInitializer {
 public:

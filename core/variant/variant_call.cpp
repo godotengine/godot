@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "variant.h"
-
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
@@ -38,6 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/method_ptrcall.h"
+#include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);

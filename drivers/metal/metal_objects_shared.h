@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "metal_device_properties.h"
-#include "metal_utils.h"
-#include "pixel_formats.h"
-#include "sha256_digest.h"
+#include "drivers/metal/metal_device_properties.h"
+#include "drivers/metal/metal_utils.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/sha256_digest.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 

@@ -30,8 +30,6 @@
 
 #include "dynamic_font_import_settings.h"
 
-#include "unicode_ranges.inc"
-
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
@@ -39,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/import/unicode_ranges.inc"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"

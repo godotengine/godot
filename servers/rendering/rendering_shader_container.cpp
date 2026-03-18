@@ -33,7 +33,7 @@
 #include "core/io/compression.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
-#include "thirdparty/spirv-reflect/spirv_reflect.h"
+#include <thirdparty/spirv-reflect/spirv_reflect.h>
 
 static inline uint32_t aligned_to(uint32_t p_size, uint32_t p_alignment) {
 	if (p_size % p_alignment) {

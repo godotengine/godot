@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "variant.h"
-
 #include "core/variant/method_ptrcall.h"
+#include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 /**** NAMED SETTERS AND GETTERS ****/

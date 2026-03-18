@@ -169,8 +169,8 @@ template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename U
 class BVH_Tree {
 	friend class BVH;
 
-#include "bvh_pair.inc"
-#include "bvh_structs.inc"
+#include "core/math/bvh_pair.inc"
+#include "core/math/bvh_structs.inc"
 
 public:
 	BVH_Tree() {
@@ -440,14 +440,14 @@ private:
 		return child_node_id;
 	}
 
-#include "bvh_cull.inc"
-#include "bvh_debug.inc"
-#include "bvh_integrity.inc"
-#include "bvh_logic.inc"
-#include "bvh_misc.inc"
-#include "bvh_public.inc"
-#include "bvh_refit.inc"
-#include "bvh_split.inc"
+#include "core/math/bvh_cull.inc"
+#include "core/math/bvh_debug.inc"
+#include "core/math/bvh_integrity.inc"
+#include "core/math/bvh_logic.inc"
+#include "core/math/bvh_misc.inc"
+#include "core/math/bvh_public.inc"
+#include "core/math/bvh_refit.inc"
+#include "core/math/bvh_split.inc"
 };
 
 #undef VERBOSE_PRINT

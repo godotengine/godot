@@ -30,8 +30,6 @@
 
 #include "tile_data_editors.h"
 
-#include "tile_set_editor.h"
-
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"
 #include "core/object/callable_mp.h"
@@ -41,6 +39,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_properties.h"
+#include "editor/scene/2d/tiles/tile_set_editor.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"

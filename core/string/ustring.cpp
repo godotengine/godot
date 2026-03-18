@@ -47,7 +47,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#include "thirdparty/grisu2/grisu2.h"
+#include <thirdparty/grisu2/grisu2.h>
 
 #include <cstdio>
 

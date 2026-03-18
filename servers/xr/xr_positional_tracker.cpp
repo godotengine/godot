@@ -30,9 +30,8 @@
 
 #include "xr_positional_tracker.h"
 
-#include "xr_controller_tracker.h"
-
 #include "core/object/class_db.h"
+#include "servers/xr/xr_controller_tracker.h"
 
 void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);

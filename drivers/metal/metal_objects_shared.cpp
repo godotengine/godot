@@ -30,7 +30,7 @@
 
 #include "metal_objects_shared.h"
 
-#include "rendering_device_driver_metal.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
 
 #include <os/signpost.h>
 #include <simd/simd.h>

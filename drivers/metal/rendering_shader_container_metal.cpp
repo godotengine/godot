@@ -30,19 +30,17 @@
 
 #include "rendering_shader_container_metal.h"
 
-#include "metal_utils.h"
-
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/fixed_vector.h"
-
-#include "thirdparty/spirv-reflect/spirv_reflect.h"
+#include "drivers/metal/metal_utils.h"
 
 #include <Metal/Metal.hpp>
 #include <spirv.hpp>
 #include <spirv_msl.hpp>
 #include <spirv_parser.hpp>
+#include <thirdparty/spirv-reflect/spirv_reflect.h>
 
 void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 	if (compiler_props.is_valid()) {

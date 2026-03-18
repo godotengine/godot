@@ -31,11 +31,10 @@
 #include "animation_blend_space_2d.h"
 #include "animation_blend_space_2d.compat.inc"
 
-#include "animation_blend_tree.h"
-
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/animation/animation_blend_tree.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);

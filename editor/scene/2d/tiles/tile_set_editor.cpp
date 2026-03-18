@@ -30,9 +30,6 @@
 
 #include "tile_set_editor.h"
 
-#include "tile_data_editors.h"
-#include "tiles_editor_plugin.h"
-
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -40,6 +37,8 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/scene/2d/tiles/tile_data_editors.h"
+#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"

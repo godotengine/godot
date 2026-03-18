@@ -30,13 +30,12 @@
 
 #import "app_delegate_service.h"
 
-#import "godot_view_apple_embedded.h"
-#import "godot_view_controller.h"
-#import "os_apple_embedded.h"
-
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 

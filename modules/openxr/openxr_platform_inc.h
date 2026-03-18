@@ -57,7 +57,7 @@
 #endif // ANDROID_ENABLED
 #if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
 #ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
+#include <thirdparty/glad/glad/egl.h>
 #else
 #include <EGL/egl.h>
 #endif // GLAD_ENABLED
@@ -65,8 +65,8 @@
 #ifdef X11_ENABLED
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
+#include <thirdparty/glad/glad/gl.h>
+#include <thirdparty/glad/glad/glx.h>
 #endif // X11_ENABLED
 #endif // defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 
