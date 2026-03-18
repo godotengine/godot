@@ -123,7 +123,7 @@ IncludeCategories:
     Priority: 20
   - Regex: ^"(modules|platform)/.*"$
     Priority: 30
-  - Regex: ^"thirdparty/.*"$
+  - Regex: ^<thirdparty/.*>$
     Priority: 40
   - Regex: ^<(windows|Jolt/Jolt|platform_gl)\.h>$
     Priority: 50

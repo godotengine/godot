@@ -18,8 +18,8 @@
 #define XShapeSelectInput XShapeSelectInput_dylibloader_orig_xext
 #define XShapeInputSelected XShapeInputSelected_dylibloader_orig_xext
 #define XShapeGetRectangles XShapeGetRectangles_dylibloader_orig_xext
-#include "thirdparty/linuxbsd_headers/X11/extensions/Xext.h" // IWYU pragma: export.
-#include "thirdparty/linuxbsd_headers/X11/extensions/shape.h" // IWYU pragma: export.
+#include <thirdparty/linuxbsd_headers/X11/extensions/Xext.h> // IWYU pragma: export.
+#include <thirdparty/linuxbsd_headers/X11/extensions/shape.h> // IWYU pragma: export.
 #undef XShapeQueryExtension
 #undef XShapeQueryVersion
 #undef XShapeCombineRegion
