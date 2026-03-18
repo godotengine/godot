@@ -240,8 +240,12 @@ jobs:
           $candidates = @(
             "bin\\godot.windows.editor.dev.x86_64.console.exe",
             "bin\\godot.windows.editor.dev.x86_64.exe",
+            "godot.windows.editor.dev.x86_64.console.exe",
+            "godot.windows.editor.dev.x86_64.exe",
             "bin\\godot.windows.editor.x86_64.console.exe",
-            "bin\\godot.windows.editor.x86_64.exe"
+            "bin\\godot.windows.editor.x86_64.exe",
+            "godot.windows.editor.x86_64.console.exe",
+            "godot.windows.editor.x86_64.exe"
           )
           $resolved = $null
           foreach ($candidate in $candidates) {
@@ -251,8 +255,15 @@ jobs:
             }
           }
           if (-not $resolved) {
-            throw "Could not find built Godot binary under bin."
+            $fallback = Get-ChildItem -Path . -Recurse -File -Filter "godot.windows.editor*.exe" | Select-Object -First 1
+            if ($fallback) {
+              $resolved = $fallback.FullName
+            }
           }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary in downloaded artifact."
+          }
+          Write-Host "Resolved Godot binary: $resolved"
           "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Run Gaussian pipeline smoke tests
@@ -333,7 +344,7 @@ jobs:
             --report-path tests/runtime/eviction_churn_benchmark_report.json
 
       - name: Summarize large-scene benchmark metrics
-        if: always()
+        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
         shell: python
         run: |
           import json
@@ -390,7 +401,7 @@ jobs:
                   handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
 
       - name: Summarize eviction-churn benchmark metrics
-        if: always()
+        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
         shell: python
         run: |
           import json
@@ -474,14 +485,14 @@ jobs:
                   )
 
       - name: Upload runtime validation report
-        if: always()
+        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: runtime-validation-report
           path: repo/tests/runtime/runtime_validation_report.json
 
       - name: Upload large-scene benchmark report
-        if: always()
+        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: large-scene-benchmark-report
@@ -490,7 +501,7 @@ jobs:
             repo/tests/runtime/large_scene_benchmark_metrics.json
 
       - name: Upload eviction-churn benchmark report
-        if: always()
+        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: eviction-churn-benchmark-report
@@ -542,8 +553,12 @@ jobs:
           $candidates = @(
             "bin\\godot.windows.editor.dev.x86_64.console.exe",
             "bin\\godot.windows.editor.dev.x86_64.exe",
+            "godot.windows.editor.dev.x86_64.console.exe",
+            "godot.windows.editor.dev.x86_64.exe",
             "bin\\godot.windows.editor.x86_64.console.exe",
-            "bin\\godot.windows.editor.x86_64.exe"
+            "bin\\godot.windows.editor.x86_64.exe",
+            "godot.windows.editor.x86_64.console.exe",
+            "godot.windows.editor.x86_64.exe"
           )
           $resolved = $null
           foreach ($candidate in $candidates) {
@@ -553,8 +568,15 @@ jobs:
             }
           }
           if (-not $resolved) {
-            throw "Could not find built Godot binary in bin."
+            $fallback = Get-ChildItem -Path . -Recurse -File -Filter "godot.windows.editor*.exe" | Select-Object -First 1
+            if ($fallback) {
+              $resolved = $fallback.FullName
+            }
           }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary in downloaded artifact."
+          }
+          Write-Host "Resolved Godot binary: $resolved"
           "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Collect production evidence
