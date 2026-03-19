@@ -114,6 +114,7 @@ public:
     TestResult test_compute_format_fallback(RenderingDevice *p_rd);
     TestResult test_alpha_compositing_accuracy(RenderingDevice *p_rd);
     TestResult test_performance_regression(RenderingDevice *p_rd);
+    TestResult test_renderer_lifecycle_leak_detection(RenderingDevice *p_rd);
 
     // Test utilities
     Vector<Gaussian> generate_test_gaussians(uint32_t count, bool valid = true);
@@ -179,7 +180,8 @@ bool TileRendererRegressionTest::run_all_tests(RenderingDevice *p_rd) {
         {"distance_cull_sort_order_stability", [this, p_rd]() { return test_distance_cull_sort_order_stability(p_rd); }},
         {"compute_format_fallback", [this, p_rd]() { return test_compute_format_fallback(p_rd); }},
         {"alpha_compositing_accuracy", [this, p_rd]() { return test_alpha_compositing_accuracy(p_rd); }},
-        {"performance_regression", [this, p_rd]() { return test_performance_regression(p_rd); }}
+        {"performance_regression", [this, p_rd]() { return test_performance_regression(p_rd); }},
+        {"renderer_lifecycle_leak_detection", [this, p_rd]() { return test_renderer_lifecycle_leak_detection(p_rd); }}
     };
 
     for (const auto &test : tests) {
@@ -1144,6 +1146,96 @@ TileRendererRegressionTest::TestResult TileRendererRegressionTest::test_performa
 
     result.stats = tile_renderer->get_last_render_stats();
     cleanup();
+    result.passed = true;
+    return result;
+}
+
+TileRendererRegressionTest::TestResult TileRendererRegressionTest::test_renderer_lifecycle_leak_detection(RenderingDevice *p_rd) {
+    TestResult result;
+
+    static constexpr int LIFECYCLE_ITERATIONS = 3;
+    static constexpr uint32_t TEST_SPLAT_COUNT = 2048;
+    static constexpr uint64_t ALLOCATION_SLACK = 32;
+    static constexpr uint64_t MEMORY_SLACK_BYTES = 16ull * 1024ull * 1024ull;
+
+    uint64_t cleanup_baseline_allocations = 0;
+    uint64_t cleanup_baseline_memory = 0;
+    bool cleanup_baseline_set = false;
+
+    for (int iteration = 0; iteration < LIFECYCLE_ITERATIONS; iteration++) {
+        Vector<Gaussian> gaussians = generate_test_gaussians(TEST_SPLAT_COUNT);
+        RID gaussian_buffer = create_test_gaussian_buffer(p_rd, gaussians);
+        RID sorted_indices = create_test_sorted_indices(p_rd, TEST_SPLAT_COUNT);
+        auto free_cycle_buffers = [&]() {
+            if (gaussian_buffer.is_valid()) {
+                p_rd->free(gaussian_buffer);
+                gaussian_buffer = RID();
+            }
+            if (sorted_indices.is_valid()) {
+                p_rd->free(sorted_indices);
+                sorted_indices = RID();
+            }
+        };
+
+        if (!gaussian_buffer.is_valid() || !sorted_indices.is_valid()) {
+            free_cycle_buffers();
+            result.error_message = "Failed to create lifecycle leak detection buffers";
+            return result;
+        }
+
+        TileRenderer::RenderParams params = make_render_params(gaussian_buffer, sorted_indices, TEST_SPLAT_COUNT,
+                TEST_VIEWPORT_WIDTH, TEST_VIEWPORT_HEIGHT, TEST_TILE_SIZE);
+        for (int frame = 0; frame < 3; frame++) {
+            RID output = tile_renderer->render(p_rd, params);
+            if (!output.is_valid()) {
+                free_cycle_buffers();
+                result.error_message = vformat("Renderer lifecycle iteration %d failed to render", iteration);
+                return result;
+            }
+            result.stats = tile_renderer->get_last_render_stats();
+        }
+
+        free_cycle_buffers();
+        tile_renderer->cleanup();
+
+        // Drain queued GPU work so allocation counters reflect post-cleanup state.
+        p_rd->submit();
+        p_rd->sync();
+
+        const uint64_t allocations_after_cleanup = p_rd->get_device_allocation_count();
+        const uint64_t memory_after_cleanup = p_rd->get_device_total_memory();
+        if (!cleanup_baseline_set) {
+            cleanup_baseline_set = true;
+            cleanup_baseline_allocations = allocations_after_cleanup;
+            cleanup_baseline_memory = memory_after_cleanup;
+        } else {
+            if (allocations_after_cleanup > cleanup_baseline_allocations + ALLOCATION_SLACK) {
+                result.error_message = vformat(
+                        "Allocation count grew across renderer lifecycle cleanup (baseline=%s current=%s slack=%s)",
+                        String::num_uint64(cleanup_baseline_allocations),
+                        String::num_uint64(allocations_after_cleanup),
+                        String::num_uint64(ALLOCATION_SLACK));
+                return result;
+            }
+            if (memory_after_cleanup > cleanup_baseline_memory + MEMORY_SLACK_BYTES) {
+                result.error_message = vformat(
+                        "Device memory grew across renderer lifecycle cleanup (baseline=%s current=%s slack=%s bytes)",
+                        String::num_uint64(cleanup_baseline_memory),
+                        String::num_uint64(memory_after_cleanup),
+                        String::num_uint64(MEMORY_SLACK_BYTES));
+                return result;
+            }
+        }
+
+        if (iteration + 1 < LIFECYCLE_ITERATIONS) {
+            Error err = tile_renderer->initialize(p_rd, Vector2i(TEST_VIEWPORT_WIDTH, TEST_VIEWPORT_HEIGHT), TEST_TILE_SIZE);
+            if (err != OK) {
+                result.error_message = vformat("Failed to reinitialize tile renderer in lifecycle iteration %d", iteration);
+                return result;
+            }
+        }
+    }
+
     result.passed = true;
     return result;
 }
