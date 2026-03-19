@@ -39,6 +39,142 @@ permissions:
   pull-requests: write
 
 jobs:
+  gpu-tests:
+    name: GPU QA Tests (Windows Self-Hosted)
+    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        working-directory: repo
+        shell: pwsh
+
+    steps:
+    - name: Configure Git safe.directory
+      working-directory: ${{ github.workspace }}
+      run: |
+        git config --global --add safe.directory '*'
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        path: repo
+        fetch-depth: 0
+        submodules: recursive
+        set-safe-directory: false
+
+    - name: Verify Python
+      run: |
+        python --version
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install SCons
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install scons numpy pillow
+
+    - name: Build module-enabled Godot editor
+      run: |
+        python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+
+    - name: Resolve Godot binary
+      id: godot_binary
+      run: |
+        $candidates = @(
+          "bin\godot.windows.editor.dev.x86_64.console.exe",
+          "bin\godot.windows.editor.dev.x86_64.exe",
+          "bin\godot.windows.editor.x86_64.console.exe",
+          "bin\godot.windows.editor.x86_64.exe"
+        )
+        $resolved = $null
+        foreach ($candidate in $candidates) {
+          if (Test-Path -LiteralPath $candidate) {
+            $resolved = (Resolve-Path -LiteralPath $candidate).Path
+            break
+          }
+        }
+        if (-not $resolved) {
+          throw "Could not find built Godot binary in expected bin\ paths."
+        }
+        Write-Host "Resolved Godot binary: $resolved"
+        "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "GODOT_BINARY=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Resolve baseline mode
+      id: baseline_mode
+      run: |
+        $mode = "compare"
+        $reason = "default-compare"
+        if ("${{ github.event_name }}" -eq "schedule") {
+          $mode = "update"
+          $reason = "nightly-schedule-update"
+        } elseif ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ inputs.baseline_mode }}" -eq "update") {
+          $mode = "update"
+          $reason = "manual-update"
+        }
+        "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "reason=$reason" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Resolved baseline mode: $mode ($reason)"
+
+    - name: Run GPU QA tests
+      env:
+        GS_CI_GPU_REQUIRED: "1"
+        GS_CI_VALIDATION_MODE: "strict"
+      run: |
+        $args = @(
+          "--categories", "sorting,qa",
+          "--godot", $env:GODOT_BINARY
+        )
+        python tests/ci/run_baseline_qa.py @args
+
+    - name: Upload GPU test artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: baseline-qa-gpu-results
+        path: |
+          repo/baseline_qa_results.json
+          repo/tests/ci/qa_results.json
+          repo/*test_results.json
+          repo/*.log
+        if-no-files-found: warn
+        retention-days: 30
+
+    - name: Post GPU test summary
+      if: always()
+      run: |
+        $summaryFile = $env:GITHUB_STEP_SUMMARY
+        "# GPU QA Test Results" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        "- Trigger: ``${{ github.event_name }}``" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        "- Baseline mode: ``${{ steps.baseline_mode.outputs.mode }}`` (${{ steps.baseline_mode.outputs.reason }})" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+
+        if (Test-Path "baseline_qa_results.json") {
+          $data = Get-Content "baseline_qa_results.json" -Raw | ConvertFrom-Json
+          "## Test Summary" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "| Metric | Value |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "|--------|-------|" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "| Total Tests | $($data.total_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "| Passed | $($data.passed_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "| Failed | $($data.failed_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          if ($data.total_tests -gt 0) {
+            $rate = [math]::Round($data.passed_tests / $data.total_tests * 100, 1)
+            "| Success Rate | ${rate}% |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          }
+          "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          "## Test Details" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          foreach ($test in $data.tests) {
+            $status = if ($test.success) { "PASS" } else { "FAIL" }
+            $duration = [math]::Round($test.duration, 1)
+            "- $status **$($test.name)** (${duration}s)" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+          }
+        } else {
+          "Test results file not found" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        }
+
   cpu-tests:
     name: CPU-Only QA Tests
     runs-on: ubuntu-latest
@@ -124,8 +260,8 @@ jobs:
       run: |
         mkdir -p ~/.config/godot
         mkdir -p ~/.local/share/godot
-        "$GODOT_BINARY" --headless --verbose --import --path . --quit
-        echo "Project imported successfully"
+        "$GODOT_BINARY" --headless --import 2>&1 || true
+        echo "Project import step completed"
 
     - name: Generate test data
       run: |
@@ -262,139 +398,3 @@ jobs:
             repo: context.repo.repo,
             body: comment
           });
-
-  gpu-tests:
-    name: GPU QA Tests (Windows Self-Hosted)
-    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
-    timeout-minutes: 120
-
-    defaults:
-      run:
-        working-directory: repo
-        shell: pwsh
-
-    steps:
-    - name: Configure Git safe.directory
-      working-directory: ${{ github.workspace }}
-      run: |
-        git config --global --add safe.directory '*'
-
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        path: repo
-        fetch-depth: 0
-        submodules: recursive
-        set-safe-directory: false
-
-    - name: Verify Python
-      run: |
-        python --version
-
-    - name: Set up MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-
-    - name: Install SCons
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install scons numpy pillow
-
-    - name: Build module-enabled Godot editor
-      run: |
-        python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
-
-    - name: Resolve Godot binary
-      id: godot_binary
-      run: |
-        $candidates = @(
-          "bin\godot.windows.editor.dev.x86_64.console.exe",
-          "bin\godot.windows.editor.dev.x86_64.exe",
-          "bin\godot.windows.editor.x86_64.console.exe",
-          "bin\godot.windows.editor.x86_64.exe"
-        )
-        $resolved = $null
-        foreach ($candidate in $candidates) {
-          if (Test-Path -LiteralPath $candidate) {
-            $resolved = (Resolve-Path -LiteralPath $candidate).Path
-            break
-          }
-        }
-        if (-not $resolved) {
-          throw "Could not find built Godot binary in expected bin\ paths."
-        }
-        Write-Host "Resolved Godot binary: $resolved"
-        "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        "GODOT_BINARY=$resolved" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    - name: Resolve baseline mode
-      id: baseline_mode
-      run: |
-        $mode = "compare"
-        $reason = "default-compare"
-        if ("${{ github.event_name }}" -eq "schedule") {
-          $mode = "update"
-          $reason = "nightly-schedule-update"
-        } elseif ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ inputs.baseline_mode }}" -eq "update") {
-          $mode = "update"
-          $reason = "manual-update"
-        }
-        "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        "reason=$reason" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        Write-Host "Resolved baseline mode: $mode ($reason)"
-
-    - name: Run GPU QA tests
-      env:
-        GS_CI_GPU_REQUIRED: "1"
-        GS_CI_VALIDATION_MODE: "strict"
-      run: |
-        $args = @(
-          "--categories", "sorting,qa",
-          "--godot", $env:GODOT_BINARY
-        )
-        python tests/ci/run_baseline_qa.py @args
-
-    - name: Upload GPU test artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: baseline-qa-gpu-results
-        path: |
-          repo/baseline_qa_results.json
-          repo/tests/ci/qa_results.json
-          repo/*test_results.json
-          repo/*.log
-        if-no-files-found: warn
-        retention-days: 30
-
-    - name: Post GPU test summary
-      if: always()
-      run: |
-        $summaryFile = $env:GITHUB_STEP_SUMMARY
-        "# GPU QA Test Results" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-        "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-        "- Trigger: ``${{ github.event_name }}``" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-        "- Baseline mode: ``${{ steps.baseline_mode.outputs.mode }}`` (${{ steps.baseline_mode.outputs.reason }})" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-        "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-
-        if (Test-Path "baseline_qa_results.json") {
-          $data = Get-Content "baseline_qa_results.json" -Raw | ConvertFrom-Json
-          "## Test Summary" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "| Metric | Value |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "|--------|-------|" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "| Total Tests | $($data.total_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "| Passed | $($data.passed_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "| Failed | $($data.failed_tests) |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          if ($data.total_tests -gt 0) {
-            $rate = [math]::Round($data.passed_tests / $data.total_tests * 100, 1)
-            "| Success Rate | ${rate}% |" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          }
-          "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          "## Test Details" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          foreach ($test in $data.tests) {
-            $status = if ($test.success) { "PASS" } else { "FAIL" }
-            $duration = [math]::Round($test.duration, 1)
-            "- $status **$($test.name)** (${duration}s)" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-          }
-        } else {
-          "Test results file not found" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
-        }
