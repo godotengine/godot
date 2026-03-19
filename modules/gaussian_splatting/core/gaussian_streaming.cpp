@@ -26,20 +26,6 @@
 
 namespace {
 
-// Project settings helpers provided by gs_project_settings.h (gs::settings namespace).
-// Legacy aliases for local call sites:
-static inline uint32_t _ps_get_uint(ProjectSettings *ps, const StringName &name, uint32_t fallback) {
-    return gs::settings::get_uint(ps, name, fallback);
-}
-
-static inline bool _ps_get_bool(ProjectSettings *ps, const StringName &name, bool fallback) {
-    return gs::settings::get_bool(ps, name, fallback);
-}
-
-static inline float _ps_get_float(ProjectSettings *ps, const StringName &name, float fallback) {
-    return gs::settings::get_float(ps, name, fallback);
-}
-
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_FRAME = 128;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SLICE = 16;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SECOND = 0;
@@ -79,7 +65,7 @@ bool _project_setting_has_override(ProjectSettings *ps, const StringName &name) 
 
 uint32_t _resolve_tiered_cap_uint(ProjectSettings *ps, const StringName &name, uint32_t fallback,
         bool tier_active, uint32_t tier_value, String &r_source) {
-    const uint32_t configured_value = _ps_get_uint(ps, name, fallback);
+    const uint32_t configured_value = gs::settings::get_uint(ps, name, fallback);
     const bool has_project_override = _project_setting_has_override(ps, name);
     if (tier_active && !has_project_override) {
         r_source = "tier_preset";
@@ -103,7 +89,7 @@ StreamingTierCapPolicy _resolve_streaming_tier_cap_policy(ProjectSettings *ps) {
                                  .strip_edges()
                                  .to_lower();
     const bool apply_tier_budgets =
-            _ps_get_bool(ps, "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
+            gs::settings::get_bool(ps, "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
     if (!apply_tier_budgets) {
         return policy;
     }
@@ -128,13 +114,13 @@ bool _is_streaming_debug_enabled() {
     if (!ps) {
         return false;
     }
-    if (ps->get_setting("rendering/gaussian_splatting/debug/enable_all_debug", false)) {
+    if (gs::settings::is_all_debug_enabled(ps)) {
         return true;
     }
-    if (ps->get_setting("rendering/gaussian_splatting/debug/enable_frame_logging", false)) {
+    if (gs::settings::get_bool(ps, "rendering/gaussian_splatting/debug/enable_frame_logging", false)) {
         return true;
     }
-    return ps->get_setting("rendering/gaussian_splatting/debug/enable_data_logging", false);
+    return gs::settings::get_bool(ps, "rendering/gaussian_splatting/debug/enable_data_logging", false);
 }
 
 enum class LayoutHintUsage : uint8_t {
@@ -235,10 +221,10 @@ bool _layout_hint_strict_validation_enabled() {
     if (!ps) {
         return false;
     }
-    if (_ps_get_bool(ps, "rendering/gaussian_splatting/streaming/layout_hint_validation_strict", false)) {
+    if (gs::settings::get_bool(ps, "rendering/gaussian_splatting/streaming/layout_hint_validation_strict", false)) {
         return true;
     }
-    return _ps_get_bool(ps, "rendering/gaussian_splatting/debug/layout_hint_validation_strict", false);
+    return gs::settings::get_bool(ps, "rendering/gaussian_splatting/debug/layout_hint_validation_strict", false);
 }
 
 const char *_layout_hint_usage_code(LayoutHintUsage p_usage) {
@@ -2550,14 +2536,14 @@ void GaussianStreamingSystem::_load_zero_visible_recovery_config_from_project_se
     }
 
     zero_visible_recovery.persistent_trigger_frames = MAX(
-            _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_trigger_frames",
+            gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_trigger_frames",
                     zero_visible_recovery.persistent_trigger_frames),
             uint32_t(1));
-    zero_visible_recovery.persistent_cooldown_frames = _ps_get_uint(ps,
+    zero_visible_recovery.persistent_cooldown_frames = gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/zero_visible_recovery_cooldown_frames",
             zero_visible_recovery.persistent_cooldown_frames);
     zero_visible_recovery.stall_log_interval_frames = MAX(
-            _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_log_interval_frames",
+            gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_log_interval_frames",
                     zero_visible_recovery.stall_log_interval_frames),
             uint32_t(1));
 }
@@ -4515,31 +4501,31 @@ void GaussianStreamingSystem::UploadQueueState::load_streaming_tuning_config_fro
     cap_tier_preset = tier_policy.tier_preset;
     cap_tier_active = tier_policy.active;
 
-    async_pack_enabled = _ps_get_bool(ps, "rendering/gaussian_splatting/streaming/async_pack_enabled", async_pack_enabled);
-    pack_worker_threads = _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/pack_worker_threads", pack_worker_threads);
-    max_pack_jobs_in_flight = _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/max_pack_jobs_in_flight", max_pack_jobs_in_flight);
-    max_chunk_loads_per_frame = _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/max_chunk_loads_per_frame", max_chunk_loads_per_frame);
+    async_pack_enabled = gs::settings::get_bool(ps, "rendering/gaussian_splatting/streaming/async_pack_enabled", async_pack_enabled);
+    pack_worker_threads = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/pack_worker_threads", pack_worker_threads);
+    max_pack_jobs_in_flight = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_pack_jobs_in_flight", max_pack_jobs_in_flight);
+    max_chunk_loads_per_frame = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_chunk_loads_per_frame", max_chunk_loads_per_frame);
     system.scheduler.max_prefetch_loads_per_frame = MIN<uint32_t>(
-            _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/max_prefetch_loads_per_frame",
+            gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_prefetch_loads_per_frame",
                     system.scheduler.max_prefetch_loads_per_frame),
             GaussianStreamingSystem::SchedulerState::MAX_PREFETCH_LOADS_PER_FRAME);
-    system.scheduler.max_visible_chunk_scan_per_frame = _ps_get_uint(ps,
+    system.scheduler.max_visible_chunk_scan_per_frame = gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/max_visible_chunk_scan_per_frame",
             system.scheduler.max_visible_chunk_scan_per_frame);
-    system.scheduler.max_prefetch_chunk_scan_per_frame = _ps_get_uint(ps,
+    system.scheduler.max_prefetch_chunk_scan_per_frame = gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/max_prefetch_chunk_scan_per_frame",
             system.scheduler.max_prefetch_chunk_scan_per_frame);
-    system.scheduler.queue_pressure_candidate_scan_throttle_enabled = _ps_get_bool(ps,
+    system.scheduler.queue_pressure_candidate_scan_throttle_enabled = gs::settings::get_bool(ps,
             "rendering/gaussian_splatting/streaming/queue_pressure_candidate_scan_throttle_enabled",
             system.scheduler.queue_pressure_candidate_scan_throttle_enabled);
     system.scheduler.queue_pressure_candidate_scan_throttle_min_queue_depth = MAX<uint32_t>(1u,
-            _ps_get_uint(ps,
+            gs::settings::get_uint(ps,
                     "rendering/gaussian_splatting/streaming/queue_pressure_candidate_scan_throttle_min_queue_depth",
                     system.scheduler.queue_pressure_candidate_scan_throttle_min_queue_depth));
-    const uint32_t queue_pressure_visible_scan_cap = MAX<uint32_t>(1u, _ps_get_uint(ps,
+    const uint32_t queue_pressure_visible_scan_cap = MAX<uint32_t>(1u, gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/queue_pressure_visible_scan_cap",
             system.scheduler.queue_pressure_candidate_scan_throttle_visible_scan_cap));
-    const uint32_t queue_pressure_prefetch_scan_cap = MAX<uint32_t>(1u, _ps_get_uint(ps,
+    const uint32_t queue_pressure_prefetch_scan_cap = MAX<uint32_t>(1u, gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/queue_pressure_prefetch_scan_cap",
             system.scheduler.queue_pressure_candidate_scan_throttle_prefetch_scan_cap));
     system.scheduler.queue_pressure_candidate_scan_throttle_visible_scan_cap =
@@ -4551,10 +4537,10 @@ void GaussianStreamingSystem::UploadQueueState::load_streaming_tuning_config_fro
             ? MIN(queue_pressure_prefetch_scan_cap, system.scheduler.max_prefetch_chunk_scan_per_frame)
             : queue_pressure_prefetch_scan_cap;
     system.scheduler.max_sync_fallback_loads_per_frame = MIN<uint32_t>(
-            MAX<uint32_t>(1u, _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/max_sync_fallback_loads_per_frame",
+            MAX<uint32_t>(1u, gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_sync_fallback_loads_per_frame",
                                        system.scheduler.max_sync_fallback_loads_per_frame)),
             GaussianStreamingSystem::SchedulerState::MAX_SYNC_FALLBACK_LOADS_PER_FRAME);
-    system.scheduler.max_sync_fallback_queue_size = MAX<uint32_t>(64u, _ps_get_uint(ps,
+    system.scheduler.max_sync_fallback_queue_size = MAX<uint32_t>(64u, gs::settings::get_uint(ps,
             "rendering/gaussian_splatting/streaming/max_sync_fallback_queue_size",
             system.scheduler.max_sync_fallback_queue_size));
 
@@ -4593,9 +4579,9 @@ void GaussianStreamingSystem::UploadQueueState::load_streaming_tuning_config_fro
         }
     }
 
-    system.eviction.eviction_hysteresis_frames = _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/eviction_hysteresis_frames",
+    system.eviction.eviction_hysteresis_frames = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/eviction_hysteresis_frames",
             system.eviction.eviction_hysteresis_frames);
-    system.eviction.max_evictions_per_frame = _ps_get_uint(ps, "rendering/gaussian_splatting/streaming/max_evictions_per_frame",
+    system.eviction.max_evictions_per_frame = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_evictions_per_frame",
             system.eviction.max_evictions_per_frame);
 
     if (async_pack_enabled && pack_worker_threads == 0) {
@@ -6506,4 +6492,3 @@ bool GaussianStreamingSystem::map_buffer_index_to_source(uint32_t buffer_index, 
     }
     return false;
 }
-
