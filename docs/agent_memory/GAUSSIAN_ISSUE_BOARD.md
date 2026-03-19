@@ -42,21 +42,21 @@ Status legend:
 | ISSUE-028 | Compute Infrastructure | Split monolithic tile render stages implementation | Medium | agent-compute | Planned | ISSUE-020 | 3d47157d998 |
 | ISSUE-029 | Compute Infrastructure | Extract renderer nested POD types to standalone headers | Medium | agent-compute | Planned | ISSUE-020 | 11d0e29fdb2 |
 | ISSUE-030 | Compute Infrastructure | Extract tile_binning shader helpers into includes | Medium | agent-compute | Planned | ISSUE-028 | 6534278a25e |
-| ISSUE-031 | Shaders | Consolidate pack telemetry into cache-aligned data layout | Medium | agent-shaders | Ready for Merge | ISSUE-030 | 6dde6a82c3b (`core/gaussian_streaming.{h,cpp}` `PackTelemetry alignas(64)`); triage 2026-03-19 |
-| ISSUE-032 | Shaders | Make async readback resilient to partial callback failures | High | agent-shaders | Ready for Merge | ISSUE-027 | de936f281eb (`tests/test_batched_async_readback.cpp`) + `renderer/batched_async_readback.cpp` partial-failure path; review follow-up adds callback execution and payload assertions for valid requests |
-| ISSUE-033 | Shaders | Discard stale overflow stats in async GPU telemetry path | High | agent-shaders | Ready for Merge | ISSUE-032 | de936f281eb (`tests/test_overflow_auto_tuner_stale_stats.cpp`) + `interfaces/overflow_auto_tuner.*` stale-frame guard |
-| ISSUE-034 | Shaders | Enforce compute shader include dependencies in build graph | Medium | agent-shaders | Ready for Merge | None | de936f281eb (`tests/check_shader_dependency_contract.py` PASS on 2026-03-19) + `SCsub` dependency wiring; review follow-up adds guard-only CI hook in `tests/ci/run_module_tests.py` and AST-based contract checks |
-| ISSUE-035 | Shaders | Clarify CPU recording timing metric naming and docs | Low | agent-shaders | Ready for Merge | ISSUE-033 | de936f281eb (`tests/README.md` RasterPerformance semantics for `submission_cpu_ms`) |
+| ISSUE-031 | Shaders | Consolidate pack telemetry into cache-aligned data layout | Medium | agent-shaders | Planned | ISSUE-030 | 3c1d70036c8 |
+| ISSUE-032 | Shaders | Make async readback resilient to partial callback failures | High | agent-shaders | Planned | ISSUE-027 | 50f58c3ab92 |
+| ISSUE-033 | Shaders | Discard stale overflow stats in async GPU telemetry path | High | agent-shaders | Planned | ISSUE-032 | 19ca3b82c49 |
+| ISSUE-034 | Shaders | Enforce compute shader include dependencies in build graph | Medium | agent-shaders | Planned | None | f362be08037 |
+| ISSUE-035 | Shaders | Clarify CPU recording timing metric naming and docs | Low | agent-shaders | Planned | ISSUE-033 | 19ca3b82c49 |
 | ISSUE-036 | Editor Integration | Cross-vendor `exp()` validation override path (`GS_SAFE_EXP`) | Medium | agent-editor | Planned | None | 32439d77809 |
 | ISSUE-037 | Editor Integration | Runtime tile rasterizer shared-memory sizing contract checks | High | agent-editor | Planned | ISSUE-030 | 32439d77809 |
 | ISSUE-038 | Editor Integration | Document SH sign convention consistency (PLY and shader) | Medium | agent-editor | Planned | ISSUE-034 | f362be08037 |
 | ISSUE-039 | Editor Integration | Disk-backed thumbnail cache with fingerprint keying | Medium | agent-editor | Planned | None | 3ac1ab161ad |
 | ISSUE-040 | Editor Integration | Add `reset_to_defaults()` to color grading resource | Low | agent-editor | Planned | None | 08c3b4b1706 |
-| ISSUE-041 | Build System | Document painterly shader performance toggle route | Low | agent-build-ci | Planned | ISSUE-034 | 32439d77809 |
-| ISSUE-042 | Build System | Consolidate sort algorithm selection through unified traits | Medium | agent-build-ci | Planned | ISSUE-010 | 32439d77809 |
-| ISSUE-043 | Build System | Document theoretical complexity units and scaling assumptions | Low | agent-build-ci | Planned | ISSUE-042 | 32439d77809 |
-| ISSUE-044 | Build System | Protect against circular clip chains and enforce depth cap | High | agent-build-ci | Planned | ISSUE-040 | 08c3b4b1706 |
-| ISSUE-045 | Build System | Track layout version in incremental saver contracts | Medium | agent-build-ci | Planned | ISSUE-023 | 32439d77809 |
+| ISSUE-041 | Build System | Document painterly shader performance toggle route | Low | agent-build-ci | Ready for Merge | ISSUE-034 | `tests/ci/collect_production_evidence.ps1:320,329,463`; `tests/ci/README.md:18` |
+| ISSUE-042 | Build System | Consolidate sort algorithm selection through unified traits | Medium | agent-build-ci | Ready for Merge | ISSUE-010 | `modules/gaussian_splatting/renderer/gpu_sorter.h:55,454,470`; `modules/gaussian_splatting/renderer/gpu_sorter.cpp:953,1037` |
+| ISSUE-043 | Build System | Document theoretical complexity units and scaling assumptions | Low | agent-build-ci | Ready for Merge | ISSUE-042 | `modules/gaussian_splatting/renderer/gpu_sorter.h:183-188`; `tests/ci/TEST_COVERAGE.md:78` |
+| ISSUE-044 | Build System | Protect against circular clip chains and enforce depth cap | High | agent-build-ci | Ready for Merge | ISSUE-040 | `modules/gaussian_splatting/animation/animation_state_machine.cpp:512,517-519` |
+| ISSUE-045 | Build System | Track layout version in incremental saver contracts | Medium | agent-build-ci | Ready for Merge | ISSUE-023 | `modules/gaussian_splatting/persistence/incremental_saver.h:45-50`; `modules/gaussian_splatting/persistence/incremental_saver.cpp:763,809` |
 
 ## Wave Plan
 
