@@ -345,7 +345,7 @@ static bool _validate_sorted_key_order(RenderingDevice *p_device, RID p_keys_buf
 
 	return true;
 }
-		
+
 void GPUSortingPipeline::_bind_methods() {
     // Bind methods for script access if needed
 }
