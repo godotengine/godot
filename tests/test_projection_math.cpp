@@ -9,7 +9,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering_server.h"
 
 using namespace GaussianProjectionValidation;
 
@@ -51,7 +51,7 @@ static void seed_rng(RandomNumberGenerator &p_rng, uint64_t p_seed) {
 } // namespace
 
 TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -107,7 +107,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Numerical stability edge cases") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -156,7 +156,7 @@ TEST_CASE("[GaussianSplatting][Projection] Numerical stability edge cases") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical validation") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -230,7 +230,7 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Camera angle coverage") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -279,7 +279,7 @@ TEST_CASE("[GaussianSplatting][Projection] Camera angle coverage") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
@@ -303,7 +303,7 @@ TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
 }
 
 TEST_CASE("[GaussianSplatting][Projection] CPU vs GPU performance benchmark") {
-    RenderingDevice *rd = RenderingServer::create_local_rendering_device();
+    RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     REQUIRE(rd != nullptr);
 
     ProjectionValidator validator;
