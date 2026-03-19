@@ -100,7 +100,7 @@ jobs:
         }
         Write-Host "Resolved Godot binary: $resolved"
         "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        "GODOT_BINARY=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "GODOT_BINARY=$resolved" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Resolve baseline mode
       id: baseline_mode
