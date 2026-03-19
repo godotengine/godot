@@ -2,6 +2,10 @@ extends Node3D
 
 ## Renders a single synthetic splat scene with configurable camera path.
 ## Camera modes: "orbit" (default), "flythrough" (tunnel), "sweep" (flat grid).
+## Supports --benchmark-output, --benchmark-capture-dir, --benchmark-reference-dir
+## for capture + SSIM/PSNR + JSON report output.
+
+const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.gd")
 
 @export var ply_path: String = ""
 @export var duration: float = 15.0
@@ -30,6 +34,14 @@ extends Node3D
 
 var _elapsed := 0.0
 var _frame_count := 0
+var _fps_samples: Array[float] = []
+var _output_path := ""
+var _capture_dir := ""
+var _reference_dir := ""
+var _scene_name := ""
+var _captures: Array[Dictionary] = []
+var _capture_fractions := [0.25, 0.5, 0.75]
+var _captured_at: Dictionary = {}
 
 func _ready() -> void:
 	Engine.max_fps = 0
@@ -42,6 +54,14 @@ func _ready() -> void:
 			duration = float(arg.substr(len("--duration=")))
 		elif arg.begins_with("--camera-mode="):
 			camera_mode = arg.substr(len("--camera-mode="))
+		elif arg.begins_with("--benchmark-output="):
+			_output_path = arg.substr(len("--benchmark-output="))
+		elif arg.begins_with("--benchmark-capture-dir="):
+			_capture_dir = arg.substr(len("--benchmark-capture-dir="))
+		elif arg.begins_with("--benchmark-reference-dir="):
+			_reference_dir = arg.substr(len("--benchmark-reference-dir="))
+
+	_scene_name = get_tree().current_scene.scene_file_path.get_file().get_basename()
 
 	if ply_path.is_empty():
 		push_error("[SYNTHETIC] No ply_path set")
@@ -77,11 +97,16 @@ func _ready() -> void:
 		light.rotation_degrees = Vector3(-45, 30, 0)
 		add_child(light)
 
+	if not _capture_dir.is_empty():
+		DirAccess.make_dir_recursive_absolute(_capture_dir + "/" + _scene_name)
+
 	print("[SYNTHETIC] %s | camera=%s | %ds" % [ply_path, camera_mode, int(duration)])
 
 func _process(delta: float) -> void:
 	_elapsed += delta
 	_frame_count += 1
+	if delta > 0:
+		_fps_samples.append(1.0 / delta)
 	var t = _elapsed / duration  # 0..1 progress.
 
 	var cam = get_node_or_null("Camera3D")
@@ -96,10 +121,110 @@ func _process(delta: float) -> void:
 		_:
 			_camera_orbit(cam, t)
 
+	# Capture at progress milestones.
+	if not _capture_dir.is_empty():
+		for frac in _capture_fractions:
+			if t >= frac and not _captured_at.has(frac):
+				_captured_at[frac] = true
+				_do_capture(frac)
+
 	if _elapsed > duration:
-		var avg_fps = _frame_count / _elapsed
-		print("[SYNTHETIC] Done. %d frames / %.1fs = %.1f FPS" % [_frame_count, _elapsed, avg_fps])
-		get_tree().quit()
+		# Final capture.
+		if not _capture_dir.is_empty() and not _captured_at.has(1.0):
+			_captured_at[1.0] = true
+			_do_capture(1.0)
+
+		_finish()
+
+func _do_capture(progress: float) -> void:
+	var viewport := get_viewport()
+	if not viewport:
+		return
+	var image := BenchmarkVisualMetrics.capture_viewport(viewport)
+	if image == null or image.is_empty():
+		return
+
+	var tag := "p%03d" % int(progress * 100)
+	var filename := "%s/%s/%s_capture_%s.png" % [_capture_dir, _scene_name, _scene_name, tag]
+	var err := BenchmarkVisualMetrics.save_png(image, filename)
+
+	var capture_entry := {
+		"progress": progress,
+		"path": filename,
+		"saved": err == OK,
+	}
+
+	# Compare against reference if available.
+	if not _reference_dir.is_empty():
+		var ref_path := "%s/%s/%s_capture_%s.png" % [_reference_dir, _scene_name, _scene_name, tag]
+		var ref_image := BenchmarkVisualMetrics.load_image(ref_path)
+		if ref_image != null and not ref_image.is_empty():
+			capture_entry["ssim"] = BenchmarkVisualMetrics.calculate_ssim(image, ref_image)
+			capture_entry["psnr"] = BenchmarkVisualMetrics.calculate_psnr(image, ref_image)
+			capture_entry["reference_path"] = ref_path
+
+	_captures.append(capture_entry)
+	print("[SYNTHETIC] Captured %s (progress=%.0f%%)" % [filename, progress * 100])
+
+func _finish() -> void:
+	var avg_fps := 0.0
+	if _elapsed > 0:
+		avg_fps = _frame_count / _elapsed
+
+	var p1_fps := 0.0
+	if _fps_samples.size() > 0:
+		var sorted := _fps_samples.duplicate()
+		sorted.sort()
+		p1_fps = sorted[int(sorted.size() * 0.01)]
+
+	print("[SYNTHETIC] Done. %d frames / %.1fs = %.1f FPS (P1=%.1f)" % [_frame_count, _elapsed, avg_fps, p1_fps])
+
+	# Compute visual summary.
+	var ssim_values: Array[float] = []
+	var psnr_values: Array[float] = []
+	for c in _captures:
+		if c.has("ssim"):
+			ssim_values.append(c["ssim"])
+		if c.has("psnr"):
+			psnr_values.append(c["psnr"])
+
+	var report := {
+		"scene": _scene_name,
+		"ply_path": ply_path,
+		"camera_mode": camera_mode,
+		"duration_s": _elapsed,
+		"frame_count": _frame_count,
+		"avg_fps": avg_fps,
+		"p1_fps": p1_fps,
+		"captures": _captures,
+		"capture_count": _captures.size(),
+	}
+
+	if ssim_values.size() > 0:
+		report["ssim_min"] = ssim_values.min()
+		report["ssim_max"] = ssim_values.max()
+		report["ssim_mean"] = _array_mean(ssim_values)
+	if psnr_values.size() > 0:
+		report["psnr_min"] = psnr_values.min()
+		report["psnr_max"] = psnr_values.max()
+		report["psnr_mean"] = _array_mean(psnr_values)
+
+	# Write JSON report.
+	if not _output_path.is_empty():
+		var json_str := JSON.stringify(report, "  ")
+		var f := FileAccess.open(_output_path, FileAccess.WRITE)
+		if f:
+			f.store_string(json_str)
+			f.close()
+			print("[SYNTHETIC] Report saved to %s" % _output_path)
+
+	get_tree().quit()
+
+func _array_mean(arr: Array[float]) -> float:
+	var total := 0.0
+	for v in arr:
+		total += v
+	return total / max(arr.size(), 1)
 
 func _camera_orbit(cam: Camera3D, _t: float) -> void:
 	var angle = _elapsed * orbit_speed
