@@ -55,9 +55,10 @@ func _ready() -> void:
 	add_child(splat_node)
 
 	if enable_wind:
-		splat_node.set("wind/enabled", true)
-		splat_node.set("wind/strength", wind_strength)
-		splat_node.set("wind/direction", wind_direction)
+		splat_node.set("rendering/wind_override_enabled", true)
+		splat_node.set("rendering/wind_enabled", true)
+		splat_node.set("rendering/wind_strength", wind_strength)
+		splat_node.set("rendering/wind_direction", wind_direction)
 
 	var cam := Camera3D.new()
 	cam.name = "Camera3D"

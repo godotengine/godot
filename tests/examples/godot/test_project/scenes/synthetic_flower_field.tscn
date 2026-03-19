@@ -4,7 +4,7 @@
 
 [node name="synthetic_flower_field" type="Node3D"]
 script = ExtResource("script")
-ply_path = "res://synthetic_test/flower_field.ply"
+ply_path = "res://tests/fixtures/test_splats.ply"
 duration = 25.0
 orbit_radius = 25.0
 orbit_height = 5.0

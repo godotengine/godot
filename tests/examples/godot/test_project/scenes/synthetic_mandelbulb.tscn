@@ -11,7 +11,7 @@ ambient_light_color = Color(0.05, 0.05, 0.08, 1)
 
 [node name="synthetic_mandelbulb" type="Node3D"]
 script = ExtResource("script")
-ply_path = "res://synthetic_test/mandelbulb.ply"
+ply_path = "res://tests/fixtures/test_splats.ply"
 duration = 25.0
 camera_mode = "flythrough"
 fly_start = Vector3(0, 0, -50)

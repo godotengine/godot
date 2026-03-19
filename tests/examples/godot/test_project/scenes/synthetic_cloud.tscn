@@ -11,7 +11,7 @@ ambient_light_energy = 0.5
 
 [node name="synthetic_cloud" type="Node3D"]
 script = ExtResource("script")
-ply_path = "res://synthetic_test/cloud.ply"
+ply_path = "res://tests/fixtures/test_splats.ply"
 duration = 25.0
 camera_mode = "flythrough"
 fly_start = Vector3(-30, 25, -60)

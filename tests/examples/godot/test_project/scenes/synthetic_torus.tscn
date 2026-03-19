@@ -4,7 +4,7 @@
 
 [node name="synthetic_torus" type="Node3D"]
 script = ExtResource("script")
-ply_path = "res://synthetic_test/torus.ply"
+ply_path = "res://tests/fixtures/test_splats.ply"
 duration = 15.0
 orbit_radius = 14.0
 orbit_height = 4.0
