@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/synthetic_showcase.gd" id="script"]
+
+[sub_resource type="Environment" id="sky_env"]
+background_mode = 1
+background_color = Color(0.3, 0.45, 0.75, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.6, 0.65, 0.8, 1)
+ambient_light_energy = 0.5
+
+[node name="synthetic_cloud" type="Node3D"]
+script = ExtResource("script")
+ply_path = "res://synthetic_test/cloud.ply"
+duration = 25.0
+camera_mode = "flythrough"
+fly_start = Vector3(-30, 25, -60)
+fly_end = Vector3(30, 25, 60)
+fly_look_ahead = 15.0
+fly_speed_scale = 0.9
+look_at_offset = Vector3(0, 0, 0)
+
+[node name="WorldEnv" type="WorldEnvironment" parent="."]
+environment = SubResource("sky_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0.354, -0.354, 0, 0.707, 0.707, 0.5, -0.612, 0.612, 0, 30, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 2.0

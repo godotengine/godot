@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/synthetic_showcase.gd" id="showcase_script"]
+
+[node name="SyntheticShowcase" type="Node3D"]
+script = ExtResource("showcase_script")

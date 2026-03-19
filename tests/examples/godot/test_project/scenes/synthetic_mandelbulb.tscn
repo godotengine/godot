@@ -1,0 +1,64 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/synthetic_showcase.gd" id="script"]
+[ext_resource type="Script" path="res://scenes/synthetic_mandelbulb_lights.gd" id="lights_script"]
+
+[sub_resource type="Environment" id="black_env"]
+background_mode = 1
+background_color = Color(0, 0, 0, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="synthetic_mandelbulb" type="Node3D"]
+script = ExtResource("script")
+ply_path = "res://synthetic_test/mandelbulb.ply"
+duration = 25.0
+camera_mode = "flythrough"
+fly_start = Vector3(0, 0, -50)
+fly_end = Vector3(0, 0, 50)
+fly_look_ahead = 10.0
+fly_speed_scale = 0.85
+
+[node name="WorldEnv" type="WorldEnvironment" parent="."]
+environment = SubResource("black_env")
+
+[node name="RotatingLights" type="Node3D" parent="."]
+script = ExtResource("lights_script")
+orbit_radius = 4.0
+orbit_speed = 1.2
+
+[node name="Light1" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -35)
+light_color = Color(1, 0.5, 0.15, 1)
+light_energy = 6.0
+omni_range = 25.0
+
+[node name="Light2" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -15)
+light_color = Color(0.2, 0.5, 1, 1)
+light_energy = 6.0
+omni_range = 25.0
+
+[node name="Light3" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 5)
+light_color = Color(1, 0.2, 0.8, 1)
+light_energy = 6.0
+omni_range = 25.0
+
+[node name="Light4" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 25)
+light_color = Color(0.2, 1, 0.4, 1)
+light_energy = 6.0
+omni_range = 25.0
+
+[node name="Light5" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 45)
+light_color = Color(1, 0.8, 0.2, 1)
+light_energy = 6.0
+omni_range = 25.0
+
+[node name="Light6" type="OmniLight3D" parent="RotatingLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 3, -5)
+light_color = Color(0.6, 0.3, 1, 1)
+light_energy = 6.0
+omni_range = 25.0
