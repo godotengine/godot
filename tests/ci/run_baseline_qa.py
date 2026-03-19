@@ -939,7 +939,12 @@ def main(argv: Optional[List[str]] = None):
     qa_baseline_path = resolve_root_path(args.qa_baseline)
     baseline_report_path = resolve_root_path(args.baseline_report)
     baseline_summary_path = resolve_root_path(args.baseline_summary)
-    qa_ran = category == "qa" or (category is None and not run_quick)
+    if categories_set is not None:
+        qa_ran = (None in categories_set) or ("qa" in categories_set)
+    elif category is not None:
+        qa_ran = category == "qa"
+    else:
+        qa_ran = not run_quick
     if qa_ran:
         qa_scene_result = next((test for test in runner.test_results["tests"] if test.get("name") == "QA Scene Suite"), None)
         qa_scene_skipped = bool(qa_scene_result and qa_scene_result.get("status") == "skipped")
