@@ -1186,9 +1186,14 @@ def main() -> int:
             if require_gpu_timestamps:
                 gpu_timing_match = bool(result.get("gpu_timing_available"))
             if visual_reference_enforced:
+                capture_count_for_reference = int(result.get("capture_count") or 0)
                 matched = int(result.get("capture_reference_match_count") or 0)
                 passed = int(result.get("capture_threshold_pass_count") or 0)
-                visual_reference_match = matched > 0 and passed == matched
+                visual_reference_match = (
+                    capture_count_for_reference > 0
+                    and matched == capture_count_for_reference
+                    and passed == capture_count_for_reference
+                )
         lane_valid = (
             int(result["exit_code"]) == 0
             and report_valid
