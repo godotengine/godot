@@ -183,6 +183,8 @@ public:
 	};
 
 	struct RegistryState {
+		HashSet<uint32_t> global_names;
+
 		WaylandThread *wayland_thread;
 
 		// Core Wayland globals.
