@@ -1,6 +1,7 @@
 #include "test_macros.h"
 
 #include "../interfaces/tile_rasterizer.h"
+#include "../renderer/tile_render_resources.h"
 #include "../renderer/tile_prefix_scan_utils.h"
 #include "../renderer/tile_renderer.h"
 #include "servers/rendering_server.h"
@@ -84,4 +85,45 @@ TEST_CASE("[TileRenderer] Compute raster shared-memory contract uses determinist
 
     CHECK(required_bytes == expected_bytes);
     CHECK(required_bytes == 40980u);
+}
+
+TEST_CASE("[TileRenderer] SH cache resize plan adds growth slack") {
+    const uint32_t required_bytes = 16u * 1024u;
+    const uint32_t current_bytes = 8u * 1024u;
+
+    const GaussianSplatting::TileSHCacheResizePlan plan =
+            GaussianSplatting::tile_compute_sh_cache_resize_plan(required_bytes, current_bytes, 0u);
+
+    CHECK(plan.should_resize);
+    CHECK(plan.target_bytes > required_bytes);
+    CHECK(plan.target_bytes >= required_bytes + GaussianSplatting::TILE_SH_CACHE_MIN_GROWTH_SLACK_BYTES);
+    CHECK(plan.next_shrink_candidate_frames == 0u);
+}
+
+TEST_CASE("[TileRenderer] SH cache shrink hysteresis defers resize until threshold") {
+    const uint32_t required_bytes = 1024u;
+    const uint32_t current_bytes = 16u * 1024u;
+
+    const GaussianSplatting::TileSHCacheResizePlan pending =
+            GaussianSplatting::tile_compute_sh_cache_resize_plan(required_bytes, current_bytes, 0u);
+    CHECK(!pending.should_resize);
+    CHECK(pending.next_shrink_candidate_frames == 1u);
+
+    const GaussianSplatting::TileSHCacheResizePlan trigger =
+            GaussianSplatting::tile_compute_sh_cache_resize_plan(required_bytes, current_bytes,
+                    GaussianSplatting::TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES - 1u);
+    CHECK(trigger.should_resize);
+    CHECK(trigger.target_bytes > required_bytes);
+    CHECK(trigger.next_shrink_candidate_frames == 0u);
+}
+
+TEST_CASE("[TileRenderer] SH cache shrink hysteresis resets when usage recovers") {
+    const uint32_t required_bytes = 9u * 1024u;
+    const uint32_t current_bytes = 16u * 1024u;
+
+    const GaussianSplatting::TileSHCacheResizePlan plan =
+            GaussianSplatting::tile_compute_sh_cache_resize_plan(required_bytes, current_bytes, 57u);
+
+    CHECK(!plan.should_resize);
+    CHECK(plan.next_shrink_candidate_frames == 0u);
 }

@@ -41,6 +41,57 @@ inline void safe_free_buffer_rid(RenderingDevice *p_device, RID &p_rid) {
 
 namespace GaussianSplatting {
 
+TileSHCacheResizePlan tile_compute_sh_cache_resize_plan(uint32_t p_required_bytes, uint32_t p_current_bytes,
+		uint32_t p_shrink_candidate_frames) {
+	TileSHCacheResizePlan plan;
+
+	auto compute_target_with_slack = [](uint32_t p_base_bytes) -> uint32_t {
+		if (p_base_bytes == 0u) {
+			return 0u;
+		}
+
+		const uint64_t percent_slack = (uint64_t(p_base_bytes) * uint64_t(TILE_SH_CACHE_GROWTH_SLACK_PERCENT) + 99u) / 100u;
+		const uint64_t slack_bytes = MAX<uint64_t>(percent_slack, uint64_t(TILE_SH_CACHE_MIN_GROWTH_SLACK_BYTES));
+		const uint64_t target_bytes64 = uint64_t(p_base_bytes) + slack_bytes;
+		return uint32_t(MIN<uint64_t>(target_bytes64, uint64_t(UINT32_MAX)));
+	};
+
+	if (p_required_bytes > p_current_bytes) {
+		plan.should_resize = true;
+		plan.target_bytes = compute_target_with_slack(p_required_bytes);
+		return plan;
+	}
+
+	if (p_current_bytes == 0u) {
+		return plan;
+	}
+
+	if (p_required_bytes == 0u) {
+		const uint32_t next_frames = MIN<uint32_t>(p_shrink_candidate_frames + 1u, TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES);
+		if (next_frames >= TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES) {
+			plan.should_resize = true;
+			plan.target_bytes = 0u;
+			return plan;
+		}
+		plan.next_shrink_candidate_frames = next_frames;
+		return plan;
+	}
+
+	const uint64_t shrink_trigger_bytes = (uint64_t(p_current_bytes) * uint64_t(TILE_SH_CACHE_SHRINK_TRIGGER_PERCENT)) / 100u;
+	if (uint64_t(p_required_bytes) <= shrink_trigger_bytes) {
+		const uint32_t next_frames = MIN<uint32_t>(p_shrink_candidate_frames + 1u, TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES);
+		if (next_frames >= TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES) {
+			plan.should_resize = true;
+			plan.target_bytes = compute_target_with_slack(p_required_bytes);
+			return plan;
+		}
+		plan.next_shrink_candidate_frames = next_frames;
+		return plan;
+	}
+
+	return plan;
+}
+
 TileShaderResources::TileShaderResources(TileRenderer &p_owner) :
 		owner(p_owner),
 		tile_binning_shader_source(std::make_unique<TileBinningShaderRD>()),
@@ -494,6 +545,7 @@ void TileSHCacheBuffers::reset_state() {
 	sh_color_cache = RID();
 	sh_color_cache_owner.clear();
 	sh_color_cache_size = 0;
+	shrink_candidate_frames = 0;
 }
 
 bool TileSHCacheBuffers::ensure_color_cache(uint32_t p_total_gaussians) {
@@ -514,11 +566,11 @@ bool TileSHCacheBuffers::ensure_color_cache(uint32_t p_total_gaussians) {
 	}
 	const uint32_t required_bytes = uint32_t(required_bytes64);
 
-	const bool should_shrink = sh_color_cache.is_valid() && sh_color_cache_size > 0 &&
-			sh_color_cache_size > required_bytes * 8u;
-	const bool needs_resize = !sh_color_cache.is_valid() || sh_color_cache_size < required_bytes || should_shrink;
+	const TileSHCacheResizePlan resize_plan =
+			tile_compute_sh_cache_resize_plan(required_bytes, sh_color_cache_size, shrink_candidate_frames);
+	shrink_candidate_frames = resize_plan.next_shrink_candidate_frames;
 
-	if (!needs_resize) {
+	if (!resize_plan.should_resize) {
 		return false;
 	}
 
@@ -527,16 +579,30 @@ bool TileSHCacheBuffers::ensure_color_cache(uint32_t p_total_gaussians) {
 		sh_color_cache_owner.clear();
 	}
 
-	sh_color_cache = device->storage_buffer_create(required_bytes);
-	sh_color_cache_size = sh_color_cache.is_valid() ? required_bytes : 0;
+	if (resize_plan.target_bytes == 0u) {
+		sh_color_cache_size = 0;
+		shrink_candidate_frames = 0;
+		owner._invalidate_descriptor_cache();
+		return true;
+	}
+
+	sh_color_cache = device->storage_buffer_create(resize_plan.target_bytes);
+	sh_color_cache_size = sh_color_cache.is_valid() ? resize_plan.target_bytes : 0;
+	if (!sh_color_cache.is_valid() && resize_plan.target_bytes != required_bytes) {
+		// Retry exact-fit allocation if slack allocation fails under pressure.
+		sh_color_cache = device->storage_buffer_create(required_bytes);
+		sh_color_cache_size = sh_color_cache.is_valid() ? required_bytes : 0;
+	}
 	if (!sh_color_cache.is_valid()) {
 		GS_LOG_ERROR_DEFAULT("[TileRenderer] Failed to allocate SH color cache buffer");
 		sh_color_cache_owner.clear();
+		shrink_candidate_frames = 0;
 		return false;
 	}
 
 	device->set_resource_name(sh_color_cache, "GS_TileRenderer_SHColorCache");
 	sh_color_cache_owner.set(device);
+	shrink_candidate_frames = 0;
 	owner._invalidate_descriptor_cache();
 	return true;
 }

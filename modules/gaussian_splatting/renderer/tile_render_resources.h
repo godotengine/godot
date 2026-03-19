@@ -17,6 +17,20 @@ class TileRenderer;
 
 namespace GaussianSplatting {
 
+constexpr uint32_t TILE_SH_CACHE_GROWTH_SLACK_PERCENT = 25u;
+constexpr uint32_t TILE_SH_CACHE_MIN_GROWTH_SLACK_BYTES = 4096u;
+constexpr uint32_t TILE_SH_CACHE_SHRINK_TRIGGER_PERCENT = 50u;
+constexpr uint32_t TILE_SH_CACHE_SHRINK_HYSTERESIS_FRAMES = 120u;
+
+struct TileSHCacheResizePlan {
+	bool should_resize = false;
+	uint32_t target_bytes = 0;
+	uint32_t next_shrink_candidate_frames = 0;
+};
+
+TileSHCacheResizePlan tile_compute_sh_cache_resize_plan(uint32_t p_required_bytes, uint32_t p_current_bytes,
+		uint32_t p_shrink_candidate_frames);
+
 struct TileRenderTargets {
 	explicit TileRenderTargets(TileRenderer &p_owner) : owner(p_owner) {}
 
@@ -191,6 +205,7 @@ struct TileSHCacheBuffers {
 	RID sh_color_cache;
 	BufferOwnership sh_color_cache_owner;
 	uint32_t sh_color_cache_size = 0;
+	uint32_t shrink_candidate_frames = 0;
 };
 
 struct TileSubpixelHistoryBuffers {
