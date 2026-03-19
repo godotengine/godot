@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/synthetic_showcase.gd" id="script"]
+
+[node name="synthetic_flower_field" type="Node3D"]
+script = ExtResource("script")
+ply_path = "res://tests/fixtures/test_splats.ply"
+duration = 25.0
+orbit_radius = 25.0
+orbit_height = 5.0
+orbit_speed = 0.08
+look_at_offset = Vector3(0, 1.2, 0)
+enable_wind = true
+wind_strength = 0.3
+wind_direction = Vector3(1.0, 0.15, 0.4)
