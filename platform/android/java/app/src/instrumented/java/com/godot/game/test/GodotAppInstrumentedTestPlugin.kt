@@ -38,6 +38,7 @@ import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.plugin.SignalInfo
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * [GodotPlugin] used to drive instrumented tests.
@@ -47,14 +48,17 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 	companion object {
 		private val TAG = GodotAppInstrumentedTestPlugin::class.java.simpleName
 		private const val MAIN_LOOP_STARTED_LATCH_KEY = "main_loop_started_latch"
+		private const val ENGINE_TERMINATING_LATCH_KEY = "engine_terminating_latch"
 
 		private const val JAVACLASSWRAPPER_TESTS = "javaclasswrapper_tests"
 		private const val FILE_ACCESS_TESTS = "file_access_tests"
 
 		private val LAUNCH_TESTS_SIGNAL = SignalInfo("launch_tests", String::class.java)
+		private val UPDATE_QUIT_ON_GO_BACK_SIGNAL = SignalInfo("update_quit_on_go_back", java.lang.Boolean::class.java)
 
 		private val SIGNALS = setOf(
-			LAUNCH_TESTS_SIGNAL
+			LAUNCH_TESTS_SIGNAL,
+			UPDATE_QUIT_ON_GO_BACK_SIGNAL
 		)
 	}
 
@@ -65,6 +69,8 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 		// Add a countdown latch that is triggered when `onGodotMainLoopStarted` is fired.
 		// This will be used by tests to wait until the engine is ready.
 		latches[MAIN_LOOP_STARTED_LATCH_KEY] = CountDownLatch(1)
+		// Add a countdown latch that is triggered when the engine terminates.
+		latches[ENGINE_TERMINATING_LATCH_KEY] = CountDownLatch(1)
 	}
 
 	override fun getPluginName() = "GodotAppInstrumentedTestPlugin"
@@ -74,6 +80,11 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 	override fun onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted()
 		latches.remove(MAIN_LOOP_STARTED_LATCH_KEY)?.countDown()
+	}
+
+	override fun onGodotTerminating() {
+		super.onGodotTerminating()
+		latches.remove(ENGINE_TERMINATING_LATCH_KEY)?.countDown()
 	}
 
 	/**
@@ -86,6 +97,19 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 		} catch (e: InterruptedException) {
 			Log.e(TAG, "Unable to wait for Godot main loop started event.", e)
 		}
+	}
+
+	internal fun waitForEngineTermination(timeoutInMs: Long) {
+		// Wait on the CountDownLatch for `onGodotTerminating`.
+		try {
+			latches[ENGINE_TERMINATING_LATCH_KEY]?.await(timeoutInMs, TimeUnit.MILLISECONDS)
+		} catch (e: InterruptedException) {
+			Log.e(TAG, "Unable to wait for engine termination event.", e)
+		}
+	}
+
+	internal fun updateQuitOnGoBack(quitOnGoBack: Boolean) {
+		emitSignal(UPDATE_QUIT_ON_GO_BACK_SIGNAL, quitOnGoBack)
 	}
 
 	/**
@@ -104,7 +128,7 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 
 	private fun launchTests(testLabel: String): Result<Any>? {
 		val latch = latches.getOrPut(testLabel) { CountDownLatch(1) }
-		emitSignal(LAUNCH_TESTS_SIGNAL.name, testLabel)
+		emitSignal(LAUNCH_TESTS_SIGNAL, testLabel)
 		return try {
 			latch.await()
 			val result = testResults.remove(testLabel)
