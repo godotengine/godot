@@ -155,13 +155,10 @@ class BaselineQARunner:
         cwd = ROOT
 
         if test_type == "godot":
-            command = [
-                self.godot_binary,
-                "--headless",
-                "--verbose",
-                "--script",
-                test["script"],
-            ]
+            command = [self.godot_binary]
+            if not test.get("requires_gpu", False):
+                command.append("--headless")
+            command.extend(["--verbose", "--script", test["script"]])
             descriptor = test["script"]
         else:
             command = test["command"]
@@ -356,6 +353,7 @@ class BaselineQARunner:
                 "type": "godot",
                 "script": "tests/ci/test_gpu_sorting_ci.gd",
                 "category": "sorting",
+                "requires_gpu": True,
             },
             {
                 "name": "Runtime Validation Suite",
