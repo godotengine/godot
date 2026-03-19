@@ -133,7 +133,11 @@ def _repo_root() -> Path:
 
 
 def _default_godot_binary(repo_root: Path) -> Path:
-    return repo_root / "bin" / "godot.linuxbsd.editor.dev.x86_64"
+    legacy_path = repo_root / "bin" / "godot.linuxbsd.editor.dev.x86_64"
+    split_path = repo_root / "godot-source" / "bin" / "godot.linuxbsd.editor.dev.x86_64"
+    if legacy_path.exists():
+        return legacy_path
+    return split_path
 
 
 def _default_project_path(repo_root: Path) -> Path:
