@@ -902,9 +902,13 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	}
 
 	auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
-		const bool has_valid_sort_buffer = sorting_pipeline && sorting_pipeline->get_sort_indices_buffer().is_valid();
-		if (strict_global_sort && has_valid_sort_buffer) {
-			return false;
+		if (strict_global_sort) {
+			// Even in strict mode, allow the identity fallback when the sort
+			// buffer is missing/invalid — refusing to render at all is worse
+			// than showing an unsorted frame.
+			if (sorting_pipeline && sorting_pipeline->get_sort_indices_buffer().is_valid()) {
+				return false;
+			}
 		}
 		if (!instance_pipeline_active || !sorting_pipeline) {
 			return false;
