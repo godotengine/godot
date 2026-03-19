@@ -9170,6 +9170,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 			float offset = (pos.x - timeline->get_name_limit()) / timeline->get_zoom_scale();
 			if (!read_only) {
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
+				moving_selection_attempt = false;
 
 				menu->clear();
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTRC("Insert Marker..."), MENU_KEY_INSERT);
