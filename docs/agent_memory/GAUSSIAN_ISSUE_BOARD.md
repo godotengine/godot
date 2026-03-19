@@ -37,11 +37,11 @@ Status legend:
 | ISSUE-023 | LOD System | Forward/backward scene persistence compatibility safeguards | High | agent-lod | Planned | None | 61b094c398e |
 | ISSUE-024 | LOD System | Make animation blend progression frame-rate independent | Medium | agent-lod | Planned | ISSUE-018 | 88465f14577 |
 | ISSUE-025 | LOD System | Add unloaded-asset diagnostics for getter misuse | Medium | agent-lod | Planned | ISSUE-023 | ba143184765 |
-| ISSUE-026 | Compute Infrastructure | Guard viewport texture state transitions against double-fire | Medium | agent-compute | Planned | ISSUE-020 | 88465f14577 |
-| ISSUE-027 | Compute Infrastructure | SH buffer reallocation slack + shrink hysteresis | High | agent-compute | In Progress | ISSUE-023 | 50f58c3ab92; partial diff in `agent-compute` worktree |
-| ISSUE-028 | Compute Infrastructure | Split monolithic tile render stages implementation | Medium | agent-compute | Planned | ISSUE-020 | 3d47157d998 |
-| ISSUE-029 | Compute Infrastructure | Extract renderer nested POD types to standalone headers | Medium | agent-compute | Planned | ISSUE-020 | 11d0e29fdb2 |
-| ISSUE-030 | Compute Infrastructure | Extract tile_binning shader helpers into includes | Medium | agent-compute | Planned | ISSUE-028 | 6534278a25e |
+| ISSUE-026 | Compute Infrastructure | Guard viewport texture state transitions against double-fire | Medium | agent-compute | Ready for Merge | ISSUE-020 | 6dde6a82c3b; guard in `gaussian_splat_node_helpers.cpp::on_viewport_texture_ready` verified 2026-03-19 |
+| ISSUE-027 | Compute Infrastructure | SH buffer reallocation slack + shrink hysteresis | High | agent-compute | Ready for Merge | ISSUE-023 | f2ce93cafca; `test_tile_renderer` SH cache resize-plan tests + checks (`check_build_metadata_consistency.py`, `compile_shaders.py --contracts-only`) |
+| ISSUE-028 | Compute Infrastructure | Split monolithic tile render stages implementation | Medium | agent-compute | Ready for Merge | ISSUE-020 | 6dde6a82c3b; staged split across `tile_render_{binning,prefix_scan,rasterizer_stage,resolve,debug_stats}.cpp` verified 2026-03-19 |
+| ISSUE-029 | Compute Infrastructure | Extract renderer nested POD types to standalone headers | Medium | agent-compute | Ready for Merge | ISSUE-020 | 6dde6a82c3b; renderer types extracted under `renderer/render_types/*.h` and consumed by `gaussian_splat_renderer.h` |
+| ISSUE-030 | Compute Infrastructure | Extract tile_binning shader helpers into includes | Medium | agent-compute | Ready for Merge | ISSUE-028 | 6dde6a82c3b; helper includes referenced in `shaders/tile_binning.glsl` and `shaders/includes/*.glsl` |
 | ISSUE-031 | Shaders | Consolidate pack telemetry into cache-aligned data layout | Medium | agent-shaders | Planned | ISSUE-030 | 3c1d70036c8 |
 | ISSUE-032 | Shaders | Make async readback resilient to partial callback failures | High | agent-shaders | Planned | ISSUE-027 | 50f58c3ab92 |
 | ISSUE-033 | Shaders | Discard stale overflow stats in async GPU telemetry path | High | agent-shaders | Planned | ISSUE-032 | 19ca3b82c49 |
