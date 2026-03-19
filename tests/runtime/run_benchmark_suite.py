@@ -358,10 +358,9 @@ def _select_capture_lanes(
         if missing:
             raise ValueError(f"Unknown capture lane ids: {', '.join(missing)}")
         return requested_set
-    default_capture_lanes = {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
     if references_requested:
-        return default_capture_lanes
-    return default_capture_lanes
+        return {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
+    return set()
 
 
 def _load_asset_manifest(path: str) -> dict[str, str]:
@@ -1111,11 +1110,18 @@ def main() -> int:
     if capture_dir is not None:
         capture_dir.mkdir(parents=True, exist_ok=True)
     reference_dir = None
-    if args.reference_dir:
+    if args.reference_dir and capture_lane_ids:
         reference_dir = Path(args.reference_dir).resolve()
         if not reference_dir.exists():
             print(f"ERROR: reference directory not found: {reference_dir}", file=sys.stderr)
             return 2
+    if args.reference_dir and not capture_lane_ids:
+        print(
+            "ERROR: --reference-dir was provided but no capture lanes are active. "
+            "Specify --capture-lane or remove --reference-dir.",
+            file=sys.stderr,
+        )
+        return 2
     for lane in selected_lanes:
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
