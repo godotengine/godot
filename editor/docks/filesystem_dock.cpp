@@ -4241,8 +4241,14 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 
 	if (p_layout->has_section_key(p_section, "selected_paths")) {
 		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "selected_paths");
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
-			select_file(dock_filesystem_selected_paths[i]);
+			const String &path = dock_filesystem_selected_paths[i];
+			if (da->file_exists(path) || da->dir_exists(path)) {
+				select_file(dock_filesystem_selected_paths[i]);
+			} else {
+				select_file("res://");
+			}
 		}
 	}
 
