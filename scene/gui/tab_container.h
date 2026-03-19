@@ -239,6 +239,7 @@ public:
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
+	Button *get_popup_button() const;
 
 	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
