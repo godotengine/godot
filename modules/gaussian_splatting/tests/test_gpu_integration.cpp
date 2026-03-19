@@ -15,25 +15,6 @@
 #include "servers/rendering_server.h"
 #include <random>
 
-namespace {
-
-uint32_t ceil_power_of_two(uint32_t value) {
-    if (value == 0) {
-        return 0;
-    }
-
-    value -= 1;
-    value |= value >> 1;
-    value |= value >> 2;
-    value |= value >> 4;
-    value |= value >> 8;
-    value |= value >> 16;
-    value += 1;
-
-    return value;
-}
-
-} // namespace
 
 // =============================================================================
 // GPU Integration Validation Tests

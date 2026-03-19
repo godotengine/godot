@@ -1,14 +1,10 @@
-// Include STL headers before the private-access hack to avoid MSVC xkeycheck.h error.
-#include <atomic>
-#define private public
 #include "../core/gaussian_streaming.h"
-#undef private
 
 #include "test_macros.h"
 
 TEST_CASE("[Streaming Pipeline] stop_pack_threads clears partial lifecycle state") {
     GaussianStreamingSystem system;
-    GaussianStreamingSystem::UploadQueueState &uploads = system.uploads;
+    GaussianStreamingSystem::UploadQueueState &uploads = system._internal_get_upload_state();
 
     uploads.pack_thread_running.store(false, std::memory_order_release);
     uploads.pack_thread_exit.store(true, std::memory_order_release);
