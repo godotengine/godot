@@ -8,6 +8,8 @@
 #include "core/templates/vector.h"
 #include "servers/rendering/rendering_device.h"
 
+#include "../resources/color_grading_resource.h"
+
 #include <array>
 #include <cstdint>
 #include <limits>

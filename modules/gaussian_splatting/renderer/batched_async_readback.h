@@ -68,6 +68,7 @@ public:
 
 	// Statistics
 	uint32_t get_total_batches_submitted() const { return total_batches_submitted; }
+	uint32_t get_total_batches_completed() const { return total_batches_completed; }
 	uint32_t get_total_requests_processed() const { return total_requests_processed; }
 	uint32_t get_total_failed_requests() const { return total_failed_requests; }
 	float get_average_batch_size() const;
