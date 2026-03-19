@@ -424,6 +424,7 @@ public:
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	void reload_open_files();
+	PackedStringArray get_unsaved_files() const;
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
