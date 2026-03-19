@@ -44,7 +44,7 @@ static Ref<GaussianData> build_debug_gaussians() {
 
 	for (uint32_t i = 0; i < gaussians.size(); i++) {
 		Gaussian &g = gaussians[i];
-		memset(&g, 0, sizeof(Gaussian));
+		g = Gaussian{};
 		const float offset = static_cast<float>(i) * 0.35f;
 		g.position = Vector3(offset - 0.5f, 0.0f, -3.0f - offset);
 		g.scale = Vector3(0.15f, 0.15f, 0.15f);
@@ -141,14 +141,14 @@ static bool compare_debug_projection(const Vector<uint8_t> &p_pixels, int p_widt
 TEST_CASE("[GaussianSplatting] Debug projection output matches golden gradient") {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs == nullptr) {
-		WARN("Skipping test - Rendering server unavailable");
+		MESSAGE("Skipping test - Rendering server unavailable");
 		return;
 	}
 
 	ScopedGaussianManagerValidation manager_scope;
 	GaussianSplatManager *manager = manager_scope.get();
 	if (manager == nullptr) {
-		WARN("Skipping test - GaussianSplatManager unavailable");
+		MESSAGE("Skipping test - GaussianSplatManager unavailable");
 		return;
 	}
 
@@ -159,7 +159,7 @@ TEST_CASE("[GaussianSplatting] Debug projection output matches golden gradient")
 		owns_device = true;
 	}
 	if (primary_rd == nullptr) {
-		WARN("Skipping test - Rendering device unavailable");
+		MESSAGE("Skipping test - Rendering device unavailable");
 		return;
 	}
 

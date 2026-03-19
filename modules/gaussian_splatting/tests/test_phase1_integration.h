@@ -147,7 +147,7 @@ TEST_CASE("[GaussianSplatting] Phase 1 Integration - Basic Components") {
 	}
 
 	if (!rd) {
-		WARN("Skipping Phase 1 integration tests - no RenderingDevice available");
+		MESSAGE("Skipping Phase 1 integration tests - no RenderingDevice available");
 		return;
 	}
 

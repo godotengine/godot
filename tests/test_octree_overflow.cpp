@@ -33,7 +33,7 @@ int main() {
         if (i <= 8) {
             octree[0].children[i-1] = i;  // Root's children
         } else if (i <= 64) {
-            int parent = ((i - 9) / 8) + 1;
+            size_t parent = ((i - 9) / 8) + 1;
             int child_slot = (i - 9) % 8;
             if (parent < octree.size()) {
                 octree[parent].children[child_slot] = i;
@@ -42,7 +42,6 @@ int main() {
     }
 
     // Verify we can correctly access nodes beyond index 255
-    bool success = true;
     for (int i = 0; i < 8; i++) {
         uint32_t child_idx = octree[0].children[i];
         if (child_idx != 0xFFFFFFFF && child_idx < octree.size()) {

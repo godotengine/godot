@@ -341,8 +341,6 @@ double ProjectionValidator::compute_scale_invariance_error(const ProjectionInput
 
 double ProjectionValidator::compute_rotation_equivariance_error(const ProjectionInput &p_input, const Basis &p_rotation) const {
     Basis additional_rotation = p_rotation;
-    Quaternion additional_quaternion = additional_rotation.get_quaternion();
-
     Basis gaussian_basis;
     gaussian_basis.set_quaternion(p_input.rotation);
 

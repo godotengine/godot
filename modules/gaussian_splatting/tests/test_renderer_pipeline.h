@@ -113,7 +113,7 @@ static void fill_gaussians(LocalVector<Gaussian> &p_gaussians, uint32_t p_count)
     p_gaussians.resize(p_count);
     for (uint32_t i = 0; i < p_count; i++) {
         Gaussian &g = p_gaussians[i];
-        memset(&g, 0, sizeof(Gaussian));
+        g = Gaussian{};
         const float ring = float(i % 64) * 0.02f;
         const float layer = float(i / 64) * 0.05f;
         g.position = Vector3(ring * Math::sin((float)i * 0.1f), layer, -5.0f - layer);
@@ -317,14 +317,14 @@ TEST_CASE("[GaussianSplatting] Instanced readiness gate requires quantization bu
 TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness preconditions fail") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -333,7 +333,7 @@ TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness p
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -388,14 +388,14 @@ TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness p
 TEST_CASE("[GaussianSplatting] RenderSceneInstance drives GPU streaming + sorting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -404,7 +404,7 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance drives GPU streaming + sortin
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -474,13 +474,13 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance drives GPU streaming + sortin
 TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffers ready without SceneDirector instances") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
 
@@ -494,7 +494,7 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -503,7 +503,7 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -559,7 +559,7 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
     }
 
     if (!streaming_system_ready) {
-        WARN("Skipping test - streaming system unavailable");
+        MESSAGE("Skipping test - streaming system unavailable");
         renderer.unref();
         return;
     }
@@ -576,13 +576,13 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
 TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-aligned diagnostics") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
 
@@ -596,7 +596,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -605,7 +605,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -656,7 +656,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
     }
 
     if (!streaming_system_ready) {
-        WARN("Skipping test - streaming system unavailable");
+        MESSAGE("Skipping test - streaming system unavailable");
         renderer.unref();
         return;
     }
@@ -704,13 +704,13 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
 TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacity") {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs == nullptr) {
-		WARN("Skipping test - Rendering server unavailable");
+		MESSAGE("Skipping test - Rendering server unavailable");
 		return;
 	}
 
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
 	if (project_settings == nullptr) {
-		WARN("Skipping test - ProjectSettings unavailable");
+		MESSAGE("Skipping test - ProjectSettings unavailable");
 		return;
 	}
 
@@ -721,7 +721,7 @@ TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacit
 	ScopedGaussianManagerPipeline manager_scope;
 	GaussianSplatManager *manager = manager_scope.get();
 	if (manager == nullptr) {
-		WARN("Skipping test - GaussianSplatManager unavailable");
+		MESSAGE("Skipping test - GaussianSplatManager unavailable");
 		return;
 	}
 
@@ -730,7 +730,7 @@ TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacit
 		primary_rd = rs->create_local_rendering_device();
 	}
 	if (primary_rd == nullptr) {
-		WARN("Skipping test - Rendering device unavailable");
+		MESSAGE("Skipping test - Rendering device unavailable");
 		return;
 	}
 
@@ -788,17 +788,17 @@ TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacit
 	}
 
 	if (!streaming_active) {
-		WARN("Skipping test - streaming buffer indices not active");
+		MESSAGE("Skipping test - streaming buffer indices not active");
 		renderer.unref();
 		return;
 	}
 	if (streaming_capacity <= total_gaussians) {
-		WARN("Skipping test - streaming buffer capacity not larger than source data");
+		MESSAGE("Skipping test - streaming buffer capacity not larger than source data");
 		renderer.unref();
 		return;
 	}
 	if (!counters_ready) {
-		WARN("Skipping test - binning debug counters unavailable");
+		MESSAGE("Skipping test - binning debug counters unavailable");
 		renderer.unref();
 		return;
 	}
@@ -812,13 +812,13 @@ TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacit
 TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
 
@@ -829,7 +829,7 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting")
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -838,7 +838,7 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting")
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -923,13 +923,13 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting")
 TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
 
@@ -969,7 +969,7 @@ TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporti
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -978,7 +978,7 @@ TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporti
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1061,13 +1061,13 @@ TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporti
 TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-disabled mode") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
 
@@ -1081,7 +1081,7 @@ TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-d
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1090,7 +1090,7 @@ TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-d
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1149,14 +1149,14 @@ TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-d
 TEST_CASE("[GaussianSplatting] Stage results report cull/sort skipped when GPU culler unavailable") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1165,7 +1165,7 @@ TEST_CASE("[GaussianSplatting] Stage results report cull/sort skipped when GPU c
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1225,14 +1225,14 @@ TEST_CASE("[GaussianSplatting] Stage results report cull/sort skipped when GPU c
 TEST_CASE("[GaussianSplatting] Stage results report raster failure when rasterizer missing") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1241,7 +1241,7 @@ TEST_CASE("[GaussianSplatting] Stage results report raster failure when rasteriz
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1301,14 +1301,14 @@ TEST_CASE("[GaussianSplatting] Stage results report raster failure when rasteriz
 TEST_CASE("[GaussianSplatting] Stage results report painterly fallback") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1317,7 +1317,7 @@ TEST_CASE("[GaussianSplatting] Stage results report painterly fallback") {
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1411,14 +1411,14 @@ static bool create_test_render_buffers(const Vector2i &p_resolution, RID &r_rend
 TEST_CASE("[GaussianSplatting] Raster path eligibility follows viewport output format") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1427,12 +1427,12 @@ TEST_CASE("[GaussianSplatting] Raster path eligibility follows viewport output f
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
     RenderingDevice *main_rd = RenderingDevice::get_singleton();
     if (main_rd == nullptr) {
-        WARN("Skipping test - Main rendering device unavailable");
+        MESSAGE("Skipping test - Main rendering device unavailable");
         return;
     }
 
@@ -1525,14 +1525,14 @@ TEST_CASE("[GaussianSplatting] Raster path eligibility follows viewport output f
 TEST_CASE("[GaussianSplatting] Final output copies between targets") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1541,12 +1541,12 @@ TEST_CASE("[GaussianSplatting] Final output copies between targets") {
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
     RenderingDevice *main_rd = RenderingDevice::get_singleton();
     if (main_rd == nullptr) {
-        WARN("Skipping test - Main rendering device unavailable");
+        MESSAGE("Skipping test - Main rendering device unavailable");
         return;
     }
 
@@ -1609,13 +1609,13 @@ TEST_CASE("[GaussianSplatting] Final output copies between targets") {
 TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buffers") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
     const String composite_depth_setting = "rendering/gaussian_splatting/composite/depth_test";
@@ -1625,7 +1625,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1634,7 +1634,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1658,7 +1658,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
     }
     RID scene_depth = render_buffers->get_depth_texture();
     if (!scene_depth.is_valid()) {
-        WARN("Skipping test - Scene depth texture unavailable");
+        MESSAGE("Skipping test - Scene depth texture unavailable");
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1711,7 +1711,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
 
     const RID cached_depth = output_compositor->get_cached_render_depth();
     if (!cached_depth.is_valid()) {
-        WARN("Skipping test - Cached raster depth unavailable");
+        MESSAGE("Skipping test - Cached raster depth unavailable");
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1739,13 +1739,13 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
 TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when cached depth is missing") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (project_settings == nullptr) {
-        WARN("Skipping test - ProjectSettings unavailable");
+        MESSAGE("Skipping test - ProjectSettings unavailable");
         return;
     }
     const String composite_depth_setting = "rendering/gaussian_splatting/composite/depth_test";
@@ -1755,7 +1755,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
     ScopedGaussianManagerPipeline manager_scope;
     GaussianSplatManager *manager = manager_scope.get();
     if (manager == nullptr) {
-        WARN("Skipping test - GaussianSplatManager unavailable");
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
         return;
     }
 
@@ -1764,7 +1764,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
         primary_rd = rs->create_local_rendering_device();
     }
     if (primary_rd == nullptr) {
-        WARN("Skipping test - Rendering device unavailable");
+        MESSAGE("Skipping test - Rendering device unavailable");
         return;
     }
 
@@ -1788,7 +1788,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
 
     RID scene_depth = render_buffers->get_depth_texture();
     if (!scene_depth.is_valid()) {
-        WARN("Skipping test - Scene depth texture unavailable");
+        MESSAGE("Skipping test - Scene depth texture unavailable");
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1843,7 +1843,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
     RID final_output = renderer->get_final_texture();
     RID cached_depth = output_compositor->get_cached_render_depth();
     if (!final_output.is_valid() || !cached_depth.is_valid()) {
-        WARN("Skipping test - Final output or cached depth unavailable");
+        MESSAGE("Skipping test - Final output or cached depth unavailable");
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1878,13 +1878,13 @@ TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when de
 
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - Rendering server unavailable");
+        MESSAGE("Skipping test - Rendering server unavailable");
         return;
     }
 
     RenderingDevice *local_rd = rs->create_local_rendering_device();
     if (local_rd == nullptr) {
-        WARN("Skipping test - Local rendering device unavailable");
+        MESSAGE("Skipping test - Local rendering device unavailable");
         return;
     }
 
@@ -1912,7 +1912,7 @@ TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when de
     RID final_texture = create_test_texture(local_rd, resolution, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, color_usage);
     RID depth_texture = create_test_texture(local_rd, resolution, RD::DATA_FORMAT_D32_SFLOAT, depth_usage);
     if (!final_texture.is_valid() || !depth_texture.is_valid()) {
-        WARN("Skipping test - Unable to allocate color/depth textures for cache reuse validation");
+        MESSAGE("Skipping test - Unable to allocate color/depth textures for cache reuse validation");
         if (final_texture.is_valid()) {
             local_rd->free(final_texture);
         }
@@ -1949,15 +1949,15 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch times out when ca
     RenderingServer *rs = RenderingServer::get_singleton();
     OS *os = OS::get_singleton();
     if (rs == nullptr || os == nullptr) {
-        WARN("Skipping test - RenderingServer/OS unavailable");
+        MESSAGE("Skipping test - RenderingServer/OS unavailable");
         return;
     }
     if (rs->is_on_render_thread()) {
-        WARN("Skipping test - Test must run off the render thread");
+        MESSAGE("Skipping test - Test must run off the render thread");
         return;
     }
     if (!rs->is_render_loop_enabled()) {
-        WARN("Skipping test - Render loop disabled");
+        MESSAGE("Skipping test - Render loop disabled");
         return;
     }
 
@@ -1985,15 +1985,15 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch times out when ca
 TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch preserves forward progress after timeout escape") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping test - RenderingServer unavailable");
+        MESSAGE("Skipping test - RenderingServer unavailable");
         return;
     }
     if (rs->is_on_render_thread()) {
-        WARN("Skipping test - Test must run off the render thread");
+        MESSAGE("Skipping test - Test must run off the render thread");
         return;
     }
     if (!rs->is_render_loop_enabled()) {
-        WARN("Skipping test - Render loop disabled");
+        MESSAGE("Skipping test - Render loop disabled");
         return;
     }
 

@@ -77,7 +77,7 @@ TEST_CASE("[GaussianSplatting] GPU Memory Streaming") {
 
 	// Skip GPU tests if no rendering device available
 	if (!rd) {
-		WARN("Skipping GPU streaming tests - no RenderingDevice available");
+		MESSAGE("Skipping GPU streaming tests - no RenderingDevice available");
 		return;
 	}
 
@@ -191,7 +191,7 @@ TEST_CASE("[GaussianSplatting] GPU Memory Streaming") {
 
 	SUBCASE("Concurrent async uploads keep deterministic accounting") {
 #ifndef THREADS_ENABLED
-		WARN("Skipping concurrent upload assertions - THREADS_ENABLED is not enabled");
+		MESSAGE("Skipping concurrent upload assertions - THREADS_ENABLED is not enabled");
 		return;
 #endif
 
@@ -265,7 +265,7 @@ TEST_CASE("[GaussianSplatting] GPU Memory Streaming Performance") {
 	}
 
 	if (!rd) {
-		WARN("Skipping GPU performance tests - no RenderingDevice available");
+		MESSAGE("Skipping GPU performance tests - no RenderingDevice available");
 		return;
 	}
 
@@ -337,7 +337,7 @@ TEST_CASE("[GaussianSplatting] Stage-B instance depth culling toggles") {
 
 	RenderingDevice *primary_device = manager->get_primary_rendering_device();
 	if (primary_device == nullptr) {
-		WARN("Skipping Stage-B culling test - primary RenderingDevice unavailable");
+		MESSAGE("Skipping Stage-B culling test - primary RenderingDevice unavailable");
 		if (manager_owner) {
 			memdelete(manager_owner);
 		}
@@ -360,7 +360,7 @@ TEST_CASE("[GaussianSplatting] Stage-B instance depth culling toggles") {
 	const uint32_t near_band_count = total_gaussians / 2;
 	for (uint32_t i = 0; i < total_gaussians; i++) {
 		Gaussian &g = gaussians[i];
-		memset(&g, 0, sizeof(Gaussian));
+		g = Gaussian{};
 		const bool in_near_band = i < near_band_count;
 		const float band_x = in_near_band ? -0.8f : 28.0f;
 		const float local_x = float(i % 64) * 0.02f;
@@ -423,7 +423,7 @@ TEST_CASE("[GaussianSplatting] Stage-B instance depth culling toggles") {
 	}
 
 	if (baseline_visible == 0) {
-		WARN("Skipping Stage-B culling test - instance pipeline did not become ready");
+		MESSAGE("Skipping Stage-B culling test - instance pipeline did not become ready");
 		renderer.unref();
 		if (manager_owner) {
 			memdelete(manager_owner);

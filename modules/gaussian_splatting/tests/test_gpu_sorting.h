@@ -39,7 +39,7 @@ TEST_CASE("[GaussianSplatting] GPU Bitonic Sorting") {
 	}
 
 	if (!rd) {
-		WARN("Skipping GPU sorting tests - no RenderingDevice available");
+		MESSAGE("Skipping GPU sorting tests - no RenderingDevice available");
 		return;
 	}
 
@@ -205,7 +205,7 @@ TEST_CASE("[GaussianSplatting] GPU Sorting Performance") {
 	}
 
 	if (!rd) {
-		WARN("Skipping GPU sorting performance tests - no RenderingDevice available");
+		MESSAGE("Skipping GPU sorting performance tests - no RenderingDevice available");
 		return;
 	}
 

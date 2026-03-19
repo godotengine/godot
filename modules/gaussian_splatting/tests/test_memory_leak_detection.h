@@ -81,7 +81,7 @@ TEST_CASE("[GaussianSplatting] GPU memory leak detection") {
 	Error init_err = mem_scope.initialize(rd);
 	CHECK(init_err == OK);
 	if (init_err != OK) {
-		WARN("Skipping GPU memory leak tests - MemoryValidator initialization failed");
+		MESSAGE("Skipping GPU memory leak tests - MemoryValidator initialization failed");
 		return;
 	}
 
@@ -293,7 +293,7 @@ TEST_CASE("[GaussianSplatting] GPU memory leak detection with renderer lifecycle
 	ScopedGaussianManagerMemory manager_scope;
 	GaussianSplatManager *manager = manager_scope.get();
 	if (!manager) {
-		WARN("Skipping renderer lifecycle memory test - GaussianSplatManager unavailable");
+		MESSAGE("Skipping renderer lifecycle memory test - GaussianSplatManager unavailable");
 		return;
 	}
 
@@ -305,7 +305,7 @@ TEST_CASE("[GaussianSplatting] GPU memory leak detection with renderer lifecycle
 		}
 	}
 	if (!primary_rd) {
-		WARN("Skipping renderer lifecycle memory test - RenderingDevice unavailable");
+		MESSAGE("Skipping renderer lifecycle memory test - RenderingDevice unavailable");
 		return;
 	}
 
@@ -338,7 +338,7 @@ TEST_CASE("[GaussianSplatting] GPU memory leak detection with renderer lifecycle
 	rng.set_seed(42);
 	for (int i = 0; i < 64; i++) {
 		Gaussian &g = gaussians[i];
-		memset(&g, 0, sizeof(Gaussian));
+		g = Gaussian{};
 		g.position = Vector3(
 				rng.randf_range(-2.0f, 2.0f),
 				rng.randf_range(-2.0f, 2.0f),
