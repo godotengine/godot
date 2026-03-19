@@ -323,14 +323,28 @@ public:
 		if (!_execute_global_sort_pipeline()) {
 			return RID();
 		}
-		if (!_select_and_prepare_raster_path()) {
-			return RID();
+		if (_has_dispatch_work()) {
+			if (!_select_and_prepare_raster_path()) {
+				return RID();
+			}
+			_dispatch_rasterization();
+		} else {
+			// Ensure no-work frames don't report stale raster mode from prior frames.
+			renderer.perf_metrics.last_raster_used_compute = false;
+			renderer.perf_metrics.sorted_indices_blend_fallback_active = false;
+			renderer.perf_metrics.sorted_indices_blend_fallback_reason = String();
 		}
-		_dispatch_rasterization();
 		return _finalize_frame();
 	}
 
 private:
+	bool _has_dispatch_work() const {
+		// Only consider actual splat/element counts as work. Buffer existence
+		// alone (e.g. an indirect dispatch buffer with a GPU-written count of 0)
+		// should not prevent the zero-work clear path from running.
+		return params.splat_count > 0 || effective_visible_splats > 0;
+	}
+
 	void _prepare_next_tile_counts_if_needed() {
 		if (!tile_counts_buffer_advanced || tile_counts_buffer_prepared) {
 			return;
@@ -680,8 +694,21 @@ private:
 
 	bool _execute_global_sort_pipeline() {
 		uint64_t assignment_start = OS::get_singleton()->get_ticks_usec();
+		auto finish_assignment_metrics = [&]() {
+			uint64_t assignment_end = OS::get_singleton()->get_ticks_usec();
+			renderer.perf_metrics.tile_assignment_ms = (assignment_end - assignment_start) / 1000.0f;
+			renderer.timing_state.last_setup_cpu_ms = renderer.perf_metrics.tile_assignment_ms;
+		};
 
 			if (renderer.render_settings.global_sort_enabled) {
+				if (!_has_dispatch_work()) {
+					renderer.diagnostics.last_overlap_record_count = 0;
+					renderer.diagnostics.last_overlap_record_budget_effective = renderer._get_effective_overlap_capacity();
+					renderer.diagnostics.last_overlap_keep_ratio = 1.0f;
+					finish_assignment_metrics();
+					return true;
+				}
+
 				bool debug_sync_requested = false;
 #ifdef DEBUG_ENABLED
 					debug_sync_requested = (g_gpu_sorting_config.enable_prefix_readback || g_gpu_sorting_config.debug_validate_prefix) &&
@@ -933,9 +960,7 @@ private:
 			// GPU-driven: sort reads element_count directly from global_sort_resources.indirect_dispatch_buffer.
 		}
 
-		uint64_t assignment_end = OS::get_singleton()->get_ticks_usec();
-		renderer.perf_metrics.tile_assignment_ms = (assignment_end - assignment_start) / 1000.0f;
-		renderer.timing_state.last_setup_cpu_ms = renderer.perf_metrics.tile_assignment_ms;
+		finish_assignment_metrics();
 
 		// Note: On main RD, compute→raster synchronization is handled automatically by command ordering.
 		// sync() only works on local devices and isn't needed here since compute_list_end() ensures
@@ -1019,39 +1044,56 @@ private:
 	}
 
 	RID _finalize_frame() {
-		if (params.splat_count == 0 && effective_visible_splats == 0) {
+		bool skip_resolve_dispatch = false;
+		if (!_has_dispatch_work()) {
+			renderer.perf_metrics.rasterization_ms = 0.0f;
+			auto clear_texture = [](RenderingDevice *p_owner, const RID &p_texture, const Color &p_clear) {
+				if (!p_owner || !p_texture.is_valid() || !p_owner->texture_is_valid(p_texture)) {
+					return;
+				}
+				RD::TextureFormat fmt = p_owner->texture_get_format(p_texture);
+				uint32_t mipmaps = MAX<uint32_t>(1, fmt.mipmaps);
+				uint32_t layers = MAX<uint32_t>(1, fmt.array_layers);
+				p_owner->texture_clear(p_texture, p_clear, 0, mipmaps, 0, layers);
+			};
+
+			RenderingDevice *raw_color_owner = renderer.render_targets.output_texture_owner.device
+					? renderer.render_targets.output_texture_owner.device
+					: resource_device;
+			RenderingDevice *raw_depth_owner = renderer.render_targets.depth_texture_owner.device
+					? renderer.render_targets.depth_texture_owner.device
+					: resource_device;
 			RenderingDevice *resolve_color_owner = renderer.render_targets.resolved_texture_owner.device
 					? renderer.render_targets.resolved_texture_owner.device
 					: resource_device;
 			RenderingDevice *resolve_depth_owner = renderer.render_targets.resolved_depth_texture_owner.device
 					? renderer.render_targets.resolved_depth_texture_owner.device
 					: resource_device;
+			RID raw_color = renderer.render_targets.output_texture_external.is_valid()
+					? renderer.render_targets.output_texture_external
+					: renderer.render_targets.output_texture;
+			RID raw_depth = renderer.render_targets.depth_texture_external.is_valid()
+					? renderer.render_targets.depth_texture_external
+					: renderer.render_targets.depth_texture;
 			RID resolve_color = renderer.render_targets.resolved_texture_external.is_valid()
 					? renderer.render_targets.resolved_texture_external
 					: renderer.render_targets.resolved_texture;
 			RID resolve_depth = renderer.render_targets.resolved_depth_texture_external.is_valid()
 					? renderer.render_targets.resolved_depth_texture_external
 					: renderer.render_targets.resolved_depth_texture;
-			if (resolve_color_owner && resolve_color.is_valid() &&
-					resolve_color_owner->texture_is_valid(resolve_color)) {
-				RD::TextureFormat fmt = resolve_color_owner->texture_get_format(resolve_color);
-				uint32_t mipmaps = MAX<uint32_t>(1, fmt.mipmaps);
-				uint32_t layers = MAX<uint32_t>(1, fmt.array_layers);
-				resolve_color_owner->texture_clear(resolve_color,
-						Color(0.0f, 0.0f, 0.0f, 0.0f), 0, mipmaps, 0, layers);
+			clear_texture(raw_color_owner, raw_color, Color(0.0f, 0.0f, 0.0f, 0.0f));
+			clear_texture(raw_depth_owner, raw_depth, Color(1.0f, 0.0f, 0.0f, 0.0f));
+			if (resolve_color != raw_color || resolve_color_owner != raw_color_owner) {
+				clear_texture(resolve_color_owner, resolve_color, Color(0.0f, 0.0f, 0.0f, 0.0f));
 			}
-			if (resolve_depth_owner && resolve_depth.is_valid() &&
-					resolve_depth_owner->texture_is_valid(resolve_depth)) {
-				RD::TextureFormat fmt = resolve_depth_owner->texture_get_format(resolve_depth);
-				uint32_t mipmaps = MAX<uint32_t>(1, fmt.mipmaps);
-				uint32_t layers = MAX<uint32_t>(1, fmt.array_layers);
-				resolve_depth_owner->texture_clear(resolve_depth,
-						Color(1.0f, 0.0f, 0.0f, 0.0f), 0, mipmaps, 0, layers);
+			if (resolve_depth != raw_depth || resolve_depth_owner != raw_depth_owner) {
+				clear_texture(resolve_depth_owner, resolve_depth, Color(1.0f, 0.0f, 0.0f, 0.0f));
 			}
+			skip_resolve_dispatch = true;
 			if (renderer.diagnostics.debug_log_resolve) {
 				GS_LOG_EVERY_N(gs_logger::Category::RENDERER, gs_logger::Level::DEBUG,
 						tile_resolve_clear_log_counter, renderer.diagnostics.debug_log_resolve_interval_frames,
-						vformat("[TileResolve] frame=%s splats=0 mode=%d resolve cleared (color=%s depth=%s)",
+						vformat("[TileResolve] frame=%s splats=0 mode=%d outputs cleared (color=%s depth=%s)",
 								String::num_uint64(renderer.frame_state.current_frame_serial),
 								int(renderer.render_settings.resolve_debug_mode),
 								renderer.render_targets.resolved_texture.is_valid()
@@ -1063,7 +1105,8 @@ private:
 			}
 		}
 
-		if (renderer.render_targets.resolved_texture.is_valid() && renderer.render_targets.resolved_depth_texture.is_valid()) {
+		if (!skip_resolve_dispatch &&
+				renderer.render_targets.resolved_texture.is_valid() && renderer.render_targets.resolved_depth_texture.is_valid()) {
 			renderer._dispatch_tile_resolve(target_viewport, requested_tile_size, params.output_is_premultiplied, params);
 		}
 
@@ -1863,9 +1906,15 @@ Vector<String> TileRenderer::_build_raster_shader_defines() const {
 	// Enable compile-time raster stats collection when debug counters are active.
 	// Without this define, the rasterizer hot loop has zero counter variables and
 	// zero stat branches, eliminating register pressure and warp divergence.
+#if defined(DEV_ENABLED) || defined(DEBUG_ENABLED) || defined(TESTS_ENABLED)
 	if (diagnostics.debug_binning_counters_enabled) {
 		defines.push_back("#define GS_COLLECT_RASTER_STATS 1\n");
 	}
+#else
+	if (diagnostics.debug_binning_counters_enabled) {
+		WARN_PRINT_ONCE("[TileRenderer] Raster stats collection requested but disabled in this build configuration");
+	}
+#endif
 	return defines;
 }
 
