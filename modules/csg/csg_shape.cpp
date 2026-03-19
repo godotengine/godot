@@ -504,7 +504,13 @@ CSGBrush *CSGShape3D::_get_brush() {
 			continue;
 		}
 		CSGBrush transformed_brush;
-		transformed_brush.copy_from(*child_brush, child->get_transform());
+		Transform3D child_xform;
+		if (child->is_set_as_top_level()) {
+			child_xform = get_global_transform().affine_inverse() * child->get_global_transform();
+		} else {
+			child_xform = child->get_transform();
+		}
+		transformed_brush.copy_from(*child_brush, child_xform);
 		manifold::Manifold child_manifold;
 		_pack_manifold(&transformed_brush, child_manifold, mesh_materials, child);
 		manifold::OpType child_operation = ManifoldOperation::convert_csg_op(child->get_operation());
@@ -964,8 +970,19 @@ void CSGShape3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (!is_root_shape()) {
-				// Update this node's parent only if its own transformation has changed, not the transformation of parent nodes
+			bool has_top_level_child = false;
+			for (int i = 0; i < get_child_count(); i++) {
+				CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
+				if (child && child->is_set_as_top_level()) {
+					has_top_level_child = true;
+					break;
+				}
+			}
+			if (has_top_level_child) {
+				// Top-level children don't move with this node, so their
+				// relative transform changed and the brush must be rebuilt.
+				_make_dirty();
+			} else if (!is_root_shape()) {
 				parent_shape->_make_dirty();
 			}
 		} break;
