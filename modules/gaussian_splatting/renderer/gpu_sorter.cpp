@@ -321,7 +321,14 @@ static ComputeCapabilityProbe _probe_compute_capabilities(RenderingDevice *rd) {
     return probe;
 }
 
+static bool _subgroup_prefix_forced_off() {
+    return g_gpu_sorting_config.subgroup_prefix_mode == GPUSortingConfig::SUBGROUP_PREFIX_FORCE_OFF;
+}
+
 static bool _supports_required_subgroups(const ComputeCapabilityProbe &probe) {
+    if (_subgroup_prefix_forced_off()) {
+        return false;
+    }
     bool has_basic = (probe.subgroup_ops & RenderingDevice::SUBGROUP_BASIC_BIT) != 0;
     bool has_ballot = (probe.subgroup_ops & RenderingDevice::SUBGROUP_BALLOT_BIT) != 0;
     bool has_compute_stage = (probe.subgroup_stages & RenderingDevice::SHADER_STAGE_COMPUTE_BIT) != 0;
@@ -1971,7 +1978,10 @@ Error RadixSort::initialize(RenderingDevice *p_rd, uint32_t p_max_elements) {
     bool has_basic = (subgroup_ops & RenderingDevice::SUBGROUP_BASIC_BIT) != 0;
     bool has_ballot = (subgroup_ops & RenderingDevice::SUBGROUP_BALLOT_BIT) != 0;
     bool has_compute = (subgroup_stages & RenderingDevice::SHADER_STAGE_COMPUTE_BIT) != 0;
-    subgroups_available = has_basic && has_ballot && has_compute;
+    subgroups_available = !_subgroup_prefix_forced_off() && has_basic && has_ballot && has_compute;
+    if (!subgroups_available && _subgroup_prefix_forced_off()) {
+        GS_LOG_WARN_DEFAULT("[GPU Sort] Subgroup prefix kernels forced OFF by project setting.");
+    }
 
     key_config.key_bits = (key_config.key_bits == 64) ? 64 : 32;
     if (key_config.tile_bits > key_config.key_bits) {

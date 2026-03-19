@@ -54,32 +54,38 @@ This document outlines the comprehensive test coverage provided by the Baseline 
 
 ### 3. GPU Sorting Tests (`test_gpu_sorting_ci.gd`)
 
-**Scope:** GPU sorting functionality and performance validation
+**Scope:** GPU sorting CI smoke gates and metric sanity checks
 
 **Test Cases:**
 - **Renderer Initialization**: Tests GPU context and RenderingDevice availability
-- **Sorting Method Configuration**: Tests bitonic sorting method setup
-- **Multi-Scale Dataset Testing**: Tests small (1K), medium (10K), and large (100K) datasets
-- **Performance Validation**: Tests sorting performance against target thresholds
+- **Sorting Method Configuration Contract**: Confirms runtime method selection is handled in native code and CI path remains radix-first
+- **Multi-Scale Dataset Lanes**: Covers small (1K), medium (10K), and large (100K) labels in the CI report format
+- **Performance Validation**: Validates collected metrics when available and enforces strict/warn-only policy behavior
 
 **Coverage Areas:**
 - `GaussianSplatRenderer` initialization
 - GPU context handling in headless environments
-- Bitonic sorting algorithm performance
+- Radix sorter class surface (`RadixSort.new()`) availability
 - Test data generation and validation
 - Performance metrics collection
-- Graceful degradation for headless CI
+- Throughput scaling sanity checks (`medium/small` ratio)
+- Graceful degradation for GPU-unavailable CI lanes
 
 **Performance Targets:**
-- Small datasets (1K): < 5ms (CI-adjusted)
-- Medium datasets (10K): < 10ms (CI-adjusted)
-- Large datasets (100K): < 20ms (CI-adjusted)
+- Small datasets (1K): <= 5ms expected, <= 10ms tolerated in strict checks
+- Medium datasets (10K): <= 15ms expected
+- Large datasets (100K): <= 50ms expected
 - Throughput measurement in M splats/second
+
+**Complexity/Scaling Assumptions:**
+- Theoretical complexity labels (`O(n log^2 n)` vs `O(n)`) are algorithm-class indicators, not direct throughput predictors.
+- `get_theoretical_complexity()` is a unitless relative scale used for policy/debugging only; real behavior is validated with measured sort time and throughput metrics.
+- CI scaling guard checks for pathological regressions (for example, medium throughput collapsing relative to small throughput).
 
 **Success Criteria:**
 - Renderer initializes properly (or gracefully handles headless mode)
-- Sorting completes for all dataset sizes
-- Performance within acceptable ranges for CI environment
+- Radix sorter entry point is constructible when GPU context exists
+- Performance metrics are within acceptable CI ranges when the benchmark path is active
 - Proper error handling for GPU unavailability
 
 ### 4. Module Test Suite (`run_module_tests.py`)
@@ -118,6 +124,11 @@ This document outlines the comprehensive test coverage provided by the Baseline 
 - Runs on Ubuntu with virtual display
 - Includes both fast (pre-built binary) and thorough (compiled module) variants
 - Generates GitHub Actions summary and PR comments
+
+**Production Evidence Route (`collect_production_evidence.ps1`):**
+- Executes `scripts/tools/run_painterly_regression.gd` and validates `PAINTERLY_TEST_PASSED` marker.
+- Executes `tests/examples/godot/test_toggle_painterly.gd` to verify painterly toggle behavior.
+- Captures GPU sort fallback evidence markers for radix-first runtime paths.
 
 ### Error Reporting
 

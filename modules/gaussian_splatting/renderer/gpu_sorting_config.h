@@ -7,6 +7,11 @@
 
 // GPU Sorting Configuration for radix-only pipeline
 struct GPUSortingConfig {
+    enum SubgroupPrefixMode : uint8_t {
+        SUBGROUP_PREFIX_AUTO = 0,
+        SUBGROUP_PREFIX_FORCE_OFF = 1,
+    };
+
     // Performance targets
     float target_sort_time_ms = 2.0f;        // Target sorting time per frame
     // Maximum supported elements for instance/depth sort buffers.
@@ -51,6 +56,10 @@ struct GPUSortingConfig {
     bool enable_prefix_readback = false;     // Enable sync readback of overlap count (debug/validation only; causes GPU stall)
     bool profiling_preserve_gpu_timestamps = false; // Skip synchronous prefix readback to keep timestamp buffers intact (profiling-only; estimates overlap count)
     bool enable_compute_raster = true;       // Compute rasterizer with multi-pass batched shared memory loading
+    bool strict_global_sort = true;          // Enforce exact global depth-sort semantics (disables unsafe fallback shortcuts)
+    bool validate_sorted_output = false;     // Debug validation of sorted key monotonicity after GPU sort
+    bool enable_stage_timestamps = true;     // Capture per-stage GPU timestamps in tile renderer
+    uint8_t subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO; // Runtime subgroup policy for radix prefix kernels
 
     // Project settings integration
     void load_from_project_settings();
@@ -127,6 +136,10 @@ struct GPUSortingConfig {
     static const String ENABLE_PREFIX_READBACK_PATH;
     static const String PROFILING_PRESERVE_TIMESTAMPS_PATH;
     static const String ENABLE_COMPUTE_RASTER_PATH;
+    static const String STRICT_GLOBAL_SORT_PATH;
+    static const String VALIDATE_SORTED_OUTPUT_PATH;
+    static const String ENABLE_STAGE_TIMESTAMPS_PATH;
+    static const String SUBGROUP_PREFIX_MODE_PATH;
     static const String GPU_PRESET_PATH;
 };
 
