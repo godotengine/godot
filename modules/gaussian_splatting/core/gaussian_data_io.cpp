@@ -267,7 +267,7 @@ Error GaussianData::populate_from_asset(const Ref<GaussianSplatAsset> &p_asset) 
 Error GaussianData::save_to_file(const String &p_path) const {
     SaveToFileSnapshot snapshot;
     {
-        MutexLock lock(sh_mutex);
+        RWLockRead lock(data_rwlock);
         copy_local_vector(snapshot.gaussians, gaussians);
         snapshot.is_2d_mode = is_2d_mode;
     }
