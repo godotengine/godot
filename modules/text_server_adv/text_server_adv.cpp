@@ -1413,7 +1413,7 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 #endif
 			} else {
 #if HB_VERSION_ATLEAST(13, 0, 0)
-				if (hb_rdr && hb_mono && p_font_data->antialiasing == FONT_ANTIALIASING_GRAY && !from_bitmap) {
+				if (p_font_data->hb_rdr && p_font_data->hb_mono && p_font_data->antialiasing == FONT_ANTIALIASING_GRAY && !from_bitmap) {
 					bool is_rasterized = false;
 					float xshift = 0.0;
 					if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
@@ -1422,54 +1422,61 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						xshift = float((int)((p_glyph >> 27) & 3) << 5);
 					}
 					xshift += (p_font_data->embolden * double(p_size.x) / 64.0);
-					fix_edge = false;
 					if (fd->color_paint) {
-						hb_raster_paint_reset(hb_rdr);
+						hb_raster_paint_reset(p_font_data->hb_rdr);
 						if (p_font_data->transform != Transform2D()) {
-							hb_raster_paint_set_transform(hb_rdr, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
 						} else {
-							hb_raster_paint_set_transform(hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
 						}
-						hb_raster_paint_set_scale_factor(hb_rdr, 64.0, 64.0);
-						hb_raster_paint_clear_custom_palette_colors(hb_rdr);
+						hb_raster_paint_set_scale_factor(p_font_data->hb_rdr, 64.0, 64.0);
+						hb_raster_paint_clear_custom_palette_colors(p_font_data->hb_rdr);
 						if (!p_font_data->palette_custom_colors_hb.is_empty()) {
 							for (int col = 0; col < p_font_data->palette_custom_colors_hb.size(); col++) {
 								if (p_font_data->palette_custom_colors_hb[col] != 0) {
-									hb_raster_paint_set_custom_palette_color(hb_rdr, col, p_font_data->palette_custom_colors_hb[col]);
+									hb_raster_paint_set_custom_palette_color(p_font_data->hb_rdr, col, p_font_data->palette_custom_colors_hb[col]);
 								}
 							}
 						}
-						bool ok = hb_raster_paint_glyph(hb_rdr, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0, p_font_data->palette_index, (hb_color_t)0xFFFFFFFF);
+						bool ok = hb_raster_paint_glyph(p_font_data->hb_rdr, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0, p_font_data->palette_index, (hb_color_t)0xFFFFFFFF);
 						if (ok) {
 							is_rasterized = true;
-							hb_raster_image_t *img = hb_raster_paint_render(hb_rdr);
+							fix_edge = false;
+							hb_raster_image_t *img = hb_raster_paint_render(p_font_data->hb_rdr);
 							hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
 							if (img) {
 								hb_raster_image_get_extents(img, &ext);
 								gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, true);
-								hb_raster_paint_recycle_image(hb_rdr, img);
+								hb_raster_paint_recycle_image(p_font_data->hb_rdr, img);
 							} else {
 								gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, true);
 							}
 						}
 					}
-					if (!is_rasterized) {
-						hb_raster_draw_reset(hb_mono);
+					if (!is_rasterized && !fix_edge) {
+						hb_raster_draw_reset(p_font_data->hb_mono);
 						if (p_font_data->transform != Transform2D()) {
-							hb_raster_draw_set_transform(hb_mono, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
+							hb_raster_draw_set_transform(p_font_data->hb_mono, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
 						} else {
-							hb_raster_draw_set_transform(hb_mono, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+							hb_raster_draw_set_transform(p_font_data->hb_mono, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
 						}
-						hb_raster_draw_set_scale_factor(hb_mono, 64.0, 64.0);
-						hb_raster_draw_glyph(hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0);
-						hb_raster_image_t *img = hb_raster_draw_render(hb_mono);
+						hb_raster_draw_set_scale_factor(p_font_data->hb_mono, 64.0, 64.0);
+						hb_raster_draw_glyph(p_font_data->hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0);
+						hb_raster_image_t *img = hb_raster_draw_render(p_font_data->hb_mono);
 						hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
 						if (img) {
+							is_rasterized = true;
 							hb_raster_image_get_extents(img, &ext);
 							gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, false);
-							hb_raster_draw_recycle_image(hb_mono, img);
+							hb_raster_draw_recycle_image(p_font_data->hb_mono, img);
 						} else {
 							gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, false);
+						}
+					}
+					if (!is_rasterized) {
+						error = FT_Render_Glyph(slot, aa_mode);
+						if (!error) {
+							gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
 						}
 					}
 				} else {
@@ -1656,6 +1663,13 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 			const static hb_language_t english = hb_language_from_string("en", -1);
 #if HB_VERSION_ATLEAST(13, 0, 0)
 			hb_face_t *hb_face = fd->hb_face;
+
+			if (!p_font_data->hb_rdr) {
+				p_font_data->hb_rdr = hb_raster_paint_create_or_fail();
+			}
+			if (!p_font_data->hb_mono) {
+				p_font_data->hb_mono = hb_raster_draw_create_or_fail();
+			}
 
 			p_font_data->palette_names.clear();
 			p_font_data->palette_colors.clear();
@@ -8377,10 +8391,6 @@ void TextServerAdvanced::_update_settings() {
 
 TextServerAdvanced::TextServerAdvanced() {
 	os_locale = OS::get_singleton()->get_locale();
-#if HB_VERSION_ATLEAST(13, 0, 0)
-	hb_rdr = hb_raster_paint_create_or_fail();
-	hb_mono = hb_raster_draw_create_or_fail();
-#endif
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
 	_update_settings();
@@ -8405,14 +8415,6 @@ void TextServerAdvanced::_cleanup() {
 
 TextServerAdvanced::~TextServerAdvanced() {
 	_bmp_free_font_funcs();
-#if HB_VERSION_ATLEAST(13, 0, 0)
-	if (hb_rdr != nullptr) {
-		hb_raster_paint_destroy(hb_rdr);
-	}
-	if (hb_mono != nullptr) {
-		hb_raster_draw_destroy(hb_mono);
-	}
-#endif
 #ifdef MODULE_FREETYPE_ENABLED
 	if (ft_library != nullptr) {
 		FT_Done_FreeType(ft_library);
