@@ -1,6 +1,7 @@
 #include "tile_rasterizer.h"
 #include "../renderer/tile_renderer.h"
 #include "../renderer/gpu_sorting_config.h"
+#include "../renderer/pipeline_feature_set.h"
 #include "../logger/gs_logger.h"
 #include "core/config/project_settings.h"
 
@@ -18,6 +19,37 @@ static bool _is_raster_ready_log_enabled() {
 	}
 	cached = enabled ? 1 : 0;
 	return enabled;
+}
+
+static uint64_t _compute_raster_shared_memory_requirement_bytes() {
+	const uint64_t splats_per_tile = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE);
+	const uint64_t projected_gaussian_words = g_pipeline_feature_set.enable_packed_stage_data ? 8u : 9u;
+	const uint64_t projected_gaussian_bytes = uint64_t(projected_gaussian_words * sizeof(uint32_t));
+	const uint64_t per_splat_bytes = uint64_t(sizeof(uint32_t)) + projected_gaussian_bytes;
+	const uint64_t scalar_shared_bytes = uint64_t(5u * sizeof(uint32_t));
+	return splats_per_tile * per_splat_bytes + scalar_shared_bytes;
+}
+
+static void _enforce_compute_raster_shared_memory_contract(RenderingDevice *p_device,
+		GaussianSplatting::ComputeRasterPolicy &r_policy) {
+	if (!p_device || r_policy == GaussianSplatting::ComputeRasterPolicy::ForceOff) {
+		return;
+	}
+
+	const uint64_t device_limit = p_device->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE);
+	if (device_limit == 0) {
+		return;
+	}
+
+	const uint64_t required_bytes = _compute_raster_shared_memory_requirement_bytes();
+	if (required_bytes <= device_limit) {
+		return;
+	}
+
+	WARN_PRINT_ONCE(vformat("[TileRasterizer] Compute raster disabled: shared memory requirement (%s bytes) exceeds "
+					"device limit (%s bytes). Falling back to fragment raster path.",
+			String::num_uint64(required_bytes), String::num_uint64(device_limit)));
+	r_policy = GaussianSplatting::ComputeRasterPolicy::ForceOff;
 }
 
 enum class OutputOwnershipContractResult {
@@ -115,6 +147,10 @@ TileRasterizer::TileRasterizer() {
 
 TileRasterizer::~TileRasterizer() {
     shutdown();
+}
+
+uint64_t TileRasterizer::get_compute_raster_shared_memory_requirement_bytes() {
+    return _compute_raster_shared_memory_requirement_bytes();
 }
 
 void TileRasterizer::set_tile_renderer(Ref<TileRenderer> p_renderer) {
@@ -314,6 +350,7 @@ RasterResult TileRasterizer::render(const RasterParams &p_params) {
 
     // Use device from params if provided, otherwise use the one from initialization
     RenderingDevice *render_device = p_params.device ? p_params.device : rd;
+    _enforce_compute_raster_shared_memory_contract(render_device, render_params.compute_raster_policy);
 
     // Perform render
     RID output = tile_renderer->render(render_device, render_params);
@@ -382,8 +419,12 @@ RasterResult TileRasterizer::render_direct(RenderingDevice *p_device, const Tile
     tile_renderer->set_frame_serial(p_params.frame_serial);
     tile_renderer->set_gpu_timestamp_capture_enabled(g_gpu_sorting_config.enable_stage_timestamps);
 
+    TileRenderer::RenderParams render_params = p_params;
+    RenderingDevice *render_device = p_device ? p_device : rd;
+    _enforce_compute_raster_shared_memory_contract(render_device, render_params.compute_raster_policy);
+
     // Perform render directly with TileRenderer::RenderParams
-    RID output = tile_renderer->render(p_device, p_params);
+    RID output = tile_renderer->render(render_device, render_params);
 
     if (output.is_valid()) {
         result.output_texture = output;
@@ -391,10 +432,10 @@ RasterResult TileRasterizer::render_direct(RenderingDevice *p_device, const Tile
         result.output_owner = tile_renderer->get_output_texture_owner();
         result.depth_owner = tile_renderer->get_depth_texture_owner();
         if (!result.output_owner) {
-            result.output_owner = p_device ? p_device : rd;
+            result.output_owner = render_device;
         }
         if (!result.depth_owner) {
-            result.depth_owner = p_device ? p_device : rd;
+            result.depth_owner = render_device;
         }
         result.has_depth = tile_renderer->has_depth_output() && result.depth_texture.is_valid();
         result.depth_copy_compatible = result.has_depth && tile_renderer->is_depth_copy_compatible();

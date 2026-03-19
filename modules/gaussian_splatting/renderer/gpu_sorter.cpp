@@ -325,14 +325,23 @@ static bool _subgroup_prefix_forced_off() {
     return g_gpu_sorting_config.subgroup_prefix_mode == GPUSortingConfig::SUBGROUP_PREFIX_FORCE_OFF;
 }
 
-static bool _supports_required_subgroups(const ComputeCapabilityProbe &probe) {
-    if (_subgroup_prefix_forced_off()) {
-        return false;
-    }
+// Check hardware subgroup support without any policy override.
+// Used by algorithms (e.g. OneSweep) that need subgroup ops but are not
+// affected by the radix-prefix force-off setting.
+static bool _has_subgroup_hardware_support(const ComputeCapabilityProbe &probe) {
     bool has_basic = (probe.subgroup_ops & RenderingDevice::SUBGROUP_BASIC_BIT) != 0;
     bool has_ballot = (probe.subgroup_ops & RenderingDevice::SUBGROUP_BALLOT_BIT) != 0;
     bool has_compute_stage = (probe.subgroup_stages & RenderingDevice::SHADER_STAGE_COMPUTE_BIT) != 0;
     return has_basic && has_ballot && has_compute_stage;
+}
+
+// Check subgroup support for radix prefix kernels — also respects the
+// subgroup_prefix_mode=force_off project setting.
+static bool _supports_required_subgroups(const ComputeCapabilityProbe &probe) {
+    if (_subgroup_prefix_forced_off()) {
+        return false;
+    }
+    return _has_subgroup_hardware_support(probe);
 }
 
 static bool _supports_compute_profile(const ComputeCapabilityProbe &probe, uint32_t required_workgroup_size,
@@ -3284,7 +3293,9 @@ bool OneSweepSort::is_supported(RenderingDevice *p_rd) {
     if (!_supports_compute_profile(probe, WORKGROUP_SIZE, MIN_STORAGE_BUFFERS_PER_SET, WORKGROUP_SIZE * sizeof(uint32_t))) {
         return false;
     }
-    return _supports_required_subgroups(probe);
+    // OneSweep needs subgroup ops but is not a radix prefix kernel, so the
+    // subgroup_prefix_mode=force_off setting must not block it.
+    return _has_subgroup_hardware_support(probe);
 }
 
 SorterCapabilities OneSweepSort::get_capabilities() {
