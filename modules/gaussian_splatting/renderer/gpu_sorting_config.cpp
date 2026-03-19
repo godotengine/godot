@@ -55,6 +55,9 @@ GPUSortingConfig g_gpu_sorting_config;
 
 void GPUSortingConfig::load_from_project_settings() {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     // Check if a preset is specified first
     String preset_name = ps->get_setting(GPU_PRESET_PATH, "");
@@ -113,6 +116,9 @@ void GPUSortingConfig::load_from_project_settings() {
 
 void GPUSortingConfig::save_to_project_settings() const {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     ps->set_setting(TARGET_TIME_PATH, target_sort_time_ms);
     ps->set_setting(MAX_ELEMENTS_PATH, max_sort_elements);

@@ -42,9 +42,9 @@ RenderingDevice* GaussianData::cached_rd = nullptr;
 namespace {
 template <typename T, typename Container>
 void copy_local_vector(LocalVector<T> &r_target, const Container &p_source) {
-    int count = (int)p_source.size();
+    uint32_t count = p_source.size();
     r_target.resize(count);
-    for (int i = 0; i < count; i++) {
+    for (uint32_t i = 0; i < count; i++) {
         r_target[i] = p_source[i];
     }
 }
@@ -381,8 +381,8 @@ bool GaussianData::capture_chunk_snapshot(uint32_t p_start, uint32_t p_count,
     RWLockRead lock(data_rwlock);
 
 #ifdef DEBUG_ENABLED
-    const int gaussians_size_before_copy = gaussians.size();
-    const int sh_coeff_size_before_copy = sh_high_order_coefficients.size();
+    const uint32_t gaussians_size_before_copy = gaussians.size();
+    const uint32_t sh_coeff_size_before_copy = sh_high_order_coefficients.size();
 #endif
 
     r_gaussians.clear();
@@ -451,8 +451,8 @@ bool GaussianData::capture_indexed_chunk_snapshot(const uint32_t *p_indices, uin
     RWLockRead lock(data_rwlock);
 
 #ifdef DEBUG_ENABLED
-    const int gaussians_size_before_copy = gaussians.size();
-    const int sh_coeff_size_before_copy = sh_high_order_coefficients.size();
+    const uint32_t gaussians_size_before_copy = gaussians.size();
+    const uint32_t sh_coeff_size_before_copy = sh_high_order_coefficients.size();
 #endif
 
     r_gaussians.clear();
@@ -527,32 +527,32 @@ bool GaussianData::capture_indexed_chunk_snapshot(const uint32_t *p_indices, uin
 
 void GaussianData::set_positions(const PackedVector3Array &p_positions) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_positions.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_positions.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].position = p_positions[i];
     }
 }
 
 void GaussianData::set_scales(const PackedVector3Array &p_scales) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_scales.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_scales.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].scale = p_scales[i];
     }
 }
 
 void GaussianData::set_rotations(const TypedArray<Quaternion> &p_rotations) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_rotations.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_rotations.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].rotation = p_rotations[i];
     }
 }
 
 void GaussianData::set_opacities(const PackedFloat32Array &p_opacities) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_opacities.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_opacities.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].opacity = p_opacities[i];
     }
 }
@@ -560,14 +560,14 @@ void GaussianData::set_opacities(const PackedFloat32Array &p_opacities) {
 void GaussianData::set_spherical_harmonics(const PackedFloat32Array &p_sh_data) {
     RWLockWrite lock(data_rwlock);
 
-    int gaussian_count = gaussians.size();
+    uint32_t gaussian_count = gaussians.size();
     ERR_FAIL_COND_MSG(gaussian_count == 0, "No gaussians available for SH assignment");
 
     int total_components = p_sh_data.size();
-    ERR_FAIL_COND_MSG(total_components % gaussian_count != 0,
+    ERR_FAIL_COND_MSG(total_components % (int)gaussian_count != 0,
             "Spherical harmonics array size does not match gaussian count");
 
-    int floats_per_gaussian = total_components / gaussian_count;
+    int floats_per_gaussian = total_components / (int)gaussian_count;
     ERR_FAIL_COND_MSG(floats_per_gaussian < 3,
             "Spherical harmonics data must contain at least DC coefficients");
     ERR_FAIL_COND_MSG(floats_per_gaussian % 3 != 0,
@@ -580,15 +580,15 @@ void GaussianData::set_spherical_harmonics(const PackedFloat32Array &p_sh_data) 
     sh_high_order_coefficients.clear();
 
     const float *data_ptr = p_sh_data.ptr();
-    for (int i = 0; i < gaussian_count; i++) {
+    for (uint32_t i = 0; i < gaussian_count; i++) {
         _set_spherical_harmonics_locked(i, data_ptr + i * floats_per_gaussian, floats_per_gaussian);
     }
 }
 
 void GaussianData::set_palette_ids(const PackedInt32Array &p_palette_ids) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_palette_ids.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_palette_ids.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         int32_t value = p_palette_ids[i];
         value = CLAMP(value, 0, 65535);
         Gaussian &g = gaussians[i];
@@ -598,8 +598,8 @@ void GaussianData::set_palette_ids(const PackedInt32Array &p_palette_ids) {
 
 void GaussianData::set_painterly_flags(const PackedInt32Array &p_flags) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_flags.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_flags.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         int32_t value = p_flags[i];
         value = CLAMP(value, 0, 65535);
         Gaussian &g = gaussians[i];
@@ -613,7 +613,7 @@ PackedInt32Array GaussianData::get_brush_override_ids() const {
     PackedInt32Array result;
     result.resize(gaussians.size());
     int32_t *write = result.ptrw();
-    for (int i = 0; i < gaussians.size(); i++) {
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         write[i] = gaussian_get_brush_override_id(gaussians[i].painterly_meta);
     }
     return result;
@@ -795,16 +795,16 @@ void GaussianData::set_spherical_harmonics(int p_index, const float *p_coeffs, i
 
 void GaussianData::set_brush_axes(const PackedVector2Array &p_brush_axes) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_brush_axes.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_brush_axes.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].brush_axes = p_brush_axes[i];
     }
 }
 
 void GaussianData::set_stroke_ages(const PackedFloat32Array &p_stroke_ages) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_stroke_ages.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_stroke_ages.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].stroke_age = p_stroke_ages[i];
     }
 }
@@ -816,8 +816,8 @@ void GaussianData::set_2d_mode(bool p_enabled) {
 
 void GaussianData::set_normals(const PackedVector3Array &p_normals) {
     RWLockWrite lock(data_rwlock);
-    ERR_FAIL_COND((int)p_normals.size() != (int)gaussians.size());
-    for (int i = 0; i < (int)gaussians.size(); i++) {
+    ERR_FAIL_COND(p_normals.size() != (int)gaussians.size());
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].normal = p_normals[i];
     }
 }
@@ -835,7 +835,7 @@ AABB GaussianData::get_aabb() const {
     Vector3 min_pos = first_pos - first_extent;
     Vector3 max_pos = first_pos + first_extent;
 
-    for (int i = 1; i < (int)gaussians.size(); i++) {
+    for (uint32_t i = 1; i < gaussians.size(); i++) {
         const Vector3 &pos = gaussians[i].position;
         const Vector3 &scale = gaussians[i].scale;
 

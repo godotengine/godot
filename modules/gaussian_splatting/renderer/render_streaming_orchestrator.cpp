@@ -1342,8 +1342,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	streaming_state.current_streaming_system->update_streaming(streaming_camera_transform, cull_projection);
 
 	uint64_t instance_generation = 0;
-	if (GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton()) {
-		instance_generation = director->get_instance_generation_for_renderer(renderer);
+	if (GaussianSplatSceneDirector *generation_director = GaussianSplatSceneDirector::get_singleton()) {
+		instance_generation = generation_director->get_instance_generation_for_renderer(renderer);
 	}
 	uint64_t atlas_generation = 0;
 	if (streaming_state.current_streaming_system.is_valid()) {

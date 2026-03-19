@@ -89,56 +89,6 @@ jobs:
         run: |
           python tests/ci/run_module_tests.py --guard-only
 
-  windows-build:
-    name: Windows Editor Build (Self-Hosted)
-    runs-on: [self-hosted, Windows, X64, godotgs]
-    needs: guards
-    timeout-minutes: 90
-    defaults:
-      run:
-        working-directory: repo
-    steps:
-      - name: Configure Git safe.directory for self-hosted workspace
-        shell: pwsh
-        working-directory: ${{ github.workspace }}
-        run: |
-          git config --global --add safe.directory '*'
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: repo
-          fetch-depth: 0
-          submodules: recursive
-          set-safe-directory: false
-
-      - name: Verify Python on runner
-        shell: pwsh
-        run: |
-          python --version
-
-      - name: Set up MSVC build env
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install SCons
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install scons
-
-      - name: Build Godot editor with tests
-        shell: pwsh
-        run: |
-          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
-
-      - name: Upload built editor artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-editor-bin
-          path: repo/bin
-          if-no-files-found: error
-          retention-days: 1
-
   gpu-evidence-requirement:
     name: GPU Evidence Requirement
     runs-on: ubuntu-latest
@@ -200,10 +150,11 @@ jobs:
 
   module-validation:
     name: Module Build + Runtime Harness (Windows Self-Hosted)
-    runs-on: [self-hosted, Windows, X64, godotgs]
+    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
     needs:
-      - windows-build
-    timeout-minutes: 90
+      - guards
+      - gpu-evidence-requirement
+    timeout-minutes: 120
     defaults:
       run:
         working-directory: repo
@@ -227,11 +178,19 @@ jobs:
         run: |
           python --version
 
-      - name: Download built editor artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-editor-bin
-          path: repo
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build Godot editor with tests
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no cache_path=C:/godotgs-scons-cache cache_limit=50 -j12
 
       - name: Resolve Godot binary
         id: godot_bin
@@ -240,12 +199,8 @@ jobs:
           $candidates = @(
             "bin\\godot.windows.editor.dev.x86_64.console.exe",
             "bin\\godot.windows.editor.dev.x86_64.exe",
-            "godot.windows.editor.dev.x86_64.console.exe",
-            "godot.windows.editor.dev.x86_64.exe",
             "bin\\godot.windows.editor.x86_64.console.exe",
-            "bin\\godot.windows.editor.x86_64.exe",
-            "godot.windows.editor.x86_64.console.exe",
-            "godot.windows.editor.x86_64.exe"
+            "bin\\godot.windows.editor.x86_64.exe"
           )
           $resolved = $null
           foreach ($candidate in $candidates) {
@@ -255,13 +210,7 @@ jobs:
             }
           }
           if (-not $resolved) {
-            $fallback = Get-ChildItem -Path . -Recurse -File -Filter "godot.windows.editor*.exe" | Select-Object -First 1
-            if ($fallback) {
-              $resolved = $fallback.FullName
-            }
-          }
-          if (-not $resolved) {
-            throw "Could not find built Godot binary in downloaded artifact."
+            throw "Could not find built Godot binary in expected bin\ paths."
           }
           Write-Host "Resolved Godot binary: $resolved"
           "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
@@ -509,78 +458,9 @@ jobs:
             repo/tests/runtime/eviction_churn_benchmark_report.json
             repo/tests/runtime/eviction_churn_benchmark_metrics.json
 
-  windows-gpu-evidence:
-    name: Windows GPU Production Evidence (Self-Hosted)
-    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
-    needs:
-      - windows-build
-      - gpu-evidence-requirement
-    timeout-minutes: 120
-    if: ${{ needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
-    defaults:
-      run:
-        working-directory: repo
-    steps:
-      - name: Configure Git safe.directory for self-hosted workspace
-        shell: pwsh
-        working-directory: ${{ github.workspace }}
-        run: |
-          git config --global --add safe.directory '*'
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: repo
-          fetch-depth: 0
-          submodules: recursive
-          set-safe-directory: false
-
-      - name: Verify Python on runner
-        shell: pwsh
-        run: |
-          python --version
-
-      - name: Download built editor artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-editor-bin
-          path: repo
-
-      - name: Resolve Godot binary
-        id: godot_bin
-        shell: pwsh
-        run: |
-          $candidates = @(
-            "bin\\godot.windows.editor.dev.x86_64.console.exe",
-            "bin\\godot.windows.editor.dev.x86_64.exe",
-            "godot.windows.editor.dev.x86_64.console.exe",
-            "godot.windows.editor.dev.x86_64.exe",
-            "bin\\godot.windows.editor.x86_64.console.exe",
-            "bin\\godot.windows.editor.x86_64.exe",
-            "godot.windows.editor.x86_64.console.exe",
-            "godot.windows.editor.x86_64.exe"
-          )
-          $resolved = $null
-          foreach ($candidate in $candidates) {
-            if (Test-Path -LiteralPath $candidate) {
-              $resolved = (Resolve-Path -LiteralPath $candidate).Path
-              break
-            }
-          }
-          if (-not $resolved) {
-            $fallback = Get-ChildItem -Path . -Recurse -File -Filter "godot.windows.editor*.exe" | Select-Object -First 1
-            if ($fallback) {
-              $resolved = $fallback.FullName
-            }
-          }
-          if (-not $resolved) {
-            throw "Could not find built Godot binary in downloaded artifact."
-          }
-          Write-Host "Resolved Godot binary: $resolved"
-          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
       - name: Collect production evidence
         id: evidence
+        if: ${{ always() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
         shell: pwsh
         env:
           RUNTIME_LOOPS: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_loops || '3' }}
@@ -599,14 +479,14 @@ jobs:
           "dir=$($latest.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Upload evidence artifact
-        if: always()
+        if: ${{ always() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' && steps.evidence.outputs.dir != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-gpu-production-evidence
           path: ${{ steps.evidence.outputs.dir }}
 
       - name: Enforce readiness booleans
-        if: ${{ inputs.enforce_gpu_readiness == true || inputs.enforce_gpu_readiness == 'true' }}
+        if: ${{ (inputs.enforce_gpu_readiness == true || inputs.enforce_gpu_readiness == 'true') && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' && steps.evidence.outcome == 'success' && steps.evidence.outputs.dir != '' }}
         shell: pwsh
         run: |
           $summaryPath = Join-Path "${{ steps.evidence.outputs.dir }}" "summary.json"

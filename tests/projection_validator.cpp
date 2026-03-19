@@ -235,7 +235,7 @@ Error ProjectionValidator::project_gpu(const Vector<ProjectionInput> &p_inputs, 
         input_data.write[i] = packed;
     }
 
-    RID input_buffer = rd->storage_buffer_create(input_data.size() * sizeof(GPUInput), input_data.span().reinterpret<uint8_t>());
+    RID input_buffer = rd->storage_buffer_create(input_data.size() * sizeof(GPUInput), Span<uint8_t>((uint8_t *)input_data.ptr(), input_data.size() * sizeof(GPUInput)));
     ERR_FAIL_COND_V(!input_buffer.is_valid(), ERR_CANT_CREATE);
 
     RID output_buffer = rd->storage_buffer_create(p_inputs.size() * sizeof(GPUOutput));
@@ -341,8 +341,6 @@ double ProjectionValidator::compute_scale_invariance_error(const ProjectionInput
 
 double ProjectionValidator::compute_rotation_equivariance_error(const ProjectionInput &p_input, const Basis &p_rotation) const {
     Basis additional_rotation = p_rotation;
-    Quaternion additional_quaternion = additional_rotation.get_quaternion();
-
     Basis gaussian_basis;
     gaussian_basis.set_quaternion(p_input.rotation);
 
@@ -406,7 +404,6 @@ Error ProjectionValidator::generate_visualization(const String &p_path, const Ve
     }
 
     Ref<Image> image = Image::create_empty(width, height, false, Image::FORMAT_RGBA8);
-    ERR_FAIL_COND_V(image.is_null(), ERR_CANT_CREATE);
 
     double denom = max_error > 0.0f ? max_error : 1.0f;
     for (int y = 0; y < height; ++y) {

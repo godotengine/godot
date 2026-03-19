@@ -6,10 +6,10 @@
 
 namespace {
 
-const StringName DEBUG_SHOW_TILE_GRID_PATH("rendering/gaussian_splatting/debug/show_tile_grid");
-const StringName DEBUG_SHOW_DENSITY_HEATMAP_PATH("rendering/gaussian_splatting/debug/show_density_heatmap");
-const StringName DEBUG_SHOW_PERFORMANCE_HUD_PATH("rendering/gaussian_splatting/debug/show_performance_hud");
-const StringName DEBUG_SHOW_RESIDENCY_HUD_PATH("rendering/gaussian_splatting/debug/show_residency_hud");
+constexpr const char *DEBUG_SHOW_TILE_GRID_PATH = "rendering/gaussian_splatting/debug/show_tile_grid";
+constexpr const char *DEBUG_SHOW_DENSITY_HEATMAP_PATH = "rendering/gaussian_splatting/debug/show_density_heatmap";
+constexpr const char *DEBUG_SHOW_PERFORMANCE_HUD_PATH = "rendering/gaussian_splatting/debug/show_performance_hud";
+constexpr const char *DEBUG_SHOW_RESIDENCY_HUD_PATH = "rendering/gaussian_splatting/debug/show_residency_hud";
 
 } // namespace
 
@@ -47,56 +47,56 @@ GaussianSplatSettingsManager::DebugOverlaySettings GaussianSplatSettingsManager:
         return settings;
     }
 
-    settings.show_tile_grid = _get_bool_setting(ps, DEBUG_SHOW_TILE_GRID_PATH, settings.show_tile_grid);
-    settings.show_density_heatmap = _get_bool_setting(ps, DEBUG_SHOW_DENSITY_HEATMAP_PATH, settings.show_density_heatmap);
-    settings.show_performance_hud = _get_bool_setting(ps, DEBUG_SHOW_PERFORMANCE_HUD_PATH, settings.show_performance_hud);
-    settings.show_residency_hud = _get_bool_setting(ps, DEBUG_SHOW_RESIDENCY_HUD_PATH, settings.show_residency_hud);
+    settings.show_tile_grid = _get_bool_setting(ps, StringName(DEBUG_SHOW_TILE_GRID_PATH), settings.show_tile_grid);
+    settings.show_density_heatmap = _get_bool_setting(ps, StringName(DEBUG_SHOW_DENSITY_HEATMAP_PATH), settings.show_density_heatmap);
+    settings.show_performance_hud = _get_bool_setting(ps, StringName(DEBUG_SHOW_PERFORMANCE_HUD_PATH), settings.show_performance_hud);
+    settings.show_residency_hud = _get_bool_setting(ps, StringName(DEBUG_SHOW_RESIDENCY_HUD_PATH), settings.show_residency_hud);
 
     return settings;
 }
 
 bool GaussianSplatSettingsManager::get_debug_show_tile_grid() {
     if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        return _get_bool_setting(ps, DEBUG_SHOW_TILE_GRID_PATH, false);
+        return _get_bool_setting(ps, StringName(DEBUG_SHOW_TILE_GRID_PATH), false);
     }
     return false;
 }
 
 bool GaussianSplatSettingsManager::get_debug_show_density_heatmap() {
     if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        return _get_bool_setting(ps, DEBUG_SHOW_DENSITY_HEATMAP_PATH, false);
+        return _get_bool_setting(ps, StringName(DEBUG_SHOW_DENSITY_HEATMAP_PATH), false);
     }
     return false;
 }
 
 bool GaussianSplatSettingsManager::get_debug_show_performance_hud() {
     if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        return _get_bool_setting(ps, DEBUG_SHOW_PERFORMANCE_HUD_PATH, false);
+        return _get_bool_setting(ps, StringName(DEBUG_SHOW_PERFORMANCE_HUD_PATH), false);
     }
     return false;
 }
 
 bool GaussianSplatSettingsManager::get_debug_show_residency_hud() {
     if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        return _get_bool_setting(ps, DEBUG_SHOW_RESIDENCY_HUD_PATH, false);
+        return _get_bool_setting(ps, StringName(DEBUG_SHOW_RESIDENCY_HUD_PATH), false);
     }
     return false;
 }
 
 void GaussianSplatSettingsManager::set_debug_show_tile_grid(bool p_enabled) {
-    _persist_if_editor(DEBUG_SHOW_TILE_GRID_PATH, p_enabled);
+    _persist_if_editor(StringName(DEBUG_SHOW_TILE_GRID_PATH), p_enabled);
 }
 
 void GaussianSplatSettingsManager::set_debug_show_density_heatmap(bool p_enabled) {
-    _persist_if_editor(DEBUG_SHOW_DENSITY_HEATMAP_PATH, p_enabled);
+    _persist_if_editor(StringName(DEBUG_SHOW_DENSITY_HEATMAP_PATH), p_enabled);
 }
 
 void GaussianSplatSettingsManager::set_debug_show_performance_hud(bool p_enabled) {
-    _persist_if_editor(DEBUG_SHOW_PERFORMANCE_HUD_PATH, p_enabled);
+    _persist_if_editor(StringName(DEBUG_SHOW_PERFORMANCE_HUD_PATH), p_enabled);
 }
 
 void GaussianSplatSettingsManager::set_debug_show_residency_hud(bool p_enabled) {
-    _persist_if_editor(DEBUG_SHOW_RESIDENCY_HUD_PATH, p_enabled);
+    _persist_if_editor(StringName(DEBUG_SHOW_RESIDENCY_HUD_PATH), p_enabled);
 }
 
 void initialize_gaussian_splat_settings() {

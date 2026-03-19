@@ -34,7 +34,6 @@
 // Project settings helpers provided by gs_project_settings.h (gs::settings namespace).
 namespace {
 static bool _is_frame_log_enabled() { return gs::settings::is_frame_log_enabled(); }
-static bool _is_data_log_enabled() { return gs::settings::is_data_log_enabled(); }
 } // namespace
 
 void GaussianSplatNode3D::_bind_methods() {

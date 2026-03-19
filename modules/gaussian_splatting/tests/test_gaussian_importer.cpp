@@ -1220,10 +1220,9 @@ TEST_CASE("[GaussianSplatting][Editor] Thumbnail style change triggers custom_se
     dialog->configure_for_file("res://test_splats.ply", asset, true, Dictionary());
 
     // Initially should not be custom
-    GaussianImportDialog::ImportConfiguration config = dialog->get_configuration();
     // Note: The custom_settings flag depends on whether any setting differs from preset defaults
     // For a fresh dialog configured with matching preset, it should be false
-    bool initial_custom = config.custom_settings;
+    (void)dialog->get_configuration();
 
     // Now configure with a different thumbnail style
     Dictionary style_override;

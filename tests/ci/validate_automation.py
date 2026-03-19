@@ -115,7 +115,7 @@ def test_baseline_qa_runner(godot_binary):
         env = os.environ.copy()
         env['GODOT_BINARY'] = godot_binary
 
-        cmd = ["python3", "tests/ci/run_baseline_qa.py"]
+        cmd = ["python3", "tests/ci/run_baseline_qa.py", "--godot", godot_binary]
         result = subprocess.run(cmd, capture_output=True, text=True,
                               timeout=120, cwd=root_dir, env=env)
 
@@ -243,12 +243,5 @@ def main():
     return passed_tests == total_tests
 
 if __name__ == "__main__":
-    try:
-        import yaml
-    except ImportError:
-        print("⚠️ Installing PyYAML for workflow validation...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyYAML"])
-        import yaml
-
     success = main()
     sys.exit(0 if success else 1)

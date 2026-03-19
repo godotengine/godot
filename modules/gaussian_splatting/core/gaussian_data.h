@@ -81,7 +81,7 @@ struct GaussianData {
     Vector3 scale;          ///< Per-axis scale factors.
     Vector3 normal;         ///< Surface normal for 2D/surfel mode.
     float area;             ///< Projected area hint for culling.
-    float covariance[6];    ///< Upper-triangle 3D covariance matrix.
+    float covariance[6] = {};    ///< Upper-triangle 3D covariance matrix.
     uint32_t index;         ///< Original index in source data.
     float importance;       ///< LOD importance weight (0-1).
     PainterlyMetadata painterly; ///< Painterly rendering metadata.
@@ -95,7 +95,6 @@ struct GaussianData {
           area(1.0f),
           index(0),
           importance(1.0f) {
-        memset(covariance, 0, sizeof(covariance));
     }
 
     /**

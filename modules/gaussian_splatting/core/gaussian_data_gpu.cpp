@@ -82,7 +82,7 @@ bool GaussianData::_validate_gpu_payload_locked(String *r_error_message) const {
                 int64_t(expected_high_order_size), int64_t(sh_high_order_coefficients.size())));
     }
 
-    for (int i = 0; i < gaussians.size(); i++) {
+    for (uint32_t i = 0; i < gaussians.size(); i++) {
         const Gaussian &g = gaussians[i];
         if (!_is_finite_vector3(g.position, kMaxAbsPosition)) {
             return fail(vformat("[GaussianData] Gaussian[%d] has invalid position", i));
@@ -118,7 +118,7 @@ bool GaussianData::_validate_gpu_payload_locked(String *r_error_message) const {
         }
     }
 
-    for (int i = 0; i < sh_high_order_coefficients.size(); i++) {
+    for (uint32_t i = 0; i < sh_high_order_coefficients.size(); i++) {
         if (!_is_finite_vector3(sh_high_order_coefficients[i], kMaxAbsColor)) {
             return fail(vformat("[GaussianData] Invalid high-order SH coefficient at index %d", i));
         }

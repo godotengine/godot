@@ -623,7 +623,7 @@ void GaussianEditorPlugin::_sync_ui_from_asset() {
         quality_selector->set_tooltip_text(has_reimport_source ? String() : reimport_tooltip);
     }
 
-    uint32_t flags = active_asset.is_valid() ? active_asset->get_compression_flags() : GaussianSplatAsset::COMPRESSION_NONE;
+    uint32_t flags = active_asset.is_valid() ? active_asset->get_compression_flags() : static_cast<uint32_t>(GaussianSplatAsset::COMPRESSION_NONE);
     if (compression_positions) {
         compression_positions->set_pressed((flags & GaussianSplatAsset::COMPRESSION_POSITIONS) != 0);
         compression_positions->set_disabled(!has_reimport_source);
