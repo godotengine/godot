@@ -1146,6 +1146,42 @@ TEST_CASE("[GaussianSplatting][Importer] GaussianSplatAsset save_to_file rejects
     _remove_user_file(output_path);
 }
 
+TEST_CASE("[GaussianSplatting][Importer] GaussianSplatAsset unloaded getters remain safe and empty") {
+    Ref<GaussianSplatAsset> asset;
+    asset.instantiate();
+
+    CHECK_FALSE(asset->is_loaded());
+    CHECK_EQ(asset->get_splat_count(), uint32_t(0));
+
+    CHECK(asset->get_positions().is_empty());
+    CHECK(asset->get_position_vectors().is_empty());
+    CHECK(asset->get_colors().is_empty());
+    CHECK(asset->get_scales().is_empty());
+    CHECK(asset->get_scale_vectors().is_empty());
+    CHECK(asset->get_rotations().is_empty());
+    CHECK_EQ(asset->get_rotation_quaternions().size(), 0);
+    CHECK(asset->get_sh_dc_coefficients().is_empty());
+    CHECK(asset->get_sh_first_order_coefficients().is_empty());
+    CHECK(asset->get_sh_high_order_coefficients().is_empty());
+    CHECK(asset->get_spherical_harmonics_buffer().is_empty());
+    CHECK(asset->get_opacity_logits().is_empty());
+    CHECK(asset->get_opacities().is_empty());
+    CHECK(asset->get_palette_ids().is_empty());
+    CHECK(asset->get_palette_ids_buffer().is_empty());
+    CHECK(asset->get_painterly_flags().is_empty());
+    CHECK(asset->get_painterly_flags_buffer().is_empty());
+    CHECK(asset->get_brush_override_ids().is_empty());
+    CHECK(asset->get_brush_override_ids_buffer().is_empty());
+    CHECK(asset->get_normals().is_empty());
+    CHECK(asset->get_normal_vectors().is_empty());
+    CHECK(asset->get_brush_axes().is_empty());
+    CHECK(asset->get_brush_axes_vector2().is_empty());
+    CHECK(asset->get_stroke_ages().is_empty());
+    CHECK(asset->get_stroke_ages_buffer().is_empty());
+
+    CHECK(asset->get_gaussian_data().is_null());
+}
+
 TEST_CASE("[GaussianSplatting][Importer] GaussianSplatAsset save_to_file persists loadable payloads") {
     const String source_path = "res://test_splats.ply";
     const String output_path = "user://gaussian_asset_save_roundtrip.ply";

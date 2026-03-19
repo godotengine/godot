@@ -1099,9 +1099,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 
 		if (strict_global_sort && !positions_ready) {
-			GS_LOG_ERROR_DEFAULT(vformat("[CPU Sort] Strict global sort enabled; refusing unsorted fallback (%s).",
+			GS_LOG_WARN_DEFAULT(vformat("[CPU Sort] Strict global sort: positions unavailable, rendering unsorted fallback (%s).",
 					p_reason));
-			return false;
 		}
 
 		if (positions_ready) {
