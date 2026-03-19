@@ -115,6 +115,7 @@ public:
     TestResult test_alpha_compositing_accuracy(RenderingDevice *p_rd);
     TestResult test_performance_regression(RenderingDevice *p_rd);
     TestResult test_renderer_lifecycle_leak_detection(RenderingDevice *p_rd);
+    TestResult test_zero_work_frame_resets_raster_timing(RenderingDevice *p_rd);
 
     // Test utilities
     Vector<Gaussian> generate_test_gaussians(uint32_t count, bool valid = true);
@@ -181,7 +182,8 @@ bool TileRendererRegressionTest::run_all_tests(RenderingDevice *p_rd) {
         {"compute_format_fallback", [this, p_rd]() { return test_compute_format_fallback(p_rd); }},
         {"alpha_compositing_accuracy", [this, p_rd]() { return test_alpha_compositing_accuracy(p_rd); }},
         {"performance_regression", [this, p_rd]() { return test_performance_regression(p_rd); }},
-        {"renderer_lifecycle_leak_detection", [this, p_rd]() { return test_renderer_lifecycle_leak_detection(p_rd); }}
+        {"renderer_lifecycle_leak_detection", [this, p_rd]() { return test_renderer_lifecycle_leak_detection(p_rd); }},
+        {"zero_work_frame_resets_raster_timing", [this, p_rd]() { return test_zero_work_frame_resets_raster_timing(p_rd); }}
     };
 
     for (const auto &test : tests) {
@@ -1236,6 +1238,62 @@ TileRendererRegressionTest::TestResult TileRendererRegressionTest::test_renderer
         }
     }
 
+    result.passed = true;
+    return result;
+}
+
+TileRendererRegressionTest::TestResult TileRendererRegressionTest::test_zero_work_frame_resets_raster_timing(RenderingDevice *p_rd) {
+    TestResult result;
+
+    static constexpr uint32_t TEST_SPLAT_COUNT = 2048;
+
+    Vector<Gaussian> gaussians = generate_test_gaussians(TEST_SPLAT_COUNT);
+    RID gaussian_buffer = create_test_gaussian_buffer(p_rd, gaussians);
+    RID sorted_indices = create_test_sorted_indices(p_rd, TEST_SPLAT_COUNT);
+    auto cleanup = [&]() {
+        if (gaussian_buffer.is_valid()) {
+            p_rd->free(gaussian_buffer);
+            gaussian_buffer = RID();
+        }
+        if (sorted_indices.is_valid()) {
+            p_rd->free(sorted_indices);
+            sorted_indices = RID();
+        }
+    };
+
+    if (!gaussian_buffer.is_valid() || !sorted_indices.is_valid()) {
+        cleanup();
+        result.error_message = "Failed to create buffers for zero-work raster timing test";
+        return result;
+    }
+
+    TileRenderer::RenderParams active_params = make_render_params(gaussian_buffer, sorted_indices, TEST_SPLAT_COUNT,
+            TEST_VIEWPORT_WIDTH, TEST_VIEWPORT_HEIGHT, TEST_TILE_SIZE);
+    RID active_output = tile_renderer->render(p_rd, active_params);
+    if (!active_output.is_valid()) {
+        cleanup();
+        result.error_message = "Failed to render active frame for zero-work timing test";
+        return result;
+    }
+
+    TileRenderer::RenderParams idle_params = active_params;
+    idle_params.splat_count = 0;
+    idle_params.total_gaussians = 0;
+    RID idle_output = tile_renderer->render(p_rd, idle_params);
+    if (!idle_output.is_valid()) {
+        cleanup();
+        result.error_message = "Failed to render zero-work frame for timing reset test";
+        return result;
+    }
+
+    const float idle_raster_ms = tile_renderer->get_rasterization_time();
+    if (idle_raster_ms != 0.0f) {
+        cleanup();
+        result.error_message = vformat("Expected rasterization_ms to reset to 0 on zero-work frame (got %.6f)", idle_raster_ms);
+        return result;
+    }
+
+    cleanup();
     result.passed = true;
     return result;
 }

@@ -1044,6 +1044,7 @@ private:
 	RID _finalize_frame() {
 		bool skip_resolve_dispatch = false;
 		if (!_has_dispatch_work()) {
+			renderer.perf_metrics.rasterization_ms = 0.0f;
 			auto clear_texture = [](RenderingDevice *p_owner, const RID &p_texture, const Color &p_clear) {
 				if (!p_owner || !p_texture.is_valid() || !p_owner->texture_is_valid(p_texture)) {
 					return;
