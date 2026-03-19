@@ -46,6 +46,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 
 ////////////////////////////////////////////////
@@ -938,8 +939,10 @@ DockContextPopup::DockContextPopup() {
 	dock_select_popup_vb->add_child(header_hb);
 
 	dock_select = memnew(DockSlotGrid);
+	dock_select->set_accessibility_name(TTRC("Slot Selector"));
 	dock_select_popup_vb->add_child(dock_select);
 	dock_select->connect("slot_clicked", callable_mp(this, &DockContextPopup::_slot_clicked));
+	dock_select->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	Control *separator = memnew(Control);
 	separator->set_custom_minimum_size(Vector2(0, 8 * EDSCALE));
@@ -1013,11 +1016,99 @@ void DockSlotGrid::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("slot_clicked", PropertyInfo(Variant::INT, "slot")));
 }
 
+void DockSlotGrid::_slot_action_click(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, EditorDock::DOCK_SLOT_MAX);
+
+	DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[p_idx];
+	if (context_dock->get_parent_container() == target_tab_container) {
+		return;
+	}
+
+	if (!(context_dock->available_layouts & target_tab_container->layout)) {
+		return;
+	}
+
+	emit_signal("slot_clicked", p_idx);
+}
+
+RID DockSlotGrid::get_focused_accessibility_element() const {
+	if (selected_slot > -1) {
+		return ac_element[selected_slot];
+	} else {
+		return get_accessibility_element();
+	}
+}
+
 void DockSlotGrid::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			rect_cache_dirty = true;
+		} break;
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+				ac_element[i] = RID();
+			}
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			if (rect_cache_dirty) {
+				_update_rect_cache();
+				rect_cache_dirty = false;
+			}
+
+			for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+				if (ac_element[i].is_null()) {
+					ac_element[i] = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+				}
+				DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[i];
+				String slot_name;
+				switch (target_tab_container->dock_slot) {
+					case EditorDock::DockSlot::DOCK_SLOT_LEFT_UL: {
+						slot_name = TTRC("Left Side, Upper Left Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_LEFT_BL: {
+						slot_name = TTRC("Left Side, Bottom Left Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_LEFT_UR: {
+						slot_name = TTRC("Left Side, Upper Right Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_LEFT_BR: {
+						slot_name = TTRC("Left Side, Bottom Right Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_RIGHT_UL: {
+						slot_name = TTRC("Right Side, Upper Left Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_RIGHT_BL: {
+						slot_name = TTRC("Right Side, Bottom Left Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_RIGHT_UR: {
+						slot_name = TTRC("Right Side, Upper Right Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_RIGHT_BR: {
+						slot_name = TTRC("Right Side, Bottom Right Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_BOTTOM: {
+						slot_name = TTRC("Bottom Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_BOTTOM_L: {
+						slot_name = TTRC("Bottom Left Slot");
+					} break;
+					case EditorDock::DockSlot::DOCK_SLOT_BOTTOM_R: {
+						slot_name = TTRC("Bottom Right Slot");
+					} break;
+					default: {
+						slot_name = vformat(TTRC("Slot %d"), i + 1);
+					} break;
+				}
+
+				AccessibilityServer::get_singleton()->update_add_action(ac_element[i], AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &DockSlotGrid::_slot_action_click).bind(i));
+				AccessibilityServer::get_singleton()->update_set_name(ac_element[i], atr(slot_name));
+				AccessibilityServer::get_singleton()->update_set_bounds(ac_element[i], rect_cache[i]);
+			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1054,7 +1145,7 @@ void DockSlotGrid::_notification(int p_what) {
 					draw_rect(slot_rect, tab_selected_color);
 				} else if (!is_slot_available) {
 					draw_rect(slot_rect, unusable_dock_color);
-				} else if (i == hovered_slot) {
+				} else if (i == hovered_slot || i == selected_slot) {
 					draw_rect(slot_rect, hovered_dock_color);
 				} else if (tabs_to_draw == 0) {
 					draw_rect(slot_rect, unused_dock_color);
@@ -1086,6 +1177,14 @@ void DockSlotGrid::_notification(int p_what) {
 			if (hovered_slot > -1) {
 				hovered_slot = -1;
 				queue_redraw();
+				queue_accessibility_update();
+			}
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (selected_slot > -1) {
+				selected_slot = -1;
+				queue_redraw();
+				queue_accessibility_update();
 			}
 		} break;
 	}
@@ -1106,6 +1205,7 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (over_dock_slot != hovered_slot) {
 			queue_redraw();
+			queue_accessibility_update();
 			hovered_slot = over_dock_slot;
 		}
 
@@ -1126,6 +1226,55 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			emit_signal("slot_clicked", over_dock_slot);
 		}
+	} else if ((p_event->is_action("ui_up", true) || p_event->is_action("ui_left", true)) && p_event->is_pressed()) {
+		int start_slot = (selected_slot > -1) ? selected_slot : EditorDock::DOCK_SLOT_MAX - 1;
+		do {
+			selected_slot--;
+			if (selected_slot < 0) {
+				selected_slot = EditorDock::DOCK_SLOT_MAX - 1;
+			}
+			DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[selected_slot];
+			if (context_dock->get_parent_container() == target_tab_container) {
+				continue;
+			}
+			if (!(context_dock->available_layouts & target_tab_container->layout)) {
+				continue;
+			}
+			break;
+		} while (selected_slot != start_slot);
+		queue_redraw();
+		accept_event();
+		queue_accessibility_update();
+	} else if ((p_event->is_action("ui_down", true) || p_event->is_action("ui_right", true)) && p_event->is_pressed()) {
+		int start_slot = (selected_slot > -1) ? selected_slot : 0;
+		do {
+			selected_slot++;
+			if (selected_slot >= EditorDock::DOCK_SLOT_MAX) {
+				selected_slot = 0;
+			}
+			DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[selected_slot];
+			if (context_dock->get_parent_container() == target_tab_container) {
+				continue;
+			}
+			if (!(context_dock->available_layouts & target_tab_container->layout)) {
+				continue;
+			}
+			break;
+		} while (selected_slot != start_slot);
+		accept_event();
+		queue_redraw();
+		queue_accessibility_update();
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed() && selected_slot > -1) {
+		DockTabContainer *target_tab_container = EditorDockManager::get_singleton()->dock_slots[selected_slot];
+		if (context_dock->get_parent_container() == target_tab_container) {
+			return;
+		}
+		if (!(context_dock->available_layouts & target_tab_container->layout)) {
+			return;
+		}
+		accept_event();
+
+		emit_signal("slot_clicked", selected_slot);
 	}
 }
 

@@ -163,11 +163,14 @@ class DockSlotGrid : public Control {
 	static constexpr int TAB_MARGIN = 2;
 
 	int hovered_slot = -1;
+	int selected_slot = -1;
 
 	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
+	RID ac_element[EditorDock::DOCK_SLOT_MAX];
 	Rect2 main_screen_rect;
 	bool rect_cache_dirty = true;
 
+	void _slot_action_click(int p_idx);
 	void _update_rect_cache();
 
 protected:
@@ -176,6 +179,8 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual Size2 get_minimum_size() const override;
+
+	virtual RID get_focused_accessibility_element() const override;
 
 public:
 	EditorDock *context_dock = nullptr;
