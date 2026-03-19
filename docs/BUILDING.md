@@ -3,6 +3,7 @@
 Canonical build/test/CI commands are maintained in:
 
 - [reference/build-test-ci.md](reference/build-test-ci.md)
+- [development/docs-site.md](development/docs-site.md)
 
 Recurring build failures and fixes:
 

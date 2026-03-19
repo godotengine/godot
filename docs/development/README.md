@@ -13,6 +13,7 @@ Find build, test, architecture, and contributor workflow references.
 | Build command and platform prerequisites | `../BUILDING.md` |
 | Build failure diagnosis | `../troubleshooting/build-troubleshooting.md` |
 | Test environment setup | `../testing/setup-guide.md` |
+| Versioned docs site build/deploy | `docs-site.md` |
 | Contribution policy | `../../CONTRIBUTING.md` |
 | Module architecture overview | `../../modules/gaussian_splatting/README.md` |
 | Documentation style policy | `../style/documentation-style-guide.md` |

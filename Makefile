@@ -1,4 +1,4 @@
-.PHONY: all build build-tests build-linux build-windows build-macos guard history-audit test-module test-runtime test-baseline test test-quick docs benchmark format lint clean
+.PHONY: all build build-tests build-linux build-windows build-macos guard history-audit test-module test-runtime test-baseline test test-quick docs docs-stage docs-site benchmark format lint clean
 
 # Determine parallelism for SCons builds; fall back to a single job if detection fails.
 NPROC ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)
@@ -76,6 +76,12 @@ lint:
 # Documentation
 docs:
 	python3 scripts/build_documentation.py --all
+
+docs-stage:
+	python3 scripts/stage_public_docs.py --source docs --output .site/public-docs
+
+docs-site:
+	python3 scripts/build_docs_site.py --strict
 
 # Benchmarking
 benchmark:

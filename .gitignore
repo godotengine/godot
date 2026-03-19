@@ -83,6 +83,7 @@ __pycache__/
 
 # Documentation
 doc/_build/
+.site/
 
 # Android
 .gradle/

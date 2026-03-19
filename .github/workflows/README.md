@@ -1,12 +1,13 @@
 # GitHub Actions Workflows
 
-This directory contains 3 active workflows.
+This directory contains 4 active workflows.
 
 ## Active Workflows
 
 | Workflow | File | Purpose | Notes |
 | --- | --- | --- | --- |
 | Baseline QA Automation | `baseline_qa.yml` | Runs baseline QA and optional compiled-module QA. | Builds the Linux editor once and reuses that artifact for push-only compiled QA. |
+| Docs Pages (Versioned) | `docs_pages.yml` | Builds and deploys MkDocs docs with mike versioning to `gh-pages`. | Publishes `latest` from `master/main` and versioned docs from `v*` tags. |
 | Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, pipeline smoke, runtime validation, benchmark probes, and optional Windows GPU evidence lane. | Owns the single Windows build for validation workflows. |
 | Gaussian Shader Validation | `gaussian_shader_validation.yml` | Validates shader compile matrix and host/shader contract checks. | Focused shader CI gate. |
 

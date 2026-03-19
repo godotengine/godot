@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Gaussian Splatting Pipeline</title>
+  <desc id="desc">Diagram showing import, processing, and rendering stages.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1a24" />
+      <stop offset="100%" stop-color="#1c3242" />
+    </linearGradient>
+    <linearGradient id="node" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1f8f6b" />
+      <stop offset="100%" stop-color="#32b38a" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <polygon points="0,0 10,5 0,10" fill="#9dd7c2" />
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="960" height="540" fill="url(#bg)" />
+  <text x="480" y="72" fill="#eff8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" text-anchor="middle">
+    Gaussian Splatting Docs Pipeline
+  </text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#0f1a22">
+    <rect x="90" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
+    <text x="200" y="235" text-anchor="middle" fill="#06291e">Scene Import</text>
+
+    <rect x="370" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
+    <text x="480" y="235" text-anchor="middle" fill="#06291e">Splat Processing</text>
+
+    <rect x="650" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
+    <text x="760" y="235" text-anchor="middle" fill="#06291e">Render Output</text>
+  </g>
+  <line x1="310" y1="226" x2="370" y2="226" stroke="#9dd7c2" stroke-width="7" marker-end="url(#arrow)" />
+  <line x1="590" y1="226" x2="650" y2="226" stroke="#9dd7c2" stroke-width="7" marker-end="url(#arrow)" />
+  <text x="480" y="470" fill="#cce8f8" font-family="Segoe UI, Arial, sans-serif" font-size="21" text-anchor="middle">
+    Versioned with docs content under docs/assets/
+  </text>
+</svg>
