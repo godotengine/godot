@@ -322,7 +322,7 @@ void pack_gaussian_f16(const Gaussian &src,
     dst.sh.dc[3] = src.sh_dc.a;
 
     uint32_t encoded_capacity = MIN<uint32_t>(coefficient_limit, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
-    uint32_t first_count = MIN<uint32_t>(first_order_count, 3);
+    uint32_t first_count = MIN<uint32_t>(first_order_count, 3u);
     uint32_t stored_first = MIN<uint32_t>(first_count, encoded_capacity);
     uint32_t encoded_total = 0;
 

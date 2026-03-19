@@ -83,7 +83,7 @@ static_assert(sizeof(DebugSplatAuditBuffer) == sizeof(DebugSplatAuditHeader) +
 void TileRenderer::TileRendererDebugStats::on_debug_counters_readback(const Vector<uint8_t> &p_data) {
     debug_counter_readback.pending = false;
     const size_t debug_bytes = sizeof(DebugCounterSnapshot);
-    if (p_data.size() < debug_bytes) {
+    if ((size_t)p_data.size() < debug_bytes) {
         return;
     }
     const DebugCounterSnapshot *ptr = reinterpret_cast<const DebugCounterSnapshot *>(p_data.ptr());
@@ -95,7 +95,7 @@ void TileRenderer::TileRendererDebugStats::on_debug_counters_readback(const Vect
 void TileRenderer::TileRendererDebugStats::on_overflow_stats_readback(const Vector<uint8_t> &p_data) {
     overflow_stats_readback.pending = false;
     const size_t overflow_bytes = sizeof(OverflowStatsSnapshot);
-    if (p_data.size() < overflow_bytes) {
+    if ((size_t)p_data.size() < overflow_bytes) {
         return;
     }
     const OverflowStatsSnapshot *ptr = reinterpret_cast<const OverflowStatsSnapshot *>(p_data.ptr());
@@ -106,7 +106,7 @@ void TileRenderer::TileRendererDebugStats::on_overflow_stats_readback(const Vect
 void TileRenderer::TileRendererDebugStats::on_splat_audit_readback(const Vector<uint8_t> &p_data) {
     splat_audit_readback.pending = false;
     const size_t audit_bytes = sizeof(DebugSplatAuditBuffer);
-    if (p_data.size() < audit_bytes) {
+    if ((size_t)p_data.size() < audit_bytes) {
         return;
     }
 

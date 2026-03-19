@@ -130,7 +130,7 @@ struct SnapshotPositionStressContext {
 };
 
 bool _snapshot_matches_position_pattern(const LocalVector<Gaussian> &p_snapshot, const PackedVector3Array &p_pattern) {
-    if (p_snapshot.size() != p_pattern.size()) {
+    if ((int)p_snapshot.size() != p_pattern.size()) {
         return false;
     }
     for (uint32_t i = 0; i < p_snapshot.size(); i++) {

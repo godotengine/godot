@@ -480,7 +480,7 @@ bool TileRenderer::TilePrefixScanStage::update_global_tile_ranges(const RID &p_g
 	// Read back the total overlap count from the GPU (enabled for validation or explicit readback).
 	// Cached/estimated values are used by default to avoid per-frame GPU/CPU stalls.
 	Vector<uint8_t> total_bytes = device->buffer_get_data(owner.global_sort_resources.prefix_total_buffer, 0, sizeof(uint32_t));
-	if (total_bytes.size() < sizeof(uint32_t)) {
+	if ((size_t)total_bytes.size() < sizeof(uint32_t)) {
 		GS_LOG_ERROR_DEFAULT("[TileRenderer] Failed to read global overlap total");
 		free_prefix_param_set();
 		return false;
@@ -571,7 +571,7 @@ bool TileRenderer::TilePrefixScanStage::update_global_tile_ranges(const RID &p_g
 	if (g_gpu_sorting_config.debug_validate_prefix) {
 		const uint64_t counts_bytes = uint64_t(owner.grid_state.total_tiles) * sizeof(uint32_t);
 		Vector<uint8_t> counts_data = device->buffer_get_data(owner.global_sort_resources.get_tile_counts_buffer(), 0, counts_bytes);
-		if (counts_data.size() == counts_bytes) {
+		if ((uint64_t)counts_data.size() == counts_bytes) {
 			const uint32_t *counts = reinterpret_cast<const uint32_t *>(counts_data.ptr());
 			uint64_t cpu_total64 = 0;
 			for (uint32_t i = 0; i < owner.grid_state.total_tiles; i++) {
