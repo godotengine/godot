@@ -1,5 +1,6 @@
 #include "test_macros.h"
 
+#include "../interfaces/tile_rasterizer.h"
 #include "../renderer/tile_prefix_scan_utils.h"
 #include "../renderer/tile_renderer.h"
 #include "servers/rendering_server.h"
@@ -74,4 +75,13 @@ TEST_CASE("[TileRenderer] Prefix emergency fallback only triggers at device-disp
     CHECK(!GaussianSplatting::tile_prefix_any_pass_requires_cpu_fallback(total_workgroups, total_workgroups));
     CHECK(GaussianSplatting::tile_prefix_any_pass_requires_cpu_fallback(total_workgroups, total_workgroups - 1u));
     CHECK(GaussianSplatting::tile_prefix_any_pass_requires_cpu_fallback(total_workgroups, dispatch_counts.pass2_dispatch_x - 1u));
+}
+
+TEST_CASE("[TileRenderer] Compute raster shared-memory contract uses deterministic requirement") {
+    const uint64_t required_bytes = TileRasterizer::get_compute_raster_shared_memory_requirement_bytes();
+    const uint64_t expected_bytes = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE) * (sizeof(uint32_t) + 9u * sizeof(uint32_t)) +
+            5u * sizeof(uint32_t);
+
+    CHECK(required_bytes == expected_bytes);
+    CHECK(required_bytes == 40980u);
 }

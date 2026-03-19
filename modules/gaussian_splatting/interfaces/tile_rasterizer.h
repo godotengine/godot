@@ -58,6 +58,7 @@ public:
     Vector<uint32_t> get_tile_density_snapshot() const override;
 
     String get_name() const override { return "TileRasterizer"; }
+    static uint64_t get_compute_raster_shared_memory_requirement_bytes();
 
     // Direct access to underlying TileRenderer for advanced configuration
     Ref<TileRenderer> get_tile_renderer() const { return tile_renderer; }
