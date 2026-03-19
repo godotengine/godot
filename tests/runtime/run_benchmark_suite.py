@@ -362,10 +362,9 @@ def _select_capture_lanes(
         if missing:
             raise ValueError(f"Unknown capture lane ids: {', '.join(missing)}")
         return requested_set
-    default_capture_lanes = {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
-    if references_requested:
-        return default_capture_lanes
-    return default_capture_lanes
+    # Default to deterministic capture lanes whenever captures are enabled,
+    # regardless of whether --reference-dir was supplied.
+    return {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
 
 
 def _load_asset_manifest(path: str) -> dict[str, str]:
@@ -577,7 +576,6 @@ def _generate_dummy_assets(project_path: Path, lanes: list[LaneDefinition], outp
         "integrity_sentinel": 100_000,
     }
     DEFAULT_SPLAT_COUNT = 100_000
-
     for lane in lanes:
         lane_index = LANE_INDEX_BY_ID.get(lane.lane_id)
         if lane_index is None:
@@ -953,6 +951,10 @@ def _lane_uses_forbidden_cpu_sort_route(report: dict[str, Any]) -> tuple[bool, s
     return False, ""
 
 
+def _lane_supports_asset_override(lane: LaneDefinition) -> bool:
+    return lane.lane_id != "unified_composite"
+
+
 def _compute_aggregate(profile: str, lane_results: list[dict[str, Any]]) -> float:
     weighted_sum = 0.0
     weight_sum = 0.0
@@ -1112,15 +1114,27 @@ def main() -> int:
     if capture_dir is not None:
         capture_dir.mkdir(parents=True, exist_ok=True)
     reference_dir = None
-    if args.reference_dir:
+    if args.reference_dir and capture_lane_ids:
         reference_dir = Path(args.reference_dir).resolve()
         if not reference_dir.exists():
             print(f"ERROR: reference directory not found: {reference_dir}", file=sys.stderr)
             return 2
+    if args.reference_dir and not capture_lane_ids:
+        print(
+            "ERROR: --reference-dir was provided but no capture lanes are active. "
+            "Specify --capture-lane or remove --reference-dir.",
+            file=sys.stderr,
+        )
+        return 2
     for lane in selected_lanes:
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
         lane_duration = max(5.0, lane_base_duration * duration_scale)
+        if asset_override and not _lane_supports_asset_override(lane):
+            print(
+                f"[suite] lane={lane.lane_id} ignores --benchmark-asset; skipping asset override."
+            )
+            asset_override = ""
         print(f"[suite] running lane={lane.lane_id} scene={lane.scene} duration={lane_duration:.1f}s")
         result = _run_lane(
             godot_binary=godot_binary,
@@ -1182,9 +1196,14 @@ def main() -> int:
             if require_gpu_timestamps:
                 gpu_timing_match = bool(result.get("gpu_timing_available"))
             if visual_reference_enforced:
+                capture_count_for_reference = int(result.get("capture_count") or 0)
                 matched = int(result.get("capture_reference_match_count") or 0)
                 passed = int(result.get("capture_threshold_pass_count") or 0)
-                visual_reference_match = matched > 0 and passed == matched
+                visual_reference_match = (
+                    capture_count_for_reference > 0
+                    and matched == capture_count_for_reference
+                    and passed == capture_count_for_reference
+                )
         lane_valid = (
             int(result["exit_code"]) == 0
             and report_valid
