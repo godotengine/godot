@@ -17,6 +17,9 @@ Float16Config g_float16_config;
 
 void Float16Config::load_from_project_settings() {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     use_float16_storage = ps->get_setting(USE_FLOAT16_STORAGE_PATH, false);
     float16_positions = ps->get_setting(FLOAT16_POSITIONS_PATH, true);
@@ -35,6 +38,9 @@ void Float16Config::load_from_project_settings() {
 
 void Float16Config::save_to_project_settings() const {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     ps->set_setting(USE_FLOAT16_STORAGE_PATH, use_float16_storage);
     ps->set_setting(FLOAT16_POSITIONS_PATH, float16_positions);

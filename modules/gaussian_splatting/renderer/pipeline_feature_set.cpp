@@ -33,6 +33,9 @@ static void _register_pipeline_project_settings() {
 
 void PipelineFeatureSet::load_from_project_settings() {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     enable_two_stage_sort = ps->get_setting(ENABLE_TWO_STAGE_SORT_PATH, false);
     enable_packed_stage_data = ps->get_setting(ENABLE_PACKED_STAGE_DATA_PATH, false);
@@ -68,6 +71,9 @@ void PipelineFeatureSet::load_from_project_settings() {
 
 void PipelineFeatureSet::save_to_project_settings() const {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     ps->set_setting(ENABLE_TWO_STAGE_SORT_PATH, enable_two_stage_sort);
     ps->set_setting(ENABLE_PACKED_STAGE_DATA_PATH, enable_packed_stage_data);

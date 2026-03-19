@@ -13,6 +13,9 @@ SHConfig g_sh_config;
 
 void SHConfig::load_from_project_settings() {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     // Load SH band level (clamped to valid range)
     int band_value = ps->get_setting(BANDS_PATH, static_cast<int>(SH_BAND_3));
@@ -31,6 +34,9 @@ void SHConfig::load_from_project_settings() {
 
 void SHConfig::save_to_project_settings() const {
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     ps->set_setting(BANDS_PATH, static_cast<int>(sh_bands));
     ps->set_setting(DC_LOGIT_PATH, dc_is_logit);
@@ -107,6 +113,9 @@ void SHConfig::print_config_summary() const {
 void initialize_sh_config() {
     // Register project settings with proper hints
     ProjectSettings *ps = ProjectSettings::get_singleton();
+    if (!ps) {
+        return;
+    }
 
     // SH bands setting with enum hint
     if (!ps->has_setting(SHConfig::BANDS_PATH)) {
