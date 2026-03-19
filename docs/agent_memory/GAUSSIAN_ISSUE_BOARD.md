@@ -12,11 +12,11 @@ Status legend:
 
 | Issue ID | Subsystem | Title | Severity | Owner Agent | Status | Dependency | Evidence |
 |---|---|---|---|---|---|---|---|
-| ISSUE-001 | Core Data Structures | Core threading safety with RWLock + animation cache mutex ordering | Critical | agent-core-data | Planned | None | a7dd73fcd06 |
-| ISSUE-002 | Core Data Structures | GPU resource ownership verification before uniform set creation | Critical | agent-core-data | Planned | None | 902f781f1b7 |
-| ISSUE-003 | Core Data Structures | Guard GaussianData animation cache mutable fields from data races | High | agent-core-data | Planned | ISSUE-001 | a7dd73fcd06 |
-| ISSUE-004 | Core Data Structures | Pack thread startup partial-failure deadlock fix | Critical | agent-core-data | Planned | ISSUE-001 | 102d229bb88 |
-| ISSUE-005 | Core Data Structures | Document lock hierarchy and enforce lock-level assertions | Medium | agent-core-data | Planned | ISSUE-001 | d2fb0d32c2e |
+| ISSUE-001 | Core Data Structures | Core threading safety with RWLock + animation cache mutex ordering | Critical | agent-core-data | Ready for Merge | None | `gaussian_data.h:247,262,295`; `gaussian_data.cpp:610`; `gaussian_data_edits.cpp:364,422`; `gaussian_data_io.cpp:270` |
+| ISSUE-002 | Core Data Structures | GPU resource ownership verification before uniform set creation | Critical | agent-core-data | Ready for Merge | None | `resource_owner_mismatch_contract.cpp:55,71,87`; `gpu_sorter.cpp:271,671,2246,2982`; `tile_render_rasterizer_stage.cpp:353,470,589`; `tile_render_resolve.cpp:518` |
+| ISSUE-003 | Core Data Structures | Guard GaussianData animation cache mutable fields from data races | High | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_data.h:295-303`; `gaussian_data.cpp:174,263,362`; `gaussian_data_animation.cpp:26,49,63`; `gaussian_data_edits.cpp:222` |
+| ISSUE-004 | Core Data Structures | Pack thread startup partial-failure deadlock fix | Critical | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_streaming.cpp:4639-4700` |
+| ISSUE-005 | Core Data Structures | Document lock hierarchy and enforce lock-level assertions | Medium | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_splat_manager.h:52-83`; `gaussian_splat_manager.cpp:72-116` |
 | ISSUE-006 | GPU Sorting | Split oversized streaming/sorting integration unit for maintainability | High | agent-gpu-sorting | Done | ISSUE-001 | 299e8f51706 (`gaussian_streaming.h` extracted `streaming_*` interfaces + split core units) |
 | ISSUE-007 | GPU Sorting | Strict global-sort contract: disable unsafe reuse/identity/unsorted fallback routes | High | agent-gpu-sorting | Done | None | 6dde6a82c3b (`render_sorting_orchestrator.cpp`: strict gates at 737/903/957/1083 and fallback dispatch at 1163) |
 | ISSUE-008 | GPU Sorting | Validate GPU sort outputs using effective indirect count + key monotonicity checks | High | agent-gpu-sorting | Done | None | 6dde6a82c3b (`gpu_sorting_pipeline.cpp`: `_resolve_effective_sort_count` 252 + `_validate_sorted_key_order` 283, used at 2843/2936) |
