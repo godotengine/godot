@@ -176,7 +176,10 @@ jobs:
         }
 
   cpu-tests:
-    name: CPU-Only QA Tests
+    name: CPU-Only QA Tests (Linux)
+    # Skip the slow Linux build on PRs — Windows self-hosted is the fast gate.
+    # Runs on push to master/develop, nightly schedule, and manual dispatch.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
