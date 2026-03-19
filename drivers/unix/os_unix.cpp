@@ -78,6 +78,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
@@ -1207,6 +1208,19 @@ String OS_Unix::get_executable_path() const {
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
 #endif
+}
+
+String OS_Unix::expand_path(const String &p_path) const {
+	String path = p_path;
+
+	if (path.begins_with("~/") || path == "~") {
+		String home = get_environment("HOME");
+		if (!home.is_empty()) {
+			path = home + path.substr(1);
+		}
+	}
+
+	return path;
 }
 
 void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {

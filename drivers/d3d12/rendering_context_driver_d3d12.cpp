@@ -44,9 +44,9 @@ GODOT_CLANG_WARNING_POP
 #include <dxgi1_6.h>
 
 #if !defined(_MSC_VER)
-#include <guiddef.h>
-
 #include <thirdparty/directx_headers/include/dxguids/dxguids.h>
+
+#include <guiddef.h>
 #endif
 
 using Microsoft::WRL::ComPtr;

@@ -43,7 +43,7 @@
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -362,6 +362,10 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+String OS::expand_path(const String &p_path) const {
+	return p_path;
 }
 
 void OS::create_lock_file() {

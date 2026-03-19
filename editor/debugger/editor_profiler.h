@@ -162,7 +162,7 @@ private:
 
 	void _combo_changed(int);
 
-	Metric _get_frame_metric(int index);
+	const Metric &_get_frame_metric(int index) const;
 
 protected:
 	void _notification(int p_what);

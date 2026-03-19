@@ -36,13 +36,13 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <io.h>
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
-
-#include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
+
 #include <cerrno>
 #include <cwchar>
 

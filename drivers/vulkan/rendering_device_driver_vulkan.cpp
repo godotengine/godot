@@ -36,14 +36,14 @@
 #include "core/templates/fixed_vector.h"
 #include "drivers/vulkan/vulkan_hooks.h"
 
-#include "thirdparty/misc/smolv.h"
+#include <thirdparty/misc/smolv.h>
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 #include "platform/android/java_godot_wrapper.h"
 #include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
 
-#include "thirdparty/swappy-frame-pacing/swappyVk.h"
+#include <thirdparty/swappy-frame-pacing/swappyVk.h>
 #endif
 
 #define ARRAY_SIZE(a) std_size(a)

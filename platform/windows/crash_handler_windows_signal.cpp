@@ -40,13 +40,13 @@
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
-#include <cxxabi.h>
-#include <csignal>
-#include <cstdlib>
+#include <thirdparty/libbacktrace/backtrace.h>
 
+#include <cxxabi.h>
 #include <psapi.h>
 
-#include "thirdparty/libbacktrace/backtrace.h"
+#include <csignal>
+#include <cstdlib>
 
 struct CrashHandlerData {
 	int64_t index = 0;

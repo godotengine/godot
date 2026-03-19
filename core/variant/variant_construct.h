@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "variant.h"
-
 #include "core/templates/a_hash_map.h"
 #include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 template <typename T>

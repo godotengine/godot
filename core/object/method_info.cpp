@@ -33,7 +33,6 @@
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
-#include "property_info.h"
 
 MethodInfo::operator Dictionary() const {
 	Dictionary d;

@@ -32,11 +32,10 @@
 
 #ifdef EGL_ENABLED
 
-// These must come first to avoid windows.h mess.
-#include "platform_gl.h"
-
 #include "core/templates/local_vector.h"
 #include "servers/display/display_server_enums.h"
+
+#include <platform_gl.h>
 
 class EGLManager {
 private:

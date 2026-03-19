@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include "godot_js.h"
+
 #include "core/input/input_enums.h"
 #include "core/os/keyboard.h"
 #include "servers/display/display_server.h"
-
-#include "godot_js.h"
 
 #include <emscripten.h>
 #include <emscripten/html5.h>

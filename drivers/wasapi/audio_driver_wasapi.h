@@ -37,9 +37,10 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
+#include <windows.h>
+
 #include <audioclient.h>
 #include <mmdeviceapi.h>
-#include <windows.h>
 
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {

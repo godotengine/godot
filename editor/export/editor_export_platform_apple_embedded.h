@@ -30,12 +30,11 @@
 
 #pragma once
 
-#include "plugin_config_apple_embedded.h"
-
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/export/plugin_config_apple_embedded.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>

@@ -32,11 +32,6 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
-#import "app_delegate_service.h"
-#import "display_server_apple_embedded.h"
-#import "godot_view_apple_embedded.h"
-#import "godot_view_controller.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -45,6 +40,10 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
+#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
@@ -56,10 +55,12 @@
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
 #include <sys/sysctl.h>
+
 #include <iterator>
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 
 #if defined(VULKAN_ENABLED)

@@ -30,9 +30,9 @@
 
 #if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
 
-#include "core/os/os.h"
-
 #include "rendering_context_driver_vulkan_windows.h"
+
+#include "core/os/os.h"
 
 #include <drivers/vulkan/godot_vulkan.h>
 

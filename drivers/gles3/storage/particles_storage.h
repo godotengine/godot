@@ -38,7 +38,7 @@
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 namespace GLES3 {
 

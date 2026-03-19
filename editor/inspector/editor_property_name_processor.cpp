@@ -167,6 +167,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
+	capitalize_string_remaps["colr"] = "COLR";
 	capitalize_string_remaps["ccdik"] = "CCDIK";
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";

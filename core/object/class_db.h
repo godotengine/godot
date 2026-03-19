@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/method_bind.h"
+#include "core/object/method_bind_common.h"
 #include "core/object/object.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
@@ -127,7 +128,6 @@ public:
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
 
-		AHashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
 

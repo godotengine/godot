@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 
 #include <windows.h>
+
 #include <winuser.h>
 
 class KeyMappingWindows {

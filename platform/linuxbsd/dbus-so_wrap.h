@@ -245,7 +245,7 @@
 #define dbus_validate_utf8 dbus_validate_utf8_dylibloader_orig_dbus
 #define dbus_threads_init dbus_threads_init_dylibloader_orig_dbus
 #define dbus_threads_init_default dbus_threads_init_default_dylibloader_orig_dbus
-#include "thirdparty/linuxbsd_headers/dbus/dbus.h" // IWYU pragma: export.
+#include <thirdparty/linuxbsd_headers/dbus/dbus.h> // IWYU pragma: export.
 #undef dbus_error_init
 #undef dbus_error_free
 #undef dbus_set_error

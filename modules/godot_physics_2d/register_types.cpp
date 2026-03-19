@@ -30,9 +30,10 @@
 
 #include "register_types.h"
 
+#include "godot_physics_server_2d.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
-#include "godot_physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_wrap_mt.h"
 

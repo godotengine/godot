@@ -728,6 +728,8 @@ private:
 		MENU_UNGROUP_SELECTED,
 		MENU_SNAP_TO_FLOOR,
 		MENU_RULER,
+		MENU_VERTEX_SNAP_BASE_VERTEX,
+		MENU_VERTEX_SNAP_BASE_ORIGIN,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -745,6 +747,7 @@ private:
 
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
+	bool vertex_snap_origin_mode = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -763,6 +766,7 @@ private:
 
 	void _snap_changed();
 	void _snap_update();
+	void _update_vertex_snap_tooltips();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
@@ -929,6 +933,7 @@ public:
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
 	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
+	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;

@@ -59,12 +59,12 @@
 
 #ifdef GLES3_ENABLED
 #include "detect_prime_egl.h"
+#include "wayland/egl_manager_wayland.h"
+#include "wayland/egl_manager_wayland_gles.h"
 
 #include "core/io/file_access.h"
 #include "drivers/egl/egl_manager.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "wayland/egl_manager_wayland.h"
-#include "wayland/egl_manager_wayland_gles.h"
 #endif
 
 #ifdef DBUS_ENABLED
@@ -1527,7 +1527,7 @@ bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::Wi
 
 void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+	ERR_FAIL_COND_MSG(p_enabled && !(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
 #endif
 
 	ERR_FAIL_COND(!windows.has(p_window_id));

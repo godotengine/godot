@@ -31,13 +31,14 @@
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
-#include "file_access_windows.h"
 
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "drivers/windows/file_access_windows.h"
 
 #include <windows.h>
+
 #include <cstdio>
 #include <cwchar>
 

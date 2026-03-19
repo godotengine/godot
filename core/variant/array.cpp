@@ -34,12 +34,12 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 
-#include "container_type_validate.h"
 #include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/dictionary.h"
 
 struct ArrayPrivate {

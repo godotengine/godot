@@ -50,10 +50,6 @@
 
 #include "rendering_device_driver_metal.h"
 
-#include "pixel_formats.h"
-#include "rendering_context_driver_metal.h"
-#include "rendering_shader_container_metal.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -61,10 +57,14 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_context_driver_metal.h"
+#include "drivers/metal/rendering_shader_container_metal.h"
 
+#include <Metal/Metal.hpp>
 #include <os/log.h>
 #include <os/signpost.h>
-#include <Metal/Metal.hpp>
+
 #include <algorithm>
 
 #ifndef MTLGPUAddress

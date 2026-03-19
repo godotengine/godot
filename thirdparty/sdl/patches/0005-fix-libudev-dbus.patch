@@ -55,7 +55,7 @@ index 738f4bafe3f..50bed36248e 100644
  
 -#include <libudev.h>
 +//#include <libudev.h>
-+#include "thirdparty/linuxbsd_headers/udev/libudev.h"
++#include <thirdparty/linuxbsd_headers/udev/libudev.h>
  #include <sys/time.h>
  #include <sys/types.h>
  

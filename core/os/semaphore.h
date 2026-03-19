@@ -40,8 +40,8 @@
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#include <thirdparty/mingw-std-threads/mingw.condition_variable.h>
+#include <thirdparty/mingw-std-threads/mingw.mutex.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <condition_variable>

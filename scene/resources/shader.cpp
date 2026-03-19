@@ -36,10 +36,10 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "texture.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"

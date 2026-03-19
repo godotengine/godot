@@ -36,9 +36,10 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include "thirdparty/misc/nvapi_minimal.h"
+#include <thirdparty/misc/nvapi_minimal.h>
 
 #include <dwmapi.h>
+
 #include <cstdio>
 #include <cstdlib>
 

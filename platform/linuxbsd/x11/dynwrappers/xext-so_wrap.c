@@ -5,7 +5,7 @@
 //
 #include <stdint.h>
 
-#include "thirdparty/linuxbsd_headers/X11/Xlib.h"
+#include <thirdparty/linuxbsd_headers/X11/Xlib.h>
 #define XShapeQueryExtension XShapeQueryExtension_dylibloader_orig_xext
 #define XShapeQueryVersion XShapeQueryVersion_dylibloader_orig_xext
 #define XShapeCombineRegion XShapeCombineRegion_dylibloader_orig_xext
@@ -17,8 +17,8 @@
 #define XShapeSelectInput XShapeSelectInput_dylibloader_orig_xext
 #define XShapeInputSelected XShapeInputSelected_dylibloader_orig_xext
 #define XShapeGetRectangles XShapeGetRectangles_dylibloader_orig_xext
-#include "thirdparty/linuxbsd_headers/X11/extensions/Xext.h"
-#include "thirdparty/linuxbsd_headers/X11/extensions/shape.h"
+#include <thirdparty/linuxbsd_headers/X11/extensions/Xext.h>
+#include <thirdparty/linuxbsd_headers/X11/extensions/shape.h>
 #undef XShapeQueryExtension
 #undef XShapeQueryVersion
 #undef XShapeCombineRegion

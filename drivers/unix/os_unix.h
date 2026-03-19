@@ -140,6 +140,8 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir(const String &p_user_dir) const override;
+
+	virtual String expand_path(const String &p_path) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {
