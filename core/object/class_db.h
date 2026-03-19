@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/method_bind.h"
+#include "core/object/method_bind_common.h"
 #include "core/object/object.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
