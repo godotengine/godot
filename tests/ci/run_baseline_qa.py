@@ -157,8 +157,10 @@ class BaselineQARunner:
         if test_type == "godot":
             command = [self.godot_binary]
             if test.get("requires_gpu", False):
-                # Headless display (no window) but keep Vulkan for GPU compute.
-                command.extend(["--display-driver", "headless", "--rendering-driver", "vulkan"])
+                # Windows display driver + Vulkan renderer + safe render thread.
+                # Headless display driver cannot create a RenderingDevice; the
+                # Windows driver is required even on service-mode runners.
+                command.extend(["--rendering-driver", "vulkan", "--render-thread", "safe"])
             else:
                 command.append("--headless")
             command.extend(["--verbose", "--script", test["script"]])
