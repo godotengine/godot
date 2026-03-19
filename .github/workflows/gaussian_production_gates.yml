@@ -150,7 +150,7 @@ jobs:
 
   module-validation:
     name: Module Build + Runtime Harness (Windows Self-Hosted)
-    runs-on: [self-hosted, Windows, X64, godotgs]
+    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
     needs:
       - guards
       - gpu-evidence-requirement
@@ -210,10 +210,7 @@ jobs:
             }
           }
           if (-not $resolved) {
-            $recursive = Get-ChildItem -Path . -Recurse -File -Filter "godot.windows.editor*.exe" | Select-Object -First 1
-            if ($recursive) {
-              $resolved = $recursive.FullName
-            }
+            throw "Could not find built Godot binary in expected bin\ paths."
           }
           if (-not $resolved) {
             throw "Could not find built Godot binary in workspace."
@@ -466,7 +463,7 @@ jobs:
 
       - name: Collect production evidence
         id: evidence
-        if: ${{ success() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
+        if: ${{ always() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
         shell: pwsh
         env:
           RUNTIME_LOOPS: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_loops || '3' }}
@@ -492,7 +489,7 @@ jobs:
           path: ${{ steps.evidence.outputs.dir }}
 
       - name: Enforce readiness booleans
-        if: ${{ (inputs.enforce_gpu_readiness == true || inputs.enforce_gpu_readiness == 'true') && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' && steps.evidence.outputs.dir != '' }}
+        if: ${{ (inputs.enforce_gpu_readiness == true || inputs.enforce_gpu_readiness == 'true') && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' && steps.evidence.outcome == 'success' && steps.evidence.outputs.dir != '' }}
         shell: pwsh
         run: |
           $summaryPath = Join-Path "${{ steps.evidence.outputs.dir }}" "summary.json"
