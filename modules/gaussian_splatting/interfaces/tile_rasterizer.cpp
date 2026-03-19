@@ -1,6 +1,7 @@
 #include "tile_rasterizer.h"
 #include "../renderer/tile_renderer.h"
 #include "../renderer/gpu_sorting_config.h"
+#include "../renderer/pipeline_feature_set.h"
 #include "../logger/gs_logger.h"
 #include "core/config/project_settings.h"
 
@@ -22,7 +23,8 @@ static bool _is_raster_ready_log_enabled() {
 
 static uint64_t _compute_raster_shared_memory_requirement_bytes() {
 	const uint64_t splats_per_tile = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE);
-	const uint64_t projected_gaussian_bytes = uint64_t(9u * sizeof(uint32_t)); // Conservative unpacked payload.
+	const uint64_t projected_gaussian_words = g_pipeline_feature_set.enable_packed_stage_data ? 8u : 9u;
+	const uint64_t projected_gaussian_bytes = uint64_t(projected_gaussian_words * sizeof(uint32_t));
 	const uint64_t per_splat_bytes = uint64_t(sizeof(uint32_t)) + projected_gaussian_bytes;
 	const uint64_t scalar_shared_bytes = uint64_t(5u * sizeof(uint32_t));
 	return splats_per_tile * per_splat_bytes + scalar_shared_bytes;
