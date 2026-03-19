@@ -531,7 +531,7 @@ const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestra
 		GaussianSplatSceneDirector *p_director,
 		GaussianStreamingSystem *p_streaming_system,
 		const Vector3 &p_camera_origin) {
-	visible_lod_selection.instances.clear();
+	visible_lod_selection._internal_get_instances().clear();
 	visible_lod_selection.residency_request_count = 0;
 
 	if (!p_director || !p_streaming_system) {
@@ -541,7 +541,7 @@ const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestra
 	const LODConfig &lod_config = p_streaming_system->get_lod_config();
 	const float hysteresis_zone = p_streaming_system->get_lod_hysteresis_zone();
 	p_director->update_instance_lods_for_renderer(renderer, p_camera_origin, lod_config, hysteresis_zone);
-	p_director->build_instance_buffer_for_renderer(renderer, visible_lod_selection.instances);
+	p_director->build_instance_buffer_for_renderer(renderer, visible_lod_selection._internal_get_instances());
 
 	return visible_lod_selection;
 }
@@ -1793,7 +1793,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 
 	// Reset legacy streaming buffers, but do not publish a pre-cull visible count.
 	// The active cull->sort path is the authoritative source for frame visibility.
-	renderer->_reset_legacy_streaming_data_path_state();
+	renderer->reset_legacy_streaming_data_path_state();
 
 	// Legacy instance transforms removed; use the view transform directly.
 	Transform3D effective_view_transform = p_world_to_camera_transform;
@@ -1843,7 +1843,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		return false;
 	}
 
-	renderer->_run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
+	renderer->run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
 			p_render_buffers, stream_ready,
 			"Cull skipped: streaming data unavailable",
 			"Sort skipped: streaming data unavailable",

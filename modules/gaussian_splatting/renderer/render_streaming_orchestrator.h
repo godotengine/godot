@@ -28,9 +28,9 @@ public:
 		uint32_t residency_request_count = 0;
 		bool has_instances() const { return !instances.is_empty(); }
 		const LocalVector<InstanceDataGPU> &get_instances() const { return instances; }
+		LocalVector<InstanceDataGPU> &_internal_get_instances() { return instances; }
 
 	private:
-		friend class RenderStreamingOrchestrator;
 		LocalVector<InstanceDataGPU> instances;
 	};
 
