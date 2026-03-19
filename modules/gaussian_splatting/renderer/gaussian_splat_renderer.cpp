@@ -84,6 +84,9 @@ using GaussianSplatting::ScopedGpuMarker;
 
 namespace {
 
+constexpr uint32_t FRUSTUM_PLANE_COUNT = 6;
+static constexpr real_t SORT_TRANSFORM_TOLERANCE = 1e-4f;
+
 // Project settings helpers provided by gs_project_settings.h (gs::settings namespace).
 static bool _get_bool_setting(ProjectSettings *ps, const StringName &name, bool fallback) {
     return gs::settings::get_bool(ps, name, fallback);
@@ -91,6 +94,13 @@ static bool _get_bool_setting(ProjectSettings *ps, const StringName &name, bool 
 
 static int _get_int_setting(ProjectSettings *ps, const StringName &name, int fallback) {
     return static_cast<int>(gs::settings::get_uint(ps, name, static_cast<uint32_t>(fallback)));
+}
+
+// Convert SH band level (0-3) to coefficient count limit
+static uint8_t _sh_band_to_coeff_limit(int p_band) {
+    // SH bands: 0 -> 1 coeff (DC only), 1 -> 4, 2 -> 9, 3 -> 16
+    int clamped = CLAMP(p_band, 0, 3);
+    return static_cast<uint8_t>((clamped + 1) * (clamped + 1));
 }
 
 static void _initialize_lighting_project_settings_defaults() {
@@ -157,13 +167,13 @@ static void _refresh_frame_log_settings() {
     g_frame_log_settings.enable_frame_logging = false;
     g_frame_log_settings.frame_log_frequency = 300;
     if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        g_frame_log_settings.enable_all_debug = _get_bool_setting(ps,
+        g_frame_log_settings.enable_all_debug = gs::settings::get_bool(ps,
                 "rendering/gaussian_splatting/debug/enable_all_debug", false);
-        g_frame_log_settings.enable_frame_logging = _get_bool_setting(ps,
+        g_frame_log_settings.enable_frame_logging = gs::settings::get_bool(ps,
                 "rendering/gaussian_splatting/debug/enable_frame_logging", false);
-        g_frame_log_settings.frame_log_frequency = _get_int_setting(ps,
+        g_frame_log_settings.frame_log_frequency = static_cast<int>(gs::settings::get_uint(ps,
                 "rendering/gaussian_splatting/debug/frame_log_frequency",
-                g_frame_log_settings.frame_log_frequency);
+                static_cast<uint32_t>(g_frame_log_settings.frame_log_frequency)));
     }
     if (g_frame_log_settings.enable_all_debug && g_frame_log_settings.frame_log_frequency <= 0) {
         g_frame_log_settings.frame_log_frequency = 1;
@@ -661,10 +671,8 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     // will be called when device becomes available
     subsystem_state.gpu_culler.instantiate();
     // Respect project setting for LOD - don't hardcode to true
-    bool lod_enabled_setting = true;  // Default
-    if (ProjectSettings::get_singleton() && ProjectSettings::get_singleton()->has_setting("rendering/gaussian_splatting/lod/enabled")) {
-        lod_enabled_setting = (bool)ProjectSettings::get_singleton()->get_setting("rendering/gaussian_splatting/lod/enabled");
-    }
+    bool lod_enabled_setting = gs::settings::get_bool(ProjectSettings::get_singleton(),
+            "rendering/gaussian_splatting/lod/enabled", true);
     subsystem_state.gpu_culler->get_config().lod_enabled = lod_enabled_setting;
     subsystem_state.gpu_culler->get_config().lod_bias = 1.0f;
     subsystem_state.gpu_culler->get_config().frustum_culling = true;
