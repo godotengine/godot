@@ -201,7 +201,6 @@ TEST_CASE("[GaussianSplatting][Persistence] validate_file accepts valid GSF") {
     CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
 
     GaussianSplatting::GaussianSceneSerializer serializer;
-    serializer.set_enable_checksum(false);
     Error save_err = serializer.save_scene(path, data.ptr(), nullptr, Dictionary());
     CHECK_MESSAGE(save_err == OK, "GSF save should succeed");
 
@@ -267,6 +266,7 @@ TEST_CASE("[GaussianSplatting][Persistence] load_scene rejects forward-incompati
     CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
 
     GaussianSplatting::GaussianSceneSerializer serializer;
+    serializer.set_enable_checksum(false);
     Error save_err = serializer.save_scene(path, data.ptr(), nullptr, Dictionary());
     CHECK_MESSAGE(save_err == OK, "GSF save should succeed");
     if (save_err != OK) {
