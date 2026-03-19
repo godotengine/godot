@@ -127,3 +127,12 @@ TEST_CASE("[TileRenderer] SH cache shrink hysteresis resets when usage recovers"
     CHECK(!plan.should_resize);
     CHECK(plan.next_shrink_candidate_frames == 0u);
 }
+
+TEST_CASE("[TileRenderer] Compute raster shared-memory contract uses deterministic requirement") {
+    const uint64_t required_bytes = TileRasterizer::get_compute_raster_shared_memory_requirement_bytes();
+    const uint64_t expected_bytes = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE) * (sizeof(uint32_t) + 9u * sizeof(uint32_t)) +
+            5u * sizeof(uint32_t);
+
+    CHECK(required_bytes == expected_bytes);
+    CHECK(required_bytes == 40980u);
+}
