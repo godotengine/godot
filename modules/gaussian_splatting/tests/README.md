@@ -107,6 +107,7 @@ Guard-only validation (fast, no editor required):
 
 ```bash
 python3 modules/gaussian_splatting/tests/check_build_metadata_consistency.py
+python3 modules/gaussian_splatting/tests/check_shader_dependency_contract.py
 python3 tests/ci/run_module_tests.py --guard-only
 ```
 
@@ -151,6 +152,16 @@ Painterly datasets live in `tests/painterly_scenes/`. Each JSON descriptor feeds
 ### Software Requirements
 - Godot built with `tests=yes` flag
 - RenderingDevice available (Vulkan-compatible backend)
+
+## Raster Performance Metric Semantics
+
+`RasterPerformance` currently mixes CPU and GPU timing fields. The naming contract is:
+
+- `submission_cpu_ms`: CPU wall-clock time spent recording/submitting tile raster work for the frame.
+- `*_gpu_ms` fields (`binning_gpu_ms`, `prefix_gpu_ms`, `raster_gpu_ms`, `resolve_gpu_ms`, `frame_gpu_ms`): GPU execution timings from timestamp queries (possibly delayed by a few frames).
+- `tile_assignment_ms` and `rasterization_ms`: high-level renderer timings retained for backward compatibility.
+
+When diagnosing regressions, compare `submission_cpu_ms` against `*_gpu_ms` rather than treating it as a GPU metric.
 
 ## Troubleshooting
 

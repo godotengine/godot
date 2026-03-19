@@ -3288,6 +3288,9 @@ SorterCapabilities RadixSort::get_capabilities() {
 }
 
 // OneSweepSort capability probes
+// Uses _supports_subgroup_hardware() instead of _supports_required_subgroups()
+// because subgroup_prefix_mode=force_off targets radix prefix kernels only and
+// should not prevent OneSweep selection on otherwise capable GPUs.
 bool OneSweepSort::is_supported(RenderingDevice *p_rd) {
     const ComputeCapabilityProbe probe = _probe_compute_capabilities(p_rd);
     if (!_supports_compute_profile(probe, WORKGROUP_SIZE, MIN_STORAGE_BUFFERS_PER_SET, WORKGROUP_SIZE * sizeof(uint32_t))) {

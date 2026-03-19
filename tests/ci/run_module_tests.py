@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MODULE_SOURCE_DIR = ROOT / "modules" / "gaussian_splatting"
 RENDERER_DIR = MODULE_SOURCE_DIR / "renderer"
 BUILD_METADATA_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_build_metadata_consistency.py"
+SHADER_DEPENDENCY_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_shader_dependency_contract.py"
 HISTORY_ARTIFACT_AUDIT_SCRIPT = ROOT / "scripts" / "repo" / "history_artifact_audit.py"
 SYNTHETIC_ASSET_PREP_SCRIPT = ROOT / "tests" / "runtime" / "prepare_synthetic_assets.py"
 SOURCE_TREES = (ROOT,)
@@ -304,6 +305,23 @@ def _run_build_metadata_guard() -> tuple[bool, list[str]]:
     return True, output_lines
 
 
+def _run_shader_dependency_guard() -> tuple[bool, list[str]]:
+    if not SHADER_DEPENDENCY_GUARD_SCRIPT.is_file():
+        return False, [
+            f"Missing shader dependency guard script: {SHADER_DEPENDENCY_GUARD_SCRIPT.relative_to(ROOT)}"
+        ]
+
+    code, out, err = _run_command([sys.executable, str(SHADER_DEPENDENCY_GUARD_SCRIPT)])
+    output_lines = [line for line in (out + err).splitlines() if line.strip()]
+
+    if code != 0:
+        if not output_lines:
+            output_lines = [f"Shader dependency guard failed with exit code {code}."]
+        return False, output_lines
+
+    return True, output_lines
+
+
 def _tests_unavailable(output: str) -> bool:
     normalized_output = " ".join(output.lower().split())
     markers = (
@@ -547,6 +565,16 @@ def main() -> int:
             return 1
         if not build_metadata_messages:
             print("[module-tests] Build metadata guard passed.")
+
+    shader_dependency_ok, shader_dependency_messages = _run_shader_dependency_guard()
+    for message in shader_dependency_messages:
+        prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
+        print(f"{prefix}{message}")
+    if not shader_dependency_ok:
+        print("[module-tests] Shader dependency guard failed.")
+        return 1
+    if not shader_dependency_messages:
+        print("[module-tests] Shader dependency guard passed.")
 
     base_ref: str | None = None
     if not args.skip_render_guards:
