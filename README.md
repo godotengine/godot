@@ -19,6 +19,7 @@ GodotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module.
 ## Documentation
 
 - Canonical docs index: [docs/index.md](docs/index.md)
+- Versioned docs site pipeline: [docs/development/docs-site.md](docs/development/docs-site.md)
 - Architecture overview: [docs/architecture/overview.md](docs/architecture/overview.md)
 - API index: [docs/api/README.md](docs/api/README.md)
 - Archive policy and historical materials: [docs/archive/README.md](docs/archive/README.md)

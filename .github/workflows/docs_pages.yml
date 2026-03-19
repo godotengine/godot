@@ -1,0 +1,86 @@
+name: Docs Pages (Versioned)
+
+on:
+  push:
+    branches: [ master, main ]
+    tags:
+      - "v*"
+    paths:
+      - "docs/**"
+      - "scripts/build_documentation.py"
+      - "scripts/stage_public_docs.py"
+      - "scripts/build_docs_site.py"
+      - "scripts/check_docs_media_budget.py"
+      - "mkdocs.yml"
+      - ".github/workflows/docs_pages.yml"
+      - "modules/gaussian_splatting/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and Deploy Versioned Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system docs dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt -r docs/requirements-site.txt
+
+      - name: Generate and stage docs artifacts
+        run: |
+          python scripts/build_documentation.py --all
+          python scripts/stage_public_docs.py \
+            --source docs \
+            --output .site/public-docs \
+            --repo-url "https://github.com/${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_SHA}"
+          python scripts/check_docs_media_budget.py \
+            --root .site/public-docs \
+            --max-file-mb 25 \
+            --max-total-mb 250
+
+      - name: Validate MkDocs build (strict)
+        env:
+          DOCS_REPO_URL: https://github.com/${{ github.repository }}
+        run: |
+          mkdocs build --strict --config-file mkdocs.yml
+
+      - name: Configure Git user for mike deploy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy with mike
+        env:
+          DOCS_REPO_URL: https://github.com/${{ github.repository }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+            mike deploy --push "${VERSION}"
+          else
+            mike deploy --push --update-aliases latest latest
+            mike set-default --push latest
+          fi

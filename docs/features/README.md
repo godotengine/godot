@@ -11,6 +11,7 @@ Index user-facing feature guides that are maintained in this repository.
 | PLY import and loading | [ply-loader.md](ply-loader.md) |
 | Color grading quick start | [color-grading-quick-start.md](color-grading-quick-start.md) |
 | Artist pipeline workflow | [artist_pipeline.md](artist_pipeline.md) |
+| Version-controlled media usage | [media.md](media.md) |
 
 ## Related
 

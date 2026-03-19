@@ -14,6 +14,8 @@
     "test:runtime": "make test-runtime",
     "test:baseline": "make test-baseline",
     "docs": "python3 scripts/build_documentation.py --all",
+    "docs:stage": "python3 scripts/stage_public_docs.py --source docs --output .site/public-docs",
+    "docs:site": "python3 scripts/build_docs_site.py --strict",
     "benchmark": "python3 test_data/benchmark_performance.py",
     "clean": "make clean"
   },

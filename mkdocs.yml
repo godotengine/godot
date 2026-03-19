@@ -1,0 +1,39 @@
+site_name: Godot Gaussian Splatting Docs
+site_description: Versioned documentation for the Godot Gaussian Splatting module.
+repo_url: !ENV [DOCS_REPO_URL, "https://github.com/OWNER/REPO"]
+edit_uri: !ENV [DOCS_EDIT_URI, "edit/master/docs/"]
+docs_dir: .site/public-docs
+site_dir: .site/site
+use_directory_urls: true
+exclude_docs: README.md
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.highlight
+    - search.suggest
+
+plugins:
+  - search
+  - mike:
+      version_selector: true
+      canonical_version: latest
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences

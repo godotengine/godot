@@ -18,6 +18,7 @@ This is the canonical documentation entrypoint for this repository.
 
 - Workflows: `workflows/`
 - Feature guides: `features/`
+- Media conventions: `features/media.md`
 
 ## Configuration
 
@@ -41,6 +42,7 @@ This is the canonical documentation entrypoint for this repository.
 ## Developer Workflow
 
 - Development index: `development/README.md`
+- Versioned docs site: `development/docs-site.md`
 - Testing setup: `testing/setup-guide.md`
 - Benchmark suite runner: `testing/benchmark-suite.md`
 - CI workflows: `../.github/workflows/README.md`
