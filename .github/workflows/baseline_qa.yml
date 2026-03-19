@@ -216,8 +216,8 @@ jobs:
         if-no-files-found: warn
         retention-days: 30
 
-    - name: Comment on PR
-      if: github.event_name == 'pull_request' && always()
+    - name: Comment on PR (success only)
+      if: github.event_name == 'pull_request' && success()
       uses: actions/github-script@v6
       with:
         script: |
@@ -230,7 +230,6 @@ jobs:
 
             const total = results.total_tests;
             const passed = results.passed_tests;
-            const failed = results.failed_tests;
             const successRate = total > 0 ? (passed/total*100).toFixed(1) : 0;
 
             comment += '| Test Suite | Status | Details |\n';
@@ -243,10 +242,6 @@ jobs:
             }
 
             comment += `\n**Summary:** ${passed}/${total} tests passed (${successRate}%)\n`;
-
-            if (failed > 0) {
-              comment += '\nSome tests failed. Check the [job logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n';
-            }
 
           } catch (error) {
             comment += 'Could not parse test results. Check the job logs for details.\n';
