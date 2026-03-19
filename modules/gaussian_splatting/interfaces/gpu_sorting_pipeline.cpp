@@ -2934,6 +2934,13 @@ SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_
 	}
 
 	if (g_gpu_sorting_config.validate_sorted_output) {
+		// Flush any pending GPU work before waiting — the radix indirect path
+		// may not have issued a submit yet, so wait_for_completion() alone can
+		// return while the sort is still in flight.
+		RenderingDevice *sync_device = sort_resource_device ? sort_resource_device : rd;
+		if (sync_device) {
+			gs_device_utils::safe_submit_and_sync(sync_device);
+		}
 		wait_for_completion();
 		result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
 		const uint32_t sorter_capacity = gpu_sorter->get_max_elements();
