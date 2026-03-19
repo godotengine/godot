@@ -961,9 +961,11 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		} else if (publish_instance_identity_fallback("Missing previous sorted buffer on camera-stable frame")) {
 			reset_sort_metrics();
 			return build_summary();
-		} else if (!strict_global_sort && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
+		} else if ((!strict_global_sort || !can_reuse_previous_sorted) && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
 			// Last resort bootstrap: if the previous sorted buffer is unavailable,
 			// keep rendering progress with current cull order instead of showing zero splats.
+			// This fallback is reachable even in strict mode when the cached sort buffer is missing,
+			// since rendering zero splats is worse than rendering with approximate cull order.
 			const uint32_t copy_count = MIN<uint32_t>(available_splats,
 					static_cast<uint32_t>(cull_state.culled_indices.size()));
 			if (copy_count > 0) {

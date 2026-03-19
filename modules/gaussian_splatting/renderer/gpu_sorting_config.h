@@ -56,7 +56,7 @@ struct GPUSortingConfig {
     bool enable_prefix_readback = false;     // Enable sync readback of overlap count (debug/validation only; causes GPU stall)
     bool profiling_preserve_gpu_timestamps = false; // Skip synchronous prefix readback to keep timestamp buffers intact (profiling-only; estimates overlap count)
     bool enable_compute_raster = true;       // Compute rasterizer with multi-pass batched shared memory loading
-    bool strict_global_sort = true;          // Enforce exact global depth-sort semantics (disables unsafe fallback shortcuts)
+    bool strict_global_sort = false;         // Enforce exact global depth-sort semantics (prefer full sorts but preserve recovery fallbacks)
     bool validate_sorted_output = false;     // Debug validation of sorted key monotonicity after GPU sort
     bool enable_stage_timestamps = true;     // Capture per-stage GPU timestamps in tile renderer
     uint8_t subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO; // Runtime subgroup policy for radix prefix kernels
