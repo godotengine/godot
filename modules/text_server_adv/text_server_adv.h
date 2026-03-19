@@ -377,7 +377,8 @@ class TextServerAdvanced : public TextServerExtension {
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
 #if HB_VERSION_ATLEAST(13, 0, 0)
-	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
+	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra, bool p_mono) const;
+	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap_lcd(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image_r, hb_raster_image_t *p_image_g, hb_raster_image_t *p_image_b, const hb_raster_extents_t &p_ext_g, const Vector2 &p_advance) const;
 #endif
 #endif
 	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
