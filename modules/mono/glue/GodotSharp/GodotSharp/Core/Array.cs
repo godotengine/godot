@@ -342,6 +342,26 @@ namespace Godot.Collections
         }
 
         /// <summary>
+        /// Ensures that the capacity of this <see cref="Array"/> is at least the specified
+        /// <paramref name="capacity"/>. You can use this method before repeated insertions to
+        /// improve performance. If the current capacity is less than <paramref name="capacity"/>,
+        /// the capacity grows in 1.5x increments when possible, and uses
+        /// <paramref name="capacity"/> exactly otherwise.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
+        /// <param name="capacity">The minimum capacity to ensure.</param>
+        /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
+        public Error EnsureCapacity(int capacity)
+        {
+            ThrowIfReadOnly();
+
+            var self = (godot_array)NativeValue;
+            return NativeFuncs.godotsharp_array_reserve(ref self, capacity);
+        }
+
+        /// <summary>
         /// Reverses the order of the elements in the array.
         /// </summary>
         /// <exception cref="InvalidOperationException">
@@ -1284,6 +1304,23 @@ namespace Godot.Collections
         public Error Resize(int newSize)
         {
             return _underlyingArray.Resize(newSize);
+        }
+
+        /// <summary>
+        /// Ensures that the capacity of this <see cref="Array{T}"/> is at least the specified
+        /// <paramref name="capacity"/>. You can use this method before repeated insertions to
+        /// improve performance. If the current capacity is less than <paramref name="capacity"/>,
+        /// the capacity grows in 1.5x increments when possible, and uses
+        /// <paramref name="capacity"/> exactly otherwise.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
+        /// <param name="capacity">The minimum capacity to ensure.</param>
+        /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
+        public Error EnsureCapacity(int capacity)
+        {
+            return _underlyingArray.EnsureCapacity(capacity);
         }
 
         /// <summary>
