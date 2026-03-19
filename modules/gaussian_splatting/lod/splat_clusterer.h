@@ -24,11 +24,10 @@ public:
         PainterlyMetadata painterly; // Painterly metadata blended from sources
 
         // Covariance matrix for the clustered splat
-        float covariance[6];  // Upper triangular: xx, xy, xz, yy, yz, zz
+        float covariance[6] = {};  // Upper triangular: xx, xy, xz, yy, yz, zz
 
         ClusteredSplat() : combined_opacity(0.0f), source_count(0),
                           importance_sum(0.0f), original_index(0) {
-            memset(covariance, 0, sizeof(covariance));
         }
 
         // Convert to GaussianData format

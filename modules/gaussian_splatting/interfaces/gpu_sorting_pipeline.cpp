@@ -1749,7 +1749,7 @@ bool GPUSortingPipeline::populate_gpu_positions(RID p_buffer, uint32_t p_total_g
                 buffer_device = manager->acquire_submission_device(buffer_device, buffer_lock);
             }
             Vector<uint8_t> gpu_bytes = buffer_device ? buffer_device->buffer_get_data(p_buffer, byte_offset, byte_size) : Vector<uint8_t>();
-            if (gpu_bytes.size() != byte_size) {
+            if ((uint64_t)gpu_bytes.size() != byte_size) {
                 if (p_inputs.gpu_gaussian_cache_valid) {
                     *p_inputs.gpu_gaussian_cache_valid = false;
                 }
@@ -1837,7 +1837,7 @@ bool GPUSortingPipeline::populate_gpu_positions(RID p_buffer, uint32_t p_total_g
                 buffer_device = manager->acquire_submission_device(buffer_device, buffer_lock);
             }
             Vector<uint8_t> gpu_bytes = buffer_device ? buffer_device->buffer_get_data(p_buffer, byte_offset, byte_size) : Vector<uint8_t>();
-            if (gpu_bytes.size() != byte_size) {
+            if ((uint64_t)gpu_bytes.size() != byte_size) {
                 return false;
             }
 

@@ -158,7 +158,7 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
 
         RenderingDevice *main_rd = rs->get_rendering_device();
         if (main_rd == nullptr) {
-            WARN("Skipping test - Main RenderingDevice unavailable");
+            MESSAGE("Skipping test - Main RenderingDevice unavailable");
             return;
         }
 
@@ -192,7 +192,7 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
 
         RenderingDevice *local_rd = rs->create_local_rendering_device();
         if (local_rd == nullptr) {
-            WARN("Skipping test - Local RenderingDevice unavailable");
+            MESSAGE("Skipping test - Local RenderingDevice unavailable");
             return;
         }
 
@@ -348,7 +348,7 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
 
     TEST_CASE("[Integration] Full pipeline execution with 100K splats") {
         if (!is_rendering_device_available()) {
-            WARN("Skipping test - Rendering device not available");
+            MESSAGE("Skipping test - Rendering device not available");
             return;
         }
 
@@ -475,7 +475,7 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
 
     TEST_CASE("[Integration] Shared submission device prevents main queue submission errors") {
         if (!is_rendering_device_available()) {
-            WARN("Skipping test - Rendering device not available");
+            MESSAGE("Skipping test - Rendering device not available");
             return;
         }
 
@@ -599,7 +599,7 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
 
     TEST_CASE("[Integration] Memory stream buffer cycling") {
         if (!is_rendering_device_available()) {
-            WARN("Skipping test - Rendering device not available");
+            MESSAGE("Skipping test - Rendering device not available");
             return;
         }
 

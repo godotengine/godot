@@ -1225,13 +1225,13 @@ bool TileRendererRegressionTest::validate_against_reference(RID output_texture, 
 TEST_CASE("[TileRenderer] Range pipeline regression test") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("[TileRenderer] RenderingServer not available, skipping regression tests");
+        MESSAGE("[TileRenderer] RenderingServer not available, skipping regression tests");
         return;
     }
 
     RenderingDevice *rd = rs->create_local_rendering_device();
     if (!rd) {
-        WARN("[TileRenderer] Could not create local rendering device, skipping regression tests");
+        MESSAGE("[TileRenderer] Could not create local rendering device, skipping regression tests");
         return;
     }
 

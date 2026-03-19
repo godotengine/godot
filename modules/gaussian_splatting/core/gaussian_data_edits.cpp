@@ -43,19 +43,19 @@ void GaussianData::_clear_brush_strokes_locked() {
 }
 
 void GaussianData::_set_runtime_position_locked(int p_idx, const Vector3& p_pos) {
-    const int count = gaussians.size();
+    const uint32_t count = gaussians.size();
     if (edit_state.runtime_positions.size() != count) {
         edit_state.runtime_positions.resize(count);
     }
     if (edit_state.runtime_position_flags.size() != count) {
         edit_state.runtime_position_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.runtime_position_flags[i] = false;
         }
     }
     if (edit_state.modified_flags.size() != count) {
         edit_state.modified_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.modified_flags[i] = false;
         }
     }
@@ -66,19 +66,19 @@ void GaussianData::_set_runtime_position_locked(int p_idx, const Vector3& p_pos)
 }
 
 void GaussianData::_set_runtime_color_locked(int p_idx, const Color& p_col) {
-    const int count = gaussians.size();
+    const uint32_t count = gaussians.size();
     if (edit_state.runtime_colors.size() != count) {
         edit_state.runtime_colors.resize(count);
     }
     if (edit_state.runtime_color_flags.size() != count) {
         edit_state.runtime_color_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.runtime_color_flags[i] = false;
         }
     }
     if (edit_state.modified_flags.size() != count) {
         edit_state.modified_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.modified_flags[i] = false;
         }
     }
@@ -89,19 +89,19 @@ void GaussianData::_set_runtime_color_locked(int p_idx, const Color& p_col) {
 }
 
 void GaussianData::_set_runtime_opacity_locked(int p_idx, float p_opacity) {
-    const int count = gaussians.size();
+    const uint32_t count = gaussians.size();
     if (edit_state.runtime_opacities.size() != count) {
         edit_state.runtime_opacities.resize(count);
     }
     if (edit_state.runtime_opacity_flags.size() != count) {
         edit_state.runtime_opacity_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.runtime_opacity_flags[i] = false;
         }
     }
     if (edit_state.modified_flags.size() != count) {
         edit_state.modified_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.modified_flags[i] = false;
         }
     }
@@ -135,19 +135,19 @@ void GaussianData::apply_color_range(int p_start, int p_count, const Color& p_co
     RWLockWrite lock(data_rwlock);
     ERR_FAIL_INDEX(p_start, (int)gaussians.size());
     ERR_FAIL_COND(p_start + p_count > (int)gaussians.size());
-    const int count = gaussians.size();
+    const uint32_t count = gaussians.size();
     if (edit_state.runtime_colors.size() != count) {
         edit_state.runtime_colors.resize(count);
     }
     if (edit_state.runtime_color_flags.size() != count) {
         edit_state.runtime_color_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.runtime_color_flags[i] = false;
         }
     }
     if (edit_state.modified_flags.size() != count) {
         edit_state.modified_flags.resize(count);
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             edit_state.modified_flags[i] = false;
         }
     }
@@ -166,7 +166,7 @@ void GaussianData::mark_range_dirty(int p_start, int p_count) {
     ERR_FAIL_COND(p_start + p_count > (int)gaussians.size());
     if (edit_state.modified_flags.size() != gaussians.size()) {
         edit_state.modified_flags.resize(gaussians.size());
-        for (int i = 0; i < (int)edit_state.modified_flags.size(); i++) {
+        for (uint32_t i = 0; i < edit_state.modified_flags.size(); i++) {
             edit_state.modified_flags[i] = false;
         }
     }
@@ -186,24 +186,24 @@ void GaussianData::commit_runtime_changes() {
             return;
         }
 
-        for (int i = 0; i < (int)edit_state.modified_flags.size(); i++) {
+        for (uint32_t i = 0; i < edit_state.modified_flags.size(); i++) {
             if (edit_state.modified_flags[i]) {
                 Gaussian original = gaussians[i];
                 bool changed = false;
-                if (i < (int)edit_state.runtime_positions.size() &&
-                    i < (int)edit_state.runtime_position_flags.size() &&
+                if (i < edit_state.runtime_positions.size() &&
+                    i < edit_state.runtime_position_flags.size() &&
                     edit_state.runtime_position_flags[i]) {
                     gaussians[i].position = edit_state.runtime_positions[i];
                     changed = true;
                 }
-                if (i < (int)edit_state.runtime_colors.size() &&
-                    i < (int)edit_state.runtime_color_flags.size() &&
+                if (i < edit_state.runtime_colors.size() &&
+                    i < edit_state.runtime_color_flags.size() &&
                     edit_state.runtime_color_flags[i]) {
                     gaussians[i].sh_dc = edit_state.runtime_colors[i];
                     changed = true;
                 }
-                if (i < (int)edit_state.runtime_opacities.size() &&
-                    i < (int)edit_state.runtime_opacity_flags.size() &&
+                if (i < edit_state.runtime_opacities.size() &&
+                    i < edit_state.runtime_opacity_flags.size() &&
                     edit_state.runtime_opacity_flags[i]) {
                     gaussians[i].opacity = edit_state.runtime_opacities[i];
                     changed = true;
@@ -301,7 +301,7 @@ void GaussianData::apply_brush_stroke(const Vector3 &p_center, float p_radius, c
         const Color target_color = stroke.color;
         const float target_alpha = CLAMP(target_color.a, 0.0f, 1.0f);
 
-        for (int i = 0; i < (int)gaussians.size(); i++) {
+        for (uint32_t i = 0; i < gaussians.size(); i++) {
             const Vector3 &pos = gaussians[i].position;
             float distance_sq = p_center.distance_squared_to(pos);
             if (distance_sq > radius_sq) {
@@ -318,14 +318,14 @@ void GaussianData::apply_brush_stroke(const Vector3 &p_center, float p_radius, c
             }
 
             Color base_color = gaussians[i].sh_dc;
-            if (i < (int)edit_state.runtime_colors.size() && i < (int)edit_state.runtime_color_flags.size() && edit_state.runtime_color_flags[i]) {
+            if (i < edit_state.runtime_colors.size() && i < edit_state.runtime_color_flags.size() && edit_state.runtime_color_flags[i]) {
                 base_color = edit_state.runtime_colors[i];
             }
             Color blended = base_color.lerp(target_color, strength);
             _set_runtime_color_locked(i, blended);
 
             float base_opacity = gaussians[i].opacity;
-            if (i < (int)edit_state.runtime_opacities.size() && i < (int)edit_state.runtime_opacity_flags.size() && edit_state.runtime_opacity_flags[i]) {
+            if (i < edit_state.runtime_opacities.size() && i < edit_state.runtime_opacity_flags.size() && edit_state.runtime_opacity_flags[i]) {
                 base_opacity = edit_state.runtime_opacities[i];
             }
             float new_opacity = Math::lerp(base_opacity, target_alpha, strength);
@@ -371,9 +371,9 @@ Dictionary GaussianData::capture_brush_affected_state(const Vector3 &p_center, f
     PackedFloat32Array opacities;
 
     const float radius_sq = p_radius * p_radius;
-    const int count = gaussians.size();
+    const uint32_t count = gaussians.size();
 
-    for (int i = 0; i < count; i++) {
+    for (uint32_t i = 0; i < count; i++) {
         float distance_sq = p_center.distance_squared_to(gaussians[i].position);
         if (distance_sq > radius_sq) {
             continue;
@@ -382,8 +382,8 @@ Dictionary GaussianData::capture_brush_affected_state(const Vector3 &p_center, f
         indices.push_back(i);
 
         // Capture the effective color (runtime overlay if present, else base).
-        if (i < (int)edit_state.runtime_colors.size() &&
-                i < (int)edit_state.runtime_color_flags.size() &&
+        if (i < edit_state.runtime_colors.size() &&
+                i < edit_state.runtime_color_flags.size() &&
                 edit_state.runtime_color_flags[i]) {
             colors.push_back(edit_state.runtime_colors[i]);
         } else {
@@ -391,8 +391,8 @@ Dictionary GaussianData::capture_brush_affected_state(const Vector3 &p_center, f
         }
 
         // Capture the effective opacity.
-        if (i < (int)edit_state.runtime_opacities.size() &&
-                i < (int)edit_state.runtime_opacity_flags.size() &&
+        if (i < edit_state.runtime_opacities.size() &&
+                i < edit_state.runtime_opacity_flags.size() &&
                 edit_state.runtime_opacity_flags[i]) {
             opacities.push_back(edit_state.runtime_opacities[i]);
         } else {

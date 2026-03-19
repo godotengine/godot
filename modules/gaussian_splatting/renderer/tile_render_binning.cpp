@@ -346,11 +346,11 @@ RID TileRenderer::TileBinningStage::acquire_binning_buffer_uniform_set(Rendering
 			ranges_uniform.append_id(owner.global_sort_resources.tile_ranges_buffer);
 			uniforms.push_back(ranges_uniform);
 
-			RD::Uniform indirect_uniform;
-			indirect_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			indirect_uniform.binding = 9;
-			indirect_uniform.append_id(owner.global_sort_resources.indirect_dispatch_buffer);
-			uniforms.push_back(indirect_uniform);
+			RD::Uniform indirect_dispatch_uniform;
+			indirect_dispatch_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			indirect_dispatch_uniform.binding = 9;
+			indirect_dispatch_uniform.append_id(owner.global_sort_resources.indirect_dispatch_buffer);
+			uniforms.push_back(indirect_dispatch_uniform);
 	}
 
 	RD::Uniform debug_uniform;

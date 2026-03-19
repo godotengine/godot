@@ -130,7 +130,7 @@ struct SnapshotPositionStressContext {
 };
 
 bool _snapshot_matches_position_pattern(const LocalVector<Gaussian> &p_snapshot, const PackedVector3Array &p_pattern) {
-    if (p_snapshot.size() != p_pattern.size()) {
+    if ((int)p_snapshot.size() != p_pattern.size()) {
         return false;
     }
     for (uint32_t i = 0; i < p_snapshot.size(); i++) {
@@ -777,7 +777,7 @@ TEST_CASE("[Streaming Pipeline] Basic Operations") {
 
 TEST_CASE("[Streaming Pipeline] Concurrent LOD and visibility updates remain coherent while worker is active") {
 #ifndef THREADS_ENABLED
-    WARN("Skipping - THREADS_ENABLED is not enabled in this build");
+    MESSAGE("Skipping - THREADS_ENABLED is not enabled in this build");
     return;
 #endif
 
@@ -790,7 +790,7 @@ TEST_CASE("[Streaming Pipeline] Concurrent LOD and visibility updates remain coh
     }
 
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -932,7 +932,7 @@ TEST_CASE("[GPU Memory Stream] Memory Leak Detection") {
 
 TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent position mutations") {
 #ifndef THREADS_ENABLED
-    WARN("Skipping - THREADS_ENABLED is not enabled in this build");
+    MESSAGE("Skipping - THREADS_ENABLED is not enabled in this build");
     return;
 #endif
 
@@ -989,7 +989,7 @@ TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent p
 
 TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent SH mutations") {
 #ifndef THREADS_ENABLED
-    WARN("Skipping - THREADS_ENABLED is not enabled in this build");
+    MESSAGE("Skipping - THREADS_ENABLED is not enabled in this build");
     return;
 #endif
 
@@ -1076,7 +1076,7 @@ TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent S
 TEST_CASE("[Streaming Pipeline] Stale generation upload jobs are dropped") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1085,7 +1085,7 @@ TEST_CASE("[Streaming Pipeline] Stale generation upload jobs are dropped") {
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1116,7 +1116,7 @@ TEST_CASE("[Streaming Pipeline] Stale generation upload jobs are dropped") {
         OS::get_singleton()->delay_usec(1000);
     }
     if (!saw_async_queue) {
-        WARN("Skipping - Async pack/upload queue not observed in test environment");
+        MESSAGE("Skipping - Async pack/upload queue not observed in test environment");
         return;
     }
 
@@ -1208,7 +1208,7 @@ TEST_CASE("[Streaming Pipeline] Upload abort clears pending chunk state") {
     system->initialize_empty(nullptr);
 
     if (system->get_frame_buffer().is_valid()) {
-        WARN("Skipping - Streaming buffer is valid, missing-buffer abort path unavailable in this environment");
+        MESSAGE("Skipping - Streaming buffer is valid, missing-buffer abort path unavailable in this environment");
         return;
     }
 
@@ -1242,7 +1242,7 @@ TEST_CASE("[Streaming Pipeline] Upload abort clears pending chunk state") {
     }
 
     if (!saw_pending_work) {
-        WARN("Skipping - Async queue activity not observed");
+        MESSAGE("Skipping - Async queue activity not observed");
         return;
     }
 
@@ -1264,7 +1264,7 @@ TEST_CASE("[Streaming Pipeline] Repeated upload aborts do not leave pending jobs
     system->initialize_empty(nullptr);
 
     if (system->get_frame_buffer().is_valid()) {
-        WARN("Skipping - Streaming buffer is valid, missing-buffer abort path unavailable in this environment");
+        MESSAGE("Skipping - Streaming buffer is valid, missing-buffer abort path unavailable in this environment");
         return;
     }
 
@@ -1309,7 +1309,7 @@ TEST_CASE("[Streaming Pipeline] Repeated upload aborts do not leave pending jobs
     }
 
     if (observed_cycles == 0) {
-        WARN("Skipping - Async queue activity not observed");
+        MESSAGE("Skipping - Async queue activity not observed");
         return;
     }
 
@@ -1328,7 +1328,7 @@ TEST_CASE("[Streaming Pipeline] Repeated upload aborts do not leave pending jobs
 TEST_CASE("[Streaming Pipeline] Atlas generation bumps on quantization buffer resize") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1337,7 +1337,7 @@ TEST_CASE("[Streaming Pipeline] Atlas generation bumps on quantization buffer re
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1379,7 +1379,7 @@ TEST_CASE("[Streaming Pipeline] Atlas generation bumps on quantization buffer re
 TEST_CASE("[Streaming Pipeline] IO layout hints clamp chunk size to CHUNK_SIZE") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1388,7 +1388,7 @@ TEST_CASE("[Streaming Pipeline] IO layout hints clamp chunk size to CHUNK_SIZE")
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1426,7 +1426,7 @@ TEST_CASE("[Streaming Pipeline] IO layout hints clamp chunk size to CHUNK_SIZE")
 TEST_CASE("[Streaming Pipeline] Randomized IO layout hint cases keep stable fallback reasons and chunk counts") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1435,7 +1435,7 @@ TEST_CASE("[Streaming Pipeline] Randomized IO layout hint cases keep stable fall
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1590,7 +1590,7 @@ TEST_CASE("[Streaming Pipeline] Randomized IO layout hint cases keep stable fall
 TEST_CASE("[Streaming Pipeline] VRAM accounting includes auxiliary atlas overhead") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1599,7 +1599,7 @@ TEST_CASE("[Streaming Pipeline] VRAM accounting includes auxiliary atlas overhea
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1636,7 +1636,7 @@ TEST_CASE("[Streaming Pipeline] VRAM accounting includes auxiliary atlas overhea
         OS::get_singleton()->delay_usec(500);
     }
     if (system->get_loaded_chunks() == 0) {
-        WARN("Skipping - Residency chunk failed to load in current test environment");
+        MESSAGE("Skipping - Residency chunk failed to load in current test environment");
         return;
     }
 
@@ -1653,7 +1653,7 @@ TEST_CASE("[Streaming Pipeline] VRAM accounting includes auxiliary atlas overhea
 TEST_CASE("[Streaming Pipeline] Invalid camera/projection input is rejected safely") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1662,7 +1662,7 @@ TEST_CASE("[Streaming Pipeline] Invalid camera/projection input is rejected safe
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1698,7 +1698,7 @@ TEST_CASE("[Streaming Pipeline] Invalid camera/projection input is rejected safe
 TEST_CASE("[Streaming Pipeline] VRAM debug stats expose reported usage vs capacity semantics") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1707,7 +1707,7 @@ TEST_CASE("[Streaming Pipeline] VRAM debug stats expose reported usage vs capaci
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1738,7 +1738,7 @@ TEST_CASE("[Streaming Pipeline] VRAM debug stats expose reported usage vs capaci
 TEST_CASE("[Streaming Pipeline] Effective max chunks are clamped to runtime buffer capacity") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1747,7 +1747,7 @@ TEST_CASE("[Streaming Pipeline] Effective max chunks are clamped to runtime buff
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
@@ -1768,7 +1768,7 @@ TEST_CASE("[Streaming Pipeline] Effective max chunks are clamped to runtime buff
             ? static_cast<uint32_t>(uint64_t(system->get_buffer_capacity_splats()) / uint64_t(GaussianStreamingSystem::CHUNK_SIZE))
             : 0;
     if (runtime_capacity_chunks == 0) {
-        WARN("Skipping - Runtime streaming buffer capacity is zero");
+        MESSAGE("Skipping - Runtime streaming buffer capacity is zero");
         return;
     }
 
@@ -1792,7 +1792,7 @@ TEST_CASE("[Streaming Pipeline] Effective max chunks are clamped to runtime buff
 TEST_CASE("[Streaming Pipeline] Budget eviction prioritizes non-primary chunks under regulator pressure") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1801,13 +1801,13 @@ TEST_CASE("[Streaming Pipeline] Budget eviction prioritizes non-primary chunks u
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (!project_settings) {
-        WARN("Skipping - ProjectSettings unavailable");
+        MESSAGE("Skipping - ProjectSettings unavailable");
         return;
     }
 
@@ -1827,7 +1827,7 @@ TEST_CASE("[Streaming Pipeline] Budget eviction prioritizes non-primary chunks u
     system->set_config_overrides(relaxed_overrides);
     system->initialize_empty(rd);
     if (!system->is_runtime_ready()) {
-        WARN("Skipping - Streaming runtime not ready");
+        MESSAGE("Skipping - Streaming runtime not ready");
         return;
     }
 
@@ -1849,7 +1849,7 @@ TEST_CASE("[Streaming Pipeline] Budget eviction prioritizes non-primary chunks u
         }
     }
     if (system->get_loaded_chunks() == 0) {
-        WARN("Skipping - Non-primary residency chunk failed to load in current test environment");
+        MESSAGE("Skipping - Non-primary residency chunk failed to load in current test environment");
         return;
     }
 
@@ -1880,7 +1880,7 @@ TEST_CASE("[Streaming Pipeline] Budget eviction prioritizes non-primary chunks u
 TEST_CASE("[Streaming Pipeline] Tier presets apply streaming caps while project overrides remain traceable") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -1889,13 +1889,13 @@ TEST_CASE("[Streaming Pipeline] Tier presets apply streaming caps while project 
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (!project_settings) {
-        WARN("Skipping - ProjectSettings unavailable");
+        MESSAGE("Skipping - ProjectSettings unavailable");
         return;
     }
 
@@ -1931,7 +1931,7 @@ TEST_CASE("[Streaming Pipeline] Tier presets apply streaming caps while project 
     system->initialize_empty(rd);
 
     if (!system->is_runtime_ready()) {
-        WARN("Skipping - Streaming runtime not ready");
+        MESSAGE("Skipping - Streaming runtime not ready");
         return;
     }
 
@@ -2169,7 +2169,7 @@ TEST_CASE("[Streaming Pipeline] Owner mismatch contract encodes remediation path
 TEST_CASE("[Streaming Pipeline] Instance content generation tracks instance pipeline budget changes") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -2186,7 +2186,7 @@ TEST_CASE("[Streaming Pipeline] Instance content generation tracks instance pipe
 
     RenderingDevice *primary_device = manager->get_primary_rendering_device();
     if (primary_device == nullptr) {
-        WARN("Skipping - Primary rendering device unavailable");
+        MESSAGE("Skipping - Primary rendering device unavailable");
         if (manager_owner) {
             memdelete(manager_owner);
         }
@@ -2237,7 +2237,7 @@ TEST_CASE("[Streaming Pipeline] Instance content generation tracks instance pipe
     }
 
     if (stable_generation_prev == 0 || stable_generation_prev != stable_generation_curr) {
-        WARN("Skipping - Instance pipeline content generation did not stabilize in test environment");
+        MESSAGE("Skipping - Instance pipeline content generation did not stabilize in test environment");
         renderer.unref();
         if (manager_owner) {
             memdelete(manager_owner);
@@ -2275,7 +2275,7 @@ TEST_CASE("[Streaming Pipeline] Instance content generation tracks instance pipe
 TEST_CASE("[Streaming Pipeline] LOD debug stats track transitions_this_frame across camera moves") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -2284,13 +2284,13 @@ TEST_CASE("[Streaming Pipeline] LOD debug stats track transitions_this_frame acr
         rd = rs->create_local_rendering_device();
     }
     if (!rd) {
-        WARN("Skipping - Rendering device unavailable");
+        MESSAGE("Skipping - Rendering device unavailable");
         return;
     }
 
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
     if (!project_settings) {
-        WARN("Skipping - ProjectSettings unavailable");
+        MESSAGE("Skipping - ProjectSettings unavailable");
         return;
     }
 
@@ -2313,7 +2313,7 @@ TEST_CASE("[Streaming Pipeline] LOD debug stats track transitions_this_frame acr
     system.instantiate();
     system->initialize_empty(rd);
     if (!system->is_runtime_ready()) {
-        WARN("Skipping - Streaming runtime not ready");
+        MESSAGE("Skipping - Streaming runtime not ready");
         return;
     }
 
@@ -2346,7 +2346,7 @@ TEST_CASE("[Streaming Pipeline] LOD debug stats track transitions_this_frame acr
 TEST_CASE("[Streaming Pipeline] Renderer renders streamed non-zero chunk") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -2363,7 +2363,7 @@ TEST_CASE("[Streaming Pipeline] Renderer renders streamed non-zero chunk") {
 
     RenderingDevice *primary_device = manager->get_primary_rendering_device();
     if (primary_device == nullptr) {
-        WARN("Skipping - Primary rendering device unavailable");
+        MESSAGE("Skipping - Primary rendering device unavailable");
         if (manager_owner) {
             memdelete(manager_owner);
         }
@@ -2388,7 +2388,7 @@ TEST_CASE("[Streaming Pipeline] Renderer renders streamed non-zero chunk") {
 
     for (uint32_t i = 0; i < total_gaussians; i++) {
         Gaussian &g = gaussians[i];
-        memset(&g, 0, sizeof(Gaussian));
+        g = Gaussian{};
         const bool in_first_chunk = i < chunk_size;
         const float base_x = in_first_chunk ? 0.0f : 1000.0f;
         const uint32_t local_index = in_first_chunk ? i : (i - chunk_size);
@@ -2450,7 +2450,7 @@ TEST_CASE("[Streaming Pipeline] Renderer renders streamed non-zero chunk") {
 TEST_CASE("[Streaming Pipeline] Instance depth Stage-B applies frustum/screen/distance culling") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
-        WARN("Skipping - Rendering server unavailable");
+        MESSAGE("Skipping - Rendering server unavailable");
         return;
     }
 
@@ -2467,7 +2467,7 @@ TEST_CASE("[Streaming Pipeline] Instance depth Stage-B applies frustum/screen/di
 
     RenderingDevice *primary_device = manager->get_primary_rendering_device();
     if (primary_device == nullptr) {
-        WARN("Skipping - Primary rendering device unavailable");
+        MESSAGE("Skipping - Primary rendering device unavailable");
         if (manager_owner) {
             memdelete(manager_owner);
         }
@@ -2490,7 +2490,7 @@ TEST_CASE("[Streaming Pipeline] Instance depth Stage-B applies frustum/screen/di
     const uint32_t inside_count = total_gaussians / 2;
     for (uint32_t i = 0; i < total_gaussians; i++) {
         Gaussian &g = gaussians[i];
-        memset(&g, 0, sizeof(Gaussian));
+        g = Gaussian{};
         const bool inside_frustum_band = i < inside_count;
         const float band_x = inside_frustum_band ? -0.8f : 30.0f;
         const float local_x = float(i % 64) * 0.025f;
@@ -2556,7 +2556,7 @@ TEST_CASE("[Streaming Pipeline] Instance depth Stage-B applies frustum/screen/di
     }
 
     if (!instance_pipeline_ready || baseline_visible == 0) {
-        WARN("Skipping - Instance pipeline did not become ready in Stage-B culling regression test");
+        MESSAGE("Skipping - Instance pipeline did not become ready in Stage-B culling regression test");
         renderer.unref();
         if (manager_owner) {
             memdelete(manager_owner);
