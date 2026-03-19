@@ -151,10 +151,10 @@ void GPUSortingConfig::save_to_project_settings() const {
     ps->set_setting(ENABLE_PREFIX_READBACK_PATH, enable_prefix_readback);
     ps->set_setting(PROFILING_PRESERVE_TIMESTAMPS_PATH, profiling_preserve_gpu_timestamps);
     ps->set_setting(ENABLE_COMPUTE_RASTER_PATH, enable_compute_raster);
-    ps->set_setting(STRICT_GLOBAL_SORT_PATH, strict_global_sort);
-    ps->set_setting(VALIDATE_SORTED_OUTPUT_PATH, validate_sorted_output);
-    ps->set_setting(ENABLE_STAGE_TIMESTAMPS_PATH, enable_stage_timestamps);
-    ps->set_setting(SUBGROUP_PREFIX_MODE_PATH, int(subgroup_prefix_mode));
+    ps->set_setting(STRICT_GLOBAL_SORT_PATH, strict_global_sort); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(VALIDATE_SORTED_OUTPUT_PATH, validate_sorted_output); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(ENABLE_STAGE_TIMESTAMPS_PATH, enable_stage_timestamps); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(SUBGROUP_PREFIX_MODE_PATH, int(subgroup_prefix_mode)); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
 
     ps->save();
 
