@@ -81,6 +81,6 @@ jobs:
             VERSION="${GITHUB_REF_NAME}"
             mike deploy --push "${VERSION}"
           else
-            mike deploy --push --update-aliases latest latest
+            mike deploy --push latest
             mike set-default --push latest
           fi
