@@ -81,6 +81,7 @@ public:
 };
 
 class EditorFileSystemDirectory;
+class ColorRect;
 
 class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
@@ -110,6 +111,7 @@ class EditorHelp : public VBoxContainer {
 	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;
 
+	ColorRect *search_highlight = nullptr;
 	RichTextLabel *class_desc = nullptr;
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
@@ -149,6 +151,8 @@ class EditorHelp : public VBoxContainer {
 
 	int scroll_to = -1;
 
+	int line_to_highlight = -1;
+
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
@@ -167,6 +171,8 @@ class EditorHelp : public VBoxContainer {
 	void _pop_title_font();
 	void _push_code_font();
 	void _pop_code_font();
+
+	void _update_search_highlight();
 
 	void _class_desc_finished();
 	void _class_list_select(const String &p_select);

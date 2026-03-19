@@ -58,6 +58,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "servers/display/display_server.h"
+#include "scene/gui/color_rect.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -264,9 +265,21 @@ void EditorHelp::_search(bool p_search_previous) {
 	}
 }
 
+void EditorHelp::_update_search_highlight() {
+	float y_offset = class_desc->get_paragraph_offset(line_to_highlight);
+	float y_offset2 = class_desc->get_paragraph_offset(line_to_highlight + 2);
+	float scroll_y = class_desc->get_v_scroll_bar()->get_value();
+	float highlight_position_y = y_offset - scroll_y;
+	float highlight_size_y = y_offset2 - y_offset;
+
+	search_highlight->set_position(Vector2(0, highlight_position_y));
+	search_highlight->set_size(Vector2(class_desc->get_size().x, highlight_size_y));
+}
+
 void EditorHelp::_class_desc_finished() {
 	if (scroll_to >= 0) {
 		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(scroll_to), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		_update_search_highlight();
 	}
 	scroll_to = -1;
 }
@@ -340,6 +353,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		// Case order is important here to correctly handle edge cases like `Variant.Type` in `@GlobalScope`.
 		if (table->has(link)) {
 			// Found in the current page.
+			line_to_highlight = (*table)[link];
 			if (class_desc->is_finished()) {
 				emit_signal(SNAME("request_save_history"));
 				class_desc->scroll_to_paragraph((*table)[link]);
@@ -2427,11 +2441,14 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
+	line_to_highlight = line;
+
 	if (class_desc->is_finished()) {
 		class_desc->scroll_to_paragraph(line);
+		_update_search_highlight();
 	} else {
 		scroll_to = line;
-	}
+	}	
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
@@ -3444,6 +3461,7 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect(SceneStringName(resized), callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
+	class_desc->connect(SceneStringName(draw), callable_mp(this, &EditorHelp::_update_search_highlight));
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
@@ -3455,6 +3473,13 @@ EditorHelp::EditorHelp() {
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
+
+	search_highlight = memnew(ColorRect);
+	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.15)); 
+	search_highlight->set_mouse_filter(MOUSE_FILTER_IGNORE); 
+	search_highlight->set_size(Vector2(0, 0));
+	search_highlight->set_position(Vector2(0, 0));
+	class_desc->call_deferred("add_child", search_highlight);
 
 	toggle_files_button = memnew(Button);
 	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
