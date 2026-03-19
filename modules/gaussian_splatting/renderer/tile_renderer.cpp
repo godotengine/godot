@@ -339,8 +339,10 @@ public:
 
 private:
 	bool _has_dispatch_work() const {
-		return params.splat_count > 0 || effective_visible_splats > 0 ||
-				renderer.instance_pipeline_buffers.indirect_dispatch_buffer.is_valid();
+		// Only consider actual splat/element counts as work. Buffer existence
+		// alone (e.g. an indirect dispatch buffer with a GPU-written count of 0)
+		// should not prevent the zero-work clear path from running.
+		return params.splat_count > 0 || effective_visible_splats > 0;
 	}
 
 	void _prepare_next_tile_counts_if_needed() {

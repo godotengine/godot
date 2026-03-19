@@ -1238,6 +1238,16 @@ TileRendererRegressionTest::TestResult TileRendererRegressionTest::test_renderer
         }
     }
 
+    // Re-initialize the shared renderer after the final cleanup so subsequent
+    // tests find it in a usable state.
+    {
+        Error err = tile_renderer->initialize(p_rd, Vector2i(TEST_VIEWPORT_WIDTH, TEST_VIEWPORT_HEIGHT), TEST_TILE_SIZE);
+        if (err != OK) {
+            result.error_message = "Failed to reinitialize tile renderer after lifecycle leak test";
+            return result;
+        }
+    }
+
     result.passed = true;
     return result;
 }
