@@ -562,6 +562,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 
 	SortingStrategyConfig sort_config = SortingStrategyConfig::load_from_project_settings();
 	const bool force_cpu_sort = sort_config.force_cpu_sort;
+	const bool strict_global_sort = g_gpu_sorting_config.strict_global_sort;
 	const bool force_algorithm = sort_config.is_algorithm_forced();
 	const String forced_algorithm_name = _algorithm_override_label(sort_config);
 	const int force_algorithm_value = static_cast<int>(sort_config.force_algorithm);
@@ -733,6 +734,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	};
 
 	auto reuse_previous_sort = [&](const String &p_reason, const char *p_route_uid) -> bool {
+		if (strict_global_sort) {
+			return false;
+		}
 		if (!sorting_pipeline || sorting_state.sorted_splat_count == 0) {
 			return false;
 		}
@@ -759,7 +763,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		return MIN(instance_max_visible_splats, chunk_budget);
 	};
 
-	if (!force_cpu_sort && instance_pipeline_active && instance_max_visible_splats > 0 &&
+	if (!strict_global_sort &&
+			!force_cpu_sort && instance_pipeline_active && instance_max_visible_splats > 0 &&
 			instance_visible_chunk_count > 0 && instance_max_chunk_splats > 0) {
 		instance_camera_to_world = p_world_to_camera_transform.affine_inverse();
 		instance_camera_valid = true;
@@ -895,6 +900,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	}
 
 	auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
+		if (strict_global_sort) {
+			return false;
+		}
 		if (!instance_pipeline_active || !sorting_pipeline) {
 			return false;
 		}
@@ -946,7 +954,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		} else if (publish_instance_identity_fallback("Missing previous sorted buffer on camera-stable frame")) {
 			reset_sort_metrics();
 			return build_summary();
-		} else if (!instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
+		} else if (!strict_global_sort && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
 			// Last resort bootstrap: if the previous sorted buffer is unavailable,
 			// keep rendering progress with current cull order instead of showing zero splats.
 			const uint32_t copy_count = MIN<uint32_t>(available_splats,
@@ -1070,6 +1078,12 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			entries[i].depth = depth;
 			entries[i].index = cpu_sort_original_indices_scratch[i];
 			entries[i].source_index = i;
+		}
+
+		if (strict_global_sort && !positions_ready) {
+			GS_LOG_ERROR_DEFAULT(vformat("[CPU Sort] Strict global sort enabled; refusing unsorted fallback (%s).",
+					p_reason));
+			return false;
 		}
 
 		if (positions_ready) {

@@ -48,6 +48,10 @@ const String GPUSortingConfig::DEBUG_VALIDATE_PREFIX_PATH = SECTION_PATH + "debu
 const String GPUSortingConfig::ENABLE_PREFIX_READBACK_PATH = SECTION_PATH + "enable_prefix_readback";
 const String GPUSortingConfig::PROFILING_PRESERVE_TIMESTAMPS_PATH = SECTION_PATH + "profiling_preserve_gpu_timestamps";
 const String GPUSortingConfig::ENABLE_COMPUTE_RASTER_PATH = SECTION_PATH + "enable_compute_raster";
+const String GPUSortingConfig::STRICT_GLOBAL_SORT_PATH = "rendering/gaussian_splatting/sorting/strict_global_sort";
+const String GPUSortingConfig::VALIDATE_SORTED_OUTPUT_PATH = "rendering/gaussian_splatting/sorting/validate_sorted_output";
+const String GPUSortingConfig::ENABLE_STAGE_TIMESTAMPS_PATH = SECTION_PATH + "enable_stage_timestamps";
+const String GPUSortingConfig::SUBGROUP_PREFIX_MODE_PATH = SECTION_PATH + "subgroup_prefix_mode";
 const String GPUSortingConfig::GPU_PRESET_PATH = SECTION_PATH + "gpu_preset";
 
 // Global instance
@@ -72,6 +76,10 @@ void GPUSortingConfig::load_from_project_settings() {
             profiling_preserve_gpu_timestamps = ps->get_setting(PROFILING_PRESERVE_TIMESTAMPS_PATH, profiling_preserve_gpu_timestamps);
             enable_compute_raster = ps->get_setting(ENABLE_COMPUTE_RASTER_PATH, enable_compute_raster);
             max_raster_splats_per_tile = ps->get_setting(MAX_RASTER_SPLATS_PER_TILE_PATH, max_raster_splats_per_tile);
+            strict_global_sort = ps->get_setting(STRICT_GLOBAL_SORT_PATH, strict_global_sort);
+            validate_sorted_output = ps->get_setting(VALIDATE_SORTED_OUTPUT_PATH, validate_sorted_output);
+            enable_stage_timestamps = ps->get_setting(ENABLE_STAGE_TIMESTAMPS_PATH, enable_stage_timestamps);
+            subgroup_prefix_mode = static_cast<uint8_t>(ps->get_setting(SUBGROUP_PREFIX_MODE_PATH, int(subgroup_prefix_mode)));
             _apply_instance_pipeline_overrides(*this);
 
             if (enable_performance_logging) {
@@ -106,6 +114,10 @@ void GPUSortingConfig::load_from_project_settings() {
     enable_prefix_readback = ps->get_setting(ENABLE_PREFIX_READBACK_PATH, false);
     profiling_preserve_gpu_timestamps = ps->get_setting(PROFILING_PRESERVE_TIMESTAMPS_PATH, false);
     enable_compute_raster = ps->get_setting(ENABLE_COMPUTE_RASTER_PATH, false);
+    strict_global_sort = ps->get_setting(STRICT_GLOBAL_SORT_PATH, true);
+    validate_sorted_output = ps->get_setting(VALIDATE_SORTED_OUTPUT_PATH, false);
+    enable_stage_timestamps = ps->get_setting(ENABLE_STAGE_TIMESTAMPS_PATH, true);
+    subgroup_prefix_mode = static_cast<uint8_t>(ps->get_setting(SUBGROUP_PREFIX_MODE_PATH, int(SUBGROUP_PREFIX_AUTO)));
 
     _apply_instance_pipeline_overrides(*this);
 
@@ -139,6 +151,10 @@ void GPUSortingConfig::save_to_project_settings() const {
     ps->set_setting(ENABLE_PREFIX_READBACK_PATH, enable_prefix_readback);
     ps->set_setting(PROFILING_PRESERVE_TIMESTAMPS_PATH, profiling_preserve_gpu_timestamps);
     ps->set_setting(ENABLE_COMPUTE_RASTER_PATH, enable_compute_raster);
+    ps->set_setting(STRICT_GLOBAL_SORT_PATH, strict_global_sort);
+    ps->set_setting(VALIDATE_SORTED_OUTPUT_PATH, validate_sorted_output);
+    ps->set_setting(ENABLE_STAGE_TIMESTAMPS_PATH, enable_stage_timestamps);
+    ps->set_setting(SUBGROUP_PREFIX_MODE_PATH, int(subgroup_prefix_mode));
 
     ps->save();
 
@@ -163,6 +179,10 @@ void GPUSortingConfig::reset_to_defaults() {
     enable_prefix_readback = false;  // Disabled by default; GPU-driven pipeline uses indirect dispatch
     profiling_preserve_gpu_timestamps = false;
     enable_compute_raster = false;
+    strict_global_sort = true;
+    validate_sorted_output = false;
+    enable_stage_timestamps = true;
+    subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO;
 
     GS_LOG_GPU_SORT_INFO("[GPU Sorting Config] Reset to default configuration");
 }
@@ -186,7 +206,8 @@ bool GPUSortingConfig::validate() const {
            (key_bits == 32 || key_bits == 64) &&
            (tile_bits + depth_bits > 0) &&
            (tile_bits + depth_bits <= key_bits) &&
-           performance_log_interval > 0;
+           performance_log_interval > 0 &&
+           subgroup_prefix_mode <= SUBGROUP_PREFIX_FORCE_OFF;
 }
 
 String GPUSortingConfig::get_validation_errors() const {
@@ -219,6 +240,9 @@ String GPUSortingConfig::get_validation_errors() const {
         errors += "Tile/depth bit split must fit within key_bits\n";
     }
     if (performance_log_interval <= 0) errors += "Performance log interval must be > 0\n";
+    if (subgroup_prefix_mode > SUBGROUP_PREFIX_FORCE_OFF) {
+        errors += "Subgroup prefix mode must be 0 (auto) or 1 (force_off)\n";
+    }
 
     return errors;
 }
@@ -282,6 +306,11 @@ void GPUSortingConfig::print_config_summary() const {
     if (enable_compute_raster) {
         GS_LOG_GPU_SORT_INFO("[GPU Sorting Config] Compute rasterizer enabled (experimental)");
     }
+    GS_LOG_GPU_SORT_INFO(vformat("[GPU Sorting Config] Strict global sort: %s | sorted-output validation: %s | stage timestamps: %s | subgroup prefix mode: %d",
+            strict_global_sort ? "enabled" : "disabled",
+            validate_sorted_output ? "enabled" : "disabled",
+            enable_stage_timestamps ? "enabled" : "disabled",
+            int(subgroup_prefix_mode)));
     GS_LOG_GPU_SORT_INFO("[GPU Sorting Config] ================================================");
 }
 
@@ -315,6 +344,10 @@ GPUSortingConfig GPUSortingConfig::preset_low() {
     config.enable_prefix_readback = false;
     config.profiling_preserve_gpu_timestamps = false;
     config.enable_compute_raster = false;
+    config.strict_global_sort = true;
+    config.validate_sorted_output = false;
+    config.enable_stage_timestamps = true;
+    config.subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO;
 
     return config;
 }
@@ -345,6 +378,10 @@ GPUSortingConfig GPUSortingConfig::preset_medium() {
     config.enable_prefix_readback = false;
     config.profiling_preserve_gpu_timestamps = false;
     config.enable_compute_raster = false;
+    config.strict_global_sort = true;
+    config.validate_sorted_output = false;
+    config.enable_stage_timestamps = true;
+    config.subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO;
 
     return config;
 }
@@ -375,6 +412,10 @@ GPUSortingConfig GPUSortingConfig::preset_high() {
     config.enable_prefix_readback = false;
     config.profiling_preserve_gpu_timestamps = false;
     config.enable_compute_raster = false;    // Enable when stable
+    config.strict_global_sort = true;
+    config.validate_sorted_output = false;
+    config.enable_stage_timestamps = true;
+    config.subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO;
 
     return config;
 }
@@ -405,6 +446,10 @@ GPUSortingConfig GPUSortingConfig::preset_ultra() {
     config.enable_prefix_readback = false;
     config.profiling_preserve_gpu_timestamps = false;
     config.enable_compute_raster = false;       // Enable when stable
+    config.strict_global_sort = true;
+    config.validate_sorted_output = false;
+    config.enable_stage_timestamps = true;
+    config.subgroup_prefix_mode = SUBGROUP_PREFIX_AUTO;
 
     return config;
 }
@@ -448,6 +493,10 @@ bool GPUSortingConfig::apply_preset(const String &p_preset_name) {
         enable_prefix_readback = new_config.enable_prefix_readback;
         profiling_preserve_gpu_timestamps = new_config.profiling_preserve_gpu_timestamps;
         enable_compute_raster = new_config.enable_compute_raster;
+        strict_global_sort = new_config.strict_global_sort;
+        validate_sorted_output = new_config.validate_sorted_output;
+        enable_stage_timestamps = new_config.enable_stage_timestamps;
+        subgroup_prefix_mode = new_config.subgroup_prefix_mode;
 
         GS_LOG_GPU_SORT_INFO(vformat("[GPU Sorting Config] Applied '%s' preset (max %d elements, %d-bit keys, workgroup %d)",
                 preset_lower, max_sort_elements, key_bits, workgroup_size));
@@ -504,6 +553,10 @@ void initialize_gpu_sorting_config() {
     GLOBAL_DEF(GPUSortingConfig::LOG_INTERVAL_PATH, g_gpu_sorting_config.performance_log_interval);
     GLOBAL_DEF(GPUSortingConfig::BANDWIDTH_MONITORING_PATH, g_gpu_sorting_config.enable_bandwidth_monitoring);
     GLOBAL_DEF(GPUSortingConfig::ENABLE_COMPUTE_RASTER_PATH, g_gpu_sorting_config.enable_compute_raster);
+    GLOBAL_DEF(GPUSortingConfig::STRICT_GLOBAL_SORT_PATH, g_gpu_sorting_config.strict_global_sort);
+    GLOBAL_DEF(GPUSortingConfig::VALIDATE_SORTED_OUTPUT_PATH, g_gpu_sorting_config.validate_sorted_output);
+    GLOBAL_DEF(GPUSortingConfig::ENABLE_STAGE_TIMESTAMPS_PATH, g_gpu_sorting_config.enable_stage_timestamps);
+    GLOBAL_DEF(GPUSortingConfig::SUBGROUP_PREFIX_MODE_PATH, int(g_gpu_sorting_config.subgroup_prefix_mode));
 #ifdef DEBUG_ENABLED
     GLOBAL_DEF(GPUSortingConfig::ENABLE_PREFIX_READBACK_PATH, g_gpu_sorting_config.enable_prefix_readback);
     GLOBAL_DEF(GPUSortingConfig::DEBUG_VALIDATE_PREFIX_PATH, g_gpu_sorting_config.debug_validate_prefix);

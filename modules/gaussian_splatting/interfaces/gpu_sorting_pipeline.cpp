@@ -224,7 +224,120 @@ static String _format_stage_failure_with_fallback(const GaussianSplatting::Compu
 			vformat(" fallback=%s",
 					String(GaussianSplatting::ComputeInfrastructure::fallback_route_name(fallback.route)));
 }
-	
+
+static RenderingDevice *_resolve_buffer_owner_device(const Ref<RenderDeviceManager> &p_device_manager, RID p_buffer, RenderingDevice *p_fallback_device) {
+	if (!p_buffer.is_valid()) {
+		return nullptr;
+	}
+	if (p_device_manager.is_valid()) {
+		return p_device_manager->get_resource_owner(p_buffer, p_fallback_device);
+	}
+	return p_fallback_device;
+}
+
+static Vector<uint8_t> _read_buffer_data_slice(RenderingDevice *p_device, RID p_buffer, uint64_t p_offset, uint64_t p_size) {
+	if (!p_device || !p_buffer.is_valid()) {
+		return Vector<uint8_t>();
+	}
+	GaussianSplatManager::ScopedSubmissionLock buffer_lock;
+	if (GaussianSplatManager *manager = GaussianSplatManager::get_singleton()) {
+		p_device = manager->acquire_submission_device(p_device, buffer_lock);
+	}
+	if (!p_device) {
+		return Vector<uint8_t>();
+	}
+	return p_device->buffer_get_data(p_buffer, p_offset, p_size);
+}
+
+static bool _resolve_effective_sort_count(const SortOperationParams &p_params,
+		const Ref<RenderDeviceManager> &p_device_manager, RenderingDevice *p_fallback_device,
+		uint32_t p_sorter_capacity, uint32_t &r_effective_count, String &r_error) {
+	uint32_t effective_count = p_params.element_count;
+	if (p_params.count_buffer.is_valid()) {
+		RenderingDevice *count_device =
+				_resolve_buffer_owner_device(p_device_manager, p_params.count_buffer, p_fallback_device);
+		if (!count_device) {
+			r_error = "[GPU Sort Validation] Missing owner device for count buffer";
+			return false;
+		}
+		Vector<uint8_t> count_bytes = _read_buffer_data_slice(
+				count_device, p_params.count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
+		if (count_bytes.size() < static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
+			r_error = vformat("[GPU Sort Validation] Failed to read indirect count payload (bytes=%d expected=%d)",
+					count_bytes.size(), int(sizeof(GaussianSplatting::IndirectDispatchLayout)));
+			return false;
+		}
+		const auto *indirect = reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(count_bytes.ptr());
+		effective_count = indirect->element_count;
+	}
+	if (p_params.element_count > 0) {
+		effective_count = MIN(effective_count, p_params.element_count);
+	}
+	if (p_sorter_capacity > 0) {
+		effective_count = MIN(effective_count, p_sorter_capacity);
+	}
+	r_effective_count = effective_count;
+	return true;
+}
+
+static bool _validate_sorted_key_order(RenderingDevice *p_device, RID p_keys_buffer, uint32_t p_element_count,
+		uint32_t p_key_stride_bytes, String &r_error) {
+	if (!p_device || !p_keys_buffer.is_valid()) {
+		r_error = "[GPU Sort Validation] Missing key buffer/device";
+		return false;
+	}
+	if (p_key_stride_bytes != sizeof(uint32_t) && p_key_stride_bytes != sizeof(uint64_t)) {
+		r_error = vformat("[GPU Sort Validation] Unsupported key stride %d (expected 4 or 8)",
+				int(p_key_stride_bytes));
+		return false;
+	}
+	if (p_element_count <= 1) {
+		return true;
+	}
+
+	const uint32_t chunk_key_count = MAX<uint32_t>(1u,
+			uint32_t((8ull * 1024ull * 1024ull) / uint64_t(p_key_stride_bytes)));
+	uint64_t previous_key = 0;
+	bool has_previous_key = false;
+
+	for (uint32_t start = 0; start < p_element_count; start += chunk_key_count) {
+		const uint32_t count = MIN<uint32_t>(chunk_key_count, p_element_count - start);
+		const uint64_t byte_offset = uint64_t(start) * uint64_t(p_key_stride_bytes);
+		const uint64_t byte_size = uint64_t(count) * uint64_t(p_key_stride_bytes);
+		Vector<uint8_t> chunk_bytes = _read_buffer_data_slice(p_device, p_keys_buffer, byte_offset, byte_size);
+		if (chunk_bytes.size() != int(byte_size)) {
+			r_error = vformat("[GPU Sort Validation] Failed to read key buffer slice (offset=%s bytes=%s got=%d)",
+					String::num_uint64(byte_offset), String::num_uint64(byte_size), chunk_bytes.size());
+			return false;
+		}
+
+		const uint8_t *chunk_ptr = chunk_bytes.ptr();
+		for (uint32_t i = 0; i < count; i++) {
+			const uint8_t *key_ptr = chunk_ptr + size_t(i) * size_t(p_key_stride_bytes);
+			uint64_t current_key = 0;
+			if (p_key_stride_bytes == sizeof(uint64_t)) {
+				memcpy(&current_key, key_ptr, sizeof(uint64_t));
+			} else {
+				uint32_t key32 = 0;
+				memcpy(&key32, key_ptr, sizeof(uint32_t));
+				current_key = key32;
+			}
+			if (has_previous_key && current_key < previous_key) {
+				const uint32_t violating_index = start + i;
+				r_error = vformat("[GPU Sort Validation] Monotonicity violation at index %d (prev=%s current=%s)",
+						int(violating_index),
+						String::num_uint64(previous_key),
+						String::num_uint64(current_key));
+				return false;
+			}
+			previous_key = current_key;
+			has_previous_key = true;
+		}
+	}
+
+	return true;
+}
+		
 void GPUSortingPipeline::_bind_methods() {
     // Bind methods for script access if needed
 }
@@ -2721,12 +2834,50 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
         return result;
     }
 
-    gpu_sorter->wait_for_completion();
-    result.success = true;
-    result.error_code = SortOperationErrorCode::NONE;
-    result.fallback_policy = SortRendererFallbackPolicy::NONE;
-    result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
-    return result;
+	gpu_sorter->wait_for_completion();
+	sorting_in_progress = false;
+	result.success = true;
+	result.error_code = SortOperationErrorCode::NONE;
+	result.fallback_policy = SortRendererFallbackPolicy::NONE;
+	result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
+	if (g_gpu_sorting_config.validate_sorted_output) {
+		const uint32_t sorter_capacity = gpu_sorter->get_max_elements();
+		const uint32_t key_stride_bytes = _get_sort_key_stride_bytes();
+		RenderingDevice *fallback_device = sort_resource_device ? sort_resource_device : rd;
+		uint32_t effective_count = 0;
+		String validation_error;
+		if (!_resolve_effective_sort_count(p_params, device_manager, fallback_device,
+				sorter_capacity, effective_count, validation_error)) {
+			GS_LOG_ERROR_DEFAULT(validation_error);
+			result.success = false;
+			result.error_code = SortOperationErrorCode::INVALID_COUNT_BUFFER;
+			result.fallback_policy = _fallback_policy_for_error(result.error_code);
+			result.error = validation_error;
+			return result;
+		}
+		if (effective_count > 1) {
+			RenderingDevice *keys_device =
+					_resolve_buffer_owner_device(device_manager, p_params.keys_buffer, fallback_device);
+			if (!keys_device) {
+				result.success = false;
+				result.error_code = SortOperationErrorCode::RESOURCE_DEVICE_UNAVAILABLE;
+				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+				result.error = "[GPU Sort Validation] Missing owner device for key buffer";
+				GS_LOG_ERROR_DEFAULT(result.error);
+				return result;
+			}
+			if (!_validate_sorted_key_order(keys_device, p_params.keys_buffer,
+					effective_count, key_stride_bytes, validation_error)) {
+				GS_LOG_ERROR_DEFAULT(validation_error);
+				result.success = false;
+				result.error_code = SortOperationErrorCode::SORT_SUBMISSION_FAILED;
+				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+				result.error = validation_error;
+				return result;
+			}
+		}
+	}
+	return result;
 }
 
 SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_params) {
@@ -2771,20 +2922,60 @@ SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_
     current_sort_timeline_value = result.timeline_value;
     last_sort_submission_value = result.timeline_value;
 
-    if (result.timeline_value == 0) {
-        result.error_code = _map_preflight_error(gpu_sorter->get_last_preflight_error());
-        if (result.error_code == SortOperationErrorCode::NONE) {
+	if (result.timeline_value == 0) {
+		result.error_code = _map_preflight_error(gpu_sorter->get_last_preflight_error());
+		if (result.error_code == SortOperationErrorCode::NONE) {
             result.error_code = SortOperationErrorCode::SORT_SUBMISSION_FAILED;
         }
         result.fallback_policy = _fallback_policy_for_error(result.error_code);
         result.error = "Async sort submission did not produce a valid timeline value";
         sorting_in_progress = false;
-        return result;
-    }
+		return result;
+	}
 
-    result.success = true;
-    result.error_code = SortOperationErrorCode::NONE;
-    result.fallback_policy = SortRendererFallbackPolicy::NONE;
+	if (g_gpu_sorting_config.validate_sorted_output) {
+		wait_for_completion();
+		result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
+		const uint32_t sorter_capacity = gpu_sorter->get_max_elements();
+		const uint32_t key_stride_bytes = _get_sort_key_stride_bytes();
+		RenderingDevice *fallback_device = sort_resource_device ? sort_resource_device : rd;
+		uint32_t effective_count = 0;
+		String validation_error;
+		if (!_resolve_effective_sort_count(p_params, device_manager, fallback_device,
+				sorter_capacity, effective_count, validation_error)) {
+			GS_LOG_ERROR_DEFAULT(validation_error);
+			result.success = false;
+			result.error_code = SortOperationErrorCode::INVALID_COUNT_BUFFER;
+			result.fallback_policy = _fallback_policy_for_error(result.error_code);
+			result.error = validation_error;
+			return result;
+		}
+		if (effective_count > 1) {
+			RenderingDevice *keys_device =
+					_resolve_buffer_owner_device(device_manager, p_params.keys_buffer, fallback_device);
+			if (!keys_device) {
+				result.success = false;
+				result.error_code = SortOperationErrorCode::RESOURCE_DEVICE_UNAVAILABLE;
+				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+				result.error = "[GPU Sort Validation] Missing owner device for key buffer";
+				GS_LOG_ERROR_DEFAULT(result.error);
+				return result;
+			}
+			if (!_validate_sorted_key_order(keys_device, p_params.keys_buffer,
+					effective_count, key_stride_bytes, validation_error)) {
+				GS_LOG_ERROR_DEFAULT(validation_error);
+				result.success = false;
+				result.error_code = SortOperationErrorCode::SORT_SUBMISSION_FAILED;
+				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+				result.error = validation_error;
+				return result;
+			}
+		}
+	}
+
+	result.success = true;
+	result.error_code = SortOperationErrorCode::NONE;
+	result.fallback_policy = SortRendererFallbackPolicy::NONE;
     result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
     return result;
 }

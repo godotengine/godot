@@ -1,5 +1,6 @@
 #include "tile_rasterizer.h"
 #include "../renderer/tile_renderer.h"
+#include "../renderer/gpu_sorting_config.h"
 #include "../logger/gs_logger.h"
 #include "core/config/project_settings.h"
 
@@ -222,7 +223,8 @@ Error TileRasterizer::initialize(RenderingDevice *p_device, const Vector2i &p_in
     _bind_output_invalidation_callback();
 
     if (tile_renderer.is_valid()) {
-		tile_renderer->set_contract_main_device(_get_manager_main_device(device_manager));
+        tile_renderer->set_contract_main_device(_get_manager_main_device(device_manager));
+        tile_renderer->set_gpu_timestamp_capture_enabled(g_gpu_sorting_config.enable_stage_timestamps);
     }
 
     rd = p_device;
@@ -308,6 +310,7 @@ RasterResult TileRasterizer::render(const RasterParams &p_params) {
 
     // Set frame serial for timing
     tile_renderer->set_frame_serial(p_params.frame_serial);
+    tile_renderer->set_gpu_timestamp_capture_enabled(g_gpu_sorting_config.enable_stage_timestamps);
 
     // Use device from params if provided, otherwise use the one from initialization
     RenderingDevice *render_device = p_params.device ? p_params.device : rd;
@@ -377,6 +380,7 @@ RasterResult TileRasterizer::render_direct(RenderingDevice *p_device, const Tile
 
     // Set frame serial for timing
     tile_renderer->set_frame_serial(p_params.frame_serial);
+    tile_renderer->set_gpu_timestamp_capture_enabled(g_gpu_sorting_config.enable_stage_timestamps);
 
     // Perform render directly with TileRenderer::RenderParams
     RID output = tile_renderer->render(p_device, p_params);
