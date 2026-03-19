@@ -358,9 +358,9 @@ def _select_capture_lanes(
         if missing:
             raise ValueError(f"Unknown capture lane ids: {', '.join(missing)}")
         return requested_set
-    if references_requested:
-        return {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
-    return set()
+    # Default to deterministic capture lanes whenever captures are enabled,
+    # regardless of whether --reference-dir was supplied.
+    return {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
 
 
 def _load_asset_manifest(path: str) -> dict[str, str]:

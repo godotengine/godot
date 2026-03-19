@@ -133,7 +133,7 @@ uint64_t CloudSplatGenerator::hash_config(const Config &p_config) {
 	hash = hash_float(hash, p_config.sh_intensity);
 	hash = hash_color(hash, p_config.cloud_color);
 	hash = hash_color(hash, p_config.shadow_tint);
-	hash = hash_vector3(hash, p_config.light_direction);
+	hash = hash_vector3(hash, p_config.light_direction.normalized());
 	return hash;
 }
 

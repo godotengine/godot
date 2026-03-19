@@ -29,6 +29,13 @@
 #include "test_gaussian_splat_world_io.h"
 #include "test_view_transform.h"
 #include "test_memory_leak_detection.h"
+#include "test_synthetic_splat_generators.h"
+#include "test_synthetic_uniform_generator.h"
+#include "test_synthetic_clustered_generator.h"
+#include "test_synthetic_surface_generator.h"
+#include "test_synthetic_cloud_generator.h"
+#include "test_synthetic_mandelbrot_generator.h"
+#include "test_synthetic_bml_traffic_generator.h"
 
 namespace TestGaussianSplatting {
 
