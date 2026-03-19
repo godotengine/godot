@@ -260,15 +260,23 @@ static bool _resolve_effective_sort_count(const SortOperationParams &p_params,
 			r_error = "[GPU Sort Validation] Missing owner device for count buffer";
 			return false;
 		}
+		const uint64_t count_read_size = GaussianSplatting::kIndirectDispatchHeaderSize;
 		Vector<uint8_t> count_bytes = _read_buffer_data_slice(
-				count_device, p_params.count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
-		if (count_bytes.size() < static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
-			r_error = vformat("[GPU Sort Validation] Failed to read indirect count payload (bytes=%d expected=%d)",
-					count_bytes.size(), int(sizeof(GaussianSplatting::IndirectDispatchLayout)));
+				count_device, p_params.count_buffer, 0, count_read_size);
+		if (count_bytes.size() < static_cast<int>(count_read_size)) {
+			r_error = vformat("[GPU Sort Validation] Failed to read indirect count payload header (bytes=%d expected=%d)",
+					count_bytes.size(), int(count_read_size));
 			return false;
 		}
-		const auto *indirect = reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(count_bytes.ptr());
-		effective_count = indirect->element_count;
+		const size_t count_offset = GaussianSplatting::kIndirectDispatchElementCountOffset;
+		if (count_bytes.size() < int(count_offset + sizeof(uint32_t))) {
+			r_error = vformat("[GPU Sort Validation] Indirect count payload too small for element_count read (bytes=%d required=%d)",
+					count_bytes.size(), int(count_offset + sizeof(uint32_t)));
+			return false;
+		}
+		uint32_t indirect_count = 0;
+		memcpy(&indirect_count, count_bytes.ptr() + count_offset, sizeof(uint32_t));
+		effective_count = indirect_count;
 	}
 	if (p_params.element_count > 0) {
 		effective_count = MIN(effective_count, p_params.element_count);
