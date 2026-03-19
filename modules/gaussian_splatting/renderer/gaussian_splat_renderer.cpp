@@ -82,21 +82,7 @@ using GaussianSplatting::ScopedGpuMarker;
 #define kLogFrameDebug 0
 #endif
 
-static constexpr bool kLogFormatTrace = false;
-static constexpr bool kLogFormatDebug = false;
-static constexpr bool kLogRendererDebug = false;
-
 namespace {
-
-constexpr uint32_t FRUSTUM_PLANE_COUNT = 6;
-static constexpr real_t SORT_TRANSFORM_TOLERANCE = 1e-4f;
-
-// Convert SH band level (0-3) to coefficient count limit
-static uint8_t _sh_band_to_coeff_limit(int p_band) {
-    // SH bands: 0 -> 1 coeff (DC only), 1 -> 4, 2 -> 9, 3 -> 16
-    int clamped = CLAMP(p_band, 0, 3);
-    return static_cast<uint8_t>((clamped + 1) * (clamped + 1));
-}
 
 // Project settings helpers provided by gs_project_settings.h (gs::settings namespace).
 static bool _get_bool_setting(ProjectSettings *ps, const StringName &name, bool fallback) {
@@ -253,19 +239,6 @@ static String _streaming_not_ready_route_uid(const char *p_state_token) {
 
 static bool _is_typed_streaming_not_ready_route(const String &p_route_uid) {
     return p_route_uid.begins_with("COMMON.SKIP.STREAMING_NOT_READY.");
-}
-
-
-static bool _transform_nearly_equal(const Transform3D &a, const Transform3D &b, float position_tolerance = 1e-4f, float rotation_tolerance = 1e-3f) {
-    Vector3 delta = a.origin - b.origin;
-    if (delta.length_squared() > position_tolerance * position_tolerance) {
-        return false;
-    }
-
-    Quaternion qa(a.basis);
-    Quaternion qb(b.basis);
-    float angle = qa.angle_to(qb);
-    return angle <= rotation_tolerance;
 }
 
 static bool _projection_nearly_equal(const Projection &p_a, const Projection &p_b, real_t p_tolerance = 1e-6f) {

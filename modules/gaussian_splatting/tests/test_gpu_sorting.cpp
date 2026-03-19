@@ -270,9 +270,7 @@ TEST_CASE("[GaussianSplatting][GPU] Bitonic sort performance") {
         sorter->sort(keys_buffer, values_buffer, size);
         
         // Measure GPU time
-        auto gpu_start = std::chrono::high_resolution_clock::now();
         err = sorter->sort(keys_buffer, values_buffer, size);
-        auto gpu_end = std::chrono::high_resolution_clock::now();
         CHECK(err == OK);
         
         // CPU sorting for comparison

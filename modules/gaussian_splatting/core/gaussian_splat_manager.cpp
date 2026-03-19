@@ -42,28 +42,6 @@ static bool _is_data_log_enabled() {
     return gs::settings::is_data_log_enabled();
 }
 
-static Gaussian _transform_gaussian(const Gaussian &p_source, const Transform3D &p_transform) {
-    Gaussian dst = p_source;
-
-    dst.position = p_transform.xform(p_source.position);
-
-    const Basis &basis = p_transform.basis;
-    Vector3 basis_scale = basis.get_scale();
-    basis_scale = Vector3(Math::abs(basis_scale.x), Math::abs(basis_scale.y), Math::abs(basis_scale.z));
-
-    Quaternion rot = basis.get_rotation_quaternion();
-    // Note: non-uniform scale is approximated via per-axis scaling.
-    dst.rotation = rot * p_source.rotation;
-
-    dst.scale.x = p_source.scale.x * basis_scale.x;
-    dst.scale.y = p_source.scale.y * basis_scale.y;
-    dst.scale.z = p_source.scale.z * basis_scale.z;
-
-    dst.normal = basis.xform(p_source.normal).normalized();
-
-    return dst;
-}
-
 } // namespace
 
 // ---------------------------------------------------------------------------

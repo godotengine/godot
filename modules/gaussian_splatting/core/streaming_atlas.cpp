@@ -237,7 +237,6 @@ void GaussianStreamingSystem::_build_global_atlas_cpu_state() {
 }
 
 void GaussianStreamingSystem::_update_chunk_meta_entry(uint32_t asset_id, uint32_t chunk_idx) {
-	const bool log_enabled = _is_streaming_debug_enabled();
 	if (atlas_asset_registry_dirty) {
 		_build_global_atlas_cpu_state();
 	}
