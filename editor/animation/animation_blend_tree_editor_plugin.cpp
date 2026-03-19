@@ -133,11 +133,13 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 	if (updating || blend_tree.is_null()) {
+		graph_update_queued = false;
 		return;
 	}
 
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
+		graph_update_queued = false;
 		return;
 	}
 
