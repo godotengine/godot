@@ -162,7 +162,7 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 	if (sc_use_full_projection_matrix) {
 		vec4 pos;
 		pos.xy = (2.0 * vec2(screen_pos) / vec2(scene_data.screen_size)) - 1.0;
-		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r * 2.0 - 1.0;
+		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r;
 		pos.w = 1.0;
 
 		pos = scene_data.inv_projection[params.view_index] * pos;
@@ -184,6 +184,8 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 		if (!params.orthogonal) {
 			pos.xy *= pos.z;
 		}
+
+		pos.y = -pos.y;
 
 		return pos;
 	}
@@ -714,7 +716,6 @@ void main() {
 	vec4 reflection_light = vec4(0.0);
 
 	vec3 vertex = reconstruct_position(pos);
-	vertex.y = -vertex.y;
 
 	process_gi(pos, vertex, ambient_light, reflection_light);
 
