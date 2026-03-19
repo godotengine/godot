@@ -361,7 +361,7 @@ void GaussianData::set_brush_strokes(const Array &p_strokes) {
 }
 
 Dictionary GaussianData::capture_brush_affected_state(const Vector3 &p_center, float p_radius) const {
-    MutexLock lock(sh_mutex);
+    RWLockRead lock(data_rwlock);
     Dictionary state;
     ERR_FAIL_COND_V(gaussians.is_empty(), state);
     ERR_FAIL_COND_V(p_radius <= 0.0f, state);
@@ -419,7 +419,7 @@ void GaussianData::restore_brush_stroke(const Dictionary &p_saved_state) {
     ERR_FAIL_COND(indices.size() != opacities.size());
 
     {
-        MutexLock lock(sh_mutex);
+        RWLockWrite lock(data_rwlock);
         ERR_FAIL_COND(gaussians.is_empty());
 
         const int n = indices.size();
