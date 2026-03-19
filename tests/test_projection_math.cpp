@@ -32,13 +32,13 @@ static bool approx_equal(float p_a, float p_b, float p_rel_tol = 1e-4f, float p_
 
 static Basis basis_from_euler_degrees(float p_pitch_deg, float p_yaw_deg, float p_roll_deg) {
     Vector3 euler_rad(Math::deg_to_rad(p_pitch_deg), Math::deg_to_rad(p_yaw_deg), Math::deg_to_rad(p_roll_deg));
-    return Basis::from_euler(euler_rad, Basis::EulerOrder::XYZ);
+    return Basis::from_euler(euler_rad, EulerOrder::XYZ);
 }
 
 static Quaternion random_unit_quaternion(RandomNumberGenerator &p_rng) {
     float u1 = p_rng.randf();
-    float u2 = p_rng.randf() * Math_TAU;
-    float u3 = p_rng.randf() * Math_TAU;
+    float u2 = p_rng.randf() * Math::TAU;
+    float u3 = p_rng.randf() * Math::TAU;
     float sqrt1 = Math::sqrt(1.0f - u1);
     float sqrt2 = Math::sqrt(u1);
     return Quaternion(Math::sin(u2) * sqrt1, Math::cos(u2) * sqrt1, Math::sin(u3) * sqrt2, Math::cos(u3) * sqrt2);
@@ -60,7 +60,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
     Vector<ProjectionInput> ground_truth;
     String load_error;
     Error load_err = validator.load_ground_truth("tests/data/projection_ground_truth.json", ground_truth, load_error);
-    INFO(String("Ground truth load error: ") + load_error);
+    INFO("Ground truth load error: ", load_error.utf8().get_data());
     REQUIRE(load_err == OK);
     REQUIRE(!ground_truth.is_empty());
 
@@ -76,7 +76,7 @@ TEST_CASE("[GaussianSplatting][Projection] Ground truth regression cases") {
         ProjectedGaussian cpu = validator.project_cpu(test_case);
         cpu_results.write[i] = cpu;
 
-        INFO(String("Case: ") + test_case.name);
+        INFO("Case: ", test_case.name.utf8().get_data());
         CHECK(approx_equal(cpu.cov_xx, test_case.expected.cov_xx));
         CHECK(approx_equal(cpu.cov_yy, test_case.expected.cov_yy));
         CHECK(approx_equal(cpu.cov_xy, test_case.expected.cov_xy, 1e-3f, 1e-4f));
@@ -164,7 +164,7 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
 
     RandomNumberGenerator rng;
     seed_rng(rng, RANDOM_ORIENTATION_SEED);
-    INFO(String("RNG seed: ") + itos((int64_t)RANDOM_ORIENTATION_SEED));
+    INFO("RNG seed: ", (int64_t)RANDOM_ORIENTATION_SEED);
 
     const int sample_count = 64;
     Vector<ProjectionInput> samples;
@@ -173,10 +173,10 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
     for (int i = 0; i < sample_count; ++i) {
         ProjectionInput sample;
         sample.name = String("random_") + itos(i);
-        sample.scale = Vector3(rng.random(0.2f, 4.0f), rng.random(0.2f, 4.0f), rng.random(0.2f, 4.0f));
+        sample.scale = Vector3(rng.randf_range(0.2f, 4.0f), rng.randf_range(0.2f, 4.0f), rng.randf_range(0.2f, 4.0f));
         sample.rotation = random_unit_quaternion(rng);
-        Vector3 view_euler(rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI));
-        sample.view_basis = Basis::from_euler(view_euler, Basis::EulerOrder::XYZ);
+        Vector3 view_euler(rng.randf_range(-Math::PI, Math::PI), rng.randf_range(-Math::PI, Math::PI), rng.randf_range(-Math::PI, Math::PI));
+        sample.view_basis = Basis::from_euler(view_euler, EulerOrder::XYZ);
         samples.write[i] = sample;
     }
 
@@ -219,8 +219,8 @@ TEST_CASE("[GaussianSplatting][Projection] Random orientation statistical valida
     }
 
     mean_abs_error /= MAX(measurement_count, 1);
-    INFO(vformat("Max absolute difference: %.6f", max_abs_error));
-    INFO(vformat("Mean absolute difference: %.6f", mean_abs_error));
+    INFO("Max absolute difference: ", max_abs_error);
+    INFO("Mean absolute difference: ", mean_abs_error);
 
     CHECK(max_abs_error < 1e-3);
     CHECK(mean_abs_error < 1e-4);
@@ -289,12 +289,12 @@ TEST_CASE("[GaussianSplatting][Projection] Scale and rotation invariants") {
     base_case.name = "invariance";
     base_case.scale = Vector3(0.75f, 1.5f, 2.25f);
     base_case.rotation = Quaternion(Vector3(0.3f, 0.7f, -0.2f).normalized(), Math::deg_to_rad(37.0f));
-    base_case.view_basis = Basis::from_euler(Vector3(Math::deg_to_rad(25.0f), Math::deg_to_rad(-15.0f), Math::deg_to_rad(5.0f)), Basis::EulerOrder::XYZ);
+    base_case.view_basis = Basis::from_euler(Vector3(Math::deg_to_rad(25.0f), Math::deg_to_rad(-15.0f), Math::deg_to_rad(5.0f)), EulerOrder::XYZ);
 
     double scale_error = validator.compute_scale_invariance_error(base_case, 1.8f);
     CHECK(scale_error < 5e-3);
 
-    Basis additional_rotation = Basis::from_euler(Vector3(Math::deg_to_rad(12.0f), Math::deg_to_rad(-9.0f), Math::deg_to_rad(3.0f)), Basis::EulerOrder::XYZ);
+    Basis additional_rotation = Basis::from_euler(Vector3(Math::deg_to_rad(12.0f), Math::deg_to_rad(-9.0f), Math::deg_to_rad(3.0f)), EulerOrder::XYZ);
     double rotation_error = validator.compute_rotation_equivariance_error(base_case, additional_rotation);
     CHECK(rotation_error < 5e-3);
 
@@ -315,13 +315,13 @@ TEST_CASE("[GaussianSplatting][Projection] CPU vs GPU performance benchmark") {
 
     RandomNumberGenerator rng;
     seed_rng(rng, PERFORMANCE_BENCHMARK_SEED);
-    INFO(String("RNG seed: ") + itos((int64_t)PERFORMANCE_BENCHMARK_SEED));
+    INFO("RNG seed: ", (int64_t)PERFORMANCE_BENCHMARK_SEED);
 
     for (int i = 0; i < benchmark_count; ++i) {
         ProjectionInput input;
-        input.scale = Vector3(rng.random(0.5f, 3.0f), rng.random(0.5f, 3.0f), rng.random(0.5f, 3.0f));
+        input.scale = Vector3(rng.randf_range(0.5f, 3.0f), rng.randf_range(0.5f, 3.0f), rng.randf_range(0.5f, 3.0f));
         input.rotation = random_unit_quaternion(rng);
-        input.view_basis = Basis::from_euler(Vector3(rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI), rng.random(-Math_PI, Math_PI)), Basis::EulerOrder::XYZ);
+        input.view_basis = Basis::from_euler(Vector3(rng.randf_range(-Math::PI, Math::PI), rng.randf_range(-Math::PI, Math::PI), rng.randf_range(-Math::PI, Math::PI)), EulerOrder::XYZ);
         inputs.write[i] = input;
     }
 
@@ -341,8 +341,8 @@ TEST_CASE("[GaussianSplatting][Projection] CPU vs GPU performance benchmark") {
     double cpu_ms = cpu_time / 1000.0;
     double gpu_ms = gpu_time / 1000.0;
 
-    INFO(vformat("CPU projection time: %.3f ms", cpu_ms));
-    INFO(vformat("GPU projection time: %.3f ms", gpu_ms));
+    INFO("CPU projection time (ms): ", cpu_ms);
+    INFO("GPU projection time (ms): ", gpu_ms);
 
     CHECK_MESSAGE(gpu_ms <= cpu_ms * 2.5 + 0.5, "GPU projection should not be dramatically slower than CPU.");
 
