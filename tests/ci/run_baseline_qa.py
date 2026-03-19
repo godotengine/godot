@@ -156,7 +156,10 @@ class BaselineQARunner:
 
         if test_type == "godot":
             command = [self.godot_binary]
-            if not test.get("requires_gpu", False):
+            if test.get("requires_gpu", False):
+                # Headless display (no window) but keep Vulkan for GPU compute.
+                command.extend(["--display-driver", "headless", "--rendering-driver", "vulkan"])
+            else:
                 command.append("--headless")
             command.extend(["--verbose", "--script", test["script"]])
             descriptor = test["script"]
