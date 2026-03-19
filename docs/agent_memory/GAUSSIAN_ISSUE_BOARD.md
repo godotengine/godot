@@ -17,11 +17,11 @@ Status legend:
 | ISSUE-003 | Core Data Structures | Guard GaussianData animation cache mutable fields from data races | High | agent-core-data | Planned | ISSUE-001 | a7dd73fcd06 |
 | ISSUE-004 | Core Data Structures | Pack thread startup partial-failure deadlock fix | Critical | agent-core-data | Planned | ISSUE-001 | 102d229bb88 |
 | ISSUE-005 | Core Data Structures | Document lock hierarchy and enforce lock-level assertions | Medium | agent-core-data | Planned | ISSUE-001 | d2fb0d32c2e |
-| ISSUE-006 | GPU Sorting | Split oversized streaming/sorting integration unit for maintainability | High | agent-gpu-sorting | Planned | ISSUE-001 | 299e8f51706 |
-| ISSUE-007 | GPU Sorting | Define missing canonical issue scope (no historical metadata found) | High | agent-gpu-sorting | Blocked | None | unresolved |
-| ISSUE-008 | GPU Sorting | Define missing canonical issue scope (no historical metadata found) | High | agent-gpu-sorting | Blocked | None | unresolved |
-| ISSUE-009 | GPU Sorting | Undo/redo safety for brush painting data mutation flows | Medium | agent-gpu-sorting | Planned | ISSUE-001 | 2128a1d20a9 |
-| ISSUE-010 | GPU Sorting | Generation-safe cleanup for stale RenderingDevice pointers | High | agent-gpu-sorting | Planned | ISSUE-002 | 902f781f1b7 |
+| ISSUE-006 | GPU Sorting | Split oversized streaming/sorting integration unit for maintainability | High | agent-gpu-sorting | Done | ISSUE-001 | 299e8f51706 (`gaussian_streaming.h` extracted `streaming_*` interfaces + split core units) |
+| ISSUE-007 | GPU Sorting | Strict global-sort contract: disable unsafe reuse/identity/unsorted fallback routes | High | agent-gpu-sorting | Done | None | 6dde6a82c3b (`render_sorting_orchestrator.cpp`: strict gates at 737/903/957/1083 and fallback dispatch at 1163) |
+| ISSUE-008 | GPU Sorting | Validate GPU sort outputs using effective indirect count + key monotonicity checks | High | agent-gpu-sorting | Done | None | 6dde6a82c3b (`gpu_sorting_pipeline.cpp`: `_resolve_effective_sort_count` 252 + `_validate_sorted_key_order` 283, used at 2843/2936) |
+| ISSUE-009 | GPU Sorting | Undo/redo safety for brush painting data mutation flows | Medium | agent-gpu-sorting | Ready for Merge | ISSUE-001 | 2128a1d20a9 + 650438cca41 (`gaussian_data_edits.cpp`: capture/restore now under `data_rwlock`) |
+| ISSUE-010 | GPU Sorting | Generation-safe cleanup for stale RenderingDevice pointers | High | agent-gpu-sorting | Done | ISSUE-002 | 902f781f1b7 (`gpu_sorter.cpp` generation-safe uniform cleanup + device-generation validation paths) |
 | ISSUE-011 | Tile Renderer | Zero-element and sort key config validation before GPU dispatch | High | agent-tile-renderer | Planned | ISSUE-010 | 57d317dca12 |
 | ISSUE-012 | Tile Renderer | Replace global mutex bottlenecks with RWLock read concurrency | High | agent-tile-renderer | In Progress | ISSUE-001 | a7dd73fcd06; partial diff in `agent-core-data` worktree |
 | ISSUE-013 | Tile Renderer | Optional AVX2 path with safe fallback for portability | Medium | agent-tile-renderer | Planned | None | 3ac1ab161ad |
@@ -57,6 +57,13 @@ Status legend:
 | ISSUE-043 | Build System | Document theoretical complexity units and scaling assumptions | Low | agent-build-ci | Ready for Merge | ISSUE-042 | `modules/gaussian_splatting/renderer/gpu_sorter.h:183-188`; `tests/ci/TEST_COVERAGE.md:78` |
 | ISSUE-044 | Build System | Protect against circular clip chains and enforce depth cap | High | agent-build-ci | Ready for Merge | ISSUE-040 | `modules/gaussian_splatting/animation/animation_state_machine.cpp:512,517-519` |
 | ISSUE-045 | Build System | Track layout version in incremental saver contracts | Medium | agent-build-ci | Ready for Merge | ISSUE-023 | `modules/gaussian_splatting/persistence/incremental_saver.h:45-50`; `modules/gaussian_splatting/persistence/incremental_saver.cpp:763,809` |
+
+## GPU Sorting Notes (Wave 1)
+
+- Wave 1 relaunch (2026-03-19): `ISSUE-007` ambiguity resolved locally. Contract proof is in `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp` where strict mode blocks previous-sort reuse (`737`), identity fallback (`903`), unsorted bootstrap (`957`), and unsorted CPU fallback (`1083`) while fallback policy dispatch remains centralized (`1163`).
+- Wave 1 relaunch (2026-03-19): `ISSUE-008` ambiguity resolved locally. Validation proof is in `modules/gaussian_splatting/interfaces/gpu_sorting_pipeline.cpp` via `_resolve_effective_sort_count` (`252`) and `_validate_sorted_key_order` (`283`), both invoked by sync/async validation flows (`2843`, `2936`).
+- Wave 1 relaunch (2026-03-19): `ISSUE-009` had one unresolved locking gap in undo/redo state capture/restore; fixed by `650438cca41` (`modules/gaussian_splatting/core/gaussian_data_edits.cpp`: `capture_brush_affected_state` at `363` now read-locks `data_rwlock`, `restore_brush_stroke` at `422` now write-locks `data_rwlock`).
+- `ISSUE-006` and `ISSUE-010` remain satisfied by existing in-tree implementation (`streaming_*` split units and generation-safe RenderingDevice cleanup).
 
 ## Wave Plan
 
