@@ -1,11 +1,11 @@
 extends Node3D
 
 const BenchmarkMetricsUtil = preload("res://scripts/benchmark_metrics.gd")
+const BenchmarkSceneContract = preload("res://scripts/benchmark_scene_contract.gd")
 
 const DEFAULT_BENCHMARK_DURATION := 180.0
 const DEFAULT_OUTPUT_PATH := "user://benchmark_unified_results.json"
 const SETTINGS_APPLY_INTERVAL := 0.1
-const INSTANCE_ASSET_PATH := "res://tests/fixtures/test_splats.ply"
 const INSTANCE_GRID_COLS := 6
 const INSTANCE_GRID_ROWS := 4
 const INSTANCE_SPACING := 7.0
@@ -82,6 +82,8 @@ const PROJECT_SETTING_KEYS := [
 	"rendering/gaussian_splatting/effects/sphere_effector_frequency",
 ]
 
+signal benchmark_scene_finished(result: Dictionary)
+
 @onready var camera: Camera3D = $Camera3D
 @onready var performance_overlay: Control = $PerformanceOverlay
 @onready var results_panel: CanvasLayer = $BenchmarkResultsPanel
@@ -97,7 +99,7 @@ const PROJECT_SETTING_KEYS := [
 var benchmark_duration := DEFAULT_BENCHMARK_DURATION
 var output_path := DEFAULT_OUTPUT_PATH
 var headless_summary := false
-var instance_asset_path := INSTANCE_ASSET_PATH
+var instance_asset_path := ""
 
 var _elapsed_s := 0.0
 var _phase_index := -1
@@ -117,9 +119,14 @@ var _result_report: Dictionary = {}
 var _settings_apply_accum := 0.0
 
 var _state_running := true
+var _pending_contract: Dictionary = {}
+var _orchestrated := false
+
+func apply_benchmark_contract(contract: Dictionary) -> void:
+	_pending_contract = contract.duplicate(true)
 
 func _ready() -> void:
-	_parse_args()
+	_apply_contract()
 	_setup_runtime_state()
 	_snapshot_project_settings()
 	_apply_base_project_settings()
@@ -160,24 +167,26 @@ func _input(event: InputEvent) -> void:
 func _exit_tree() -> void:
 	_restore_project_settings()
 
-func _parse_args() -> void:
-	var args := OS.get_cmdline_args()
-	for i in range(args.size()):
-		var arg := str(args[i])
-		if arg.begins_with("--benchmark-output="):
-			output_path = arg.replace("--benchmark-output=", "")
-		elif arg == "--benchmark-output" and i + 1 < args.size():
-			output_path = str(args[i + 1])
-		elif arg.begins_with("--benchmark-duration="):
-			benchmark_duration = max(5.0, float(arg.replace("--benchmark-duration=", "")))
-		elif arg == "--benchmark-duration" and i + 1 < args.size():
-			benchmark_duration = max(5.0, float(args[i + 1]))
-		elif arg.begins_with("--benchmark-asset="):
-			instance_asset_path = arg.replace("--benchmark-asset=", "")
-		elif arg == "--benchmark-asset" and i + 1 < args.size():
-			instance_asset_path = str(args[i + 1])
-		elif arg == "--benchmark-headless-summary":
-			headless_summary = true
+func _apply_contract() -> void:
+	var scene_id := BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	var defaults := {
+		"duration_s": DEFAULT_BENCHMARK_DURATION,
+		"output_path": DEFAULT_OUTPUT_PATH,
+		"headless_summary": false,
+		"asset_path": "",
+		"lane_id": "unified_composite",
+	}
+	var contract := BenchmarkSceneContract.resolve_contract(scene_id, defaults, _pending_contract)
+	_orchestrated = bool(contract.get("orchestrated", false))
+	benchmark_duration = max(5.0, float(contract.get("duration_s", DEFAULT_BENCHMARK_DURATION)))
+	output_path = str(contract.get("output_path", DEFAULT_OUTPUT_PATH))
+	headless_summary = bool(contract.get("headless_summary", false))
+	instance_asset_path = BenchmarkSceneContract.resolve_asset_path(
+		scene_id,
+		str(contract.get("lane_id", "unified_composite")),
+		str(contract.get("asset_path", "")),
+		"",
+	)
 
 func _setup_runtime_state() -> void:
 	OS.set_low_processor_usage_mode(false)
@@ -356,6 +365,16 @@ func _finish_benchmark() -> void:
 	_restore_project_settings()
 	_result_report = _build_report()
 	_write_report(_result_report)
+
+	if _orchestrated:
+		emit_signal("benchmark_scene_finished", {
+			"success": true,
+			"lane_id": "unified_composite",
+			"report_path": output_path,
+			"report": _result_report,
+		})
+		queue_free()
+		return
 
 	if headless_summary or DisplayServer.get_name() == "headless":
 		_print_headless_summary(_result_report)

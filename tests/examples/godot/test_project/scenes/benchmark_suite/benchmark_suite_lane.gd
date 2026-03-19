@@ -2,11 +2,11 @@ extends Node3D
 
 const BenchmarkMetricsUtil = preload("res://scripts/benchmark_metrics.gd")
 const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.gd")
+const BenchmarkSceneContract = preload("res://scripts/benchmark_scene_contract.gd")
 
 const DEFAULT_BENCHMARK_DURATION := 20.0
 const DEFAULT_BENCHMARK_WARMUP := 3.0
 const DEFAULT_OUTPUT_PATH := "user://benchmark_suite_lane_results.json"
-const DEFAULT_ASSET_PATH := "res://tests/fixtures/test_splats.ply"
 var DEFAULT_CAPTURE_PROGRESS_MARKERS := PackedFloat32Array([0.25, 0.5, 0.75])
 const DEFAULT_VISUAL_SSIM_THRESHOLD := 0.95
 const DEFAULT_VISUAL_PSNR_THRESHOLD := 30.0
@@ -139,11 +139,13 @@ const RENDER_TELEMETRY_KEYS := [
 	"sorted_indices_blend_fallback_reason",
 ]
 
+signal benchmark_scene_finished(result: Dictionary)
+
 @export var lane_id := "static_baseline"
 @export var lane_name := "Static Baseline"
 @export var lane_description := "Single-asset baseline lane."
 @export var lane_preset := "static_baseline"
-@export var placeholder_asset_path := DEFAULT_ASSET_PATH
+@export var placeholder_asset_path := ""
 @export var default_duration_s := DEFAULT_BENCHMARK_DURATION
 
 @onready var camera: Camera3D = $Camera3D
@@ -190,10 +192,14 @@ var _max_total_visible_splats := 0
 var _lane_config: Dictionary = {}
 var _capture_targets: Array[Dictionary] = []
 var _capture_records: Array[Dictionary] = []
+var _pending_contract: Dictionary = {}
+var _orchestrated := false
+
+func apply_benchmark_contract(contract: Dictionary) -> void:
+	_pending_contract = contract.duplicate(true)
 
 func _ready() -> void:
-	benchmark_duration = default_duration_s
-	_parse_args()
+	_apply_contract()
 	_setup_runtime_state()
 	_initialize_capture_targets()
 	_snapshot_project_settings()
@@ -245,56 +251,46 @@ func _input(event: InputEvent) -> void:
 func _exit_tree() -> void:
 	_restore_project_settings()
 
-func _parse_args() -> void:
-	var args := OS.get_cmdline_args()
-	for i in range(args.size()):
-		var arg := str(args[i])
-		if arg.begins_with("--benchmark-output="):
-			output_path = arg.replace("--benchmark-output=", "")
-		elif arg == "--benchmark-output" and i + 1 < args.size():
-			output_path = str(args[i + 1])
-		elif arg.begins_with("--benchmark-duration="):
-			benchmark_duration = max(5.0, float(arg.replace("--benchmark-duration=", "")))
-		elif arg == "--benchmark-duration" and i + 1 < args.size():
-			benchmark_duration = max(5.0, float(args[i + 1]))
-		elif arg.begins_with("--benchmark-warmup="):
-			benchmark_warmup = max(0.0, float(arg.replace("--benchmark-warmup=", "")))
-		elif arg == "--benchmark-warmup" and i + 1 < args.size():
-			benchmark_warmup = max(0.0, float(args[i + 1]))
-		elif arg == "--benchmark-headless-summary":
-			headless_summary = true
-		elif arg.begins_with("--benchmark-asset="):
-			asset_override_path = arg.replace("--benchmark-asset=", "")
-		elif arg == "--benchmark-asset" and i + 1 < args.size():
-			asset_override_path = str(args[i + 1])
-		elif arg.begins_with("--benchmark-lane-tag="):
-			lane_tag = arg.replace("--benchmark-lane-tag=", "")
-		elif arg == "--benchmark-lane-tag" and i + 1 < args.size():
-			lane_tag = str(args[i + 1])
-		elif arg.begins_with("--benchmark-instancing-mode="):
-			instancing_mode = _normalize_instancing_mode(arg.replace("--benchmark-instancing-mode=", ""))
-		elif arg == "--benchmark-instancing-mode" and i + 1 < args.size():
-			instancing_mode = _normalize_instancing_mode(str(args[i + 1]))
-		elif arg.begins_with("--benchmark-capture-dir="):
-			capture_dir = arg.replace("--benchmark-capture-dir=", "")
-		elif arg == "--benchmark-capture-dir" and i + 1 < args.size():
-			capture_dir = str(args[i + 1])
-		elif arg.begins_with("--benchmark-reference-dir="):
-			reference_dir = arg.replace("--benchmark-reference-dir=", "")
-		elif arg == "--benchmark-reference-dir" and i + 1 < args.size():
-			reference_dir = str(args[i + 1])
-		elif arg.begins_with("--benchmark-capture-tag="):
-			capture_tag = arg.replace("--benchmark-capture-tag=", "")
-		elif arg == "--benchmark-capture-tag" and i + 1 < args.size():
-			capture_tag = str(args[i + 1])
-		elif arg.begins_with("--benchmark-ssim-threshold="):
-			visual_ssim_threshold = maxf(0.0, minf(1.0, float(arg.replace("--benchmark-ssim-threshold=", ""))))
-		elif arg == "--benchmark-ssim-threshold" and i + 1 < args.size():
-			visual_ssim_threshold = maxf(0.0, minf(1.0, float(args[i + 1])))
-		elif arg.begins_with("--benchmark-psnr-threshold="):
-			visual_psnr_threshold = maxf(0.0, float(arg.replace("--benchmark-psnr-threshold=", "")))
-		elif arg == "--benchmark-psnr-threshold" and i + 1 < args.size():
-			visual_psnr_threshold = maxf(0.0, float(args[i + 1]))
+func _apply_contract() -> void:
+	var scene_id := BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	var defaults := {
+		"lane_id": lane_id,
+		"lane_name": lane_name,
+		"lane_description": lane_description,
+		"lane_preset": lane_preset,
+		"duration_s": default_duration_s,
+		"warmup_s": DEFAULT_BENCHMARK_WARMUP,
+		"output_path": DEFAULT_OUTPUT_PATH,
+		"headless_summary": false,
+		"asset_path": "",
+		"placeholder_asset_path": placeholder_asset_path,
+		"lane_tag": "",
+		"capture_dir": "",
+		"reference_dir": "",
+		"capture_tag": "",
+		"instancing_mode": "auto",
+		"ssim_threshold": DEFAULT_VISUAL_SSIM_THRESHOLD,
+		"psnr_threshold": DEFAULT_VISUAL_PSNR_THRESHOLD,
+	}
+	var contract := BenchmarkSceneContract.resolve_contract(scene_id, defaults, _pending_contract)
+	_orchestrated = bool(contract.get("orchestrated", false))
+	lane_id = str(contract.get("lane_id", lane_id))
+	lane_name = str(contract.get("lane_name", lane_name))
+	lane_description = str(contract.get("lane_description", lane_description))
+	lane_preset = str(contract.get("lane_preset", lane_preset))
+	benchmark_duration = max(5.0, float(contract.get("duration_s", default_duration_s)))
+	benchmark_warmup = max(0.0, float(contract.get("warmup_s", DEFAULT_BENCHMARK_WARMUP)))
+	output_path = str(contract.get("output_path", DEFAULT_OUTPUT_PATH))
+	headless_summary = bool(contract.get("headless_summary", false))
+	asset_override_path = str(contract.get("asset_path", ""))
+	placeholder_asset_path = str(contract.get("placeholder_asset_path", placeholder_asset_path))
+	lane_tag = str(contract.get("lane_tag", ""))
+	capture_dir = str(contract.get("capture_dir", ""))
+	reference_dir = str(contract.get("reference_dir", ""))
+	capture_tag = str(contract.get("capture_tag", ""))
+	instancing_mode = _normalize_instancing_mode(str(contract.get("instancing_mode", "auto")))
+	visual_ssim_threshold = maxf(0.0, minf(1.0, float(contract.get("ssim_threshold", DEFAULT_VISUAL_SSIM_THRESHOLD))))
+	visual_psnr_threshold = maxf(0.0, float(contract.get("psnr_threshold", DEFAULT_VISUAL_PSNR_THRESHOLD)))
 
 func _initialize_capture_targets() -> void:
 	_capture_targets.clear()
@@ -531,11 +527,8 @@ func _config_for_preset(preset: String) -> Dictionary:
 			}
 
 func _resolved_asset_path() -> String:
-	if not asset_override_path.is_empty():
-		return asset_override_path
-	if not placeholder_asset_path.is_empty():
-		return placeholder_asset_path
-	return DEFAULT_ASSET_PATH
+	var scene_id := BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	return BenchmarkSceneContract.resolve_asset_path(scene_id, lane_id, asset_override_path, placeholder_asset_path)
 
 func _build_instances(config: Dictionary) -> void:
 	for child in instance_root.get_children():
@@ -746,6 +739,16 @@ func _finish_benchmark() -> void:
 	_result_report = _build_report()
 	_restore_project_settings()
 	_write_report(_result_report)
+
+	if _orchestrated:
+		emit_signal("benchmark_scene_finished", {
+			"success": true,
+			"lane_id": lane_id,
+			"report_path": output_path,
+			"report": _result_report,
+		})
+		queue_free()
+		return
 
 	if headless_summary or DisplayServer.get_name() == "headless":
 		_print_headless_summary(_result_report)
