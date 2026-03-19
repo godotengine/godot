@@ -424,8 +424,10 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		// Release current focus.
 		if (gui.subwindow_focused) {
 			gui.subwindow_focused->_event_callback(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
+			Window *old_focus = gui.subwindow_focused;
 			gui.subwindow_focused = nullptr;
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
+			_sub_window_update(old_focus);
 		}
 
 		Window *this_window = Object::cast_to<Window>(this);
