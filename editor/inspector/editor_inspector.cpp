@@ -1167,6 +1167,16 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		select();
 		return;
 	}
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && key->is_action("ui_menu", true)) {
+		accept_event();
+		_update_popup();
+		menu->set_position(get_screen_position());
+		menu->reset_size();
+		menu->popup();
+		select();
+		return;
+	}
 }
 
 void EditorProperty::_accessibility_action_click(const Variant &p_data) {
@@ -2076,6 +2086,10 @@ void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		_popup_context_menu(get_screen_position() + mb->get_position());
 	}
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && key->is_action("ui_menu", true)) {
+		_popup_context_menu(get_screen_position());
+	}
 }
 
 EditorInspectorCategory::EditorInspectorCategory() {
@@ -2569,6 +2583,15 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
+
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && key->is_action("ui_menu", true)) {
+		accept_event();
+		_update_popup();
+		menu->set_position(get_screen_position());
+		menu->reset_size();
+		menu->popup();
+	}
 }
 
 String EditorInspectorSection::get_section() const {
@@ -2982,6 +3005,17 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 		if (array_elements[p_index].panel->has_focus() && key.is_pressed() && key.get_keycode() == Key::KEY_DELETE) {
 			_move_element(begin_array_index + p_index, -1);
 			array_elements[p_index].panel->accept_event();
+		}
+	}
+	if (key_ref.is_valid() && key_ref->is_pressed() && key_ref->is_action("ui_menu", true)) {
+		if (movable) {
+			array_elements[p_index].panel->accept_event();
+			popup_array_index_pressed = begin_array_index + p_index;
+			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
+			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
+			rmb_popup->set_position(array_elements[p_index].panel->get_screen_position());
+			rmb_popup->reset_size();
+			rmb_popup->popup();
 		}
 	}
 
