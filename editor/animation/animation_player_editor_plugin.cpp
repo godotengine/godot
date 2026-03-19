@@ -265,7 +265,7 @@ void AnimationPlayerEditor::go_to_nearest_keyframe(bool p_backward) {
 
 	double current_time = player->get_current_animation_position();
 	// Offset the time to avoid finding the same keyframe with Animation::track_find_key().
-	double time_offset = MAX(CMP_EPSILON * 2, current_time * CMP_EPSILON * 2);
+	double time_offset = MAX(frame->get_step(), current_time * frame->get_step());
 	double current_time_offset = current_time + (p_backward ? -time_offset : time_offset);
 
 	float nearest_key_time = p_backward ? 0 : anim->get_length();
