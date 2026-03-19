@@ -37,7 +37,7 @@ class EditorDebuggerServer : public RefCounted {
 	GDSOFTCLASS(EditorDebuggerServer, RefCounted);
 
 public:
-	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
+	typedef Ref<EditorDebuggerServer> (*CreateServerFunc)(const String &p_uri);
 
 private:
 	static HashMap<StringName, CreateServerFunc> protocols;
@@ -47,7 +47,7 @@ public:
 	static void deinitialize();
 
 	static void register_protocol_handler(const String &p_protocol, CreateServerFunc p_func);
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
 	virtual String get_uri() const = 0;
 	virtual void poll() = 0;

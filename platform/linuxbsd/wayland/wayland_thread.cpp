@@ -2721,11 +2721,11 @@ void WaylandThread::_wp_image_description_on_ready2(void *data, struct wp_image_
 
 	struct wp_image_description_info_v1 *image_info = wp_image_description_v1_get_information(image_descriptor);
 	if (image_info != nullptr) {
-		ColorProfileMessage *msg = memnew(ColorProfileMessage);
+		Ref<ColorProfileMessage> msg = memnew(ColorProfileMessage);
 		msg->id = ws->id;
 		msg->wayland_thread = ws->wayland_thread;
 
-		wp_image_description_info_v1_add_listener(image_info, &wp_image_description_info_listener, msg);
+		wp_image_description_info_v1_add_listener(image_info, &wp_image_description_info_listener, msg.ptr());
 		wp_image_description_v1_destroy(image_descriptor);
 	}
 }

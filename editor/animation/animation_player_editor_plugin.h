@@ -331,7 +331,7 @@ public:
 class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTrackKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationTrackKeyEdit> atk_plugin;
 
 public:
 	virtual bool handles(Object *p_object) const override;
@@ -356,7 +356,7 @@ public:
 class AnimationMarkerKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationMarkerKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationMarkerKeyEdit *amk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationMarkerKeyEdit> amk_plugin;
 
 public:
 	virtual bool handles(Object *p_object) const override;
