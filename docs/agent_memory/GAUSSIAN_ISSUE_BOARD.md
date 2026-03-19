@@ -12,11 +12,11 @@ Status legend:
 
 | Issue ID | Subsystem | Title | Severity | Owner Agent | Status | Dependency | Evidence |
 |---|---|---|---|---|---|---|---|
-| ISSUE-001 | Core Data Structures | Core threading safety with RWLock + animation cache mutex ordering | Critical | agent-core-data | Planned | None | a7dd73fcd06 |
-| ISSUE-002 | Core Data Structures | GPU resource ownership verification before uniform set creation | Critical | agent-core-data | Planned | None | 902f781f1b7 |
-| ISSUE-003 | Core Data Structures | Guard GaussianData animation cache mutable fields from data races | High | agent-core-data | Planned | ISSUE-001 | a7dd73fcd06 |
-| ISSUE-004 | Core Data Structures | Pack thread startup partial-failure deadlock fix | Critical | agent-core-data | Planned | ISSUE-001 | 102d229bb88 |
-| ISSUE-005 | Core Data Structures | Document lock hierarchy and enforce lock-level assertions | Medium | agent-core-data | Planned | ISSUE-001 | d2fb0d32c2e |
+| ISSUE-001 | Core Data Structures | Core threading safety with RWLock + animation cache mutex ordering | Critical | agent-core-data | Ready for Merge | None | `gaussian_data.h:247,262,295`; `gaussian_data.cpp:610`; `gaussian_data_edits.cpp:364,422`; `gaussian_data_io.cpp:270` |
+| ISSUE-002 | Core Data Structures | GPU resource ownership verification before uniform set creation | Critical | agent-core-data | Ready for Merge | None | `resource_owner_mismatch_contract.cpp:55,71,87`; `gpu_sorter.cpp:271,671,2246,2982`; `tile_render_rasterizer_stage.cpp:353,470,589`; `tile_render_resolve.cpp:518` |
+| ISSUE-003 | Core Data Structures | Guard GaussianData animation cache mutable fields from data races | High | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_data.h:295-303`; `gaussian_data.cpp:174,263,362`; `gaussian_data_animation.cpp:26,49,63`; `gaussian_data_edits.cpp:222` |
+| ISSUE-004 | Core Data Structures | Pack thread startup partial-failure deadlock fix | Critical | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_streaming.cpp:4639-4700` |
+| ISSUE-005 | Core Data Structures | Document lock hierarchy and enforce lock-level assertions | Medium | agent-core-data | Ready for Merge | ISSUE-001 | `gaussian_splat_manager.h:52-83`; `gaussian_splat_manager.cpp:72-116` |
 | ISSUE-006 | GPU Sorting | Split oversized streaming/sorting integration unit for maintainability | High | agent-gpu-sorting | Planned | ISSUE-001 | 299e8f51706 |
 | ISSUE-007 | GPU Sorting | Define missing canonical issue scope (no historical metadata found) | High | agent-gpu-sorting | Blocked | None | unresolved |
 | ISSUE-008 | GPU Sorting | Define missing canonical issue scope (no historical metadata found) | High | agent-gpu-sorting | Blocked | None | unresolved |
@@ -52,11 +52,11 @@ Status legend:
 | ISSUE-038 | Editor Integration | Document SH sign convention consistency (PLY and shader) | Medium | agent-editor | Planned | ISSUE-034 | f362be08037 |
 | ISSUE-039 | Editor Integration | Disk-backed thumbnail cache with fingerprint keying | Medium | agent-editor | Planned | None | 3ac1ab161ad |
 | ISSUE-040 | Editor Integration | Add `reset_to_defaults()` to color grading resource | Low | agent-editor | Planned | None | 08c3b4b1706 |
-| ISSUE-041 | Build System | Document painterly shader performance toggle route | Low | agent-build-ci | Ready for Merge | ISSUE-034 | `tests/ci/collect_production_evidence.ps1:320,329,463`; `tests/ci/README.md:18` |
-| ISSUE-042 | Build System | Consolidate sort algorithm selection through unified traits | Medium | agent-build-ci | Ready for Merge | ISSUE-010 | `modules/gaussian_splatting/renderer/gpu_sorter.h:55,454,470`; `modules/gaussian_splatting/renderer/gpu_sorter.cpp:953,1037` |
-| ISSUE-043 | Build System | Document theoretical complexity units and scaling assumptions | Low | agent-build-ci | Ready for Merge | ISSUE-042 | `modules/gaussian_splatting/renderer/gpu_sorter.h:183-188`; `tests/ci/TEST_COVERAGE.md:78` |
-| ISSUE-044 | Build System | Protect against circular clip chains and enforce depth cap | High | agent-build-ci | Ready for Merge | ISSUE-040 | `modules/gaussian_splatting/animation/animation_state_machine.cpp:512,517-519` |
-| ISSUE-045 | Build System | Track layout version in incremental saver contracts | Medium | agent-build-ci | Ready for Merge | ISSUE-023 | `modules/gaussian_splatting/persistence/incremental_saver.h:45-50`; `modules/gaussian_splatting/persistence/incremental_saver.cpp:763,809` |
+| ISSUE-041 | Build System | Document painterly shader performance toggle route | Low | agent-build-ci | Planned | ISSUE-034 | 32439d77809 |
+| ISSUE-042 | Build System | Consolidate sort algorithm selection through unified traits | Medium | agent-build-ci | Planned | ISSUE-010 | 32439d77809 |
+| ISSUE-043 | Build System | Document theoretical complexity units and scaling assumptions | Low | agent-build-ci | Planned | ISSUE-042 | 32439d77809 |
+| ISSUE-044 | Build System | Protect against circular clip chains and enforce depth cap | High | agent-build-ci | Planned | ISSUE-040 | 08c3b4b1706 |
+| ISSUE-045 | Build System | Track layout version in incremental saver contracts | Medium | agent-build-ci | Planned | ISSUE-023 | 32439d77809 |
 
 ## Wave Plan
 

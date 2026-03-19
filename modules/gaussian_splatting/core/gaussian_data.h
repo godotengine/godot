@@ -259,7 +259,6 @@ private:
     uint32_t sh_high_order_capacity = 0; // Slack-factored capacity to avoid reallocation thrashing
     LocalVector<Vector3> sh_high_order_coefficients;
     mutable RWLock data_rwlock;
-    mutable Mutex sh_mutex; ///< Protects SH coefficient reads/writes during IO and edits.
     bool is_2d_mode = false;
 
     struct BrushStroke {

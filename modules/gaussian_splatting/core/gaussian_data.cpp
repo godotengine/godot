@@ -608,7 +608,7 @@ void GaussianData::set_painterly_flags(const PackedInt32Array &p_flags) {
 }
 
 PackedInt32Array GaussianData::get_brush_override_ids() const {
-    MutexLock lock(sh_mutex);
+    RWLockRead lock(data_rwlock);
 
     PackedInt32Array result;
     result.resize(gaussians.size());
@@ -858,4 +858,3 @@ float GaussianData::get_memory_usage() const {
     float octree_size = sizeof(OctreeNode) * octree.size();
     return base_size + octree_size;
 }
-
