@@ -248,6 +248,17 @@
 				Returns an array of file paths of currently unsaved scenes.
 			</description>
 		</method>
+		<method name="import_and_save_resource">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="importer_name" type="String" />
+			<param index="2" name="params" type="Dictionary" />
+			<param index="3" name="save_base_path" type="String" />
+			<description>
+				Imports the resource at the given path and saves it to the given base path.
+				Returns an array of file paths of the imported resources and generated files.
+			</description>
+		</method>
 		<method name="inspect_object">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />

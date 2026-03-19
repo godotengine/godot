@@ -192,6 +192,8 @@ public:
 	void save_all_scenes();
 	Error close_scene();
 
+	Vector<String> import_and_save_resource(const String &p_path, const String &p_importer_name, const Dictionary &p_params, const String &p_save_base_path);
+
 	// Scene playback.
 
 	void play_main_scene();
