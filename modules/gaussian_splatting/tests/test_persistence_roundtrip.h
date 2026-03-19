@@ -34,6 +34,97 @@ void _remove_persistence_fixture(const String &p_path) {
     DirAccess::remove_absolute(p_path);
 }
 
+bool _overwrite_scene_header_versions(const String &p_path, uint16_t p_version, uint16_t p_min_reader_version) {
+    Ref<FileAccess> file = _open_persistence_fixture(p_path, FileAccess::READ_WRITE);
+    if (file.is_null()) {
+        return false;
+    }
+
+    const uint64_t payload_offset = sizeof(GaussianSplatting::ChunkHeader);
+    if (file->get_length() < payload_offset + GaussianSplatting::SCENE_HEADER_PACKED_SIZE) {
+        return false;
+    }
+
+    const uint64_t version_offset = payload_offset + sizeof(uint32_t);
+    const uint64_t min_reader_offset = payload_offset + 56;
+    file->seek(version_offset);
+    file->store_16(p_version);
+    file->seek(min_reader_offset);
+    file->store_16(p_min_reader_version);
+    return true;
+}
+
+bool _retag_first_metadata_chunk_as_unknown(const String &p_path, uint32_t p_unknown_chunk_type) {
+    Ref<FileAccess> file = _open_persistence_fixture(p_path, FileAccess::READ_WRITE);
+    if (file.is_null()) {
+        return false;
+    }
+
+    const uint64_t file_length = file->get_length();
+    file->seek(0);
+
+    while (file->get_position() + uint64_t(sizeof(GaussianSplatting::ChunkHeader)) <= file_length) {
+        const uint64_t chunk_start = file->get_position();
+        const uint32_t chunk_type = file->get_32();
+        const uint32_t chunk_size = file->get_32();
+        file->get_32(); // checksum
+        file->get_32(); // flags
+
+        const uint64_t payload_offset = file->get_position();
+        if (payload_offset > file_length || uint64_t(chunk_size) > file_length - payload_offset) {
+            return false;
+        }
+
+        if (chunk_type == uint32_t(GaussianSplatting::ChunkType::METADATA)) {
+            file->seek(chunk_start);
+            file->store_32(p_unknown_chunk_type);
+            return true;
+        }
+
+        if (chunk_type == uint32_t(GaussianSplatting::ChunkType::END_OF_FILE)) {
+            break;
+        }
+
+        file->seek(payload_offset + uint64_t(chunk_size));
+    }
+
+    return false;
+}
+
+bool _file_contains_chunk_type(const String &p_path, uint32_t p_chunk_type) {
+    Ref<FileAccess> file = _open_persistence_fixture(p_path, FileAccess::READ);
+    if (file.is_null()) {
+        return false;
+    }
+
+    const uint64_t file_length = file->get_length();
+    file->seek(0);
+
+    while (file->get_position() + uint64_t(sizeof(GaussianSplatting::ChunkHeader)) <= file_length) {
+        const uint32_t chunk_type = file->get_32();
+        const uint32_t chunk_size = file->get_32();
+        file->get_32(); // checksum
+        file->get_32(); // flags
+
+        const uint64_t payload_offset = file->get_position();
+        if (payload_offset > file_length || uint64_t(chunk_size) > file_length - payload_offset) {
+            return false;
+        }
+
+        if (chunk_type == p_chunk_type) {
+            return true;
+        }
+
+        if (chunk_type == uint32_t(GaussianSplatting::ChunkType::END_OF_FILE)) {
+            break;
+        }
+
+        file->seek(payload_offset + uint64_t(chunk_size));
+    }
+
+    return false;
+}
+
 Ref<GaussianSplatWorld> create_test_world() {
     Ref<GaussianData> data;
     data.instantiate();
@@ -110,6 +201,7 @@ TEST_CASE("[GaussianSplatting][Persistence] validate_file accepts valid GSF") {
     CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
 
     GaussianSplatting::GaussianSceneSerializer serializer;
+    serializer.set_enable_checksum(false);
     Error save_err = serializer.save_scene(path, data.ptr(), nullptr, Dictionary());
     CHECK_MESSAGE(save_err == OK, "GSF save should succeed");
 
@@ -122,6 +214,134 @@ TEST_CASE("[GaussianSplatting][Persistence] validate_file accepts valid GSF") {
     CHECK_MESSAGE(is_gsf, "is_gaussian_scene_file should accept valid chunked GSF");
 
     _remove_persistence_fixture(path);
+}
+
+TEST_CASE("[GaussianSplatting][Persistence] load_scene accepts forward-compatible future versions") {
+    const String path = _make_persistence_fixture_path("test_forward_compatible_version");
+    const bool fixture_dir_ready = _ensure_persistence_fixture_dir(path);
+    CHECK_MESSAGE(fixture_dir_ready, "Persistence fixture directory should be available");
+    if (!fixture_dir_ready) {
+        return;
+    }
+
+    Ref<GaussianSplatWorld> world = create_test_world();
+    Ref<GaussianData> data = world->get_gaussian_data();
+    CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
+
+    GaussianSplatting::GaussianSceneSerializer serializer;
+    serializer.set_enable_checksum(false);
+    Error save_err = serializer.save_scene(path, data.ptr(), nullptr, Dictionary());
+    CHECK_MESSAGE(save_err == OK, "GSF save should succeed");
+    if (save_err != OK) {
+        return;
+    }
+
+    const uint16_t future_version = GaussianSplatting::GAUSSIAN_SCENE_VERSION + 1;
+    const bool patched = _overwrite_scene_header_versions(path, future_version, GaussianSplatting::GAUSSIAN_SCENE_VERSION);
+    CHECK_MESSAGE(patched, "Fixture header should be patchable for forward-compatibility test");
+    if (!patched) {
+        _remove_persistence_fixture(path);
+        return;
+    }
+
+    Ref<GaussianData> loaded_data;
+    loaded_data.instantiate();
+    Error load_err = serializer.load_scene(path, loaded_data.ptr(), nullptr, nullptr);
+    CHECK_MESSAGE(load_err == OK, "Forward-compatible future version should load successfully");
+    CHECK_MESSAGE(loaded_data->get_count() == data->get_count(),
+            "Forward-compatible load should preserve splat count");
+
+    _remove_persistence_fixture(path);
+}
+
+TEST_CASE("[GaussianSplatting][Persistence] load_scene rejects forward-incompatible future versions") {
+    const String path = _make_persistence_fixture_path("test_forward_incompatible_version");
+    const bool fixture_dir_ready = _ensure_persistence_fixture_dir(path);
+    CHECK_MESSAGE(fixture_dir_ready, "Persistence fixture directory should be available");
+    if (!fixture_dir_ready) {
+        return;
+    }
+
+    Ref<GaussianSplatWorld> world = create_test_world();
+    Ref<GaussianData> data = world->get_gaussian_data();
+    CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
+
+    GaussianSplatting::GaussianSceneSerializer serializer;
+    Error save_err = serializer.save_scene(path, data.ptr(), nullptr, Dictionary());
+    CHECK_MESSAGE(save_err == OK, "GSF save should succeed");
+    if (save_err != OK) {
+        return;
+    }
+
+    const uint16_t future_version = GaussianSplatting::GAUSSIAN_SCENE_VERSION + 1;
+    const uint16_t incompatible_reader_floor = GaussianSplatting::GAUSSIAN_SCENE_VERSION + 1;
+    const bool patched = _overwrite_scene_header_versions(path, future_version, incompatible_reader_floor);
+    CHECK_MESSAGE(patched, "Fixture header should be patchable for forward-incompatibility test");
+    if (!patched) {
+        _remove_persistence_fixture(path);
+        return;
+    }
+
+    Ref<GaussianData> loaded_data;
+    loaded_data.instantiate();
+    Error load_err = serializer.load_scene(path, loaded_data.ptr(), nullptr, nullptr);
+    CHECK_MESSAGE(load_err == ERR_FILE_UNRECOGNIZED,
+            "Forward-incompatible future version should be rejected");
+
+    _remove_persistence_fixture(path);
+}
+
+TEST_CASE("[GaussianSplatting][Persistence] unknown chunks round-trip across load and save") {
+    const String path = _make_persistence_fixture_path("test_unknown_chunk_roundtrip");
+    const String resaved_path = _make_persistence_fixture_path("test_unknown_chunk_roundtrip_resave");
+    const bool fixture_dir_ready = _ensure_persistence_fixture_dir(path) && _ensure_persistence_fixture_dir(resaved_path);
+    CHECK_MESSAGE(fixture_dir_ready, "Persistence fixture directory should be available");
+    if (!fixture_dir_ready) {
+        return;
+    }
+
+    Ref<GaussianSplatWorld> world = create_test_world();
+    Ref<GaussianData> data = world->get_gaussian_data();
+    CHECK_MESSAGE(data.is_valid(), "Test data should be valid");
+
+    Dictionary metadata;
+    metadata[StringName("roundtrip_probe")] = true;
+
+    GaussianSplatting::GaussianSceneSerializer serializer;
+    Error save_err = serializer.save_scene(path, data.ptr(), nullptr, metadata);
+    CHECK_MESSAGE(save_err == OK, "GSF save with metadata should succeed");
+    if (save_err != OK) {
+        _remove_persistence_fixture(path);
+        _remove_persistence_fixture(resaved_path);
+        return;
+    }
+
+    const uint32_t unknown_chunk_type = 0x554E4B4Eu; // "UNKN"
+    const bool retagged = _retag_first_metadata_chunk_as_unknown(path, unknown_chunk_type);
+    CHECK_MESSAGE(retagged, "Fixture should contain a metadata chunk to retag");
+    if (!retagged) {
+        _remove_persistence_fixture(path);
+        _remove_persistence_fixture(resaved_path);
+        return;
+    }
+
+    Ref<GaussianData> loaded_data;
+    loaded_data.instantiate();
+    Dictionary loaded_metadata;
+    Error load_err = serializer.load_scene(path, loaded_data.ptr(), nullptr, &loaded_metadata);
+    CHECK_MESSAGE(load_err == OK, "Loading fixture with unknown chunk should succeed");
+    CHECK_MESSAGE(serializer.get_unknown_chunk_count() == 1,
+            "Serializer should preserve exactly one unknown chunk for round-trip");
+
+    Error resave_err = serializer.save_scene(resaved_path, loaded_data.ptr(), nullptr, Dictionary());
+    CHECK_MESSAGE(resave_err == OK, "Resaving after unknown chunk load should succeed");
+    if (resave_err == OK) {
+        CHECK_MESSAGE(_file_contains_chunk_type(resaved_path, unknown_chunk_type),
+                "Resaved file should still contain preserved unknown chunk type");
+    }
+
+    _remove_persistence_fixture(path);
+    _remove_persistence_fixture(resaved_path);
 }
 
 TEST_CASE("[GaussianSplatting][Persistence] Validation helpers accept chunked GSF without checksums") {
