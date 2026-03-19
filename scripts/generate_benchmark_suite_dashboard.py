@@ -7,6 +7,7 @@ import argparse
 import html
 import json
 import math
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +48,15 @@ def _relative_path(path_text: str, output_dir: Path) -> str:
     try:
         return path.relative_to(output_dir).as_posix()
     except ValueError:
-        return path.as_posix()
+        if path.exists() and path.is_file():
+            assets_dir = output_dir / "_dashboard_assets"
+            assets_dir.mkdir(parents=True, exist_ok=True)
+            unique_name = f"{abs(hash(path.resolve().as_posix())) & 0xFFFFFFFF:08x}_{path.name}"
+            local_copy = assets_dir / unique_name
+            if not local_copy.exists():
+                shutil.copy2(path, local_copy)
+            return local_copy.relative_to(output_dir).as_posix()
+        return path.name
 
 
 def _svg_bar_chart(

@@ -69,6 +69,7 @@ Scene lanes (under `res://scenes/benchmark_suite/`):
 - `lane_animation_arena.tscn`
 - `lane_lod_torture.tscn`
 - `lane_integrity_sentinel.tscn`
+- `lane_parity_fidelity.tscn`
 - `lane_long_soak.tscn`
 
 Composite lane:
@@ -115,8 +116,10 @@ Compare captured frames against golden references with SSIM/PSNR:
 ```bash
 python3 tests/runtime/run_benchmark_suite.py \
   --profile parity \
-  --reference-dir tests/examples/godot/test_project/tests/visual_references
+  --reference-dir <reference-dir>
 ```
+
+`<reference-dir>` must contain `<lane_id>/<lane_id>_capture*.png` matches for every selected capture lane.
 
 Require GPU timestamps:
 
