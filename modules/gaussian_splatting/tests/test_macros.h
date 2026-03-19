@@ -71,7 +71,7 @@ public:
         }                                                               \
     }                                                                    \
     if (rd == nullptr) {                                                 \
-        WARN("Skipping test - RenderingDevice unavailable");             \
+        MESSAGE("Skipping test - RenderingDevice unavailable");             \
         return;                                                          \
     }
 

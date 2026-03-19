@@ -10,6 +10,7 @@
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 #include "core/variant/variant.h"
+#include <algorithm>
 #include <cstring>
 
 namespace {
@@ -372,8 +373,8 @@ void pack_gaussian_f16(const Gaussian &src,
                       (SH_ENCODING_F16 << 24);
 
     // Zero padding arrays for alignment
-    memset(dst._pre_sh_padding, 0, sizeof(dst._pre_sh_padding));
-    memset(dst._padding, 0, sizeof(dst._padding));
+    std::fill_n(dst._pre_sh_padding, 3, 0u);
+    std::fill_n(dst._padding, 4, 0u);
 
     // Update metrics
     metrics.raw_bytes += sizeof(Color);

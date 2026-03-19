@@ -518,7 +518,7 @@ void StreamingLODManager::upload_to_gpu(LODLevel& lod, const Vector<GaussianData
     for (uint32_t i = 0; i < data.size(); i++) {
         const GaussianData &src = data[i];
         ::Gaussian &dst = gpu_gaussians[i];
-        std::memset(&dst, 0, sizeof(::Gaussian));
+        dst = ::Gaussian{};
 
         dst.position = src.position;
         dst.opacity = src.color.a;

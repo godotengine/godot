@@ -73,7 +73,7 @@ static bool _compute_expected_payload_bytes(const SPZLoader::SPZHeader &p_header
 
 SPZLoader::SPZLoader() {
     gaussian_data.instantiate();
-    memset(&header, 0, sizeof(header));
+    header = SPZHeader{};
 }
 
 SPZLoader::~SPZLoader() {

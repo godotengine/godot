@@ -167,7 +167,7 @@ TEST_SUITE("[GaussianSplatting]") {
         RenderingDevice *rd = manager->get_primary_rendering_device();
         if (!rd) {
             memdelete(manager);
-            WARN("Skipping 100K test - no RenderingDevice available");
+            MESSAGE("Skipping 100K test - no RenderingDevice available");
             return;
         }
 
