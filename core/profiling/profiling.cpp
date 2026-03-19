@@ -34,6 +34,7 @@
 // Use the tracy profiler.
 
 #include "core/os/mutex.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 
 namespace tracy {
@@ -74,13 +75,52 @@ struct TracyInternTable {
 	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
 	static inline BinaryMutex mutex;
+	static inline LocalVector<TracyInternTable *> instances;
 
-	static inline SourceLocationInternData *source_location_table[TABLE_LEN];
-	static inline PagedAllocator<SourceLocationInternData> source_location_allocator;
+	SourceLocationInternData *source_location_table[TABLE_LEN] = {};
+	PagedAllocator<SourceLocationInternData> source_location_allocator;
 
-	static inline StringInternData *string_table[TABLE_LEN];
-	static inline PagedAllocator<StringInternData> string_allocator;
+	StringInternData *string_table[TABLE_LEN] = {};
+	PagedAllocator<StringInternData> string_allocator;
+
+	void cleanup() {
+		for (uint32_t i = 0; i < TABLE_LEN; i++) {
+			while (source_location_table[i]) {
+				SourceLocationInternData *d = source_location_table[i];
+				source_location_table[i] = d->next;
+				source_location_allocator.free(d);
+			}
+		}
+
+		for (uint32_t i = 0; i < TABLE_LEN; i++) {
+			while (string_table[i]) {
+				StringInternData *d = string_table[i];
+				string_table[i] = d->next;
+				string_allocator.free(d);
+			}
+		}
+	}
+
+	static void cleanup_all() {
+		MutexLock lock(mutex);
+		for (TracyInternTable *table : instances) {
+			table->cleanup();
+		}
+	}
+
+	TracyInternTable() {
+		MutexLock lock(mutex);
+		instances.push_back(this);
+	}
+
+	~TracyInternTable() {
+		MutexLock lock(mutex);
+		cleanup();
+		instances.erase(this);
+	}
 };
+
+static thread_local TracyInternTable intern_table;
 
 const StringInternData *_intern_name(const StringName &p_name) {
 	CRASH_COND(!configured);
@@ -88,7 +128,8 @@ const StringInternData *_intern_name(const StringName &p_name) {
 	const uint32_t hash = p_name.hash();
 	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
 
-	StringInternData *_data = TracyInternTable::string_table[idx];
+	TracyInternTable &t = intern_table;
+	StringInternData *_data = t.string_table[idx];
 
 	while (_data) {
 		if (_data->hash == hash) {
@@ -97,17 +138,17 @@ const StringInternData *_intern_name(const StringName &p_name) {
 		_data = _data->next;
 	}
 
-	_data = TracyInternTable::string_allocator.alloc();
+	_data = t.string_allocator.alloc();
 	_data->name = p_name;
 	_data->name_utf8 = p_name.operator String().utf8();
 
-	_data->next = TracyInternTable::string_table[idx];
+	_data->next = t.string_table[idx];
 	_data->prev = nullptr;
 
-	if (TracyInternTable::string_table[idx]) {
-		TracyInternTable::string_table[idx]->prev = _data;
+	if (t.string_table[idx]) {
+		t.string_table[idx]->prev = _data;
 	}
-	TracyInternTable::string_table[idx] = _data;
+	t.string_table[idx] = _data;
 
 	return _data;
 }
@@ -118,8 +159,8 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 	const uint32_t hash = HashMapHasherDefault::hash(p_function_ptr);
 	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
 
-	MutexLock lock(TracyInternTable::mutex);
-	SourceLocationInternData *_data = TracyInternTable::source_location_table[idx];
+	TracyInternTable &t = intern_table;
+	SourceLocationInternData *_data = t.source_location_table[idx];
 
 	while (_data) {
 		if (_data->function_ptr_hash == hash && _data->source_location_data.line == p_line && _data->file->name == p_file && _data->function->name == p_function && _data->name->name == p_name) {
@@ -128,7 +169,7 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 		_data = _data->next;
 	}
 
-	_data = TracyInternTable::source_location_allocator.alloc();
+	_data = t.source_location_allocator.alloc();
 
 	_data->function_ptr_hash = hash;
 	_data->file = _intern_name(p_file);
@@ -142,28 +183,20 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 	_data->source_location_data.line = p_line;
 	_data->source_location_data.color = p_is_script ? 0x478cbf : 0; // godot_logo_blue
 
-	_data->next = TracyInternTable::source_location_table[idx];
+	_data->next = t.source_location_table[idx];
 	_data->prev = nullptr;
 
-	if (TracyInternTable::source_location_table[idx]) {
-		TracyInternTable::source_location_table[idx]->prev = _data;
+	if (t.source_location_table[idx]) {
+		t.source_location_table[idx]->prev = _data;
 	}
-	TracyInternTable::source_location_table[idx] = _data;
+	t.source_location_table[idx] = _data;
 
 	return &_data->source_location_data;
 }
 } // namespace tracy
 
 void godot_init_profiler() {
-	MutexLock lock(tracy::TracyInternTable::mutex);
 	ERR_FAIL_COND(tracy::configured);
-
-	for (uint32_t i = 0; i < tracy::TracyInternTable::TABLE_LEN; i++) {
-		tracy::TracyInternTable::source_location_table[i] = nullptr;
-	}
-	for (uint32_t i = 0; i < tracy::TracyInternTable::TABLE_LEN; i++) {
-		tracy::TracyInternTable::string_table[i] = nullptr;
-	}
 
 	tracy::configured = true;
 
@@ -173,24 +206,9 @@ void godot_init_profiler() {
 }
 
 void godot_cleanup_profiler() {
-	MutexLock lock(tracy::TracyInternTable::mutex);
 	ERR_FAIL_COND(!tracy::configured);
 
-	for (uint32_t i = 0; i < tracy::TracyInternTable::TABLE_LEN; i++) {
-		while (tracy::TracyInternTable::source_location_table[i]) {
-			tracy::SourceLocationInternData *d = tracy::TracyInternTable::source_location_table[i];
-			tracy::TracyInternTable::source_location_table[i] = tracy::TracyInternTable::source_location_table[i]->next;
-			tracy::TracyInternTable::source_location_allocator.free(d);
-		}
-	}
-	for (uint32_t i = 0; i < tracy::TracyInternTable::TABLE_LEN; i++) {
-		while (tracy::TracyInternTable::string_table[i]) {
-			tracy::StringInternData *d = tracy::TracyInternTable::string_table[i];
-			tracy::TracyInternTable::string_table[i] = tracy::TracyInternTable::string_table[i]->next;
-			tracy::TracyInternTable::string_allocator.free(d);
-		}
-	}
-
+	tracy::TracyInternTable::cleanup_all();
 	tracy::configured = false;
 }
 
