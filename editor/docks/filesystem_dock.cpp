@@ -2613,6 +2613,25 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_dir_dialog->popup_centered();
 		} break;
 
+		case FILE_MENU_NEW_MATERIAL_FROM_SHADER: {
+			if (p_selected.size() != 1) {
+				return;
+			}
+			const String &fpath = p_selected[0];
+
+			Ref<ShaderMaterial> shader_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
+			shader_material->set_shader(Ref<Shader>(ResourceLoader::load(fpath)));
+
+			String name = fpath.get_file().get_basename() + "_material.tres";
+			String save_path = fpath.get_base_dir().path_join(name);
+
+			// Set the path so the save dialog uses it as the suggested file name.
+			shader_material->set_path(save_path);
+
+			EditorNode::get_singleton()->push_item(shader_material.ptr());
+			EditorNode::get_singleton()->save_resource_as(shader_material, fpath.get_base_dir());
+		} break;
+
 		case FILE_MENU_REIMPORT: {
 			ImportDock::get_singleton()->reimport_resources(p_selected);
 		} break;
@@ -3443,6 +3462,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_submenu_node_item(TTRC("Create New"), new_menu, FILE_MENU_NEW);
 		p_popup->set_item_icon(p_popup->get_item_index(FILE_MENU_NEW), get_editor_theme_icon(SNAME("Add")));
 
+		const String type = EditorFileSystem::get_singleton()->get_file_type(p_paths[0]);
+		if (type == "Shader" || type == "VisualShader") {
+			new_menu->add_icon_item(get_editor_theme_icon(SNAME("ShaderMaterial")), TTRC("Material From Shader..."), FILE_MENU_NEW_MATERIAL_FROM_SHADER);
+			new_menu->add_separator();
+		}
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
 		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Scene..."), FILE_MENU_NEW_SCENE);
