@@ -77,7 +77,7 @@ jobs:
 
     - name: Build module-enabled Godot editor
       run: |
-        python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no -j12
+        python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no cache_path=C:/godotgs-scons-cache cache_limit=50 -j12
 
     - name: Resolve Godot binary
       id: godot_binary
