@@ -81,9 +81,18 @@ jobs:
           mesa-vulkan-drivers \
           xvfb
 
+    - name: Restore SCons build cache
+      uses: actions/cache@v4
+      with:
+        path: .scons_cache
+        key: scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-${{ github.sha }}
+        restore-keys: |
+          scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-
+          scons-linux-
+
     - name: Build module-enabled Godot editor
       run: |
-        scons platform=linuxbsd target=editor dev_build=yes tests=yes -j"$(nproc)"
+        scons platform=linuxbsd target=editor dev_build=yes tests=yes cache_path=.scons_cache cache_limit=10 -j"$(nproc)"
 
     - name: Resolve module-enabled Godot binary
       id: godot_binary
