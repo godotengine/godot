@@ -56,9 +56,9 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/line_edit.h"
 #include "servers/display/display_server.h"
-#include "scene/gui/color_rect.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -2448,7 +2448,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		_update_search_highlight();
 	} else {
 		scroll_to = line;
-	}	
+	}
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
@@ -3475,11 +3475,11 @@ EditorHelp::EditorHelp() {
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
 	search_highlight = memnew(ColorRect);
-	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.15)); 
-	search_highlight->set_mouse_filter(MOUSE_FILTER_IGNORE); 
+	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.15));
+	search_highlight->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	search_highlight->set_size(Vector2(0, 0));
 	search_highlight->set_position(Vector2(0, 0));
-	class_desc->call_deferred("add_child", search_highlight);
+	class_desc->add_child(search_highlight);
 
 	toggle_files_button = memnew(Button);
 	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
