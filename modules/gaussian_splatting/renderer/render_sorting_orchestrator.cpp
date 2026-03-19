@@ -988,11 +988,20 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 				// Force a real re-sort on the next frame; this bootstrap order is not depth-sorted.
 				sorting_state.last_sort_transform_valid = false;
 			}
+		} else if (strict_global_sort && sorting_pipeline && available_splats > 0) {
+			// Strict mode cannot publish fallback ordering. If the stable-frame fast path
+			// has no reusable sorted buffer, force a real sort this frame instead of
+			// returning with stale/invalid state.
+			need_sort = true;
+			sorting_state.last_sort_transform_valid = false;
+			GS_LOG_WARN_DEFAULT("[GPU Sort] Strict mode missing previous sorted buffer on camera-stable frame; forcing immediate re-sort");
 		}
-		refresh_cull_signature_tracking();
-		reset_sort_metrics();
-		renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_SKIP_CAMERA_STABLE;
-		return build_summary();
+		if (!need_sort) {
+			refresh_cull_signature_tracking();
+			reset_sort_metrics();
+			renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_SKIP_CAMERA_STABLE;
+			return build_summary();
+		}
 	}
 
 	auto apply_sort_buffer_update = [&](uint32_t p_count) {
