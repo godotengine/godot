@@ -353,7 +353,6 @@ private:
 		Vector3 center;
 		Point2 mouse_pos;
 		Point2 original_mouse_pos;
-		bool snap = false;
 		bool show_rotation_line = false;
 		bool is_trackball = false;
 		Ref<EditorNode3DGizmo> gizmo;
