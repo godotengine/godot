@@ -31,15 +31,24 @@
 #include "godotsharp_dirs.h"
 
 #include "mono_gd/gd_mono.h"
+
+#ifndef TOOLS_ENABLED
 #include "utils/path_utils.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/version.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
+#endif
+
+#ifndef TOOLS_ENABLED
+#include "core/config/engine.h"
+#ifndef ANDROID_ENABLED
+#include "core/io/file_access.h"
+#endif
 #endif
 
 namespace GodotSharpDirs {
@@ -167,8 +176,12 @@ private:
 #else // TOOLS_ENABLED
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
-		String appname_safe = path::get_csharp_project_name();
+		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
+#ifdef ANDROID_ENABLED
+		api_assemblies_dir = packed_path;
+		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+#else
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
 			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + platform + "_" + arch);
@@ -214,6 +227,7 @@ private:
 #endif
 			api_assemblies_dir = data_dir_root;
 		}
+#endif // ANDROID_ENABLED
 #endif
 	}
 

@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeTransformFunc.Function" default="0">
-			The function to be computed. See [enum Function] for options.
+			The function to be computed.
 		</member>
 	</members>
 	<constants>

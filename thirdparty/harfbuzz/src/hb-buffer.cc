@@ -158,13 +158,14 @@ hb_segment_properties_overlay (hb_segment_properties_t *p,
 bool
 hb_buffer_t::enlarge (unsigned int size)
 {
-  if (unlikely (!successful))
-    return false;
   if (unlikely (size > max_len))
   {
     successful = false;
     return false;
   }
+
+  if (unlikely (!successful))
+    return false;
 
   unsigned int new_allocated = allocated;
   hb_glyph_position_t *new_pos = nullptr;
@@ -225,6 +226,13 @@ hb_buffer_t::shift_forward (unsigned int count)
 {
   assert (have_output);
   if (unlikely (!ensure (len + count))) return false;
+
+  max_ops -= len - idx;
+  if (unlikely (max_ops < 0))
+  {
+    successful = false;
+    return false;
+  }
 
   memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
   if (idx + count > len)
@@ -297,7 +305,6 @@ hb_buffer_t::clear ()
   props = default_props;
 
   successful = true;
-  shaping_failed = false;
   have_output = false;
   have_positions = false;
 
@@ -320,7 +327,6 @@ hb_buffer_t::enter ()
 {
   deallocate_var_all ();
   serial = 0;
-  shaping_failed = false;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
   unsigned mul;
   if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR, &mul)))
@@ -339,7 +345,6 @@ hb_buffer_t::leave ()
   max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
   deallocate_var_all ();
   serial = 0;
-  // Intentionally not reseting shaping_failed, such that it can be inspected.
 }
 
 
@@ -367,6 +372,18 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
   if (unlikely (!ensure (len + 1))) return;
 
   info[len] = glyph_info;
+
+  len++;
+}
+void
+hb_buffer_t::add_info_and_pos (const hb_glyph_info_t &glyph_info,
+			       const hb_glyph_position_t &glyph_pos)
+{
+  if (unlikely (!ensure (len + 1))) return;
+
+  info[len] = glyph_info;
+  assert (have_positions);
+  pos[len] = glyph_pos;
 
   len++;
 }
@@ -508,7 +525,19 @@ hb_buffer_t::set_masks (hb_mask_t    value,
   hb_mask_t not_mask = ~mask;
   value &= mask;
 
+  max_ops -= len;
+  if (unlikely (max_ops < 0))
+    successful = false;
+
   unsigned int count = len;
+
+  if (cluster_start == 0 && cluster_end == (unsigned int) -1)
+  {
+    for (unsigned int i = 0; i < count; i++)
+      info[i].mask = (info[i].mask & not_mask) | value;
+    return;
+  }
+
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
@@ -518,11 +547,9 @@ void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
-  {
-    unsafe_to_break (start, end);
-    return;
-  }
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = info[start].cluster;
 
@@ -548,14 +575,12 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     set_cluster (info[i], cluster);
 }
 void
-hb_buffer_t::merge_out_clusters (unsigned int start,
-				 unsigned int end)
+hb_buffer_t::merge_out_clusters_impl (unsigned int start,
+				      unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
-    return;
-
-  if (unlikely (end - start < 2))
-    return;
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = out_info[start].cluster;
 
@@ -714,7 +739,6 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_SEGMENT_PROPERTIES_DEFAULT,
 
   false, /* successful */
-  true, /* shaping_failed */
   false, /* have_output */
   true  /* have_positions */
 
@@ -936,6 +960,9 @@ void
 hb_buffer_set_content_type (hb_buffer_t              *buffer,
 			    hb_buffer_content_type_t  content_type)
 {
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
   buffer->content_type = content_type;
 }
 
@@ -2254,6 +2281,22 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * Debugging.
  */
 
+void
+hb_buffer_t::changed ()
+{
+#ifdef HB_NO_BUFFER_MESSAGE
+  return;
+#else
+  if (!message_depth)
+    return;
+
+  if (changed_func)
+    changed_func (this, changed_data);
+  else
+    update_digest ();
+#endif
+}
+
 #ifndef HB_NO_BUFFER_MESSAGE
 /**
  * hb_buffer_set_message_func:
@@ -2271,7 +2314,8 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
 			    hb_buffer_message_func_t func,
 			    void *user_data, hb_destroy_func_t destroy)
 {
-  if (unlikely (hb_object_is_immutable (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)) ||
+      unlikely (buffer->message_depth))
   {
     if (destroy)
       destroy (user_data);
@@ -2291,6 +2335,23 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
     buffer->message_destroy = nullptr;
   }
 }
+/**
+ * hb_buffer_changed:
+ * @buffer: An #hb_buffer_t
+ *
+ * Called by a message callback after modifying buffer glyph indices,
+ * to update internal caches.
+ *
+ * If not called from inside a message callback, does nothing.
+ *
+ * Since: 13.0.0
+ **/
+void
+hb_buffer_changed (hb_buffer_t *buffer)
+{
+  buffer->changed ();
+}
+
 bool
 hb_buffer_t::message_impl (hb_font_t *font, const char *fmt, va_list ap)
 {

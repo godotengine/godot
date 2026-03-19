@@ -4,71 +4,78 @@ default_language_version:
 exclude: |
   (?x)^(
     .*thirdparty/.*|
-    .*-so_wrap\.(h|c)|
+    .*-(dll|dylib|so)_wrap\.[ch]|
     platform/android/java/editor/src/main/java/com/android/.*|
-    platform/android/java/lib/src/com/google/.*
+    platform/android/java/lib/src/main/java/com/google/.*
   )$
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: (SConstruct|SCsub)$ # SCons files use shebangs for syntax highlighting only.
+
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v19.1.3
+    rev: v21.1.7
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         types_or: [text]
-        exclude: ^tests/python_build/.*
       - id: clang-format
         name: clang-format-glsl
         files: \.glsl$
         types_or: [text]
-        exclude: ^tests/python_build/.*
         args: [-style=file:misc/utility/clang_format_glsl.yml]
 
+  # Not automatically triggered (because it requires compile_commands.json to be up-to-date).
+  # Invoke it manually via `pre-commit run --hook-stage manual clang-tidy`
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
       - id: clang-tidy
-        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
-        args: [--fix, --quiet, --use-color]
+        # TODO .inc ignored for now because they don't include their parent header.
+        # TODO Platform-specific subfolders currently fail, we should try to include them
+        files: ^(core|main|scene)/.*\.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|java)$
+        # No unknown warning suppression used for easier compatibility with gcc
+        args: [--fix, --quiet, --use-color, -p=compile_commands.json, -extra-arg=-Wno-unknown-warning-option]
         types_or: [text]
-        exclude: ^tests/python_build/.*
-        additional_dependencies: [clang-tidy==19.1.0]
-        require_serial: true
-        stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
+        additional_dependencies: [clang-tidy==21.1.6]
+        require_serial: false
+        stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.10
+    rev: v0.15.0
     hooks:
-      - id: ruff
-        args: [--fix]
+      - id: ruff-check
+        args: [--color=always]
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]
       - id: ruff-format
+        args: [--color=always]
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1  # Latest version that supports Python 3.8
+    rev: v1.19.1
     hooks:
       - id: mypy
         files: \.py$
         types_or: [text]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies: [tomli]
 
-  ### Requires Docker; look into alternative implementation.
-  # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
-  #   rev: 1.0.0
-  #   hooks:
-  #     - id: xmllint
-  #       language: docker
-  #       types_or: [text]
-  #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
-  #       args: [--schema, doc/class.xsd]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.34.1
+    hooks:
+      - id: check-jsonschema
+        files: ^core/extension/gdextension_interface\.json$
+        args: ["--schemafile", "core/extension/gdextension_interface.schema.json"]
 
   - repo: local
     hooks:
@@ -87,6 +94,32 @@ repos:
         args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes, -c]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: validate-builders
+        name: validate-builders
+        language: python
+        entry: python tests/python_build/validate_builders.py
+        pass_filenames: false
+        files: ^(gles3|glsl)_builders\.py$
+
+      - id: validate-xml
+        name: validate-xml
+        language: python
+        entry: python misc/scripts/validate_xml.py
+        files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+        additional_dependencies: [xmlschema]
+
+      - id: validate-codeowners
+        name: validate-codeowners
+        language: python
+        entry: python misc/scripts/validate_codeowners.py
+        args: [--unowned]
+
+      - id: validate-includes
+        name: validate-includes
+        language: python
+        entry: python misc/scripts/validate_includes.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
 
       - id: eslint
         name: eslint
@@ -144,9 +177,9 @@ repos:
           (?x)^(
             core/math/bvh_.*\.inc|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
-            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java|
-            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java|
-            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix\.java
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java
           )$
 
       - id: header-guards

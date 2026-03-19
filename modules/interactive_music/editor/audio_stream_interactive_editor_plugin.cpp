@@ -31,6 +31,10 @@
 #include "audio_stream_interactive_editor_plugin.h"
 
 #include "../audio_stream_interactive.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -40,6 +44,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/style_box_flat.h"
 
 void AudioStreamInteractiveTransitionEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -115,7 +120,7 @@ void AudioStreamInteractiveTransitionEditor::_update_selection() {
 	filler_clip->set_disabled(selected.is_empty());
 	hold_previous->set_disabled(selected.is_empty());
 
-	if (selected.size() == 0) {
+	if (selected.is_empty()) {
 		return;
 	}
 
@@ -183,13 +188,13 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 			if (!exists) {
 				if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, to)) {
 					from = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using Any Clip -> %s."), audio_stream_interactive->get_clip_name(to));
+					tooltip = vformat(TTR(U"Using any clip → %s."), audio_stream_interactive->get_clip_name(to));
 				} else if (audio_stream_interactive->has_transition(from, AudioStreamInteractive::CLIP_ANY)) {
 					to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using %s -> Any Clip."), audio_stream_interactive->get_clip_name(from));
+					tooltip = vformat(TTR(U"Using %s → Any clip."), audio_stream_interactive->get_clip_name(from));
 				} else if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, AudioStreamInteractive::CLIP_ANY)) {
 					from = to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = TTR("Using All Clips -> Any Clip.");
+					tooltip = TTR(U"Using all clips → Any clip.");
 				} else {
 					tooltip = TTR("No transition available.");
 				}
@@ -270,7 +275,8 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	filler_clip->clear();
 	filler_clip->add_item(TTR("Disabled"), -1);
 
-	Color header_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
+	const Ref<StyleBoxFlat> &sb_title = tree->get_theme_stylebox(SNAME("title_button_normal"), SNAME("Tree"));
+	const Color header_color = sb_title.is_valid() ? sb_title->get_bg_color() : Color(0, 0, 0, 0);
 
 	int max_w = 0;
 
@@ -329,9 +335,11 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
+	tree->set_hide_folding(true);
 	tree->add_theme_constant_override("draw_guides", 1);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_custom_minimum_size(Size2(400, 0) * EDSCALE);
+	tree->set_theme_type_variation("TreeSecondary");
 	split->add_child(tree);
 
 	tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -341,6 +349,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 
 	transition_enabled = memnew(CheckBox);
 	transition_enabled->set_text(TTR("Enabled"));
+	transition_enabled->set_accessibility_name(TTRC("Use Transition:"));
 	edit_vb->add_margin_child(TTR("Use Transition:"), transition_enabled);
 	transition_enabled->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 
@@ -350,6 +359,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	transition_from->add_item(TTR("Next Beat"), AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BEAT);
 	transition_from->add_item(TTR("Next Bar"), AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR);
 	transition_from->add_item(TTR("Clip End"), AudioStreamInteractive::TRANSITION_FROM_TIME_END);
+	transition_from->set_accessibility_name(TTRC("Transition From:"));
 
 	transition_from->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
@@ -358,25 +368,30 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	transition_to->add_item(TTR("Same Position"), AudioStreamInteractive::TRANSITION_TO_TIME_SAME_POSITION);
 	transition_to->add_item(TTR("Clip Start"), AudioStreamInteractive::TRANSITION_TO_TIME_START);
 	transition_to->add_item(TTR("Prev Position"), AudioStreamInteractive::TRANSITION_TO_TIME_PREVIOUS_POSITION);
+	transition_to->set_accessibility_name(TTRC("Transition To:"));
 	transition_to->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
 	fade_mode = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Fade Mode:"), fade_mode);
 	fade_mode->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	fade_mode->set_accessibility_name(TTRC("Fade Mode:"));
 
 	fade_beats = memnew(SpinBox);
 	edit_vb->add_margin_child(TTR("Fade Beats:"), fade_beats);
 	fade_beats->set_max(16);
 	fade_beats->set_step(0.1);
 	fade_beats->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	fade_beats->set_accessibility_name(TTRC("Fade Beats:"));
 
 	filler_clip = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Filler Clip:"), filler_clip);
 	filler_clip->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filler_clip->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	filler_clip->set_accessibility_name(TTRC("Filler Clip:"));
 
 	hold_previous = memnew(CheckBox);
 	hold_previous->set_text(TTR("Enabled"));
+	hold_previous->set_accessibility_name(TTRC("Hold Previous:"));
 	hold_previous->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 	edit_vb->add_margin_child(TTR("Hold Previous:"), hold_previous);
 
@@ -395,8 +410,7 @@ void EditorInspectorPluginAudioStreamInteractive::_edit(Object *p_object) {
 
 void EditorInspectorPluginAudioStreamInteractive::parse_end(Object *p_object) {
 	if (Object::cast_to<AudioStreamInteractive>(p_object)) {
-		Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Transitions"));
-		button->set_button_icon(audio_stream_interactive_transition_editor->get_editor_theme_icon(SNAME("Blend")));
+		Button *button = memnew(EditorInspectorActionButton(TTRC("Edit Transitions"), SNAME("Blend")));
 		button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginAudioStreamInteractive::_edit).bind(p_object));
 		add_custom_control(button);
 	}

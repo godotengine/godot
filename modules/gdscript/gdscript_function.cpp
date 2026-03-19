@@ -32,6 +32,125 @@
 
 #include "gdscript.h"
 
+#include "core/object/class_db.h"
+
+bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_conversion) const {
+	switch (kind) {
+		case VARIANT: {
+			return true;
+		} break;
+		case BUILTIN: {
+			Variant::Type var_type = p_variant.get_type();
+			bool valid = builtin_type == var_type;
+			if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+				Array array = p_variant;
+				if (array.is_typed()) {
+					const GDScriptDataType &elem_type = container_element_types[0];
+					Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
+					StringName array_native_type = array.get_typed_class_name();
+					Ref<Script> array_script_type_ref = array.get_typed_script();
+
+					if (array_script_type_ref.is_valid()) {
+						valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == array_script_type_ref.ptr();
+					} else if (array_native_type != StringName()) {
+						valid = elem_type.kind == NATIVE && elem_type.native_type == array_native_type;
+					} else {
+						valid = elem_type.kind == BUILTIN && elem_type.builtin_type == array_builtin_type;
+					}
+				} else {
+					valid = false;
+				}
+			} else if (valid && builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+				Dictionary dictionary = p_variant;
+				if (dictionary.is_typed()) {
+					if (dictionary.is_typed_key()) {
+						GDScriptDataType key = get_container_element_type_or_variant(0);
+						Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
+						StringName key_native_type = dictionary.get_typed_key_class_name();
+						Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
+
+						if (key_script_type_ref.is_valid()) {
+							valid = (key.kind == SCRIPT || key.kind == GDSCRIPT) && key.script_type == key_script_type_ref.ptr();
+						} else if (key_native_type != StringName()) {
+							valid = key.kind == NATIVE && key.native_type == key_native_type;
+						} else {
+							valid = key.kind == BUILTIN && key.builtin_type == key_builtin_type;
+						}
+					}
+
+					if (valid && dictionary.is_typed_value()) {
+						GDScriptDataType value = get_container_element_type_or_variant(1);
+						Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
+						StringName value_native_type = dictionary.get_typed_value_class_name();
+						Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
+
+						if (value_script_type_ref.is_valid()) {
+							valid = (value.kind == SCRIPT || value.kind == GDSCRIPT) && value.script_type == value_script_type_ref.ptr();
+						} else if (value_native_type != StringName()) {
+							valid = value.kind == NATIVE && value.native_type == value_native_type;
+						} else {
+							valid = value.kind == BUILTIN && value.builtin_type == value_builtin_type;
+						}
+					}
+				} else {
+					valid = false;
+				}
+			} else if (!valid && p_allow_implicit_conversion) {
+				valid = Variant::can_convert_strict(var_type, builtin_type);
+			}
+			return valid;
+		} break;
+		case NATIVE: {
+			if (p_variant.get_type() == Variant::NIL) {
+				return true;
+			}
+			if (p_variant.get_type() != Variant::OBJECT) {
+				return false;
+			}
+
+			bool was_freed = false;
+			Object *obj = p_variant.get_validated_object_with_check(was_freed);
+			if (!obj) {
+				return !was_freed;
+			}
+
+			if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+				return false;
+			}
+			return true;
+		} break;
+		case SCRIPT:
+		case GDSCRIPT: {
+			if (p_variant.get_type() == Variant::NIL) {
+				return true;
+			}
+			if (p_variant.get_type() != Variant::OBJECT) {
+				return false;
+			}
+
+			bool was_freed = false;
+			Object *obj = p_variant.get_validated_object_with_check(was_freed);
+			if (!obj) {
+				return !was_freed;
+			}
+
+			Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
+			bool valid = false;
+			while (base.is_valid()) {
+				if (base == script_type) {
+					valid = true;
+					break;
+				}
+				base = base->get_base_script();
+			}
+			return valid;
+		} break;
+	}
+	return false;
+}
+
+/////////////////////
+
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
@@ -206,7 +325,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 			return Variant();
 #endif
 		}
-		// Do these now to avoid locking again after the call
+		// Do these now to avoid locking again after the call.
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
 	}
@@ -215,36 +334,8 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	Callable::CallError err;
 	Variant ret = function->call(nullptr, nullptr, 0, err, &state);
 
-	bool completed = true;
-
-	// If the return value is a GDScriptFunctionState reference,
-	// then the function did await again after resuming.
-	if (ret.is_ref_counted()) {
-		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
-		if (gdfs && gdfs->function == function) {
-			completed = false;
-			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
-		}
-	}
-
-	function = nullptr; //cleaned up;
+	function = nullptr; // Cleaned up.
 	state.result = Variant();
-
-	if (completed) {
-		if (first_state.is_valid()) {
-			first_state->emit_signal(SNAME("completed"), ret);
-		} else {
-			emit_signal(SNAME("completed"), ret);
-		}
-
-#ifdef DEBUG_ENABLED
-		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->exit_function();
-		}
-
-		_clear_stack();
-#endif
-	}
 
 	return ret;
 }
@@ -252,8 +343,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 void GDScriptFunctionState::_clear_stack() {
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
-		// The first 3 are special addresses and not copied to the state, so we skip them here.
-		for (int i = 3; i < state.stack_size; i++) {
+		// First `GDScriptFunction::FIXED_ADDRESSES_MAX` stack addresses are special
+		// and not copied to the state, so we skip them here.
+		for (int i = GDScriptFunction::FIXED_ADDRESSES_MAX; i < state.stack_size; i++) {
 			stack[i].~Variant();
 		}
 		state.stack_size = 0;
@@ -287,5 +379,6 @@ GDScriptFunctionState::~GDScriptFunctionState() {
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
+		_clear_stack();
 	}
 }

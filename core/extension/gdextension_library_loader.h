@@ -30,13 +30,15 @@
 
 #pragma once
 
-#include <functional>
-
 #include "core/extension/gdextension_loader.h"
 #include "core/io/config_file.h"
 #include "core/os/shared_object.h"
 
+#include <functional>
+
 class GDExtensionLibraryLoader : public GDExtensionLoader {
+	GDSOFTCLASS(GDExtensionLibraryLoader, GDExtensionLoader);
+
 	friend class GDExtensionManager;
 	friend class GDExtension;
 
@@ -46,8 +48,6 @@ private:
 	void *library = nullptr; // pointer if valid.
 	String library_path;
 	String entry_symbol;
-
-	bool is_static_library = false;
 
 #ifdef TOOLS_ENABLED
 	bool is_reloadable = false;

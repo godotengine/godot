@@ -30,23 +30,17 @@
 
 #pragma once
 
+#include "../scene_multiplayer.h"
+
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/scene_tree.h"
+#include "tests/signal_watcher.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
-#include "../scene_multiplayer.h"
-
 namespace TestSceneMultiplayer {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 TEST_CASE("[Multiplayer][SceneMultiplayer] Defaults") {
 	Ref<SceneMultiplayer> scene_multiplayer;
 	scene_multiplayer.instantiate();
@@ -175,7 +169,7 @@ TEST_CASE("[Multiplayer][SceneMultiplayer][SceneTree] Send Authentication") {
 		Ref<MultiplayerPeer> multiplayer_peer = scene_multiplayer->get_multiplayer_peer();
 		int peer_id = 42;
 		multiplayer_peer->emit_signal(SNAME("peer_connected"), peer_id);
-		SIGNAL_CHECK("peer_authenticating", build_array(build_array(peer_id)));
+		SIGNAL_CHECK("peer_authenticating", { { peer_id } });
 
 		CHECK_EQ(scene_multiplayer->send_auth(peer_id, String("It's me").to_ascii_buffer()), Error::OK);
 
@@ -193,7 +187,7 @@ TEST_CASE("[Multiplayer][SceneMultiplayer][SceneTree] Send Authentication") {
 		int peer_id = 42;
 		multiplayer_peer->emit_signal(SNAME("peer_connected"), peer_id);
 		multiplayer_peer->emit_signal(SNAME("peer_disconnected"), peer_id);
-		SIGNAL_CHECK("peer_authentication_failed", build_array(build_array(peer_id)));
+		SIGNAL_CHECK("peer_authentication_failed", { { peer_id } });
 
 		SIGNAL_UNWATCH(scene_multiplayer.ptr(), "peer_authentication_failed");
 	}
@@ -215,7 +209,7 @@ TEST_CASE("[Multiplayer][SceneMultiplayer][SceneTree] Send Authentication") {
 
 		CHECK_EQ(scene_multiplayer->poll(), Error::OK);
 
-		SIGNAL_CHECK("peer_authentication_failed", build_array(build_array(first_peer_id), build_array(second_peer_id)));
+		SIGNAL_CHECK("peer_authentication_failed", Array({ { first_peer_id }, { second_peer_id } }));
 
 		SIGNAL_UNWATCH(scene_multiplayer.ptr(), "peer_authentication_failed");
 	}

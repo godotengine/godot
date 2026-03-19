@@ -30,32 +30,29 @@
 
 #include "class_db_api_json.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
-#include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	// Must be alphabetically sorted for hash to compute.
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	for (const StringName &E : class_list) {
-		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
+	for (const StringName &class_name : class_list) {
+		ClassDB::ClassInfo *t = ClassDB::classes.getptr(class_name);
 		ERR_FAIL_NULL(t);
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
 
 		Dictionary class_dict;
-		classes_dict[t->name] = class_dict;
+		classes_dict[t->gdtype->get_name()] = class_dict;
 
-		class_dict["inherits"] = t->inherits;
+		class_dict["inherits"] = t->gdtype->get_super_type_name();
 
 		{ //methods
 
@@ -124,7 +121,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
 				snames.push_back(F.key);
 			}
 
@@ -137,7 +134,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constants.push_back(constant_dict);
 
 				constant_dict["name"] = F;
-				constant_dict["value"] = t->constant_map[F];
+				constant_dict["value"] = t->gdtype->get_integer_constant_map(true)[F];
 			}
 
 			if (!constants.is_empty()) {
@@ -149,7 +146,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, const MethodInfo *> &F : t->gdtype->get_signal_map(true)) {
 				snames.push_back(F.key);
 			}
 
@@ -161,7 +158,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				MethodInfo &mi = t->signal_map[F];
+				const MethodInfo &mi = *t->gdtype->get_signal_map(true)[F];
 				signal_dict["name"] = F;
 
 				Array arguments;
@@ -232,4 +229,4 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }
 
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED

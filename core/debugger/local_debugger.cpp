@@ -31,7 +31,10 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
+
+#include <cstdio>
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
@@ -114,6 +117,10 @@ struct LocalDebugger::ScriptsProfiler {
 };
 
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+	if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
+		return;
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
 	if (!target_function.is_empty()) {
@@ -224,6 +231,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(0);
 			script_debugger->set_lines_left(1);
 			break;
+		} else if (line == "o" || line == "out") {
+			script_debugger->set_depth(1);
+			script_debugger->set_lines_left(1);
+			break;
 		} else if (line == "fin" || line == "finish") {
 			String current_function = script_lang->debug_get_stack_level_function(0);
 
@@ -242,7 +253,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 			if (line.get_slice_count(" ") <= 1) {
 				const HashMap<int, HashSet<StringName>> &breakpoints = script_debugger->get_breakpoints();
-				if (breakpoints.size() == 0) {
+				if (breakpoints.is_empty()) {
 					print_line("No Breakpoints.");
 					continue;
 				}
@@ -362,7 +373,7 @@ void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 }
 
 void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
-	print_line("ERROR: '" + (p_descr.is_empty() ? p_err : p_descr) + "'");
+	_err_print_error(p_func.utf8().get_data(), p_file.utf8().get_data(), p_line, p_err, p_descr, p_editor_notify, p_type);
 }
 
 LocalDebugger::LocalDebugger() {

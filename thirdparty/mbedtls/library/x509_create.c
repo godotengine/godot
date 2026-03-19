@@ -292,8 +292,12 @@ int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *nam
     unsigned char data[MBEDTLS_X509_MAX_DN_NAME_SIZE];
     size_t data_len = 0;
 
-    /* Clear existing chain if present */
-    mbedtls_asn1_free_named_data_list(head);
+    /* Ensure the output parameter is not already populated.
+     * (If it were, overwriting it would likely cause a memory leak.)
+     */
+    if (*head != NULL) {
+        return MBEDTLS_ERR_X509_BAD_INPUT_DATA;
+    }
 
     while (c <= end) {
         if (in_attr_type && *c == '=') {

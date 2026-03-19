@@ -32,6 +32,7 @@
 #include <Jolt/Geometry/Plane.h>
 #include <Jolt/Geometry/OrientedBox.h>
 #include <Jolt/TriangleSplitter/TriangleSplitterBinning.h>
+#include <Jolt/TriangleSplitter/TriangleSplitterMean.h>
 #include <Jolt/AABBTree/AABBTreeBuilder.h>
 #include <Jolt/AABBTree/AABBTreeToBuffer.h>
 #include <Jolt/AABBTree/TriangleCodec/TriangleCodecIndexed8BitPackSOA4Flags.h>
@@ -55,6 +56,7 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(MeshShapeSettings)
 	JPH_ADD_ATTRIBUTE(MeshShapeSettings, mMaxTrianglesPerLeaf)
 	JPH_ADD_ATTRIBUTE(MeshShapeSettings, mActiveEdgeCosThresholdAngle)
 	JPH_ADD_ATTRIBUTE(MeshShapeSettings, mPerTriangleUserData)
+	JPH_ADD_ENUM_ATTRIBUTE(MeshShapeSettings, mBuildQuality)
 }
 
 // Codecs this mesh shape is using
@@ -190,12 +192,36 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 	sFindActiveEdges(inSettings, indexed_triangles);
 
 	// Create triangle splitter
-	TriangleSplitterBinning splitter(inSettings.mTriangleVertices, indexed_triangles);
+	union Storage
+	{
+									Storage() { }
+									~Storage() { }
+
+		TriangleSplitterBinning		mBinning;
+		TriangleSplitterMean		mMean;
+	};
+	Storage storage;
+	TriangleSplitter *splitter = nullptr;
+	switch (inSettings.mBuildQuality)
+	{
+	case MeshShapeSettings::EBuildQuality::FavorRuntimePerformance:
+		splitter = new (&storage.mBinning) TriangleSplitterBinning(inSettings.mTriangleVertices, indexed_triangles);
+		break;
+
+	case MeshShapeSettings::EBuildQuality::FavorBuildSpeed:
+		splitter = new (&storage.mMean) TriangleSplitterMean(inSettings.mTriangleVertices, indexed_triangles);
+		break;
+
+	default:
+		JPH_ASSERT(false);
+		break;
+	}
 
 	// Build tree
-	AABBTreeBuilder builder(splitter, inSettings.mMaxTrianglesPerLeaf);
+	AABBTreeBuilder builder(*splitter, inSettings.mMaxTrianglesPerLeaf);
 	AABBTreeBuilderStats builder_stats;
 	const AABBTreeBuilder::Node *root = builder.Build(builder_stats);
+	splitter->~TriangleSplitter();
 
 	// Convert to buffer
 	AABBTreeToBuffer<TriangleCodec, NodeCodec> buffer;
@@ -221,6 +247,14 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 
 void MeshShape::sFindActiveEdges(const MeshShapeSettings &inSettings, IndexedTriangleList &ioIndices)
 {
+	// Check if we're requested to make all edges active
+	if (inSettings.mActiveEdgeCosThresholdAngle < 0.0f)
+	{
+		for (IndexedTriangle &triangle : ioIndices)
+			triangle.mMaterialIndex |= 0b111 << FLAGS_ACTIVE_EGDE_SHIFT;
+		return;
+	}
+
 	// A struct to hold the two vertex indices of an edge
 	struct Edge
 	{
@@ -285,6 +319,7 @@ void MeshShape::sFindActiveEdges(const MeshShapeSettings &inSettings, IndexedTri
 				uint32 mask = 1 << (edge_idx + FLAGS_ACTIVE_EGDE_SHIFT);
 				JPH_ASSERT((triangle.mMaterialIndex & mask) == 0);
 				triangle.mMaterialIndex |= mask;
+				indices.mNumTriangles = 3; // Indicate that we have 3 or more triangles
 			}
 		}
 	}
@@ -349,7 +384,7 @@ MassProperties MeshShape::GetMassProperties() const
 	// creating a Body:
 	//
 	// BodyCreationSettings::mOverrideMassProperties = EOverrideMassProperties::MassAndInertiaProvided;
-	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sReplicate(1.0f), 1000.0f);
+	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sOne(), 1000.0f);
 	//
 	// Note that for a mesh shape to simulate properly, it is best if the mesh is manifold
 	// (i.e. closed, all edges shared by only two triangles, consistent winding order).
@@ -814,8 +849,12 @@ void MeshShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Ar
 
 		JPH_INLINE int	VisitNodes(Vec4Arg inBoundsMinX, Vec4Arg inBoundsMinY, Vec4Arg inBoundsMinZ, Vec4Arg inBoundsMaxX, Vec4Arg inBoundsMaxY, Vec4Arg inBoundsMaxZ, UVec4 &ioProperties, int inStackTop)
 		{
+			// Scale the bounding boxes of this node
+			Vec4 bounds_min_x, bounds_min_y, bounds_min_z, bounds_max_x, bounds_max_y, bounds_max_z;
+			AABox4Scale(mScale, inBoundsMinX, inBoundsMinY, inBoundsMinZ, inBoundsMaxX, inBoundsMaxY, inBoundsMaxZ, bounds_min_x, bounds_min_y, bounds_min_z, bounds_max_x, bounds_max_y, bounds_max_z);
+
 			// Get distance to vertex
-			Vec4 dist_sq = AABox4DistanceSqToPoint(mLocalPosition, inBoundsMinX, inBoundsMinY, inBoundsMinZ, inBoundsMaxX, inBoundsMaxY, inBoundsMaxZ);
+			Vec4 dist_sq = AABox4DistanceSqToPoint(mLocalPosition, bounds_min_x, bounds_min_y, bounds_min_z, bounds_max_x, bounds_max_y, bounds_max_z);
 
 			// Sort so that highest values are first (we want to first process closer hits and we process stack top to bottom)
 			return SortReverseAndStore(dist_sq, mClosestDistanceSq, ioProperties, &mDistanceStack[inStackTop]);

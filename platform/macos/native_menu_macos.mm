@@ -34,6 +34,7 @@
 #import "godot_menu_item.h"
 #import "key_mapping_macos.h"
 
+#include "core/object/callable_mp.h"
 #include "scene/resources/image_texture.h"
 
 void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu) {
@@ -238,6 +239,47 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 	}
 }
 
+String NativeMenuMacOS::get_system_menu_text(SystemMenus p_menu_id) const {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return String();
+	}
+	if (!menu) {
+		return String();
+	}
+	return String::utf8([[menu title] UTF8String]);
+}
+
+void NativeMenuMacOS::set_system_menu_text(SystemMenus p_menu_id, const String &p_name) {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return;
+	}
+	if (!menu || !main_menu_ns) {
+		return;
+	}
+	[menu setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	int idx = [main_menu_ns indexOfItemWithSubmenu:(NSMenu *)menu];
+	NSMenuItem *menu_item = [main_menu_ns itemAtIndex:idx];
+	if (menu_item) {
+		[menu_item setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	}
+}
+
 RID NativeMenuMacOS::create_menu() {
 	MenuData *md = memnew(MenuData);
 	md->menu = [[NSMenu alloc] initWithTitle:@""];
@@ -294,6 +336,9 @@ void NativeMenuMacOS::popup(const RID &p_rid, const Vector2i &p_position) {
 		position /= ds->screen_get_max_scale();
 
 		[md->menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(position.x, position.y - 5) inView:nil]; // Menu vertical position doesn't include rounded corners, add `5` display pixels to better align it with Godot buttons.
+
+		ds->release_pressed_events(); // Note: context menu block main loop and consume events, pressed keys and mouse buttons should be released manually.
+		ds->sync_mouse_state();
 	}
 }
 
@@ -412,6 +457,7 @@ int NativeMenuMacOS::add_item(const RID &p_rid, const String &p_label, const Cal
 		obj->callback = p_callback;
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
+		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
 	}
@@ -430,6 +476,7 @@ int NativeMenuMacOS::add_check_item(const RID &p_rid, const String &p_label, con
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_CHECK_BOX;
+		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
 	}
@@ -447,6 +494,7 @@ int NativeMenuMacOS::add_icon_item(const RID &p_rid, const Ref<Texture2D> &p_ico
 		obj->callback = p_callback;
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
+		obj->accel = p_accel;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
@@ -476,6 +524,7 @@ int NativeMenuMacOS::add_icon_check_item(const RID &p_rid, const Ref<Texture2D> 
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_CHECK_BOX;
+		obj->accel = p_accel;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
@@ -505,6 +554,7 @@ int NativeMenuMacOS::add_radio_check_item(const RID &p_rid, const String &p_labe
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_RADIO_BUTTON;
+		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
 	}
@@ -523,6 +573,7 @@ int NativeMenuMacOS::add_icon_radio_check_item(const RID &p_rid, const Ref<Textu
 		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_RADIO_BUTTON;
+		obj->accel = p_accel;
 		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 		if (ds && p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 			obj->img = p_icon->get_image();
@@ -553,6 +604,7 @@ int NativeMenuMacOS::add_multistate_item(const RID &p_rid, const String &p_label
 		obj->meta = p_tag;
 		obj->max_states = p_max_states;
 		obj->state = p_default_state;
+		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
 	}
@@ -1093,6 +1145,8 @@ void NativeMenuMacOS::set_item_submenu(const RID &p_rid, int p_idx, const RID &p
 		NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[md->menu setSubmenu:md_sub->menu forItem:menu_item];
+			[menu_item setAction:nil];
+			[menu_item setKeyEquivalent:@""];
 		}
 	} else {
 		int item_start = _get_system_menu_start(md->menu);
@@ -1105,7 +1159,11 @@ void NativeMenuMacOS::set_item_submenu(const RID &p_rid, int p_idx, const RID &p
 				ERR_PRINT("Can't remove open menu!");
 				return;
 			}
+			GodotMenuItem *obj = [menu_item representedObject];
+			String keycode = KeyMappingMacOS::keycode_get_native_string(obj->accel & KeyModifierMask::CODE_MASK);
 			[md->menu setSubmenu:nil forItem:menu_item];
+			[menu_item setAction:@selector(globalMenuCallback:)];
+			[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
 		}
 	}
 }
@@ -1121,12 +1179,17 @@ void NativeMenuMacOS::set_item_accelerator(const RID &p_rid, int p_idx, Key p_ke
 	ERR_FAIL_COND(p_idx >= item_start + item_count);
 	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 	if (menu_item) {
-		if (p_keycode == Key::NONE) {
-			[menu_item setKeyEquivalent:@""];
-		} else {
-			[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
-			String keycode = KeyMappingMacOS::keycode_get_native_string(p_keycode & KeyModifierMask::CODE_MASK);
-			[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		GodotMenuItem *obj = [menu_item representedObject];
+		obj->accel = p_keycode;
+		NSMenu *sub_menu = [menu_item submenu];
+		if (!sub_menu) {
+			if (p_keycode == Key::NONE) {
+				[menu_item setKeyEquivalent:@""];
+			} else {
+				[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
+				String keycode = KeyMappingMacOS::keycode_get_native_string(p_keycode & KeyModifierMask::CODE_MASK);
+				[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+			}
 		}
 	}
 }
@@ -1142,6 +1205,8 @@ void NativeMenuMacOS::set_item_disabled(const RID &p_rid, int p_idx, bool p_disa
 	ERR_FAIL_COND(p_idx >= item_start + item_count);
 	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		obj->enabled = !p_disabled;
 		[menu_item setEnabled:(!p_disabled)];
 	}
 }
@@ -1253,6 +1318,29 @@ void NativeMenuMacOS::set_item_indentation_level(const RID &p_rid, int p_idx, in
 	if (menu_item) {
 		[menu_item setIndentationLevel:p_level];
 	}
+}
+
+int NativeMenuMacOS::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	ERR_FAIL_COND_V(p_idx < 0, -1);
+
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, -1);
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND_V(p_idx >= item_start + item_count, -1);
+	ERR_FAIL_INDEX_V(p_target_idx, item_count, -1);
+	p_target_idx += item_start;
+
+	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if ([menu_item submenu] && _is_menu_opened([menu_item submenu])) {
+		ERR_FAIL_V_MSG(-1, "Can't move open menu!");
+	}
+	if (menu_item) {
+		[md->menu removeItemAtIndex:p_idx];
+		[md->menu insertItem:menu_item atIndex:p_target_idx];
+	}
+	return p_target_idx - item_start;
 }
 
 int NativeMenuMacOS::get_item_count(const RID &p_rid) const {

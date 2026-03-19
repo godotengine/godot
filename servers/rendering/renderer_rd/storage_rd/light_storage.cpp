@@ -29,9 +29,13 @@
 /**************************************************************************/
 
 #include "light_storage.h"
+
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
+#include "core/os/os.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
 
@@ -78,7 +82,7 @@ LightStorage::~LightStorage() {
 	free_light_data();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
-		RD::get_singleton()->free(E.value.cubemap);
+		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
 
 	singleton = nullptr;
@@ -116,31 +120,31 @@ bool LightStorage::free(RID p_rid) {
 
 /* LIGHT */
 
-void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
+void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
 	Light light;
 	light.type = p_type;
 
-	light.param[RS::LIGHT_PARAM_ENERGY] = 1.0;
-	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
-	light.param[RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY] = 1.0;
-	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
-	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
-	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
-	light.param[RS::LIGHT_PARAM_ATTENUATION] = 1.0;
-	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
-	light.param[RS::LIGHT_PARAM_SPOT_ATTENUATION] = 1.0;
-	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
-	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
-	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
-	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
-	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
-	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
-	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
-	light.param[RS::LIGHT_PARAM_SHADOW_OPACITY] = 1.0;
-	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
-	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
-	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
-	light.param[RS::LIGHT_PARAM_INTENSITY] = p_type == RS::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
+	light.param[RSE::LIGHT_PARAM_ENERGY] = 1.0;
+	light.param[RSE::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light.param[RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SPECULAR] = 0.5;
+	light.param[RSE::LIGHT_PARAM_RANGE] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SIZE] = 0.0;
+	light.param[RSE::LIGHT_PARAM_ATTENUATION] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SPOT_ANGLE] = 45;
+	light.param[RSE::LIGHT_PARAM_SPOT_ATTENUATION] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
+	light.param[RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
+	light.param[RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
+	light.param[RSE::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
+	light.param[RSE::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
+	light.param[RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RSE::LIGHT_PARAM_SHADOW_OPACITY] = 1.0;
+	light.param[RSE::LIGHT_PARAM_SHADOW_BLUR] = 0;
+	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -150,7 +154,7 @@ RID LightStorage::directional_light_allocate() {
 }
 
 void LightStorage::directional_light_initialize(RID p_light) {
-	_light_initialize(p_light, RS::LIGHT_DIRECTIONAL);
+	_light_initialize(p_light, RSE::LIGHT_DIRECTIONAL);
 }
 
 RID LightStorage::omni_light_allocate() {
@@ -158,7 +162,7 @@ RID LightStorage::omni_light_allocate() {
 }
 
 void LightStorage::omni_light_initialize(RID p_light) {
-	_light_initialize(p_light, RS::LIGHT_OMNI);
+	_light_initialize(p_light, RSE::LIGHT_OMNI);
 }
 
 RID LightStorage::spot_light_allocate() {
@@ -166,7 +170,7 @@ RID LightStorage::spot_light_allocate() {
 }
 
 void LightStorage::spot_light_initialize(RID p_light) {
-	_light_initialize(p_light, RS::LIGHT_SPOT);
+	_light_initialize(p_light, RSE::LIGHT_SPOT);
 }
 
 void LightStorage::light_free(RID p_rid) {
@@ -185,29 +189,29 @@ void LightStorage::light_set_color(RID p_light, const Color &p_color) {
 	light->color = p_color;
 }
 
-void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_value) {
+void LightStorage::light_set_param(RID p_light, RSE::LightParam p_param, float p_value) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
-	ERR_FAIL_INDEX(p_param, RS::LIGHT_PARAM_MAX);
+	ERR_FAIL_INDEX(p_param, RSE::LIGHT_PARAM_MAX);
 
 	if (light->param[p_param] == p_value) {
 		return;
 	}
 
 	switch (p_param) {
-		case RS::LIGHT_PARAM_RANGE:
-		case RS::LIGHT_PARAM_SPOT_ANGLE:
-		case RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
-		case RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
-		case RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
-		case RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
-		case RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
-		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
-		case RS::LIGHT_PARAM_SHADOW_BIAS: {
+		case RSE::LIGHT_PARAM_RANGE:
+		case RSE::LIGHT_PARAM_SPOT_ANGLE:
+		case RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
+		case RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
+		case RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
+		case RSE::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
+		case RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
+		case RSE::LIGHT_PARAM_SHADOW_BIAS: {
 			light->version++;
 			light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 		} break;
-		case RS::LIGHT_PARAM_SIZE: {
+		case RSE::LIGHT_PARAM_SIZE: {
 			if ((light->param[p_param] > CMP_EPSILON) != (p_value > CMP_EPSILON)) {
 				//changing from no size to size and the opposite
 				light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
@@ -240,15 +244,15 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
 
-	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
-		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+	if (light->type != RSE::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RSE::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
-	if (light->type != RS::LIGHT_DIRECTIONAL) {
+	if (light->type != RSE::LIGHT_DIRECTIONAL) {
 		if (light->projector.is_valid()) {
-			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RSE::LIGHT_OMNI);
 		}
 		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
@@ -268,7 +272,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
@@ -308,7 +312,7 @@ uint32_t LightStorage::light_get_shadow_caster_mask(RID p_light) const {
 	return light->shadow_caster_mask;
 }
 
-void LightStorage::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
+void LightStorage::light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 
@@ -328,7 +332,7 @@ void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) 
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
-void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
+void LightStorage::light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 
@@ -337,21 +341,21 @@ void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMo
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 
-	if (p_mode == RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID) {
+	if (p_mode == RSE::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID) {
 		shadow_dual_paraboloid_used = true;
-	} else if (p_mode == RS::LIGHT_OMNI_SHADOW_CUBE) {
+	} else if (p_mode == RSE::LIGHT_OMNI_SHADOW_CUBE) {
 		shadow_cubemaps_used = true;
 	}
 }
 
-RS::LightOmniShadowMode LightStorage::light_omni_get_shadow_mode(RID p_light) {
+RSE::LightOmniShadowMode LightStorage::light_omni_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_NULL_V(light, RS::LIGHT_OMNI_SHADOW_CUBE);
+	ERR_FAIL_NULL_V(light, RSE::LIGHT_OMNI_SHADOW_CUBE);
 
 	return light->omni_shadow_mode;
 }
 
-void LightStorage::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
+void LightStorage::light_directional_set_shadow_mode(RID p_light, RSE::LightDirectionalShadowMode p_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 
@@ -376,23 +380,23 @@ bool LightStorage::light_directional_get_blend_splits(RID p_light) const {
 	return light->directional_blend_splits;
 }
 
-void LightStorage::light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) {
+void LightStorage::light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 
 	light->directional_sky_mode = p_mode;
 }
 
-RS::LightDirectionalSkyMode LightStorage::light_directional_get_sky_mode(RID p_light) const {
+RSE::LightDirectionalSkyMode LightStorage::light_directional_get_sky_mode(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
+	ERR_FAIL_NULL_V(light, RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY);
 
 	return light->directional_sky_mode;
 }
 
-RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(RID p_light) {
+RSE::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
+	ERR_FAIL_NULL_V(light, RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
 
 	return light->directional_shadow_mode;
 }
@@ -404,9 +408,9 @@ uint32_t LightStorage::light_get_max_sdfgi_cascade(RID p_light) {
 	return light->max_sdfgi_cascade;
 }
 
-RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
+RSE::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
-	ERR_FAIL_NULL_V(light, RS::LIGHT_BAKE_DISABLED);
+	ERR_FAIL_NULL_V(light, RSE::LIGHT_BAKE_DISABLED);
 
 	return light->bake_mode;
 }
@@ -430,16 +434,23 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	ERR_FAIL_NULL_V(light, AABB());
 
 	switch (light->type) {
-		case RS::LIGHT_SPOT: {
-			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+		case RSE::LIGHT_SPOT: {
+			float len = light->param[RSE::LIGHT_PARAM_RANGE];
+			float angle = Math::deg_to_rad(light->param[RSE::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
-		case RS::LIGHT_OMNI: {
-			float r = light->param[RS::LIGHT_PARAM_RANGE];
+		case RSE::LIGHT_OMNI: {
+			float r = light->param[RSE::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
 		};
-		case RS::LIGHT_DIRECTIONAL: {
+		case RSE::LIGHT_DIRECTIONAL: {
 			return AABB();
 		};
 	}
@@ -464,8 +475,8 @@ RID LightStorage::light_instance_create(RID p_light) {
 	light_instance->self = li;
 	light_instance->light = p_light;
 	light_instance->light_type = light_get_type(p_light);
-	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+	if (light_instance->light_type != RSE::LIGHT_DIRECTIONAL) {
+		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(light_instance->light_type == RSE::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
 	}
 
 	return li;
@@ -492,8 +503,8 @@ void LightStorage::light_instance_free(RID p_light) {
 		shadow_atlas->shadow_owners.erase(p_light);
 	}
 
-	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		ForwardIDStorage::get_singleton()->free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+	if (light_instance->light_type != RSE::LIGHT_DIRECTIONAL) {
+		ForwardIDStorage::get_singleton()->free_forward_id(light_instance->light_type == RSE::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
 	}
 	light_instance_owner.free(p_light);
 }
@@ -539,17 +550,17 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 
 void LightStorage::free_light_data() {
 	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
+		RD::get_singleton()->free_rid(directional_light_buffer);
 		directional_light_buffer = RID();
 	}
 
 	if (omni_light_buffer.is_valid()) {
-		RD::get_singleton()->free(omni_light_buffer);
+		RD::get_singleton()->free_rid(omni_light_buffer);
 		omni_light_buffer = RID();
 	}
 
 	if (spot_light_buffer.is_valid()) {
-		RD::get_singleton()->free(spot_light_buffer);
+		RD::get_singleton()->free_rid(spot_light_buffer);
 		spot_light_buffer = RID();
 	}
 
@@ -621,8 +632,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		ERR_CONTINUE(light == nullptr);
 
 		switch (light->type) {
-			case RS::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RS::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+			case RSE::LIGHT_DIRECTIONAL: {
+				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					continue;
 				}
 
@@ -638,12 +649,12 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				float sign = light->negative ? -1 : 1;
 
-				light_data.energy = sign * light->param[RS::LIGHT_PARAM_ENERGY];
+				light_data.energy = sign * light->param[RSE::LIGHT_PARAM_ENERGY];
 
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-					light_data.energy *= light->param[RS::LIGHT_PARAM_INTENSITY];
+					light_data.energy *= light->param[RSE::LIGHT_PARAM_INTENSITY];
 				} else {
-					light_data.energy *= Math_PI;
+					light_data.energy *= Math::PI;
 				}
 
 				if (p_render_data->camera_attributes.is_valid()) {
@@ -655,25 +666,25 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.color[1] = linear_col.g;
 				light_data.color[2] = linear_col.b;
 
-				light_data.specular = light->param[RS::LIGHT_PARAM_SPECULAR];
-				light_data.volumetric_fog_energy = light->param[RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
+				light_data.specular = light->param[RSE::LIGHT_PARAM_SPECULAR];
+				light_data.volumetric_fog_energy = light->param[RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
 				light_data.mask = light->cull_mask;
 
-				float size = light->param[RS::LIGHT_PARAM_SIZE];
+				float size = light->param[RSE::LIGHT_PARAM_SIZE];
 
 				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
 
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
-						? light->param[RS::LIGHT_PARAM_SHADOW_OPACITY]
+						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
 
-				float angular_diameter = light->param[RS::LIGHT_PARAM_SIZE];
+				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
 				if (angular_diameter > 0.0) {
 					// I know tan(0) is 0, but let's not risk it with numerical precision.
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
-					if (light->shadow && light->param[RS::LIGHT_PARAM_SHADOW_BLUR] > 0.0) {
+					if (light->shadow && light->param[RSE::LIGHT_PARAM_SHADOW_BLUR] > 0.0) {
 						// Only enable PCSS-like soft shadows if blurring is enabled.
 						// Otherwise, performance would decrease with no visual difference.
 						r_directional_light_soft_shadows = true;
@@ -685,17 +696,17 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.bake_mode = light->bake_mode;
 
 				if (light_data.shadow_opacity > 0.001) {
-					RS::LightDirectionalShadowMode smode = light->directional_shadow_mode;
+					RSE::LightDirectionalShadowMode smode = light->directional_shadow_mode;
 
-					light_data.soft_shadow_scale = light->param[RS::LIGHT_PARAM_SHADOW_BLUR];
+					light_data.soft_shadow_scale = light->param[RSE::LIGHT_PARAM_SHADOW_BLUR];
 					light_data.softshadow_angle = angular_diameter;
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
 					}
 
-					int limit = smode == RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);
-					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light->directional_blend_splits;
+					int limit = smode == RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);
+					light_data.blend_splits = (smode != RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light->directional_blend_splits;
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = light_instance->shadow_transform[j].atlas_rect;
 						Projection correction;
@@ -713,9 +724,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
-						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
-						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
-						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
+						light_data.shadow_bias[j] = light->param[RSE::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
+						light_data.shadow_normal_bias[j] = light->param[RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
+						light_data.shadow_transmittance_bias[j] = light->param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_z_range[j] = light_instance->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = light_instance->shadow_transform[j].range_begin;
 						RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrices[j]);
@@ -742,14 +753,14 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						}
 					}
 
-					float fade_start = light->param[RS::LIGHT_PARAM_SHADOW_FADE_START];
+					float fade_start = light->param[RSE::LIGHT_PARAM_SHADOW_FADE_START];
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 				}
 
 				r_directional_light_count++;
 			} break;
-			case RS::LIGHT_OMNI: {
+			case RSE::LIGHT_OMNI: {
 				if (omni_light_count >= max_lights) {
 					continue;
 				}
@@ -774,7 +785,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				omni_light_sort[omni_light_count].depth = distance;
 				omni_light_count++;
 			} break;
-			case RS::LIGHT_SPOT: {
+			case RSE::LIGHT_SPOT: {
 				if (spot_light_count >= max_lights) {
 					continue;
 				}
@@ -819,13 +830,13 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	for (uint32_t i = 0; i < (omni_light_count + spot_light_count); i++) {
 		uint32_t index = (i < omni_light_count) ? i : i - (omni_light_count);
 		LightData &light_data = (i < omni_light_count) ? omni_lights[index] : spot_lights[index];
-		RS::LightType type = (i < omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
+		RSE::LightType type = (i < omni_light_count) ? RSE::LIGHT_OMNI : RSE::LIGHT_SPOT;
 		LightInstance *light_instance = (i < omni_light_count) ? omni_light_sort[index].light_instance : spot_light_sort[index].light_instance;
 		Light *light = (i < omni_light_count) ? omni_light_sort[index].light : spot_light_sort[index].light;
 		real_t distance = (i < omni_light_count) ? omni_light_sort[index].depth : spot_light_sort[index].depth;
 
 		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index, light_instance->last_pass);
+			forward_id_storage->map_forward_id(type == RSE::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index, light_instance->last_pass);
 		}
 
 		Transform3D light_transform = light_instance->transform;
@@ -833,7 +844,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		float sign = light->negative ? -1 : 1;
 		Color linear_col = light->color.srgb_to_linear();
 
-		light_data.attenuation = light->param[RS::LIGHT_PARAM_ATTENUATION];
+		light_data.attenuation = light->param[RSE::LIGHT_PARAM_ATTENUATION];
 
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
@@ -857,21 +868,21 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			}
 		}
 
-		float energy = sign * light->param[RS::LIGHT_PARAM_ENERGY] * fade;
+		float energy = sign * light->param[RSE::LIGHT_PARAM_ENERGY] * fade;
 
 		if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-			energy *= light->param[RS::LIGHT_PARAM_INTENSITY];
+			energy *= light->param[RSE::LIGHT_PARAM_INTENSITY];
 
 			// Convert from Luminous Power to Luminous Intensity
-			if (type == RS::LIGHT_OMNI) {
-				energy *= 1.0 / (Math_PI * 4.0);
+			if (type == RSE::LIGHT_OMNI) {
+				energy *= 1.0 / (Math::PI * 4.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.
-				energy *= 1.0 / Math_PI;
+				energy *= 1.0 / Math::PI;
 			}
 		} else {
-			energy *= Math_PI;
+			energy *= Math::PI;
 		}
 
 		if (p_render_data->camera_attributes.is_valid()) {
@@ -881,11 +892,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_data.color[0] = linear_col.r * energy;
 		light_data.color[1] = linear_col.g * energy;
 		light_data.color[2] = linear_col.b * energy;
-		light_data.specular_amount = light->param[RS::LIGHT_PARAM_SPECULAR] * 2.0;
-		light_data.volumetric_fog_energy = light->param[RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
+		light_data.specular_amount = light->param[RSE::LIGHT_PARAM_SPECULAR] * 2.0;
+		light_data.volumetric_fog_energy = light->param[RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
 		light_data.bake_mode = light->bake_mode;
 
-		float radius = MAX(0.001, light->param[RS::LIGHT_PARAM_RANGE]);
+		float radius = MAX(0.001, light->param[RSE::LIGHT_PARAM_RANGE]);
 		light_data.inv_radius = 1.0 / radius;
 
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
@@ -900,12 +911,12 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_data.direction[1] = direction.y;
 		light_data.direction[2] = direction.z;
 
-		float size = light->param[RS::LIGHT_PARAM_SIZE];
+		float size = light->param[RSE::LIGHT_PARAM_SIZE];
 
 		light_data.size = size;
 
-		light_data.inv_spot_attenuation = 1.0f / light->param[RS::LIGHT_PARAM_SPOT_ATTENUATION];
-		float spot_angle = light->param[RS::LIGHT_PARAM_SPOT_ANGLE];
+		light_data.inv_spot_attenuation = 1.0f / light->param[RSE::LIGHT_PARAM_SPOT_ATTENUATION];
+		float spot_angle = light->param[RSE::LIGHT_PARAM_SPOT_ANGLE];
 		light_data.cos_spot_angle = Math::cos(Math::deg_to_rad(spot_angle));
 
 		light_data.mask = light->cull_mask;
@@ -920,7 +931,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		if (projector.is_valid()) {
 			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
 
-			if (type == RS::LIGHT_SPOT) {
+			if (type == RSE::LIGHT_SPOT) {
 				light_data.projector_rect[0] = rect.position.x;
 				light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped
 				light_data.projector_rect[2] = rect.size.width;
@@ -955,18 +966,18 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		if (needs_shadow && in_shadow_range) {
 			// fill in the shadow information
 
-			light_data.shadow_opacity = light->param[RS::LIGHT_PARAM_SHADOW_OPACITY] * shadow_opacity_fade;
+			light_data.shadow_opacity = light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY] * shadow_opacity_fade;
 
 			float shadow_texel_size = light_instance_get_shadow_texel_size(light_instance->self, p_shadow_atlas);
-			light_data.shadow_normal_bias = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * shadow_texel_size * 10.0;
+			light_data.shadow_normal_bias = light->param[RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * shadow_texel_size * 10.0;
 
-			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0;
+			if (type == RSE::LIGHT_SPOT) {
+				light_data.shadow_bias = light->param[RSE::LIGHT_PARAM_SHADOW_BIAS] / 100.0;
 			} else { //omni
-				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS];
+				light_data.shadow_bias = light->param[RSE::LIGHT_PARAM_SHADOW_BIAS];
 			}
 
-			light_data.transmittance_bias = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+			light_data.transmittance_bias = light->param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 
 			Vector2i omni_offset;
 			Rect2 rect = light_instance_get_shadow_atlas_rect(light_instance->self, p_shadow_atlas, omni_offset);
@@ -976,9 +987,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.atlas_rect[2] = rect.size.width;
 			light_data.atlas_rect[3] = rect.size.height;
 
-			light_data.soft_shadow_scale = light->param[RS::LIGHT_PARAM_SHADOW_BLUR];
+			light_data.soft_shadow_scale = light->param[RSE::LIGHT_PARAM_SHADOW_BLUR];
 
-			if (type == RS::LIGHT_OMNI) {
+			if (type == RSE::LIGHT_OMNI) {
 				Transform3D proj = (inverse_transform * light_transform).inverse();
 
 				RendererRD::MaterialStorage::store_transform(proj, light_data.shadow_matrix);
@@ -994,7 +1005,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				light_data.direction[0] = omni_offset.x * float(rect.size.width);
 				light_data.direction[1] = omni_offset.y * float(rect.size.height);
-			} else if (type == RS::LIGHT_SPOT) {
+			} else if (type == RSE::LIGHT_SPOT) {
 				Transform3D modelview = (inverse_transform * light_transform).inverse();
 				Projection bias;
 				bias.set_light_bias();
@@ -1058,7 +1069,7 @@ void LightStorage::reflection_probe_free(RID p_rid) {
 	reflection_probe_owner.free(p_rid);
 }
 
-void LightStorage::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
+void LightStorage::reflection_probe_set_update_mode(RID p_probe, RSE::ReflectionProbeUpdateMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
 
@@ -1080,7 +1091,7 @@ void LightStorage::reflection_probe_set_blend_distance(RID p_probe, float p_blen
 	reflection_probe->blend_distance = p_blend_distance;
 }
 
-void LightStorage::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
+void LightStorage::reflection_probe_set_ambient_mode(RID p_probe, RSE::ReflectionProbeAmbientMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
 
@@ -1169,11 +1180,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-	ERR_FAIL_COND(p_resolution < 32);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
@@ -1203,9 +1210,9 @@ AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
 	return aabb;
 }
 
-RS::ReflectionProbeUpdateMode LightStorage::reflection_probe_get_update_mode(RID p_probe) const {
+RSE::ReflectionProbeUpdateMode LightStorage::reflection_probe_get_update_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, RS::REFLECTION_PROBE_UPDATE_ALWAYS);
+	ERR_FAIL_NULL_V(reflection_probe, RSE::REFLECTION_PROBE_UPDATE_ALWAYS);
 
 	return reflection_probe->update_mode;
 }
@@ -1259,13 +1266,6 @@ float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return reflection_probe->mesh_lod_threshold;
 }
 
-int LightStorage::reflection_probe_get_resolution(RID p_probe) const {
-	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, 0);
-
-	return reflection_probe->resolution;
-}
-
 float LightStorage::reflection_probe_get_baked_exposure(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL_V(reflection_probe, 1.0);
@@ -1301,9 +1301,9 @@ bool LightStorage::reflection_probe_is_box_projection(RID p_probe) const {
 	return reflection_probe->box_projection;
 }
 
-RS::ReflectionProbeAmbientMode LightStorage::reflection_probe_get_ambient_mode(RID p_probe) const {
+RSE::ReflectionProbeAmbientMode LightStorage::reflection_probe_get_ambient_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, RS::REFLECTION_PROBE_AMBIENT_DISABLED);
+	ERR_FAIL_NULL_V(reflection_probe, RSE::REFLECTION_PROBE_AMBIENT_DISABLED);
 	return reflection_probe->ambient_mode;
 }
 
@@ -1347,6 +1347,28 @@ void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 
+void LightStorage::_reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas) {
+	RD::get_singleton()->free_rid(p_reflection_atlas->reflection);
+	p_reflection_atlas->reflection = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_fb);
+	p_reflection_atlas->depth_fb = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_buffer);
+	p_reflection_atlas->depth_buffer = RID();
+
+	for (int i = 0; i < p_reflection_atlas->reflections.size(); i++) {
+		p_reflection_atlas->reflections.write[i].data.clear_reflection_data();
+		if (p_reflection_atlas->reflections[i].owner.is_null()) {
+			continue;
+		}
+
+		reflection_probe_release_atlas_index(p_reflection_atlas->reflections[i].owner);
+	}
+
+	p_reflection_atlas->reflections.clear();
+}
+
 void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
 	ERR_FAIL_NULL(ra);
@@ -1364,21 +1386,7 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 	ra->count = p_reflection_count;
 
 	if (ra->reflection.is_valid()) {
-		//clear and invalidate everything
-		RD::get_singleton()->free(ra->reflection);
-		ra->reflection = RID();
-		RD::get_singleton()->free(ra->depth_buffer);
-		ra->depth_buffer = RID();
-		for (int i = 0; i < ra->reflections.size(); i++) {
-			ra->reflections.write[i].data.clear_reflection_data();
-			if (ra->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(ra->reflections[i].owner);
-			//rp->atlasindex clear
-		}
-
-		ra->reflections.clear();
+		_reflection_atlas_clear(ra);
 	}
 
 	if (ra->render_buffers.is_valid()) {
@@ -1448,7 +1456,6 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 		rpi->rendering = false;
 		rpi->dirty = true;
 		rpi->processing_layer = 1;
-		rpi->processing_side = 0;
 	}
 
 	rpi->atlas_index = -1;
@@ -1467,7 +1474,7 @@ bool LightStorage::reflection_probe_instance_needs_redraw(RID p_instance) {
 		return true;
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RSE::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		return true;
 	}
 
@@ -1486,6 +1493,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 2, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1493,42 +1503,58 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RSE::REFLECTION_PROBE_UPDATE_ALWAYS;
+	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
-		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free(atlas->reflection);
-		atlas->reflection = RID();
-
-		for (int i = 0; i < atlas->reflections.size(); i++) {
-			if (atlas->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(atlas->reflections[i].owner);
-		}
-
-		atlas->reflections.clear();
+	// Reflection atlas only allows recreating the texture at a lower resolution when going from not real time to real time,
+	// but not the other way around. This can lead to situations where the reflection atlas will be stuck on a lower resolution
+	// even if no real-time probes are present. This is intentional behavior until a future solution can accommodate for both
+	// quality levels being used simultaneously.
+	const int required_real_time_mipmaps = 7;
+	const bool switched_to_real_time = !atlas->update_always && update_always && atlas->reflection.is_valid();
+	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != required_real_time_mipmaps;
+	if (switched_to_real_time || real_time_mipmaps_different) {
+		_reflection_atlas_clear(atlas);
 	}
 
 	if (atlas->reflection.is_null()) {
+		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+		ERR_FAIL_NULL_V_MSG(copy_effects, false, "Effects haven't been initialized");
+
 		int mipmaps = MIN(RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = update_always ? required_real_time_mipmaps : mipmaps;
+
+		// Double size to approximate texel density of cubemaps + add border for proper filtering/mipmapping.
+		uint32_t padding_pixels = (1 << (mipmaps - 1));
+		atlas->reflection_texture_size = atlas->size * 2 + padding_pixels * 2;
+		atlas->uv_border_size = float(padding_pixels) / float(atlas->reflection_texture_size);
+
+		bool use_storage = !copy_effects->get_raster_effects().has_flag(CopyEffects::RASTER_EFFECT_OCTMAP);
 		{
-			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
-			tf.array_layers = 6 * atlas->count;
+			tf.array_layers = atlas->count;
 			tf.format = get_reflection_probe_color_format();
-			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 			tf.mipmaps = mipmaps;
+			tf.width = atlas->reflection_texture_size;
+			tf.height = atlas->reflection_texture_size;
+			tf.usage_bits = get_reflection_probe_color_usage_bits(use_storage);
+			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		}
+		{
+			RD::TextureFormat tf;
+			tf.array_layers = 6;
+			tf.format = get_reflection_probe_color_format();
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = get_reflection_probe_color_usage_bits();
-			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			tf.usage_bits = get_reflection_probe_color_usage_bits(use_storage);
+			atlas->color_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 		{
 			RD::TextureFormat tf;
@@ -1540,17 +1566,20 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
-			for (int j = 0; j < 6; j++) {
-				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
-			}
+			atlas->reflections.write[i].data.update_reflection_data(atlas->reflection_texture_size, mipmaps, false, atlas->reflection, i, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format(), atlas->uv_border_size);
 		}
 
-		Vector<RID> fb;
-		fb.push_back(atlas->depth_buffer);
-		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fb);
+		for (int i = 0; i < 6; i++) {
+			atlas->color_views[i] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), atlas->color_buffer, i, 0);
+			atlas->color_fbs[i] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->color_views[i], atlas->depth_buffer);
+		}
+
+		Vector<RID> fbs;
+		fbs.push_back(atlas->depth_buffer);
+		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fbs);
 
 		atlas->render_buffers->configure_for_reflections(Size2i(atlas->size, atlas->size));
+		atlas->update_always = update_always;
 	}
 
 	if (rpi->atlas_index == -1) {
@@ -1583,8 +1612,24 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	rpi->rendering = true;
 	rpi->dirty = false;
 	rpi->processing_layer = 1;
-	rpi->processing_side = 0;
 
+	RD::get_singleton()->draw_command_end_label();
+
+	return true;
+}
+
+bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) {
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+	ERR_FAIL_NULL_V_MSG(copy_effects, false, "Effects haven't been initialized");
+
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
+	ERR_FAIL_NULL_V(atlas, false);
+
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	RD::get_singleton()->draw_command_begin_label("Convert reflection probe to octahedral");
+	copy_effects->copy_cubemap_to_octmap(atlas->color_buffer, atlas->reflections.write[rpi->atlas_index].data.layers[0].mipmaps[0].framebuffer, atlas->uv_border_size);
 	RD::get_singleton()->draw_command_end_label();
 
 	return true;
@@ -1609,39 +1654,21 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 		return false;
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RSE::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		// Using real time reflections, all roughness is done in one step
 		atlas->reflections.write[rpi->atlas_index].data.create_reflection_fast_filter(false);
 		rpi->rendering = false;
-		rpi->processing_side = 0;
 		rpi->processing_layer = 1;
 		return true;
 	}
 
-	if (rpi->processing_layer > 1) {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, 10, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
-		rpi->processing_layer++;
-		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
-			rpi->rendering = false;
-			rpi->processing_side = 0;
-			rpi->processing_layer = 1;
-			return true;
-		}
-		return false;
+	atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
 
-	} else {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, rpi->processing_side, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
-	}
-
-	rpi->processing_side++;
-	if (rpi->processing_side == 6) {
-		rpi->processing_side = 0;
-		rpi->processing_layer++;
-		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
-			rpi->rendering = false;
-			rpi->processing_layer = 1;
-			return true;
-		}
+	rpi->processing_layer++;
+	if (rpi->processing_layer == (int)atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
+		rpi->rendering = false;
+		rpi->processing_layer = 1;
+		return true;
 	}
 
 	return false;
@@ -1663,7 +1690,9 @@ RID LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int 
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, RID());
-	return atlas->reflections[rpi->atlas_index].fbs[p_index];
+	ERR_FAIL_COND_V_MSG(rpi->atlas_index < 0, RID(), "Reflection probe atlas index invalid. Maximum amount of reflection probes in use (" + itos(atlas->count) + ") may have been exceeded, reflections will not display properly. Consider increasing Rendering > Reflections > Reflection Atlas > Reflection Count in the Project Settings.");
+
+	return atlas->color_fbs[p_index];
 }
 
 RID LightStorage::reflection_probe_instance_get_depth_framebuffer(RID p_instance, int p_index) {
@@ -1696,7 +1725,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 
 void LightStorage::free_reflection_data() {
 	if (reflection_buffer.is_valid()) {
-		RD::get_singleton()->free(reflection_buffer);
+		RD::get_singleton()->free_rid(reflection_buffer);
 		reflection_buffer = RID();
 	}
 
@@ -1809,11 +1838,11 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_color_format() {
-	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format();
 }
 
-uint32_t LightStorage::get_reflection_probe_color_usage_bits() {
-	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+uint32_t LightStorage::get_reflection_probe_color_usage_bits(bool p_storage) {
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_depth_format() {
@@ -1886,7 +1915,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 				}
 			}
 		}
-		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
+		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will not display properly.");
 
 		lightmap_textures.write[lm->array_index] = t->rd_texture;
 	}
@@ -1998,7 +2027,7 @@ void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point,
 		return; //nothing could be done
 	}
 
-	node = ABS(node) - 1;
+	node = Math::abs(node) - 1;
 
 	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
 	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
@@ -2069,14 +2098,14 @@ void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow
 	shadowmask_textures.write[lm->array_index] = t->rd_texture;
 }
 
-RS::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
+RSE::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
 	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
-	ERR_FAIL_NULL_V(lm, RS::SHADOWMASK_MODE_NONE);
+	ERR_FAIL_NULL_V(lm, RSE::SHADOWMASK_MODE_NONE);
 
 	return lm->shadowmask_mode;
 }
 
-void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) {
+void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) {
 	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL(lm);
 
@@ -2131,7 +2160,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	p_size = Math::next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -2139,7 +2168,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
+		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
@@ -2168,7 +2197,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2(p_subdivision);
+	uint32_t subdiv = Math::next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
@@ -2363,7 +2392,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(quad_size * p_coverage));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, Math::next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
@@ -2421,7 +2450,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		old_subdivision = shadow_atlas->quadrants[old_quadrant].subdivision;
 	}
 
-	bool is_omni = li->light_type == RS::LIGHT_OMNI;
+	bool is_omni = li->light_type == RSE::LIGHT_OMNI;
 	bool found_shadow = false;
 	int new_quadrant = -1;
 	int new_shadow = -1;
@@ -2528,7 +2557,7 @@ void LightStorage::update_directional_shadow_atlas() {
 	}
 }
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = Math::nearest_power_of_2_templated(p_size);
 
 	if (directional_shadow.size == p_size && directional_shadow.use_16_bits == p_16_bits) {
 		return;
@@ -2538,7 +2567,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
+		RD::get_singleton()->free_rid(directional_shadow.depth);
 		directional_shadow.depth = RID();
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}
@@ -2584,12 +2613,12 @@ int LightStorage::get_directional_light_shadow_size(RID p_light_instance) {
 	ERR_FAIL_NULL_V(light_instance, 0);
 
 	switch (light_directional_get_shadow_mode(light_instance->light)) {
-		case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
+		case RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
-		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+		case RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
 			r.size.height /= 2;
 			break;
-		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+		case RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
 			r.size /= 2;
 			break;
 	}

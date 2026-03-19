@@ -31,6 +31,7 @@
 #include "regex.h"
 #include "regex.compat.inc"
 
+#include "core/object/class_db.h"
 #include "core/os/memory.h"
 
 extern "C" {
@@ -69,7 +70,7 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return 0;
 	}
 	return data.size() - 1;
@@ -271,7 +272,7 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 }
 
 TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
-	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
+	ERR_FAIL_COND_V_MSG(p_offset < 0, TypedArray<RegExMatch>(), "RegEx search offset must be >= 0");
 
 	int last_end = 0;
 	TypedArray<RegExMatch> result;
@@ -326,7 +327,7 @@ int RegEx::_sub(const String &p_subject, const String &p_replacement, int p_offs
 	pcre2_match_context_free_32(mctx);
 
 	if (res >= 0) {
-		r_output = String(output.ptr(), olength) + p_subject.substr(length);
+		r_output = String::utf32(Span(output.ptr(), olength)) + p_subject.substr(length);
 	}
 
 	return res;

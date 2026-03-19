@@ -32,6 +32,23 @@
 
 #include "core/error/error_macros.h"
 
+enum class InputEventType {
+	INVALID = -1,
+	KEY,
+	MOUSE_BUTTON,
+	MOUSE_MOTION,
+	JOY_MOTION,
+	JOY_BUTTON,
+	SCREEN_TOUCH,
+	SCREEN_DRAG,
+	MAGNIFY_GESTURE,
+	PAN_GESTURE,
+	MIDI,
+	SHORTCUT,
+	ACTION,
+	MAX,
+};
+
 enum class HatDir {
 	UP = 0,
 	RIGHT = 1,
@@ -83,7 +100,12 @@ enum class JoyButton {
 	PADDLE3 = 18,
 	PADDLE4 = 19,
 	TOUCHPAD = 20,
-	SDL_MAX = 21,
+	MISC2 = 21,
+	MISC3 = 22,
+	MISC4 = 23,
+	MISC5 = 24,
+	MISC6 = 25,
+	SDL_MAX = 26,
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
@@ -135,4 +157,12 @@ inline MouseButtonMask mouse_button_to_mask(MouseButton button) {
 	ERR_FAIL_COND_V(button == MouseButton::NONE, MouseButtonMask::NONE);
 
 	return MouseButtonMask(1 << ((int)button - 1));
+}
+
+constexpr MouseButtonMask operator|(MouseButtonMask p_a, MouseButtonMask p_b) {
+	return static_cast<MouseButtonMask>(static_cast<int>(p_a) | static_cast<int>(p_b));
+}
+
+constexpr MouseButtonMask &operator|=(MouseButtonMask &p_a, MouseButtonMask p_b) {
+	return p_a = p_a | p_b;
 }

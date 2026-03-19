@@ -30,14 +30,17 @@
 
 #pragma once
 
-#include "core/os/os.h"
-
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
-@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate>
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
+class OS_MacOS_NSApp;
+
+@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate, NSMenuItemValidation>
+
+- (GodotApplicationDelegate *)initWithOS:(OS_MacOS_NSApp *)os;
+
+- (bool)getHighContrast;
+- (bool)getReduceMotion;
+- (bool)getReduceTransparency;
+- (bool)getVoiceOver;
 @end

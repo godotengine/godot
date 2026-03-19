@@ -13,6 +13,7 @@
 # Doc
 
 /doc/                                         @godotengine/documentation
+/doc/translations/                            @godotengine/i18n
 
 # Drivers
 
@@ -26,6 +27,9 @@
 /drivers/winmidi/                             @godotengine/audio
 /drivers/xaudio2/                             @godotengine/audio
 
+## Input
+/drivers/sdl/                                 @godotengine/input
+
 ## Rendering
 /drivers/d3d12/                               @godotengine/rendering
 /drivers/dummy/                               @godotengine/rendering
@@ -36,27 +40,33 @@
 /drivers/vulkan/                              @godotengine/rendering
 
 ## OS
+/drivers/apple*/                              @godotengine/macos
 /drivers/unix/                                @godotengine/linux-bsd
 /drivers/windows/                             @godotengine/windows
 
 ## Misc
-/drivers/png/                                 @godotengine/import
+/drivers/register_driver_types.*              @godotengine/buildsystem
+/drivers/accesskit/                           @godotengine/buildsystem
+/drivers/png/                                 @godotengine/asset-pipeline
 
 # Editor
 
-/editor/**/*2d*                               @godotengine/2d-editor
-/editor/**/*3d*                               @godotengine/3d-editor
-/editor/**/*audio*                            @godotengine/audio
-/editor/**/*code*                             @godotengine/script-editor
-/editor/**/*debugger*                         @godotengine/debugger
-/editor/**/*dock*                             @godotengine/docks
-/editor/**/*script*                           @godotengine/script-editor
-/editor/**/*shader*                           @godotengine/shaders
-/editor/debugger/                             @godotengine/debugger
-/editor/gui/                                  @godotengine/usability @godotengine/gui-nodes
-/editor/icons/                                @godotengine/usability
-/editor/import/                               @godotengine/import
-/editor/themes/                               @godotengine/usability @godotengine/gui-nodes
+/editor/                                      @godotengine/editor
+/editor/animation/                            @godotengine/editor @godotengine/animation
+/editor/audio/                                @godotengine/editor @godotengine/audio
+/editor/debugger/                             @godotengine/editor @godotengine/debugger
+/editor/doc/                                  @godotengine/editor @godotengine/documentation
+/editor/gui/                                  @godotengine/editor @godotengine/gui-nodes
+/editor/import/                               @godotengine/editor @godotengine/asset-pipeline
+/editor/scene/2d/                             @godotengine/editor @godotengine/2d-nodes
+/editor/scene/2d/physics/                     @godotengine/editor @godotengine/physics
+/editor/scene/3d/                             @godotengine/editor @godotengine/3d-nodes
+/editor/scene/3d/physics/                     @godotengine/editor @godotengine/physics
+/editor/scene/gui/                            @godotengine/editor @godotengine/gui-nodes
+/editor/script/                               @godotengine/editor @godotengine/script-editor
+/editor/shader/                               @godotengine/editor @godotengine/script-editor @godotengine/shaders
+/editor/themes/                               @godotengine/editor @godotengine/gui-nodes
+/editor/translations/                         @godotengine/i18n
 
 # Main
 
@@ -72,37 +82,42 @@
 ## Audio (+ video)
 /modules/interactive_music/                   @godotengine/audio
 /modules/interactive_music/doc_classes/       @godotengine/audio @godotengine/documentation
-/modules/minimp3/                             @godotengine/audio
-/modules/minimp3/doc_classes/                 @godotengine/audio @godotengine/documentation
+/modules/interactive_music/editor/            @godotengine/audio @godotengine/editor
+/modules/mp3/                                 @godotengine/audio
+/modules/mp3/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/ogg/                                 @godotengine/audio
 /modules/ogg/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/theora/                              @godotengine/audio
 /modules/theora/doc_classes/                  @godotengine/audio @godotengine/documentation
+/modules/theora/editor/                       @godotengine/audio @godotengine/editor
 /modules/vorbis/                              @godotengine/audio
 /modules/vorbis/doc_classes/                  @godotengine/audio @godotengine/documentation
 
 ## Import
-/modules/astcenc/                             @godotengine/import
-/modules/basis_universal/                     @godotengine/import
-/modules/bcdec/                               @godotengine/import
-/modules/betsy/                               @godotengine/import
-/modules/bmp/                                 @godotengine/import
-/modules/cvtt/                                @godotengine/import
-/modules/dds/                                 @godotengine/import
-/modules/etcpak/                              @godotengine/import
-/modules/fbx/                                 @godotengine/import
-/modules/fbx/doc_classes/                     @godotengine/import @godotengine/documentation
-/modules/gltf/                                @godotengine/import
-/modules/gltf/doc_classes/                    @godotengine/import @godotengine/documentation
-/modules/gltf/tests/                          @godotengine/import @godotengine/tests
-/modules/hdr/                                 @godotengine/import
-/modules/jpg/                                 @godotengine/import
-/modules/ktx/                                 @godotengine/import
-/modules/squish/                              @godotengine/import
-/modules/svg/                                 @godotengine/import
-/modules/tga/                                 @godotengine/import
-/modules/tinyexr/                             @godotengine/import
-/modules/webp/                                @godotengine/import
+/modules/astcenc/                             @godotengine/asset-pipeline
+/modules/basis_universal/                     @godotengine/asset-pipeline
+/modules/bcdec/                               @godotengine/asset-pipeline
+/modules/betsy/                               @godotengine/asset-pipeline
+/modules/bmp/                                 @godotengine/asset-pipeline
+/modules/cvtt/                                @godotengine/asset-pipeline
+/modules/dds/                                 @godotengine/asset-pipeline
+/modules/dds/tests/                           @godotengine/asset-pipeline @godotengine/tests
+/modules/etcpak/                              @godotengine/asset-pipeline
+/modules/fbx/                                 @godotengine/asset-pipeline
+/modules/fbx/doc_classes/                     @godotengine/asset-pipeline @godotengine/documentation
+/modules/fbx/editor/                          @godotengine/asset-pipeline @godotengine/editor
+/modules/gltf/                                @godotengine/asset-pipeline
+/modules/gltf/doc_classes/                    @godotengine/asset-pipeline @godotengine/documentation
+/modules/gltf/editor/                         @godotengine/asset-pipeline @godotengine/editor
+/modules/gltf/tests/                          @godotengine/asset-pipeline @godotengine/tests
+/modules/hdr/                                 @godotengine/asset-pipeline
+/modules/jpg/                                 @godotengine/asset-pipeline
+/modules/ktx/                                 @godotengine/asset-pipeline
+/modules/squish/                              @godotengine/asset-pipeline
+/modules/svg/                                 @godotengine/asset-pipeline
+/modules/tga/                                 @godotengine/asset-pipeline
+/modules/tinyexr/                             @godotengine/asset-pipeline
+/modules/webp/                                @godotengine/asset-pipeline
 
 ## Network
 /modules/enet/                                @godotengine/network
@@ -111,6 +126,7 @@
 /modules/mbedtls/tests/                       @godotengine/network @godotengine/tests
 /modules/multiplayer/                         @godotengine/network
 /modules/multiplayer/doc_classes/             @godotengine/network @godotengine/documentation
+/modules/multiplayer/editor/                  @godotengine/network @godotengine/editor
 /modules/multiplayer/tests/                   @godotengine/network @godotengine/tests
 /modules/upnp/                                @godotengine/network
 /modules/upnp/doc_classes/                    @godotengine/network @godotengine/documentation
@@ -118,11 +134,12 @@
 /modules/webrtc/doc_classes/                  @godotengine/network @godotengine/documentation
 /modules/websocket/                           @godotengine/network
 /modules/websocket/doc_classes/               @godotengine/network @godotengine/documentation
+/modules/websocket/editor/                    @godotengine/network @godotengine/editor
 
 ## Physics
 /modules/godot_physics_2d/                    @godotengine/physics
 /modules/godot_physics_3d/                    @godotengine/physics
-/modules/jolt_physics/                        @godotengine/physics
+/modules/jolt_physics/                        @godotengine/physics @godotengine/jolt-physics
 
 ## Rendering
 /modules/glslang/                             @godotengine/rendering
@@ -135,13 +152,13 @@
 ## Scripting
 /modules/gdscript/                            @godotengine/gdscript
 /modules/gdscript/doc_classes/                @godotengine/gdscript @godotengine/documentation
-/modules/gdscript/icons/                      @godotengine/gdscript @godotengine/usability
+/modules/gdscript/editor/                     @godotengine/gdscript @godotengine/script-editor
 /modules/gdscript/tests/                      @godotengine/gdscript @godotengine/tests
 /modules/jsonrpc/                             @godotengine/gdscript @godotengine/network
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
-/modules/mono/icons/                          @godotengine/dotnet @godotengine/usability
+/modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
@@ -157,30 +174,39 @@
 /modules/mobile_vr/doc_classes/               @godotengine/xr @godotengine/documentation
 /modules/openxr/                              @godotengine/xr
 /modules/openxr/doc_classes/                  @godotengine/xr @godotengine/documentation
+/modules/openxr/editor/                       @godotengine/xr @godotengine/editor
 /modules/webxr/                               @godotengine/xr
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 
 ## Misc
+/modules/register_module_types.*              @godotengine/buildsystem
 /modules/csg/                                 @godotengine/3d-nodes
 /modules/csg/doc_classes/                     @godotengine/3d-nodes @godotengine/documentation
-/modules/csg/icons/                           @godotengine/3d-nodes @godotengine/usability
+/modules/csg/editor/                          @godotengine/3d-nodes @godotengine/editor
+/modules/csg/tests/                           @godotengine/3d-nodes @godotengine/tests
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
-/modules/gridmap/icons/                       @godotengine/3d-nodes @godotengine/usability
-/modules/navigation/                          @godotengine/navigation
+/modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
+/modules/navigation_2d/                       @godotengine/navigation
+/modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
+/modules/navigation_3d/                       @godotengine/navigation
+/modules/navigation_3d/editor/                @godotengine/navigation @godotengine/editor
 /modules/noise/                               @godotengine/core
 /modules/noise/doc_classes/                   @godotengine/core @godotengine/documentation
-/modules/noise/icons/                         @godotengine/core @godotengine/usability
+/modules/noise/editor/                        @godotengine/core @godotengine/editor
 /modules/noise/tests/                         @godotengine/core @godotengine/tests
+/modules/objectdb_profiler/                   @godotengine/debugger
+/modules/objectdb_profiler/editor/            @godotengine/debugger @godotengine/editor
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
-/modules/regex/icons/                         @godotengine/core @godotengine/usability
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
+/modules/zip/tests/                           @godotengine/core @godotengine/tests
 
 # Platform
 
+/platform/register_platform_apis.*            @godotengine/buildsystem
 /platform/android/                            @godotengine/android
 /platform/android/doc_classes/                @godotengine/android @godotengine/documentation
 /platform/ios/                                @godotengine/ios
@@ -189,6 +215,8 @@
 /platform/linuxbsd/doc_classes/               @godotengine/linux-bsd @godotengine/documentation
 /platform/macos/                              @godotengine/macos
 /platform/macos/doc_classes/                  @godotengine/macos @godotengine/documentation
+/platform/visionos/                           @godotengine/xr
+/platform/visionos/doc_classes/               @godotengine/xr @godotengine/documentation
 /platform/web/                                @godotengine/web
 /platform/web/doc_classes/                    @godotengine/web @godotengine/documentation
 /platform/windows/                            @godotengine/windows
@@ -196,41 +224,51 @@
 
 # Scene
 
+/scene/property_*                             @godotengine/buildsystem
+/scene/register_scene_types.*                 @godotengine/buildsystem
+/scene/scene_string_names.*                   @godotengine/buildsystem
 /scene/2d/                                    @godotengine/2d-nodes
+/scene/2d/navigation/                         @godotengine/2d-nodes @godotengine/navigation
 /scene/2d/physics/                            @godotengine/2d-nodes @godotengine/physics
 /scene/3d/                                    @godotengine/3d-nodes
+/scene/3d/navigation/                         @godotengine/3d-nodes @godotengine/navigation
 /scene/3d/physics/                            @godotengine/3d-nodes @godotengine/physics
+/scene/3d/xr/                                 @godotengine/3d-nodes @godotengine/xr
 /scene/animation/                             @godotengine/animation
 /scene/audio/                                 @godotengine/audio
 /scene/debugger/                              @godotengine/debugger
 /scene/gui/                                   @godotengine/gui-nodes
 /scene/main/                                  @godotengine/core
+/scene/resources/*                            @godotengine/gui-nodes
 /scene/resources/2d/                          @godotengine/2d-nodes
+/scene/resources/2d/skeleton/                 @godotengine/2d-nodes @godotengine/animation
 /scene/resources/3d/                          @godotengine/3d-nodes
 /scene/resources/animated*                    @godotengine/animation
 /scene/resources/animation*                   @godotengine/animation
 /scene/resources/audio*                       @godotengine/audio
+/scene/resources/bone*                        @godotengine/animation
 /scene/resources/font*                        @godotengine/gui-nodes
+/scene/resources/physics*                     @godotengine/physics
 /scene/resources/shader*                      @godotengine/shaders
+/scene/resources/skeleton*                    @godotengine/animation
 /scene/resources/text_*                       @godotengine/gui-nodes
 /scene/resources/visual_shader*               @godotengine/shaders
 /scene/theme/                                 @godotengine/gui-nodes
-/scene/theme/icons/                           @godotengine/gui-nodes @godotengine/usability
 
 # Servers
 
-/servers/**/audio_*                           @godotengine/audio
-/servers/**/camera_*                          @godotengine/xr
-/servers/**/debugger_*                        @godotengine/debugger
-/servers/**/navigation_*                      @godotengine/navigation
-/servers/**/physics_*                         @godotengine/physics
-/servers/**/rendering_*                       @godotengine/rendering
-/servers/**/text_*                            @godotengine/gui-nodes
-/servers/**/xr_*                              @godotengine/xr
+/servers/nav_heap.*                           @godotengine/navigation
+/servers/register_server_types.*              @godotengine/buildsystem
+/servers/server_wrap_*                        @godotengine/buildsystem
 /servers/audio/                               @godotengine/audio
 /servers/camera/                              @godotengine/xr
 /servers/debugger/                            @godotengine/debugger
-/servers/navigation/                          @godotengine/navigation
+/servers/display/                             @godotengine/rendering
+/servers/movie_writer/                        @godotengine/rendering
+/servers/navigation_2d/                       @godotengine/navigation
+/servers/navigation_3d/                       @godotengine/navigation
+/servers/physics_2d/                          @godotengine/physics
+/servers/physics_3d/                          @godotengine/physics
 /servers/rendering/                           @godotengine/rendering
 /servers/text/                                @godotengine/gui-nodes
 /servers/xr/                                  @godotengine/xr
@@ -242,6 +280,7 @@
 # Thirdparty
 
 /thirdparty/                                  @godotengine/buildsystem
+/thirdparty/jolt_physics/                     @godotengine/buildsystem @godotengine/jolt-physics
 
 # Buildsystem (After everything to catch all)
 

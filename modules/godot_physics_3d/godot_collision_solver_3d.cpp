@@ -30,10 +30,9 @@
 
 #include "godot_collision_solver_3d.h"
 
+#include "gjk_epa.h"
 #include "godot_collision_solver_3d_sat.h"
 #include "godot_soft_body_3d.h"
-
-#include "gjk_epa.h"
 
 #define collision_solver sat_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
@@ -61,8 +60,8 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 		// Use 3 equidistant points on the circle.
 		for (int i = 0; i < 3; ++i) {
 			Vector3 vertex_pos = circle_pos;
-			vertex_pos += circle_axis_1 * Math::cos(2.0 * Math_PI * i / 3.0);
-			vertex_pos += circle_axis_2 * Math::sin(2.0 * Math_PI * i / 3.0);
+			vertex_pos += circle_axis_1 * Math::cos(2.0 * Math::PI * i / 3.0);
+			vertex_pos += circle_axis_2 * Math::sin(2.0 * Math::PI * i / 3.0);
 			supports[i] = vertex_pos;
 		}
 	}
@@ -488,8 +487,8 @@ bool GodotCollisionSolver3D::solve_distance_world_boundary(const GodotShape3D *p
 		// Use 3 equidistant points on the circle.
 		for (int i = 0; i < 3; ++i) {
 			Vector3 vertex_pos = circle_pos;
-			vertex_pos += circle_axis_1 * Math::cos(2.0 * Math_PI * i / 3.0);
-			vertex_pos += circle_axis_2 * Math::sin(2.0 * Math_PI * i / 3.0);
+			vertex_pos += circle_axis_1 * Math::cos(2.0 * Math::PI * i / 3.0);
+			vertex_pos += circle_axis_2 * Math::sin(2.0 * Math::PI * i / 3.0);
 			supports[i] = vertex_pos;
 		}
 	}

@@ -32,18 +32,17 @@
 
 #ifdef GLES3_ENABLED
 
-#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
 
 // Always include this as late as possible.
-#include "../../openxr_platform_inc.h"
+#include "../../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
 public:
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
@@ -55,6 +54,7 @@ public:
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
+	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) override { return RID(); }
 
 private:
 	static OpenXROpenGLExtension *singleton;
@@ -83,7 +83,7 @@ private:
 
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLESGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLESKHR *), p_graphics_requirements)
 #else
 	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLKHR *), p_graphics_requirements)

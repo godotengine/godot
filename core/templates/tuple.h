@@ -42,7 +42,7 @@
 // recursion. So: float value;  int value; etc.
 //
 // This works by splitting up the parameter pack for each step in the recursion minus the first.
-// so the the first step creates the "T value" from the first template parameter.
+// so the first step creates the "T value" from the first template parameter.
 // any further template arguments end up in "Rest", which we then use to instantiate a new
 // tuple, but now minus the first argument. To write this all out:
 //
@@ -84,6 +84,10 @@ struct Tuple<T, Rest...> : Tuple<Rest...> {
 			Tuple<Rest...>(std::forward<R>(rest)...),
 			value(std::forward<F>(f)) {}
 };
+
+// Tuple is zero-constructible if and only if all constrained types are zero-constructible.
+template <typename... Types>
+struct is_zero_constructible<Tuple<Types...>> : std::conjunction<is_zero_constructible<Types>...> {};
 
 template <size_t I, typename Tuple>
 struct TupleGet;

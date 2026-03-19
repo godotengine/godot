@@ -30,10 +30,9 @@
 
 #pragma once
 
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
-
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
 
 class StreamPeer : public RefCounted {
@@ -49,7 +48,11 @@ protected:
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
 
+#ifdef BIG_ENDIAN_ENABLED
+	bool big_endian = true;
+#else
 	bool big_endian = false;
+#endif
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
@@ -93,8 +96,6 @@ public:
 	String get_string(int p_bytes = -1);
 	String get_utf8_string(int p_bytes = -1);
 	Variant get_var(bool p_allow_objects = false);
-
-	StreamPeer() {}
 };
 
 class StreamPeerExtension : public StreamPeer {
@@ -148,6 +149,4 @@ public:
 	void clear();
 
 	Ref<StreamPeerBuffer> duplicate() const;
-
-	StreamPeerBuffer() {}
 };

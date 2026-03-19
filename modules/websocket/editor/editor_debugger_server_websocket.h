@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../websocket_peer.h"
 
 #include "core/io/tcp_server.h"
@@ -49,7 +47,7 @@ private:
 public:
 	static EditorDebuggerServer *create(const String &p_protocol);
 
-	void _peer_connected(int p_peer, String p_protocol);
+	void _peer_connected(int p_peer, const String &p_protocol);
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
 	virtual void poll() override;
@@ -63,5 +61,3 @@ public:
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
-
-#endif // TOOLS_ENABLED

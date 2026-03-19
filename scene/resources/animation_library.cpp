@@ -30,6 +30,8 @@
 
 #include "animation_library.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/scene_string_names.h"
 
 bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
@@ -41,12 +43,7 @@ bool AnimationLibrary::is_valid_library_name(const String &p_name) {
 }
 
 String AnimationLibrary::validate_library_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = "/:,[";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
+	return p_name.replace_chars("/:,[", '_');
 }
 
 Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
@@ -54,13 +51,13 @@ Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animat
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
 
 	if (animations.has(p_name)) {
-		animations.get(p_name)->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
+		animations[p_name]->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
 		animations.erase(p_name);
 		emit_signal(SNAME("animation_removed"), p_name);
 	}
 
 	animations.insert(p_name, p_animation);
-	animations.get(p_name)->connect_changed(callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_name));
+	animations[p_name]->connect_changed(callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_name));
 	emit_signal(SNAME("animation_added"), p_name);
 	notify_property_list_changed();
 	return OK;
@@ -69,7 +66,7 @@ Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animat
 void AnimationLibrary::remove_animation(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!animations.has(p_name), vformat("Animation not found: %s.", p_name));
 
-	animations.get(p_name)->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
+	animations[p_name]->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
 	animations.erase(p_name);
 	emit_signal(SNAME("animation_removed"), p_name);
 	notify_property_list_changed();
@@ -80,8 +77,8 @@ void AnimationLibrary::rename_animation(const StringName &p_name, const StringNa
 	ERR_FAIL_COND_MSG(!is_valid_animation_name(p_new_name), "Invalid animation name: '" + String(p_new_name) + "'.");
 	ERR_FAIL_COND_MSG(animations.has(p_new_name), vformat("Animation name \"%s\" already exists in library.", p_new_name));
 
-	animations.get(p_name)->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
-	animations.get(p_name)->connect_changed(callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_new_name));
+	animations[p_name]->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
+	animations[p_name]->connect_changed(callable_mp(this, &AnimationLibrary::_animation_changed).bind(p_new_name));
 	animations.insert(p_new_name, animations[p_name]);
 	animations.erase(p_name);
 	emit_signal(SNAME("animation_renamed"), p_name, p_new_name);
@@ -99,7 +96,7 @@ Ref<Animation> AnimationLibrary::get_animation(const StringName &p_name) const {
 
 TypedArray<StringName> AnimationLibrary::_get_animation_list() const {
 	TypedArray<StringName> ret;
-	List<StringName> names;
+	LocalVector<StringName> names;
 	get_animation_list(&names);
 	for (const StringName &K : names) {
 		ret.push_back(K);
@@ -111,8 +108,8 @@ void AnimationLibrary::_animation_changed(const StringName &p_name) {
 	emit_signal(SceneStringName(animation_changed), p_name);
 }
 
-void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {
-	List<StringName> anims;
+void AnimationLibrary::get_animation_list(LocalVector<StringName> *p_animations) const {
+	LocalVector<StringName> anims;
 
 	for (const KeyValue<StringName, Ref<Animation>> &E : animations) {
 		anims.push_back(E.key);
@@ -134,10 +131,8 @@ void AnimationLibrary::_set_data(const Dictionary &p_data) {
 		K.value->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
 	}
 	animations.clear();
-	List<Variant> keys;
-	p_data.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		add_animation(K, p_data[K]);
+	for (const KeyValue<Variant, Variant> &kv : p_data) {
+		add_animation(kv.key, kv.value);
 	}
 }
 
@@ -153,7 +148,7 @@ Dictionary AnimationLibrary::_get_data() const {
 void AnimationLibrary::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0 && (pf == "get_animation" || pf == "has_animation" || pf == "rename_animation" || pf == "remove_animation")) {
-		List<StringName> names;
+		LocalVector<StringName> names;
 		get_animation_list(&names);
 		for (const StringName &E : names) {
 			r_options->push_back(E.operator String().quote());

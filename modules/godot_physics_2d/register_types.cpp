@@ -30,10 +30,12 @@
 
 #include "register_types.h"
 
-#include "core/config/project_settings.h"
 #include "godot_physics_server_2d.h"
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_2d_wrap_mt.h"
+
+#include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_wrap_mt.h"
 
 static PhysicsServer2D *_createGodotPhysics2DCallback() {
 #ifdef THREADS_ENABLED

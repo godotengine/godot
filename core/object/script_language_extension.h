@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
@@ -192,10 +192,8 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_CALL(_get_constants, constants);
-		List<Variant> keys;
-		constants.get_key_list(&keys);
-		for (const Variant &K : keys) {
-			p_constants->insert(K, constants[K]);
+		for (const KeyValue<Variant, Variant> &kv : constants) {
+			p_constants->insert(kv.key, kv.value);
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(TypedArray<StringName>, _get_members)
@@ -211,13 +209,11 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Variant, _get_rpc_config)
 
-	virtual Variant get_rpc_config() const override {
+	virtual const Variant get_rpc_config() const override {
 		Variant ret;
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
-
-	ScriptExtension() {}
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
@@ -241,43 +237,35 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
 
-	virtual void get_reserved_words(List<String> *p_words) const override {
+	virtual Vector<String> get_reserved_words() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_reserved_words, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_comment_delimiters)
 
-	virtual void get_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
 
-	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_doc_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_string_delimiters)
 
-	virtual void get_string_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_string_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_string_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
@@ -349,8 +337,6 @@ public:
 				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
-				ERR_CONTINUE(!warn.has("leftmost_column"));
-				ERR_CONTINUE(!warn.has("rightmost_column"));
 				ERR_CONTINUE(!warn.has("code"));
 				ERR_CONTINUE(!warn.has("string_code"));
 				ERR_CONTINUE(!warn.has("message"));
@@ -358,8 +344,6 @@ public:
 				Warning swarn;
 				swarn.start_line = warn["start_line"];
 				swarn.end_line = warn["end_line"];
-				swarn.leftmost_column = warn["leftmost_column"];
-				swarn.rightmost_column = warn["rightmost_column"];
 				swarn.code = warn["code"];
 				swarn.string_code = warn["string_code"];
 				swarn.message = warn["message"];
@@ -377,14 +361,9 @@ public:
 	}
 
 	EXBIND1RC(String, validate_path, const String &)
-	GDVIRTUAL0RC_REQUIRED(Object *, _create_script)
-	Script *create_script() const override {
-		Object *ret = nullptr;
-		GDVIRTUAL_CALL(_create_script, ret);
-		return Object::cast_to<Script>(ret);
-	}
 #ifndef DISABLE_DEPRECATED
-	EXBIND0RC(bool, has_named_classes)
+	GDVIRTUAL0RC(Object *, _create_script)
+	GDVIRTUAL0RC(bool, _has_named_classes)
 #endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
@@ -441,6 +420,7 @@ public:
 						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
 					}
 				}
+				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}
@@ -473,7 +453,7 @@ public:
 		r_result.description = ret.get("description", "");
 		r_result.is_deprecated = ret.get("is_deprecated", false);
 		r_result.deprecated_message = ret.get("deprecated_message", "");
-		r_result.is_deprecated = ret.get("is_deprecated", false);
+		r_result.is_experimental = ret.get("is_experimental", false);
 		r_result.experimental_message = ret.get("experimental_message", "");
 
 		r_result.doc_type = ret.get("doc_type", "");
@@ -515,7 +495,7 @@ public:
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
@@ -535,7 +515,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_members != nullptr && ret.has("members")) {
@@ -562,7 +542,7 @@ public:
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_globals != nullptr && ret.has("globals")) {
@@ -713,11 +693,7 @@ public:
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
-// There should not be warnings on explicit casts.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wignored-qualifiers") // There should not be warnings on explicit casts.
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
@@ -824,7 +800,9 @@ public:
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state) override {
 		if (native_info->get_property_state_func) {
 			native_info->get_property_state_func(instance, _add_property_with_state, &state);
+			return;
 		}
+		ScriptInstance::get_property_state(state);
 	}
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override {
@@ -965,7 +943,5 @@ public:
 #endif // DISABLE_DEPRECATED
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 };

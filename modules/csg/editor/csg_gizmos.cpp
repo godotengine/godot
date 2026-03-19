@@ -30,18 +30,19 @@
 
 #include "csg_gizmos.h"
 
-#ifdef TOOLS_ENABLED
-
+#include "core/math/geometry_3d.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/main/scene_tree.h"
 
 void CSGShapeEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -156,6 +157,8 @@ CSGShapeEditor::CSGShapeEditor() {
 	options->hide();
 	options->set_text(TTR("CSG"));
 	options->set_switch_on_hover(true);
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Bake Mesh Instance"), MENU_OPTION_BAKE_MESH_INSTANCE);
@@ -185,9 +188,6 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	create_material("shape_intersection_solid_material", gizmo_color);
 
 	create_handle_material("handles");
-}
-
-CSGShape3DGizmoPlugin::~CSGShape3DGizmoPlugin() {
 }
 
 String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
@@ -227,7 +227,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
-		return p_id == 0 ? s->get_radius() : s->get_height();
+		return Vector2(s->get_radius(), s->get_height());
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
@@ -384,7 +384,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> faces = cs->get_brush_faces();
 
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return;
 	}
 
@@ -419,17 +419,14 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> handles_material = get_material("handles");
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
-	if (cs->is_root_shape()) {
-		Array csg_meshes = cs->get_meshes();
-		if (csg_meshes.size() == 2) {
-			Ref<Mesh> csg_mesh = csg_meshes[1];
-			if (csg_mesh.is_valid()) {
-				p_gizmo->add_collision_triangles(csg_mesh->generate_triangle_mesh());
-			}
-		}
-	}
+	Ref<ArrayMesh> collision_mesh;
+	collision_mesh.instantiate();
+	Array collision_array;
+	collision_array.resize(Mesh::ARRAY_MAX);
+	collision_array[Mesh::ARRAY_VERTEX] = faces;
+	collision_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, collision_array);
+	p_gizmo->add_collision_triangles(collision_mesh->generate_triangle_mesh());
 
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node
@@ -508,5 +505,3 @@ EditorPluginCSG::EditorPluginCSG() {
 	csg_shape_editor = memnew(CSGShapeEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
 }
-
-#endif // TOOLS_ENABLED

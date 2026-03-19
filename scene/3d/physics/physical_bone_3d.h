@@ -83,8 +83,8 @@ public:
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
-		real_t swing_span = Math_PI * 0.25;
-		real_t twist_span = Math_PI;
+		real_t swing_span = Math::PI * 0.25;
+		real_t twist_span = Math::PI;
 		real_t bias = 0.3;
 		real_t softness = 0.8;
 		real_t relaxation = 1.;
@@ -98,8 +98,8 @@ public:
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
 		bool angular_limit_enabled = false;
-		real_t angular_limit_upper = Math_PI * 0.5;
-		real_t angular_limit_lower = -Math_PI * 0.5;
+		real_t angular_limit_upper = Math::PI * 0.5;
+		real_t angular_limit_lower = -Math::PI * 0.5;
 		real_t angular_limit_bias = 0.3;
 		real_t angular_limit_softness = 0.9;
 		real_t angular_limit_relaxation = 1.;
@@ -156,8 +156,6 @@ public:
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
 		SixDOFAxisData axis_data[3];
-
-		SixDOFJointData() {}
 	};
 
 private:
@@ -199,7 +197,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
-	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
+	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState3D>)
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 

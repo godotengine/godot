@@ -30,7 +30,17 @@
 
 #pragma once
 
-#include "servers/rendering_server.h"
+#include "core/math/aabb.h"
+#include "core/math/vector2i.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/variant/callable.h"
+#include "servers/rendering/rendering_device_enums.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class DependencyTracker;
 
@@ -50,6 +60,7 @@ public:
 		DEPENDENCY_CHANGED_LIGHT,
 		DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR,
 		DEPENDENCY_CHANGED_REFLECTION_PROBE,
+		DEPENDENCY_CHANGED_CULL_MASK,
 	};
 
 	void changed_notify(DependencyChangedNotification p_notification);
@@ -124,7 +135,7 @@ public:
 
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
+	virtual RSE::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
 	/* DEPENDENCIES */
@@ -147,15 +158,15 @@ public:
 
 	bool capturing_timestamps = false;
 
-#define TIMESTAMP_BEGIN()                               \
-	{                                                   \
-		if (RSG::utilities->capturing_timestamps)       \
+#define TIMESTAMP_BEGIN() \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamps_begin(); \
 	}
 
-#define RENDER_TIMESTAMP(m_text)                       \
-	{                                                  \
-		if (RSG::utilities->capturing_timestamps)      \
+#define RENDER_TIMESTAMP(m_text) \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamp(m_text); \
 	}
 
@@ -176,10 +187,10 @@ public:
 
 	virtual void update_memory_info() = 0;
 
-	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
+	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual Size2i get_maximum_viewport_size() const = 0;

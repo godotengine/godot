@@ -31,6 +31,7 @@
 #include "editor_import_collada.h"
 
 #include "core/config/project_settings.h"
+#include "core/templates/rb_set.h"
 #include "editor/import/3d/collada.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -706,7 +707,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					}
 				}
 
-				if (weights.size() == 0 || total == 0) { //if nothing, add a weight to bone 0
+				if (weights.is_empty() || total == 0) { //if nothing, add a weight to bone 0
 					//no weights assigned
 					Collada::Vertex::Weight w;
 					w.bone_idx = 0;
@@ -919,7 +920,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			uint64_t mesh_flags = 0;
 
 			if (p_use_compression) {
-				mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			// We can't generate tangents without UVs, so create dummy tangents.
@@ -957,10 +958,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				if (has_weights) {
 					Vector<float> weights;
 					Vector<int> bones;
-					weights.resize(RS::ARRAY_WEIGHTS_SIZE);
-					bones.resize(RS::ARRAY_WEIGHTS_SIZE);
+					weights.resize(RSE::ARRAY_WEIGHTS_SIZE);
+					bones.resize(RSE::ARRAY_WEIGHTS_SIZE);
 					//float sum=0.0;
-					for (int l = 0; l < RS::ARRAY_WEIGHTS_SIZE; l++) {
+					for (int l = 0; l < RSE::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
 							bones.write[l] = vertex_array[k].weights[l].bone_idx;
@@ -1004,7 +1005,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 
 			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller || is_mesh_2d) {
 				// Can't compress if attributes missing or if using vertex weights.
-				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			////////////////////////////
@@ -1012,17 +1013,17 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			////////////////////////////
 
 			Array d = surftool->commit_to_arrays();
-			d.resize(RS::ARRAY_MAX);
+			d.resize(RSE::ARRAY_MAX);
 
-			if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
+			if (mesh_flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = d[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
 				for (int vert = 0; vert < normals.size(); vert++) {
 					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
+					if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 						// Tangent is not perpendicular to the normal, so we can't use compression.
-						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						mesh_flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 					}
 				}
 			}
@@ -1278,7 +1279,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh_unique_names.insert(name);
 
 					mesh->set_name(name);
-					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
+					Error err = _create_mesh_surfaces(morphs.is_empty(), mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
 					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
 
 					mesh_cache[meshid] = mesh;
@@ -1565,7 +1566,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		}
 
 		NodeMap &nm = node_map[E];
-		String path = scene->get_path_to(nm.node);
+		String path = String(scene->get_path_to(nm.node));
 
 		if (nm.bone >= 0) {
 			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
@@ -1642,22 +1643,22 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		}
 
 		for (int i = 0; i < snapshots.size(); i++) {
-			for (List<int>::Element *ET = nm.anim_tracks.front(); ET; ET = ET->next()) {
+			for (const int track_id : nm.anim_tracks) {
 				//apply tracks
 
 				if (p_clip == -1) {
-					if (track_filter.has(ET->get())) {
+					if (track_filter.has(track_id)) {
 						continue;
 					}
 				} else {
-					if (!track_filter.has(ET->get())) {
+					if (!track_filter.has(track_id)) {
 						continue;
 					}
 				}
 
 				found_anim = true;
 
-				const Collada::AnimationTrack &at = collada.state.animation_tracks[ET->get()];
+				const Collada::AnimationTrack &at = collada.state.animation_tracks[track_id];
 
 				int xform_idx = -1;
 				for (int j = 0; j < cn->xform_list.size(); j++) {
@@ -1756,7 +1757,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			}
 
 			NodeMap &nm = node_map[at.target];
-			String path = scene->get_path_to(nm.node);
+			String path = String(scene->get_path_to(nm.node));
 
 			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;
@@ -1854,7 +1855,4 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 	}
 
 	return state.scene;
-}
-
-EditorSceneFormatImporterCollada::EditorSceneFormatImporterCollada() {
 }

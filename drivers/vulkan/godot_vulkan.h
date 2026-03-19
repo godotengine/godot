@@ -30,10 +30,12 @@
 
 #pragma once
 
+// IWYU pragma: begin_exports.
 #ifdef USE_VOLK
 #include <volk.h>
 #else
-#include <stdint.h>
+#include <cstdint>
 #define VK_NO_STDINT_H
 #include <vulkan/vulkan.h>
 #endif
+// IWYU pragma: end_exports.

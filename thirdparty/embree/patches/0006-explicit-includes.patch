@@ -1,0 +1,24 @@
+diff --git a/thirdparty/embree/common/sys/vector.h b/thirdparty/embree/common/sys/vector.h
+index 2d30d6725b..a8138de832 100644
+--- a/thirdparty/embree/common/sys/vector.h
++++ b/thirdparty/embree/common/sys/vector.h
+@@ -5,6 +5,7 @@
+ 
+ #include "alloc.h"
+ #include <algorithm>
++#include <type_traits>
+ 
+ namespace embree
+ {
+diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.h b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+index d4e0c7386b..99e47608d6 100644
+--- a/thirdparty/embree/common/tasking/taskschedulerinternal.h
++++ b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+@@ -14,6 +14,7 @@
+ #include "../sys/atomic.h"
+ #include "../math/range.h"
+ 
++#include <exception>
+ #include <list>
+ 
+ namespace embree

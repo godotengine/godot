@@ -30,6 +30,11 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "dialogs.h"
+
+#include "core/object/class_db.h"
+#include "scene/gui/line_edit.h"
+
 void AcceptDialog::_register_text_enter_bind_compat_89419(Control *p_line_edit) {
 	register_text_enter(Object::cast_to<LineEdit>(p_line_edit));
 }
@@ -43,4 +48,4 @@ void AcceptDialog::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("remove_button", "quadrant_size"), &AcceptDialog::_remove_button_bind_compat_89419);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

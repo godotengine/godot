@@ -30,6 +30,7 @@
 
 #include "callable.h"
 
+#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -305,7 +306,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 			if (less_a == less_b) {
 				return less_a(custom, p_callable.custom);
 			} else {
-				return less_a < less_b; //it's something..
+				return (uintptr_t)less_a < (uintptr_t)less_b; //it's something..
 			}
 
 		} else {

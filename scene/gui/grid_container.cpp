@@ -30,6 +30,8 @@
 
 #include "grid_container.h"
 
+#include "core/object/class_db.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
 #include "scene/theme/theme_db.h"
 
@@ -74,7 +76,7 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			int max_col = MIN(valid_controls_index, columns);
-			int max_row = ceil((float)valid_controls_index / (float)columns);
+			int max_row = std::ceil((float)valid_controls_index / (float)columns);
 
 			// Consider all empty columns expanded.
 			for (int i = valid_controls_index; i < columns; i++) {
@@ -318,5 +320,3 @@ Size2 GridContainer::get_minimum_size() const {
 
 	return ms;
 }
-
-GridContainer::GridContainer() {}

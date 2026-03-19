@@ -33,13 +33,15 @@
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
-#include "thirdparty/misc/nvapi_minimal.h"
+#include <thirdparty/misc/nvapi_minimal.h>
 
 #include <dwmapi.h>
-#include <stdio.h>
-#include <stdlib.h>
+
+#include <cstdio>
+#include <cstdlib>
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -170,7 +172,7 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 	// We need a name anyways, so let's use the engine name if an application name is not available
 	// (this is used mostly by the Project Manager)
 	if (app_profile_name.is_empty()) {
-		app_profile_name = VERSION_NAME;
+		app_profile_name = GODOT_VERSION_NAME;
 	}
 	String old_profile_name = app_profile_name + " Nvidia Profile";
 	Char16String app_profile_name_u16 = app_profile_name.utf16();
@@ -425,7 +427,7 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	return OK;
 }
 
-Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
+Error GLManagerNative_Windows::window_create(DisplayServerEnums::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
 	HDC hDC = GetDC(p_hwnd);
 	if (!hDC) {
 		return ERR_CANT_CREATE;
@@ -457,7 +459,7 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 	return OK;
 }
 
-void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	if (_current_window == &win) {
 		_current_window = nullptr;
@@ -477,7 +479,7 @@ void GLManagerNative_Windows::release_current() {
 	_current_window = nullptr;
 }
 
-void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_make_current(DisplayServerEnums::WindowID p_window_id) {
 	if (p_window_id == -1) {
 		return;
 	}
@@ -507,7 +509,7 @@ Error GLManagerNative_Windows::initialize() {
 	return OK;
 }
 
-void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
+void GLManagerNative_Windows::set_use_vsync(DisplayServerEnums::WindowID p_window_id, bool p_use) {
 	GLWindow &win = get_window(p_window_id);
 
 	if (&win != _current_window) {
@@ -525,15 +527,15 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 	}
 }
 
-bool GLManagerNative_Windows::is_using_vsync(DisplayServer::WindowID p_window_id) const {
+bool GLManagerNative_Windows::is_using_vsync(DisplayServerEnums::WindowID p_window_id) const {
 	return get_window(p_window_id).use_vsync;
 }
 
-HDC GLManagerNative_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
+HDC GLManagerNative_Windows::get_hdc(DisplayServerEnums::WindowID p_window_id) {
 	return get_window(p_window_id).hDC;
 }
 
-HGLRC GLManagerNative_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
+HGLRC GLManagerNative_Windows::get_hglrc(DisplayServerEnums::WindowID p_window_id) {
 	const GLWindow &win = get_window(p_window_id);
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 	return disp.hRC;

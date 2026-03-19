@@ -30,14 +30,21 @@
 
 #include "polygon_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/2d/skeleton_2d.h"
+#include "servers/rendering/rendering_server.h"
+
+#ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_server_2d.h"
-#include "skeleton_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 #ifdef TOOLS_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
@@ -92,17 +99,11 @@ bool Polygon2D::_edit_use_rect() const {
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
-		polygon2d.resize(polygon2d.size() - internal_vertices);
+		polygon2d.resize(MAX(polygon2d.size() - internal_vertices, 0));
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
 #endif // DEBUG_ENABLED
-
-void Polygon2D::_validate_property(PropertyInfo &p_property) const {
-	if (!invert && p_property.name == "invert_border") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-}
 
 void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
@@ -153,7 +154,7 @@ void Polygon2D::_notification(int p_what) {
 			Vector<float> weights;
 
 			int len = polygon.size();
-			if ((invert || polygons.size() == 0) && internal_vertices > 0) {
+			if ((invert || polygons.is_empty()) && internal_vertices > 0) {
 				//if no polygons are around, internal vertices must not be drawn, else let them be
 				len -= internal_vertices;
 			}
@@ -323,7 +324,7 @@ void Polygon2D::_notification(int p_what) {
 
 			Vector<int> index_array;
 
-			if (invert || polygons.size() == 0) {
+			if (invert || polygons.is_empty()) {
 				index_array = Geometry2D::triangulate_polygon(points);
 			} else {
 				//draw individual polygons
@@ -361,23 +362,23 @@ void Polygon2D::_notification(int p_what) {
 
 			if (index_array.size()) {
 				Array arr;
-				arr.resize(RS::ARRAY_MAX);
-				arr[RS::ARRAY_VERTEX] = points;
+				arr.resize(RSE::ARRAY_MAX);
+				arr[RSE::ARRAY_VERTEX] = points;
 				if (uvs.size() == points.size()) {
-					arr[RS::ARRAY_TEX_UV] = uvs;
+					arr[RSE::ARRAY_TEX_UV] = uvs;
 				}
 				if (colors.size() == points.size()) {
-					arr[RS::ARRAY_COLOR] = colors;
+					arr[RSE::ARRAY_COLOR] = colors;
 				}
 
 				if (bones.size() == points.size() * 4) {
-					arr[RS::ARRAY_BONES] = bones;
-					arr[RS::ARRAY_WEIGHTS] = weights;
+					arr[RSE::ARRAY_BONES] = bones;
+					arr[RSE::ARRAY_WEIGHTS] = weights;
 				}
 
-				arr[RS::ARRAY_INDEX] = index_array;
+				arr[RSE::ARRAY_INDEX] = index_array;
 
-				RS::SurfaceData sd;
+				RenderingServerTypes::SurfaceData sd;
 
 				if (skeleton_node) {
 					// Compute transform between mesh and skeleton for runtime AABB compute.
@@ -395,13 +396,13 @@ void Polygon2D::_notification(int p_what) {
 					sd.mesh_to_skeleton_xform.origin.y = mesh_to_sk2d.get_origin().y;
 				}
 
-				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 				if (err != OK) {
 					return;
 				}
 
 				RS::get_singleton()->mesh_add_surface(mesh, sd);
-				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_rid() : RID());
+				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
 			}
 
 		} break;
@@ -501,7 +502,6 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Polygon2D::get_invert() const {
@@ -610,6 +610,7 @@ NodePath Polygon2D::get_skeleton() const {
 	return skeleton;
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void Polygon2D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -639,6 +640,7 @@ void Polygon2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_na
 		p_source_geometry_data->add_obstruction_outline(shape_outline);
 	}
 }
+#endif // NAVIGATION_2D_DISABLED
 
 void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2D::set_polygon);
@@ -703,7 +705,7 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale", PROPERTY_HINT_LINK), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_texture_rotation", "get_texture_rotation");
@@ -712,14 +714,14 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled"), "set_invert_enabled", "get_invert_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_invert_enabled", "get_invert_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1,suffix:px"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons"), "set_polygons", "get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_TYPE_STRING, "PackedInt32Array"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");
 }
@@ -732,5 +734,5 @@ Polygon2D::~Polygon2D() {
 	// This will free the internally-allocated mesh instance, if allocated.
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(mesh);
 }

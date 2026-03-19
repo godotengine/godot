@@ -1,5 +1,5 @@
 diff --git a/thirdparty/glslang/glslang/Include/InfoSink.h b/thirdparty/glslang/glslang/Include/InfoSink.h
-index 23f495dcb7..137ede8510 100644
+index 262933941d..dec05e651c 100644
 --- a/thirdparty/glslang/glslang/Include/InfoSink.h
 +++ b/thirdparty/glslang/glslang/Include/InfoSink.h
 @@ -36,7 +36,7 @@
@@ -11,8 +11,8 @@ index 23f495dcb7..137ede8510 100644
  #include <cmath>
  
  namespace glslang {
-@@ -101,14 +101,14 @@ public:
-         snprintf(locText, maxSize, ":%d", loc.line);
+@@ -105,14 +105,14 @@ public:
+         }
  
          if(loc.getFilename() == nullptr && shaderFileName != nullptr && absolute) {
 -            append(std::filesystem::absolute(shaderFileName).string());

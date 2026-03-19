@@ -15,3 +15,7 @@ indent_style = space
 [{*.{yml,yaml},.clang{-format,-tidy,d}}]
 indent_size = 2
 indent_style = space
+
+[{*.props,*.vcxproj}]
+indent_size = 2
+indent_style = space

@@ -17,6 +17,9 @@ class JPH_EXPORT TempAllocator : public NonCopyable
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
+	/// If this allocator needs to fall back to aligned allocations because JPH_RVECTOR_ALIGNMENT is bigger than the platform default
+	static constexpr bool			needs_aligned_allocate = JPH_RVECTOR_ALIGNMENT > JPH_DEFAULT_ALLOCATE_ALIGNMENT;
+
 	/// Destructor
 	virtual							~TempAllocator() = default;
 
@@ -34,17 +37,22 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructs the allocator with a maximum allocatable size of inSize
-	explicit						TempAllocatorImpl(uint inSize) :
-		mBase(static_cast<uint8 *>(AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT))),
-		mSize(inSize)
+	explicit						TempAllocatorImpl(size_t inSize) : mSize(inSize)
 	{
+		if constexpr (needs_aligned_allocate)
+			mBase = static_cast<uint8 *>(AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT));
+		else
+			mBase = static_cast<uint8 *>(JPH::Allocate(inSize));
 	}
 
 	/// Destructor, frees the block
 	virtual							~TempAllocatorImpl() override
 	{
 		JPH_ASSERT(mTop == 0);
-		AlignedFree(mBase);
+		if constexpr (needs_aligned_allocate)
+			AlignedFree(mBase);
+		else
+			JPH::Free(mBase);
 	}
 
 	// See: TempAllocator
@@ -56,10 +64,10 @@ public:
 		}
 		else
 		{
-			uint new_top = mTop + AlignUp(inSize, JPH_RVECTOR_ALIGNMENT);
+			size_t new_top = mTop + AlignUp(inSize, JPH_RVECTOR_ALIGNMENT);
 			if (new_top > mSize)
 			{
-				Trace("TempAllocator: Out of memory");
+				Trace("TempAllocator: Out of memory trying to allocate %u bytes", inSize);
 				std::abort();
 			}
 			void *address = mBase + mTop;
@@ -93,13 +101,13 @@ public:
 	}
 
 	/// Get the total size of the fixed buffer
-	uint							GetSize() const
+	size_t							GetSize() const
 	{
 		return mSize;
 	}
 
 	/// Get current usage in bytes of the buffer
-	uint							GetUsage() const
+	size_t							GetUsage() const
 	{
 		return mTop;
 	}
@@ -118,8 +126,8 @@ public:
 
 private:
 	uint8 *							mBase;							///< Base address of the memory block
-	uint							mSize;							///< Size of the memory block
-	uint							mTop = 0;						///< End of currently allocated area
+	size_t							mSize;							///< Size of the memory block
+	size_t							mTop = 0;						///< End of currently allocated area
 };
 
 /// Implementation of the TempAllocator that just falls back to malloc/free
@@ -132,14 +140,27 @@ public:
 	// See: TempAllocator
 	virtual void *					Allocate(uint inSize) override
 	{
-		return inSize > 0? AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT) : nullptr;
+		if (inSize > 0)
+		{
+			if constexpr (needs_aligned_allocate)
+				return AlignedAllocate(inSize, JPH_RVECTOR_ALIGNMENT);
+			else
+				return JPH::Allocate(inSize);
+		}
+		else
+			return nullptr;
 	}
 
 	// See: TempAllocator
 	virtual void					Free(void *inAddress, [[maybe_unused]] uint inSize) override
 	{
 		if (inAddress != nullptr)
-			AlignedFree(inAddress);
+		{
+			if constexpr (needs_aligned_allocate)
+				AlignedFree(inAddress);
+			else
+				JPH::Free(inAddress);
+		}
 	}
 };
 

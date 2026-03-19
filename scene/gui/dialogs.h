@@ -30,12 +30,11 @@
 
 #pragma once
 
-#include "box_container.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/texture_button.h"
 #include "scene/main/window.h"
 
 class LineEdit;
@@ -52,7 +51,7 @@ class AcceptDialog : public Window {
 
 	bool popped_up = false;
 	String ok_text;
-	String internal_ok_text;
+	String default_ok_text;
 
 	bool hide_on_ok = true;
 	bool close_on_escape = true;
@@ -65,11 +64,11 @@ class AcceptDialog : public Window {
 	} theme_cache;
 
 	void _custom_action(const String &p_action);
-	void _custom_button_visibility_changed(Button *button);
+	void _button_visibility_changed(Button *button);
 	void _update_child_rects();
 	void _update_ok_text();
 
-	static bool swap_cancel_ok;
+	inline static bool swap_cancel_ok = false;
 
 	void _parent_focused();
 
@@ -80,12 +79,13 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}
 
-	void set_internal_ok_text(const String &p_text);
+	void set_default_ok_text(const String &p_text);
 
 	// Not private since used by derived classes signal.
 	void _text_submitted(const String &p_text);

@@ -7,7 +7,7 @@
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them. Animating something with a [Tween] is called tweening.
 		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a "fire-and-forget" manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
-		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
+		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback], [method tween_method], [method tween_subtween], or [method tween_await]:
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
@@ -58,32 +58,32 @@
 		[gdscript]
 		var tween = create_tween()
 		for sprite in get_children():
-		    tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
+			tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
 		[/gdscript]
 		[csharp]
 		Tween tween = CreateTween();
 		foreach (Node sprite in GetChildren())
-		    tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
+			tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
 		[/csharp]
 		[/codeblocks]
-		In the example above, all children of a node are moved one after another to position (0, 0).
+		In the example above, all children of a node are moved one after another to position [code](0, 0)[/code].
 		You should avoid using more than one [Tween] per object's property. If two or more tweens animate one property at the same time, the last one created will take priority and assign the final value. If you want to interrupt and restart an animation, consider assigning the [Tween] to a variable:
 		[codeblocks]
 		[gdscript]
 		var tween
 		func animate():
-		    if tween:
-		        tween.kill() # Abort the previous animation.
-		    tween = create_tween()
+			if tween:
+				tween.kill() # Abort the previous animation.
+			tween = create_tween()
 		[/gdscript]
 		[csharp]
 		private Tween _tween;
 
 		public void Animate()
 		{
-		    if (_tween != null)
-		        _tween.Kill(); // Abort the previous animation
-		    _tween = CreateTween();
+			if (_tween != null)
+				_tween.Kill(); // Abort the previous animation
+			_tween = CreateTween();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -142,6 +142,12 @@
 			<description>
 				Returns the total time in seconds the [Tween] has been animating (i.e. the time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale], and [method stop] will reset it to [code]0[/code].
 				[b]Note:[/b] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
+			</description>
+		</method>
+		<method name="has_tweeners" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any [Tweener] has been added to the [Tween] and the [Tween] is valid. Useful when tweeners are added dynamically and the tween can end up empty. Killing an empty tween before it starts will prevent errors.
 			</description>
 		</method>
 		<method name="interpolate_value" qualifiers="static">
@@ -261,7 +267,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
-				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
+				Determines the behavior of the [Tween] when the [SceneTree] is paused.
 				Default value is [constant TWEEN_PAUSE_BOUND].
 			</description>
 		</method>
@@ -315,6 +321,37 @@
 				tween.play()
 				[/codeblock]
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
+			</description>
+		</method>
+		<method name="tween_await">
+			<return type="AwaitTweener" />
+			<param index="0" name="signal" type="Signal" />
+			<description>
+				Creates and appends an [AwaitTweener]. This method can be used to await a signal to be emitted and create asynchronous animations or cutscenes.
+				The animation will not progress to the next step until the awaited signal is emitted or the connection becomes invalid (e.g. as a result of freeing the target object). If you know that the emission may not happen, use [method AwaitTweener.set_timeout].
+				[b]Note:[/b] The awaited signal should be emitted during the step when [AwaitTweener] is active.
+				[b]Example:[/b] An object launches itself and explodes upon collision or after 4 seconds.
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_callback(launch)
+				tween.tween_await(collided).set_timeout(4.0)
+				tween.tween_callback(explode)
+				[/codeblock]
+				[b]Example:[/b] A character walks to a specific point, says some lines and walks back when the player closes the message box.
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_callback(walk_to.bind(600.0))
+				tween.tween_await(destination_reached)
+				tween.tween_callback(say_dialogue.bind("Good day, sir!"))
+				tween.tween_await(dialogue_closed)
+				tween.tween_callback(walk_to.bind(0.0))
+				[/codeblock]
+				[b]Note:[/b] If you are awaiting a signal from a callback called in the same [Tween], make sure the signal is emitted [i]after[/i] the await starts. If it can't be reasonably guaranteed, you can await and emit in the same step:
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_await(signal)
+				tween.parallel().tween_callback(method_that_emits_signal)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tween_callback">
@@ -413,24 +450,24 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var tween = create_tween()
-				    tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
+					var tween = create_tween()
+					tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
 
 				func set_label_text(value: int):
-				    $Label.text = "Counting " + str(value)
+					$Label.text = "Counting " + str(value)
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    base._Ready();
+					base._Ready();
 
-				    Tween tween = CreateTween();
-				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+					Tween tween = CreateTween();
+					tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
 				{
-				    GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
+					GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
 				}
 				[/csharp]
 				[/codeblocks]

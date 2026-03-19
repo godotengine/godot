@@ -44,6 +44,7 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/utilities.h"
 
 class RenderingLightCuller;
@@ -300,7 +301,7 @@ public:
 	struct InstanceVisibilityData {
 		uint64_t viewport_state = 0;
 		int32_t array_index = -1;
-		RS::VisibilityRangeFadeMode fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
+		RSE::VisibilityRangeFadeMode fade_mode = RSE::VISIBILITY_RANGE_FADE_DISABLED;
 		Vector3 position;
 		Instance *instance = nullptr;
 		float range_begin = 0.0f;
@@ -399,7 +400,7 @@ public:
 	};
 
 	struct Instance {
-		RS::InstanceType base_type;
+		RSE::InstanceType base_type;
 		RID base;
 
 		RID skeleton;
@@ -408,15 +409,8 @@ public:
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
-		// This is the main transform to be drawn with ...
-		// This will either be the interpolated transform (when using fixed timestep interpolation)
-		// or the ONLY transform (when not using FTI).
 		Transform3D transform;
-
-		// For interpolation we store the current transform (this physics tick)
-		// and the transform in the previous tick.
-		Transform3D transform_curr;
-		Transform3D transform_prev;
+		bool teleported = false;
 
 		float lod_bias;
 
@@ -425,7 +419,7 @@ public:
 
 		Vector<RID> materials;
 
-		RS::ShadowCastingSetting cast_shadows;
+		RSE::ShadowCastingSetting cast_shadows;
 
 		uint32_t layer_mask;
 		// Fit in 32 bits.
@@ -435,16 +429,6 @@ public:
 		bool baked_light : 1; // This flag is only to know if it actually did use baked light.
 		bool dynamic_gi : 1; // Same as above for dynamic objects.
 		bool redraw_if_visible : 1;
-
-		bool on_interpolate_list : 1;
-		bool on_interpolate_transform_list : 1;
-		bool interpolated : 1;
-		TransformInterpolator::Method interpolation_method : 3;
-
-		// For fixed timestep interpolation.
-		// Note 32 bits is plenty for checksum, no need for real_t
-		float transform_checksum_curr;
-		float transform_checksum_prev;
 
 		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
@@ -469,7 +453,7 @@ public:
 		float visibility_range_end = 0.0f;
 		float visibility_range_begin_margin = 0.0f;
 		float visibility_range_end_margin = 0.0f;
-		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
+		RSE::VisibilityRangeFadeMode visibility_range_fade_mode = RSE::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
 		HashSet<Instance *> visibility_dependencies;
 		uint32_t visibility_dependencies_depth = 0;
@@ -521,11 +505,12 @@ public:
 				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
 				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 				case Dependency::DEPENDENCY_CHANGED_DECAL:
-				case Dependency::DEPENDENCY_CHANGED_LIGHT:
-				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
-				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE:
+				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR:
+				case Dependency::DEPENDENCY_CHANGED_CULL_MASK: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);
@@ -560,7 +545,7 @@ public:
 						singleton->instance_set_surface_override_material(instance->self, i, RID());
 					}
 				}
-				if (instance->base_type == RS::INSTANCE_PARTICLES) {
+				if (instance->base_type == RSE::INSTANCE_PARTICLES) {
 					RID particle_material = RSG::particles_storage->particles_get_process_material(instance->base);
 					if (p_dependency == particle_material) {
 						RSG::particles_storage->particles_set_process_material(instance->base, RID());
@@ -577,21 +562,14 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-			base_type = RS::INSTANCE_NONE;
-			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
+			base_type = RSE::INSTANCE_NONE;
+			cast_shadows = RSE::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;
 			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-
-			on_interpolate_list = false;
-			on_interpolate_transform_list = false;
-			interpolated = true;
-			interpolation_method = TransformInterpolator::INTERP_LERP;
-			transform_checksum_curr = 0.0;
-			transform_checksum_prev = 0.0;
 
 			lightmap_slice_index = 0;
 			lightmap = nullptr;
@@ -679,6 +657,7 @@ public:
 	struct InstanceDecalData : public InstanceBaseData {
 		Instance *owner = nullptr;
 		RID instance;
+		uint32_t cull_mask = 0xFFFFFFFF;
 
 		HashSet<Instance *> geometries;
 
@@ -690,6 +669,7 @@ public:
 
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
+		uint32_t cull_mask = 0xFFFFFFFF;
 	};
 
 	struct InstanceFogVolumeData : public InstanceBaseData {
@@ -721,8 +701,9 @@ public:
 
 		Instance *baked_light = nullptr;
 
-		RS::LightBakeMode bake_mode;
+		RSE::LightBakeMode bake_mode;
 		uint32_t max_sdfgi_cascade = 2;
+		uint32_t cull_mask = 0xFFFFFFFF;
 
 	private:
 		// Instead of a single dirty flag, we maintain a count
@@ -768,7 +749,7 @@ public:
 		bool is_shadow_update_full() const { return shadow_dirty_count == 0; }
 
 		InstanceLightData() {
-			bake_mode = RS::LIGHT_BAKE_DISABLED;
+			bake_mode = RSE::LIGHT_BAKE_DISABLED;
 			D = nullptr;
 			last_version = 0;
 			baked_light = nullptr;
@@ -789,7 +770,7 @@ public:
 		HashSet<Instance *> lights;
 
 		struct LightCache {
-			RS::LightType type;
+			RSE::LightType type;
 			Transform3D transform;
 			Color color;
 			float energy;
@@ -800,7 +781,7 @@ public:
 			float spot_angle;
 			float spot_attenuation;
 			bool has_shadow;
-			RS::LightDirectionalSkyMode sky_mode;
+			RSE::LightDirectionalSkyMode sky_mode;
 		};
 
 		Vector<LightCache> light_cache;
@@ -841,12 +822,11 @@ public:
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
 		uint32_t pair_mask;
 		uint64_t pair_pass;
-		uint32_t cull_mask = 0xFFFFFFFF; // Needed for decals and lights in the mobile and compatibility renderers.
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
 
-			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type)) && (cull_mask & p_instance->layer_mask)) {
+			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;
 				InstancePair *pair = pair_allocator->alloc();
@@ -1031,7 +1011,7 @@ public:
 
 	uint32_t thread_cull_threshold = 200;
 
-	mutable RID_Owner<Instance, true> instance_owner;
+	mutable RID_Owner<Instance, true> instance_owner{ 65536, 4194304 };
 
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
@@ -1046,13 +1026,13 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
-	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
-	virtual void instance_reset_physics_interpolation(RID p_instance);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
+
+	virtual void instance_teleport(RID p_instance);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -1072,12 +1052,12 @@ public:
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const;
 
-	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled);
-	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
+	virtual void instance_geometry_set_flag(RID p_instance, RSE::InstanceFlags p_flags, bool p_enabled);
+	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RSE::ShadowCastingSetting p_shadow_casting_setting);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material);
 
-	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
+	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RSE::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
@@ -1088,7 +1068,7 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const;
 
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation);
-	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
+	virtual uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
 
 	_FORCE_INLINE_ void _update_instance(Instance *p_instance) const;
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance) const;
@@ -1174,10 +1154,10 @@ public:
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
-	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows = true, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
+	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas, float p_window_output_max_value);
 
-	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, float p_window_output_max_value, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances() const;
 
 	void render_particle_colliders();
@@ -1195,7 +1175,7 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
+	PASS1(voxel_gi_set_quality, RSE::VoxelGIQuality)
 
 	/* SKY API */
 
@@ -1203,7 +1183,7 @@ public:
 	PASS1(sky_initialize, RID)
 
 	PASS2(sky_set_radiance_size, RID, int)
-	PASS2(sky_set_mode, RID, RS::SkyMode)
+	PASS2(sky_set_mode, RID, RSE::SkyMode)
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
@@ -1215,8 +1195,8 @@ public:
 	PASS1RC(bool, is_compositor_effect, RID)
 
 	PASS2(compositor_effect_set_enabled, RID, bool)
-	PASS3(compositor_effect_set_callback, RID, RS::CompositorEffectCallbackType, const Callable &)
-	PASS3(compositor_effect_set_flag, RID, RS::CompositorEffectFlags, bool)
+	PASS3(compositor_effect_set_callback, RID, RSE::CompositorEffectCallbackType, const Callable &)
+	PASS3(compositor_effect_set_flag, RID, RSE::CompositorEffectFlags, bool)
 
 	// Compositor
 
@@ -1235,17 +1215,17 @@ public:
 	PASS1RC(bool, is_environment, RID)
 
 	// Background
-	PASS2(environment_set_background, RID, RS::EnvironmentBG)
+	PASS2(environment_set_background, RID, RSE::EnvironmentBG)
 	PASS2(environment_set_sky, RID, RID)
 	PASS2(environment_set_sky_custom_fov, RID, float)
 	PASS2(environment_set_sky_orientation, RID, const Basis &)
 	PASS2(environment_set_bg_color, RID, const Color &)
 	PASS3(environment_set_bg_energy, RID, float, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
-	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
+	PASS6(environment_set_ambient_light, RID, const Color &, RSE::EnvironmentAmbientSource, float, float, RSE::EnvironmentReflectionSource)
 	PASS2(environment_set_camera_feed_id, RID, int)
 
-	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
+	PASS1RC(RSE::EnvironmentBG, environment_get_background, RID)
 	PASS1RC(RID, environment_get_sky, RID)
 	PASS1RC(float, environment_get_sky_custom_fov, RID)
 	PASS1RC(Basis, environment_get_sky_orientation, RID)
@@ -1253,20 +1233,21 @@ public:
 	PASS1RC(float, environment_get_bg_energy_multiplier, RID)
 	PASS1RC(float, environment_get_bg_intensity, RID)
 	PASS1RC(int, environment_get_canvas_max_layer, RID)
-	PASS1RC(RS::EnvironmentAmbientSource, environment_get_ambient_source, RID)
+	PASS1RC(RSE::EnvironmentAmbientSource, environment_get_ambient_source, RID)
 	PASS1RC(Color, environment_get_ambient_light, RID)
 	PASS1RC(float, environment_get_ambient_light_energy, RID)
 	PASS1RC(float, environment_get_ambient_sky_contribution, RID)
-	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
+	PASS1RC(RSE::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
 	// Tonemap
-	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
-	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
+	PASS4(environment_set_tonemap, RID, RSE::EnvironmentToneMapper, float, float)
+	PASS2(environment_set_tonemap_agx_contrast, RID, float)
+	PASS1RC(RSE::EnvironmentToneMapper, environment_get_tone_mapper, RID)
 	PASS1RC(float, environment_get_exposure, RID)
-	PASS1RC(float, environment_get_white, RID)
+	PASS3RC(float, environment_get_white, RID, bool, float)
 
 	// Fog
-	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)
+	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RSE::EnvironmentFogMode)
 
 	PASS1RC(bool, environment_get_fog_enabled, RID)
 	PASS1RC(Color, environment_get_fog_light_color, RID)
@@ -1277,7 +1258,7 @@ public:
 	PASS1RC(float, environment_get_fog_height, RID)
 	PASS1RC(float, environment_get_fog_height_density, RID)
 	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
-	PASS1RC(RS::EnvironmentFogMode, environment_get_fog_mode, RID)
+	PASS1RC(RSE::EnvironmentFogMode, environment_get_fog_mode, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
@@ -1306,7 +1287,7 @@ public:
 	PASS1RC(float, environment_get_volumetric_fog_ambient_inject, RID)
 
 	// Glow
-	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
+	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RSE::EnvironmentGlowBlendMode, float, float, float, float, RID)
 
 	PASS1RC(bool, environment_get_glow_enabled, RID)
 	PASS1RC(Vector<float>, environment_get_glow_levels, RID)
@@ -1314,7 +1295,7 @@ public:
 	PASS1RC(float, environment_get_glow_strength, RID)
 	PASS1RC(float, environment_get_glow_bloom, RID)
 	PASS1RC(float, environment_get_glow_mix, RID)
-	PASS1RC(RS::EnvironmentGlowBlendMode, environment_get_glow_blend_mode, RID)
+	PASS1RC(RSE::EnvironmentGlowBlendMode, environment_get_glow_blend_mode, RID)
 	PASS1RC(float, environment_get_glow_hdr_bleed_threshold, RID)
 	PASS1RC(float, environment_get_glow_hdr_luminance_cap, RID)
 	PASS1RC(float, environment_get_glow_hdr_bleed_scale, RID)
@@ -1332,7 +1313,8 @@ public:
 	PASS1RC(float, environment_get_ssr_fade_out, RID)
 	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
 
-	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+	PASS1(environment_set_ssr_half_size, bool)
+	PASS1(environment_set_ssr_roughness_quality, RSE::EnvironmentSSRRoughnessQuality)
 
 	// SSAO
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
@@ -1347,7 +1329,7 @@ public:
 	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
 	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
 
-	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
+	PASS6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	// SSIL
 	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
@@ -1358,11 +1340,11 @@ public:
 	PASS1RC(float, environment_get_ssil_sharpness, RID)
 	PASS1RC(float, environment_get_ssil_normal_rejection, RID)
 
-	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+	PASS6(environment_set_ssil_quality, RSE::EnvironmentSSILQuality, bool, float, int, float, float)
 
 	// SDFGI
 
-	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	PASS11(environment_set_sdfgi, RID, bool, int, float, RSE::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
 
 	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
 	PASS1RC(int, environment_get_sdfgi_cascades, RID)
@@ -1373,11 +1355,11 @@ public:
 	PASS1RC(float, environment_get_sdfgi_energy, RID)
 	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
 	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)
-	PASS1RC(RS::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
+	PASS1RC(RSE::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
 
-	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
-	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
-	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
+	PASS1(environment_set_sdfgi_ray_count, RSE::EnvironmentSDFGIRayCount)
+	PASS1(environment_set_sdfgi_frames_to_converge, RSE::EnvironmentSDFGIFramesToConverge)
+	PASS1(environment_set_sdfgi_frames_to_update_light, RSE::EnvironmentSDFGIFramesToUpdateLight)
 
 	// Adjustment
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
@@ -1392,11 +1374,11 @@ public:
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
 	PASS3(screen_space_roughness_limiter_set_active, bool, float, float)
-	PASS1(sub_surface_scattering_set_quality, RS::SubSurfaceScatteringQuality)
+	PASS1(sub_surface_scattering_set_quality, RSE::SubSurfaceScatteringQuality)
 	PASS2(sub_surface_scattering_set_scale, float, float)
 
-	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
-	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
+	PASS1(positional_soft_shadow_filter_set_quality, RSE::ShadowQuality)
+	PASS1(directional_soft_shadow_filter_set_quality, RSE::ShadowQuality)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
@@ -1406,11 +1388,12 @@ public:
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Misc */
-	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)
+	PASS1(set_debug_draw_mode, RSE::ViewportDebugDraw)
 
-	PASS1(decals_set_filter, RS::DecalFilter)
-	PASS1(light_projectors_set_filter, RS::LightProjectorFilter)
+	PASS1(decals_set_filter, RSE::DecalFilter)
+	PASS1(light_projectors_set_filter, RSE::LightProjectorFilter)
 	PASS1(lightmaps_set_bicubic_filter, bool)
+	PASS1(material_set_use_debanding, bool)
 
 	virtual void update();
 
@@ -1427,12 +1410,6 @@ public:
 	virtual void set_physics_interpolation_enabled(bool p_enabled);
 
 	struct InterpolationData {
-		void notify_free_instance(RID p_rid, Instance &r_instance);
-		LocalVector<RID> instance_interpolate_update_list;
-		LocalVector<RID> instance_transform_update_lists[2];
-		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
-		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
-
 		bool interpolation_enabled = false;
 	} _interpolation_data;
 

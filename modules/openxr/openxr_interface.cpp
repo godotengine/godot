@@ -30,13 +30,18 @@
 
 #include "openxr_interface.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-
+#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
-#include "servers/rendering/renderer_compositor.h"
+#include "extensions/openxr_user_presence_extension.h"
+
+#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 #include <openxr/openxr.h>
 
@@ -44,6 +49,7 @@ void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
 	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_synchronized"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("session_loss_pending"));
@@ -53,6 +59,15 @@ void OpenXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
 	ADD_SIGNAL(MethodInfo("gpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
+
+	// State
+	ClassDB::bind_method(D_METHOD("get_session_state"), &OpenXRInterface::get_session_state);
+
+	// User presence
+	ADD_SIGNAL(MethodInfo("user_presence_changed", PropertyInfo(Variant::BOOL, "is_user_present")));
+
+	ClassDB::bind_method(D_METHOD("is_user_presence_supported"), &OpenXRInterface::is_user_presence_supported);
+	ClassDB::bind_method(D_METHOD("is_user_present"), &OpenXRInterface::is_user_present);
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -115,6 +130,16 @@ void OpenXRInterface::_bind_methods() {
 	ADD_GROUP("Vulkan VRS", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+
+	BIND_ENUM_CONSTANT(SESSION_STATE_UNKNOWN);
+	BIND_ENUM_CONSTANT(SESSION_STATE_IDLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_READY);
+	BIND_ENUM_CONSTANT(SESSION_STATE_SYNCHRONIZED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_VISIBLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_FOCUSED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_STOPPING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_LOSS_PENDING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_EXITING);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -753,6 +778,8 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 		return XRInterface::XR_PLAY_AREA_ROOMSCALE;
 	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STAGE) {
 		return XRInterface::XR_PLAY_AREA_STAGE;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_MAX_ENUM) {
+		return XRInterface::XR_PLAY_AREA_CUSTOM;
 	}
 
 	return XRInterface::XR_PLAY_AREA_UNKNOWN;
@@ -1012,17 +1039,17 @@ uint32_t OpenXRInterface::get_view_count() {
 	return 2;
 }
 
-void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {
-	p_transform = Transform3D();
+void OpenXRInterface::_set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye) {
+	r_transform = Transform3D();
 
 	// if we're not tracking, don't put our head on the floor...
-	p_transform.origin.y = 1.5 * p_world_scale;
+	r_transform.origin.y = 1.5 * p_world_scale;
 
 	// overkill but..
 	if (p_eye == 1) {
-		p_transform.origin.x = 0.03 * p_world_scale;
+		r_transform.origin.x = 0.03 * p_world_scale;
 	} else if (p_eye == 2) {
-		p_transform.origin.x = -0.03 * p_world_scale;
+		r_transform.origin.x = -0.03 * p_world_scale;
 	}
 }
 
@@ -1230,13 +1257,13 @@ bool OpenXRInterface::pre_draw_viewport(RID p_render_target) {
 	}
 }
 
-Vector<BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
-	Vector<BlitToScreen> blit_to_screen;
+Vector<RenderingServerTypes::BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 #ifndef ANDROID_ENABLED
 	// If separate HMD we should output one eye to screen
 	if (p_screen_rect != Rect2()) {
-		BlitToScreen blit;
+		RenderingServerTypes::BlitToScreen blit;
 
 		blit.render_target = p_render_target;
 		blit.multi_view.use_layer = true;
@@ -1291,11 +1318,10 @@ void OpenXRInterface::stop_passthrough() {
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
-	Array modes;
-
 	if (!openxr_api) {
-		return modes;
+		return Array();
 	}
+	Array modes;
 
 	const Vector<XrEnvironmentBlendMode> env_blend_modes = openxr_api->get_supported_environment_blend_modes();
 
@@ -1373,6 +1399,10 @@ void OpenXRInterface::on_state_visible() {
 	emit_signal(SNAME("session_visible"));
 }
 
+void OpenXRInterface::on_state_synchronized() {
+	emit_signal(SNAME("session_synchronized"));
+}
+
 void OpenXRInterface::on_state_focused() {
 	emit_signal(SNAME("session_focussed"));
 }
@@ -1389,12 +1419,64 @@ void OpenXRInterface::on_state_exiting() {
 	emit_signal(SNAME("instance_exiting"));
 }
 
-void OpenXRInterface::on_reference_space_change_pending() {
+void OpenXRInterface::on_reference_space_change_pending(XrReferenceSpaceType p_type) {
 	reference_stage_changing = true;
+
+	// Emit play area bounds changed signal when the reference space changes.
+	PlayAreaMode mode = XR_PLAY_AREA_UNKNOWN;
+
+	switch (p_type) {
+		case XR_REFERENCE_SPACE_TYPE_VIEW:
+			mode = XR_PLAY_AREA_3DOF;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_LOCAL:
+			mode = XR_PLAY_AREA_SITTING;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_STAGE:
+			mode = XR_PLAY_AREA_STAGE;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR:
+			mode = XR_PLAY_AREA_ROOMSCALE;
+			break;
+		default:
+			mode = XR_PLAY_AREA_UNKNOWN;
+			break;
+	}
+
+	print_verbose("OpenXR Interface: Play area changed, emitting signal.");
+	emit_signal(SNAME("play_area_changed"), mode);
 }
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {
 	emit_signal(SNAME("refresh_rate_changed"), p_new_rate);
+}
+
+OpenXRInterface::SessionState OpenXRInterface::get_session_state() {
+	if (openxr_api) {
+		return (SessionState)openxr_api->get_session_state();
+	}
+
+	return SESSION_STATE_UNKNOWN;
+}
+
+/** User Presence. */
+bool OpenXRInterface::is_user_presence_supported() const {
+	if (!openxr_api || !openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXRUserPresenceExtension *user_presence_ext = OpenXRUserPresenceExtension::get_singleton();
+		return user_presence_ext && user_presence_ext->is_active();
+	}
+}
+
+bool OpenXRInterface::is_user_present() const {
+	// If extension is unavailable or unsupported, we default to user is present.
+	if (!is_user_presence_supported()) {
+		return true;
+	} else {
+		OpenXRUserPresenceExtension *user_presence_ext = OpenXRUserPresenceExtension::get_singleton();
+		return user_presence_ext->is_user_present();
+	}
 }
 
 /** Hand tracking. */
@@ -1454,9 +1536,10 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_CONTROLLER:
 				return HAND_TRACKED_SOURCE_CONTROLLER;
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_UNKNOWN:
+			case OpenXRHandTrackingExtension::OPENXR_SOURCE_NOT_TRACKED:
 				return HAND_TRACKED_SOURCE_UNKNOWN;
 			default:
-				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source returned by OpenXR");
+				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source (" + String::num_int64(source) + ") returned by OpenXR");
 		}
 	}
 
@@ -1464,7 +1547,7 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 }
 
 BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
-	BitField<OpenXRInterface::HandJointFlags> bits;
+	BitField<OpenXRInterface::HandJointFlags> bits = HAND_JOINT_NONE;
 
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
@@ -1544,6 +1627,11 @@ RID OpenXRInterface::get_vrs_texture() {
 		return RID();
 	}
 
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return density_map;
+	}
+
 	PackedVector2Array eye_foci;
 
 	Size2 target_size = get_render_target_size();
@@ -1557,6 +1645,19 @@ RID OpenXRInterface::get_vrs_texture() {
 	xr_vrs.set_vrs_render_region(get_render_region());
 
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
+}
+
+XRInterface::VRSTextureFormat OpenXRInterface::get_vrs_texture_format() {
+	if (!openxr_api) {
+		return XR_VRS_TEXTURE_FORMAT_UNIFIED;
+	}
+
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP;
+	}
+
+	return XR_VRS_TEXTURE_FORMAT_UNIFIED;
 }
 
 void OpenXRInterface::set_cpu_level(PerfSettingsLevel p_level) {

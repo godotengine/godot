@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
+	GDSOFTCLASS(DirAccessUnix, DirAccess);
 	DIR *dir_stream = nullptr;
 
 	bool _cisdir = false;
@@ -49,6 +50,7 @@ protected:
 	String current_dir;
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
 	virtual bool is_hidden(const String &p_name);
+	virtual String fix_path(const String &p_path) const override;
 
 public:
 	typedef void (*RemoveNotificationFunc)(const String &p_file);
@@ -85,6 +87,7 @@ public:
 	virtual Error create_link(String p_source, String p_target) override;
 
 	virtual bool is_case_sensitive(const String &p_path) const override;
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const override;
 
 	virtual uint64_t get_space_left() override;
 

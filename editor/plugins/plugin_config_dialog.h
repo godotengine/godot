@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
@@ -47,6 +46,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 		MSG_ID_SUBFOLDER,
 		MSG_ID_SCRIPT,
 		MSG_ID_ACTIVE,
+		MSG_ID_ENABLE_WARNINGS,
 	};
 
 	LineEdit *name_edit = nullptr;
@@ -56,7 +56,6 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *version_edit = nullptr;
 	OptionButton *script_option_edit = nullptr;
 	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
 
 	LocalVector<Control *> plugin_edit_hidden_controls;
 
@@ -81,5 +80,4 @@ public:
 	void config(const String &p_config_path);
 
 	PluginConfigDialog();
-	~PluginConfigDialog();
 };

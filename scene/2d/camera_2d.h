@@ -52,7 +52,7 @@ protected:
 	bool first = true;
 	bool just_exited_tree = false;
 
-	ObjectID custom_viewport_id; // to check validity
+	ObjectID custom_viewport_id; // To check validity.
 	Viewport *custom_viewport = nullptr;
 	Viewport *viewport = nullptr;
 
@@ -73,10 +73,10 @@ protected:
 	bool rotation_smoothing_enabled = false;
 
 	bool limit_enabled = true;
-	int limit[4];
+	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;
 
-	real_t drag_margin[4];
+	real_t drag_margin[4] = { 0.2, 0.2, 0.2, 0.2 };
 	bool drag_horizontal_enabled = false;
 	bool drag_vertical_enabled = false;
 	real_t drag_horizontal_offset = 0.0;
@@ -90,18 +90,13 @@ protected:
 	void _update_scroll();
 
 #ifdef TOOLS_ENABLED
-	bool _is_dragging_limit_rect() const;
 	void _project_settings_changed();
 #endif
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }
 
-	void _set_old_smoothing(real_t p_enable);
-
 	void _update_process_internal_for_smoothing();
-
-	void _set_limit_rect(const Rect2 &p_limit_rect);
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -113,6 +108,10 @@ protected:
 		Transform2D xform_curr;
 		Transform2D xform_prev;
 		uint32_t last_update_physics_tick = UINT32_MAX; // Ensure tick 0 is detected as a change.
+
+		// Camera2D can only call get_camera_transform() without flagging warnings after setting up viewports
+		// during NOTIFICATION_ENTER_TREE, so we reject resets outside this lifetime.
+		bool accepting_resets = false;
 	} _interpolation_data;
 
 	void _ensure_update_interpolation_data();
@@ -124,26 +123,10 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-#ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
-
-	virtual void _edit_set_position(const Point2 &p_position) override;
-	virtual Point2 _edit_get_position() const override;
-
-	virtual void _edit_set_rect(const Rect2 &p_rect) override;
-	virtual Size2 _edit_get_minimum_size() const override { return Size2(); }
-#endif // TOOLS_ENABLED
-
-#ifdef DEBUG_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
-#endif // DEBUG_ENABLED
-
-	Rect2 get_limit_rect() const;
+	void set_limit_rect(const Rect2i &p_limit_rect);
+	Rect2i get_limit_rect() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
@@ -160,7 +143,7 @@ public:
 	void set_limit(Side p_side, int p_limit);
 	int get_limit(Side p_side) const;
 
-	void set_limit_smoothing_enabled(bool enable);
+	void set_limit_smoothing_enabled(bool p_enabled);
 	bool is_limit_smoothing_enabled() const;
 
 	void set_drag_horizontal_enabled(bool p_enabled);
@@ -204,6 +187,7 @@ public:
 	Vector2 get_zoom() const;
 
 	Point2 get_camera_screen_center() const;
+	real_t get_screen_rotation() const;
 
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;
@@ -213,13 +197,13 @@ public:
 	void reset_smoothing();
 	void align();
 
-	void set_screen_drawing_enabled(bool enable);
+	void set_screen_drawing_enabled(bool p_enabled);
 	bool is_screen_drawing_enabled() const;
 
-	void set_limit_drawing_enabled(bool enable);
+	void set_limit_drawing_enabled(bool p_enabled);
 	bool is_limit_drawing_enabled() const;
 
-	void set_margin_drawing_enabled(bool enable);
+	void set_margin_drawing_enabled(bool p_enabled);
 	bool is_margin_drawing_enabled() const;
 
 	Camera2D();

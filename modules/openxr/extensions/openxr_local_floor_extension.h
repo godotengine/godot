@@ -33,13 +33,18 @@
 #include "openxr_extension_wrapper.h"
 
 class OpenXRLocalFloorExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRLocalFloorExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRLocalFloorExtension *get_singleton();
 
 	OpenXRLocalFloorExtension();
 	virtual ~OpenXRLocalFloorExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 

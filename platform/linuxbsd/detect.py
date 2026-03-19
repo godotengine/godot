@@ -29,8 +29,24 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
+    # Dependencies folder.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:  # Give up.
+            deps_folder = ""
+
     return [
-        EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
+        EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
@@ -51,6 +67,12 @@ def get_opts():
         BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
     ]
 
 
@@ -67,13 +89,13 @@ def get_doc_path():
 def get_flags():
     return {
         "arch": detect_arch(),
-        "supported": ["mono"],
+        "supported": ["library", "mono"],
     }
 
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "loongarch64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
@@ -144,9 +166,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
-        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
+            env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             env.Append(
                 CCFLAGS=[
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
@@ -163,24 +185,31 @@ def configure(env: "SConsEnvironment"):
                 env.Append(CCFLAGS=["-fsanitize=bounds-strict"])
 
         if env["use_asan"]:
+            env.Append(CPPDEFINES=["ASAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
         if env["use_lsan"]:
+            env.Append(CPPDEFINES=["LSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=leak"])
             env.Append(LINKFLAGS=["-fsanitize=leak"])
 
         if env["use_tsan"]:
+            env.Append(CPPDEFINES=["TSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
         if env["use_msan"] and env["use_llvm"]:
+            env.Append(CPPDEFINES=["MSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=memory"])
             env.Append(CCFLAGS=["-fsanitize-memory-track-origins"])
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
+
+    if env["library_type"] == "shared_library":
+        env.Append(CCFLAGS=["-fPIC"])
 
     # LTO
 
@@ -244,6 +273,9 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
+        print_warning(
+            "System-provided ENet has its functionality limited to IPv4 only and no DTLS support, unless patched for Godot."
+        )
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
@@ -257,20 +289,29 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_libtheora"]:
         env["builtin_libogg"] = False  # Needed to link against system libtheora
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
-        env.ParseConfig("pkg-config theora theoradec --cflags --libs")
+        if env.editor_build:
+            env.ParseConfig("pkg-config theora theoradec theoraenc --cflags --libs")
+        else:
+            env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
         if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
-        env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
+        if env.editor_build:
+            env.ParseConfig("pkg-config vorbis vorbisfile vorbisenc --cflags --libs")
+        else:
+            env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
 
     if not env["builtin_libwebp"]:
         env.ParseConfig("pkg-config libwebp --cflags --libs")
+
+    if not env["builtin_libjpeg_turbo"]:
+        env.ParseConfig("pkg-config libturbojpeg --cflags --libs")
 
     if not env["builtin_mbedtls"]:
         # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
@@ -292,9 +333,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
     if not env["builtin_recastnavigation"]:
-        # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
-        env.Append(LIBS=["Recast"])
+        env.ParseConfig("pkg-config recastnavigation --cflags --libs")
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
@@ -336,7 +375,7 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
-    if env["dbus"]:
+    if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
                 env.ParseConfig("pkg-config dbus-1 --cflags --libs")
@@ -374,7 +413,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if not env["use_sowrap"]:
                 if os.system("pkg-config --exists libudev") == 0:  # 0 means found
@@ -387,6 +425,18 @@ def configure(env: "SConsEnvironment"):
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
+
+    if env["sdl"]:
+        if env["builtin_sdl"]:
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
+            env.ParseConfig("pkg-config sdl3 --cflags --libs")
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        else:
+            print_warning(
+                "SDL3 development libraries not found, and `builtin_sdl` was explicitly disabled. Disabling SDL input driver support."
+            )
+            env["sdl"] = False
 
     # Linkflags below this line should typically stay the last ones
     if not env["builtin_zlib"]:
@@ -466,13 +516,38 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
+    if env["accesskit"]:
+        if os.path.exists(env["accesskit_sdk_path"]):
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+            elif env["arch"] == "arm32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+            elif env["arch"] == "rv64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+            elif env["arch"] == "x86_64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+            elif env["arch"] == "x86_32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+            env.Append(LIBS=["accesskit"])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        else:
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
             # No pkgconfig file so far, hardcode expected lib name.
-            env.Append(LIBS=["glslang", "SPIRV"])
+            env.Append(LIBS=["glslang", "SPIRV", "glslang-default-resource-limits"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])

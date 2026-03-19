@@ -31,11 +31,41 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/variant/type_info.h"
 
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
+// This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
+// (See https://github.com/godotengine/godot-proposals/issues/5144.)
+template <typename T>
+class VectorView {
+	const T *_ptr = nullptr;
+	const uint32_t _size = 0;
+
+public:
+	const T &operator[](uint32_t p_index) {
+		DEV_ASSERT(p_index < _size);
+		return _ptr[p_index];
+	}
+
+	_ALWAYS_INLINE_ const T *ptr() const { return _ptr; }
+	_ALWAYS_INLINE_ uint32_t size() const { return _size; }
+
+	VectorView() = default;
+	VectorView(const T &p_ptr) :
+			// With this one you can pass a single element very conveniently!
+			_ptr(&p_ptr),
+			_size(1) {}
+	VectorView(const T *p_ptr, uint32_t p_size) :
+			_ptr(p_ptr), _size(p_size) {}
+	VectorView(const Vector<T> &p_lv) :
+			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
+	VectorView(const LocalVector<T> &p_lv) :
+			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
+};
+
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
@@ -286,6 +316,12 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum ColorSpace {
+		COLOR_SPACE_REC709_LINEAR,
+		COLOR_SPACE_REC709_NONLINEAR_SRGB,
+		COLOR_SPACE_MAX,
+	};
+
 	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
 	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
 	// (or at least shouldn't) alter the execution behavior in any way.
@@ -390,6 +426,8 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
+		TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT = (1 << 12),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
 	};
 
 	struct TextureFormat {
@@ -517,12 +555,25 @@ public:
 	};
 
 	struct VertexAttribute {
+		uint32_t binding = UINT32_MAX; // Attribute buffer binding index. When set to UINT32_MAX, it uses the index of the attribute in the layout.
 		uint32_t location = 0; // Shader location.
 		uint32_t offset = 0;
 		DataFormat format = DATA_FORMAT_MAX;
 		uint32_t stride = 0;
 		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
 	};
+
+	struct VertexAttributeBinding {
+		uint32_t stride = 0;
+		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
+
+		VertexAttributeBinding() = default;
+		VertexAttributeBinding(uint32_t p_stride, VertexFrequency p_frequency) :
+				stride(p_stride),
+				frequency(p_frequency) {}
+	};
+
+	typedef HashMap<uint32_t, VertexAttributeBinding> VertexAttributeBindingsMap;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -540,17 +591,52 @@ public:
 		SHADER_STAGE_TESSELATION_CONTROL,
 		SHADER_STAGE_TESSELATION_EVALUATION,
 		SHADER_STAGE_COMPUTE,
+		SHADER_STAGE_RAYGEN,
+		SHADER_STAGE_ANY_HIT,
+		SHADER_STAGE_CLOSEST_HIT,
+		SHADER_STAGE_MISS,
+		SHADER_STAGE_INTERSECTION,
 		SHADER_STAGE_MAX,
 		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
 		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
 		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
 		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
 		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+		SHADER_STAGE_RAYGEN_BIT = (1 << SHADER_STAGE_RAYGEN),
+		SHADER_STAGE_ANY_HIT_BIT = (1 << SHADER_STAGE_ANY_HIT),
+		SHADER_STAGE_CLOSEST_HIT_BIT = (1 << SHADER_STAGE_CLOSEST_HIT),
+		SHADER_STAGE_MISS_BIT = (1 << SHADER_STAGE_MISS),
+		SHADER_STAGE_INTERSECTION_BIT = (1 << SHADER_STAGE_INTERSECTION),
+	};
+
+	enum ShaderLanguage {
+		SHADER_LANGUAGE_GLSL,
+		SHADER_LANGUAGE_HLSL,
+	};
+
+	enum ShaderLanguageVersion {
+		SHADER_LANGUAGE_VULKAN_VERSION_1_0 = (1 << 22),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_1 = (1 << 22) | (1 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_2 = (1 << 22) | (2 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_3 = (1 << 22) | (3 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_4 = (1 << 22) | (4 << 12),
+		SHADER_LANGUAGE_OPENGL_VERSION_4_5_0 = 450,
+	};
+
+	enum ShaderSpirvVersion {
+		SHADER_SPIRV_VERSION_1_0 = (1 << 16),
+		SHADER_SPIRV_VERSION_1_1 = (1 << 16) | (1 << 8),
+		SHADER_SPIRV_VERSION_1_2 = (1 << 16) | (2 << 8),
+		SHADER_SPIRV_VERSION_1_3 = (1 << 16) | (3 << 8),
+		SHADER_SPIRV_VERSION_1_4 = (1 << 16) | (4 << 8),
+		SHADER_SPIRV_VERSION_1_5 = (1 << 16) | (5 << 8),
+		SHADER_SPIRV_VERSION_1_6 = (1 << 16) | (6 << 8),
 	};
 
 	struct ShaderStageSPIRVData {
 		ShaderStage shader_stage = SHADER_STAGE_MAX;
 		Vector<uint8_t> spirv;
+		Vector<uint64_t> dynamic_buffers;
 	};
 
 	/*********************/
@@ -559,6 +645,7 @@ public:
 
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 
+	// Keep the enum values in sync with the `SHADER_UNIFORM_NAMES` values (file rendering_device.cpp).
 	enum UniformType {
 		UNIFORM_TYPE_SAMPLER, // For sampling only (sampler GLSL type).
 		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // For sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture.
@@ -570,6 +657,9 @@ public:
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_ACCELERATION_STRUCTURE, // Bounding Volume Hierarchy (Top + Bottom Level acceleration structures), for raytracing only.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -598,6 +688,13 @@ public:
 	/*******************/
 
 	// ----- PIPELINE -----
+
+	// Rendering Shader Container expects this type to be 4 bytes for proper alignment with the shaders.
+	enum PipelineType : uint32_t {
+		PIPELINE_TYPE_RASTERIZATION,
+		PIPELINE_TYPE_COMPUTE,
+		PIPELINE_TYPE_RAYTRACING,
+	};
 
 	enum RenderPrimitive {
 		RENDER_PRIMITIVE_POINTS,
@@ -795,17 +892,6 @@ public:
 	/**** MISC ****/
 	/**************/
 
-	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
-	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
-		DEVICE_TYPE_OTHER,
-		DEVICE_TYPE_INTEGRATED_GPU,
-		DEVICE_TYPE_DISCRETE_GPU,
-		DEVICE_TYPE_VIRTUAL_GPU,
-		DEVICE_TYPE_CPU,
-		DEVICE_TYPE_MAX
-	};
-
 	// Defined in an API-agnostic way.
 	// Some may not make sense for the underlying API; in that case, 0 is returned.
 	enum DriverResource {
@@ -882,24 +968,27 @@ public:
 		LIMIT_SUBGROUP_MAX_SIZE,
 		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
 		LIMIT_SUBGROUP_OPERATIONS,
-		LIMIT_VRS_TEXEL_WIDTH,
-		LIMIT_VRS_TEXEL_HEIGHT,
-		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
-		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
-		LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE,
+		LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE = 46,
 		LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE,
 		LIMIT_MAX_SHADER_VARYINGS,
 	};
 
 	enum Features {
 		SUPPORTS_MULTIVIEW,
-		SUPPORTS_FSR_HALF_FLOAT,
+		SUPPORTS_HALF_FLOAT,
 		SUPPORTS_ATTACHMENT_VRS,
 		SUPPORTS_METALFX_SPATIAL,
 		SUPPORTS_METALFX_TEMPORAL,
 		// If not supported, a fragment shader with only side effects (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
+		SUPPORTS_IMAGE_ATOMIC_32_BIT,
+		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
+		SUPPORTS_POINT_SIZE,
+		SUPPORTS_RAY_QUERY,
+		SUPPORTS_RAYTRACING_PIPELINE,
+		SUPPORTS_HDR_OUTPUT,
 	};
 
 	enum SubgroupOperations {
@@ -933,12 +1022,12 @@ protected:
 
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
 
-	static uint32_t get_image_format_pixel_size(DataFormat p_format);
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
+	static bool format_has_depth(DataFormat p_format);
 	static bool format_has_stencil(DataFormat p_format);
 	static uint32_t format_get_plane_count(DataFormat p_format);
 
@@ -954,18 +1043,24 @@ protected:
 
 	static uint32_t get_format_vertex_size(DataFormat p_format);
 
+public:
+	/*****************/
+	/**** TEXTURE ****/
+	/*****************/
+
+	static uint32_t get_image_format_pixel_size(DataFormat p_format);
+
 	/****************/
 	/**** SHADER ****/
 	/****************/
 
 	static const char *SHADER_STAGE_NAMES[SHADER_STAGE_MAX];
 
-public:
 	struct ShaderUniform {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
 		uint32_t binding = 0;
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
 
 		bool operator!=(const ShaderUniform &p_other) const {
@@ -993,26 +1088,24 @@ public:
 	};
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 
 		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
 	};
 
-	struct ShaderDescription {
+	struct ShaderReflection {
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
+		bool has_multiview = false;
+		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
 		Vector<ShaderSpecializationConstant> specialization_constants;
-		Vector<ShaderStage> stages;
-	};
-
-protected:
-	struct ShaderReflection : public ShaderDescription {
-		BitField<ShaderStage> stages;
-		BitField<ShaderStage> push_constant_stages;
+		Vector<ShaderStage> stages_vector;
+		BitField<ShaderStage> stages_bits = {};
+		BitField<ShaderStage> push_constant_stages = {};
 	};
 };

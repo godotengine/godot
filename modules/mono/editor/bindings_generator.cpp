@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
@@ -39,7 +39,6 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -141,6 +140,7 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"MenuBar.TextDirection",
 	"RichTextLabel.TextDirection",
 	"TextEdit.TextDirection",
+	"FoldableContainer.TextDirection",
 	"VisualShaderNodeReroute.PortType",
 	// The following instances are uniquely egregious violations, hiding `GetType()` from `object`.
 	// Included for the sake of CI, with the understanding that they *deserve* warnings.
@@ -172,7 +172,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -249,7 +249,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
-			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+			if (link_target_parts.is_empty() || link_target_parts.size() > 2) {
 				ERR_PRINT("Invalid reference format: '" + tag + "'.");
 
 				output.append(tag);
@@ -272,7 +272,10 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 				target_cname = link_target_parts[0];
 			}
 
-			if (link_tag == "method") {
+			if (!_validate_api_type(target_itype, p_itype)) {
+				// If the target member is referenced from a type with a different API level, we can't reference it.
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "method") {
 				_append_text_method(output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
@@ -561,7 +564,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
-			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+			if (link_target_parts.is_empty() || link_target_parts.size() > 2) {
 				ERR_PRINT("Invalid reference format: '" + tag + "'.");
 
 				xml_output.append("<c>");
@@ -586,7 +589,10 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				target_cname = link_target_parts[0];
 			}
 
-			if (link_tag == "method") {
+			if (!_validate_api_type(target_itype, p_itype)) {
+				// If the target member is referenced from a type with a different API level, we can't reference it.
+				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "method") {
 				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
@@ -830,6 +836,9 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 			p_output.append("'new " BINDINGS_NAMESPACE ".");
 			p_output.append(p_target_itype->proxy_name);
 			p_output.append("()'");
+		} else if (p_target_cname == "to_string") {
+			// C# uses the built-in object.ToString() method, reference that instead.
+			p_output.append("'object.ToString()'");
 		} else {
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
@@ -864,7 +873,7 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 				}
 				p_output.append(")'");
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -907,7 +916,7 @@ void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeI
 			p_output.append(target_iprop->proxy_name);
 			p_output.append("'");
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -938,7 +947,7 @@ void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeI
 			p_output.append(target_isignal->proxy_name);
 			p_output.append("'");
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -963,7 +972,7 @@ void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInt
 		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_output.append("'");
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1031,7 +1040,7 @@ void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const Typ
 				// Also search in @GlobalScope as a last resort if no class was specified
 				_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -1105,12 +1114,15 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else {
 		if (p_target_cname == "_init") {
-			// The _init method is not declared in C#, reference the constructor instead
+			// The _init method is not declared in C#, reference the constructor instead.
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append("()\"/>");
+		} else if (p_target_cname == "to_string") {
+			// C# uses the built-in object.ToString() method, reference that instead.
+			p_xml_output.append("<see cref=\"object.ToString()\"/>");
 		} else {
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
@@ -1148,7 +1160,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 					p_xml_output.append(")\"/>");
 				}
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -1194,7 +1206,7 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append("\"/>");
 			}
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -1228,7 +1240,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append("\"/>");
 			}
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -1257,7 +1269,7 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 			p_xml_output.append("\"/>");
 		}
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1325,7 +1337,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				// Also search in @GlobalScope as a last resort if no class was specified
 				_append_xml_constant_in_global_scope(p_xml_output, p_target_cname, p_link_target);
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -1562,43 +1574,43 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	// The class where we put the extensions doesn't matter, so just use "GD".
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
-#define ARRAY_IS_EMPTY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                    \
+#define ARRAY_IS_EMPTY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
 	p_output.append(INDENT1 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
-	p_output.append(INDENT1 "/// </summary>\n");                                                        \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
-	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n");             \
-	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
-	p_output.append(OPEN_BLOCK_L1);                                                                     \
-	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n");                      \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n"); \
+	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_JOIN(m_type)                                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                                \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
-	p_output.append(INDENT1 "/// </summary>\n");                                                                    \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
-	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                            \
-	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
-	p_output.append(OPEN_BLOCK_L1);                                                                                 \
-	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n");                                          \
-	p_output.append(INDENT1 CLOSE_BLOCK);
-
-#define ARRAY_STRINGIFY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                     \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n");         \
-	p_output.append(INDENT1 "/// </summary>\n");                                                         \
+#define ARRAY_JOIN(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
 	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                 \
-	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n");            \
-	p_output.append(OPEN_BLOCK_L1);                                                                      \
-	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n");                                \
+	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_ALL(m_type)  \
+#define ARRAY_STRINGIFY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n"); \
+	p_output.append(INDENT1 CLOSE_BLOCK);
+
+#define ARRAY_ALL(m_type) \
 	ARRAY_IS_EMPTY(m_type) \
-	ARRAY_JOIN(m_type)     \
+	ARRAY_JOIN(m_type) \
 	ARRAY_STRINGIFY(m_type)
 
 	ARRAY_ALL(byte);
@@ -1740,8 +1752,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	da->make_dir("Generated");
 	da->make_dir("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	String base_gen_dir = Path::join(p_proj_dir, "Generated");
+	String godot_objects_gen_dir = Path::join(base_gen_dir, "GodotObjects");
 
 	Vector<String> compile_items;
 
@@ -1749,7 +1761,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	{
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
-		String output_file = path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
+		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
 		Error save_err = _save_file(output_file, constants_source);
 		if (save_err != OK) {
 			return save_err;
@@ -1762,7 +1774,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	{
 		StringBuilder extensions_source;
 		_generate_array_extensions(extensions_source);
-		String output_file = path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
+		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
 		Error save_err = _save_file(output_file, extensions_source);
 		if (save_err != OK) {
 			return save_err;
@@ -1778,7 +1790,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 			continue;
 		}
 
-		String output_file = path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
+		String output_file = Path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP) {
@@ -1845,7 +1857,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
-		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
 		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
 
 		if (err != OK) {
@@ -1888,7 +1900,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
-	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
+	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK) {
@@ -1904,14 +1916,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
 	includes_props_content.append("  </ItemGroup>\n"
 								  "</Project>\n");
 
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
+	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
 	err = _save_file(includes_props_file, includes_props_content);
 	if (err != OK) {
@@ -1936,8 +1948,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	da->make_dir("Generated");
 	da->make_dir("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	String base_gen_dir = Path::join(p_proj_dir, "Generated");
+	String godot_objects_gen_dir = Path::join(base_gen_dir, "GodotObjects");
 
 	Vector<String> compile_items;
 
@@ -1948,7 +1960,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 			continue;
 		}
 
-		String output_file = path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
+		String output_file = Path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP) {
@@ -2003,7 +2015,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
-		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
 		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
 
 		if (err != OK) {
@@ -2048,7 +2060,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
-	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
+	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK) {
@@ -2064,14 +2076,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
 	includes_props_content.append("  </ItemGroup>\n"
 								  "</Project>\n");
 
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
+	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
 	err = _save_file(includes_props_file, includes_props_content);
 	if (err != OK) {
@@ -2084,7 +2096,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
-	String output_dir = path::abspath(path::realpath(p_output_dir));
+	String output_dir = Path::abspath(Path::realpath(p_output_dir));
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
@@ -2731,11 +2743,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	if (getter && setter) {
 		const ArgumentInterface &setter_first_arg = setter->arguments.back()->get();
 		if (getter->return_type.cname != setter_first_arg.type.cname) {
-			// Special case for Node::set_name
-			bool whitelisted = getter->return_type.cname == name_cache.type_StringName &&
-					setter_first_arg.type.cname == name_cache.type_String;
-
-			ERR_FAIL_COND_V_MSG(!whitelisted, ERR_BUG,
+			ERR_FAIL_V_MSG(ERR_BUG,
 					"Return type from getter doesn't match first argument of setter for property: '" +
 							p_itype.name + "." + String(p_iprop.cname) + "'.");
 		}
@@ -2780,6 +2788,8 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	if (p_iprop.is_hidden) {
 		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+		// Deprecated PROPERTY_USAGE_INTERNAL properties appear as hidden to C# and may call deprecated getter/setter functions.
+		p_output.append("\n#pragma warning disable CS0618 // Type or member is obsolete.");
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
@@ -2837,6 +2847,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	p_output.append(CLOSE_BLOCK_L1);
+
+	if (p_iprop.is_hidden) {
+		p_output.append("#pragma warning restore CS0618 // Type or member is obsolete.\n");
+	}
 
 	return OK;
 }
@@ -3122,9 +3136,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.append(INDENT2 CS_METHOD_CALL "(\"");
-			p_output.append(p_imethod.name);
-			p_output.append("\"");
+			p_output.append(INDENT2 CS_METHOD_CALL "(");
+			p_output.append("MethodName." + p_imethod.proxy_name);
 
 			for (const ArgumentInterface &iarg : p_imethod.arguments) {
 				p_output.append(", ");
@@ -3200,7 +3213,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		bool is_parameterless = p_isignal.arguments.size() == 0;
+		bool is_parameterless = p_isignal.arguments.is_empty();
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
@@ -3799,6 +3812,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
@@ -3828,7 +3843,10 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
+		case Variant::VECTOR4I:
+			return p_arg_type.name == name_cache.type_Vector4 ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}
@@ -3857,35 +3875,28 @@ struct SortMethodWithHashes {
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName type_cname = class_list.front()->get();
-
+	for (const StringName &type_cname : class_list) {
 		ClassDB::APIType api_type = ClassDB::get_api_type(type_cname);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (ignored_types.has(type_cname)) {
 			_log("Ignoring type '%s' because it's in the list of ignored types\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
 			_log("Ignoring type '%s' because it's not exposed\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
 			_log("Ignoring type '%s' because it's not enabled\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
@@ -4008,7 +4019,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
 		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
-		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
+		method_list_with_hashes.sort_custom<SortMethodWithHashes>();
 
 		List<MethodInterface> compat_methods;
 		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
@@ -4111,9 +4122,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4203,6 +4213,18 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			// after all the non-compat methods have been added. The compat methods are added in
 			// reverse so the most recently added ones take precedence over older compat methods.
 			if (imethod.is_compat) {
+				// If the method references deprecated types, mark the method as deprecated as well.
+				for (const ArgumentInterface &iarg : imethod.arguments) {
+					String arg_type_name = iarg.type.cname;
+					String doc_name = arg_type_name.begins_with("_") ? arg_type_name.substr(1) : arg_type_name;
+					const DocData::ClassDoc &class_doc = EditorHelp::get_doc_data()->class_list[doc_name];
+					if (class_doc.is_deprecated) {
+						imethod.is_deprecated = true;
+						imethod.deprecation_message = "This method overload is deprecated.";
+						break;
+					}
+				}
+
 				imethod.is_hidden = true;
 				compat_methods.push_front(imethod);
 				continue;
@@ -4233,19 +4255,23 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
 
-		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
+		for (const KeyValue<StringName, const MethodInfo *> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = E.value;
+			const MethodInfo &method_info = *E.value;
+
+			if (method_info.name.begins_with("_")) {
+				// Signals starting with an underscore are internal and not meant to be exposed.
+				continue;
+			}
 
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4325,10 +4351,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
+		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
 
-		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
-			StringName enum_proxy_cname = E.key;
+		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
+			StringName enum_proxy_cname = kv.key;
 			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
 			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
@@ -4337,15 +4363,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
-			const List<StringName> &enum_constants = E.value.constants;
-			for (const StringName &constant_cname : enum_constants) {
-				String constant_name = constant_cname.operator String();
-				int64_t *value = class_info->constant_map.getptr(constant_cname);
-				ERR_FAIL_NULL_V(value, false);
-				constants.erase(constant_name);
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : kv.value->values) {
+				String constant_name = kv_case.key.operator String();
+				constants.erase(kv_case.key);
 
-				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), kv_case.value);
 
 				iconstant.const_doc = nullptr;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -4378,7 +4401,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(E.key);
+			enum_itype.name = itype.name + "." + String(kv.key);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -4386,7 +4409,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
+			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
@@ -4436,8 +4459,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
 		}
-
-		class_list.pop_front();
 	}
 
 	return true;
@@ -4697,7 +4718,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 			r_iarg.default_argument = "default";
 			break;
-		default:
+		case Variant::VARIANT_MAX:
 			ERR_FAIL_V_MSG(false, "Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}
@@ -4714,12 +4735,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type, m_proxy_name)                                          \
-	{                                                                                     \
+#define INSERT_STRUCT_TYPE(m_type, m_proxy_name) \
+	{ \
 		itype = TypeInterface::create_value_type(String(#m_type), String(#m_proxy_name)); \
-		itype.cs_in_expr = "&%0";                                                         \
-		itype.cs_in_expr_is_unsafe = true;                                                \
-		builtin_types.insert(itype.cname, itype);                                         \
+		itype.cs_in_expr = "&%0"; \
+		itype.cs_in_expr_is_unsafe = true; \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, Vector2)
@@ -4756,21 +4777,21 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	{
 		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
 		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
-#define INSERT_INT_TYPE(m_name, m_int_struct_name)                                             \
-	{                                                                                          \
-		itype = TypeInterface::create_value_type(String(m_name));                              \
-		if (itype.name != "long" && itype.name != "ulong") {                                   \
-			itype.c_in = "%5%0 %1_in = %1;\n";                                                 \
-			itype.c_out = "%5return (%0)(%1);\n";                                              \
-			itype.c_type = "long";                                                             \
-			itype.c_arg_in = "&%s_in";                                                         \
-		} else {                                                                               \
-			itype.c_arg_in = "&%s";                                                            \
-		}                                                                                      \
-		itype.c_type_in = itype.name;                                                          \
-		itype.c_type_out = itype.name;                                                         \
+#define INSERT_INT_TYPE(m_name, m_int_struct_name) \
+	{ \
+		itype = TypeInterface::create_value_type(String(m_name)); \
+		if (itype.name != "long" && itype.name != "ulong") { \
+			itype.c_in = "%5%0 %1_in = %1;\n"; \
+			itype.c_out = "%5return (%0)(%1);\n"; \
+			itype.c_type = "long"; \
+			itype.c_arg_in = "&%s_in"; \
+		} else { \
+			itype.c_arg_in = "&%s"; \
+		} \
+		itype.c_type_in = itype.name; \
+		itype.c_type_out = itype.name; \
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromInt(%1);\n"; \
-		builtin_types.insert(itype.cname, itype);                                              \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
@@ -4942,22 +4963,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.is_span_compatible = true;
 	builtin_types.insert(itype.cname, itype);
 
-#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \
-	{                                                                               \
-		itype = TypeInterface();                                                    \
-		itype.name = #m_name;                                                       \
-		itype.cname = itype.name;                                                   \
-		itype.proxy_name = #m_proxy_t "[]";                                         \
-		itype.cs_type = itype.proxy_name;                                           \
+#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t) \
+	{ \
+		itype = TypeInterface(); \
+		itype.name = #m_name; \
+		itype.cname = itype.name; \
+		itype.proxy_name = #m_proxy_t "[]"; \
+		itype.cs_type = itype.proxy_name; \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
-		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";        \
-		itype.c_arg_in = "&%s_in";                                                  \
-		itype.c_type = #m_managed_type;                                             \
-		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">";                           \
-		itype.c_type_out = itype.proxy_name;                                        \
-		itype.c_type_is_disposable_struct = true;                                   \
-		itype.is_span_compatible = true;                                            \
-		builtin_types.insert(itype.name, itype);                                    \
+		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
+		itype.c_arg_in = "&%s_in"; \
+		itype.c_type = #m_managed_type; \
+		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">"; \
+		itype.c_type_out = itype.proxy_name; \
+		itype.c_type_is_disposable_struct = true; \
+		itype.is_span_compatible = true; \
+		builtin_types.insert(itype.name, itype); \
 	}
 
 #define INSERT_ARRAY(m_type, m_managed_type, m_proxy_t) INSERT_ARRAY_FULL(m_type, m_type, m_managed_type, m_proxy_t)
@@ -5289,4 +5310,4 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

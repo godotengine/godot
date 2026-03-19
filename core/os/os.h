@@ -33,14 +33,48 @@
 #include "core/config/engine.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
+#include "core/os/process_id.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-#include <stdlib.h>
+#include <cstdlib>
+
+class MainLoop;
 
 class OS {
+public:
+	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
+	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
+
+	enum RenderThreadMode {
+		RENDER_THREAD_UNSAFE,
+		RENDER_THREAD_SAFE,
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
+	};
+
+	enum RenderingSource {
+		RENDERING_SOURCE_DEFAULT,
+		RENDERING_SOURCE_PROJECT_SETTING,
+		RENDERING_SOURCE_COMMANDLINE,
+		RENDERING_SOURCE_FALLBACK
+	};
+
+	enum PlatformString {
+		PLATFORM_STRING_FILE_MANAGER_OPEN,
+		PLATFORM_STRING_FILE_MANAGER_SHOW,
+	};
+
+private:
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -69,7 +103,9 @@ class OS {
 	List<String> restart_commandline;
 
 	String _current_rendering_driver_name;
+	RenderingSource _current_rendering_driver_name_source = RENDERING_SOURCE_DEFAULT;
 	String _current_rendering_method;
+	RenderingSource _current_rendering_method_source = RENDERING_SOURCE_DEFAULT;
 	bool _is_gles_over_gl = false;
 
 	RemoteFilesystemClient default_rfs;
@@ -77,31 +113,12 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
-	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
+	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
+	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
-public:
-	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
-	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
-
-	enum RenderThreadMode {
-		RENDER_THREAD_UNSAFE,
-		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD,
-	};
-
-	enum StdHandleType {
-		STD_HANDLE_INVALID,
-		STD_HANDLE_CONSOLE,
-		STD_HANDLE_FILE,
-		STD_HANDLE_PIPE,
-		STD_HANDLE_UNKNOWN,
-	};
-
-protected:
 	friend class Main;
 	// Needed by tests to setup command-line args.
 	friend int test_main(int argc, char *argv[]);
@@ -111,7 +128,6 @@ protected:
 	bool _silent_crash_handler = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
-	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
@@ -127,22 +143,30 @@ protected:
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
-	typedef int64_t ProcessID;
-
 	static OS *get_singleton();
 
-	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
+	static bool prefer_meta_over_ctrl();
+
+	void set_current_rendering_driver_name(const String &p_driver_name, RenderingSource p_source) {
+		_current_rendering_driver_name = p_driver_name;
+		_current_rendering_driver_name_source = p_source;
+	}
+	void set_current_rendering_method(const String &p_name, RenderingSource p_source) {
+		_current_rendering_method = p_name;
+		_current_rendering_method_source = p_source;
+	}
 	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
+	RenderingSource get_current_rendering_driver_name_source() const { return _current_rendering_driver_name_source; }
+	RenderingSource get_current_rendering_method_source() const { return _current_rendering_method_source; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
 	virtual bool get_user_prefers_integrated_gpu() const { return false; }
 
-	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -192,6 +216,7 @@ public:
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) { return create_process(p_program_path, p_paths); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -201,19 +226,21 @@ public:
 	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 	virtual Error set_cwd(const String &p_cwd);
+	virtual String get_cwd() const;
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
 	virtual void unset_environment(const String &p_var) const = 0;
+	virtual void load_shell_environment() const {}
 
 	virtual String get_name() const = 0;
 	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
 	virtual String get_version_alias() const { return get_version(); }
-	virtual List<String> get_cmdline_args() const { return _cmdline; }
-	virtual List<String> get_cmdline_user_args() const { return _user_args; }
+	virtual List<String> get_cmdline_args() const { return List<String>(_cmdline); }
+	virtual List<String> get_cmdline_user_args() const { return List<String>(_user_args); }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 
@@ -222,6 +249,7 @@ public:
 
 	void ensure_user_data_dir();
 
+	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
 	virtual MainLoop *get_main_loop() const = 0;
 
 	virtual void yield();
@@ -247,7 +275,8 @@ public:
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual void add_frame_delay(bool p_can_draw);
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events);
+	virtual uint64_t get_frame_delay(bool p_can_draw) const;
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
@@ -264,6 +293,9 @@ public:
 
 	virtual void set_crash_handler_silent() { _silent_crash_handler = true; }
 	virtual bool is_crash_handler_silent() { return _silent_crash_handler; }
+
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
@@ -289,6 +321,7 @@ public:
 	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
+	virtual String get_bundle_icon_name() const;
 
 	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;
@@ -350,6 +383,8 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
+	void add_logger(Logger *p_logger);
+
 	enum PreferredTextureFormat {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,
 		PREFERRED_TEXTURE_FORMAT_ETC2_ASTC
@@ -361,9 +396,22 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+	virtual String get_platform_string(PlatformString p_platform_string) const {
+		switch (p_platform_string) {
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in File Manager");
+			case PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in File Manager");
+			default:
+				ERR_FAIL_V_MSG("", vformat("Couldn't find a string for platform string: %d.", p_platform_string));
+		}
+	}
+
+#ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+#endif
 
 	OS();
 	virtual ~OS();

@@ -30,9 +30,14 @@
 
 #include "label_3d.h"
 
+#include "core/config/engine.h"
+#include "core/math/triangle_mesh.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 
 void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &Label3D::set_horizontal_alignment);
@@ -85,6 +90,9 @@ void Label3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label3D::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label3D::get_autowrap_mode);
+
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &Label3D::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &Label3D::get_autowrap_trim_flags);
 
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label3D::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label3D::get_justification_flags);
@@ -139,14 +147,14 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RSE::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RSE::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RSE::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RSE::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_modulate"), "set_outline_modulate", "get_outline_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
@@ -154,6 +162,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 
@@ -176,6 +185,9 @@ void Label3D::_bind_methods() {
 }
 
 void Label3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (
 			p_property.name == "material_override" ||
 			p_property.name == "material_overlay" ||
@@ -183,9 +195,7 @@ void Label3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.name == "gi_mode" ||
 			p_property.name == "gi_lightmap_scale") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+	} else if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
 		// Alpha-blended materials can't cast shadows.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -207,11 +217,8 @@ void Label3D::_notification(int p_what) {
 			window->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = atr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
-			}
-			xl_text = new_text;
+			// Language update might change the appearance of some characters.
+			xl_text = atr(text);
 			dirty_text = true;
 			_queue_update();
 		} break;
@@ -388,7 +395,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 
 			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, &shader_rid);
+			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, &shader_rid);
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
@@ -463,7 +470,7 @@ void Label3D::_shape() {
 
 	// Clear materials.
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 
@@ -475,8 +482,9 @@ void Label3D::_shape() {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
+		const String &lang = language.is_empty() ? _get_locale() : language;
+		String txt = uppercase ? TS->string_to_upper(xl_text, lang) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
 
 		TypedArray<Vector3i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
@@ -519,7 +527,7 @@ void Label3D::_shape() {
 			case TextServer::AUTOWRAP_OFF:
 				break;
 		}
-		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+		autowrap_flags = autowrap_flags | autowrap_flags_trim;
 
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 		float max_line_w = 0.0;
@@ -616,18 +624,36 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
 	}
 
+	switch (get_billboard_mode()) {
+		case StandardMaterial3D::BILLBOARD_ENABLED: {
+			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));
+			size_new = MAX(size_new, MAX(Math::abs(aabb.position.y), (aabb.position.y + aabb.size.y)));
+			aabb.position = Vector3(-size_new, -size_new, -size_new);
+			aabb.size = Vector3(size_new * 2.0, size_new * 2.0, size_new * 2.0);
+		} break;
+		case StandardMaterial3D::BILLBOARD_FIXED_Y: {
+			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));
+			aabb.position.x = -size_new;
+			aabb.position.z = -size_new;
+			aabb.size.x = size_new * 2.0;
+			aabb.size.z = size_new * 2.0;
+		} break;
+		default:
+			break;
+	}
+
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		Array mesh_array;
-		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
+		mesh_array.resize(RSE::ARRAY_MAX);
+		mesh_array[RSE::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RSE::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RSE::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RSE::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RSE::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RSE::ARRAY_INDEX] = E.value.indices;
 
-		RS::SurfaceData sd;
-		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
+		RenderingServerTypes::SurfaceData sd;
+		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
 
 		sd.material = E.value.material;
 
@@ -714,16 +740,16 @@ TextServer::StructuredTextParser Label3D::get_structured_text_bidi_override() co
 	return st_parser;
 }
 
-void Label3D::set_structured_text_bidi_override_options(Array p_args) {
+void Label3D::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
-		st_args = p_args;
+		st_args = Array(p_args);
 		dirty_text = true;
 		_queue_update();
 	}
 }
 
 Array Label3D::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void Label3D::set_uppercase(bool p_uppercase) {
@@ -739,7 +765,7 @@ bool Label3D::is_uppercase() const {
 }
 
 void Label3D::set_render_priority(int p_priority) {
-	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(p_priority < RSE::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RSE::MATERIAL_RENDER_PRIORITY_MAX);
 	if (render_priority != p_priority) {
 		render_priority = p_priority;
 		_queue_update();
@@ -751,7 +777,7 @@ int Label3D::get_render_priority() const {
 }
 
 void Label3D::set_outline_render_priority(int p_priority) {
-	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+	ERR_FAIL_COND(p_priority < RSE::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RSE::MATERIAL_RENDER_PRIORITY_MAX);
 	if (outline_render_priority != p_priority) {
 		outline_render_priority = p_priority;
 		_queue_update();
@@ -889,6 +915,18 @@ void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 	return autowrap_mode;
+}
+
+void Label3D::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	if (autowrap_flags_trim != (p_flags & TextServer::BREAK_TRIM_MASK)) {
+		autowrap_flags_trim = (p_flags & TextServer::BREAK_TRIM_MASK);
+		dirty_lines = true;
+		_queue_update();
+	}
+}
+
+BitField<TextServer::LineBreakFlag> Label3D::get_autowrap_trim_flags() const {
+	return autowrap_flags_trim;
 }
 
 void Label3D::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
@@ -1068,9 +1106,9 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 }

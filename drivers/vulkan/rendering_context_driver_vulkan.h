@@ -32,14 +32,16 @@
 
 #ifdef VULKAN_ENABLED
 
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+#if defined(DEBUG_ENABLED)
 #define VK_TRACK_DRIVER_MEMORY
 #define VK_TRACK_DEVICE_MEMORY
 #endif
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 
 class RenderingContextDriverVulkan : public RenderingContextDriver {
 public:
@@ -136,22 +138,40 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) override;
 	virtual SurfaceID surface_create(const void *p_platform_data) override;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) override;
+	virtual DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) override;
+	virtual float surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const override;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) override;
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const override;
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
+	virtual bool is_colorspace_externally_managed() const { return false; }
+	bool is_colorspace_supported() const;
 
 	// Vulkan-only methods.
 	struct Surface {
 		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
+		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		bool needs_resize = false;
+
+		bool hdr_output = false;
+		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
+		// to be a more pleasant player-facing value.
+		float hdr_reference_luminance = 200.0f;
+		float hdr_max_luminance = 1000.0f;
+		float hdr_linear_luminance_scale = 100.0f;
 	};
 
 	VkInstance instance_get() const;

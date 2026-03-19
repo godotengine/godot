@@ -30,25 +30,36 @@
 
 #include "editor_log.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
+#include "servers/display/display_server.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str = String::utf8(p_errorexp);
+		err_str = String::utf8(p_errorexp).replace("[", "[lb]");
 	} else {
-		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
+		err_str = vformat("[url]%s:%d[/url] - %s", String::utf8(p_file).replace("[", "[lb]"), p_line, String::utf8(p_error).replace("[", "[lb]"));
 	}
 
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
@@ -99,20 +110,23 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("mono_font_size", font_size);
 	log->end_bulk_theme_override();
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+	const String wide_text = "MMM";
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+	Button *button = type_filter_map[MSG_TYPE_STD]->toggle_button;
+	button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
+	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button = type_filter_map[MSG_TYPE_ERROR]->toggle_button;
+	button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
+	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button = type_filter_map[MSG_TYPE_WARNING]->toggle_button;
+	button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button = type_filter_map[MSG_TYPE_EDITOR]->toggle_button;
+	button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-	copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_search_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -137,10 +151,28 @@ void EditorLog::_notification(int p_what) {
 			_load_state();
 		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			if (!save_state_timer->is_stopped()) {
+				_save_state();
+				save_state_timer->stop();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_rebuild_log();
 		} break;
+	}
+}
+
+void EditorLog::shortcut_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			search_box->grab_focus();
+			search_box->select_all();
+			accept_event();
+		}
 	}
 }
 
@@ -157,65 +189,59 @@ void EditorLog::_start_state_save_timer() {
 }
 
 void EditorLog::_save_state() {
-	Ref<ConfigFile> config;
-	config.instantiate();
-	// Load and amend existing config if it exists.
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		config->set_value(section, "log_filter_" + itos(E.key), E.value->is_active());
+		EditorSettings::get_singleton()->set_setting("_editor_log_filter_" + itos(E.key), E.value->is_active());
 	}
-
-	config->set_value(section, "collapse", collapse);
-	config->set_value(section, "show_search", search_box->is_visible());
-
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	EditorSettings::get_singleton()->set_setting("_editor_log_collapse", collapse);
+	EditorSettings::save();
 }
 
 void EditorLog::_load_state() {
 	is_loading_state = true;
 
-	Ref<ConfigFile> config;
-	config.instantiate();
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		E.value->set_active(config->get_value(section, "log_filter_" + itos(E.key), true));
+		E.value->set_active(EDITOR_DEF("_editor_log_filter_" + itos(E.key), true));
 	}
-
-	collapse = config->get_value(section, "collapse", false);
-	collapse_button->set_pressed(collapse);
-	bool show_search = config->get_value(section, "show_search", true);
-	search_box->set_visible(show_search);
-	show_search_button->set_pressed(show_search);
+	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
 
 	is_loading_state = false;
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
-	OS::get_singleton()->shell_open(p_meta);
+	if (!p_meta.contains_char(':')) {
+		return;
+	}
+	const PackedStringArray parts = p_meta.rsplit(":", true, 1);
+	String path = parts[0];
+	const int line = parts[1].to_int() - 1;
+
+	if (path.begins_with("res://")) {
+		if (ResourceLoader::exists(path)) {
+			const Ref<Resource> res = ResourceLoader::load(path);
+			ScriptEditor::get_singleton()->edit(res, line, 0);
+			InspectorDock::get_singleton()->edit_resource(res);
+		}
+	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
+		// Godot source file. Try to open it in external editor.
+		if (path.begins_with("./") || path.begins_with(".\\")) {
+			// Relative path. Convert to absolute, using executable path as reference.
+			path = path.trim_prefix("./").trim_prefix(".\\");
+			path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
+		}
+
+		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
+			OS::get_singleton()->shell_open(path);
+		}
+	} else {
+		OS::get_singleton()->shell_open(p_meta);
+	}
 }
 
 void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_button_icon(Ref<Texture2D>());
-}
-
-void EditorLog::_copy_request() {
-	String text = log->get_selected_text();
-
-	if (text.is_empty()) {
-		text = log->get_parsed_text();
-	}
-
-	if (!text.is_empty()) {
-		DisplayServer::get_singleton()->clipboard_set(text);
-	}
+	_set_dock_tab_icon(Ref<Texture2D>());
 }
 
 void EditorLog::clear() {
@@ -254,8 +280,9 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 }
 
-void EditorLog::set_tool_button(Button *p_tool_button) {
-	tool_button = p_tool_button;
+void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
+	set_dock_icon(p_icon);
+	set_force_show_icon(p_icon.is_valid());
 }
 
 void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -321,7 +348,28 @@ void EditorLog::_rebuild_log() {
 bool EditorLog::_check_display_message(LogMessage &p_message) {
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
+
+	if (search_text.is_empty()) {
+		return filter_active;
+	}
+
+	bool search_match = p_message.text.containsn(search_text);
+
+	// If not found and message contains BBCode tags, also check the parsed text
+	if (!search_match && p_message.text.contains_char('[')) {
+		// Lazy initialize the BBCode parser
+		if (!bbcode_parser) {
+			bbcode_parser = memnew(RichTextLabel);
+			bbcode_parser->set_use_bbcode(true);
+		}
+
+		// Ensure clean state for each message
+		bbcode_parser->clear();
+		bbcode_parser->parse_bbcode(p_message.text);
+		String parsed_text = bbcode_parser->get_parsed_text();
+		search_match = parsed_text.containsn(search_text);
+	}
+
 	return filter_active && search_match;
 }
 
@@ -358,18 +406,18 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" ERROR: ");
+			log->add_text(U" ERROR: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->push_bold();
-			log->add_text(" WARNING: ");
+			log->add_text(U" WARNING: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
@@ -384,7 +432,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	if (p_message.type == MSG_TYPE_STD_RICH) {
+	// Note that errors and warnings only support BBCode in the file part of the message.
+	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
 		log->append_text(p_message.text);
 	} else {
 		log->add_text(p_message.text);
@@ -412,14 +461,6 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 	_rebuild_log();
 }
 
-void EditorLog::_set_search_visible(bool p_visible) {
-	search_box->set_visible(p_visible);
-	if (p_visible) {
-		search_box->grab_focus();
-	}
-	_start_state_save_timer();
-}
-
 void EditorLog::_search_changed(const String &p_text) {
 	_rebuild_log();
 }
@@ -431,6 +472,14 @@ void EditorLog::_reset_message_counts() {
 }
 
 EditorLog::EditorLog() {
+	set_name(TTRC("Output"));
+	set_icon_name("Output");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Dock"), KeyModifierMask::ALT | Key::O));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_process_shortcut_input(true);
+	set_shortcut_context(this);
+
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
 	save_state_timer->set_one_shot(true);
@@ -440,10 +489,11 @@ EditorLog::EditorLog() {
 	line_limit = int(EDITOR_GET("run/output/max_lines"));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));
 
-	HBoxContainer *hb = this;
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);
-	vb_left->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	vb_left->set_custom_minimum_size(Size2(0, 90 * EDSCALE));
 	vb_left->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb_left);
@@ -462,94 +512,71 @@ EditorLog::EditorLog() {
 	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
+	HFlowContainer *bottom_hf = memnew(HFlowContainer);
+	vb_left->add_child(bottom_hf);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	bottom_hf->add_child(hbox);
+
 	// Search box
 	search_box = memnew(LineEdit);
+	search_box->set_custom_minimum_size(Vector2(200 * EDSCALE, 0));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter Messages"));
+	search_box->set_placeholder(TTRC("Filter Messages"));
+	search_box->set_accessibility_name(TTRC("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
-	search_box->set_visible(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	vb_left->add_child(search_box);
-
-	VBoxContainer *vb_right = memnew(VBoxContainer);
-	hb->add_child(vb_right);
-
-	// Tools grid
-	HBoxContainer *hb_tools = memnew(HBoxContainer);
-	hb_tools->set_h_size_flags(SIZE_SHRINK_CENTER);
-	vb_right->add_child(hb_tools);
+	hbox->add_child(search_box);
 
 	// Clear.
 	clear_button = memnew(Button);
+	clear_button->set_accessibility_name(TTRC("Clear Log"));
 	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
-	clear_button->set_focus_mode(FOCUS_NONE);
+	clear_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
-	hb_tools->add_child(clear_button);
-
-	// Copy.
-	copy_button = memnew(Button);
-	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
-	copy_button->set_focus_mode(FOCUS_NONE);
-	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTRC("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
-	copy_button->set_shortcut_context(this);
-	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
-	hb_tools->add_child(copy_button);
+	hbox->add_child(clear_button);
 
 	// Separate toggle buttons from normal buttons.
-	vb_right->add_child(memnew(HSeparator));
+	hbox->add_child(memnew(VSeparator));
 
-	// A second hbox to make a 2x2 grid of buttons.
-	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
-	hb_tools2->set_h_size_flags(SIZE_SHRINK_CENTER);
-	vb_right->add_child(hb_tools2);
+	hbox = memnew(HBoxContainer);
+	bottom_hf->add_child(hbox);
 
 	// Collapse.
 	collapse_button = memnew(Button);
 	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
-	collapse_button->set_focus_mode(FOCUS_NONE);
+	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
-	hb_tools2->add_child(collapse_button);
-
-	// Show Search.
-	show_search_button = memnew(Button);
-	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_search_button->set_focus_mode(FOCUS_NONE);
-	show_search_button->set_toggle_mode(true);
-	show_search_button->set_pressed(true);
-	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
-	show_search_button->set_shortcut_context(this);
-	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
-	hb_tools2->add_child(show_search_button);
+	hbox->add_child(collapse_button);
 
 	// Message Type Filters.
-	vb_right->add_child(memnew(HSeparator));
-
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
-	std_filter->initialize_button(TTR("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(std_filter->toggle_button);
+	std_filter->initialize_button(TTRC("Standard Messages"), TTRC("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
+	hbox->add_child(std_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_STD, std_filter);
 	type_filter_map.insert(MSG_TYPE_STD_RICH, std_filter);
 
 	LogFilter *error_filter = memnew(LogFilter(MSG_TYPE_ERROR));
-	error_filter->initialize_button(TTR("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(error_filter->toggle_button);
+	error_filter->initialize_button(TTRC("Errors"), TTRC("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
+	hbox->add_child(error_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_ERROR, error_filter);
 
 	LogFilter *warning_filter = memnew(LogFilter(MSG_TYPE_WARNING));
-	warning_filter->initialize_button(TTR("Toggle visibility of warnings."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(warning_filter->toggle_button);
+	warning_filter->initialize_button(TTRC("Warnings"), TTRC("Toggle visibility of warnings."), callable_mp(this, &EditorLog::_set_filter_active));
+	hbox->add_child(warning_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_WARNING, warning_filter);
 
 	LogFilter *editor_filter = memnew(LogFilter(MSG_TYPE_EDITOR));
-	editor_filter->initialize_button(TTR("Toggle visibility of editor messages."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(editor_filter->toggle_button);
+	editor_filter->initialize_button(TTRC("Editor Messages"), TTRC("Toggle visibility of editor messages."), callable_mp(this, &EditorLog::_set_filter_active));
+	hbox->add_child(editor_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_EDITOR, editor_filter);
 
-	add_message(VERSION_FULL_NAME " (c) 2007-present Juan Linietsky, Ariel Manzur & Godot Contributors.");
+	add_message(GODOT_VERSION_FULL_NAME " (c) 2007-present Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
@@ -561,6 +588,10 @@ void EditorLog::deinit() {
 }
 
 EditorLog::~EditorLog() {
+	if (bbcode_parser) {
+		memdelete(bbcode_parser);
+	}
+
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
 		// MSG_TYPE_STD_RICH is connected to the std_filter button, so we do this
 		// to avoid it from being deleted twice, causing a crash on closing.

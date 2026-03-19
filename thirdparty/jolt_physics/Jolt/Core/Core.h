@@ -6,8 +6,8 @@
 
 // Jolt library version
 #define JPH_VERSION_MAJOR 5
-#define JPH_VERSION_MINOR 2
-#define JPH_VERSION_PATCH 1
+#define JPH_VERSION_MINOR 5
+#define JPH_VERSION_PATCH 0
 
 // Determine which features the library was compiled with
 #ifdef JPH_DOUBLE_PRECISION
@@ -83,8 +83,8 @@
 	#define JPH_PLATFORM_ANDROID
 #elif defined(__linux__)
 	#define JPH_PLATFORM_LINUX
-#elif defined(__FreeBSD__)
-	#define JPH_PLATFORM_FREEBSD
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+	#define JPH_PLATFORM_BSD
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
 	#if defined(TARGET_OS_IPHONE) && !TARGET_OS_IPHONE
@@ -121,9 +121,9 @@
 	// X86 CPU architecture
 	#define JPH_CPU_X86
 	#if defined(__x86_64__) || defined(_M_X64)
-		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_CPU_ARCH_BITS 64
 	#else
-		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_CPU_ARCH_BITS 32
 	#endif
 	#define JPH_USE_SSE
 	#define JPH_VECTOR_ALIGNMENT 16
@@ -171,12 +171,12 @@
 	// ARM CPU architecture
 	#define JPH_CPU_ARM
 	#if defined(__aarch64__) || defined(_M_ARM64)
-		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_CPU_ARCH_BITS 64
 		#define JPH_USE_NEON
 		#define JPH_VECTOR_ALIGNMENT 16
 		#define JPH_DVECTOR_ALIGNMENT 32
 	#else
-		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_CPU_ARCH_BITS 32
 		#define JPH_VECTOR_ALIGNMENT 8 // 32-bit ARM does not support aligning on the stack on 16 byte boundaries
 		#define JPH_DVECTOR_ALIGNMENT 8
 	#endif
@@ -184,18 +184,22 @@
 	// RISC-V CPU architecture
 	#define JPH_CPU_RISCV
 	#if __riscv_xlen == 64
-		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_CPU_ARCH_BITS 64
 		#define JPH_VECTOR_ALIGNMENT 16
 		#define JPH_DVECTOR_ALIGNMENT 32
 	#else
-		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_CPU_ARCH_BITS 32
 		#define JPH_VECTOR_ALIGNMENT 16
 		#define JPH_DVECTOR_ALIGNMENT 8
 	#endif
 #elif defined(JPH_PLATFORM_WASM)
 	// WebAssembly CPU architecture
 	#define JPH_CPU_WASM
-	#define JPH_CPU_ADDRESS_BITS 32
+	#if defined(__wasm64__)
+		#define JPH_CPU_ARCH_BITS 64
+	#else
+		#define JPH_CPU_ARCH_BITS 32
+	#endif
 	#define JPH_VECTOR_ALIGNMENT 16
 	#define JPH_DVECTOR_ALIGNMENT 32
 	#ifdef __wasm_simd128__
@@ -207,9 +211,9 @@
 	// PowerPC CPU architecture
 	#define JPH_CPU_PPC
 	#if defined(__powerpc64__)
-		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_CPU_ARCH_BITS 64
 	#else
-		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_CPU_ARCH_BITS 32
 	#endif
 	#ifdef _BIG_ENDIAN
 		#define JPH_CPU_BIG_ENDIAN
@@ -220,16 +224,16 @@
 	// LoongArch CPU architecture
 	#define JPH_CPU_LOONGARCH
 	#if defined(__loongarch64)
-		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_CPU_ARCH_BITS 64
 	#else
-		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_CPU_ARCH_BITS 32
 	#endif
 	#define JPH_VECTOR_ALIGNMENT 16
 	#define JPH_DVECTOR_ALIGNMENT 8
 #elif defined(__e2k__)
 	// E2K CPU architecture (MCST Elbrus 2000)
 	#define JPH_CPU_E2K
-	#define JPH_CPU_ADDRESS_BITS 64
+	#define JPH_CPU_ARCH_BITS 64
 	#define JPH_VECTOR_ALIGNMENT 16
 	#define JPH_DVECTOR_ALIGNMENT 32
 
@@ -317,9 +321,15 @@
 #else
 	#define JPH_MSVC2019_SUPPRESS_WARNING(w)
 #endif
+#if _MSC_VER >= 1950
+#define JPH_MSVC2026_PLUS_SUPPRESS_WARNING(w) JPH_MSVC_SUPPRESS_WARNING(w)
+#else
+#define JPH_MSVC2026_PLUS_SUPPRESS_WARNING(w)
+#endif
 #else
 #define JPH_MSVC_SUPPRESS_WARNING(w)
 #define JPH_MSVC2019_SUPPRESS_WARNING(w)
+#define JPH_MSVC2026_PLUS_SUPPRESS_WARNING(w)
 #endif
 
 // Disable common warnings triggered by Jolt when compiling with -Wall
@@ -360,6 +370,7 @@
 	JPH_MSVC_SUPPRESS_WARNING(4514) /* 'X' : unreferenced inline function has been removed */	\
 	JPH_MSVC_SUPPRESS_WARNING(4710) /* 'X' : function not inlined */							\
 	JPH_MSVC_SUPPRESS_WARNING(4711) /* function 'X' selected for automatic inline expansion */	\
+	JPH_MSVC_SUPPRESS_WARNING(4714) /* function 'X' marked as __forceinline not inlined */		\
 	JPH_MSVC_SUPPRESS_WARNING(4820) /* 'X': 'Y' bytes padding added after data member 'Z' */	\
 	JPH_MSVC_SUPPRESS_WARNING(4100) /* 'X' : unreferenced formal parameter */					\
 	JPH_MSVC_SUPPRESS_WARNING(4626) /* 'X' : assignment operator was implicitly defined as deleted because a base class assignment operator is inaccessible or deleted */ \
@@ -388,9 +399,9 @@
 	// Configuration for a popular game console.
 	// This file is not distributed because it would violate an NDA.
 	// Creating one should only be a couple of minutes of work if you have the documentation for the platform
-	// (you only need to define JPH_BREAKPOINT, JPH_PLATFORM_BLUE_GET_TICKS, JPH_PLATFORM_BLUE_MUTEX*, JPH_PLATFORM_BLUE_RWLOCK* and include the right header).
+	// (you only need to define JPH_BREAKPOINT, JPH_PLATFORM_BLUE_GET_TICKS, JPH_PLATFORM_BLUE_MUTEX*, JPH_PLATFORM_BLUE_RWLOCK*, JPH_PLATFORM_BLUE_SEMAPHORE* and include the right header).
 	#include <Jolt/Core/PlatformBlue.h>
-#elif defined(JPH_PLATFORM_LINUX) || defined(JPH_PLATFORM_ANDROID) || defined(JPH_PLATFORM_MACOS) || defined(JPH_PLATFORM_IOS) || defined(JPH_PLATFORM_FREEBSD)
+#elif defined(JPH_PLATFORM_LINUX) || defined(JPH_PLATFORM_ANDROID) || defined(JPH_PLATFORM_MACOS) || defined(JPH_PLATFORM_IOS) || defined(JPH_PLATFORM_BSD)
 	#if defined(JPH_CPU_X86)
 		#define JPH_BREAKPOINT	__asm volatile ("int $0x3")
 	#elif defined(JPH_CPU_ARM) || defined(JPH_CPU_RISCV) || defined(JPH_CPU_E2K) || defined(JPH_CPU_PPC) || defined(JPH_CPU_LOONGARCH)
@@ -426,23 +437,31 @@
 	JPH_MSVC_SUPPRESS_WARNING(4514)																\
 	JPH_MSVC_SUPPRESS_WARNING(5262)																\
 	JPH_MSVC_SUPPRESS_WARNING(5264)																\
-	JPH_MSVC_SUPPRESS_WARNING(4738)
+	JPH_MSVC_SUPPRESS_WARNING(4738)																\
+	JPH_MSVC_SUPPRESS_WARNING(5045)
 
 #define JPH_SUPPRESS_WARNINGS_STD_END															\
 	JPH_SUPPRESS_WARNING_POP
+
+// MSVC STL requires _HAS_EXCEPTIONS=0 if exceptions are turned off
+#if defined(JPH_COMPILER_MSVC) && (!defined(__cpp_exceptions) || !__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
+	#define _HAS_EXCEPTIONS 0
+#endif
 
 // Standard C++ includes
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <float.h>
 #include <limits.h>
 #include <string.h>
+#include <new>
 #include <utility>
 #include <cmath>
 #include <sstream>
 #include <functional>
 #include <algorithm>
 #include <cstdint>
-#ifdef JPH_COMPILER_MSVC
+#include <type_traits>
+#if defined(JPH_COMPILER_MSVC) || (defined(JPH_COMPILER_CLANG) && defined(_MSC_VER)) // MSVC or clang-cl
 	#include <malloc.h> // for alloca
 #endif
 #if defined(JPH_USE_SSE)
@@ -490,7 +509,6 @@ static_assert(sizeof(uint8) == 1, "Invalid size of uint8");
 static_assert(sizeof(uint16) == 2, "Invalid size of uint16");
 static_assert(sizeof(uint32) == 4, "Invalid size of uint32");
 static_assert(sizeof(uint64) == 8, "Invalid size of uint64");
-static_assert(sizeof(void *) == (JPH_CPU_ADDRESS_BITS == 64? 8 : 4), "Invalid size of pointer" );
 
 // Determine if we want extra debugging code to be active
 #if !defined(NDEBUG) && !defined(JPH_NO_DEBUG)
@@ -514,6 +532,12 @@ static_assert(sizeof(void *) == (JPH_CPU_ADDRESS_BITS == 64? 8 : 4), "Invalid si
 	#define JPH_INLINE __forceinline
 #else
 	#error Undefined
+#endif
+
+// Default memory allocation alignment.
+// This define can be overridden in case the user provides an Allocate function that has a different alignment than the platform default.
+#ifndef JPH_DEFAULT_ALLOCATE_ALIGNMENT
+	#define JPH_DEFAULT_ALLOCATE_ALIGNMENT __STDCPP_DEFAULT_NEW_ALIGNMENT__
 #endif
 
 // Cache line size (used for aligning to cache line)

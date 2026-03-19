@@ -218,7 +218,7 @@ public:
 
 		/// Constructor
 							Geometry(const AABox &inBounds) : mBounds(inBounds) { }
-							Geometry(const Batch &inBatch, const AABox &inBounds) : mBounds(inBounds) { mLODs.push_back({ inBatch, FLT_MAX }); }
+							Geometry(const Batch &inBatch, const AABox &inBounds) : mBounds(inBounds) { mLODs.push_back({ inBatch, cLargeFloat }); }
 
 		/// Determine which LOD to render
 		/// @param inCameraPosition Current position of the camera

@@ -33,12 +33,12 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/CylinderShape.h"
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 
 JPH::ShapeRefC JoltCylinderShape3D::_build() const {
 	const float half_height = height / 2.0f;
 	const float min_half_extent = MIN(half_height, radius);
-	const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::get_collision_margin_fraction());
+	const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::collision_margin_fraction);
 
 	const JPH::CylinderShapeSettings shape_settings(half_height, radius, actual_margin);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();

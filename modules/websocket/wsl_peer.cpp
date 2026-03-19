@@ -33,6 +33,8 @@
 #ifndef WEB_ENABLED
 
 #include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 
 CryptoCore::RandomGenerator *WSLPeer::_static_rng = nullptr;
 
@@ -47,6 +49,10 @@ void WSLPeer::deinitialize() {
 		memdelete(_static_rng);
 		_static_rng = nullptr;
 	}
+}
+
+WebSocketPeer *WSLPeer::_create(bool p_notify_postinitialize) {
+	return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize));
 }
 
 ///
@@ -80,7 +86,7 @@ void WSLPeer::Resolver::stop() {
 	port = 0;
 }
 
-void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
+void WSLPeer::Resolver::try_next_candidate(const Ref<StreamPeerTCP> &p_tcp) {
 	// Check if we still need resolving.
 	if (resolver_id != IP::RESOLVER_INVALID_ID) {
 		IP::ResolverStatus ip_status = IP::get_singleton()->get_resolve_item_status(resolver_id);
@@ -124,7 +130,7 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 ///
 /// Server functions
 ///
-Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
+Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
@@ -151,7 +157,7 @@ Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
 }
 
 bool WSLPeer::_parse_client_request() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
@@ -175,7 +181,7 @@ bool WSLPeer::_parse_client_request() {
 	}
 	requested_host = headers.has("host") ? headers.get("host") : "";
 	requested_url = (use_tls ? "wss://" : "ws://") + requested_host + req[1];
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 #define WSL_CHECK_EX(NAME) \
@@ -297,7 +303,7 @@ Error WSLPeer::_do_server_handshake() {
 			wslay_event_context_server_init(&wsl_ctx, &_wsl_callbacks, this);
 			wslay_event_config_set_no_buffering(wsl_ctx, 1);
 			wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-			in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+			in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 			packet_buffer.resize(inbound_buffer_size);
 			ready_state = STATE_OPEN;
 		}
@@ -406,7 +412,7 @@ void WSLPeer::_do_client_handshake() {
 				wslay_event_context_client_init(&wsl_ctx, &_wsl_callbacks, this);
 				wslay_event_config_set_no_buffering(wsl_ctx, 1);
 				wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-				in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+				in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 				packet_buffer.resize(inbound_buffer_size);
 				ready_state = STATE_OPEN;
 				break;
@@ -416,7 +422,7 @@ void WSLPeer::_do_client_handshake() {
 }
 
 bool WSLPeer::_verify_server_response() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers. Got: " + itos(len) + ", expected >= 4.");
 
@@ -440,10 +446,10 @@ bool WSLPeer::_verify_server_response() {
 		}
 	}
 
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define WSL_CHECK_NC(NAME, VALUE)                                            \
+#define WSL_CHECK_NC(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME] != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 	WSL_CHECK("connection", "upgrade");
@@ -451,7 +457,7 @@ bool WSLPeer::_verify_server_response() {
 	WSL_CHECK_NC("sec-websocket-accept", _compute_key_response(session_key));
 #undef WSL_CHECK_NC
 #undef WSL_CHECK
-	if (supported_protocols.size() == 0) {
+	if (supported_protocols.is_empty()) {
 		// We didn't request a custom protocol
 		ERR_FAIL_COND_V_MSG(headers.has("sec-websocket-protocol"), false, "Received unrequested sub-protocol -> " + headers["sec-websocket-protocol"]);
 	} else {
@@ -474,7 +480,7 @@ bool WSLPeer::_verify_server_response() {
 	return true;
 }
 
-Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
+Error WSLPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
@@ -646,9 +652,9 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		// Close request or confirmation.
 		peer->close_code = arg->status_code;
 		size_t len = arg->msg_length;
-		peer->close_reason = "";
+		peer->close_reason.clear();
 		if (len > 2 /* first 2 bytes = close code */) {
-			peer->close_reason.parse_utf8((char *)arg->msg + 2, len - 2);
+			peer->close_reason.append_utf8((char *)arg->msg + 2, len - 2);
 		}
 		if (peer->ready_state == STATE_OPEN) {
 			peer->ready_state = STATE_CLOSING;
@@ -688,7 +694,7 @@ String WSLPeer::_generate_key() {
 	return CryptoCore::b64_encode_str(bkey.ptrw(), len);
 }
 
-String WSLPeer::_compute_key_response(String p_key) {
+String WSLPeer::_compute_key_response(const String &p_key) {
 	String key = p_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"; // Magic UUID as per RFC
 	Vector<uint8_t> sha = key.sha1_buffer();
 	return CryptoCore::b64_encode_str(sha.ptr(), sha.size());
@@ -840,7 +846,7 @@ int WSLPeer::get_current_outbound_buffered_amount() const {
 	return wslay_event_get_queued_msg_length(wsl_ctx);
 }
 
-void WSLPeer::close(int p_code, String p_reason) {
+void WSLPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		// Force immediate close.
 		ready_state = STATE_CLOSED;

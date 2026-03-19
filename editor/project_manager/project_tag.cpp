@@ -63,12 +63,15 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	add_child(cr);
 	cr->set_custom_minimum_size(Vector2(4, 0) * EDSCALE);
 	cr->set_color(tag_color);
+	cr->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	button = memnew(Button);
 	add_child(button);
 	button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	button->set_text(p_text.capitalize());
-	button->set_focus_mode(FOCUS_NONE);
+	button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	button->set_accessibility_name(vformat(TTR("Project Tag: %s"), p_text));
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	button->set_theme_type_variation(SNAME("ProjectTagButton"));
+	button->set_mouse_filter(MOUSE_FILTER_PASS);
 }

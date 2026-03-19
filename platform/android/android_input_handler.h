@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 
 // This class encapsulates all the handling of input events that come from the Android UI thread.
 // Remarks:
@@ -62,7 +62,7 @@ public:
 		int index = 0; // Can be either JoyAxis or JoyButton.
 		bool pressed = false;
 		float value = 0;
-		BitField<HatMask> hat;
+		BitField<HatMask> hat = HatMask::CENTER;
 	};
 
 private:
@@ -71,7 +71,7 @@ private:
 	bool control_mem = false;
 	bool meta_mem = false;
 
-	BitField<MouseButtonMask> buttons_state;
+	BitField<MouseButtonMask> buttons_state = MouseButtonMask::NONE;
 
 	Vector<TouchPos> touch;
 	MouseEventInfo mouse_event_info;

@@ -31,9 +31,10 @@
 #include "mobile_vr_interface.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "servers/display_server.h"
-#include "servers/rendering/renderer_compositor.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
@@ -135,7 +136,6 @@ void MobileVRInterface::set_position_from_sensors() {
 	// few things we need
 	Input *input = Input::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
-	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
 	// make copies of our inputs
 	bool has_grav = false;
@@ -206,7 +206,7 @@ void MobileVRInterface::set_position_from_sensors() {
 			Vector3 axis = grav_adj.cross(down);
 			axis.normalize();
 
-			Basis drift_compensation(axis, acos(dot) * delta_time * 10);
+			Basis drift_compensation(axis, std::acos(dot) * delta_time * 10);
 			orientation = drift_compensation * orientation;
 		};
 	};
@@ -510,10 +510,10 @@ Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_
 	return eye;
 }
 
-Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<RenderingServerTypes::BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
-	Vector<BlitToScreen> blit_to_screen;
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 	// We must have a valid render target.
 	ERR_FAIL_COND_V(!p_render_target.is_valid(), blit_to_screen);
@@ -529,7 +529,7 @@ Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, 
 	Rect2 modified_screen_rect = Rect2(p_screen_rect.position + offset_rect.position * p_screen_rect.size, p_screen_rect.size * offset_rect.size);
 
 	// and add our blits
-	BlitToScreen blit;
+	RenderingServerTypes::BlitToScreen blit;
 	blit.render_target = p_render_target;
 	blit.multi_view.use_layer = true;
 	blit.lens_distortion.apply = true;

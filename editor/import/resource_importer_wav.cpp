@@ -31,6 +31,7 @@
 #include "resource_importer_wav.h"
 
 #include "core/io/resource_saver.h"
+#include "scene/resources/audio_stream_wav.h"
 
 String ResourceImporterWAV::get_importer_name() const {
 	return "wav";
@@ -97,7 +98,4 @@ Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_s
 	Ref<AudioStreamWAV> sample = AudioStreamWAV::load_from_file(p_source_file, options);
 	ResourceSaver::save(sample, p_save_path + ".sample");
 	return OK;
-}
-
-ResourceImporterWAV::ResourceImporterWAV() {
 }

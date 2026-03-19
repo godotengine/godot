@@ -35,11 +35,12 @@
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -88,7 +89,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 }
 
 static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
-	static const char *argmeta[13] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32" };
+	static const char *argmeta[14] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32", "required" };
 	return argmeta[metadata];
 }
 
@@ -96,7 +97,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -106,16 +107,16 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	{
 		//header
 		Dictionary header;
-		header["version_major"] = VERSION_MAJOR;
-		header["version_minor"] = VERSION_MINOR;
-#if VERSION_PATCH
-		header["version_patch"] = VERSION_PATCH;
+		header["version_major"] = GODOT_VERSION_MAJOR;
+		header["version_minor"] = GODOT_VERSION_MINOR;
+#if GODOT_VERSION_PATCH
+		header["version_patch"] = GODOT_VERSION_PATCH;
 #else
 		header["version_patch"] = 0;
 #endif
-		header["version_status"] = VERSION_STATUS;
-		header["version_build"] = VERSION_BUILD;
-		header["version_full_name"] = VERSION_FULL_NAME;
+		header["version_status"] = GODOT_VERSION_STATUS;
+		header["version_build"] = GODOT_VERSION_BUILD;
+		header["version_full_name"] = GODOT_VERSION_FULL_NAME;
 
 #if REAL_T_IS_DOUBLE
 		header["precision"] = "double";
@@ -281,59 +282,59 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// Member offsets, meta types and sizes.
 
 #define REAL_MEMBER_OFFSET(type, member) \
-	{                                    \
-		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+	{ \
+		type, \
+		member, \
+		"float", \
+		sizeof(float), \
+		"float", \
+		sizeof(float), \
+		"double", \
+		sizeof(double), \
+		"double", \
+		sizeof(double), \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
-	{                                     \
-		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+	{ \
+		type, \
+		member, \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                              \
-		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+	{ \
+		type, \
+		member, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                             \
-		type,                                                                     \
-				member,                                                           \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
+	{ \
+		type, \
+				member, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
 	}
 
 		struct {
@@ -797,6 +798,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					d2["is_static"] = Variant::is_builtin_method_static(type, method_name);
 					d2["hash"] = Variant::get_builtin_method_hash(type, method_name);
 
+					Vector<uint32_t> compat_hashes = Variant::get_builtin_method_compatibility_hashes(type, method_name);
+					Array compatibility;
+					if (compat_hashes.size()) {
+						for (int j = 0; j < compat_hashes.size(); j++) {
+							compatibility.push_back(compat_hashes[j]);
+						}
+					}
+					if (compatibility.size() > 0) {
+						d2["hash_compatibility"] = compatibility;
+					}
+
 					Vector<Variant> default_args = Variant::get_builtin_method_default_arguments(type, method_name);
 
 					Array arguments;
@@ -900,11 +912,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// classes
 		Array classes;
 
-		List<StringName> class_list;
+		LocalVector<StringName> class_list;
 
-		ClassDB::get_class_list(&class_list);
-
-		class_list.sort_custom<StringName::AlphCompare>();
+		ClassDB::get_class_list(class_list);
 
 		for (const StringName &class_name : class_list) {
 			if (!ClassDB::is_class_exposed(class_name)) {
@@ -975,14 +985,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Array values;
 					List<StringName> enum_constant_list;
 					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
-					for (List<StringName>::Element *G = enum_constant_list.front(); G; G = G->next()) {
+					for (const StringName &enum_constant : enum_constant_list) {
 						Dictionary d3;
-						d3["name"] = String(G->get());
-						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+						d3["name"] = String(enum_constant);
+						d3["value"] = ClassDB::get_integer_constant(class_name, enum_constant);
 
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-								if (constant_doc.name == G->get()) {
+								if (constant_doc.name == enum_constant) {
 									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
@@ -1053,9 +1063,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 
 						Array arguments;
-						int i = 0;
-						for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
-							const PropertyInfo &pinfo = *itr;
+						for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+							const PropertyInfo &pinfo = mi.arguments[i];
 							Dictionary d3;
 
 							d3["name"] = pinfo.name;
@@ -1174,17 +1183,20 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				List<MethodInfo> signal_list;
 				ClassDB::get_signal_list(class_name, &signal_list, true);
 				for (const MethodInfo &F : signal_list) {
+					if (F.name.begins_with("_")) {
+						continue; // Hidden signal.
+					}
+
 					StringName signal_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(signal_name);
 
 					Array arguments;
 
-					int i = 0;
-					for (List<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
+					for (int64_t i = 0; i < F.arguments.size(); ++i) {
 						Dictionary d3;
-						d3["name"] = itr->name;
-						d3["type"] = get_property_info_type_name(*itr);
+						d3["name"] = F.arguments[i].name;
+						d3["type"] = get_property_info_type_name(F.arguments[i]);
 						if (F.get_argument_meta(i) > 0) {
 							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
 						}
@@ -1345,16 +1357,16 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		for (const Variant &key : old_dict.keys()) {
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}
@@ -1603,8 +1615,8 @@ Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
 		int major = header["version_major"];
 		int minor = header["version_minor"];
 
-		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, VERSION_MAJOR));
-		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
+		ERR_FAIL_COND_V_MSG(major != GODOT_VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, GODOT_VERSION_MAJOR));
+		ERR_FAIL_COND_V_MSG(minor > GODOT_VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
 	}
 
 	bool failed = false;

@@ -30,9 +30,7 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/os/os.h"
-#include "editor/editor_settings.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export_platform_pc.h"
 
 // Optional environment variables for defining confidential information. If any
@@ -65,11 +63,11 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
-	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
+	Error _add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	String _get_exe_arch(const String &p_path) const;
@@ -90,12 +88,12 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformWindows();
+	virtual void initialize() override;
 };

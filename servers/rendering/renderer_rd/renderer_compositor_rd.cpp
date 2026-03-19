@@ -30,27 +30,39 @@
 
 #include "renderer_compositor_rd.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-
+#include "core/os/os.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
+#include "servers/rendering/rendering_server_types.h"
 
-void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
 
+	BlitPipelines blit_pipelines = _get_blit_pipelines_for_format(RD::get_singleton()->screen_get_framebuffer_format(p_screen));
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
 	ERR_FAIL_COND(draw_list == RD::INVALID_ID);
+
+	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(p_screen);
+	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(p_screen);
+	const float linear_luminance_scale = RD::get_singleton()->get_context_driver()->window_get_hdr_output_linear_luminance_scale(p_screen);
+	const float output_max_value = RD::get_singleton()->get_context_driver()->window_get_output_max_linear_value(p_screen);
+	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance, linear_luminance_scale);
 
 	for (int i = 0; i < p_amount; i++) {
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
 
-		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
+		HashMap<RID, RID>::Iterator it = render_target_descriptors.find(rd_texture);
+		if (it == render_target_descriptors.end() || !RD::get_singleton()->uniform_set_is_valid(it->value)) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
@@ -60,14 +72,15 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
-			render_target_descriptors[rd_texture] = uniform_set;
+			it = render_target_descriptors.insert(rd_texture, uniform_set);
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
 		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
-		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[mode]);
+
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, it->value, 0);
 
 		// We need to invert the phone rotation.
 		const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(p_screen);
@@ -94,7 +107,11 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.k2 = p_render_targets[i].lens_distortion.k2;
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
-		blit.push_constant.convert_to_srgb = texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.source_is_srgb = !texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.use_debanding = texture_storage->render_target_is_using_debanding(p_render_targets[i].render_target);
+		blit.push_constant.target_color_space = color_space;
+		blit.push_constant.reference_multiplier = reference_multiplier;
+		blit.push_constant.output_max_value = output_max_value;
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -108,7 +125,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	delta = frame_step;
 	time += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = GLOBAL_GET_CACHED(double, "rendering/limits/time/time_rollover_secs");
 	time = Math::fmod(time, time_roll_over);
 
 	canvas->set_time(time);
@@ -129,15 +146,7 @@ void RendererCompositorRD::initialize() {
 		blit_modes.push_back("\n");
 
 		blit.shader.initialize(blit_modes);
-
 		blit.shader_version = blit.shader.version_create();
-
-		for (int i = 0; i < BLIT_MODE_MAX; i++) {
-			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
-
-			// Unload shader modules to save memory.
-			RD::get_singleton()->shader_destroy_modules(blit.shader.version_get_shader(blit.shader_version, i));
-		}
 
 		//create index array for copy shader
 		Vector<uint8_t> pv;
@@ -162,6 +171,7 @@ void RendererCompositorRD::initialize() {
 uint64_t RendererCompositorRD::frame = 1;
 
 void RendererCompositorRD::finalize() {
+	texture_storage->_tex_blit_shader_free();
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(fog);
@@ -174,20 +184,45 @@ void RendererCompositorRD::finalize() {
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
-	RD::get_singleton()->free(blit.index_buffer);
-	RD::get_singleton()->free(blit.sampler);
+	RD::get_singleton()->free_rid(blit.index_buffer);
+	RD::get_singleton()->free_rid(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+RendererCompositorRD::BlitPipelines RendererCompositorRD::_get_blit_pipelines_for_format(RenderingDevice::FramebufferFormatID format) {
+	HashMap<RenderingDevice::FramebufferFormatID, BlitPipelines>::Iterator it = blit.pipelines_by_format.find(format);
+	if (it != blit.pipelines_by_format.end()) {
+		return it->value;
+	}
+
+	BlitPipelines pipelines;
+	for (int i = 0; i < BLIT_MODE_MAX; i++) {
+		pipelines.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), format, RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
+	}
+	blit.pipelines_by_format.insert(format, pipelines);
+	return pipelines;
+}
+
+float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance, const float p_linear_luminance_scale) {
+	switch (p_color_space) {
+		case RD::COLOR_SPACE_REC709_LINEAR:
+			return p_reference_luminance / p_linear_luminance_scale;
+		default:
+			return 1.0f;
+	}
+}
+
+void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
 
-	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
+
+	BlitPipelines blit_pipelines = _get_blit_pipelines_for_format(RD::get_singleton()->screen_get_framebuffer_format(DisplayServerEnums::MAIN_WINDOW_ID));
 
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
@@ -213,25 +248,33 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		screenrect = OS::get_singleton()->calculate_boot_screen_rect(window_size, imgrect.size);
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-	}
-
+	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
+	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float linear_luminance_scale = RD::get_singleton()->get_context_driver()->window_get_hdr_output_linear_luminance_scale(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float output_max_value = RD::get_singleton()->get_context_driver()->window_get_output_max_linear_value(DisplayServerEnums::MAIN_WINDOW_ID);
+	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance, linear_luminance_scale);
 
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
+	Color clear_color = p_color;
+	if (color_space != RD::COLOR_SPACE_REC709_NONLINEAR_SRGB) {
+		// draw_list_begin_for_screen requires linear-encoded Color when using an HDR buffer.
+		clear_color = p_color.srgb_to_linear();
+
+		clear_color.r *= reference_multiplier;
+		clear_color.g *= reference_multiplier;
+		clear_color.b *= reference_multiplier;
+	}
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServerEnums::MAIN_WINDOW_ID, clear_color);
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[BLIT_MODE_NORMAL_ALPHA]);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
-	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServer::MAIN_WINDOW_ID);
+	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServerEnums::MAIN_WINDOW_ID);
 	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
 	blit.push_constant.rotation_cos = Math::cos(screen_rotation);
 	blit.push_constant.rotation_sin = Math::sin(screen_rotation);
@@ -250,7 +293,11 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.k2 = 0;
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;
-	blit.push_constant.convert_to_srgb = false;
+	blit.push_constant.source_is_srgb = true;
+	blit.push_constant.use_debanding = false;
+	blit.push_constant.target_color_space = color_space;
+	blit.push_constant.reference_multiplier = reference_multiplier;
+	blit.push_constant.output_max_value = output_max_value;
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -260,7 +307,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
-	RD::get_singleton()->free(sampler);
+	RD::get_singleton()->free_rid(sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
@@ -269,40 +316,44 @@ RendererCompositorRD::RendererCompositorRD() {
 	uniform_set_cache = memnew(UniformSetCacheRD);
 	framebuffer_cache = memnew(FramebufferCacheRD);
 
-	{
-		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
-		if (shader_cache_dir.is_empty()) {
-			shader_cache_dir = "user://";
+	bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+	bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
+	bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
+	bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
+	ShaderRD::set_shader_cache_save_compressed(compress);
+	ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
+	ShaderRD::set_shader_cache_save_debug(!strip_debug);
+
+	// Shader cache is forcefully enabled when running the editor.
+	if (shader_cache_enabled || Engine::get_singleton()->is_editor_hint()) {
+		// Attempt to create a folder for the shader cache that the user can write to. Shaders will only be attempted to be saved if this path exists.
+		String shader_cache_user_dir = Engine::get_singleton()->get_shader_cache_path();
+		if (shader_cache_user_dir.is_empty()) {
+			shader_cache_user_dir = "user://";
 		}
-		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
-		if (da.is_null()) {
-			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+
+		Ref<DirAccess> user_da = DirAccess::open(shader_cache_user_dir);
+		if (user_da.is_null()) {
+			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_user_dir);
 		} else {
-			Error err = da->change_dir("shader_cache");
+			Error err = user_da->change_dir("shader_cache");
 			if (err != OK) {
-				err = da->make_dir("shader_cache");
+				err = user_da->make_dir("shader_cache");
 			}
+
 			if (err != OK) {
-				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_user_dir);
 			} else {
-				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
-
-				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
-				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
-					shader_cache_dir = String(); //disable only if not editor
-				}
-
-				if (!shader_cache_dir.is_empty()) {
-					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
-					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
-					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
-
-					ShaderRD::set_shader_cache_dir(shader_cache_dir);
-					ShaderRD::set_shader_cache_save_compressed(compress);
-					ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
-					ShaderRD::set_shader_cache_save_debug(!strip_debug);
-				}
+				shader_cache_user_dir = shader_cache_user_dir.path_join("shader_cache");
+				ShaderRD::set_shader_cache_user_dir(shader_cache_user_dir);
 			}
+		}
+
+		// Check if a directory exists for the shader cache to pull shaders from as read-only. This is used on exported projects with baked shaders.
+		String shader_cache_res_dir = "res://.godot/shader_cache";
+		Ref<DirAccess> res_da = DirAccess::open(shader_cache_res_dir);
+		if (res_da.is_valid()) {
+			ShaderRD::set_shader_cache_res_dir(shader_cache_res_dir);
 		}
 	}
 
@@ -317,6 +368,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	particles_storage = memnew(RendererRD::ParticlesStorage);
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
+	texture_storage->_tex_blit_shader_initialize();
 
 	String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
@@ -341,5 +393,6 @@ RendererCompositorRD::~RendererCompositorRD() {
 	singleton = nullptr;
 	memdelete(uniform_set_cache);
 	memdelete(framebuffer_cache);
-	ShaderRD::set_shader_cache_dir(String());
+	ShaderRD::set_shader_cache_user_dir(String());
+	ShaderRD::set_shader_cache_res_dir(String());
 }

@@ -14,6 +14,7 @@
 #include "../sys/atomic.h"
 #include "../math/range.h"
 
+#include <exception>
 #include <list>
 
 namespace embree
@@ -130,11 +131,8 @@ namespace embree
       __forceinline void* alloc(size_t bytes, size_t align = 64)
       {
         size_t ofs = bytes + ((align - stackPtr) & (align-1));
-        //if (stackPtr + ofs > CLOSURE_STACK_SIZE)
-        //  throw std::runtime_error("closure stack overflow");
-        if (stackPtr + ofs > CLOSURE_STACK_SIZE) {
-          abort();
-        }
+        if (stackPtr + ofs > CLOSURE_STACK_SIZE)
+          abort(); //throw std::runtime_error("closure stack overflow");
         stackPtr += ofs;
         return &stack[stackPtr-bytes];
       }
@@ -142,11 +140,8 @@ namespace embree
       template<typename Closure>
       __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure, TaskGroupContext* context)
       {
-        //if (right >= TASK_STACK_SIZE)
-        //  throw std::runtime_error("task stack overflow");
-        if (right >= TASK_STACK_SIZE) {
-          abort();
-        }
+        if (right >= TASK_STACK_SIZE)
+          abort(); //throw std::runtime_error("task stack overflow");
 
 	/* allocate new task on right side of stack */
         size_t oldStackPtr = stackPtr;

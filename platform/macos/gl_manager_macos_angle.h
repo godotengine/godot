@@ -32,15 +32,20 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
-#include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
 #include "drivers/egl/egl_manager.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server_enums.h"
+
+// Suppress redefinition conflicts
+#define FontVariation __FontVariation
+#define BitMap __BitMap
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
+
+#undef BitMap
+#undef FontVariation
 
 class GLManagerANGLE_MacOS : public EGLManager {
 private:
@@ -51,7 +56,7 @@ private:
 	virtual Vector<EGLint> _get_platform_context_attribs() const override;
 
 public:
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {}
 
 	GLManagerANGLE_MacOS() {}
 	~GLManagerANGLE_MacOS() {}

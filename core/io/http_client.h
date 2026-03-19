@@ -31,9 +31,7 @@
 #pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/io/ip.h"
 #include "core/io/stream_peer.h"
-#include "core/io/stream_peer_tcp.h"
 #include "core/object/ref_counted.h"
 
 class HTTPClient : public RefCounted {
@@ -197,7 +195,6 @@ public:
 	virtual void set_http_proxy(const String &p_host, int p_port);
 	virtual void set_https_proxy(const String &p_host, int p_port);
 
-	HTTPClient() {}
 	virtual ~HTTPClient() {}
 };
 

@@ -30,71 +30,29 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
-#include "core/os/mutex.h"
-#include "core/string/ustring.h"
-#include "core/templates/rid_owner.h"
-#include "rendering_device_driver_d3d12.h"
-#include "servers/display_server.h"
+#include "drivers/d3d12/rendering_device_driver_d3d12.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#endif
+#include <drivers/d3d12/godot_d3dx12.h>
 
-#if defined(AS)
-#undef AS
-#endif
-
-#if (WINVER < _WIN32_WINNT_WIN8) && defined(_MSC_VER)
-#pragma push_macro("NTDDI_VERSION")
-#pragma push_macro("WINVER")
-#undef NTDDI_VERSION
-#undef WINVER
-#define NTDDI_VERSION NTDDI_WIN8
-#define WINVER _WIN32_WINNT_WIN8
-#include <dcomp.h>
-#pragma pop_macro("WINVER")
-#pragma pop_macro("NTDDI_VERSION")
-#else
+#ifdef DCOMP_ENABLED
 #include <dcomp.h>
 #endif
-
-#include "d3dx12.h"
-#include <dxgi1_6.h>
 
 #include <wrl/client.h>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-using Microsoft::WRL::ComPtr;
-
-#define ARRAY_SIZE(a) std::size(a)
+#define ARRAY_SIZE(a) std_size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
-	ComPtr<ID3D12DeviceFactory> device_factory;
-	ComPtr<IDXGIFactory2> dxgi_factory;
+	Microsoft::WRL::ComPtr<ID3D12DeviceFactory> device_factory;
+	Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
 	TightLocalVector<Device> driver_devices;
 	bool tearing_supported = false;
 
 	Error _init_device_factory();
 	Error _initialize_debug_layers();
+	Error _create_dxgi_factory();
 	Error _initialize_devices();
 
 public:
@@ -106,8 +64,17 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) override;
 	virtual SurfaceID surface_create(const void *p_platform_data) override;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) override;
+	virtual DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) override;
+	virtual float surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const override;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) override;
@@ -125,20 +92,33 @@ public:
 		HWND hwnd = nullptr;
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
+		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		bool needs_resize = false;
-		ComPtr<IDCompositionDevice> composition_device;
-		ComPtr<IDCompositionTarget> composition_target;
-		ComPtr<IDCompositionVisual> composition_visual;
+
+		bool hdr_output = false;
+		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
+		// to be a more pleasant player-facing value. This value is used by Steam
+		// Deck and other Windows emulation that does not provide an SDRWhiteLevel.
+		float hdr_reference_luminance = 200.0f;
+		float hdr_max_luminance = 1000.0f;
+		float hdr_linear_luminance_scale = 80.0f;
+
+#ifdef DCOMP_ENABLED
+		Microsoft::WRL::ComPtr<IDCompositionDevice> composition_device;
+		Microsoft::WRL::ComPtr<IDCompositionTarget> composition_target;
+		Microsoft::WRL::ComPtr<IDCompositionVisual> composition_visual;
+#endif
 	};
 
 	HMODULE lib_d3d12 = nullptr;
 	HMODULE lib_dxgi = nullptr;
+#ifdef DCOMP_ENABLED
 	HMODULE lib_dcomp = nullptr;
+#endif
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;
-	IDXGIFactory2 *dxgi_factory_get() const;
+	IDXGIFactory2 *dxgi_factory_get();
 	bool get_tearing_supported() const;
 	bool use_validation_layers() const;
 

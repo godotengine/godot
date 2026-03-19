@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphElement" inherits="Container" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphElement" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that represents a basic element that can be placed inside a [GraphEdit] control.
 	</brief_description>
@@ -18,6 +18,9 @@
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphElement.
 			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] and [signal resize_end] signals, the GraphElement needs to be resized manually.
+		</member>
+		<member name="scaling_menus" type="bool" setter="set_scaling_menus" getter="is_scaling_menus" default="false">
+			If [code]true[/code], [PopupMenu]s that are descendants of the GraphElement are scaled with the [GraphEdit] zoom.
 		</member>
 		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
 			If [code]true[/code], the user can select the GraphElement.

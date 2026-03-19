@@ -196,7 +196,8 @@
 			<return type="Vector3" />
 			<param index="0" name="local_position" type="Vector3" />
 			<description>
-				Returns the body's velocity at the given relative position, including both translation and rotation.
+				Returns the body's velocity at the given relative position.
+				[param local_position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="integrate_forces">
@@ -231,6 +232,12 @@
 		</member>
 		<member name="center_of_mass_local" type="Vector3" setter="" getter="get_center_of_mass_local">
 			The body's center of mass position in the body's local coordinate system.
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+			The body's collision layer.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+			The body's collision mask.
 		</member>
 		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.

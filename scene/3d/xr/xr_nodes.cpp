@@ -30,11 +30,25 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	// Hide properties that are managed by XRInterface or otherwise not applicable for XRCamera3D.
+	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
 
 void XRCamera3D::_bind_tracker() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -76,6 +90,11 @@ void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	}
 }
 
+void XRCamera3D::_physics_interpolated_changed() {
+	Camera3D::_physics_interpolated_changed();
+	update_configuration_warnings();
+}
+
 PackedStringArray XRCamera3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Camera3D::get_configuration_warnings();
 
@@ -86,6 +105,10 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+		}
 	}
 
 	return warnings;
@@ -196,6 +219,9 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 }
 
 XRCamera3D::XRCamera3D() {
+	// XRCamera3D gets its transform updated every render frame and shouldn't be interpolated.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
+
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -243,6 +269,9 @@ void XRNode3D::_bind_methods() {
 }
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -440,7 +469,14 @@ void XRNode3D::_update_visibility() {
 	}
 }
 
+void XRNode3D::_physics_interpolated_changed() {
+	update_configuration_warnings();
+}
+
 XRNode3D::XRNode3D() {
+	// XRNode3D gets its transform updated every render frame and shouldn't be interpolated.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
+
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -477,6 +513,10 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 
 		if (pose_name == "") {
 			warnings.push_back(RTR("No pose is set."));
+		}
+
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+			warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
 	}
 
@@ -655,9 +695,12 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 				has_camera = true;
 			}
 		}
-
 		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
+		}
+
+		if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
+			warnings.push_back(RTR("Changing the scale on the XROrigin3D node is not supported. Change the World Scale instead."));
 		}
 	}
 
@@ -714,6 +757,12 @@ void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
 		ERR_FAIL_NULL(xr_server);
 
 		xr_server->set_world_origin(get_global_transform());
+
+		if (is_physics_interpolated()) {
+			set_process_internal(true);
+		}
+	} else if (is_physics_interpolated()) {
+		set_process_internal(false);
 	}
 
 	// Check if we need to update our other origin nodes accordingly
@@ -784,8 +833,14 @@ void XROrigin3D::_notification(int p_what) {
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (current && !Engine::get_singleton()->is_editor_hint()) {
+			if (current && !Engine::get_singleton()->is_editor_hint() && !is_physics_interpolated_and_enabled()) {
 				xr_server->set_world_origin(get_global_transform());
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (current && !Engine::get_singleton()->is_editor_hint() && is_physics_interpolated_and_enabled()) {
+				xr_server->set_world_origin(get_global_transform_interpolated());
 			}
 		} break;
 	}
@@ -798,5 +853,11 @@ void XROrigin3D::_notification(int p_what) {
 				interface->notification(p_what);
 			}
 		}
+	}
+}
+
+void XROrigin3D::_physics_interpolated_changed() {
+	if (current && !Engine::get_singleton()->is_editor_hint()) {
+		set_process_internal(is_physics_interpolated());
 	}
 }

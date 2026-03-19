@@ -31,13 +31,14 @@
 #pragma once
 
 #include "core/core_globals.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
 #include <type_traits>
-#include <typeinfo>
+#include <typeinfo> // IWYU pragma: keep // Used in macro.
 
 template <typename T, bool thread_safe = false, uint32_t DEFAULT_PAGE_SIZE = 4096>
 class PagedAllocator {
@@ -145,9 +146,9 @@ public:
 		}
 		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
-		page_size = nearest_power_of_2_templated(p_page_size);
+		page_size = Math::nearest_power_of_2_templated(p_page_size);
 		page_mask = page_size - 1;
-		page_shift = get_shift_from_power_of_2(page_size);
+		page_shift = Math::get_shift_from_power_of_2(page_size);
 		if constexpr (thread_safe) {
 			spin_lock.unlock();
 		}

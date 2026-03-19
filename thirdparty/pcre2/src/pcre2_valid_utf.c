@@ -44,12 +44,11 @@ strings. This file is also #included by the pcre2test program, which uses
 macros to change names from _pcre2_xxx to xxxx, thereby avoiding name clashes
 with the library. In this case, PCRE2_PCRE2TEST is defined. */
 
+
 #ifndef PCRE2_PCRE2TEST           /* We're compiling the library */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "pcre2_internal.h"
 #endif /* PCRE2_PCRE2TEST */
+
 
 
 #ifndef SUPPORT_UNICODE

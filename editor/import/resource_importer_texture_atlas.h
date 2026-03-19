@@ -67,6 +67,4 @@ public:
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) override;
 
 	virtual bool can_import_threaded() const override { return true; }
-
-	ResourceImporterTextureAtlas();
 };

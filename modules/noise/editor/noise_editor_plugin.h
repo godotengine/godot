@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/plugins/editor_plugin.h"
 
 class NoiseEditorPlugin : public EditorPlugin {
@@ -42,5 +40,3 @@ public:
 
 	NoiseEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED

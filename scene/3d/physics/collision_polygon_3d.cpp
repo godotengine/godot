@@ -31,7 +31,9 @@
 #include "collision_polygon_3d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
@@ -41,12 +43,12 @@ void CollisionPolygon3D::_build_polygon() {
 
 	collision_object->shape_owner_clear_shapes(owner_id);
 
-	if (polygon.size() == 0) {
+	if (polygon.is_empty()) {
 		return;
 	}
 
 	Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(polygon);
-	if (decomp.size() == 0) {
+	if (decomp.is_empty()) {
 		return;
 	}
 

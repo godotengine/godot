@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "editor/editor_settings.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export_platform_pc.h"
 #include "scene/resources/image_texture.h"
 
@@ -61,7 +60,7 @@ class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	bool is_elf(const String &p_path) const;
@@ -82,12 +81,12 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformLinuxBSD();
+	virtual void initialize() override;
 };

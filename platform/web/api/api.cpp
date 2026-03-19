@@ -33,6 +33,7 @@
 #include "javascript_bridge_singleton.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 static JavaScriptBridge *javascript_bridge_singleton;
 
@@ -54,7 +55,7 @@ JavaScriptBridge *JavaScriptBridge::get_singleton() {
 }
 
 JavaScriptBridge::JavaScriptBridge() {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "JavaScriptBridge singleton already exist.");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "JavaScriptBridge singleton already exists.");
 	singleton = this;
 }
 

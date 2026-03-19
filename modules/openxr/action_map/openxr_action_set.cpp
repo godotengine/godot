@@ -30,6 +30,8 @@
 
 #include "openxr_action_set.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRActionSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRActionSet::set_localized_name);
 	ClassDB::bind_method(D_METHOD("get_localized_name"), &OpenXRActionSet::get_localized_name);
@@ -42,7 +44,7 @@ void OpenXRActionSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action_count"), &OpenXRActionSet::get_action_count);
 	ClassDB::bind_method(D_METHOD("set_actions", "actions"), &OpenXRActionSet::set_actions);
 	ClassDB::bind_method(D_METHOD("get_actions"), &OpenXRActionSet::get_actions);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction", PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, OpenXRAction::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
 
 	ClassDB::bind_method(D_METHOD("add_action", "action"), &OpenXRActionSet::add_action);
 	ClassDB::bind_method(D_METHOD("remove_action", "action"), &OpenXRActionSet::remove_action);
@@ -60,7 +62,7 @@ Ref<OpenXRActionSet> OpenXRActionSet::new_action_set(const char *p_name, const c
 	return action_set;
 }
 
-void OpenXRActionSet::set_localized_name(const String p_localized_name) {
+void OpenXRActionSet::set_localized_name(const String &p_localized_name) {
 	localized_name = p_localized_name;
 	emit_changed();
 }
@@ -84,7 +86,7 @@ int OpenXRActionSet::get_action_count() const {
 
 void OpenXRActionSet::clear_actions() {
 	// Actions held within our action set should be released and destroyed but just in case they are still used some where else
-	if (actions.size() == 0) {
+	if (actions.is_empty()) {
 		return;
 	}
 
@@ -96,7 +98,7 @@ void OpenXRActionSet::clear_actions() {
 	emit_changed();
 }
 
-void OpenXRActionSet::set_actions(Array p_actions) {
+void OpenXRActionSet::set_actions(const Array &p_actions) {
 	// Any actions not retained in p_actions should be freed automatically, those held within our Array will have be relinked to our action set.
 	clear_actions();
 
@@ -110,7 +112,7 @@ Array OpenXRActionSet::get_actions() const {
 	return actions;
 }
 
-Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
+Ref<OpenXRAction> OpenXRActionSet::get_action(const String &p_name) const {
 	for (int i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		if (action->get_name() == p_name) {
@@ -121,7 +123,7 @@ Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
+void OpenXRActionSet::add_action(const Ref<OpenXRAction> &p_action) {
 	ERR_FAIL_COND(p_action.is_null());
 
 	if (!actions.has(p_action)) {
@@ -136,7 +138,7 @@ void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
 	}
 }
 
-void OpenXRActionSet::remove_action(Ref<OpenXRAction> p_action) {
+void OpenXRActionSet::remove_action(const Ref<OpenXRAction> &p_action) {
 	int idx = actions.find(p_action);
 	if (idx != -1) {
 		actions.remove_at(idx);

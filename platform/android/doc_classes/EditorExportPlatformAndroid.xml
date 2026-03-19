@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="apk_expansion/SALT" type="String" setter="" getter="">
-			Array of random bytes that the licensing Policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
+			Array of random bytes that the licensing policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
 		</member>
 		<member name="apk_expansion/enable" type="bool" setter="" getter="">
 			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
@@ -54,7 +54,14 @@
 		</member>
 		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
 			If [code]true[/code], native libraries are compressed when performing a Gradle build.
-			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
+			[b]Note:[/b] While enabling compression can reduce the size of the binary, it may result in slower application startup because the native libraries must be extracted before use, rather than being loaded directly.
+			If you're distributing your app via the Play Store, it's generally recommended to keep this option [code]false[/code], see [url=https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs]official documentation[/url].
+		</member>
+		<member name="gradle_build/custom_theme_attributes" type="Dictionary" setter="" getter="">
+			A dictionary of custom theme attributes to include in the exported Android project. Each entry defines a theme attribute name and its value, and will be added to the [b]GodotAppMainTheme[/b].
+			For example, the key [code]android:windowSwipeToDismiss[/code] with the value [code]false[/code] is resolved to [code]&lt;item name="android:windowSwipeToDismiss"&gt;false&lt;/item&gt;[/code].
+			[b]Note:[/b] To add a custom attribute to the [b]GodotAppSplashTheme[/b], prefix the attribute name with [code][splash][/code].
+			[b]Note:[/b] Reserved attributes configured via other export options or project settings cannot be overridden by [code]custom_theme_attributes[/code] and are skipped during export.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
@@ -367,6 +374,9 @@
 		<member name="permissions/manage_external_storage" type="bool" setter="" getter="">
 			Allows an application a broad access to external storage in scoped storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE]MANAGE_EXTERNAL_STORAGE[/url].
 		</member>
+		<member name="permissions/manage_media" type="bool" setter="" getter="">
+			Allows an application to modify and delete media files on this device or any connected storage device without user confirmation. Applications must already be granted the [code]READ_EXTERNAL_STORAGE[/code] or [code]MANAGE_EXTERNAL_STORAGE[/code] permissions for this permission to take effect. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_MEDIA]MANAGE_MEDIA[/url].
+		</member>
 		<member name="permissions/master_clear" type="bool" setter="" getter="">
 			See [url=https://developer.android.com/reference/android/Manifest.permission#MASTER_CLEAR]MASTER_CLEAR[/url].
 		</member>
@@ -596,8 +606,15 @@
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
 		</member>
+		<member name="screen/background_color" type="Color" setter="" getter="">
+			The background color used for the root window. By default it's [constant Color.BLACK].
+		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
+		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
-			If [code]true[/code], hides navigation and status bar. See [method DisplayServer.window_set_mode] to toggle it at runtime.
+			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.
 		</member>
 		<member name="screen/support_large" type="bool" setter="" getter="">
 			Indicates whether the application supports larger screen form-factors.
@@ -610,6 +627,10 @@
 		</member>
 		<member name="screen/support_xlarge" type="bool" setter="" getter="">
 			Indicates whether the application supports extra large screen form-factors.
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
 		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.

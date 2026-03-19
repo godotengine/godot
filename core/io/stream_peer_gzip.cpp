@@ -31,6 +31,8 @@
 #include "core/io/stream_peer_gzip.h"
 
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
+
 #include <zlib.h>
 
 void StreamPeerGZIP::_bind_methods() {
@@ -38,9 +40,6 @@ void StreamPeerGZIP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_decompression", "use_deflate", "buffer_size"), &StreamPeerGZIP::start_decompression, DEFVAL(false), DEFVAL(65535));
 	ClassDB::bind_method(D_METHOD("finish"), &StreamPeerGZIP::finish);
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerGZIP::clear);
-}
-
-StreamPeerGZIP::StreamPeerGZIP() {
 }
 
 StreamPeerGZIP::~StreamPeerGZIP() {
@@ -79,7 +78,7 @@ Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size
 	ERR_FAIL_COND_V_MSG(buffer_size <= 0, ERR_INVALID_PARAMETER, "Invalid buffer size. It should be a positive integer.");
 	clear();
 	compressing = p_compress;
-	rb.resize(nearest_shift(buffer_size - 1));
+	rb.resize(Math::nearest_shift(uint32_t(buffer_size - 1)));
 	buffer.resize(1024);
 
 	// Create ctx.
@@ -195,12 +194,12 @@ int StreamPeerGZIP::get_available_bytes() const {
 Error StreamPeerGZIP::finish() {
 	ERR_FAIL_COND_V(!ctx || !compressing, ERR_UNAVAILABLE);
 	// Ensure we have enough space in temporary buffer.
-	if (buffer.size() < 1024) {
-		buffer.resize(1024); // 1024 should be more than enough.
+	if (buffer.size() < get_available_bytes()) {
+		buffer.resize(get_available_bytes()); // get_available_bytes() is what we can store in RingBuffer.
 	}
 	int consumed = 0;
 	int to_write = 0;
-	Error err = _process(buffer.ptrw(), 1024, nullptr, 0, consumed, to_write, true); // compress
+	Error err = _process(buffer.ptrw(), buffer.size(), nullptr, 0, consumed, to_write, true); // compress
 	if (err != OK) {
 		return err;
 	}

@@ -1,0 +1,37 @@
+diff --git a/thirdparty/gamepadmotionhelpers/GamepadMotion.hpp b/thirdparty/gamepadmotionhelpers/GamepadMotion.hpp
+index 02497ac953..7d89f86d7f 100644
+--- a/thirdparty/gamepadmotionhelpers/GamepadMotion.hpp
++++ b/thirdparty/gamepadmotionhelpers/GamepadMotion.hpp
+@@ -810,11 +810,6 @@ namespace GamepadMotionHelpers
+ 		{
+ 			if (MinMaxWindow.NumSamples >= minStillnessSamples && MinMaxWindow.TimeSampled >= minStillnessCorrectionTime)
+ 			{
+-				/*if (TimeSteadyStillness == 0.f)
+-				{
+-					printf("Still!\n");
+-				}/**/
+-
+ 				TimeSteadyStillness = std::min(TimeSteadyStillness + deltaTime, stillnessCalibrationEaseInTime);
+ 				const float calibrationEaseIn = stillnessCalibrationEaseInTime <= 0.f ? 1.f : TimeSteadyStillness / stillnessCalibrationEaseInTime;
+ 
+@@ -973,20 +968,11 @@ namespace GamepadMotionHelpers
+ 		// apply corrections
+ 		if (gyroAccelerationMag > sensorFusionAngularAccelerationThreshold || CalibrationData == nullptr)
+ 		{
+-			/*if (TimeSteadySensorFusion > 0.f)
+-			{
+-				printf("Shaken!\n");
+-			}/**/
+ 			TimeSteadySensorFusion = 0.f;
+ 			//printf("No calibration due to acceleration of %.4f\n", gyroAccelerationMag);
+ 		}
+ 		else
+ 		{
+-			/*if (TimeSteadySensorFusion == 0.f)
+-			{
+-				printf("Steady!\n");
+-			}/**/
+-
+ 			TimeSteadySensorFusion = std::min(TimeSteadySensorFusion + deltaTime, sensorFusionCalibrationEaseInTime);
+ 			const float calibrationEaseIn = sensorFusionCalibrationEaseInTime <= 0.f ? 1.f : TimeSteadySensorFusion / sensorFusionCalibrationEaseInTime;
+ 			const Vec oldGyroBias = Vec(CalibrationData->X, CalibrationData->Y, CalibrationData->Z) / std::max((float)CalibrationData->NumSamples, 1.f);

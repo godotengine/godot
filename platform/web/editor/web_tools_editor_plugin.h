@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/zip_io.h"
 #include "editor/plugins/editor_plugin.h"
 
 class WebToolsEditorPlugin : public EditorPlugin {
@@ -43,11 +42,4 @@ public:
 	static void initialize();
 
 	WebToolsEditorPlugin();
-};
-
-#else
-
-class WebToolsEditorPlugin {
-public:
-	static void initialize() {}
 };

@@ -43,6 +43,8 @@
 class TLSContextMbedTLS;
 
 class CookieContextMbedTLS : public RefCounted {
+	GDSOFTCLASS(CookieContextMbedTLS, RefCounted);
+
 	friend class TLSContextMbedTLS;
 
 protected:
@@ -56,10 +58,12 @@ public:
 	void clear();
 
 	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
+	~CookieContextMbedTLS() override;
 };
 
 class TLSContextMbedTLS : public RefCounted {
+	GDSOFTCLASS(TLSContextMbedTLS, RefCounted);
+
 protected:
 	bool inited = false;
 
@@ -83,5 +87,5 @@ public:
 	mbedtls_ssl_context *get_context();
 
 	TLSContextMbedTLS();
-	~TLSContextMbedTLS();
+	~TLSContextMbedTLS() override;
 };

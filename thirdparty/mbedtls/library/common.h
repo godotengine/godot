@@ -434,4 +434,20 @@ static inline void mbedtls_xor_no_simd(unsigned char *r,
 #    define MBEDTLS_MAYBE_UNUSED
 #endif
 
+/* GCC >= 15 has a warning 'unterminated-string-initialization' which complains if you initialize
+ * a string into an array without space for a terminating NULL character. In some places in the
+ * codebase this behaviour is intended, so we add the macro MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING
+ * to suppress the warning in these places.
+ */
+#if defined(__has_attribute)
+#if __has_attribute(nonstring)
+#define MBEDTLS_HAS_ATTRIBUTE_NONSTRING
+#endif /* __has_attribute(nonstring) */
+#endif /* __has_attribute */
+#if defined(MBEDTLS_HAS_ATTRIBUTE_NONSTRING)
+#define MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING __attribute__((nonstring))
+#else
+#define MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING
+#endif /* MBEDTLS_HAS_ATTRIBUTE_NONSTRING */
+
 #endif /* MBEDTLS_LIBRARY_COMMON_H */

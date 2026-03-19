@@ -32,7 +32,7 @@
 
 #include "core/string/ustring.h"
 
-namespace path {
+namespace Path {
 
 String find_executable(const String &p_name);
 
@@ -58,4 +58,4 @@ String realpath(const String &p_path);
 String relative_to(const String &p_path, const String &p_relative_to);
 
 String get_csharp_project_name();
-} // namespace path
+} // namespace Path

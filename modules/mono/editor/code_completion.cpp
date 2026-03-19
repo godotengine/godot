@@ -31,11 +31,13 @@
 #include "code_completion.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
 
 namespace gdmono {
@@ -51,7 +53,7 @@ void _add_nodes_suggestions(const Node *p_base, const Node *p_node, PackedString
 		return;
 	}
 
-	String path_relative_to_orig = p_base->get_path_to(p_node);
+	String path_relative_to_orig = String(p_base->get_path_to(p_node));
 
 	r_suggestions.push_back(quoted(path_relative_to_orig));
 
@@ -123,7 +125,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		case CompletionKind::NODE_PATHS: {
 			{
 				// Autoloads.
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
 
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;

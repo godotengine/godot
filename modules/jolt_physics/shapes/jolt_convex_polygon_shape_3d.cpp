@@ -33,7 +33,7 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/ConvexHullShape.h"
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 
 JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 	const int vertex_count = (int)vertices.size();
@@ -55,7 +55,7 @@ JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 	}
 
 	const float min_half_extent = _calculate_aabb().get_shortest_axis_size() * 0.5f;
-	const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::get_collision_margin_fraction());
+	const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::collision_margin_fraction);
 
 	const JPH::ConvexHullShapeSettings shape_settings(jolt_vertices, actual_margin);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();

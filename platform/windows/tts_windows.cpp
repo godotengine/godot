@@ -30,6 +30,8 @@
 
 #include "tts_windows.h"
 
+#include "servers/display/display_server.h"
+
 TTS_Windows *TTS_Windows::singleton = nullptr;
 
 void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) {
@@ -39,9 +41,9 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 		uint32_t stream_num = (uint32_t)event.ulStreamNum;
 		if (tts->ids.has(stream_num)) {
 			if (event.eEventId == SPEI_START_INPUT_STREAM) {
-				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_STARTED, tts->ids[stream_num].id);
+				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_STARTED, tts->ids[stream_num].id);
 			} else if (event.eEventId == SPEI_END_INPUT_STREAM) {
-				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_ENDED, tts->ids[stream_num].id);
+				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_ENDED, tts->ids[stream_num].id);
 				tts->ids.erase(stream_num);
 				tts->update_requested = true;
 			} else if (event.eEventId == SPEI_WORD_BOUNDARY) {
@@ -54,7 +56,7 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 					}
 					pos++;
 				}
-				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_BOUNDARY, tts->ids[stream_num].id, pos - tts->ids[stream_num].offset);
+				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_BOUNDARY, tts->ids[stream_num].id, pos - tts->ids[stream_num].offset);
 			}
 		}
 	}
@@ -62,7 +64,7 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 
 void TTS_Windows::process_events() {
 	if (update_requested && !paused && queue.size() > 0 && !is_speaking()) {
-		DisplayServer::TTSUtterance &message = queue.front()->get();
+		TTSUtterance &message = queue.front()->get();
 
 		String text;
 		DWORD flags = SPF_ASYNC | SPF_PURGEBEFORESPEAK | SPF_IS_XML;
@@ -104,7 +106,7 @@ void TTS_Windows::process_events() {
 		ut.id = message.id;
 
 		synth->SetVolume(message.volume);
-		synth->SetRate(10.f * log10(message.rate) / log10(3.f));
+		synth->SetRate(10.f * std::log10(message.rate) / std::log10(3.f));
 		synth->Speak((LPCWSTR)ut.string.get_data(), flags, &stream_number);
 
 		ids[(uint32_t)stream_number] = ut;
@@ -186,18 +188,18 @@ Array TTS_Windows::get_voices() const {
 	return list;
 }
 
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();
 	}
 
 	if (p_text.is_empty()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, p_utterance_id);
 		return;
 	}
 
-	DisplayServer::TTSUtterance message;
+	TTSUtterance message;
 	message.text = p_text;
 	message.voice = p_voice;
 	message.volume = CLAMP(p_volume, 0, 100);
@@ -235,11 +237,11 @@ void TTS_Windows::stop() {
 	synth->GetStatus(&status, nullptr);
 	uint32_t current_stream = (uint32_t)status.ulCurrentStream;
 	if (ids.has(current_stream)) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, ids[current_stream].id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, ids[current_stream].id);
 		ids.erase(current_stream);
 	}
-	for (DisplayServer::TTSUtterance &message : queue) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, message.id);
+	for (TTSUtterance &message : queue) {
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, message.id);
 	}
 	queue.clear();
 	synth->Speak(nullptr, SPF_PURGEBEFORESPEAK, nullptr);

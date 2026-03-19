@@ -1,0 +1,6 @@
+GH-110250
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/grab_focus': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/has_focus': arguments
+
+Optional argument added. Compatibility methods registered.

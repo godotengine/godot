@@ -30,7 +30,17 @@
 
 #pragma once
 
-#include "servers/rendering_server.h"
+#include "core/math/math_defs.h" // real_t
+#include "servers/rendering/rendering_server_enums.h"
+
+class RID;
+struct AABB;
+struct Color;
+struct Transform3D;
+struct Vector3;
+
+template <typename T>
+class Vector;
 
 class RendererParticlesStorage {
 public:
@@ -42,7 +52,7 @@ public:
 	virtual void particles_initialize(RID p_rid) = 0;
 	virtual void particles_free(RID p_rid) = 0;
 
-	virtual void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) = 0;
+	virtual void particles_set_mode(RID p_particles, RSE::ParticlesMode p_mode) = 0;
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
@@ -65,7 +75,7 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
-	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) = 0;
 
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
@@ -78,7 +88,7 @@ public:
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
 
-	virtual void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) = 0;
+	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) = 0;
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) = 0;
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) = 0;
@@ -107,7 +117,7 @@ public:
 	virtual void particles_collision_initialize(RID p_rid) = 0;
 	virtual void particles_collision_free(RID p_rid) = 0;
 
-	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) = 0;
+	virtual void particles_collision_set_collision_type(RID p_particles_collision, RSE::ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
@@ -116,11 +126,12 @@ public:
 	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) = 0;
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
-	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RSE::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const = 0;
 	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) = 0;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const = 0;
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;

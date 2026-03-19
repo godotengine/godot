@@ -100,13 +100,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var exportedMembers = new List<ExportedPropertyMetadata>();
@@ -215,7 +215,11 @@ namespace Godot.SourceGenerators
                     if (propertyDeclarationSyntax.Initializer != null)
                     {
                         var sm = context.Compilation.GetSemanticModel(propertyDeclarationSyntax.Initializer.SyntaxTree);
-                        value = propertyDeclarationSyntax.Initializer.Value.FullQualifiedSyntax(sm);
+                        var initializerValue = propertyDeclarationSyntax.Initializer.Value;
+                        if (!IsStaticallyResolvable(initializerValue, sm))
+                            value = "default";
+                        else
+                            value = propertyDeclarationSyntax.Initializer.Value.FullQualifiedSyntax(sm);
                     }
                     else
                     {
@@ -332,7 +336,11 @@ namespace Godot.SourceGenerators
                 if (initializer != null)
                 {
                     var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
-                    value = initializer.Value.FullQualifiedSyntax(sm);
+                    var initializerValue = initializer.Value;
+                    if (!IsStaticallyResolvable(initializerValue, sm))
+                        value = "default";
+                    else
+                        value = initializer.Value.FullQualifiedSyntax(sm);
                 }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
@@ -416,6 +424,32 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static bool IsStaticallyResolvable(ExpressionSyntax expression, SemanticModel semanticModel)
+        {
+            // Find non-static node in expression
+            foreach (SyntaxNode descendant in expression.DescendantNodesAndSelf())
+            {
+                // Constant nodes are static
+                if (semanticModel.GetConstantValue(descendant).HasValue)
+                {
+                    continue;
+                }
+
+                // Check non-static symbol
+                SymbolInfo symbolInfo = semanticModel.GetSymbolInfo(descendant);
+                if (symbolInfo.Symbol is ISymbol symbol)
+                {
+                    if (symbol.Kind is SymbolKind.Local or SymbolKind.Parameter)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            // No non-static nodes found
+            return true;
         }
 
         private static bool MemberHasNodeType(ITypeSymbol memberType, MarshalType marshalType)

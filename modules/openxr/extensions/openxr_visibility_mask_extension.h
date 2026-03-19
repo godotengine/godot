@@ -31,10 +31,9 @@
 #pragma once
 
 #include "../util.h"
+#include "openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
-#include "openxr_extension_wrapper.h"
-#include "scene/resources/mesh.h"
 
 // The OpenXR visibility mask extension provides a mesh for each eye that
 // can be used as a mask to determine which part of our rendered result
@@ -47,13 +46,18 @@
 // https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_KHR_visibility_mask
 
 class OpenXRVisibilityMaskExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRVisibilityMaskExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRVisibilityMaskExtension *get_singleton();
 
 	OpenXRVisibilityMaskExtension();
 	virtual ~OpenXRVisibilityMaskExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 

@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "cpu_particles_3d.h"
+
+#include "core/object/class_db.h"
+
 void CPUParticles3D::_restart_bind_compat_92089() {
 	restart(false);
 }

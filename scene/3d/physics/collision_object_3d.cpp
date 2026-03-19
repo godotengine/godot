@@ -30,7 +30,13 @@
 
 #include "collision_object_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -386,7 +392,7 @@ void CollisionObject3D::_update_debug_shapes() {
 				ShapeData::ShapeBase &s = shape_bases[i];
 				if (s.shape.is_null() || shapedata.disabled) {
 					if (s.debug_shape.is_valid()) {
-						RS::get_singleton()->free(s.debug_shape);
+						RS::get_singleton()->free_rid(s.debug_shape);
 						s.debug_shape = RID();
 						--debug_shapes_count;
 					}
@@ -418,7 +424,7 @@ void CollisionObject3D::_clear_debug_shapes() {
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.debug_shape.is_valid()) {
-				RS::get_singleton()->free(s.debug_shape);
+				RS::get_singleton()->free_rid(s.debug_shape);
 				s.debug_shape = RID();
 				if (s.shape.is_valid()) {
 					s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_update_shape_data));
@@ -495,7 +501,7 @@ void CollisionObject3D::_bind_methods() {
 	GDVIRTUAL_BIND(_mouse_enter);
 	GDVIRTUAL_BIND(_mouse_exit);
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "event_position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static()), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "event_position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
@@ -519,7 +525,7 @@ uint32_t CollisionObject3D::create_shape_owner(Object *p_owner) {
 	ShapeData sd;
 	uint32_t id;
 
-	if (shapes.size() == 0) {
+	if (shapes.is_empty()) {
 		id = 0;
 	} else {
 		id = shapes.back()->key() + 1;
@@ -607,9 +613,9 @@ Object *CollisionObject3D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape) {
+void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape3D> rp_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	ERR_FAIL_COND(p_shape.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_shape, rp_shape);
 
 	ShapeData &sd = shapes[p_owner];
 	ShapeData::ShapeBase s;
@@ -664,7 +670,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	}
 
 	if (s.debug_shape.is_valid()) {
-		RS::get_singleton()->free(s.debug_shape);
+		RS::get_singleton()->free_rid(s.debug_shape);
 		if (s.shape.is_valid()) {
 			s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_shape_changed));
 		}
@@ -713,6 +719,7 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 	rid = p_rid;
 	area = p_area;
 	set_notify_transform(true);
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_3D);
 
 	if (p_area) {
 		PhysicsServer3D::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
@@ -746,6 +753,8 @@ PackedStringArray CollisionObject3D::get_configuration_warnings() const {
 }
 
 CollisionObject3D::CollisionObject3D() {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_3D);
+
 	set_notify_transform(true);
 	//owner=
 
@@ -754,5 +763,5 @@ CollisionObject3D::CollisionObject3D() {
 
 CollisionObject3D::~CollisionObject3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(rid);
+	PhysicsServer3D::get_singleton()->free_rid(rid);
 }

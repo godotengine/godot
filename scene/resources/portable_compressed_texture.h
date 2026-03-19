@@ -53,6 +53,7 @@ public:
 		COMPRESSION_MODE_S3TC,
 		COMPRESSION_MODE_ETC2,
 		COMPRESSION_MODE_BPTC,
+		COMPRESSION_MODE_ASTC,
 	};
 
 private:
@@ -70,6 +71,8 @@ private:
 
 	bool image_stored = false;
 
+	Image::BasisUniversalPackerParams basisu_params;
+
 protected:
 	Vector<uint8_t> _get_data() const;
 	void _set_data(const Vector<uint8_t> &p_data);
@@ -80,7 +83,7 @@ public:
 	CompressionMode get_compression_mode() const;
 	void create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map = false, float p_lossy_quality = 0.8);
 
-	Image::Format get_format() const;
+	virtual Image::Format get_format() const override;
 
 	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
@@ -105,10 +108,11 @@ public:
 	void set_keep_compressed_buffer(bool p_keep);
 	bool is_keeping_compressed_buffer() const;
 
+	void set_basisu_compressor_params(int p_uastc_level, float p_rdo_quality_loss);
+
 	static void set_keep_all_compressed_buffers(bool p_keep);
 	static bool is_keeping_all_compressed_buffers();
 
-	PortableCompressedTexture2D();
 	~PortableCompressedTexture2D();
 };
 

@@ -71,7 +71,7 @@ public:
 	static Animation::InterpolationType gltf_to_godot_interpolation(Interpolation p_gltf_interpolation);
 
 	String get_original_name();
-	void set_original_name(String p_name);
+	void set_original_name(const String &p_name);
 
 	bool get_loop() const;
 	void set_loop(bool p_val);

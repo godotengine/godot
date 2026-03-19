@@ -30,22 +30,14 @@
 
 #pragma once
 
-#include "crash_handler_windows.h"
-#include "joypad_windows.h"
-#include "key_mapping_windows.h"
-#include "tts_windows.h"
-
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/io/image.h"
-#include "core/os/os.h"
-#include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio_server.h"
-#include "servers/display_server.h"
+#include "core/os/process_id.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/rb_map.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#include "servers/rendering_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -60,13 +52,10 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
-#include "native_menu_windows.h"
+#include <windows.h>
 
 #include <io.h>
-#include <stdio.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <shobjidl.h>
 #include <windowsx.h>
 
 // WinTab API
@@ -161,7 +150,7 @@ enum PreferredAppMode {
 	APPMODE_MAX = 4
 };
 
-typedef const char *(CDECL *WineGetVersionPtr)(void);
+typedef const char *(CDECL *WineGetVersionPtr)();
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
@@ -171,165 +160,6 @@ typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
 typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
 typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
 typedef void(WINAPI *FlushMenuThemesPtr)();
-
-// Windows Ink API
-#ifndef POINTER_STRUCTURES
-
-#define POINTER_STRUCTURES
-
-typedef DWORD POINTER_INPUT_TYPE;
-typedef UINT32 POINTER_FLAGS;
-typedef UINT32 PEN_FLAGS;
-typedef UINT32 PEN_MASK;
-
-#ifndef PEN_FLAG_INVERTED
-#define PEN_FLAG_INVERTED 0x00000002
-#endif
-
-#ifndef PEN_FLAG_ERASER
-#define PEN_FLAG_ERASER 0x00000004
-#endif
-
-#ifndef PEN_MASK_PRESSURE
-#define PEN_MASK_PRESSURE 0x00000001
-#endif
-
-#ifndef PEN_MASK_TILT_X
-#define PEN_MASK_TILT_X 0x00000004
-#endif
-
-#ifndef PEN_MASK_TILT_Y
-#define PEN_MASK_TILT_Y 0x00000008
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
-#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_SECONDBUTTON
-#define POINTER_MESSAGE_FLAG_SECONDBUTTON 0x00000020
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_THIRDBUTTON
-#define POINTER_MESSAGE_FLAG_THIRDBUTTON 0x00000040
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FOURTHBUTTON
-#define POINTER_MESSAGE_FLAG_FOURTHBUTTON 0x00000080
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FIFTHBUTTON
-#define POINTER_MESSAGE_FLAG_FIFTHBUTTON 0x00000100
-#endif
-
-#ifndef IS_POINTER_FLAG_SET_WPARAM
-#define IS_POINTER_FLAG_SET_WPARAM(wParam, flag) (((DWORD)HIWORD(wParam) & (flag)) == (flag))
-#endif
-
-#ifndef IS_POINTER_FIRSTBUTTON_WPARAM
-#define IS_POINTER_FIRSTBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON)
-#endif
-
-#ifndef IS_POINTER_SECONDBUTTON_WPARAM
-#define IS_POINTER_SECONDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_SECONDBUTTON)
-#endif
-
-#ifndef IS_POINTER_THIRDBUTTON_WPARAM
-#define IS_POINTER_THIRDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_THIRDBUTTON)
-#endif
-
-#ifndef IS_POINTER_FOURTHBUTTON_WPARAM
-#define IS_POINTER_FOURTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FOURTHBUTTON)
-#endif
-
-#ifndef IS_POINTER_FIFTHBUTTON_WPARAM
-#define IS_POINTER_FIFTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIFTHBUTTON)
-#endif
-
-#ifndef GET_POINTERID_WPARAM
-#define GET_POINTERID_WPARAM(wParam) (LOWORD(wParam))
-#endif
-
-#if WINVER < 0x0602
-enum tagPOINTER_INPUT_TYPE {
-	PT_POINTER = 0x00000001,
-	PT_TOUCH = 0x00000002,
-	PT_PEN = 0x00000003,
-	PT_MOUSE = 0x00000004,
-	PT_TOUCHPAD = 0x00000005
-};
-
-typedef enum tagPOINTER_BUTTON_CHANGE_TYPE {
-	POINTER_CHANGE_NONE,
-	POINTER_CHANGE_FIRSTBUTTON_DOWN,
-	POINTER_CHANGE_FIRSTBUTTON_UP,
-	POINTER_CHANGE_SECONDBUTTON_DOWN,
-	POINTER_CHANGE_SECONDBUTTON_UP,
-	POINTER_CHANGE_THIRDBUTTON_DOWN,
-	POINTER_CHANGE_THIRDBUTTON_UP,
-	POINTER_CHANGE_FOURTHBUTTON_DOWN,
-	POINTER_CHANGE_FOURTHBUTTON_UP,
-	POINTER_CHANGE_FIFTHBUTTON_DOWN,
-	POINTER_CHANGE_FIFTHBUTTON_UP,
-} POINTER_BUTTON_CHANGE_TYPE;
-
-typedef struct tagPOINTER_INFO {
-	POINTER_INPUT_TYPE pointerType;
-	UINT32 pointerId;
-	UINT32 frameId;
-	POINTER_FLAGS pointerFlags;
-	HANDLE sourceDevice;
-	HWND hwndTarget;
-	POINT ptPixelLocation;
-	POINT ptHimetricLocation;
-	POINT ptPixelLocationRaw;
-	POINT ptHimetricLocationRaw;
-	DWORD dwTime;
-	UINT32 historyCount;
-	INT32 InputData;
-	DWORD dwKeyStates;
-	UINT64 PerformanceCount;
-	POINTER_BUTTON_CHANGE_TYPE ButtonChangeType;
-} POINTER_INFO;
-
-typedef struct tagPOINTER_PEN_INFO {
-	POINTER_INFO pointerInfo;
-	PEN_FLAGS penFlags;
-	PEN_MASK penMask;
-	UINT32 pressure;
-	UINT32 rotation;
-	INT32 tiltX;
-	INT32 tiltY;
-} POINTER_PEN_INFO;
-#endif
-
-#endif //POINTER_STRUCTURES
-
-#ifndef WM_POINTERUPDATE
-#define WM_POINTERUPDATE 0x0245
-#endif
-
-#ifndef WM_POINTERENTER
-#define WM_POINTERENTER 0x0249
-#endif
-
-#ifndef WM_POINTERLEAVE
-#define WM_POINTERLEAVE 0x024A
-#endif
-
-#ifndef WM_POINTERDOWN
-#define WM_POINTERDOWN 0x0246
-#endif
-
-#ifndef WM_POINTERUP
-#define WM_POINTERUP 0x0247
-#endif
-
-typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
-typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
-typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
-typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
-typedef HRESULT(WINAPI *SHLoadIndirectStringPtr)(PCWSTR pszSource, PWSTR pszOutBuf, UINT cchOutBuf, void **ppvReserved);
 
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
@@ -349,24 +179,18 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
-typedef enum _SHC_PROCESS_DPI_AWARENESS {
-	SHC_PROCESS_DPI_UNAWARE = 0,
-	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
-	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
-} SHC_PROCESS_DPI_AWARENESS;
-
-#ifndef WS_EX_NOREDIRECTIONBITMAP
-#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
-#endif
-
 class DropTargetWindows;
+class NativeMenuWindows;
+class TTS_Windows;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011
 #endif
 
+class JoypadSDL;
+
 class DisplayServerWindows : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
 
 	friend class DropTargetWindows;
 
@@ -388,18 +212,6 @@ class DisplayServerWindows : public DisplayServer {
 	static WTInfoPtr wintab_WTInfo;
 	static WTPacketPtr wintab_WTPacket;
 	static WTEnablePtr wintab_WTEnable;
-
-	// Windows Ink API
-	static bool winink_available;
-	static GetPointerTypePtr win8p_GetPointerType;
-	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
-
-	// DPI conversion API
-	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
-	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
-
-	// Shell API
-	static SHLoadIndirectStringPtr load_indirect_string;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
@@ -426,14 +238,14 @@ class DisplayServerWindows : public DisplayServer {
 	};
 
 	struct KeyEvent {
-		WindowID window_id;
+		DisplayServerEnums::WindowID window_id;
 		bool alt, shift, control, meta, altgr;
 		UINT uMsg;
 		WPARAM wParam;
 		LPARAM lParam;
 	};
 
-	WindowID window_mouseover_id = INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID window_mouseover_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
@@ -454,20 +266,30 @@ class DisplayServerWindows : public DisplayServer {
 
 	RBMap<int, Vector2> touch_state;
 
+	Vector<BYTE> icon_buffer_big;
+	HICON icon_big = nullptr;
+	Vector<BYTE> icon_buffer_small;
+	HICON icon_small = nullptr;
+
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
 	bool app_focused = false;
 	bool keep_screen_on = false;
+	bool get_object_received = false;
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
+	ITaskbarList3 *taskbar = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
+		DisplayServerEnums::WindowID id;
 
 		Vector<Vector2> mpath;
+		DisplayServerEnums::ProgressState progress_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
+		float progress_value = 0.0;
 
 		bool create_completed = false;
 		bool pre_fs_valid = false;
@@ -479,6 +301,8 @@ class DisplayServerWindows : public DisplayServer {
 		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool window_focused = false;
 		int activate_state = 0;
 		bool was_maximized_pre_fs = false;
@@ -488,7 +312,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
-		bool context_created = false;
+		bool rendering_context_window_created = false;
+		bool gl_native_window_created = false;
+		bool gl_angle_window_created = false;
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -517,6 +343,7 @@ class DisplayServerWindows : public DisplayServer {
 		Size2 min_size;
 		Size2 max_size;
 		int width = 0, height = 0;
+		int width_with_decorations = 0, height_with_decorations = 0;
 
 		Size2 window_rect;
 		Point2 last_pos;
@@ -541,29 +368,48 @@ class DisplayServerWindows : public DisplayServer {
 		// OLE API
 		DropTargetWindows *drop_target = nullptr;
 
-		WindowID transient_parent = INVALID_WINDOW_ID;
-		HashSet<WindowID> transient_children;
+		DisplayServerEnums::WindowID transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
+		HashSet<DisplayServerEnums::WindowID> transient_children;
 
 		bool is_popup = false;
 		Rect2i parent_safe_rect;
 
+		// HDR
+		bool hdr_output_requested = false;
+		float hdr_output_reference_luminance = -1.0f;
+		float hdr_output_max_luminance = -1.0f;
+
 		bool initialized = false;
 
-		HWND parent_hwnd = 0;
+		HWND parent_hwnd = nullptr;
+
+		bool no_redirection_bitmap = false;
 	};
 
-	JoypadWindows *joypad = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	HHOOK mouse_monitor = nullptr;
-	List<WindowID> popup_list;
+	List<DisplayServerEnums::WindowID> popup_list;
 	uint64_t time_since_popup = 0;
-	Ref<Image> icon;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd);
-	WindowID window_id_counter = MAIN_WINDOW_ID;
-	RBMap<WindowID, WindowData> windows;
+	Error _create_window(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
+	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
 
-	WindowID last_focused_window = INVALID_WINDOW_ID;
-	WindowID last_mouse_button_down_window = INVALID_WINDOW_ID;
+#ifdef RD_ENABLED
+	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);
+	void _destroy_rendering_context_window(DisplayServerEnums::WindowID p_window_id);
+#endif
+
+#ifdef GLES3_ENABLED
+	Error _create_gl_window(DisplayServerEnums::WindowID p_window_id);
+#endif
+
+	DisplayServerEnums::WindowID window_id_counter = DisplayServerEnums::MAIN_WINDOW_ID;
+	RBMap<DisplayServerEnums::WindowID, WindowData> windows;
+
+	DisplayServerEnums::WindowID last_focused_window = DisplayServerEnums::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID last_mouse_button_down_window = DisplayServerEnums::INVALID_WINDOW_ID;
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -571,13 +417,15 @@ class DisplayServerWindows : public DisplayServer {
 	struct IndicatorData {
 		RID menu_rid;
 		Callable callback;
+		Vector<BYTE> icon_buffer;
+		HICON icon = nullptr;
 	};
 
-	IndicatorID indicator_id_counter = 0;
-	HashMap<IndicatorID, IndicatorData> indicators;
+	DisplayServerEnums::IndicatorID indicator_id_counter = 0;
+	HashMap<DisplayServerEnums::IndicatorID, IndicatorData> indicators;
 
 	struct FileDialogData {
-		HWND hwnd_owner = 0;
+		HWND hwnd_owner = nullptr;
 		Rect2i wrect;
 		String appid;
 		String title;
@@ -585,10 +433,10 @@ class DisplayServerWindows : public DisplayServer {
 		String root;
 		String filename;
 		bool show_hidden = false;
-		DisplayServer::FileDialogMode mode = FileDialogMode::FILE_DIALOG_MODE_OPEN_ANY;
+		DisplayServerEnums::FileDialogMode mode = DisplayServerEnums::FileDialogMode::FILE_DIALOG_MODE_OPEN_ANY;
 		Vector<String> filters;
 		TypedArray<Dictionary> options;
-		WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		Callable callback;
 		bool options_in_cb = false;
 		Thread listener_thread;
@@ -616,12 +464,12 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, LONG> pointer_down_time;
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
-	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
+	void _send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_no_redirection_bitmap, DWORD &r_style, DWORD &r_style_ex);
 
-	MouseMode mouse_mode;
-	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	DisplayServerEnums::MouseMode mouse_mode;
+	DisplayServerEnums::MouseMode mouse_mode_base = DisplayServerEnums::MOUSE_MODE_VISIBLE;
+	DisplayServerEnums::MouseMode mouse_mode_override = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;
 	void _mouse_update_mode();
 	int restore_mouse_trails = 0;
@@ -634,27 +482,28 @@ class DisplayServerWindows : public DisplayServer {
 	HBRUSH window_bkg_brush = nullptr;
 	uint32_t window_bkg_brush_color = 0;
 
-	HCURSOR cursors[CURSOR_MAX] = { nullptr };
-	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
-	RBMap<CursorShape, Vector<Variant>> cursors_cache;
+	HCURSOR cursors[DisplayServerEnums::CURSOR_MAX] = { nullptr };
+	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CursorShape::CURSOR_ARROW;
+	RBMap<DisplayServerEnums::CursorShape, Vector<Variant>> cursors_cache;
 
 	Callable system_theme_changed;
 
-	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
-	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
+	void _drag_event(DisplayServerEnums::WindowID p_window, float p_x, float p_y, int idx);
+	void _touch_event(DisplayServerEnums::WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
-	bool _is_always_on_top_recursive(WindowID p_window) const;
+	bool _is_always_on_top_recursive(DisplayServerEnums::WindowID p_window) const;
 
-	void _update_window_style(WindowID p_window, bool p_repaint = true);
-	void _update_window_mouse_passthrough(WindowID p_window);
+	void _update_window_style(DisplayServerEnums::WindowID p_window, bool p_repaint = true);
+	void _update_window_mouse_passthrough(DisplayServerEnums::WindowID p_window);
 
-	void _update_real_mouse_position(WindowID p_window);
+	void _update_real_mouse_position(DisplayServerEnums::WindowID p_window);
 
-	void _set_mouse_mode_impl(MouseMode p_mode);
-	WindowID _get_focused_window_or_popup() const;
-	void _register_raw_input_devices(WindowID p_target_window);
+	void _set_mouse_mode_impl(DisplayServerEnums::MouseMode p_mode);
+	DisplayServerEnums::WindowID _get_focused_window_or_popup() const;
+	void _register_raw_input_devices(DisplayServerEnums::WindowID p_target_window);
+	bool _has_moving_window() const;
 
-	void _process_activate_event(WindowID p_window_id);
+	void _process_activate_event(DisplayServerEnums::WindowID p_window_id);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
@@ -662,6 +511,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
+
+	Vector2i _get_screen_expand_offset(int p_screen) const;
 
 	enum class WinKeyModifierMask {
 		ALT_GR = (1 << 1),
@@ -672,36 +523,51 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	BitField<WinKeyModifierMask> _get_mods() const;
 
-	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id);
 
 	String _get_keyboard_layout_display_name(const String &p_klid) const;
 	String _get_klid(HKL p_hkl) const;
 
 	struct EmbeddedProcessData {
-		HWND window_handle = 0;
-		HWND parent_window_handle = 0;
+		HWND window_handle = nullptr;
+		HWND parent_window_handle = nullptr;
 		bool is_visible = false;
 	};
-	HashMap<OS::ProcessID, EmbeddedProcessData *> embedded_processes;
+	HashMap<ProcessID, EmbeddedProcessData *> embedded_processes;
 
-	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
+	HWND _find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd);
+
+	void initialize_tts() const;
+
+	struct ScreenHdrData {
+		bool hdr_supported = false;
+		float min_luminance = 0.0f;
+		float max_luminance = 0.0f;
+		float max_average_luminance = 0.0f;
+		float sdr_white_level = 0.0f;
+	};
+	AHashMap<int, ScreenHdrData> hdr_output_cache;
+
+	ScreenHdrData _get_screen_hdr_data(int p_screen) const;
+	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
+	void _update_hdr_output_for_tracked_windows();
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
-	void popup_open(WindowID p_window);
-	void popup_close(WindowID p_window);
+	void popup_open(DisplayServerEnums::WindowID p_window);
+	void popup_close(DisplayServerEnums::WindowID p_window);
 
-	virtual bool has_feature(Feature p_feature) const override;
+	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
 	virtual String get_name() const override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -712,15 +578,15 @@ public:
 	virtual Color get_base_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
 
 	virtual void beep() const override;
 
-	virtual void mouse_set_mode(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode() const override;
-	virtual void mouse_set_mode_override(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode(DisplayServerEnums::MouseMode p_mode) override;
+	virtual DisplayServerEnums::MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(DisplayServerEnums::MouseMode p_mode) override;
+	virtual DisplayServerEnums::MouseMode mouse_get_mode_override() const override;
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
@@ -737,109 +603,132 @@ public:
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
 	virtual int get_keyboard_focus_screen() const override;
-	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Point2i screen_get_position(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Size2i screen_get_size(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Rect2i screen_get_usable_rect(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
-	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override; //disable screensaver
 	virtual bool screen_is_kept_on() const override;
 
-	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
+	virtual Vector<DisplayServerEnums::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
-	virtual void show_window(WindowID p_window) override;
-	virtual void delete_sub_window(WindowID p_window) override;
+	virtual DisplayServerEnums::WindowID create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, DisplayServerEnums::WindowID p_transient_parent = DisplayServerEnums::INVALID_WINDOW_ID) override;
+	virtual void show_window(DisplayServerEnums::WindowID p_window) override;
+	virtual void delete_sub_window(DisplayServerEnums::WindowID p_window) override;
 
-	virtual WindowID window_get_active_popup() const override;
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
-	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
+	virtual DisplayServerEnums::WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(DisplayServerEnums::WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(DisplayServerEnums::WindowID p_window) const override;
 
-	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual int64_t window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+	virtual DisplayServerEnums::WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
-	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
+	virtual void window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual ObjectID window_get_attached_instance_id(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServerEnums::WindowID p_window_id) override;
 
-	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_drop_files_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_title_size(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual int window_get_current_screen(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual void window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Point2i window_get_position(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual void window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
-	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
-	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive) override;
+	virtual void window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) override;
+	virtual void window_set_exclusive(DisplayServerEnums::WindowID p_window, bool p_exclusive) override;
 
-	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_max_size(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_min_size(const Size2i p_size, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_min_size(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_size(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual bool window_get_flag(DisplayServerEnums::WindowFlags p_flag, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_request_attention(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_value(float p_value, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_taskbar_progress_state(DisplayServerEnums::ProgressState p_state, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_move_to_foreground(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual WindowID get_focused_window() const override;
+	virtual DisplayServerEnums::WindowID get_focused_window() const override;
 
-	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual bool window_can_draw(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual bool can_any_window_draw() const override;
 
-	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
-	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+	virtual void window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual DisplayServerEnums::VSyncMode window_get_vsync_mode(DisplayServerEnums::WindowID p_vsync_mode) const override;
 
-	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
-	virtual void cursor_set_shape(CursorShape p_shape) override;
-	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual bool window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_start_drag(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
+	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
+	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual bool get_swap_cancel_ok() override;
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
-	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
-	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
-	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
-	virtual OS::ProcessID get_focused_process_id() override;
+	virtual void enable_for_stealing_focus(ProcessID pid) override;
+	virtual Error embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(ProcessID p_pid) override;
+	virtual Error remove_embedded_process(ProcessID p_pid) override;
+	virtual ProcessID get_focused_process_id() override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
@@ -868,22 +757,22 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
-	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
-	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_rid) override;
-	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
-	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
-	virtual void delete_status_indicator(IndicatorID p_id) override;
+	virtual DisplayServerEnums::IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(DisplayServerEnums::IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_tooltip(DisplayServerEnums::IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(DisplayServerEnums::IndicatorID p_id, const RID &p_rid) override;
+	virtual void status_indicator_set_callback(DisplayServerEnums::IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(DisplayServerEnums::IndicatorID p_id) const override;
+	virtual void delete_status_indicator(DisplayServerEnums::IndicatorID p_id) override;
 
-	virtual void set_context(Context p_context) override;
+	virtual void set_context(DisplayServerEnums::Context p_context) override;
 
 	virtual bool is_window_transparency_available() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_windows_driver();
 
-	DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
+	DisplayServerWindows(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerWindows();
 };

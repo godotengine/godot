@@ -91,15 +91,15 @@ CylinderShape::CylinderShape(const CylinderShapeSettings &inSettings, ShapeResul
 	ConvexShape(EShapeSubType::Cylinder, inSettings, outResult),
 	mHalfHeight(inSettings.mHalfHeight),
 	mRadius(inSettings.mRadius),
-	mConvexRadius(inSettings.mConvexRadius)
+	mConvexRadius(min(inSettings.mConvexRadius, min(inSettings.mHalfHeight, inSettings.mRadius)))
 {
-	if (inSettings.mHalfHeight < inSettings.mConvexRadius)
+	if (inSettings.mHalfHeight < 0.0f)
 	{
 		outResult.SetError("Invalid height");
 		return;
 	}
 
-	if (inSettings.mRadius < inSettings.mConvexRadius)
+	if (inSettings.mRadius < 0.0f)
 	{
 		outResult.SetError("Invalid radius");
 		return;
@@ -118,10 +118,10 @@ CylinderShape::CylinderShape(float inHalfHeight, float inRadius, float inConvexR
 	ConvexShape(EShapeSubType::Cylinder, inMaterial),
 	mHalfHeight(inHalfHeight),
 	mRadius(inRadius),
-	mConvexRadius(inConvexRadius)
+	mConvexRadius(min(inConvexRadius, min(inHalfHeight, inRadius)))
 {
-	JPH_ASSERT(inHalfHeight >= inConvexRadius);
-	JPH_ASSERT(inRadius >= inConvexRadius);
+	JPH_ASSERT(inHalfHeight >= 0.0f);
+	JPH_ASSERT(inRadius >= 0.0f);
 	JPH_ASSERT(inConvexRadius >= 0.0f);
 }
 
@@ -200,13 +200,14 @@ void CylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg in
 	float scaled_radius = scale_xz * mRadius;
 
 	float x = inDirection.GetX(), y = inDirection.GetY(), z = inDirection.GetZ();
-	float o = sqrt(Square(x) + Square(z));
+	float xz_sq = Square(x) + Square(z);
+	float y_sq = Square(y);
 
-	// If o / |y| > scaled_radius / scaled_half_height, we're hitting the side
-	if (o * scaled_half_height > scaled_radius * abs(y))
+	// Check which component is bigger
+	if (xz_sq > y_sq)
 	{
 		// Hitting side
-		float f = -scaled_radius / o;
+		float f = -scaled_radius / sqrt(xz_sq);
 		float vx = x * f;
 		float vz = z * f;
 		outVertices.push_back(inCenterOfMassTransform * Vec3(vx, scaled_half_height, vz));
@@ -215,8 +216,21 @@ void CylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg in
 	else
 	{
 		// Hitting top or bottom
+
+		// When the inDirection is more than 5 degrees from vertical, align the vertices so that 1 of the vertices
+		// points towards inDirection in the XZ plane. This ensures that we always have a vertex towards max penetration depth.
+		Mat44 transform = inCenterOfMassTransform;
+		if (xz_sq > 0.00765427f * y_sq)
+		{
+			Vec4 base_x = Vec4(x, 0, z, 0) / sqrt(xz_sq);
+			Vec4 base_z = base_x.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W>() * Vec4(-1, 0, 1, 0);
+			transform = transform * Mat44(base_x, Vec4(0, 1, 0, 0), base_z, Vec4(0, 0, 0, 1));
+		}
+
+		// Adjust for scale and height
 		Vec3 multiplier = y < 0.0f? Vec3(scaled_radius, scaled_half_height, scaled_radius) : Vec3(-scaled_radius, -scaled_half_height, scaled_radius);
-		Mat44 transform = inCenterOfMassTransform.PreScaled(multiplier);
+		transform = transform.PreScaled(multiplier);
+
 		for (const Vec3 &v : cCylinderTopFace)
 			outVertices.push_back(transform * v);
 	}

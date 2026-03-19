@@ -19,6 +19,8 @@
 *   that then do not depend on resource bundle code and display name data.
 */
 
+#include <string_view>
+
 #include "unicode/utypes.h"
 #include "unicode/brkiter.h"
 #include "unicode/locid.h"
@@ -64,7 +66,7 @@ Locale::getDisplayLanguage(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayLanguage(fullName, displayLocale.fullName,
+    length=uloc_getDisplayLanguage(getName(), displayLocale.getName(),
                                    buffer, result.getCapacity(),
                                    &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -76,7 +78,7 @@ Locale::getDisplayLanguage(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayLanguage(fullName, displayLocale.fullName,
+        length=uloc_getDisplayLanguage(getName(), displayLocale.getName(),
                                        buffer, result.getCapacity(),
                                        &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -104,7 +106,7 @@ Locale::getDisplayScript(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayScript(fullName, displayLocale.fullName,
+    length=uloc_getDisplayScript(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -116,7 +118,7 @@ Locale::getDisplayScript(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayScript(fullName, displayLocale.fullName,
+        length=uloc_getDisplayScript(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -144,7 +146,7 @@ Locale::getDisplayCountry(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayCountry(fullName, displayLocale.fullName,
+    length=uloc_getDisplayCountry(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -156,7 +158,7 @@ Locale::getDisplayCountry(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayCountry(fullName, displayLocale.fullName,
+        length=uloc_getDisplayCountry(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -184,7 +186,7 @@ Locale::getDisplayVariant(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayVariant(fullName, displayLocale.fullName,
+    length=uloc_getDisplayVariant(getName(), displayLocale.getName(),
                                   buffer, result.getCapacity(),
                                   &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -196,7 +198,7 @@ Locale::getDisplayVariant(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayVariant(fullName, displayLocale.fullName,
+        length=uloc_getDisplayVariant(getName(), displayLocale.getName(),
                                       buffer, result.getCapacity(),
                                       &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -224,7 +226,7 @@ Locale::getDisplayName(const Locale &displayLocale,
         return result;
     }
 
-    length=uloc_getDisplayName(fullName, displayLocale.fullName,
+    length=uloc_getDisplayName(getName(), displayLocale.getName(),
                                buffer, result.getCapacity(),
                                &errorCode);
     result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -236,7 +238,7 @@ Locale::getDisplayName(const Locale &displayLocale,
             return result;
         }
         errorCode=U_ZERO_ERROR;
-        length=uloc_getDisplayName(fullName, displayLocale.fullName,
+        length=uloc_getDisplayName(getName(), displayLocale.getName(),
                                    buffer, result.getCapacity(),
                                    &errorCode);
         result.releaseBuffer(U_SUCCESS(errorCode) ? length : 0);
@@ -359,7 +361,7 @@ _getStringOrCopyKey(const char *path, const char *locale,
     return u_terminateUChars(dest, destCapacity, length, &errorCode);
 }
 
-using UDisplayNameGetter = icu::CharString(const char*, UErrorCode&);
+using UDisplayNameGetter = icu::CharString(std::string_view, UErrorCode&);
 
 int32_t
 _getDisplayNameForComponent(const char *locale,
@@ -375,6 +377,10 @@ _getDisplayNameForComponent(const char *locale,
     if(destCapacity<0 || (destCapacity>0 && dest==nullptr)) {
         errorCode = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
+    }
+
+    if (locale == nullptr) {
+        locale = uloc_getDefault();
     }
 
     localStatus = U_ZERO_ERROR;

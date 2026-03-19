@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
 
 class RID_AllocBase;
@@ -69,5 +70,8 @@ public:
 	}
 	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
 
-	_ALWAYS_INLINE_ RID() {}
+	uint32_t hash() const { return HashMapHasherDefault::hash(_id); }
 };
+
+template <>
+struct is_zero_constructible<RID> : std::true_type {};

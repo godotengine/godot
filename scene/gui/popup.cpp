@@ -30,12 +30,17 @@
 
 #include "popup.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
-#endif
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
+#endif
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
@@ -78,6 +83,8 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (is_visible()) {
 					_initialize_visible_parents();
+					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				} else {
 					_deinitialize_visible_parents();
 					if (hide_reason == HIDE_REASON_NONE) {
@@ -85,15 +92,6 @@ void Popup::_notification(int p_what) {
 					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
-				}
-			}
-		} break;
-
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (!is_in_edited_scene_root()) {
-				if (has_focus()) {
-					popped_up = true;
-					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -148,6 +146,9 @@ void Popup::_post_popup() {
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (
 			p_property.name == "transient" ||
 			p_property.name == "exclusive" ||
@@ -166,6 +167,11 @@ Rect2i Popup::_popup_adjust_rect() const {
 	}
 
 	Rect2i current(get_position(), get_size());
+
+	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
+		// We're fine as is, the Display Server will take care of that for us.
+		return current;
+	}
 
 	if (current.position.x + current.size.x > parent_rect.position.x + parent_rect.size.x) {
 		current.position.x = parent_rect.position.x + parent_rect.size.x - current.size.x;
@@ -218,7 +224,10 @@ Popup::Popup() {
 	set_transient(true);
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
+	set_flag(FLAG_MINIMIZE_DISABLED, true);
+	set_flag(FLAG_MAXIMIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
+	set_flag(FLAG_POPUP_WM_HINT, true);
 }
 
 Popup::~Popup() {
@@ -228,7 +237,7 @@ Popup::~Popup() {
 PackedStringArray PopupPanel::get_configuration_warnings() const {
 	PackedStringArray warnings = Popup::get_configuration_warnings();
 
-	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET("display/window/subwindows/embed_subwindows")) {
+	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET_CACHED(bool, "display/window/subwindows/embed_subwindows")) {
 		Ref<StyleBoxFlat> sb = theme_cache.panel_style;
 		if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
 			warnings.push_back(RTR("The current theme style has shadows and/or rounded corners for popups, but those won't display correctly if \"display/window/per_pixel_transparency/allowed\" isn't enabled in the Project Settings, nor if it isn't supported."));
@@ -299,7 +308,7 @@ Rect2i PopupPanel::_popup_adjust_rect() const {
 	_update_child_rects();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(ABS(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(-panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}
@@ -329,14 +338,14 @@ void PopupPanel::_update_shadow_offsets() const {
 	// Offset the background panel so it leaves space inside the window for the shadows to be drawn.
 	const Point2 shadow_offset = sb->get_shadow_offset();
 	if (is_layout_rtl()) {
-		panel->set_offset(SIDE_LEFT, shadow_size + shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size + shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size + shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size + shadow_offset.x));
 	} else {
-		panel->set_offset(SIDE_LEFT, shadow_size - shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size - shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size - shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size - shadow_offset.x));
 	}
-	panel->set_offset(SIDE_TOP, shadow_size - shadow_offset.y);
-	panel->set_offset(SIDE_BOTTOM, -shadow_size - shadow_offset.y);
+	panel->set_offset(SIDE_TOP, MAX(0, shadow_size - shadow_offset.y));
+	panel->set_offset(SIDE_BOTTOM, MIN(0, -shadow_size - shadow_offset.y));
 }
 
 void PopupPanel::_update_child_rects() const {
@@ -379,6 +388,7 @@ void PopupPanel::_notification(int p_what) {
 #endif
 		} break;
 
+		case Control::NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_visible()) {
 				_update_shadow_offsets();
@@ -425,6 +435,8 @@ void PopupPanel::_bind_methods() {
 
 PopupPanel::PopupPanel() {
 	set_flag(FLAG_TRANSPARENT, true);
+	set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	set_default_canvas_item_texture_repeat(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
 
 	panel = memnew(Panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

@@ -32,9 +32,9 @@
 
 #include "jolt_joint_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Constraints/SliderConstraint.h"
+#include <Jolt/Physics/Constraints/SliderConstraint.h>
 
 class JoltPinJoint3D final : public JoltJoint3D {
 	static JPH::Constraint *_build_pin(JPH::Body *p_jolt_body_a, JPH::Body *p_jolt_body_b, const Transform3D &p_shifted_ref_a, const Transform3D &p_shifted_ref_b);

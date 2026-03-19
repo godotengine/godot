@@ -30,6 +30,10 @@
 
 #include "multiplayer_spawner.h"
 
+#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/multiplayer_api.h"
 
 #ifdef TOOLS_ENABLED
@@ -174,8 +178,8 @@ void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spawn_function", "spawn_function"), &MultiplayerSpawner::set_spawn_function);
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "spawn_function", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_spawn_function", "get_spawn_function");
 
-	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 }
 
 void MultiplayerSpawner::_update_spawn_node() {
@@ -185,7 +189,7 @@ void MultiplayerSpawner::_update_spawn_node() {
 	}
 #endif
 	if (spawn_node.is_valid()) {
-		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(spawn_node));
+		Node *node = ObjectDB::get_instance<Node>(spawn_node);
 		if (node && node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
 			node->disconnect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
@@ -211,7 +215,7 @@ void MultiplayerSpawner::_notification(int p_what) {
 			_update_spawn_node();
 
 			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
-				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
+				Node *node = ObjectDB::get_instance<Node>(E.key);
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit));
 				get_multiplayer()->object_configuration_remove(node, this);
@@ -265,7 +269,7 @@ void MultiplayerSpawner::_spawn_notify(ObjectID p_id) {
 }
 
 void MultiplayerSpawner::_node_exit(ObjectID p_id) {
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
+	Node *node = ObjectDB::get_instance<Node>(p_id);
 	ERR_FAIL_NULL(node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);

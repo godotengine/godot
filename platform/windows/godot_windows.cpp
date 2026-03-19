@@ -30,10 +30,10 @@
 
 #include "os_windows.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
-#include <locale.h>
-#include <stdio.h>
+#include <clocale>
 
 // For export templates, add a section; the exporter will patch it to enclose
 // the data appended to the executable (bundled PCK).
@@ -66,6 +66,8 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
+	godot_init_profiler();
+
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
@@ -104,6 +106,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	delete[] argv_utf8;
 
+	godot_cleanup_profiler();
 	return os.get_exit_code();
 }
 

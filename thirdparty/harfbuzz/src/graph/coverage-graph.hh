@@ -32,29 +32,27 @@
 
 namespace graph {
 
-struct CoverageFormat1 : public OT::Layout::Common::CoverageFormat1_3<SmallTypes>
-{
-  bool sanitize (graph_t::vertex_t& vertex) const
-  {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    constexpr unsigned min_size = OT::Layout::Common::CoverageFormat1_3<SmallTypes>::min_size;
-    if (vertex_len < min_size) return false;
-    hb_barrier ();
-    return vertex_len >= min_size + glyphArray.get_size () - glyphArray.len.get_size ();
-  }
-};
+static bool sanitize (
+  const OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>* thiz,
+  graph_t::vertex_t& vertex
+) {
+  int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+  constexpr unsigned min_size = OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>::min_size;
+  if (vertex_len < min_size) return false;
+  hb_barrier ();
+  return vertex_len >= min_size + thiz->glyphArray.get_size () - thiz->glyphArray.len.get_size ();
+}
 
-struct CoverageFormat2 : public OT::Layout::Common::CoverageFormat2_4<SmallTypes>
-{
-  bool sanitize (graph_t::vertex_t& vertex) const
-  {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    constexpr unsigned min_size = OT::Layout::Common::CoverageFormat2_4<SmallTypes>::min_size;
-    if (vertex_len < min_size) return false;
-    hb_barrier ();
-    return vertex_len >= min_size + rangeRecord.get_size () - rangeRecord.len.get_size ();
-  }
-};
+static bool sanitize (
+  const OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>* thiz,
+  graph_t::vertex_t& vertex
+) {
+  int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+  constexpr unsigned min_size = OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>::min_size;
+  if (vertex_len < min_size) return false;
+  hb_barrier ();
+  return vertex_len >= min_size + thiz->rangeRecord.get_size () - thiz->rangeRecord.len.get_size ();
+}
 
 struct Coverage : public OT::Layout::Common::Coverage
 {
@@ -98,11 +96,33 @@ struct Coverage : public OT::Layout::Common::Coverage
     coverage_link->width = SmallTypes::size;
     coverage_link->objidx = coverage_prime_id;
     coverage_link->position = link_position;
-    coverage_prime_vertex.add_parent (parent_id);
+    coverage_prime_vertex.add_parent (parent_id, false);
 
     return (Coverage*) coverage_prime_vertex.obj.head;
   }
 
+  // Filter an existing coverage table to glyphs at indices [start, end) and replace it with the filtered version.
+  static bool filter_coverage (gsubgpos_graph_context_t& c,
+                               unsigned existing_coverage,
+                               unsigned start, unsigned end) {
+    unsigned coverage_size = c.graph.vertices_[existing_coverage].table_size ();
+    auto& coverage_v = c.graph.vertices_[existing_coverage];
+    Coverage* coverage_table = (Coverage*) coverage_v.obj.head;
+    if (!coverage_table || !coverage_table->sanitize (coverage_v))
+      return false;
+
+    auto new_coverage =
+        + hb_zip (coverage_table->iter (), hb_range ())
+        | hb_filter ([&] (hb_pair_t<unsigned, unsigned> p) {
+          return p.second >= start && p.second < end;
+        })
+        | hb_map_retains_sorting (hb_first)
+        ;
+
+    return make_coverage (c, new_coverage, existing_coverage, coverage_size * 2 + 100);
+  }
+
+  // Replace the coverage table at dest obj with one covering 'glyphs'.
   template<typename It>
   static bool make_coverage (gsubgpos_graph_context_t& c,
                              It glyphs,
@@ -141,10 +161,10 @@ struct Coverage : public OT::Layout::Common::Coverage
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Layout::Common::Coverage::min_size) return false;
     hb_barrier ();
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return ((CoverageFormat1*)this)->sanitize (vertex);
-    case 2: return ((CoverageFormat2*)this)->sanitize (vertex);
+    case 1: return graph::sanitize ((const OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>*) this, vertex);
+    case 2: return graph::sanitize ((const OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>*) this, vertex);
 #ifndef HB_NO_BEYOND_64K
     // Not currently supported
     case 3:

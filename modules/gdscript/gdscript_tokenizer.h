@@ -35,12 +35,6 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
-#ifdef MINGW_ENABLED
-#undef CONST
-#undef IN
-#undef VOID
-#endif
-
 class GDScriptTokenizer {
 public:
 	enum CursorPlace {
@@ -51,6 +45,7 @@ public:
 	};
 
 	struct Token {
+		// If this enum changes, please increment the TOKENIZER_VERSION in gdscript_tokenizer_buffer.h
 		enum Type {
 			EMPTY,
 			// Basic
@@ -117,11 +112,11 @@ public:
 			BREAKPOINT,
 			CLASS,
 			CLASS_NAME,
-			CONST,
+			TK_CONST, // Conflict with WinAPI.
 			ENUM,
 			EXTENDS,
 			FUNC,
-			IN,
+			TK_IN, // Conflict with WinAPI.
 			IS,
 			NAMESPACE,
 			PRELOAD,
@@ -131,7 +126,7 @@ public:
 			SUPER,
 			TRAIT,
 			VAR,
-			VOID,
+			TK_VOID, // Conflict with WinAPI.
 			YIELD,
 			// Punctuation
 			BRACKET_OPEN,
@@ -144,6 +139,7 @@ public:
 			SEMICOLON,
 			PERIOD,
 			PERIOD_PERIOD,
+			PERIOD_PERIOD_PERIOD,
 			COLON,
 			DOLLAR,
 			FORWARD_ARROW,
@@ -169,9 +165,10 @@ public:
 
 		Type type = EMPTY;
 		Variant literal;
-		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
-		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
-		int cursor_position = -1;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		CursorPlace cursor_place = CURSOR_NONE;
 		String source;
 
@@ -206,6 +203,12 @@ public:
 
 	static String get_token_name(Token::Type p_token_type);
 
+#ifdef TOOLS_ENABLED
+	// This is a temporary solution, as Tokens are not able to store their position, only lines and columns.
+	virtual int get_current_position() const { return 0; }
+	virtual String get_source_code() const { return ""; }
+#endif // TOOLS_ENABLED
+
 	virtual int get_cursor_line() const = 0;
 	virtual int get_cursor_column() const = 0;
 	virtual void set_cursor_position(int p_line, int p_column) = 0;
@@ -224,14 +227,16 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
-	int line = -1, column = -1;
-	int cursor_line = -1, cursor_column = -1;
+	int line = 0;
+	int column = 0;
+	int cursor_line = -1;
+	int cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
 	const char32_t *_start = nullptr;
-	int start_line = 0, start_column = 0;
-	int leftmost_column = 0, rightmost_column = 0;
+	int start_line = 0;
+	int start_column = 0;
 
 	// Info cache.
 	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
@@ -291,6 +296,11 @@ public:
 	void set_source_code(const String &p_source_code);
 
 	const Vector<int> &get_continuation_lines() const { return continuation_lines; }
+
+#ifdef TOOLS_ENABLED
+	virtual int get_current_position() const override { return position; }
+	virtual String get_source_code() const override { return source; }
+#endif // TOOLS_ENABLED
 
 	virtual int get_cursor_line() const override;
 	virtual int get_cursor_column() const override;

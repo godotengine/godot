@@ -27,15 +27,38 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
+    # Dependencies folder.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:  # Give up.
+            deps_folder = ""
+
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
-        EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
+        EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ["no", "5.0", "devel"], ignorecase=2),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         (
             "bundle_sign_identity",
@@ -61,7 +84,7 @@ def get_flags():
         "arch": detect_arch(),
         "use_volk": False,
         "metal": True,
-        "supported": ["metal", "mono"],
+        "supported": ["library", "metal", "mono"],
     }
 
 
@@ -89,7 +112,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    env.Append(CCFLAGS=["-fobjc-arc", "-fvisibility=hidden"])
 
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
@@ -153,9 +176,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += ".san"
-        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
+            env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             env.Append(
                 CCFLAGS=[
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
@@ -165,15 +188,18 @@ def configure(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
 
         if env["use_asan"]:
+            env.Append(CPPDEFINES=["ASAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
         if env["use_tsan"]:
+            env.Append(CPPDEFINES=["TSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
-        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
-    else:
+        if env["library_type"] == "executable":
+            env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
+    elif env["library_type"] == "executable":
         env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
 
     if env["use_coverage"]:
@@ -182,8 +208,32 @@ def configure(env: "SConsEnvironment"):
 
     ## Dependencies
 
+    if env["accesskit"]:
+        if os.path.exists(env["accesskit_sdk_path"]):
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64" or env["arch"] == "universal":
+                env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/arm64/static/"])
+            if env["arch"] == "x86_64" or env["arch"] == "universal":
+                env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/x86_64/static/"])
+            env.Append(LINKFLAGS=["-laccesskit"])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        else:
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
+
     if env["builtin_libtheora"] and env["arch"] == "x86_64":
         env["x86_libtheora_opt_gcc"] = True
+
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "ForceFeedback"])
 
     ## Flags
 
@@ -219,9 +269,13 @@ def configure(env: "SConsEnvironment"):
             "Security",
             "-framework",
             "UniformTypeIdentifiers",
+            "-framework",
+            "IOSurface",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
+
+    extra_frameworks = set()
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
@@ -239,8 +293,6 @@ def configure(env: "SConsEnvironment"):
         print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
         env["metal"] = False
 
-    extra_frameworks = set()
-
     if env["metal"]:
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
         extra_frameworks.add("Metal")
@@ -251,7 +303,6 @@ def configure(env: "SConsEnvironment"):
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         extra_frameworks.add("Metal")
-        extra_frameworks.add("IOSurface")
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
 

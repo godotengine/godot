@@ -31,21 +31,18 @@
 #pragma once
 
 #include "crash_handler_linuxbsd.h"
-#include "joypad_linux.h"
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+
+class JoypadSDL;
 
 #ifdef FONTCONFIG_ENABLED
-#ifdef SOWRAP_ENABLED
-#include "fontconfig-so_wrap.h"
-#else
-#include <fontconfig/fontconfig.h>
-#endif
+typedef struct _FcConfig FcConfig;
+typedef struct _FcObjectSet FcObjectSet;
 #endif
 
 class OS_LinuxBSD : public OS_Unix {
@@ -60,8 +57,8 @@ class OS_LinuxBSD : public OS_Unix {
 	int _stretch_to_fc(int p_stretch) const;
 #endif
 
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
 #endif
 
 #ifdef ALSA_ENABLED
@@ -137,8 +134,10 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 
+#ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const override;
+#endif
 
 	OS_LinuxBSD();
 	~OS_LinuxBSD();

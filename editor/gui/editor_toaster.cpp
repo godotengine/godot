@@ -30,13 +30,17 @@
 
 #include "editor_toaster.h"
 
-#include "editor/editor_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display/display_server.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 
@@ -117,21 +121,26 @@ void EditorToaster::_notification(int p_what) {
 			disable_notifications_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 
 			// Styleboxes background.
-			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			const Color base_color = get_theme_color(SNAME("base_color"), EditorStringName(Editor));
+			const Color bg_color = base_color.lerp(get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.08);
 
-			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			info_panel_style_background->set_bg_color(bg_color);
+
+			warning_panel_style_background->set_bg_color(bg_color);
 			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			error_panel_style_background->set_bg_color(bg_color);
 			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			// Styleboxes progress.
-			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			const Color bg_progress_color = base_color.lerp(get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.135);
 
-			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			info_panel_style_progress->set_bg_color(bg_progress_color);
+
+			warning_panel_style_progress->set_bg_color(bg_progress_color);
 			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			error_panel_style_progress->set_bg_color(bg_progress_color);
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
@@ -159,7 +168,7 @@ void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const 
 	bool in_dev = false;
 #endif
 
-	int show_all_setting = EDITOR_GET("interface/editor/show_internal_errors_in_toast_notifications");
+	int show_all_setting = EDITOR_GET("interface/editor/behavior/show_internal_errors_in_toast_notifications");
 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
 		String err_str = !p_errorexp.is_empty() ? p_errorexp : p_error;
@@ -178,10 +187,18 @@ void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const 
 	}
 }
 
+// This is kind of a workaround because it's hard to keep the VBox anchored to the bottom.
 void EditorToaster::_update_vbox_position() {
-	// This is kind of a workaround because it's hard to keep the VBox anchroed to the bottom.
 	vbox_container->set_size(Vector2());
-	vbox_container->set_position(get_global_position() - vbox_container->get_size() + Vector2(get_size().x, -5 * EDSCALE));
+
+	Point2 pos = get_global_position();
+	Size2 vbox_size = vbox_container->get_size();
+	pos.y -= vbox_size.y + 5 * EDSCALE;
+	if (!is_layout_rtl()) {
+		pos.x = pos.x - vbox_size.x + get_size().x;
+	}
+
+	vbox_container->set_position(pos);
 }
 
 void EditorToaster::_update_disable_notifications_button() {
@@ -197,7 +214,18 @@ void EditorToaster::_update_disable_notifications_button() {
 		disable_notifications_panel->hide();
 	} else {
 		disable_notifications_panel->show();
-		disable_notifications_panel->set_position(get_global_position() + Vector2(5 * EDSCALE, -disable_notifications_panel->get_minimum_size().y) + Vector2(get_size().x, -5 * EDSCALE));
+
+		Point2 pos = get_global_position();
+		int sep = 5 * EDSCALE;
+		Size2 disable_panel_size = disable_notifications_panel->get_minimum_size();
+		pos.y -= disable_panel_size.y + sep;
+		if (is_layout_rtl()) {
+			pos.x = pos.x - disable_panel_size.x - sep;
+		} else {
+			pos.x += get_size().x + sep;
+		}
+
+		disable_notifications_panel->set_position(pos);
 	}
 }
 
@@ -236,12 +264,12 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	}
 
 	if (toasts.is_empty()) {
-		main_button->set_tooltip_text(TTR("No notifications."));
+		main_button->set_tooltip_text(TTRC("No notifications."));
 		main_button->set_modulate(Color(0.5, 0.5, 0.5));
 		main_button->set_disabled(true);
 		set_process_internal(false);
 	} else {
-		main_button->set_tooltip_text(TTR("Show notifications."));
+		main_button->set_tooltip_text(TTRC("Show notifications."));
 		main_button->set_modulate(Color(1, 1, 1));
 		main_button->set_disabled(false);
 	}
@@ -284,9 +312,6 @@ void EditorToaster::_draw_button() {
 
 void EditorToaster::_draw_progress(Control *panel) {
 	if (toasts.has(panel) && toasts[panel].remaining_time > 0 && toasts[panel].duration > 0) {
-		Size2 size = panel->get_size();
-		size.x *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
-
 		Ref<StyleBoxFlat> stylebox;
 		switch (toasts[panel].severity) {
 			case SEVERITY_INFO:
@@ -301,7 +326,15 @@ void EditorToaster::_draw_progress(Control *panel) {
 			default:
 				break;
 		}
-		panel->draw_style_box(stylebox, Rect2(Vector2(), size));
+
+		Size2 size = panel->get_size();
+		Size2 progress = size;
+		progress.width *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
+		if (is_layout_rtl()) {
+			panel->draw_style_box(stylebox, Rect2(size - progress, progress));
+		} else {
+			panel->draw_style_box(stylebox, Rect2(Vector2(), progress));
+		}
 	}
 }
 
@@ -342,6 +375,7 @@ void EditorToaster::_repop_old() {
 Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, const String &p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
@@ -374,11 +408,13 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	// Add buttons.
 	if (p_time > 0.0) {
 		Button *copy_button = memnew(Button);
+		copy_button->set_accessibility_name(TTRC("Copy"));
 		copy_button->set_flat(true);
 		copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::copy).bind(panel));
 		hbox_container->add_child(copy_button);
 
 		Button *close_button = memnew(Button);
+		close_button->set_accessibility_name(TTRC("Close"));
 		close_button->set_flat(true);
 		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::instant_close).bind(panel));
 		hbox_container->add_child(close_button);
@@ -433,9 +469,12 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 		hb->add_theme_constant_override("separation", 0);
 
 		Label *label = memnew(Label);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hb->add_child(label);
 
 		Label *count_label = memnew(Label);
+		count_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		hb->add_child(count_label);
 
 		control = popup(hb, p_severity, default_message_duration, p_tooltip);
@@ -541,16 +580,18 @@ EditorToaster::EditorToaster() {
 	vbox_container->connect(SceneStringName(resized), callable_mp(this, &EditorToaster::_update_vbox_position));
 	add_child(vbox_container);
 
+	Side border_side = is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT;
+
 	// Theming (background).
 	info_panel_style_background.instantiate();
 	info_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	warning_panel_style_background.instantiate();
-	warning_panel_style_background->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	warning_panel_style_background->set_border_width(border_side, stylebox_radius * EDSCALE);
 	warning_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	error_panel_style_background.instantiate();
-	error_panel_style_background->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	error_panel_style_background->set_border_width(border_side, stylebox_radius * EDSCALE);
 	error_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	Ref<StyleBoxFlat> boxes[] = { info_panel_style_background, warning_panel_style_background, error_panel_style_background };
@@ -563,16 +604,17 @@ EditorToaster::EditorToaster() {
 	info_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	warning_panel_style_progress.instantiate();
-	warning_panel_style_progress->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	warning_panel_style_progress->set_border_width(border_side, stylebox_radius * EDSCALE);
 	warning_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	error_panel_style_progress.instantiate();
-	error_panel_style_progress->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	error_panel_style_progress->set_border_width(border_side, stylebox_radius * EDSCALE);
 	error_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	// Main button.
 	main_button = memnew(Button);
-	main_button->set_tooltip_text(TTR("No notifications."));
+	main_button->set_accessibility_name(TTRC("Notifications:"));
+	main_button->set_tooltip_text(TTRC("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
 	main_button->set_theme_type_variation("FlatMenuButton");
@@ -588,7 +630,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
-	disable_notifications_button->set_tooltip_text(TTR("Silence the notifications."));
+	disable_notifications_button->set_tooltip_text(TTRC("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
 	disable_notifications_panel->add_child(disable_notifications_button);

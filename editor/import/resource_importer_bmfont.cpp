@@ -32,6 +32,8 @@
 
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
+#include "scene/resources/font.h"
+#include "servers/text/text_server.h"
 
 String ResourceImporterBMFont::get_importer_name() const {
 	return "font_data_bmfont";
@@ -81,16 +83,16 @@ Error ResourceImporterBMFont::import(ResourceUID::ID p_source_id, const String &
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load font to file \"" + p_source_file + "\".");
 
 	// Update import settings for the image files used by font.
-	for (List<String>::Element *E = image_files.front(); E; E = E->next()) {
+	for (const String &file : image_files) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 
-		err = config->load(E->get() + ".import");
+		err = config->load(file + ".import");
 		if (err == OK) {
 			config->clear();
 			config->set_value("remap", "importer", "skip");
 
-			config->save(E->get() + ".import");
+			config->save(file + ".import");
 		}
 	}
 
@@ -108,7 +110,4 @@ Error ResourceImporterBMFont::import(ResourceUID::ID p_source_id, const String &
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterBMFont::ResourceImporterBMFont() {
 }

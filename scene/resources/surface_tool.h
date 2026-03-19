@@ -32,13 +32,15 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
-#include "thirdparty/misc/mikktspace.h"
+#include "servers/rendering/rendering_server_enums.h"
+
+#include <thirdparty/misc/mikktspace.h>
 
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
-	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
-	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_mask[RSE::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RSE::ARRAY_CUSTOM_COUNT];
 
 public:
 	struct Vertex {
@@ -52,7 +54,7 @@ public:
 		Vector3 tangent;
 		Vector2 uv;
 		Vector2 uv2;
-		Color custom[RS::ARRAY_CUSTOM_COUNT];
+		Color custom[RSE::ARRAY_CUSTOM_COUNT];
 
 		Vector3 vertex; // Must be last.
 		// ----------------------------------------------------------------
@@ -61,20 +63,18 @@ public:
 		Vector<float> weights;
 
 		bool operator==(const Vertex &p_vertex) const;
-
-		Vertex() {}
 	};
 
 	enum CustomFormat {
-		CUSTOM_RGBA8_UNORM = RS::ARRAY_CUSTOM_RGBA8_UNORM,
-		CUSTOM_RGBA8_SNORM = RS::ARRAY_CUSTOM_RGBA8_SNORM,
-		CUSTOM_RG_HALF = RS::ARRAY_CUSTOM_RG_HALF,
-		CUSTOM_RGBA_HALF = RS::ARRAY_CUSTOM_RGBA_HALF,
-		CUSTOM_R_FLOAT = RS::ARRAY_CUSTOM_R_FLOAT,
-		CUSTOM_RG_FLOAT = RS::ARRAY_CUSTOM_RG_FLOAT,
-		CUSTOM_RGB_FLOAT = RS::ARRAY_CUSTOM_RGB_FLOAT,
-		CUSTOM_RGBA_FLOAT = RS::ARRAY_CUSTOM_RGBA_FLOAT,
-		CUSTOM_MAX = RS::ARRAY_CUSTOM_MAX
+		CUSTOM_RGBA8_UNORM = RSE::ARRAY_CUSTOM_RGBA8_UNORM,
+		CUSTOM_RGBA8_SNORM = RSE::ARRAY_CUSTOM_RGBA8_SNORM,
+		CUSTOM_RG_HALF = RSE::ARRAY_CUSTOM_RG_HALF,
+		CUSTOM_RGBA_HALF = RSE::ARRAY_CUSTOM_RGBA_HALF,
+		CUSTOM_R_FLOAT = RSE::ARRAY_CUSTOM_R_FLOAT,
+		CUSTOM_RG_FLOAT = RSE::ARRAY_CUSTOM_RG_FLOAT,
+		CUSTOM_RGB_FLOAT = RSE::ARRAY_CUSTOM_RGB_FLOAT,
+		CUSTOM_RGBA_FLOAT = RSE::ARRAY_CUSTOM_RGBA_FLOAT,
+		CUSTOM_MAX = RSE::ARRAY_CUSTOM_MAX
 	};
 
 	enum SkinWeightCount {
@@ -91,6 +91,10 @@ public:
 		SIMPLIFY_ERROR_ABSOLUTE = 1 << 2, // From meshopt_SimplifyErrorAbsolute
 		/* Remove disconnected parts of the mesh during simplification incrementally, regardless of the topological restrictions inside components. */
 		SIMPLIFY_PRUNE = 1 << 3, // From meshopt_SimplifyPrune
+		/* Produce more regular triangle sizes and shapes during simplification, at some cost to geometric quality. */
+		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
+		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
+		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
@@ -165,9 +169,9 @@ private:
 
 	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
 
-	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
+	Color last_custom[RSE::ARRAY_CUSTOM_COUNT];
 
-	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
+	CustomFormat last_custom_format[RSE::ARRAY_CUSTOM_COUNT];
 
 	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);

@@ -30,6 +30,7 @@
 
 #include "kinematic_collision_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
 
 Vector3 KinematicCollision3D::get_travel() const {
@@ -66,7 +67,7 @@ real_t KinematicCollision3D::get_angle(int p_collision_index, const Vector3 &p_u
 
 Object *KinematicCollision3D::get_local_shape(int p_collision_index) const {
 	ERR_FAIL_INDEX_V(p_collision_index, result.collision_count, nullptr);
-	PhysicsBody3D *owner = Object::cast_to<PhysicsBody3D>(ObjectDB::get_instance(owner_id));
+	PhysicsBody3D *owner = ObjectDB::get_instance<PhysicsBody3D>(owner_id);
 	if (!owner) {
 		return nullptr;
 	}

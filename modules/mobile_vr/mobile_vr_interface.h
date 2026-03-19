@@ -94,8 +94,8 @@ private:
 
 	///@TODO a few support functions for trackers, most are math related and should likely be moved elsewhere
 	float floor_decimals(const float p_value, const float p_decimals) {
-		float power_of_10 = pow(10.0f, p_decimals);
-		return floor(p_value * power_of_10) / power_of_10;
+		float power_of_10 = std::pow(10.0f, p_decimals);
+		return std::floor(p_value * power_of_10) / power_of_10;
 	}
 
 	Vector3 floor_decimals(const Vector3 &p_vector, const float p_decimals) {
@@ -165,7 +165,7 @@ public:
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
 

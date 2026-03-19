@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_collision_solver_2d.h"
+
 #include "godot_collision_solver_2d_sat.h"
 
 #define collision_solver sat_2d_calculate_penetration

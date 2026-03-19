@@ -11,6 +11,7 @@ env_betsy.GLSL_HEADER("bc6h.glsl")
 env_betsy.GLSL_HEADER("bc1.glsl")
 env_betsy.GLSL_HEADER("bc4.glsl")
 env_betsy.GLSL_HEADER("alpha_stitch.glsl")
+env_betsy.GLSL_HEADER("rgb_to_rgba.glsl")
 
 env_betsy.Depends(Glob("*.glsl.gen.h"), ["#glsl_builders.py"])
 

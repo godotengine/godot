@@ -34,8 +34,6 @@
 
 #include "core/io/file_access.h"
 
-ZipArchive *ZipArchive::instance = nullptr;
-
 extern "C" {
 
 struct ZipData {
@@ -146,7 +144,7 @@ unzFile ZipArchive::get_file_handle(const String &p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset = 0) {
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	// load with offset feature only supported for PCK files
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
 
@@ -176,7 +174,6 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 
 	Package pkg;
 	pkg.filename = p_path;
-	pkg.zfile = zfile;
 	packages.push_back(pkg);
 	int pkg_num = packages.size() - 1;
 
@@ -203,6 +200,8 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 		}
 	}
 
+	unzClose(zfile);
+
 	return true;
 }
 
@@ -210,7 +209,7 @@ bool ZipArchive::file_exists(const String &p_name) const {
 	return files.has(p_name);
 }
 
-Ref<FileAccess> ZipArchive::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+Ref<FileAccess> ZipArchive::get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key) {
 	return memnew(FileAccessZip(p_path, *p_file));
 }
 
@@ -227,10 +226,6 @@ ZipArchive::ZipArchive() {
 }
 
 ZipArchive::~ZipArchive() {
-	for (int i = 0; i < packages.size(); i++) {
-		unzClose(packages[i].zfile);
-	}
-
 	packages.clear();
 }
 

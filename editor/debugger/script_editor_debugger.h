@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
+class Button;
 class Tree;
 class LineEdit;
 class TabContainer;
@@ -83,6 +83,12 @@ private:
 		ACTION_DELETE_ALL_BREAKPOINTS,
 	};
 
+	enum VMemMenu {
+		VMEM_MENU_SHOW_IN_FILESYSTEM,
+		VMEM_MENU_SHOW_IN_EXPLORER,
+		VMEM_MENU_OWNERS,
+	};
+
 	AcceptDialog *msgdialog = nullptr;
 
 	LineEdit *clicked_ctrl = nullptr;
@@ -107,7 +113,7 @@ private:
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
 	};
-	FileDialogPurpose file_dialog_purpose;
+	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
 	int error_count;
 	int warning_count;
@@ -118,13 +124,14 @@ private:
 
 	TabContainer *tabs = nullptr;
 
-	Label *reason = nullptr;
+	RichTextLabel *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
 	Button *ignore_error_breaks = nullptr;
 	Button *copy = nullptr;
 	Button *step = nullptr;
 	Button *next = nullptr;
+	Button *out = nullptr;
 	Button *dobreak = nullptr;
 	Button *docontinue = nullptr;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
@@ -137,6 +144,8 @@ private:
 	Button *vmem_refresh = nullptr;
 	Button *vmem_export = nullptr;
 	LineEdit *vmem_total = nullptr;
+	TextureRect *vmem_notice_icon = nullptr;
+	PopupMenu *vmem_item_menu = nullptr;
 
 	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
@@ -155,7 +164,7 @@ private:
 	EditorPerformanceProfiler *performance_profiler = nullptr;
 	EditorExpressionEvaluator *expression_evaluator = nullptr;
 
-	OS::ProcessID remote_pid = 0;
+	ProcessID remote_pid = 0;
 	bool move_to_foreground = true;
 	bool can_request_idle_draw = false;
 
@@ -183,13 +192,61 @@ private:
 
 	void _select_thread(int p_index);
 
+	bool debug_mute_audio = false;
+	bool audio_muted_on_break = false;
+	void _mute_audio_on_break(bool p_mute);
+	void _send_debug_mute_audio_msg(bool p_mute);
+
 	EditorDebuggerNode::CameraOverride camera_override;
 
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
+
+	/// Message handler function for _parse_message.
+	typedef void (ScriptEditorDebugger::*ParseMessageFunc)(uint64_t p_thread_id, const Array &p_data);
+	static HashMap<String, ParseMessageFunc> parse_message_handlers;
+	static void _init_parse_message_handlers();
+
+	void _msg_debug_enter(uint64_t p_thread_id, const Array &p_data);
+	void _msg_debug_exit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_set_pid(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_scene_tree(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data);
+#ifndef DISABLE_DEPRECATED
+	void _msg_scene_inspect_object(uint64_t p_thread_id, const Array &p_data);
+#endif // DISABLE_DEPRECATED
+	void _msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_vars(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_var(uint64_t p_thread_id, const Array &p_data);
+	void _msg_output(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_hardware_info(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_error(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_function_signature(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_common(const Array &p_data, const bool p_final);
+	void _msg_servers_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_total(uint64_t p_thread_id, const Array &p_data);
+	void _msg_request_quit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
+	void _msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data);
+	void _msg_filesystem_update_file(uint64_t p_thread_id, const Array &p_data);
+	void _msg_evaluation_return(uint64_t p_thread_id, const Array &p_data);
+	void _msg_window_title(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_suspend_toggle(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_next_frame(uint64_t p_thread_id, const Array &p_data);
+
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
+	void _update_reason_content_height();
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
 	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
@@ -215,6 +272,10 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+
+	void _vmem_item_activated();
+	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
+	void _vmem_item_menu_id_pressed(int p_option);
 
 	void _profiler_activate(bool p_enable, int p_profiler);
 	void _profiler_seeked();
@@ -246,6 +307,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum EmbedShortcutAction {
+		EMBED_SUSPEND_TOGGLE,
+		EMBED_NEXT_FRAME,
+	};
+
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
 
@@ -266,6 +332,7 @@ public:
 	void debug_ignore_error_breaks();
 	void debug_copy();
 
+	void debug_out();
 	void debug_next();
 	void debug_step();
 	void debug_break();
@@ -300,6 +367,9 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	bool get_debug_mute_audio() const;
+	void set_debug_mute_audio(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);

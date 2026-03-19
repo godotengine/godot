@@ -12,10 +12,12 @@
 #include "src/dsp/dsp.h"
 
 #if defined(WEBP_USE_SSE41)
+#include <emmintrin.h>
+#include <smmintrin.h>
 
-#include "src/dsp/common_sse41.h"
+#include "src/webp/types.h"
+#include "src/dsp/cpu.h"
 #include "src/dsp/lossless.h"
-#include "src/dsp/lossless_common.h"
 
 //------------------------------------------------------------------------------
 // Color-space conversion functions
@@ -26,9 +28,9 @@ static void TransformColorInverse_SSE41(const VP8LMultipliers* const m,
 // sign-extended multiplying constants, pre-shifted by 5.
 #define CST(X)  (((int16_t)(m->X << 8)) >> 5)   // sign-extend
   const __m128i mults_rb =
-      _mm_set1_epi32((int)((uint32_t)CST(green_to_red_) << 16 |
-                           (CST(green_to_blue_) & 0xffff)));
-  const __m128i mults_b2 = _mm_set1_epi32(CST(red_to_blue_));
+      _mm_set1_epi32((int)((uint32_t)CST(green_to_red) << 16 |
+                           (CST(green_to_blue) & 0xffff)));
+  const __m128i mults_b2 = _mm_set1_epi32(CST(red_to_blue));
 #undef CST
   const __m128i mask_ag = _mm_set1_epi32((int)0xff00ff00);
   const __m128i perm1 = _mm_setr_epi8(-1, 1, -1, 1, -1, 5, -1, 5,
@@ -77,8 +79,8 @@ static void TransformColorInverse_SSE41(const VP8LMultipliers* const m,
   }                                                   \
 } while (0)
 
-static void ConvertBGRAToRGB_SSE41(const uint32_t* src, int num_pixels,
-                                   uint8_t* dst) {
+static void ConvertBGRAToRGB_SSE41(const uint32_t* WEBP_RESTRICT src,
+                                   int num_pixels, uint8_t* WEBP_RESTRICT dst) {
   const __m128i* in = (const __m128i*)src;
   __m128i* out = (__m128i*)dst;
   const __m128i perm0 = _mm_setr_epi8(2, 1, 0, 6, 5, 4, 10, 9,
@@ -95,8 +97,8 @@ static void ConvertBGRAToRGB_SSE41(const uint32_t* src, int num_pixels,
   }
 }
 
-static void ConvertBGRAToBGR_SSE41(const uint32_t* src,
-                                   int num_pixels, uint8_t* dst) {
+static void ConvertBGRAToBGR_SSE41(const uint32_t* WEBP_RESTRICT src,
+                                   int num_pixels, uint8_t* WEBP_RESTRICT dst) {
   const __m128i* in = (const __m128i*)src;
   __m128i* out = (__m128i*)dst;
   const __m128i perm0 = _mm_setr_epi8(0, 1, 2, 4, 5, 6, 8, 9, 10,
@@ -124,6 +126,10 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LDspInitSSE41(void) {
   VP8LTransformColorInverse = TransformColorInverse_SSE41;
   VP8LConvertBGRAToRGB = ConvertBGRAToRGB_SSE41;
   VP8LConvertBGRAToBGR = ConvertBGRAToBGR_SSE41;
+
+  // SSE exports for AVX and above.
+  VP8LTransformColorInverse_SSE = TransformColorInverse_SSE41;
+  VP8LConvertBGRAToRGB_SSE = ConvertBGRAToRGB_SSE41;
 }
 
 #else  // !WEBP_USE_SSE41

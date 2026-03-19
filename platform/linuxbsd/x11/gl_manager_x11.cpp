@@ -32,10 +32,17 @@
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
-#include "thirdparty/glad/glad/glx.h"
+#include "core/os/os.h"
+#include "servers/display/display_server.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <thirdparty/glad/glad/glx.h>
+
+#ifdef SOWRAP_ENABLED
+#include "dynwrappers/xrender-so_wrap.h"
+#else
+#include <X11/extensions/Xrender.h>
+#endif
+
 #include <unistd.h>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
@@ -137,6 +144,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
+			if (vi) {
+				XFree(vi);
+				vi = nullptr;
+			}
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
 			if (!vi) {
 				continue;
@@ -191,6 +202,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	// for later creating windows using this display
 	if (vi) {
 		gl_display.x_vi = *vi;
+		gl_display.x_fbconfig = fbconfig;
 	}
 
 	XFree(vi);
@@ -217,7 +229,7 @@ Error GLManager_X11::open_display(Display *p_display) {
 	}
 }
 
-Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
+Error GLManager_X11::window_create(DisplayServerEnums::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
 	// make sure vector is big enough...
 	// we can mirror the external vector, it is simpler
 	// to keep the IDs identical for fast lookup
@@ -260,12 +272,12 @@ void GLManager_X11::_internal_set_current_window(GLWindow *p_win) {
 	_x_windisp.x11_display = disp.x11_display;
 }
 
-void GLManager_X11::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void GLManager_X11::window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {
 	get_window(p_window_id).width = p_width;
 	get_window(p_window_id).height = p_height;
 }
 
-void GLManager_X11::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManager_X11::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	win.in_use = false;
 
@@ -287,7 +299,7 @@ void GLManager_X11::release_current() {
 	_current_window = nullptr;
 }
 
-void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManager_X11::window_make_current(DisplayServerEnums::WindowID p_window_id) {
 	if (p_window_id == -1) {
 		return;
 	}
@@ -322,7 +334,7 @@ void GLManager_X11::swap_buffers() {
 
 	// On X11, when enabled, transparency is always active, so clear alpha manually.
 	if (OS::get_singleton()->is_layered_allowed()) {
-		if (!DisplayServer::get_singleton()->window_get_flag(DisplayServer::WINDOW_FLAG_TRANSPARENT, _current_window->window_id)) {
+		if (!DisplayServer::get_singleton()->window_get_flag(DisplayServerEnums::WINDOW_FLAG_TRANSPARENT, _current_window->window_id)) {
 			glColorMask(false, false, false, true);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -367,7 +379,7 @@ bool GLManager_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
-void *GLManager_X11::get_glx_context(DisplayServer::WindowID p_window_id) {
+void *GLManager_X11::get_glx_context(DisplayServerEnums::WindowID p_window_id) {
 	if (p_window_id == -1) {
 		return nullptr;
 	}
@@ -376,6 +388,28 @@ void *GLManager_X11::get_glx_context(DisplayServer::WindowID p_window_id) {
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 
 	return (void *)disp.context->glx_context;
+}
+
+VisualID GLManager_X11::get_glx_visualid(DisplayServerEnums::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return (VisualID)0;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return disp.x_vi.visualid;
+}
+
+void *GLManager_X11::get_glx_fbconfig(DisplayServerEnums::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return nullptr;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return disp.x_fbconfig;
 }
 
 GLManager_X11::GLManager_X11(const Vector2i &p_size, ContextType p_context_type) {

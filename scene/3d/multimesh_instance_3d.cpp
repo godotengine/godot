@@ -30,12 +30,17 @@
 
 #include "multimesh_instance_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
+#ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable MultiMeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MultiMeshInstance3D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 void MultiMeshInstance3D::_refresh_interpolated() {
 	if (is_inside_tree() && multimesh.is_valid()) {
@@ -52,7 +57,7 @@ void MultiMeshInstance3D::_physics_interpolated_changed() {
 void MultiMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance3D::set_multimesh);
 	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance3D::get_multimesh);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, MultiMesh::get_class_static()), "set_multimesh", "get_multimesh");
 }
 
 void MultiMeshInstance3D::_notification(int p_what) {
@@ -103,6 +108,7 @@ AABB MultiMeshInstance3D::get_aabb() const {
 	}
 }
 
+#ifndef NAVIGATION_3D_DISABLED
 void MultiMeshInstance3D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -137,6 +143,7 @@ void MultiMeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh
 		}
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 MultiMeshInstance3D::MultiMeshInstance3D() {
 }

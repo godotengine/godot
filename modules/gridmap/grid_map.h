@@ -32,17 +32,21 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
-
-//heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
-//should scale better with hardware that supports instancing
 
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+#ifndef PHYSICS_3D_DISABLED
 class PhysicsMaterial;
+#endif // PHYSICS_3D_DISABLED
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
+
+	enum DebugVisibilityMode {
+		DEBUG_VISIBILITY_MODE_DEFAULT,
+		DEBUG_VISIBILITY_MODE_FORCE_SHOW,
+		DEBUG_VISIBILITY_MODE_FORCE_HIDE,
+	};
 
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
@@ -70,6 +74,8 @@ class GridMap : public Node3D {
 		_FORCE_INLINE_ operator Vector3i() const {
 			return Vector3i(x, y, z);
 		}
+
+		uint32_t hash() const { return operator Vector3i().hash(); }
 
 		IndexKey(Vector3i p_vector) {
 			x = (int16_t)p_vector.x;
@@ -150,10 +156,16 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+#ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
+	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 	Ref<PhysicsMaterial> physics_material;
+#endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
 	RID map_override;
 
@@ -177,28 +189,30 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-		RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
+		RSE::LightType type = RSE::LightType::LIGHT_DIRECTIONAL;
 		Vector3 pos;
 		Vector3 dir;
-		float param[RS::LIGHT_PARAM_MAX] = {};
+		float param[RSE::LIGHT_PARAM_MAX] = {};
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
+#ifndef PHYSICS_3D_DISABLED
 	void _update_physics_bodies_collision_properties();
 	void _update_physics_bodies_characteristics();
+#endif // PHYSICS_3D_DISABLED
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
 	void _navigation_map_changed(RID p_map);
 	void _update_navigation_debug_edge_connections();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
@@ -233,6 +247,7 @@ public:
 		INVALID_CELL_ITEM = -1
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 
@@ -248,16 +263,22 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+	void set_collision_visibility_mode(DebugVisibilityMode p_visibility_mode);
+	DebugVisibilityMode get_collision_visibility_mode() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
 	Array get_collision_shapes() const;
+#endif // PHYSICS_3D_DISABLED
 
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
+#ifndef NAVIGATION_3D_DISABLED
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
+#endif // NAVIGATION_3D_DISABLED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
@@ -301,14 +322,20 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+#ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 public:
+#ifndef NAVIGATION_3D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	GridMap();
 	~GridMap();
 };
+
+VARIANT_ENUM_CAST(GridMap::DebugVisibilityMode);

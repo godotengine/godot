@@ -32,14 +32,12 @@
 
 #include "audio_driver_wasapi.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/engine.h"
 #include "core/os/os.h"
 
-#include <stdint.h> // INT32_MAX
-
 #include <functiondiscoverykeys.h>
-
 #include <wrl/client.h>
+
 using Microsoft::WRL::ComPtr;
 
 // Define IAudioClient3 if not already defined by MinGW headers
@@ -112,10 +110,10 @@ const IID IID_IAudioClient3 = __uuidof(IAudioClient3);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-#define SAFE_RELEASE(memory)   \
+#define SAFE_RELEASE(memory) \
 	if ((memory) != nullptr) { \
-		(memory)->Release();   \
-		(memory) = nullptr;    \
+		(memory)->Release(); \
+		(memory) = nullptr; \
 	}
 
 #define REFTIMES_PER_SEC 10000000
@@ -128,11 +126,7 @@ static bool default_input_device_changed = false;
 static int output_reinit_countdown = 0;
 static int input_reinit_countdown = 0;
 
-// Silence warning due to a COM API weirdness (GH-35194).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness (GH-35194).
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
@@ -198,9 +192,7 @@ public:
 	}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
@@ -458,7 +450,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// so we need to select the closest multiple to the user-specified latency.
 		UINT32 desired_period_frames = target_latency_ms * mix_rate / 1000;
 		UINT32 period_frames = (desired_period_frames / fundamental_period_frames) * fundamental_period_frames;
-		if (ABS((int64_t)period_frames - (int64_t)desired_period_frames) > ABS((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
+		if (Math::abs((int64_t)period_frames - (int64_t)desired_period_frames) > Math::abs((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
 			period_frames = period_frames + fundamental_period_frames;
 		}
 		period_frames = CLAMP(period_frames, min_period_frames, max_period_frames);
@@ -550,6 +542,10 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 }
 
 Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
+	if (audio_input.active.is_set()) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
 		// We've tried to init the device, but have failed. Time to clean up.
@@ -1031,11 +1027,9 @@ Error AudioDriverWASAPI::input_stop() {
 	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
 		audio_input.active.clear();
-
-		return OK;
 	}
 
-	return FAILED;
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {

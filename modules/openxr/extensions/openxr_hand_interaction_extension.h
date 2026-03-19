@@ -50,13 +50,18 @@
 // for more information.
 
 class OpenXRHandInteractionExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRHandInteractionExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRHandInteractionExtension *get_singleton();
 
 	OpenXRHandInteractionExtension();
 	virtual ~OpenXRHandInteractionExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 

@@ -5,6 +5,7 @@
 #include <string.h>
 
 // This work is based on:
+// Matthias Teschner, Bruno Heidelberger, Matthias Mueller, Danat Pomeranets, Markus Gross. Optimized Spatial Hashing for Collision Detection of Deformable Objects. 2003
 // John McDonald, Mark Kilgard. Crack-Free Point-Normal Triangles using Adjacent Edge Normals. 2010
 // John Hable. Variable Rate Shading with Visibility Buffer Rendering. 2024
 namespace meshopt
@@ -83,6 +84,46 @@ struct VertexStreamHasher
 		}
 
 		return true;
+	}
+};
+
+struct VertexCustomHasher
+{
+	const float* vertex_positions;
+	size_t vertex_stride_float;
+
+	int (*callback)(void*, unsigned int, unsigned int);
+	void* context;
+
+	size_t hash(unsigned int index) const
+	{
+		const unsigned int* key = reinterpret_cast<const unsigned int*>(vertex_positions + index * vertex_stride_float);
+
+		unsigned int x = key[0], y = key[1], z = key[2];
+
+		// replace negative zero with zero
+		x = (x == 0x80000000) ? 0 : x;
+		y = (y == 0x80000000) ? 0 : y;
+		z = (z == 0x80000000) ? 0 : z;
+
+		// scramble bits to make sure that integer coordinates have entropy in lower bits
+		x ^= x >> 17;
+		y ^= y >> 17;
+		z ^= z >> 17;
+
+		// Optimized Spatial Hashing for Collision Detection of Deformable Objects
+		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+	}
+
+	bool equal(unsigned int lhs, unsigned int rhs) const
+	{
+		const float* lp = vertex_positions + lhs * vertex_stride_float;
+		const float* rp = vertex_positions + rhs * vertex_stride_float;
+
+		if (lp[0] != rp[0] || lp[1] != rp[1] || lp[2] != rp[2])
+			return false;
+
+		return callback ? callback(context, lhs, rhs) : true;
 	}
 };
 
@@ -183,6 +224,43 @@ static void buildPositionRemap(unsigned int* remap, const float* vertex_position
 	allocator.deallocate(vertex_table);
 }
 
+template <typename Hash>
+static size_t generateVertexRemap(unsigned int* remap, const unsigned int* indices, size_t index_count, size_t vertex_count, const Hash& hash, meshopt_Allocator& allocator)
+{
+	memset(remap, -1, vertex_count * sizeof(unsigned int));
+
+	size_t table_size = hashBuckets(vertex_count);
+	unsigned int* table = allocator.allocate<unsigned int>(table_size);
+	memset(table, -1, table_size * sizeof(unsigned int));
+
+	unsigned int next_vertex = 0;
+
+	for (size_t i = 0; i < index_count; ++i)
+	{
+		unsigned int index = indices ? indices[i] : unsigned(i);
+		assert(index < vertex_count);
+
+		if (remap[index] != ~0u)
+			continue;
+
+		unsigned int* entry = hashLookup(table, table_size, hash, index, ~0u);
+
+		if (*entry == ~0u)
+		{
+			*entry = index;
+			remap[index] = next_vertex++;
+		}
+		else
+		{
+			assert(remap[*entry] != ~0u);
+			remap[index] = remap[*entry];
+		}
+	}
+
+	assert(next_vertex <= vertex_count);
+	return next_vertex;
+}
+
 template <size_t BlockSize>
 static void remapVertices(void* destination, const void* vertices, size_t vertex_count, size_t vertex_size, const unsigned int* remap)
 {
@@ -197,6 +275,35 @@ static void remapVertices(void* destination, const void* vertices, size_t vertex
 		}
 }
 
+template <typename Hash>
+static void generateShadowBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count, const Hash& hash, meshopt_Allocator& allocator)
+{
+	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
+	memset(remap, -1, vertex_count * sizeof(unsigned int));
+
+	size_t table_size = hashBuckets(vertex_count);
+	unsigned int* table = allocator.allocate<unsigned int>(table_size);
+	memset(table, -1, table_size * sizeof(unsigned int));
+
+	for (size_t i = 0; i < index_count; ++i)
+	{
+		unsigned int index = indices[i];
+		assert(index < vertex_count);
+
+		if (remap[index] == ~0u)
+		{
+			unsigned int* entry = hashLookup(table, table_size, hash, index, ~0u);
+
+			if (*entry == ~0u)
+				*entry = index;
+
+			remap[index] = *entry;
+		}
+
+		destination[i] = remap[index];
+	}
+}
+
 } // namespace meshopt
 
 size_t meshopt_generateVertexRemap(unsigned int* destination, const unsigned int* indices, size_t index_count, const void* vertices, size_t vertex_count, size_t vertex_size)
@@ -208,44 +315,9 @@ size_t meshopt_generateVertexRemap(unsigned int* destination, const unsigned int
 	assert(vertex_size > 0 && vertex_size <= 256);
 
 	meshopt_Allocator allocator;
-
-	memset(destination, -1, vertex_count * sizeof(unsigned int));
-
 	VertexHasher hasher = {static_cast<const unsigned char*>(vertices), vertex_size, vertex_size};
 
-	size_t table_size = hashBuckets(vertex_count);
-	unsigned int* table = allocator.allocate<unsigned int>(table_size);
-	memset(table, -1, table_size * sizeof(unsigned int));
-
-	unsigned int next_vertex = 0;
-
-	for (size_t i = 0; i < index_count; ++i)
-	{
-		unsigned int index = indices ? indices[i] : unsigned(i);
-		assert(index < vertex_count);
-
-		if (destination[index] == ~0u)
-		{
-			unsigned int* entry = hashLookup(table, table_size, hasher, index, ~0u);
-
-			if (*entry == ~0u)
-			{
-				*entry = index;
-
-				destination[index] = next_vertex++;
-			}
-			else
-			{
-				assert(destination[*entry] != ~0u);
-
-				destination[index] = destination[*entry];
-			}
-		}
-	}
-
-	assert(next_vertex <= vertex_count);
-
-	return next_vertex;
+	return generateVertexRemap(destination, indices, index_count, vertex_count, hasher, allocator);
 }
 
 size_t meshopt_generateVertexRemapMulti(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count, const struct meshopt_Stream* streams, size_t stream_count)
@@ -263,44 +335,24 @@ size_t meshopt_generateVertexRemapMulti(unsigned int* destination, const unsigne
 	}
 
 	meshopt_Allocator allocator;
-
-	memset(destination, -1, vertex_count * sizeof(unsigned int));
-
 	VertexStreamHasher hasher = {streams, stream_count};
 
-	size_t table_size = hashBuckets(vertex_count);
-	unsigned int* table = allocator.allocate<unsigned int>(table_size);
-	memset(table, -1, table_size * sizeof(unsigned int));
+	return generateVertexRemap(destination, indices, index_count, vertex_count, hasher, allocator);
+}
 
-	unsigned int next_vertex = 0;
+size_t meshopt_generateVertexRemapCustom(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, int (*callback)(void*, unsigned int, unsigned int), void* context)
+{
+	using namespace meshopt;
 
-	for (size_t i = 0; i < index_count; ++i)
-	{
-		unsigned int index = indices ? indices[i] : unsigned(i);
-		assert(index < vertex_count);
+	assert(indices || index_count == vertex_count);
+	assert(!indices || index_count % 3 == 0);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride % sizeof(float) == 0);
 
-		if (destination[index] == ~0u)
-		{
-			unsigned int* entry = hashLookup(table, table_size, hasher, index, ~0u);
+	meshopt_Allocator allocator;
+	VertexCustomHasher hasher = {vertex_positions, vertex_positions_stride / sizeof(float), callback, context};
 
-			if (*entry == ~0u)
-			{
-				*entry = index;
-
-				destination[index] = next_vertex++;
-			}
-			else
-			{
-				assert(destination[*entry] != ~0u);
-
-				destination[index] = destination[*entry];
-			}
-		}
-	}
-
-	assert(next_vertex <= vertex_count);
-
-	return next_vertex;
+	return generateVertexRemap(destination, indices, index_count, vertex_count, hasher, allocator);
 }
 
 void meshopt_remapVertexBuffer(void* destination, const void* vertices, size_t vertex_count, size_t vertex_size, const unsigned int* remap)
@@ -362,33 +414,9 @@ void meshopt_generateShadowIndexBuffer(unsigned int* destination, const unsigned
 	assert(vertex_size <= vertex_stride);
 
 	meshopt_Allocator allocator;
-
-	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
-	memset(remap, -1, vertex_count * sizeof(unsigned int));
-
 	VertexHasher hasher = {static_cast<const unsigned char*>(vertices), vertex_size, vertex_stride};
 
-	size_t table_size = hashBuckets(vertex_count);
-	unsigned int* table = allocator.allocate<unsigned int>(table_size);
-	memset(table, -1, table_size * sizeof(unsigned int));
-
-	for (size_t i = 0; i < index_count; ++i)
-	{
-		unsigned int index = indices[i];
-		assert(index < vertex_count);
-
-		if (remap[index] == ~0u)
-		{
-			unsigned int* entry = hashLookup(table, table_size, hasher, index, ~0u);
-
-			if (*entry == ~0u)
-				*entry = index;
-
-			remap[index] = *entry;
-		}
-
-		destination[i] = remap[index];
-	}
+	generateShadowBuffer(destination, indices, index_count, vertex_count, hasher, allocator);
 }
 
 void meshopt_generateShadowIndexBufferMulti(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count, const struct meshopt_Stream* streams, size_t stream_count)
@@ -406,32 +434,33 @@ void meshopt_generateShadowIndexBufferMulti(unsigned int* destination, const uns
 	}
 
 	meshopt_Allocator allocator;
-
-	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
-	memset(remap, -1, vertex_count * sizeof(unsigned int));
-
 	VertexStreamHasher hasher = {streams, stream_count};
+
+	generateShadowBuffer(destination, indices, index_count, vertex_count, hasher, allocator);
+}
+
+void meshopt_generatePositionRemap(unsigned int* destination, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride)
+{
+	using namespace meshopt;
+
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride % sizeof(float) == 0);
+
+	meshopt_Allocator allocator;
+	VertexCustomHasher hasher = {vertex_positions, vertex_positions_stride / sizeof(float), NULL, NULL};
 
 	size_t table_size = hashBuckets(vertex_count);
 	unsigned int* table = allocator.allocate<unsigned int>(table_size);
 	memset(table, -1, table_size * sizeof(unsigned int));
 
-	for (size_t i = 0; i < index_count; ++i)
+	for (size_t i = 0; i < vertex_count; ++i)
 	{
-		unsigned int index = indices[i];
-		assert(index < vertex_count);
+		unsigned int* entry = hashLookup(table, table_size, hasher, unsigned(i), ~0u);
 
-		if (remap[index] == ~0u)
-		{
-			unsigned int* entry = hashLookup(table, table_size, hasher, index, ~0u);
+		if (*entry == ~0u)
+			*entry = unsigned(i);
 
-			if (*entry == ~0u)
-				*entry = index;
-
-			remap[index] = *entry;
-		}
-
-		destination[i] = remap[index];
+		destination[i] = *entry;
 	}
 }
 

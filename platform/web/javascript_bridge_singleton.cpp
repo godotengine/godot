@@ -34,6 +34,10 @@
 
 #include <emscripten.h>
 
+#ifdef PROXY_TO_PTHREAD_ENABLED
+#include "core/object/callable_mp.h"
+#endif
+
 extern "C" {
 extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
@@ -64,6 +68,8 @@ extern int godot_js_wrapper_object_transfer_buffer(int p_id, void *p_byte_arr, v
 };
 
 class JavaScriptObjectImpl : public JavaScriptObject {
+	GDSOFTCLASS(JavaScriptObjectImpl, JavaScriptObject);
+
 private:
 	friend class JavaScriptBridge;
 

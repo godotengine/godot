@@ -36,8 +36,6 @@ class OpenXRVisibilityMask : public VisualInstance3D {
 	GDCLASS(OpenXRVisibilityMask, VisualInstance3D);
 
 protected:
-	static void _bind_methods();
-
 	void _notification(int p_what);
 
 	void _on_openxr_session_begun();

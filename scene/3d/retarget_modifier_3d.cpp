@@ -30,6 +30,9 @@
 
 #include "retarget_modifier_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 PackedStringArray RetargetModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = SkeletonModifier3D::get_configuration_warnings();
 	if (child_skeletons.is_empty()) {
@@ -161,7 +164,7 @@ Vector<RetargetModifier3D::RetargetBoneInfo> RetargetModifier3D::cache_bone_rest
 
 void RetargetModifier3D::_update_child_skeleton_rests(int p_child_skeleton_idx) {
 	ERR_FAIL_INDEX(p_child_skeleton_idx, child_skeletons.size());
-	Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(child_skeletons[p_child_skeleton_idx].skeleton_id));
+	Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(child_skeletons[p_child_skeleton_idx].skeleton_id);
 	if (!c) {
 		return;
 	}
@@ -192,7 +195,7 @@ void RetargetModifier3D::_update_child_skeletons() {
 
 void RetargetModifier3D::_reset_child_skeleton_poses() {
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!c) {
 			continue;
 		}
@@ -216,7 +219,7 @@ void RetargetModifier3D::_reset_child_skeletons() {
 #ifdef TOOLS_ENABLED
 void RetargetModifier3D::_force_update_child_skeletons() {
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!c) {
 			continue;
 		}
@@ -249,7 +252,7 @@ void RetargetModifier3D::remove_child_notify(Node *p_child) {
 
 void RetargetModifier3D::_validate_property(PropertyInfo &p_property) const {
 	if (use_global_pose) {
-		if (p_property.name == "enable_flags") {
+		if (p_property.name == "enable") {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
@@ -270,7 +273,7 @@ void RetargetModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_enabled", "enabled"), &RetargetModifier3D::set_scale_enabled);
 	ClassDB::bind_method(D_METHOD("is_scale_enabled"), &RetargetModifier3D::is_scale_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, SkeletonProfile::get_class_static()), "set_profile", "get_profile");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_pose"), "set_use_global_pose", "is_using_global_pose");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"), "set_enable_flags", "get_enable_flags");
 
@@ -304,7 +307,7 @@ void RetargetModifier3D::_retarget_global_pose() {
 	}
 
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *target_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *target_skeleton = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!target_skeleton) {
 			continue;
 		}
@@ -338,7 +341,7 @@ void RetargetModifier3D::_retarget_pose() {
 	}
 
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *target_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *target_skeleton = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!target_skeleton) {
 			continue;
 		}
@@ -370,7 +373,7 @@ void RetargetModifier3D::_retarget_pose() {
 	}
 }
 
-void RetargetModifier3D::_process_modification() {
+void RetargetModifier3D::_process_modification(double p_delta) {
 	if (use_global_pose) {
 		_retarget_global_pose();
 	} else {

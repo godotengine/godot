@@ -32,35 +32,78 @@
 
 #ifdef X11_ENABLED
 
-#include "x11/detect_prime_x11.h"
 #include "x11/key_mapping_x11.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"
+#include "drivers/unix/os_unix.h"
 #include "main/main.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/native_menu.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
-#if defined(VULKAN_ENABLED)
+#include <X11/Xatom.h>
+
+#ifdef SOWRAP_ENABLED
+#include "x11/dynwrappers/xext-so_wrap.h"
+#include "x11/dynwrappers/xinerama-so_wrap.h"
+#include "x11/dynwrappers/xrender-so_wrap.h"
+#else // !SOWRAP_ENABLED
+#include <X11/XKBlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
+#endif
+
+#ifdef RD_ENABLED
+#ifdef VULKAN_ENABLED
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
+
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
+#include "x11/detect_prime_x11.h"
+#include "x11/gl_manager_x11.h"
+#include "x11/gl_manager_x11_egl.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
-#include <dlfcn.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+#ifdef DBUS_ENABLED
+#include "freedesktop_at_spi_monitor.h"
+#include "freedesktop_portal_desktop.h"
+#include "freedesktop_screensaver.h"
 
-#undef CursorShape
-#include <X11/XKBlib.h>
+#ifdef SOWRAP_ENABLED
+#include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
+#endif
+
+#ifdef SPEECHD_ENABLED
+#include "tts_linux.h"
+#endif
+
+#include <dlfcn.h> // dlopen
+//#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <unistd.h>
+#include <climits> // LONG_MAX
+#include <cstdio> // stderr
+#include <cstdlib> // getenv
 
 // ICCCM
 #define WM_NormalState 1L // window normal state
@@ -99,73 +142,98 @@
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
-// Hints for X11 fullscreen
-struct Hints {
-	unsigned long flags = 0;
-	unsigned long functions = 0;
-	unsigned long decorations = 0;
-	long inputMode = 0;
-	unsigned long status = 0;
+struct MotifWmHints {
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long input_mode;
+	unsigned long status;
+};
+
+enum {
+	MWM_HINTS_FUNCTIONS = (1L << 0),
+	MWM_HINTS_DECORATIONS = (1L << 1),
+
+	MWM_FUNC_ALL = (1L << 0),
+	MWM_FUNC_RESIZE = (1L << 1),
+	MWM_FUNC_MOVE = (1L << 2),
+	MWM_FUNC_MINIMIZE = (1L << 3),
+	MWM_FUNC_MAXIMIZE = (1L << 4),
+	MWM_FUNC_CLOSE = (1L << 5),
+
+	MWM_DECOR_ALL = (1L << 0),
+	MWM_DECOR_BORDER = (1L << 1),
+	MWM_DECOR_RESIZEH = (1L << 2),
+	MWM_DECOR_TITLE = (1L << 3),
+	MWM_DECOR_MENU = (1L << 4),
+	MWM_DECOR_MINIMIZE = (1L << 5),
+	MWM_DECOR_MAXIMIZE = (1L << 6),
 };
 
 static String get_atom_name(Display *p_disp, Atom p_atom) {
 	char *name = XGetAtomName(p_disp, p_atom);
 	ERR_FAIL_NULL_V_MSG(name, String(), "Atom is invalid.");
-	String ret;
-	ret.parse_utf8(name);
+	String ret = String::utf8(name);
 	XFree(name);
 	return ret;
 }
 
-bool DisplayServerX11::has_feature(Feature p_feature) const {
+bool DisplayServerX11::has_feature(DisplayServerEnums::Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
-		case FEATURE_GLOBAL_MENU: {
+		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		case FEATURE_SUBWINDOWS:
+		case DisplayServerEnums::FEATURE_SUBWINDOWS:
 #ifdef TOUCH_ENABLED
-		case FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
 #endif
-		case FEATURE_MOUSE:
-		case FEATURE_MOUSE_WARP:
-		case FEATURE_CLIPBOARD:
-		case FEATURE_CURSOR_SHAPE:
-		case FEATURE_CUSTOM_CURSOR_SHAPE:
-		case FEATURE_IME:
-		case FEATURE_WINDOW_TRANSPARENCY:
-		//case FEATURE_HIDPI:
-		case FEATURE_ICON:
-		//case FEATURE_NATIVE_ICON:
-		case FEATURE_SWAP_BUFFERS:
+		case DisplayServerEnums::FEATURE_MOUSE:
+		case DisplayServerEnums::FEATURE_MOUSE_WARP:
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
+		case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
+		case DisplayServerEnums::FEATURE_IME:
+		case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
+		//case DisplayServerEnums::FEATURE_HIDPI:
+		case DisplayServerEnums::FEATURE_ICON:
+		//case DisplayServerEnums::FEATURE_NATIVE_ICON:
+		case DisplayServerEnums::FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
-		case FEATURE_KEEP_SCREEN_ON:
+		case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
 #endif
-		case FEATURE_CLIPBOARD_PRIMARY:
-		case FEATURE_WINDOW_EMBEDDING:
-		case FEATURE_WINDOW_DRAG: {
+		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
+		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
+		case DisplayServerEnums::FEATURE_WINDOW_DRAG: {
 			return true;
 		} break;
 
-		//case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_NATIVE_DIALOG_INPUT:
+		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_INPUT:
 #ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG_FILE:
-		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME: {
 			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
 		} break;
+		case DisplayServerEnums::FEATURE_NATIVE_COLOR_PICKER: {
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_screenshot_supported());
+		} break;
 #endif
-		case FEATURE_SCREEN_CAPTURE: {
+		case DisplayServerEnums::FEATURE_SCREEN_CAPTURE: {
 			return !xwayland;
 		} break;
 
 #ifdef SPEECHD_ENABLED
-		case FEATURE_TEXT_TO_SPEECH: {
+		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH: {
 			return true;
 		} break;
 #endif
+
+		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return AccessibilityServer::get_singleton()->is_supported();
+		} break;
 
 		default: {
 			return false;
@@ -338,38 +406,63 @@ void DisplayServerX11::_flush_mouse_motion() {
 
 #ifdef SPEECHD_ENABLED
 
+void DisplayServerX11::initialize_tts() const {
+	const_cast<DisplayServerX11 *>(this)->tts = memnew(TTS_Linux);
+}
+
 bool DisplayServerX11::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_speaking();
 }
 
 bool DisplayServerX11::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
-void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerX11::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->pause();
 }
 
 void DisplayServerX11::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->resume();
 }
 
 void DisplayServerX11::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->stop();
 }
 
@@ -398,26 +491,36 @@ bool DisplayServerX11::is_dark_mode() const {
 	}
 }
 
+Color DisplayServerX11::get_accent_color() const {
+	if (!portal_desktop) {
+		return Color();
+	}
+	return portal_desktop->get_appearance_accent_color();
+}
+
 void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
+	ERR_FAIL_COND(!portal_desktop);
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
-Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
-	WindowID window_id = p_window_id;
+Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
+	DisplayServerEnums::WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
-		window_id = MAIN_WINDOW_ID;
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
+		window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
 
-Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
-	WindowID window_id = p_window_id;
+Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
+	DisplayServerEnums::WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
-		window_id = MAIN_WINDOW_ID;
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
+		window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
@@ -433,7 +536,7 @@ void DisplayServerX11::beep() const {
 void DisplayServerX11::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+	DisplayServerEnums::MouseMode wanted_mouse_mode = mouse_mode_override_enabled
 			? mouse_mode_override
 			: mouse_mode_base;
 
@@ -441,26 +544,26 @@ void DisplayServerX11::_mouse_update_mode() {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
 		XUngrabPointer(x11_display, CurrentTime);
 	}
 
 	// The only modes that show a cursor are VISIBLE and CONFINED
-	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
-	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == DisplayServerEnums::MOUSE_MODE_VISIBLE || wanted_mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == DisplayServerEnums::MOUSE_MODE_VISIBLE || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
-		WindowID window_id = get_window_at_screen_position(mouse_get_position());
-		if (window_id != INVALID_WINDOW_ID && window_mouseover_id != window_id) {
-			if (window_mouseover_id != INVALID_WINDOW_ID) {
-				_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+		DisplayServerEnums::WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != DisplayServerEnums::INVALID_WINDOW_ID && window_mouseover_id != window_id) {
+			if (window_mouseover_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+				_send_window_event(windows[window_mouseover_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 			}
 			window_mouseover_id = window_id;
-			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+			_send_window_event(windows[window_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER);
 		}
 	}
 
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 		if (show_cursor) {
 			XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
 		} else {
@@ -469,12 +572,12 @@ void DisplayServerX11::_mouse_update_mode() {
 	}
 	mouse_mode = wanted_mouse_mode;
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		_flush_mouse_motion();
-		WindowID window_id = _get_focused_window_or_popup();
+		DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
 		if (!windows.has(window_id)) {
-			window_id = MAIN_WINDOW_ID;
+			window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 		}
 		WindowData &window = windows[window_id];
 
@@ -485,7 +588,7 @@ void DisplayServerX11::_mouse_update_mode() {
 			ERR_PRINT("NO GRAB");
 		}
 
-		if (mouse_mode == MOUSE_MODE_CAPTURED) {
+		if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 			center.x = window.size.width / 2;
 			center.y = window.size.height / 2;
 
@@ -501,8 +604,8 @@ void DisplayServerX11::_mouse_update_mode() {
 	XFlush(x11_display);
 }
 
-void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+void DisplayServerX11::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, DisplayServerEnums::MouseMode::MOUSE_MODE_MAX);
 	if (p_mode == mouse_mode_base) {
 		return;
 	}
@@ -510,12 +613,12 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
+DisplayServerEnums::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerX11::mouse_set_mode_override(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+void DisplayServerX11::mouse_set_mode_override(DisplayServerEnums::MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, DisplayServerEnums::MouseMode::MOUSE_MODE_MAX);
 	if (p_mode == mouse_mode_override) {
 		return;
 	}
@@ -523,7 +626,7 @@ void DisplayServerX11::mouse_set_mode_override(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode_override() const {
+DisplayServerEnums::MouseMode DisplayServerX11::mouse_get_mode_override() const {
 	return mouse_mode_override;
 }
 
@@ -542,12 +645,12 @@ bool DisplayServerX11::mouse_is_mode_override_enabled() const {
 void DisplayServerX11::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 		last_mouse_pos = p_position;
 	} else {
-		WindowID window_id = _get_focused_window_or_popup();
+		DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
 		if (!windows.has(window_id)) {
-			window_id = MAIN_WINDOW_ID;
+			window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 		}
 
 		XWarpPointer(x11_display, None, windows[window_id].x11_window,
@@ -578,7 +681,7 @@ BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 		int root_x, root_y, win_x, win_y;
 		unsigned int mask;
 		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 			if (mask & Button1Mask) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
@@ -599,7 +702,7 @@ BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 			return last_button_state;
 		}
 	}
-	return 0;
+	return MouseButtonMask::NONE;
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
@@ -611,8 +714,8 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 		internal_clipboard = p_text;
 	}
 
-	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
-	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
+	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
 }
 
 void DisplayServerX11::clipboard_set_primary(const String &p_text) {
@@ -624,8 +727,8 @@ void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 			internal_clipboard_primary = p_text;
 		}
 
-		XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
-		XSetSelectionOwner(x11_display, XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+		XSetSelectionOwner(x11_display, XA_PRIMARY, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
+		XSetSelectionOwner(x11_display, XInternAtom(x11_display, "PRIMARY", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, CurrentTime);
 	}
 }
 
@@ -759,7 +862,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 			}
 
 			if (success && (data_size > 0)) {
-				ret.parse_utf8((const char *)incr_data.ptr(), data_size);
+				ret.append_utf8((const char *)incr_data.ptr(), data_size);
 			}
 		} else if (bytes_left > 0) {
 			// Data is ready and can be processed all at once.
@@ -769,7 +872,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 					&len, &dummy, &data);
 
 			if (result == Success) {
-				ret.parse_utf8((const char *)data);
+				ret.append_utf8((const char *)data);
 			} else {
 				print_verbose("Failed to get selection data.");
 			}
@@ -867,10 +970,10 @@ String DisplayServerX11::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
 	String ret;
-	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
+	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
 
 	if (ret.is_empty()) {
-		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
+		ret = _clipboard_get(XA_PRIMARY, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
 	}
 
 	return ret;
@@ -880,10 +983,10 @@ String DisplayServerX11::clipboard_get_primary() const {
 	_THREAD_SAFE_METHOD_
 
 	String ret;
-	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window);
+	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
 
 	if (ret.is_empty()) {
-		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
+		ret = _clipboard_get(XA_PRIMARY, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
 	}
 
 	return ret;
@@ -892,7 +995,7 @@ String DisplayServerX11::clipboard_get_primary() const {
 Ref<Image> DisplayServerX11::clipboard_get_image() const {
 	_THREAD_SAFE_METHOD_
 	Atom clipboard = XInternAtom(x11_display, "CLIPBOARD", 0);
-	Window x11_window = windows[MAIN_WINDOW_ID].x11_window;
+	Window x11_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
 	Ref<Image> ret;
 	Atom target = _clipboard_get_image_target(clipboard, x11_window);
 	if (target == None) {
@@ -1037,7 +1140,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 bool DisplayServerX11::clipboard_has_image() const {
 	Atom target = _clipboard_get_image_target(
 			XInternAtom(x11_display, "CLIPBOARD", 0),
-			windows[MAIN_WINDOW_ID].x11_window);
+			windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
 	return target != None;
 }
 
@@ -1163,7 +1266,8 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_COND_V(p_screen < 0, rect);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	// Using Xinerama Extension.
 	bool found = false;
@@ -1251,9 +1355,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
-
-	// Check if screen is valid.
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i(0, 0, 0, 0));
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	bool is_multiscreen = screen_count > 1;
 
@@ -1557,14 +1659,15 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
 		if (xrr_get_monitors) {
-			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, true, &count);
 			if (p_screen < count) {
 				double xdpi = sc.width / (double)monitors[p_screen].mwidth * 25.4;
 				double ydpi = sc.height / (double)monitors[p_screen].mheight * 25.4;
@@ -1634,18 +1737,9 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	if (xwayland) {
 		return Ref<Image>();
@@ -1750,58 +1844,57 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V_MSG(!xrandr_ext_ok || !xrr_get_monitors, SCREEN_REFRESH_RATE_FALLBACK, "XRandR extension is not available.");
+
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
-	//Use xrandr to get screen refresh rate.
-	if (xrandr_ext_ok) {
-		XRRScreenResources *screen_info = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
-		if (screen_info) {
-			RRMode current_mode = 0;
-			xrr_monitor_info *monitors = nullptr;
-
-			if (xrr_get_monitors) {
-				int count = 0;
-				monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
-				ERR_FAIL_INDEX_V(p_screen, count, SCREEN_REFRESH_RATE_FALLBACK);
-			} else {
-				ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-				return SCREEN_REFRESH_RATE_FALLBACK;
-			}
-
-			bool found_active_mode = false;
-			for (int crtc = 0; crtc < screen_info->ncrtc; crtc++) { // Loop through outputs to find which one is currently outputting.
-				XRRCrtcInfo *monitor_info = XRRGetCrtcInfo(x11_display, screen_info, screen_info->crtcs[crtc]);
-				if (monitor_info->x != monitors[p_screen].x || monitor_info->y != monitors[p_screen].y) { // If X and Y aren't the same as the monitor we're looking for, this isn't the right monitor. Continue.
-					continue;
-				}
-
-				if (monitor_info->mode != None) {
-					current_mode = monitor_info->mode;
-					found_active_mode = true;
-					break;
-				}
-			}
-
-			if (found_active_mode) {
-				for (int mode = 0; mode < screen_info->nmode; mode++) {
-					XRRModeInfo m_info = screen_info->modes[mode];
-					if (m_info.id == current_mode) {
-						// Snap to nearest 0.01 to stay consistent with other platforms.
-						return Math::snapped((float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal), 0.01);
-					}
-				}
-			}
-
-			ERR_PRINT("An error occurred while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occurred.
-			return SCREEN_REFRESH_RATE_FALLBACK;
-		} else {
-			ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-			return SCREEN_REFRESH_RATE_FALLBACK;
+	int target_x;
+	int target_y;
+	{
+		int count = 0;
+		xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window, true, &count);
+		ERR_FAIL_NULL_V(monitors, SCREEN_REFRESH_RATE_FALLBACK);
+		if (count <= p_screen) {
+			xrr_free_monitors(monitors);
+			ERR_FAIL_V_MSG(SCREEN_REFRESH_RATE_FALLBACK, vformat("Invalid screen index: %d (count: %d).", p_screen, count));
 		}
+		target_x = monitors[p_screen].x;
+		target_y = monitors[p_screen].y;
+		xrr_free_monitors(monitors);
 	}
-	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-	return SCREEN_REFRESH_RATE_FALLBACK;
+
+	XRRScreenResources *screen_res = XRRGetScreenResourcesCurrent(x11_display, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window);
+	ERR_FAIL_NULL_V(screen_res, SCREEN_REFRESH_RATE_FALLBACK);
+
+	XRRModeInfo *mode_info = nullptr;
+	for (int crtc = 0; crtc < screen_res->ncrtc; crtc++) { // Loop through outputs to find which one is currently outputting.
+		XRRCrtcInfo *monitor_info = XRRGetCrtcInfo(x11_display, screen_res, screen_res->crtcs[crtc]);
+		if (monitor_info->x != target_x || monitor_info->y != target_y || monitor_info->mode == None) {
+			XRRFreeCrtcInfo(monitor_info);
+			continue;
+		}
+		for (int mode = 0; mode < screen_res->nmode; mode++) {
+			if (screen_res->modes[mode].id == monitor_info->mode) {
+				mode_info = &screen_res->modes[mode];
+			}
+		}
+		XRRFreeCrtcInfo(monitor_info);
+		break;
+	}
+
+	float result;
+	if (mode_info) {
+		// Snap to nearest 0.01 to stay consistent with other platforms.
+		result = Math::snapped((float)mode_info->dotClock / ((float)mode_info->hTotal * (float)mode_info->vTotal), 0.01);
+	} else {
+		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+		result = SCREEN_REFRESH_RATE_FALLBACK;
+	}
+
+	XRRFreeScreenResources(screen_res);
+	return result;
 }
 
 #ifdef DBUS_ENABLED
@@ -1810,13 +1903,26 @@ void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
-	if (p_enable) {
-		screensaver->inhibit();
-	} else {
-		screensaver->uninhibit();
-	}
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			// Attach the inhibit request to the main window, not the last focused window,
+			// on the basis that inhibiting the screensaver is global state for the application.
+			DisplayServerEnums::WindowID window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+			String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+			keep_screen_on = portal_desktop->inhibit(xid);
+		} else {
+			portal_desktop->uninhibit();
+			keep_screen_on = false;
+		}
+	} else if (screensaver) {
+		if (p_enable) {
+			screensaver->inhibit();
+		} else {
+			screensaver->uninhibit();
+		}
 
-	keep_screen_on = p_enable;
+		keep_screen_on = p_enable;
+	}
 }
 
 bool DisplayServerX11::screen_is_kept_on() const {
@@ -1824,23 +1930,23 @@ bool DisplayServerX11::screen_is_kept_on() const {
 }
 #endif
 
-Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
+Vector<DisplayServerEnums::WindowID> DisplayServerX11::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
 	Vector<int> ret;
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 		ret.push_back(E.key);
 	}
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
+DisplayServerEnums::WindowID DisplayServerX11::create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, 0);
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
+	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, 0);
+	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, id);
+			window_set_flag(DisplayServerEnums::WindowFlags(i), true, id);
 		}
 	}
 #ifdef RD_ENABLED
@@ -1849,31 +1955,116 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 	}
 #endif
 
-	if (p_transient_parent != INVALID_WINDOW_ID) {
+	if (p_transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
 		window_set_transient(id, p_transient_parent);
 	}
 
 	return id;
 }
 
-void DisplayServerX11::show_window(WindowID p_id) {
+void DisplayServerX11::show_window(DisplayServerEnums::WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_id];
+	WindowData &wd = windows[p_id];
 	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
+	// Setup initial minimize/maximize state.
+	// `_NET_WM_STATE` can be set directly when the window is unmapped.
+	LocalVector<Atom> hints;
+	if (wd.maximized) {
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False));
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False));
+	}
+	if (wd.minimized) {
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False));
+	}
+	XChangeProperty(x11_display, wd.x11_window, XInternAtom(x11_display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)hints.ptr(), hints.size());
+
+	_update_motif_wm_hints(p_id);
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
-	_validate_mode_on_map(p_id);
+
+	_validate_fullscreen_on_map(p_id);
+
+	if (p_id == DisplayServerEnums::MAIN_WINDOW_ID) {
+		// Get main window size for boot splash drawing.
+		bool get_config_event = false;
+
+		// Search the X11 event queue for ConfigureNotify events and process all that are currently queued early.
+		{
+			MutexLock mutex_lock(events_mutex);
+
+			for (uint32_t event_index = 0; event_index < polled_events.size(); ++event_index) {
+				XEvent &config_event = polled_events[event_index];
+				if (config_event.type == ConfigureNotify) {
+					_window_changed(&config_event);
+					get_config_event = true;
+				}
+			}
+			XEvent config_event;
+			while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+				_window_changed(&config_event);
+				get_config_event = true;
+			}
+		}
+
+		// Estimate maximize/full screen window size, ConfigureNotify may arrive only after maximize animation is finished.
+		if (!get_config_event && (wd.maximized || wd.fullscreen)) {
+			int screen = window_get_current_screen(p_id);
+			Size2i sz;
+			if (wd.maximized) {
+				sz = screen_get_usable_rect(screen).size;
+				if (!wd.borderless) {
+					Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+					if (prop != None) {
+						Atom type;
+						int format;
+						unsigned long len;
+						unsigned long remaining;
+						unsigned char *data = nullptr;
+						if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+							if (format == 32 && len == 4 && data) {
+								long *extents = (long *)data;
+								sz.width -= extents[0] + extents[1]; // left, right
+								sz.height -= extents[2] + extents[3]; // top, bottom
+							}
+							XFree(data);
+						}
+					}
+				}
+			} else {
+				sz = screen_get_size(screen);
+			}
+			if (sz == Size2i()) {
+				return;
+			}
+
+			wd.size = sz;
+#if defined(RD_ENABLED)
+			if (rendering_context) {
+				rendering_context->window_set_size(p_id, sz.width, sz.height);
+			}
+#endif
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
+				gl_manager->window_resize(p_id, sz.width, sz.height);
+			}
+			if (gl_manager_egl) {
+				gl_manager_egl->window_resize(p_id, sz.width, sz.height);
+			}
+#endif
+		}
+	}
 }
 
-void DisplayServerX11::delete_sub_window(WindowID p_id) {
+void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_id));
-	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted");
+	ERR_FAIL_COND_MSG(p_id == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't be deleted");
 
 	popup_close(p_id);
 
@@ -1882,16 +2073,16 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	if (window_mouseover_id == p_id) {
-		window_mouseover_id = INVALID_WINDOW_ID;
-		_send_window_event(windows[p_id], WINDOW_EVENT_MOUSE_EXIT);
+		window_mouseover_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		_send_window_event(windows[p_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 	}
 
 	while (wd.transient_children.size()) {
-		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
+		window_set_transient(*wd.transient_children.begin(), DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
-	if (wd.transient_parent != INVALID_WINDOW_ID) {
-		window_set_transient(p_id, INVALID_WINDOW_ID);
+	if (wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		window_set_transient(p_id, DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 #if defined(RD_ENABLED)
@@ -1911,6 +2102,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		gl_manager_egl->window_destroy(p_id);
 	}
 #endif
+
+	AccessibilityServer::get_singleton()->window_destroy(p_id);
 
 	if (wd.xic) {
 		XDestroyIC(wd.xic);
@@ -1938,24 +2131,24 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	windows.erase(p_id);
 
 	if (last_focused_window == p_id) {
-		last_focused_window = INVALID_WINDOW_ID;
+		last_focused_window = DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 }
 
-int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+int64_t DisplayServerX11::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), 0);
 	switch (p_handle_type) {
-		case DISPLAY_HANDLE: {
+		case DisplayServerEnums::DISPLAY_HANDLE: {
 			return (int64_t)x11_display;
 		}
-		case WINDOW_HANDLE: {
+		case DisplayServerEnums::WINDOW_HANDLE: {
 			return (int64_t)windows[p_window].x11_window;
 		}
-		case WINDOW_VIEW: {
+		case DisplayServerEnums::WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
 #ifdef GLES3_ENABLED
-		case OPENGL_CONTEXT: {
+		case DisplayServerEnums::OPENGL_CONTEXT: {
 			if (gl_manager) {
 				return (int64_t)gl_manager->get_glx_context(p_window);
 			}
@@ -1964,15 +2157,27 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 			}
 			return 0;
 		}
-		case EGL_DISPLAY: {
+		case DisplayServerEnums::EGL_DISPLAY: {
 			if (gl_manager_egl) {
 				return (int64_t)gl_manager_egl->get_display(p_window);
 			}
 			return 0;
 		}
-		case EGL_CONFIG: {
+		case DisplayServerEnums::EGL_CONFIG: {
 			if (gl_manager_egl) {
 				return (int64_t)gl_manager_egl->get_config(p_window);
+			}
+			return 0;
+		}
+		case DisplayServerEnums::GLX_VISUALID: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_visualid(p_window);
+			}
+			return 0;
+		}
+		case DisplayServerEnums::GLX_FBCONFIG: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_fbconfig(p_window);
 			}
 			return 0;
 		}
@@ -1983,24 +2188,24 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 	}
 }
 
-void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	wd.instance_id = p_instance;
 }
 
-ObjectID DisplayServerX11::window_get_attached_instance_id(WindowID p_window) const {
+ObjectID DisplayServerX11::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), ObjectID());
 	const WindowData &wd = windows[p_window];
 	return wd.instance_id;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
-	WindowID found_window = INVALID_WINDOW_ID;
-	WindowID parent_window = INVALID_WINDOW_ID;
+DisplayServerEnums::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
+	DisplayServerEnums::WindowID found_window = DisplayServerEnums::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID parent_window = DisplayServerEnums::INVALID_WINDOW_ID;
 	unsigned int focus_order = 0;
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 		const WindowData &wd = E.value;
 
 		// Discard windows with no focus.
@@ -2009,7 +2214,7 @@ DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const
 		}
 
 		// Find topmost window which contains the given position.
-		WindowID window_id = E.key;
+		DisplayServerEnums::WindowID window_id = E.key;
 		Rect2i win_rect = Rect2i(window_get_position(window_id), window_get_size(window_id));
 		if (win_rect.has_point(p_position)) {
 			// For siblings, pick the window which was focused last.
@@ -2024,7 +2229,7 @@ DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const
 	return found_window;
 }
 
-void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
+void DisplayServerX11::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2040,7 +2245,7 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	}
 }
 
-void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2048,7 +2253,7 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 	_update_window_mouse_passthrough(p_window);
 }
 
-void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
+void DisplayServerX11::_update_window_mouse_passthrough(DisplayServerEnums::WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_COND(!xshaped_ext_ok);
 
@@ -2061,7 +2266,7 @@ void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
 			Region region = XCreateRegion();
 			XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
 			XDestroyRegion(region);
-		} else if (region_path.size() == 0) {
+		} else if (region_path.is_empty()) {
 			XShapeCombineMask(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, None, ShapeSet);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * region_path.size());
@@ -2077,7 +2282,7 @@ void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
 	}
 }
 
-void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2085,7 +2290,7 @@ void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callab
 	wd.rect_changed_callback = p_callable;
 }
 
-void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2093,7 +2298,7 @@ void DisplayServerX11::window_set_window_event_callback(const Callable &p_callab
 	wd.event_callback = p_callable;
 }
 
-void DisplayServerX11::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2101,7 +2306,7 @@ void DisplayServerX11::window_set_input_event_callback(const Callable &p_callabl
 	wd.input_event_callback = p_callable;
 }
 
-void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2109,7 +2314,7 @@ void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable
 	wd.input_text_callback = p_callable;
 }
 
-void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2117,7 +2322,7 @@ void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable
 	wd.drop_files_callback = p_callable;
 }
 
-int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
+int DisplayServerX11::window_get_current_screen(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	int count = get_screen_count();
@@ -2126,7 +2331,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 		return 0;
 	}
 
-	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	ERR_FAIL_COND_V(!windows.has(p_window), DisplayServerEnums::INVALID_SCREEN);
 	const WindowData &wd = windows[p_window];
 
 	const Rect2i window_rect(wd.position, wd.size);
@@ -2147,7 +2352,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	return screen_index;
 }
 
-void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+void DisplayServerX11::gl_window_make_current(DisplayServerEnums::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
 		gl_manager->window_make_current(p_window_id);
@@ -2158,29 +2363,32 @@ void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_i
 #endif
 }
 
-void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
+void DisplayServerX11::window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX(p_screen, get_screen_count());
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
+	WindowData &wd = windows[p_window];
 
 	if (wd.embed_parent) {
 		print_line("Embedded window can't be moved to another screen.");
 		return;
 	}
 
-	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN || window_get_mode(p_window) == WINDOW_MODE_MAXIMIZED) {
+	if (window_get_mode(p_window) == DisplayServerEnums::WINDOW_MODE_FULLSCREEN || window_get_mode(p_window) == DisplayServerEnums::WINDOW_MODE_MAXIMIZED) {
+		DisplayServerEnums::WindowMode current_mode = window_get_mode(p_window);
+		window_set_mode(DisplayServerEnums::WINDOW_MODE_WINDOWED, p_window);
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
-
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
+		window_set_mode(current_mode, p_window);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
 		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
@@ -2193,7 +2401,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	}
 }
 
-void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent) {
+void DisplayServerX11::window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(p_window == p_parent);
@@ -2201,21 +2409,21 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd_window = windows[p_window];
 
-	WindowID prev_parent = wd_window.transient_parent;
+	DisplayServerEnums::WindowID prev_parent = wd_window.transient_parent;
 	ERR_FAIL_COND(prev_parent == p_parent);
 
 	DEBUG_LOG_X11("window_set_transient: %lu (%u), prev_parent=%u, parent=%u\n", wd_window.x11_window, p_window, prev_parent, p_parent);
 
 	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
-	if (p_parent == INVALID_WINDOW_ID) {
+	if (p_parent == DisplayServerEnums::INVALID_WINDOW_ID) {
 		//remove transient
 
-		ERR_FAIL_COND(prev_parent == INVALID_WINDOW_ID);
+		ERR_FAIL_COND(prev_parent == DisplayServerEnums::INVALID_WINDOW_ID);
 		ERR_FAIL_COND(!windows.has(prev_parent));
 
 		WindowData &wd_parent = windows[prev_parent];
 
-		wd_window.transient_parent = INVALID_WINDOW_ID;
+		wd_window.transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
@@ -2234,7 +2442,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		}
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
-		ERR_FAIL_COND_MSG(prev_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
+		ERR_FAIL_COND_MSG(prev_parent != DisplayServerEnums::INVALID_WINDOW_ID, "Window already has a transient parent");
 		WindowData &wd_parent = windows[p_parent];
 
 		wd_window.transient_parent = p_parent;
@@ -2245,21 +2453,22 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 }
 
 // Helper method. Assumes that the window id has already been checked and exists.
-void DisplayServerX11::_update_size_hints(WindowID p_window) {
+void DisplayServerX11::_update_size_hints(DisplayServerEnums::WindowID p_window) {
 	WindowData &wd = windows[p_window];
-	WindowMode window_mode = window_get_mode(p_window);
+	DisplayServerEnums::WindowMode window_mode = window_get_mode(p_window);
 	XSizeHints *xsh = XAllocSizeHints();
 
 	// Always set the position and size hints - they should be synchronized with the actual values after the window is mapped anyway
-	xsh->flags |= PPosition | PSize;
+	xsh->flags |= PPosition | PSize | PWinGravity;
 	xsh->x = wd.position.x;
 	xsh->y = wd.position.y;
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
+	xsh->win_gravity = StaticGravity;
 
-	if (window_mode == WINDOW_MODE_FULLSCREEN || window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (window_mode == DisplayServerEnums::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		// Do not set any other hints to prevent the window manager from ignoring the fullscreen flags
-	} else if (window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
+	} else if (window_get_flag(DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		// If resizing is disabled, use the forced size
 		xsh->flags |= PMinSize | PMaxSize;
 		xsh->min_width = wd.size.x;
@@ -2284,7 +2493,87 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	XFree(xsh);
 }
 
-Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
+void DisplayServerX11::_update_motif_wm_hints(DisplayServerEnums::WindowID p_window) {
+	Atom motif_wm_hints = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	if (motif_wm_hints == None) {
+		return;
+	}
+
+	WindowData &wd = windows[p_window];
+
+	MotifWmHints hints = {};
+	hints.flags = MWM_HINTS_DECORATIONS;
+
+	if (!wd.borderless) {
+		hints.flags |= MWM_HINTS_FUNCTIONS;
+
+		hints.decorations = MWM_DECOR_BORDER | MWM_DECOR_MENU | MWM_DECOR_TITLE;
+		hints.functions = MWM_FUNC_MOVE | MWM_FUNC_CLOSE;
+
+		if (!wd.no_min_btn) {
+			hints.decorations |= MWM_DECOR_MINIMIZE;
+			hints.functions |= MWM_FUNC_MINIMIZE;
+		}
+		if (!wd.no_max_btn) {
+			hints.decorations |= MWM_DECOR_MAXIMIZE;
+			hints.functions |= MWM_FUNC_MAXIMIZE;
+		}
+		if (!wd.resize_disabled) {
+			hints.decorations |= MWM_DECOR_RESIZEH;
+			hints.functions |= MWM_FUNC_RESIZE;
+		}
+	}
+
+	XChangeProperty(x11_display, wd.x11_window, motif_wm_hints, motif_wm_hints, 32, PropModeReplace, (unsigned char *)&hints, 5);
+}
+
+void DisplayServerX11::_update_wm_state_hints(DisplayServerEnums::WindowID p_window) {
+	WindowData &wd = windows[p_window];
+
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+
+	int result = XGetWindowProperty(
+			x11_display,
+			wd.x11_window,
+			XInternAtom(x11_display, "_NET_WM_STATE", False),
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+	if (result != Success) {
+		return;
+	}
+
+	LocalVector<Atom> hints;
+	if (data) {
+		hints.resize(len);
+		Atom *atoms = (Atom *)data;
+		for (unsigned long i = 0; i < len; i++) {
+			hints[i] = atoms[i];
+		}
+		XFree(data);
+	}
+
+	Atom fullscreen_atom = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+	Atom maximized_horz_atom = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+	Atom maximized_vert_atom = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+	Atom hidden_atom = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
+
+	wd.fullscreen = hints.has(fullscreen_atom);
+	wd.maximized = hints.has(maximized_horz_atom) && hints.has(maximized_vert_atom);
+	wd.minimized = hints.has(hidden_atom);
+}
+
+Point2i DisplayServerX11::window_get_position(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
@@ -2293,7 +2582,7 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	return wd.position;
 }
 
-Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window) const {
+Point2i DisplayServerX11::window_get_position_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2327,7 +2616,7 @@ Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window
 	return Size2i(x, y);
 }
 
-void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
+void DisplayServerX11::window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2338,33 +2627,12 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 		return;
 	}
 
-	int x = 0;
-	int y = 0;
-	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		//exclude window decorations
-		XSync(x11_display, False);
-		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
-		if (prop != None) {
-			Atom type;
-			int format;
-			unsigned long len;
-			unsigned long remaining;
-			unsigned char *data = nullptr;
-			if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-				if (format == 32 && len == 4 && data) {
-					long *extents = (long *)data;
-					x = extents[0];
-					y = extents[2];
-				}
-				XFree(data);
-			}
-		}
-	}
-	XMoveWindow(x11_display, wd.x11_window, p_position.x - x, p_position.y - y);
+	wd.position = p_position;
+	XMoveWindow(x11_display, wd.x11_window, p_position.x, p_position.y);
 	_update_real_mouse_position(wd);
 }
 
-void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerX11::window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2385,7 +2653,7 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 	XFlush(x11_display);
 }
 
-Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_max_size(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2394,7 +2662,7 @@ Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
 	return wd.max_size;
 }
 
-void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerX11::window_set_min_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2415,7 +2683,7 @@ void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_windo
 	XFlush(x11_display);
 }
 
-Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_min_size(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2424,7 +2692,7 @@ Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
 	return wd.min_size;
 }
 
-void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerX11::window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -2485,7 +2753,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 #endif
 }
 
-Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2493,7 +2761,7 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size_with_decorations(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2529,7 +2797,7 @@ Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) con
 
 // Just a helper to reduce code duplication in `window_is_maximize_allowed`
 // and `_set_wm_maximized`.
-bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_atom_name) const {
+bool DisplayServerX11::_window_maximize_check(DisplayServerEnums::WindowID p_window, const char *p_atom_name) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
@@ -2601,7 +2869,7 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 	return retval;
 }
 
-bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
+bool DisplayServerX11::_window_minimize_check(DisplayServerEnums::WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	// Using EWMH instead of ICCCM, might work better for Wayland users.
@@ -2644,7 +2912,7 @@ bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
 	return false;
 }
 
-bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
+bool DisplayServerX11::_window_fullscreen_check(DisplayServerEnums::WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
@@ -2690,15 +2958,11 @@ bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
 	return retval;
 }
 
-void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
+void DisplayServerX11::_validate_fullscreen_on_map(DisplayServerEnums::WindowID p_window) {
 	// Check if we applied any window modes that didn't take effect while unmapped
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
 		_set_wm_fullscreen(p_window, true, wd.exclusive_fullscreen);
-	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
-		_set_wm_maximized(p_window, true);
-	} else if (wd.minimized && !_window_minimize_check(p_window)) {
-		_set_wm_minimized(p_window, true);
 	}
 
 	if (wd.on_top) {
@@ -2718,12 +2982,12 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	}
 }
 
-bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
+bool DisplayServerX11::window_is_maximize_allowed(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	return _window_maximize_check(p_window, "_NET_WM_ALLOWED_ACTIONS");
 }
 
-void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
+void DisplayServerX11::_set_wm_maximized(DisplayServerEnums::WindowID p_window, bool p_enabled) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -2748,14 +3012,14 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 		// Wait for effective resizing (so the GLX context is too).
 		// Give up after 0.5s, it's not going to happen on this WM.
 		// https://github.com/godotengine/godot/issues/19978
-		for (int attempt = 0; window_get_mode(p_window) != WINDOW_MODE_MAXIMIZED && attempt < 50; attempt++) {
+		for (int attempt = 0; window_get_mode(p_window) != DisplayServerEnums::WINDOW_MODE_MAXIMIZED && attempt < 50; attempt++) {
 			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 	wd.maximized = p_enabled;
 }
 
-void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
+void DisplayServerX11::_set_wm_minimized(DisplayServerEnums::WindowID p_window, bool p_enabled) {
 	WindowData &wd = windows[p_window];
 	// Using ICCCM -- Inter-Client Communication Conventions Manual
 	XEvent xev;
@@ -2785,21 +3049,9 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	wd.minimized = p_enabled;
 }
 
-void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive) {
+void DisplayServerX11::_set_wm_fullscreen(DisplayServerEnums::WindowID p_window, bool p_enabled, bool p_exclusive) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
-
-	if (p_enabled && !window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		// remove decorations if the window is not already borderless
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		if (property != None) {
-			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		}
-	}
 
 	if (p_enabled) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
@@ -2841,83 +3093,64 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	if (!p_enabled) {
 		// Reset the non-resizable flags if we un-set these before.
 		_update_size_hints(p_window);
-
-		// put back or remove decorations according to the last set borderless state
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = wd.borderless ? 0 : 1;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		if (property != None) {
-			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		}
 	}
 }
 
-void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
+void DisplayServerX11::window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	WindowMode old_mode = window_get_mode(p_window);
+	DisplayServerEnums::WindowMode old_mode = window_get_mode(p_window);
 	if (old_mode == p_mode) {
 		return; // do nothing
 	}
 
-	if (p_mode != WINDOW_MODE_WINDOWED && wd.embed_parent) {
+	if (p_mode != DisplayServerEnums::WINDOW_MODE_WINDOWED && wd.embed_parent) {
 		print_line("Embedded window only supports Windowed mode.");
 		return;
 	}
 
 	// Remove all "extra" modes.
 	switch (old_mode) {
-		case WINDOW_MODE_WINDOWED: {
+		case DisplayServerEnums::WINDOW_MODE_WINDOWED: {
 			//do nothing
 		} break;
-		case WINDOW_MODE_MINIMIZED: {
+		case DisplayServerEnums::WINDOW_MODE_MINIMIZED: {
 			_set_wm_minimized(p_window, false);
 		} break;
-		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
-		case WINDOW_MODE_FULLSCREEN: {
-			//Remove full-screen
-			wd.fullscreen = false;
-			wd.exclusive_fullscreen = false;
-
-			_set_wm_fullscreen(p_window, false, false);
-
-			//un-maximize required for always on top
-			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
-
-			window_set_position(wd.last_position_before_fs, p_window);
-
-			if (on_top) {
-				_set_wm_maximized(p_window, false);
+		case DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+		case DisplayServerEnums::WINDOW_MODE_FULLSCREEN: {
+			// Only remove fullscreen when necessary.
+			if (p_mode == DisplayServerEnums::WINDOW_MODE_WINDOWED || p_mode == DisplayServerEnums::WINDOW_MODE_MAXIMIZED) {
+				wd.fullscreen = false;
+				wd.exclusive_fullscreen = false;
+				_set_wm_fullscreen(p_window, false, false);
 			}
-
 		} break;
-		case WINDOW_MODE_MAXIMIZED: {
-			_set_wm_maximized(p_window, false);
+		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
+			// Varies between target modes, so do nothing here.
 		} break;
 	}
 
 	switch (p_mode) {
-		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+		case DisplayServerEnums::WINDOW_MODE_WINDOWED: {
+			if (wd.maximized) {
+				_set_wm_maximized(p_window, false);
+			}
 		} break;
-		case WINDOW_MODE_MINIMIZED: {
+		case DisplayServerEnums::WINDOW_MODE_MINIMIZED: {
 			_set_wm_minimized(p_window, true);
 		} break;
-		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
-		case WINDOW_MODE_FULLSCREEN: {
-			wd.last_position_before_fs = wd.position;
-
-			if (window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window)) {
+		case DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+		case DisplayServerEnums::WINDOW_MODE_FULLSCREEN: {
+			if (window_get_flag(DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP, p_window)) {
 				_set_wm_maximized(p_window, true);
 			}
 
 			wd.fullscreen = true;
-			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+			if (p_mode == DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 				wd.exclusive_fullscreen = true;
 				_set_wm_fullscreen(p_window, true, true);
 			} else {
@@ -2925,51 +3158,56 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				_set_wm_fullscreen(p_window, true, false);
 			}
 		} break;
-		case WINDOW_MODE_MAXIMIZED: {
+		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
 			_set_wm_maximized(p_window, true);
 		} break;
 	}
 }
 
-DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
+DisplayServerEnums::WindowMode DisplayServerX11::window_get_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
+	ERR_FAIL_COND_V(!windows.has(p_window), DisplayServerEnums::WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen) { //if fullscreen, it's not in another mode
+	if (_window_minimize_check(p_window)) {
+		return DisplayServerEnums::WINDOW_MODE_MINIMIZED;
+	}
+
+	if (wd.fullscreen) {
 		if (wd.exclusive_fullscreen) {
-			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
-		} else {
-			return WINDOW_MODE_FULLSCREEN;
+			return DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
 		}
+		return DisplayServerEnums::WINDOW_MODE_FULLSCREEN;
 	}
 
-	// Test maximized.
-	// Using EWMH -- Extended Window Manager Hints
 	if (_window_maximize_check(p_window, "_NET_WM_STATE")) {
-		return WINDOW_MODE_MAXIMIZED;
+		return DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	}
 
-	{
-		if (_window_minimize_check(p_window)) {
-			return WINDOW_MODE_MINIMIZED;
-		}
-	}
-
-	// All other discarded, return windowed.
-
-	return WINDOW_MODE_WINDOWED;
+	return DisplayServerEnums::WINDOW_MODE_WINDOWED;
 }
 
-void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
+void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
-		case WINDOW_FLAG_RESIZE_DISABLED: {
+		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			_update_motif_wm_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			_update_motif_wm_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.embed_parent) {
 				print_line("Embedded window resize can't be disabled.");
 				return;
@@ -2977,29 +3215,17 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 			wd.resize_disabled = p_enabled;
 			_update_size_hints(p_window);
+			_update_motif_wm_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
-		case WINDOW_FLAG_BORDERLESS: {
-			Hints hints;
-			Atom property;
-			hints.flags = 2;
-			hints.decorations = p_enabled ? 0 : 1;
-			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (property != None) {
-				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-			}
-
-			// Preserve window size
-			if (!wd.embed_parent) {
-				window_set_size(window_get_size(p_window), p_window);
-			}
-
+		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
 			wd.borderless = p_enabled;
+			_update_motif_wm_hints(p_window);
 			_update_window_mouse_passthrough(p_window);
 		} break;
-		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
+		case DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP: {
+			ERR_FAIL_COND_MSG(wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
 			if (p_enabled && wd.embed_parent) {
 				print_line("Embedded window can't become on top.");
 				return;
@@ -3028,22 +3254,22 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			wd.on_top = p_enabled;
 
 		} break;
-		case WINDOW_FLAG_TRANSPARENT: {
+		case DisplayServerEnums::WINDOW_FLAG_TRANSPARENT: {
 			wd.layered_window = p_enabled;
 		} break;
-		case WINDOW_FLAG_NO_FOCUS: {
+		case DisplayServerEnums::WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
 		} break;
-		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+		case DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			wd.mpass = p_enabled;
 			_update_window_mouse_passthrough(p_window);
 		} break;
-		case WINDOW_FLAG_POPUP: {
+		case DisplayServerEnums::WINDOW_FLAG_POPUP: {
 			XWindowAttributes xwa;
 			XSync(x11_display, False);
 			XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
-			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
+			ERR_FAIL_COND_MSG(p_window == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			if (p_enabled && wd.embed_parent) {
 				print_line("Embedded window can't be popup.");
@@ -3056,49 +3282,38 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	}
 }
 
-bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+bool DisplayServerX11::window_get_flag(DisplayServerEnums::WindowFlags p_flag, DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
-		case WINDOW_FLAG_RESIZE_DISABLED: {
+		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
 		} break;
-		case WINDOW_FLAG_BORDERLESS: {
-			bool borderless = wd.borderless;
-			Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (prop != None) {
-				Atom type;
-				int format;
-				unsigned long len;
-				unsigned long remaining;
-				unsigned char *data = nullptr;
-				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-					if (data && (format == 32) && (len >= 5)) {
-						borderless = !(reinterpret_cast<Hints *>(data)->decorations);
-					}
-					if (data) {
-						XFree(data);
-					}
-				}
-			}
-			return borderless;
+		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
+			return wd.borderless;
 		} break;
-		case WINDOW_FLAG_ALWAYS_ON_TOP: {
+		case DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.on_top;
 		} break;
-		case WINDOW_FLAG_TRANSPARENT: {
+		case DisplayServerEnums::WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
 		} break;
-		case WINDOW_FLAG_NO_FOCUS: {
+		case DisplayServerEnums::WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
 		} break;
-		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+		case DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;
 		} break;
-		case WINDOW_FLAG_POPUP: {
+		case DisplayServerEnums::WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
 		} break;
 		default: {
@@ -3108,7 +3323,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 	return false;
 }
 
-void DisplayServerX11::window_request_attention(WindowID p_window) {
+void DisplayServerX11::window_request_attention(DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -3134,7 +3349,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 	XFlush(x11_display);
 }
 
-void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
+void DisplayServerX11::window_move_to_foreground(DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -3155,11 +3370,11 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
-DisplayServerX11::WindowID DisplayServerX11::get_focused_window() const {
+DisplayServerEnums::WindowID DisplayServerX11::get_focused_window() const {
 	return last_focused_window;
 }
 
-bool DisplayServerX11::window_is_focused(WindowID p_window) const {
+bool DisplayServerX11::window_is_focused(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
@@ -3169,16 +3384,16 @@ bool DisplayServerX11::window_is_focused(WindowID p_window) const {
 	return wd.focused;
 }
 
-bool DisplayServerX11::window_can_draw(WindowID p_window) const {
+bool DisplayServerX11::window_can_draw(DisplayServerEnums::WindowID p_window) const {
 	//this seems to be all that is provided by X11
-	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
+	return window_get_mode(p_window) != DisplayServerEnums::WINDOW_MODE_MINIMIZED;
 }
 
 bool DisplayServerX11::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if (window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (window_get_mode(E.key) != DisplayServerEnums::WINDOW_MODE_MINIMIZED) {
 			return true;
 		}
 	}
@@ -3186,7 +3401,7 @@ bool DisplayServerX11::can_any_window_draw() const {
 	return false;
 }
 
-void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_window) {
+void DisplayServerX11::window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -3229,7 +3444,7 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	}
 }
 
-void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -3252,6 +3467,25 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	}
 }
 
+int DisplayServerX11::accessibility_should_increase_contrast() const {
+#ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return -1;
+	}
+	return portal_desktop->get_high_contrast();
+#endif
+	return -1;
+}
+
+int DisplayServerX11::accessibility_screen_reader_active() const {
+#ifdef DBUS_ENABLED
+	if (atspi_monitor && atspi_monitor->is_supported()) {
+		return atspi_monitor->is_active();
+	}
+#endif
+	return -1;
+}
+
 Point2i DisplayServerX11::ime_get_selection() const {
 	return im_selection;
 }
@@ -3260,23 +3494,23 @@ String DisplayServerX11::ime_get_text() const {
 	return im_text;
 }
 
-void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
+void DisplayServerX11::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+	ERR_FAIL_INDEX(p_shape, DisplayServerEnums::CURSOR_MAX);
 
 	if (p_shape == current_cursor) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_VISIBLE || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED) {
 		if (cursors[p_shape] != None) {
-			for (const KeyValue<WindowID, WindowData> &E : windows) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 				XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
 			}
-		} else if (cursors[CURSOR_ARROW] != None) {
-			for (const KeyValue<WindowID, WindowData> &E : windows) {
-				XDefineCursor(x11_display, E.value.x11_window, cursors[CURSOR_ARROW]);
+		} else if (cursors[DisplayServerEnums::CURSOR_ARROW] != None) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+				XDefineCursor(x11_display, E.value.x11_window, cursors[DisplayServerEnums::CURSOR_ARROW]);
 			}
 		}
 	}
@@ -3284,17 +3518,17 @@ void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
 	current_cursor = p_shape;
 }
 
-DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
+DisplayServerEnums::CursorShape DisplayServerX11::cursor_get_shape() const {
 	return current_cursor;
 }
 
-void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+	ERR_FAIL_INDEX(p_shape, DisplayServerEnums::CURSOR_MAX);
 
 	if (p_cursor.is_valid()) {
-		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
+		HashMap<DisplayServerEnums::CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
@@ -3323,7 +3557,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		cursor_image->pixels = (XcursorPixel *)memalloc(size);
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture_size.width);
+			int row_index = std::floor(index / texture_size.width);
 			int column_index = index % int(texture_size.width);
 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
@@ -3340,8 +3574,8 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		cursors_cache.insert(p_shape, params);
 
 		if (p_shape == current_cursor) {
-			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
-				for (const KeyValue<WindowID, WindowData> &E : windows) {
+			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_VISIBLE || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED) {
+				for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 					XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
 				}
 			}
@@ -3357,10 +3591,14 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 
 		cursors_cache.erase(p_shape);
 
-		CursorShape c = current_cursor;
-		current_cursor = CURSOR_MAX;
+		DisplayServerEnums::CursorShape c = current_cursor;
+		current_cursor = DisplayServerEnums::CURSOR_MAX;
 		cursor_set_shape(c);
 	}
+}
+
+bool DisplayServerX11::get_swap_cancel_ok() {
+	return swap_cancel_ok;
 }
 
 int DisplayServerX11::keyboard_get_layout_count() const {
@@ -3491,8 +3729,11 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 	Key key = KeyMappingX11::get_keycode(xkeysym);
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v08p) {
-		String keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym)));
-		key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+		char32_t chr = xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym));
+		if (chr != 0) {
+			String keysym = String::chr(chr);
+			key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+		}
 	}
 #endif
 
@@ -3502,6 +3743,24 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 		return p_keycode;
 	}
 	return (Key)(key | modifiers);
+}
+
+bool DisplayServerX11::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return false;
+	}
+	DisplayServerEnums::WindowID window_id = last_focused_window;
+
+	if (!windows.has(window_id)) {
+		window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+	}
+
+	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	return portal_desktop->color_picker(xid, p_callback);
+#else
+	return false;
+#endif
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -3570,7 +3829,7 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
+void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
 	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -3614,12 +3873,21 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
+	// Get a normalized keysym (ignoring modifiers like Shift/Ctrl).
 	String keysym;
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v08p) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
-		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
+
+		// Unicode codepoint corresponding to the pressed key.
+		// Printable keys (letters, numbers, symbols) return a valid codepoint.
+		u_int32_t unicode_cp = xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm));
+
+		// Non-printable keys (Ctrl, Home, CapsLock, F1, etc.) return 0, so we skip them.
+		if (unicode_cp != 0) {
+			keysym = String::chr(unicode_cp);
+		}
 	}
 #endif
 
@@ -3665,8 +3933,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				keycode -= 'a' - 'A';
 			}
 
-			String tmp;
-			tmp.parse_utf8(utf8string, utf8bytes);
+			String tmp = String::utf8(utf8string, utf8bytes);
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
@@ -3746,8 +4013,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				char str_xkb[256] = {};
 				int str_xkb_size = xkb_compose_state_get_utf8(wd.xkb_state, str_xkb, 255);
 
-				String tmp;
-				tmp.parse_utf8(str_xkb, str_xkb_size);
+				String tmp = String::utf8(str_xkb, str_xkb_size);
 				for (int i = 0; i < tmp.length(); i++) {
 					Ref<InputEventKey> k;
 					k.instantiate();
@@ -3969,7 +4235,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				32,
 				PropModeReplace,
 				(unsigned char *)&data,
-				std::size(data));
+				std_size(data));
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "SAVE_TARGETS", 0)) {
 		// Request to check if SAVE_TARGETS is supported, nothing special to do.
@@ -4069,7 +4335,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 int DisplayServerX11::_xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
 		::XPointer call_data) {
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
-	WindowID window_id = ds->_get_focused_window_or_popup();
+	DisplayServerEnums::WindowID window_id = ds->_get_focused_window_or_popup();
 	WindowData &wd = ds->windows[window_id];
 	if (wd.ime_active) {
 		wd.ime_in_progress = true;
@@ -4081,7 +4347,7 @@ int DisplayServerX11::_xim_preedit_start_callback(::XIM xim, ::XPointer client_d
 void DisplayServerX11::_xim_preedit_done_callback(::XIM xim, ::XPointer client_data,
 		::XPointer call_data) {
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
-	WindowID window_id = ds->_get_focused_window_or_popup();
+	DisplayServerEnums::WindowID window_id = ds->_get_focused_window_or_popup();
 	WindowData &wd = ds->windows[window_id];
 	if (wd.ime_active) {
 		wd.ime_in_progress = false;
@@ -4092,7 +4358,7 @@ void DisplayServerX11::_xim_preedit_done_callback(::XIM xim, ::XPointer client_d
 void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_data,
 		::XIMPreeditDrawCallbackStruct *call_data) {
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
-	WindowID window_id = ds->_get_focused_window_or_popup();
+	DisplayServerEnums::WindowID window_id = ds->_get_focused_window_or_popup();
 	WindowData &wd = ds->windows[window_id];
 
 	XIMText *xim_text = call_data->text;
@@ -4102,7 +4368,7 @@ void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_d
 			if (xim_text->encoding_is_wchar) {
 				changed_text = String(xim_text->string.wide_char);
 			} else {
-				changed_text.parse_utf8(xim_text->string.multi_byte);
+				changed_text.append_utf8(xim_text->string.multi_byte);
 			}
 
 			if (call_data->chg_length < 0) {
@@ -4143,20 +4409,19 @@ void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
-	WARN_PRINT("Input method stopped");
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
 
-	for (KeyValue<WindowID, WindowData> &E : ds->windows) {
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		E.value.xic = nullptr;
 	}
 }
 
 void DisplayServerX11::_window_changed(XEvent *event) {
-	WindowID window_id = MAIN_WINDOW_ID;
+	DisplayServerEnums::WindowID window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 
 	// Assign the event to the relevant window
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 		if (event->xany.window == E.value.x11_window) {
 			window_id = E.key;
 			break;
@@ -4169,22 +4434,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
 		return;
 	}
-
-	// Query display server about a possible new window state.
-	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
-	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
-
-	// Readjusting the window position if the window is being reparented by the window manager for decoration
-	Window root, parent, *children;
-	unsigned int nchildren;
-	if (XQueryTree(x11_display, wd.x11_window, &root, &parent, &children, &nchildren) && wd.parent != parent) {
-		wd.parent = parent;
-		if (!wd.embed_parent) {
-			window_set_position(wd.position, window_id);
-		}
-	}
-	XFree(children);
 
 	{
 		//the position in xconfigure is not useful here, obtain it manually
@@ -4224,8 +4473,8 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 }
 
-DisplayServer::WindowID DisplayServerX11::_get_focused_window_or_popup() const {
-	const List<WindowID>::Element *E = popup_list.back();
+DisplayServerEnums::WindowID DisplayServerX11::_get_focused_window_or_popup() const {
+	const List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 	if (E) {
 		return E->get();
 	}
@@ -4239,7 +4488,7 @@ void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	{
-		List<WindowID>::Element *E = popup_list.back();
+		List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 		if (E && Object::cast_to<InputEventKey>(*p_event)) {
 			// Redirect keyboard input to active popup.
 			if (windows.has(E->get())) {
@@ -4253,7 +4502,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
-	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
+	if (event_from_window.is_valid() && event_from_window->get_window_id() != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// Send to a single window.
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
@@ -4264,7 +4513,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	} else {
 		// Send to all windows. Copy all pending callbacks, since callback can erase window.
 		Vector<Callable> cbs;
-		for (KeyValue<WindowID, WindowData> &E : windows) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
 				cbs.push_back(callable);
@@ -4276,7 +4525,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_event) {
+void DisplayServerX11::_send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event) {
 	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
 		wd.event_callback.call(event);
@@ -4305,7 +4554,7 @@ Bool DisplayServerX11::_predicate_all_events(Display *display, XEvent *event, XP
 	return True;
 }
 
-bool DisplayServerX11::_wait_for_events() const {
+bool DisplayServerX11::_wait_for_events(int timeout_seconds, int timeout_microseconds) const {
 	int x11_fd = ConnectionNumber(x11_display);
 	fd_set in_fds;
 
@@ -4315,8 +4564,8 @@ bool DisplayServerX11::_wait_for_events() const {
 	FD_SET(x11_fd, &in_fds);
 
 	struct timeval tv;
-	tv.tv_usec = 0;
-	tv.tv_sec = 1;
+	tv.tv_sec = timeout_seconds;
+	tv.tv_usec = timeout_microseconds;
 
 	// Wait for next event or timeout.
 	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
@@ -4335,7 +4584,8 @@ bool DisplayServerX11::_wait_for_events() const {
 
 void DisplayServerX11::_poll_events() {
 	while (!events_thread_done.is_set()) {
-		_wait_for_events();
+		// Wait with a shorter timeout from the events thread to avoid delayed inputs.
+		_wait_for_events(0, 1000);
 
 		// Process events from the queue.
 		{
@@ -4372,16 +4622,16 @@ void DisplayServerX11::_check_pending_events(LocalVector<XEvent> &r_events) {
 	}
 }
 
-DisplayServer::WindowID DisplayServerX11::window_get_active_popup() const {
-	const List<WindowID>::Element *E = popup_list.back();
+DisplayServerEnums::WindowID DisplayServerX11::window_get_active_popup() const {
+	const List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 	if (E) {
 		return E->get();
 	} else {
-		return INVALID_WINDOW_ID;
+		return DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 }
 
-void DisplayServerX11::window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {
+void DisplayServerX11::window_set_popup_safe_rect(DisplayServerEnums::WindowID p_window, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -4389,7 +4639,7 @@ void DisplayServerX11::window_set_popup_safe_rect(WindowID p_window, const Rect2
 	wd.parent_safe_rect = p_rect;
 }
 
-Rect2i DisplayServerX11::window_get_popup_safe_rect(WindowID p_window) const {
+Rect2i DisplayServerX11::window_get_popup_safe_rect(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Rect2i());
@@ -4397,14 +4647,14 @@ Rect2i DisplayServerX11::window_get_popup_safe_rect(WindowID p_window) const {
 	return wd.parent_safe_rect;
 }
 
-void DisplayServerX11::popup_open(WindowID p_window) {
+void DisplayServerX11::popup_open(DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	bool has_popup_ancestor = false;
-	WindowID transient_root = p_window;
+	DisplayServerEnums::WindowID transient_root = p_window;
 	while (true) {
-		WindowID parent = windows[transient_root].transient_parent;
-		if (parent == INVALID_WINDOW_ID) {
+		DisplayServerEnums::WindowID parent = windows[transient_root].transient_parent;
+		if (parent == DisplayServerEnums::INVALID_WINDOW_ID) {
 			break;
 		} else {
 			transient_root = parent;
@@ -4416,15 +4666,15 @@ void DisplayServerX11::popup_open(WindowID p_window) {
 	}
 
 	// Detect tooltips and other similar popups that shouldn't block input to their parent.
-	bool ignores_input = window_get_flag(WINDOW_FLAG_NO_FOCUS, p_window) && window_get_flag(WINDOW_FLAG_MOUSE_PASSTHROUGH, p_window);
+	bool ignores_input = window_get_flag(DisplayServerEnums::WINDOW_FLAG_NO_FOCUS, p_window) && window_get_flag(DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH, p_window);
 
 	WindowData &wd = windows[p_window];
 	if (wd.is_popup || (has_popup_ancestor && !ignores_input)) {
 		// Find current popup parent, or root popup if new window is not transient.
-		List<WindowID>::Element *C = nullptr;
-		List<WindowID>::Element *E = popup_list.back();
+		List<DisplayServerEnums::WindowID>::Element *C = nullptr;
+		List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 		while (E) {
-			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
+			if (wd.transient_parent != E->get() || wd.transient_parent == DisplayServerEnums::INVALID_WINDOW_ID) {
 				C = E;
 				E = E->prev();
 			} else {
@@ -4432,7 +4682,7 @@ void DisplayServerX11::popup_open(WindowID p_window) {
 			}
 		}
 		if (C) {
-			_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+			_send_window_event(windows[C->get()], DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 
 		time_since_popup = OS::get_singleton()->get_ticks_msec();
@@ -4440,18 +4690,18 @@ void DisplayServerX11::popup_open(WindowID p_window) {
 	}
 }
 
-void DisplayServerX11::popup_close(WindowID p_window) {
+void DisplayServerX11::popup_close(DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	List<WindowID>::Element *E = popup_list.find(p_window);
+	List<DisplayServerEnums::WindowID>::Element *E = popup_list.find(p_window);
 	while (E) {
-		List<WindowID>::Element *F = E->next();
-		WindowID win_id = E->get();
+		List<DisplayServerEnums::WindowID>::Element *F = E->next();
+		DisplayServerEnums::WindowID win_id = E->get();
 		popup_list.erase(E);
 
 		if (win_id != p_window) {
 			// Only request close on related windows, not this window.  We are already processing it.
-			_send_window_event(windows[win_id], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+			_send_window_event(windows[win_id], DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 		}
 		E = F;
 	}
@@ -4481,8 +4731,8 @@ bool DisplayServerX11::mouse_process_popups() {
 			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
 			if (mask != last_mouse_monitor_mask) {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
-					List<WindowID>::Element *C = nullptr;
-					List<WindowID>::Element *E = popup_list.back();
+					List<DisplayServerEnums::WindowID>::Element *C = nullptr;
+					List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 					// Find top popup to close.
 					while (E) {
 						// Popup window area.
@@ -4499,7 +4749,7 @@ bool DisplayServerX11::mouse_process_popups() {
 						}
 					}
 					if (C) {
-						_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+						_send_window_event(windows[C->get()], DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 						closed = true;
 					}
 				}
@@ -4541,7 +4791,7 @@ void DisplayServerX11::process_events() {
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
 		bool focus_found = false;
-		for (const KeyValue<WindowID, WindowData> &E : windows) {
+		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 			if (E.value.focused) {
 				focus_found = true;
 				break;
@@ -4567,7 +4817,7 @@ void DisplayServerX11::process_events() {
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
-	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN;
+	bool mouse_mode_grab = mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN;
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
@@ -4579,19 +4829,16 @@ void DisplayServerX11::process_events() {
 		MutexLock mutex_lock(events_mutex);
 		events = polled_events;
 		polled_events.clear();
-
-		// Check for more pending events to avoid an extra frame delay.
-		_check_pending_events(events);
 	}
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
 		XEvent &event = events[event_index];
 
 		bool ime_window_event = false;
-		WindowID window_id = MAIN_WINDOW_ID;
+		DisplayServerEnums::WindowID window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 
 		// Assign the event to the relevant window
-		for (const KeyValue<WindowID, WindowData> &E : windows) {
+		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 			if (event.xany.window == E.value.x11_window) {
 				window_id = E.key;
 				break;
@@ -4797,6 +5044,8 @@ void DisplayServerX11::process_events() {
 				XSync(x11_display, False);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
+				XFlush(x11_display);
+
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
@@ -4805,7 +5054,7 @@ void DisplayServerX11::process_events() {
 				}
 
 				// Have we failed to set fullscreen while the window was unmapped?
-				_validate_mode_on_map(window_id);
+				_validate_fullscreen_on_map(window_id);
 
 				// On KDE Plasma, when the parent window of an embedded process is restored after being minimized,
 				// only the embedded window receives the Map notification, causing it to
@@ -4826,24 +5075,6 @@ void DisplayServerX11::process_events() {
 				Main::force_redraw();
 			} break;
 
-			case NoExpose: {
-				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu (%u) \n", frame, event.xnoexpose.drawable, window_id);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = true;
-			} break;
-
-			case VisibilityNotify: {
-				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = _window_minimize_check(window_id);
-			} break;
-
 			case LeaveNotify: {
 				DEBUG_LOG_X11("[%u] LeaveNotify window=%lu (%u), mode='%u' \n", frame, event.xcrossing.window, window_id, event.xcrossing.mode);
 				if (ime_window_event) {
@@ -4851,8 +5082,8 @@ void DisplayServerX11::process_events() {
 				}
 
 				if (!mouse_mode_grab && window_mouseover_id == window_id) {
-					window_mouseover_id = INVALID_WINDOW_ID;
-					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+					window_mouseover_id = DisplayServerEnums::INVALID_WINDOW_ID;
+					_send_window_event(windows[window_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 				}
 
 			} break;
@@ -4864,11 +5095,11 @@ void DisplayServerX11::process_events() {
 				}
 
 				if (!mouse_mode_grab && window_mouseover_id != window_id) {
-					if (window_mouseover_id != INVALID_WINDOW_ID) {
-						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					if (window_mouseover_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+						_send_window_event(windows[window_mouseover_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT);
 					}
 					window_mouseover_id = window_id;
-					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+					_send_window_event(windows[window_id], DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER);
 				}
 			} break;
 
@@ -4886,15 +5117,16 @@ void DisplayServerX11::process_events() {
 				static unsigned int focus_order = 0;
 				wd.focus_order = ++focus_order;
 
-				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
+				AccessibilityServer::get_singleton()->set_window_focused(window_id, true);
+				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 
 				if (mouse_mode_grab) {
 					// Show and update the cursor if confined and the window regained focus.
 
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						if (mouse_mode == MOUSE_MODE_CONFINED) {
+					for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+						if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED) {
 							XUndefineCursor(x11_display, E.value.x11_window);
-						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
+						} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
 							XDefineCursor(x11_display, E.value.x11_window, null_cursor);
 						}
 
@@ -4937,12 +5169,14 @@ void DisplayServerX11::process_events() {
 				wd.focused = false;
 
 				Input::get_singleton()->release_pressed_events();
-				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
+
+				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
+				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 
 				if (mouse_mode_grab) {
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
+					for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 						//dear X11, I try, I really try, but you never work, you do whatever you want.
-						if (mouse_mode == MOUSE_MODE_CAPTURED) {
+						if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E.value.x11_window);
 						}
@@ -4977,6 +5211,12 @@ void DisplayServerX11::process_events() {
 				_window_changed(&event);
 			} break;
 
+			case PropertyNotify: {
+				if (event.xproperty.atom == XInternAtom(x11_display, "_NET_WM_STATE", False)) {
+					_update_wm_state_hints(window_id);
+				}
+			} break;
+
 			case ButtonPress:
 			case ButtonRelease: {
 				if (ime_window_event || ignore_events) {
@@ -4984,7 +5224,7 @@ void DisplayServerX11::process_events() {
 				}
 				/* exit in case of a mouse button press */
 				last_timestamp = event.xbutton.time;
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 					event.xbutton.x = last_mouse_pos.x;
 					event.xbutton.y = last_mouse_pos.y;
 				}
@@ -5047,7 +5287,7 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
-					WindowID window_id_other = INVALID_WINDOW_ID;
+					DisplayServerEnums::WindowID window_id_other = DisplayServerEnums::INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
 					if (!wd.focused) {
 						// Propagate the event to the focused window,
@@ -5055,7 +5295,7 @@ void DisplayServerX11::process_events() {
 						// Note: This is needed for drag & drop to work between windows,
 						// because the engine expects events to keep being processed
 						// on the same window dragging started.
-						for (const KeyValue<WindowID, WindowData> &E : windows) {
+						for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 							if (E.value.focused) {
 								if (E.key != window_id) {
 									window_id_other = E.key;
@@ -5066,7 +5306,7 @@ void DisplayServerX11::process_events() {
 						}
 					}
 
-					if (window_id_other != INVALID_WINDOW_ID) {
+					if (window_id_other != DisplayServerEnums::INVALID_WINDOW_ID) {
 						int x, y;
 						Window child;
 						XTranslateCoordinates(x11_display, wd.x11_window, wd_other_x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
@@ -5087,13 +5327,13 @@ void DisplayServerX11::process_events() {
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
-				WindowID focused_window_id = _get_focused_window_or_popup();
+				DisplayServerEnums::WindowID focused_window_id = _get_focused_window_or_popup();
 				if (!windows.has(focused_window_id)) {
-					focused_window_id = MAIN_WINDOW_ID;
+					focused_window_id = DisplayServerEnums::MAIN_WINDOW_ID;
 				}
 
 				while (true) {
-					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[focused_window_id].size.width / 2 && event.xmotion.y == windows[focused_window_id].size.height / 2) {
+					if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && event.xmotion.x == windows[focused_window_id].size.width / 2 && event.xmotion.y == windows[focused_window_id].size.height / 2) {
 						//this is likely the warp event since it was warped here
 						center = Vector2(event.xmotion.x, event.xmotion.y);
 						break;
@@ -5134,7 +5374,7 @@ void DisplayServerX11::process_events() {
 				const WindowData &wd = windows[window_id];
 				bool focused = wd.focused;
 
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 					if (xi.relative_motion.x == 0 && xi.relative_motion.y == 0) {
 						break;
 					}
@@ -5159,7 +5399,7 @@ void DisplayServerX11::process_events() {
 				Point2i rel;
 
 				// Only use raw input if in capture mode. Otherwise use the classic behavior.
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 					rel = xi.relative_motion;
 				} else {
 					rel = pos - last_mouse_pos;
@@ -5168,11 +5408,11 @@ void DisplayServerX11::process_events() {
 				// Reset to prevent lingering motion
 				xi.relative_motion.x = 0;
 				xi.relative_motion.y = 0;
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 					pos = Point2i(windows[focused_window_id].size.width / 2, windows[focused_window_id].size.height / 2);
 				}
 
-				BitField<MouseButtonMask> last_button_state = 0;
+				BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 				if (event.xmotion.state & Button1Mask) {
 					last_button_state.set_flag(MouseButtonMask::LEFT);
 				}
@@ -5225,7 +5465,7 @@ void DisplayServerX11::process_events() {
 					// Note: This is needed for drag & drop to work between windows,
 					// because the engine expects events to keep being processed
 					// on the same window dragging started.
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
+					for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 						const WindowData &wd_other = E.value;
 						if (wd_other.focused) {
 							int x, y;
@@ -5276,7 +5516,7 @@ void DisplayServerX11::process_events() {
 					Vector<String> files = String((char *)p.data).split("\r\n", false);
 					XFree(p.data);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").uri_decode();
+						files.write[i] = files[i].replace("file://", "").uri_file_decode();
 					}
 
 					if (windows[window_id].drop_files_callback.is_valid()) {
@@ -5311,7 +5551,7 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 				if ((unsigned int)event.xclient.data.l[0] == (unsigned int)wm_delete) {
-					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
+					_send_window_event(windows[window_id], DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 				}
 
 				else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
@@ -5376,8 +5616,8 @@ void DisplayServerX11::process_events() {
 	XFlush(x11_display);
 
 	if (do_mouse_warp) {
-		XWarpPointer(x11_display, None, windows[MAIN_WINDOW_ID].x11_window,
-				0, 0, 0, 0, (int)windows[MAIN_WINDOW_ID].size.width / 2, (int)windows[MAIN_WINDOW_ID].size.height / 2);
+		XWarpPointer(x11_display, None, windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window,
+				0, 0, 0, 0, (int)windows[DisplayServerEnums::MAIN_WINDOW_ID].size.width / 2, (int)windows[DisplayServerEnums::MAIN_WINDOW_ID].size.height / 2);
 
 		/*
 		Window root, child;
@@ -5393,7 +5633,7 @@ void DisplayServerX11::process_events() {
 
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
-		portal_desktop->process_file_dialog_callbacks();
+		portal_desktop->process_callbacks();
 	}
 #endif
 
@@ -5430,19 +5670,19 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 	if (classHint) {
 		CharString name_str;
 		switch (context) {
-			case CONTEXT_EDITOR:
+			case DisplayServerEnums::CONTEXT_EDITOR:
 				name_str = "Godot_Editor";
 				break;
-			case CONTEXT_PROJECTMAN:
+			case DisplayServerEnums::CONTEXT_PROJECTMAN:
 				name_str = "Godot_ProjectList";
 				break;
-			case CONTEXT_ENGINE:
+			case DisplayServerEnums::CONTEXT_ENGINE:
 				name_str = "Godot_Engine";
 				break;
 		}
 
 		CharString class_str;
-		if (context == CONTEXT_ENGINE) {
+		if (context == DisplayServerEnums::CONTEXT_ENGINE) {
 			String config_name = GLOBAL_GET("application/config/name");
 			if (config_name.length() == 0) {
 				class_str = "Godot_Engine";
@@ -5461,12 +5701,12 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 	}
 }
 
-void DisplayServerX11::set_context(Context p_context) {
+void DisplayServerX11::set_context(DisplayServerEnums::Context p_context) {
 	_THREAD_SAFE_METHOD_
 
 	context = p_context;
 
-	for (KeyValue<WindowID, WindowData> &E : windows) {
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 		_update_context(E.value);
 	}
 }
@@ -5501,7 +5741,7 @@ int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
 void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
-	WindowData &wd = windows[MAIN_WINDOW_ID];
+	WindowData &wd = windows[DisplayServerEnums::MAIN_WINDOW_ID];
 
 	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
 
@@ -5579,7 +5819,7 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	XSetErrorHandler(oldHandler);
 }
 
-void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -5589,15 +5829,15 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
 	if (gl_manager_egl) {
-		gl_manager_egl->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+		gl_manager_egl->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
 #endif
 }
 
-DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
+DisplayServerEnums::VSyncMode DisplayServerX11::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -5606,16 +5846,16 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 #endif
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+		return gl_manager->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
 	if (gl_manager_egl) {
-		return gl_manager_egl->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+		return gl_manager_egl->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
 #endif
-	return DisplayServer::VSYNC_ENABLED;
+	return DisplayServerEnums::VSYNC_ENABLED;
 }
 
-void DisplayServerX11::window_start_drag(WindowID p_window) {
+void DisplayServerX11::window_start_drag(DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -5653,10 +5893,10 @@ void DisplayServerX11::window_start_drag(WindowID p_window) {
 	XSync(x11_display, 0);
 }
 
-void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+void DisplayServerX11::window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	ERR_FAIL_INDEX(int(p_edge), DisplayServerEnums::WINDOW_EDGE_MAX);
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
@@ -5687,28 +5927,28 @@ void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_w
 	}
 
 	switch (p_edge) {
-		case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+		case DisplayServerEnums::WINDOW_EDGE_TOP_LEFT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPLEFT;
 		} break;
-		case DisplayServer::WINDOW_EDGE_TOP: {
+		case DisplayServerEnums::WINDOW_EDGE_TOP: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOP;
 		} break;
-		case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+		case DisplayServerEnums::WINDOW_EDGE_TOP_RIGHT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
 		} break;
-		case DisplayServer::WINDOW_EDGE_LEFT: {
+		case DisplayServerEnums::WINDOW_EDGE_LEFT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_LEFT;
 		} break;
-		case DisplayServer::WINDOW_EDGE_RIGHT: {
+		case DisplayServerEnums::WINDOW_EDGE_RIGHT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_RIGHT;
 		} break;
-		case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+		case DisplayServerEnums::WINDOW_EDGE_BOTTOM_LEFT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
 		} break;
-		case DisplayServer::WINDOW_EDGE_BOTTOM: {
+		case DisplayServerEnums::WINDOW_EDGE_BOTTOM: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOM;
 		} break;
-		case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+		case DisplayServerEnums::WINDOW_EDGE_BOTTOM_RIGHT: {
 			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
 		} break;
 		default:
@@ -5749,9 +5989,10 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	}
 
 	for (unsigned int i = 0; i < num_children; i++) {
-		pid_t pid = get_window_pid(p_display, children[i]);
-		if (pid == p_process_id) {
-			return children[i];
+		const Window child = children[i];
+		if (get_window_pid(p_display, child) == p_process_id) {
+			XFree(children);
+			return child;
 		}
 	}
 
@@ -5759,6 +6000,7 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	for (unsigned int i = 0; i < num_children; i++) {
 		Window wnd = find_window_from_process_id_internal(p_display, p_process_id, children[i]);
 		if (wnd != 0) {
+			XFree(children);
 			return wnd;
 		}
 	}
@@ -5829,7 +6071,7 @@ void DisplayServerX11::_set_window_taskbar_pager_enabled(Window p_window, bool p
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 }
 
-Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), FAILED);
@@ -5965,7 +6207,7 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 	return OK;
 }
 
-Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::request_close_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -5998,7 +6240,7 @@ Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::remove_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -6015,7 +6257,7 @@ Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-OS::ProcessID DisplayServerX11::get_focused_process_id() {
+ProcessID DisplayServerX11::get_focused_process_id() {
 	Window focused_window = 0;
 	int revert_to = 0;
 
@@ -6038,16 +6280,84 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window) {
+void DisplayServerX11::_create_xic(WindowData &wd) {
+	if (xim && xim_style) {
+		// Block events polling while changing input focus
+		// because it triggers some event polling internally.
+		MutexLock mutex_lock(events_mutex);
+
+		// Force on-the-spot for the over-the-spot style.
+		if ((xim_style & XIMPreeditPosition) != 0) {
+			xim_style &= ~XIMPreeditPosition;
+			xim_style |= XIMPreeditCallbacks;
+		}
+		if ((xim_style & XIMPreeditCallbacks) != 0) {
+			::XIMCallback preedit_start_callback;
+			preedit_start_callback.client_data = (::XPointer)(this);
+			preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+			::XIMCallback preedit_done_callback;
+			preedit_done_callback.client_data = (::XPointer)(this);
+			preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+			::XIMCallback preedit_draw_callback;
+			preedit_draw_callback.client_data = (::XPointer)(this);
+			preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+			::XIMCallback preedit_caret_callback;
+			preedit_caret_callback.client_data = (::XPointer)(this);
+			preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+			::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+					XNPreeditStartCallback, &preedit_start_callback,
+					XNPreeditDoneCallback, &preedit_done_callback,
+					XNPreeditDrawCallback, &preedit_draw_callback,
+					XNPreeditCaretCallback, &preedit_caret_callback,
+					(char *)nullptr);
+
+			wd.xic = XCreateIC(xim,
+					XNInputStyle, xim_style,
+					XNClientWindow, wd.x11_xim_window,
+					XNFocusWindow, wd.x11_xim_window,
+					XNPreeditAttributes, preedit_attributes,
+					(char *)nullptr);
+			XFree(preedit_attributes);
+		} else {
+			wd.xic = XCreateIC(xim,
+					XNInputStyle, xim_style,
+					XNClientWindow, wd.x11_xim_window,
+					XNFocusWindow, wd.x11_xim_window,
+					(char *)nullptr);
+		}
+
+		long im_event_mask = 0;
+		if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
+			WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
+			XDestroyIC(wd.xic);
+			wd.xic = nullptr;
+		}
+		if (wd.xic) {
+			XUnsetICFocus(wd.xic);
+		} else {
+			WARN_PRINT("XCreateIC couldn't create wd.xic.");
+		}
+	} else {
+		wd.xic = nullptr;
+		WARN_PRINT("XCreateIC couldn't create wd.xic.");
+	}
+}
+
+DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window) {
 	//Create window
 
 	XVisualInfo visualInfo;
@@ -6057,19 +6367,19 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	if (gl_manager) {
 		Error err;
 		visualInfo = gl_manager->get_vi(x11_display, err);
-		ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't acquire visual info from display.");
+		ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Can't acquire visual info from display.");
 		vi_selected = true;
 	}
 	if (gl_manager_egl) {
 		XVisualInfo visual_info_template;
 		int visual_id = gl_manager_egl->display_get_native_visual_id(x11_display);
-		ERR_FAIL_COND_V_MSG(visual_id < 0, INVALID_WINDOW_ID, "Unable to get a visual id.");
+		ERR_FAIL_COND_V_MSG(visual_id < 0, DisplayServerEnums::INVALID_WINDOW_ID, "Unable to get a visual id.");
 
 		visual_info_template.visualid = (VisualID)visual_id;
 
 		int number_of_visuals = 0;
 		XVisualInfo *vi_list = XGetVisualInfo(x11_display, VisualIDMask, &visual_info_template, &number_of_visuals);
-		ERR_FAIL_COND_V(number_of_visuals <= 0, INVALID_WINDOW_ID);
+		ERR_FAIL_COND_V(number_of_visuals <= 0, DisplayServerEnums::INVALID_WINDOW_ID);
 
 		visualInfo = vi_list[0];
 
@@ -6083,7 +6393,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		XVisualInfo vInfoTemplate = {};
 		vInfoTemplate.screen = DefaultScreen(x11_display);
 		XVisualInfo *vi_list = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
-		ERR_FAIL_NULL_V(vi_list, INVALID_WINDOW_ID);
+		ERR_FAIL_NULL_V(vi_list, DisplayServerEnums::INVALID_WINDOW_ID);
 
 		visualInfo = vi_list[0];
 		if (OS::get_singleton()->is_layered_allowed()) {
@@ -6118,14 +6428,14 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		valuemask |= CWBackPixel;
 	}
 
-	WindowID id = window_id_counter++;
+	DisplayServerEnums::WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
 
-	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
+	if (p_flags & DisplayServerEnums::WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
 
-	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
+	if (p_flags & DisplayServerEnums::WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
 	}
 
@@ -6148,7 +6458,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	Rect2i win_rect = p_rect;
 	if (!p_parent_window) {
 		// No parent.
-		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		if (p_mode == DisplayServerEnums::WINDOW_MODE_FULLSCREEN || p_mode == DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 			win_rect = screen_rect;
@@ -6169,8 +6479,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
-		wd.parent = RootWindow(x11_display, visualInfo.screen);
-
 		DEBUG_LOG_X11("CreateWindow window=%lu, parent: %lu \n", wd.x11_window, wd.parent);
 
 		if (p_parent_window) {
@@ -6187,6 +6495,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
 #endif
+		if (!AccessibilityServer::get_singleton()->window_create(id, nullptr)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+		}
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
 		if (!wd.no_focus && !wd.is_popup) {
@@ -6252,82 +6565,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			XChangeProperty(x11_display, wd.x11_window, xdnd_aware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&xdnd_version, 1);
 		}
 
-		if (xim && xim_style) {
-			// Block events polling while changing input focus
-			// because it triggers some event polling internally.
-			MutexLock mutex_lock(events_mutex);
-
-			// Force on-the-spot for the over-the-spot style.
-			if ((xim_style & XIMPreeditPosition) != 0) {
-				xim_style &= ~XIMPreeditPosition;
-				xim_style |= XIMPreeditCallbacks;
-			}
-			if ((xim_style & XIMPreeditCallbacks) != 0) {
-				::XIMCallback preedit_start_callback;
-				preedit_start_callback.client_data = (::XPointer)(this);
-				preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
-
-				::XIMCallback preedit_done_callback;
-				preedit_done_callback.client_data = (::XPointer)(this);
-				preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
-
-				::XIMCallback preedit_draw_callback;
-				preedit_draw_callback.client_data = (::XPointer)(this);
-				preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
-
-				::XIMCallback preedit_caret_callback;
-				preedit_caret_callback.client_data = (::XPointer)(this);
-				preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
-
-				::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
-						XNPreeditStartCallback, &preedit_start_callback,
-						XNPreeditDoneCallback, &preedit_done_callback,
-						XNPreeditDrawCallback, &preedit_draw_callback,
-						XNPreeditCaretCallback, &preedit_caret_callback,
-						(char *)nullptr);
-
-				wd.xic = XCreateIC(xim,
-						XNInputStyle, xim_style,
-						XNClientWindow, wd.x11_xim_window,
-						XNFocusWindow, wd.x11_xim_window,
-						XNPreeditAttributes, preedit_attributes,
-						(char *)nullptr);
-				XFree(preedit_attributes);
-			} else {
-				wd.xic = XCreateIC(xim,
-						XNInputStyle, xim_style,
-						XNClientWindow, wd.x11_xim_window,
-						XNFocusWindow, wd.x11_xim_window,
-						(char *)nullptr);
-			}
-
-			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
-				WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
-				XDestroyIC(wd.xic);
-				wd.xic = nullptr;
-			}
-			if (wd.xic) {
-				XUnsetICFocus(wd.xic);
-			} else {
-				WARN_PRINT("XCreateIC couldn't create wd.xic");
-			}
-		} else {
-			wd.xic = nullptr;
-			WARN_PRINT("XCreateIC couldn't create wd.xic");
-		}
-
+		_create_xic(wd);
 		_update_context(wd);
-
-		if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
-			Hints hints;
-			Atom property;
-			hints.flags = 2;
-			hints.decorations = 0;
-			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (property != None) {
-				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-			}
-		}
 
 		if (wd.is_popup || wd.no_focus || (wd.embed_parent && !kde5_embed_workaround)) {
 			// Set Utility type to disable fade animations.
@@ -6366,7 +6605,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			}
 #endif
 			Error err = rendering_context->window_create(id, &wpd);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
+			ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
 
 			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
 			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
@@ -6375,11 +6614,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
+			ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Can't create an OpenGL window");
 		}
 		if (gl_manager_egl) {
 			Error err = gl_manager_egl->window_create(id, x11_display, &wd.x11_window, win_rect.size.width, win_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGLES window.");
+			ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Failed to create an OpenGLES window.");
 		}
 		window_set_vsync_mode(p_vsync_mode, id);
 #endif
@@ -6471,11 +6710,63 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 	return p_style_a;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer client_data,
+		::XPointer call_data) {
+	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
+
+	ds->xim = XOpenIM(display, nullptr, nullptr, nullptr);
+
+	if (ds->xim == nullptr) {
+		WARN_PRINT("XOpenIM failed.");
+		ds->xim_style = 0L;
+	} else {
+		::XIMCallback im_destroy_callback;
+		im_destroy_callback.client_data = client_data;
+		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
+		if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
+					nullptr) != nullptr) {
+			WARN_PRINT("Error setting XIM destroy callback.");
+		}
+
+		::XIMStyles *xim_styles = nullptr;
+		ds->xim_style = 0L;
+		char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
+		if (imvalret != nullptr || xim_styles == nullptr) {
+			fprintf(stderr, "Input method doesn't support any styles\n");
+		}
+
+		if (xim_styles) {
+			ds->xim_style = 0L;
+			for (int i = 0; i < xim_styles->count_styles; i++) {
+				const ::XIMStyle &style = xim_styles->supported_styles[i];
+
+				if (!_is_xim_style_supported(style)) {
+					continue;
+				}
+
+				ds->xim_style = _get_best_xim_style(ds->xim_style, style);
+			}
+
+			XFree(xim_styles);
+		}
+		XFree(imvalret);
+	}
+
+	// The input method has been (re)started.
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
+		ds->_create_xic(E.value);
+	}
+}
+
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingX11::initialize();
 
+	String current_desk = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower();
+	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
+	swap_cancel_ok = (current_desk.contains("kde") || session_desk.contains("kde") || current_desk.contains("lxqt") || session_desk.contains("lxqt"));
+
 	xwayland = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").to_lower() == "wayland";
-	kde5_embed_workaround = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower() == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
+	kde5_embed_workaround = current_desk == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
 
 	native_menu = memnew(NativeMenu);
 	context = p_context;
@@ -6572,7 +6863,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-	for (int i = 0; i < CURSOR_MAX; i++) {
+	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
 		cursors[i] = None;
 		cursor_img[i] = nullptr;
 	}
@@ -6663,10 +6954,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	if (modifiers == nullptr) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			WARN_PRINT("IME is disabled");
+			WARN_PRINT("IME is disabled.");
 		}
 		XSetLocaleModifiers("@im=none");
-		WARN_PRINT("Error setting locale modifiers");
+		WARN_PRINT("Error setting locale modifiers.");
 	}
 
 	const char *err;
@@ -6711,42 +7002,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		return;
 	}
 
-	xim = XOpenIM(x11_display, nullptr, nullptr, nullptr);
-
-	if (xim == nullptr) {
-		WARN_PRINT("XOpenIM failed");
-		xim_style = 0L;
-	} else {
-		::XIMCallback im_destroy_callback;
-		im_destroy_callback.client_data = (::XPointer)(this);
-		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
-		if (XSetIMValues(xim, XNDestroyCallback, &im_destroy_callback,
-					nullptr) != nullptr) {
-			WARN_PRINT("Error setting XIM destroy callback");
-		}
-
-		::XIMStyles *xim_styles = nullptr;
-		xim_style = 0L;
-		char *imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, nullptr);
-		if (imvalret != nullptr || xim_styles == nullptr) {
-			fprintf(stderr, "Input method doesn't support any styles\n");
-		}
-
-		if (xim_styles) {
-			xim_style = 0L;
-			for (int i = 0; i < xim_styles->count_styles; i++) {
-				const ::XIMStyle &style = xim_styles->supported_styles[i];
-
-				if (!_is_xim_style_supported(style)) {
-					continue;
-				}
-
-				xim_style = _get_best_xim_style(xim_style, style);
-			}
-
-			XFree(xim_styles);
-		}
-		XFree(imvalret);
+	if (!XRegisterIMInstantiateCallback(x11_display, nullptr, nullptr, nullptr, (::XIDProc)(_xim_instantiate_callback), (::XPointer)this)) {
+		WARN_PRINT("Error registering XIM instantiate callback.");
+		_xim_instantiate_callback(x11_display, (::XPointer)this, nullptr);
 	}
 
 	/* Atom internment */
@@ -6765,7 +7023,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = memnew(TTS_Linux);
+		initialize_tts();
 	}
 #endif
 
@@ -6777,6 +7035,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	String executable_name = OS::get_singleton()->get_executable_path().get_file();
 
 	// Initialize context and rendering device.
+
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+		driver_found = true;
+	}
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
@@ -6794,8 +7057,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your video card drivers seem not to support the required Vulkan version, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
 #endif // GLES3_ENABLED
 			{
@@ -6871,7 +7134,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			if (fallback) {
 				WARN_PRINT("Your video card drivers seem not to support the required OpenGL version, switching to OpenGLES.");
 				rendering_driver = "opengl3_es";
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 
@@ -6922,29 +7185,28 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	if (p_position != nullptr) {
 		window_position = *p_position;
 	} else {
-		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-			p_screen = SCREEN_PRIMARY;
+		if (p_screen == DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) {
+			p_screen = DisplayServerEnums::SCREEN_PRIMARY;
 		}
 		Rect2i scr_rect = screen_get_usable_rect(p_screen);
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), p_parent_window);
-	if (main_window == INVALID_WINDOW_ID) {
+	DisplayServerEnums::WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), p_parent_window);
+	if (main_window == DisplayServerEnums::INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;
 	}
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
+	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, main_window);
+			window_set_flag(DisplayServerEnums::WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(main_window);
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+		if (rendering_device->initialize(rendering_context, DisplayServerEnums::MAIN_WINDOW_ID) != OK) {
 			memdelete(rendering_device);
 			rendering_device = nullptr;
 			memdelete(rendering_context);
@@ -6952,7 +7214,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
-		rendering_device->screen_create(MAIN_WINDOW_ID);
+		rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -6978,7 +7240,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		cursor_theme = "default";
 	}
 
-	for (int i = 0; i < CURSOR_MAX; i++) {
+	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
 		static const char *cursor_file[] = {
 			"left_ptr",
 			"xterm",
@@ -7004,49 +7266,49 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			const char *fallback = nullptr;
 
 			switch (i) {
-				case CURSOR_POINTING_HAND:
+				case DisplayServerEnums::CURSOR_POINTING_HAND:
 					fallback = "pointer";
 					break;
-				case CURSOR_CROSS:
+				case DisplayServerEnums::CURSOR_CROSS:
 					fallback = "crosshair";
 					break;
-				case CURSOR_WAIT:
+				case DisplayServerEnums::CURSOR_WAIT:
 					fallback = "wait";
 					break;
-				case CURSOR_BUSY:
+				case DisplayServerEnums::CURSOR_BUSY:
 					fallback = "progress";
 					break;
-				case CURSOR_DRAG:
+				case DisplayServerEnums::CURSOR_DRAG:
 					fallback = "grabbing";
 					break;
-				case CURSOR_CAN_DROP:
+				case DisplayServerEnums::CURSOR_CAN_DROP:
 					fallback = "hand1";
 					break;
-				case CURSOR_FORBIDDEN:
+				case DisplayServerEnums::CURSOR_FORBIDDEN:
 					fallback = "forbidden";
 					break;
-				case CURSOR_VSIZE:
+				case DisplayServerEnums::CURSOR_VSIZE:
 					fallback = "ns-resize";
 					break;
-				case CURSOR_HSIZE:
+				case DisplayServerEnums::CURSOR_HSIZE:
 					fallback = "ew-resize";
 					break;
-				case CURSOR_BDIAGSIZE:
+				case DisplayServerEnums::CURSOR_BDIAGSIZE:
 					fallback = "fd_double_arrow";
 					break;
-				case CURSOR_FDIAGSIZE:
+				case DisplayServerEnums::CURSOR_FDIAGSIZE:
 					fallback = "bd_double_arrow";
 					break;
-				case CURSOR_MOVE:
-					cursor_img[i] = cursor_img[CURSOR_DRAG];
+				case DisplayServerEnums::CURSOR_MOVE:
+					cursor_img[i] = cursor_img[DisplayServerEnums::CURSOR_DRAG];
 					break;
-				case CURSOR_VSPLIT:
+				case DisplayServerEnums::CURSOR_VSPLIT:
 					fallback = "sb_v_double_arrow";
 					break;
-				case CURSOR_HSPLIT:
+				case DisplayServerEnums::CURSOR_HSPLIT:
 					fallback = "sb_h_double_arrow";
 					break;
-				case CURSOR_HELP:
+				case DisplayServerEnums::CURSOR_HELP:
 					fallback = "help";
 					break;
 			}
@@ -7091,7 +7353,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		null_cursor = cursor;
 	}
-	cursor_set_shape(CURSOR_BUSY);
+	cursor_set_shape(DisplayServerEnums::CURSOR_BUSY);
 
 	// Search the X11 event queue for ConfigureNotify events and process all
 	// that are currently queued early, so we can get the final window size
@@ -7102,14 +7364,37 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	events_thread.start(_poll_events_thread, this);
 
-	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
+	_update_real_mouse_position(windows[DisplayServerEnums::MAIN_WINDOW_ID]);
 
 #ifdef DBUS_ENABLED
-	screensaver = memnew(FreeDesktopScreenSaver);
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
-
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	bool dbus_ok = true;
+#ifdef SOWRAP_ENABLED
+	if (initialize_dbus(dylibloader_verbose) != 0) {
+		print_verbose("Failed to load DBus library!");
+		dbus_ok = false;
+	}
+#endif
+	if (dbus_ok) {
+		bool ver_ok = false;
+		int version_major = 0;
+		int version_minor = 0;
+		int version_rev = 0;
+		dbus_get_version(&version_major, &version_minor, &version_rev);
+		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		if (!ver_ok) {
+			print_verbose("Unsupported DBus library version!");
+			dbus_ok = false;
+		}
+	}
+	if (dbus_ok) {
+		screensaver = memnew(FreeDesktopScreenSaver);
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+	}
 #endif // DBUS_ENABLED
+
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	XSetErrorHandler(&default_window_error_handler);
 
@@ -7118,7 +7403,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 DisplayServerX11::~DisplayServerX11() {
 	// Send owned clipboard data to clipboard manager before exit.
-	Window x11_main_window = windows[MAIN_WINDOW_ID].x11_window;
+	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
 	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
 	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 
@@ -7131,7 +7416,7 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 	//destroy all windows
-	for (KeyValue<WindowID, WindowData> &E : windows) {
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
 #if defined(RD_ENABLED)
 		if (rendering_device) {
 			rendering_device->screen_free(E.key);
@@ -7149,6 +7434,8 @@ DisplayServerX11::~DisplayServerX11() {
 			gl_manager_egl->window_destroy(E.key);
 		}
 #endif
+
+		AccessibilityServer::get_singleton()->window_destroy(E.key);
 
 		WindowData &wd = E.value;
 		if (wd.xic) {
@@ -7207,7 +7494,7 @@ DisplayServerX11::~DisplayServerX11() {
 		dlclose(xrandr_handle);
 	}
 
-	for (int i = 0; i < CURSOR_MAX; i++) {
+	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
 		if (cursors[i] != None) {
 			XFreeCursor(x11_display, cursors[i]);
 		}
@@ -7232,8 +7519,15 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 #ifdef DBUS_ENABLED
-	memdelete(screensaver);
-	memdelete(portal_desktop);
+	if (screensaver) {
+		memdelete(screensaver);
+	}
+	if (portal_desktop) {
+		memdelete(portal_desktop);
+	}
+	if (atspi_monitor) {
+		memdelete(atspi_monitor);
+	}
 #endif
 }
 

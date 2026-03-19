@@ -32,7 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "scene/gui/margin_container.h"
+#include "editor/docks/editor_dock.h"
 
 class Button;
 class DebugAdapterParser;
@@ -44,8 +44,8 @@ class ScriptEditorDebugger;
 class TabContainer;
 class UndoRedo;
 
-class EditorDebuggerNode : public MarginContainer {
-	GDCLASS(EditorDebuggerNode, MarginContainer);
+class EditorDebuggerNode : public EditorDock {
+	GDCLASS(EditorDebuggerNode, EditorDock);
 
 public:
 	enum CameraOverride {
@@ -93,7 +93,6 @@ private:
 
 	Ref<EditorDebuggerServer> server;
 	TabContainer *tabs = nullptr;
-	Button *debugger_button = nullptr;
 	MenuButton *script_menu = nullptr;
 
 	Ref<Script> stack_script; // Why?!?
@@ -113,6 +112,8 @@ private:
 	bool keep_open = false;
 	String current_uri;
 
+	bool debug_mute_audio = false;
+
 	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
@@ -120,6 +121,7 @@ private:
 
 	ScriptEditorDebugger *_add_debugger();
 	void _update_errors();
+	void _update_margins();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
@@ -178,10 +180,6 @@ public:
 
 	void set_script_debug_button(MenuButton *p_button);
 
-	void set_tool_button(Button *p_button) {
-		debugger_button = p_button;
-	}
-
 	String get_var_value(const String &p_var) const;
 	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?
 
@@ -213,6 +211,9 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	void set_debug_mute_audio(bool p_mute);
+	bool get_debug_mute_audio() const;
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();

@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include "openxr_api.h"
-
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
 
+#include <openxr/openxr.h>
+
+class OpenXRExtensionWrapper;
 class OpenXRExtensionWrapperExtension;
 
 class OpenXRAPIExtension : public RefCounted {
@@ -46,7 +47,16 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void _register_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _unregister_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _register_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _unregister_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+#endif
+
 public:
+	uint64_t get_openxr_version();
 	uint64_t get_instance();
 	uint64_t get_system_id();
 	uint64_t get_session();
@@ -54,12 +64,12 @@ public:
 	// Helper method to convert an XrPosef to a Transform3D.
 	Transform3D transform_from_pose(GDExtensionConstPtr<const void> p_pose);
 
-	bool xr_result(uint64_t result, String format, Array args = Array());
+	bool xr_result(uint64_t p_result, const String &p_format, const Array &p_args = Array());
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
-	uint64_t get_instance_proc_addr(String p_name);
+	uint64_t get_instance_proc_addr(const String &p_name);
 	String get_error_string(uint64_t result);
 	String get_swapchain_format_name(int64_t p_swapchain_format);
 	void set_object_name(int64_t p_object_type, uint64_t p_object_handle, const String &p_object_name);
@@ -67,9 +77,13 @@ public:
 	void end_debug_label_region();
 	void insert_debug_label(const String &p_label_name);
 
+	uint32_t get_view_count() const;
+	uint64_t get_view_configuration() const;
+
 	bool is_initialized();
 	bool is_running();
 
+	void set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space);
 	uint64_t get_play_space();
 	int64_t get_predicted_display_time();
 	int64_t get_next_frame_time();
@@ -80,11 +94,17 @@ public:
 
 	uint64_t get_hand_tracker(int p_hand_index);
 
-	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
-	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
+	void register_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
+	void unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
 
-	void register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
-	void unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
+	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
 
 	double get_render_state_z_near();
 	double get_render_state_z_far();
@@ -105,6 +125,8 @@ public:
 	uint64_t get_projection_layer();
 
 	void set_render_region(const Rect2i &p_render_region);
+
+	void update_main_swapchain_size();
 
 	enum OpenXRAlphaBlendModeSupport {
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,

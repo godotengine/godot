@@ -35,13 +35,15 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
+#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 
-#include <stdarg.h>
+#include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -53,6 +55,16 @@ uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
 	return singleton;
+}
+
+bool OS::prefer_meta_over_ctrl() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	return true;
+#elif defined(WEB_ENABLED)
+	return singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
+#else
+	return false;
+#endif
 }
 
 uint64_t OS::get_ticks_msec() const {
@@ -84,13 +96,13 @@ String OS::get_identifier() const {
 	return get_name().to_lower();
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
 	if (_logger) {
-		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	}
 }
 
@@ -199,6 +211,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -246,7 +266,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	if (p_allow_paths) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
 		invalid_chars.push_back("..");
-		safe_dir_name = safe_dir_name.replace("\\", "/").strip_edges();
+		safe_dir_name = safe_dir_name.replace_char('\\', '/').replace("//", "/").strip_edges();
 	} else {
 		invalid_chars.push_back("/");
 		invalid_chars.push_back("\\");
@@ -274,7 +294,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
-	return String(VERSION_SHORT_NAME).to_lower();
+	return String(GODOT_VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME
@@ -301,8 +321,13 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// Path to macOS .app bundle embedded icon
+// Path to macOS .app bundle embedded icon (.icns file).
 String OS::get_bundle_icon_path() const {
+	return String();
+}
+
+// Name of macOS .app bundle embedded icon (Liquid Glass asset name).
+String OS::get_bundle_icon_name() const {
 	return String();
 }
 
@@ -383,6 +408,10 @@ uint64_t OS::get_static_memory_peak_usage() const {
 
 Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
+}
+
+String OS::get_cwd() const {
+	return ".";
 }
 
 Dictionary OS::get_memory_info() const {
@@ -577,21 +606,26 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
-#if defined(IOS_SIMULATOR)
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
 	if (p_feature == "simulator") {
 		return true;
 	}
 #endif
 
-#ifdef THREADS_ENABLED
 	if (p_feature == "threads") {
+#ifdef THREADS_ENABLED
 		return true;
-	}
 #else
-	if (p_feature == "nothreads") {
-		return true;
-	}
+		return false;
 #endif
+	}
+	if (p_feature == "nothreads") {
+#ifdef THREADS_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
 
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
@@ -622,7 +656,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
+	return List<String>(restart_commandline);
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {
@@ -650,7 +684,25 @@ void OS::close_midi_inputs() {
 	}
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+uint64_t OS::get_frame_delay(bool p_can_draw) const {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	return frame_delay + dynamic_delay;
+}
+
+void OS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take

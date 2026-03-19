@@ -32,15 +32,20 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <csignal>
+
+#ifndef sighandler_t
+typedef typeof(void(int)) *sighandler_t;
+#endif
 
 Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 	// Open pipe using handles created by pipe(fd) call in the OS.execute_with_pipe.
@@ -67,7 +72,7 @@ Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) 
 	path_src = p_path;
 	ERR_FAIL_COND_V_MSG(fd[0] >= 0 || fd[1] >= 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 
-	path = String("/tmp/") + p_path.replace("pipe://", "").replace("/", "_");
+	path = String("/tmp/") + p_path.replace("pipe://", "").replace_char('/', '_');
 	const CharString path_utf8 = path.utf8();
 
 	struct stat st = {};
@@ -165,7 +170,11 @@ bool FileAccessUnixPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_V_MSG(fd[1] < 0, false, "Pipe must be opened before use.");
 	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
 
-	if (::write(fd[1], p_src, p_length) != (ssize_t)p_length) {
+	sighandler_t sig_pipe = signal(SIGPIPE, SIG_IGN);
+	ssize_t ret = ::write(fd[1], p_src, p_length);
+	signal(SIGPIPE, sig_pipe);
+
+	if (ret != (ssize_t)p_length) {
 		last_error = ERR_FILE_CANT_WRITE;
 		return false;
 	} else {

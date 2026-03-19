@@ -195,9 +195,9 @@ void SSAO_tap_inner(const int p_quality_level, inout float r_obscurance_sum, ino
 	float weight = 1.0;
 
 	if (p_quality_level >= SSAO_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduct = max(0, -hit_delta.z);
-		reduct = clamp(reduct * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSAO_HALOING_REDUCTION_AMOUNT * reduct + (1.0 - SSAO_HALOING_REDUCTION_AMOUNT);
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSAO_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSAO_HALOING_REDUCTION_AMOUNT);
 	}
 	weight *= p_weight_mod;
 	r_obscurance_sum += obscurance * weight;

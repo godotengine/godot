@@ -144,12 +144,15 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
+		mutable int64_t next_item_id = 0;
+
 		struct Line {
 			Vector<Gutter> gutters;
 
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
+			Vector<RID> accessibility_text_root_element;
 
 			String ime_data;
 			Array ime_bidi_override;
@@ -159,6 +162,7 @@ private:
 			int line_count = 0;
 			int height = 0;
 			int width = 0;
+			float indent_ofs = -1.0;
 
 			Line() {
 				data_buf.instantiate();
@@ -181,6 +185,7 @@ private:
 		String custom_word_separators;
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
+		Callable inline_object_parser;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -203,6 +208,7 @@ private:
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
+		void set_inline_object_parser(const Callable &p_parser);
 
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
@@ -226,8 +232,17 @@ private:
 		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
 
+		const Vector<RID> get_accessibility_elements(int p_line);
+		void update_accessibility(int p_line, RID p_root);
+		void clear_accessibility() {
+			for (int i = 0; i < text.size(); i++) {
+				text.write[i].accessibility_text_root_element.clear();
+			}
+		}
+
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
+		float get_indent_offset(int p_line, bool p_rtl) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_ime(int p_line, const String &p_text, const Array &p_bidi_override);
@@ -243,7 +258,7 @@ private:
 		void invalidate_all();
 		void invalidate_all_lines();
 
-		_FORCE_INLINE_ String operator[](int p_line) const;
+		_FORCE_INLINE_ const String &operator[](int p_line) const;
 		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
 
 		/* Gutters. */
@@ -273,12 +288,22 @@ private:
 
 	/* Text */
 	Text text;
-
+	RID text_ci;
 	bool setting_text = false;
 
+	enum AltInputMode {
+		ALT_INPUT_NONE,
+		ALT_INPUT_UNICODE,
+		ALT_INPUT_OEM,
+		ALT_INPUT_WIN,
+	};
+
+	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
+
+	bool tab_input_mode = true;
 
 	// Text properties.
 	String ime_text = "";
@@ -308,7 +333,7 @@ private:
 	Array st_args;
 
 	void _clear();
-	void _update_caches();
+	void _update_caches(bool p_invalidate_all = false);
 
 	void _close_ime_window();
 	void _update_ime_window_position();
@@ -318,8 +343,10 @@ private:
 	bool overtype_mode = false;
 	bool context_menu_enabled = true;
 	bool emoji_menu_enabled = true;
+	bool backspace_deletes_composite_character_enabled = false;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
+	bool virtual_keyboard_show_on_focus = true;
 	bool middle_mouse_paste_enabled = true;
 	bool empty_selection_clipboard_enabled = true;
 
@@ -330,6 +357,9 @@ private:
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
+
+	Callable inline_object_drawer;
+	Callable inline_object_click_handler;
 
 	Key _get_menu_action_accelerator(const String &p_action);
 	void _generate_context_menu();
@@ -427,6 +457,7 @@ private:
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
+	void _set_caret_pos_dirty(bool p_dirty);
 
 	int multicaret_edit_count = 0;
 	bool multicaret_edit_merge_queued = false;
@@ -497,7 +528,6 @@ private:
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	int wrap_at_column = 0;
-	int wrap_right_offset = 10;
 
 	void _update_wrap_at_column(bool p_force = false);
 
@@ -611,10 +641,14 @@ private:
 		Color outline_color = Color(1, 1, 1);
 
 		int line_spacing = 1;
+		int wrap_offset = 10;
 
-		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
+
+#ifndef DISABLE_DEPRECATED
+		Color background_color = Color(1, 1, 1);
+#endif // DISABLE_DEPRECATED
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -625,6 +659,12 @@ private:
 	bool draw_control_chars = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
+
+	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
+	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
+
+	/* Theme. */
+	Ref<StyleBox> _get_current_stylebox() const;
 
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
@@ -665,6 +705,7 @@ protected:
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
+	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
 
 	/* Internal API for CodeEdit, pending public API. */
@@ -695,6 +736,7 @@ protected:
 	virtual void _unhide_carets();
 
 	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
+	float _get_wrap_indent_offset(int p_line, int p_wrap_index, bool p_rtl) const;
 
 	// Symbol lookup.
 	String lookup_symbol_word;
@@ -715,6 +757,17 @@ protected:
 	virtual void _copy_internal(int p_caret);
 	virtual void _paste_internal(int p_caret);
 	virtual void _paste_primary_clipboard_internal(int p_caret);
+
+	void _accessibility_action_set_selection(const Variant &p_data);
+	void _accessibility_action_replace_selected(const Variant &p_data);
+	void _accessibility_action_set_value(const Variant &p_data);
+	void _accessibility_action_menu(const Variant &p_data);
+	void _accessibility_scroll_down(const Variant &p_data);
+	void _accessibility_scroll_left(const Variant &p_data);
+	void _accessibility_scroll_right(const Variant &p_data);
+	void _accessibility_scroll_up(const Variant &p_data);
+	void _accessibility_scroll_set(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_line, int p_wrap);
 
 	GDVIRTUAL2(_handle_unicode_input, int, int)
 	GDVIRTUAL1(_backspace, int)
@@ -739,6 +792,8 @@ public:
 
 	/* Text */
 	// Text properties.
+	RID get_text_canvas_item() const;
+
 	bool has_ime_text() const;
 	void cancel_ime();
 	void apply_ime();
@@ -754,7 +809,7 @@ public:
 
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_tab_size(const int p_size);
@@ -762,6 +817,9 @@ public:
 
 	void set_indent_wrapped_lines(bool p_enabled);
 	bool is_indent_wrapped_lines() const;
+
+	void set_tab_input_mode(bool p_enabled);
+	bool get_tab_input_mode() const;
 
 	// User controls
 	void set_overtype_mode_enabled(bool p_enabled);
@@ -775,11 +833,17 @@ public:
 	void set_emoji_menu_enabled(bool p_enabled);
 	bool is_emoji_menu_enabled() const;
 
+	void set_backspace_deletes_composite_character_enabled(bool p_enabled);
+	bool is_backspace_deletes_composite_character_enabled() const;
+
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
 	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
+
+	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
+	bool get_virtual_keyboard_show_on_focus() const;
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
@@ -790,6 +854,7 @@ public:
 	// Text manipulation
 	void clear();
 
+	void _set_text(const String &p_text, bool p_emit_signal = false);
 	void set_text(const String &p_text);
 	String get_text() const;
 
@@ -820,6 +885,8 @@ public:
 	int get_last_unhidden_line() const;
 	int get_next_visible_line_offset_from(int p_line_from, int p_visible_amount) const;
 	Point2i get_next_visible_line_index_offset_from(int p_line_from, int p_wrap_index_from, int p_visible_amount) const;
+
+	void set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler);
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode, int p_caret = -1);
@@ -866,6 +933,7 @@ public:
 	Point2 get_local_mouse_pos() const;
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
+	String get_word(int p_line, int p_column) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
@@ -922,6 +990,8 @@ public:
 
 	void set_caret_column(int p_column, bool p_adjust_viewport = true, int p_caret = 0);
 	int get_caret_column(int p_caret = 0) const;
+	int get_next_composite_character_column(int p_line, int p_column) const;
+	int get_previous_composite_character_column(int p_line, int p_column) const;
 
 	int get_caret_wrap_index(int p_caret = 0) const;
 
@@ -1024,6 +1094,7 @@ public:
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust
+	bool is_line_in_viewport(int p_line) const;
 	void adjust_viewport_to_caret(int p_caret = 0);
 	void center_viewport_to_caret(int p_caret = 0);
 
@@ -1130,6 +1201,7 @@ public:
 #endif
 
 	TextEdit(const String &p_placeholder = String());
+	~TextEdit();
 };
 
 VARIANT_ENUM_CAST(TextEdit::EditAction);

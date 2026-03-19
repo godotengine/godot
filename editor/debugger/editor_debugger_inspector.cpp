@@ -32,10 +32,14 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/variant/typed_dictionary.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/inspector_dock.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 
 bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -43,12 +47,15 @@ bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &
 
 bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
 	String name = p_name;
-
-	if (name.begins_with("Metadata/")) {
-		name = name.replace_first("Metadata/", "metadata/");
-	}
 	if (!prop_values.has(name) || String(name).begins_with("Constants/")) {
 		return false;
+	}
+
+	// Change it back to the real name when sending it.
+	if (name == "Script") {
+		name = "script";
+	} else if (name.begins_with("Metadata/")) {
+		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	Dictionary &values = prop_values[p_name];
@@ -69,12 +76,7 @@ bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Vari
 }
 
 bool EditorDebuggerRemoteObjects::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-
-	if (name.begins_with("Metadata/")) {
-		name = name.replace_first("Metadata/", "metadata/");
-	}
-	if (!prop_values.has(name)) {
+	if (!prop_values.has(p_name)) {
 		return false;
 	}
 
@@ -85,17 +87,18 @@ bool EditorDebuggerRemoteObjects::_get(const StringName &p_name, Variant &r_ret)
 void EditorDebuggerRemoteObjects::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->clear(); // Sorry, don't want any categories.
 	for (const PropertyInfo &prop : prop_list) {
-		if (prop.name == "script") {
-			// Skip the script property, it's always added by the non-virtual method.
-			continue;
-		}
-
 		p_list->push_back(prop);
 	}
 }
 
 void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
-	_set_impl(p_property, p_value, p_field);
+	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
+	Variant::Type type = p_value.get_type();
+	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
+		_set_impl(p_property, p_value, "");
+	} else {
+		_set_impl(p_property, p_value, p_field);
+	}
 }
 
 String EditorDebuggerRemoteObjects::get_title() {
@@ -113,10 +116,17 @@ Variant EditorDebuggerRemoteObjects::get_variant(const StringName &p_name) {
 	return var;
 }
 
+void EditorDebuggerRemoteObjects::clear() {
+	prop_list.clear();
+	prop_values.clear();
+}
+
 void EditorDebuggerRemoteObjects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &EditorDebuggerRemoteObjects::get_title);
+	ClassDB::bind_method("_hide_script_from_inspector", &EditorDebuggerRemoteObjects::_hide_script_from_inspector);
+	ClassDB::bind_method("_hide_metadata_from_inspector", &EditorDebuggerRemoteObjects::_hide_metadata_from_inspector);
 
-	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t:Variant"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t;Variant"), PropertyInfo(Variant::STRING, "field")));
 }
 
 /// EditorDebuggerInspector
@@ -191,34 +201,6 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects_list.push_back(remote_objects);
 	}
 
-	StringName class_name = objects[0].class_name;
-	if (class_name != SNAME("Object")) {
-		// Search for the common class between all selected objects.
-		bool check_type_again = true;
-		while (check_type_again) {
-			check_type_again = false;
-
-			if (class_name == SNAME("Object") || class_name == StringName()) {
-				// All objects inherit from Object, so no need to continue checking.
-				class_name = SNAME("Object");
-				break;
-			}
-
-			// Check that all objects inherit from type_name.
-			for (const SceneDebuggerObject &obj : objects) {
-				if (obj.class_name == class_name || ClassDB::is_parent_class(obj.class_name, class_name)) {
-					continue; // class_name is the same or a parent of the object's class.
-				}
-
-				// class_name is not a parent of the node's class, so check again with the parent class.
-				class_name = ClassDB::get_parent_class(class_name);
-				check_type_again = true;
-				break;
-			}
-		}
-	}
-	remote_objects->type_name = class_name;
-
 	// Search for properties that are present in all selected objects.
 	struct UsageData {
 		int qty = 0;
@@ -230,10 +212,11 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	for (const SceneDebuggerObject &obj : objects) {
 		for (const SceneDebuggerObject::SceneDebuggerProperty &prop : obj.properties) {
 			PropertyInfo pinfo = prop.first;
+			// Rename those variables, so they don't conflict with the ones from the resource itself.
 			if (pinfo.name == "script") {
-				continue; // Added later manually, since this is intercepted before being set (check Variant Object::get()).
+				pinfo.name = "Script";
 			} else if (pinfo.name.begins_with("metadata/")) {
-				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from EditorDebuggerRemoteObjects.
+				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/");
 			}
 
 			if (!usage.has(pinfo.name)) {
@@ -271,36 +254,22 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	remote_objects->prop_list.clear();
 	int new_props_added = 0;
 	HashSet<String> changed;
-	for (const KeyValue<String, UsageData> &KV : usage) {
+	for (KeyValue<String, UsageData> &KV : usage) {
 		const PropertyInfo &pinfo = KV.value.prop.first;
 		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
 
-		if (pinfo.type == Variant::OBJECT) {
-			if (var.is_string()) {
-				String path = var;
-				if (path.contains("::")) {
-					// Built-in resource.
-					String base_path = path.get_slice("::", 0);
-					Ref<Resource> dependency = ResourceLoader::load(base_path);
-					if (dependency.is_valid()) {
-						remote_dependencies.insert(dependency);
-					}
-				}
-				var = ResourceLoader::load(path);
-
-				if (pinfo.hint_string == "Script") {
-					if (remote_objects->get_script() != var) {
-						remote_objects->set_script(Ref<RefCounted>());
-						Ref<Script> scr(var);
-						if (scr.is_valid()) {
-							ScriptInstance *scr_instance = scr->placeholder_instance_create(remote_objects);
-							if (scr_instance) {
-								remote_objects->set_script_and_instance(var, scr_instance);
-							}
-						}
-					}
+		if (pinfo.type == Variant::OBJECT && var.is_string()) {
+			String path = var;
+			if (path.contains("::")) {
+				// Built-in resource.
+				String base_path = path.get_slice("::", 0);
+				Ref<Resource> dependency = ResourceLoader::load(base_path);
+				if (dependency.is_valid()) {
+					remote_dependencies.insert(dependency);
 				}
 			}
+			var = ResourceLoader::load(path);
+			KV.value.values[remote_objects->remote_object_ids[0]] = var;
 		}
 
 		// Always add the property, since props may have been added or removed.
@@ -314,6 +283,70 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 
 		remote_objects->prop_values[pinfo.name] = KV.value.values;
 	}
+
+	StringName class_name = objects[0].class_name;
+	bool has_custom_class = true;
+
+	if (usage.has("Script")) {
+		// Check if all objects have the same script.
+		Ref<Script> common_scr;
+		LocalVector<Variant> keys = usage["Script"].values.get_key_list();
+		for (const Variant &key : keys) {
+			Ref<Script> scr = usage["Script"].values[key];
+			if (scr.is_null()) {
+				has_custom_class = false;
+				break;
+			}
+
+			if (common_scr.is_null()) {
+				common_scr = scr;
+			} else if (scr != common_scr) {
+				has_custom_class = false;
+				break;
+			}
+		}
+
+		if (has_custom_class) {
+			// Now check if the script has a custom class.
+			if (common_scr.is_null()) {
+				has_custom_class = false;
+			} else {
+				const StringName scr_class = common_scr->get_global_name();
+				if (scr_class.is_empty()) {
+					has_custom_class = false;
+				} else {
+					class_name = scr_class;
+				}
+			}
+		}
+	}
+
+	if (!has_custom_class && class_name != SNAME("Object")) {
+		// Search for the common class between all selected objects.
+		bool check_type_again = true;
+		while (check_type_again) {
+			check_type_again = false;
+
+			if (class_name.is_empty() || class_name == SNAME("Object")) {
+				// All objects inherit from Object, so no need to continue checking.
+				class_name = SNAME("Object");
+				break;
+			}
+
+			// Check that all objects inherit from type_name.
+			for (const SceneDebuggerObject &obj : objects) {
+				if (obj.class_name == class_name || ClassDB::is_parent_class(obj.class_name, class_name)) {
+					continue; // class_name is the same or a parent of the object's class.
+				}
+
+				// class_name is not a parent of the node's class, so check again with the parent class.
+				class_name = ClassDB::get_parent_class(class_name);
+				check_type_again = true;
+				break;
+			}
+		}
+	}
+	remote_objects->type_name = class_name;
 
 	if (old_prop_size == remote_objects->prop_list.size() && new_props_added == 0) {
 		// Only some may have changed, if so, then update those, if they exist.
@@ -386,6 +419,10 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 			type = "Locals/";
 			break;
 		case 1:
+			if (n.begins_with("@")) {
+				return; // Skip groups.
+			}
+
 			type = "Members/";
 			break;
 		case 2:
@@ -399,7 +436,9 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 	}
 
 	PropertyInfo pinfo;
-	pinfo.name = type + n;
+	// Encode special characters to avoid issues with expressions in Evaluator.
+	// Dots are skipped by uri_encode(), but uri_decode() process them correctly when replaced with "%2E".
+	pinfo.name = type + n.uri_encode().replace(".", "%2E");
 	pinfo.type = v.get_type();
 	pinfo.hint = h;
 	pinfo.hint_string = hs;
@@ -413,21 +452,14 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		}
 		variables->prop_list.insert_before(current, pinfo);
 	}
-	variables->prop_values[type + n][0] = v;
+	variables->prop_values[pinfo.name][0] = v;
 	variables->update();
 	edit(variables);
-
-	// To prevent constantly resizing when using filtering.
-	int size_x = get_size().x;
-	if (size_x > get_custom_minimum_size().x) {
-		set_custom_minimum_size(Size2(size_x, 0));
-	}
 }
 
 void EditorDebuggerInspector::clear_stack_variables() {
 	variables->clear();
 	variables->update();
-	set_custom_minimum_size(Size2(0, 0));
 }
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {

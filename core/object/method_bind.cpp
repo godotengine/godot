@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/object/object.h"
 // object.h needs to be the first include *before* method_bind.h
 // FIXME: Find out why and fix potential cyclical dependencies.
-#include "core/object/object.h"
-
-#include "method_bind.h"
+#include "core/object/method_bind.h"
 
 uint32_t MethodBind::get_hash() const {
 	MethodInfo mi;
@@ -50,11 +49,11 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 	ERR_FAIL_INDEX_V(p_argument, get_argument_count(), PropertyInfo());
 
 	PropertyInfo info = _gen_argument_type_info(p_argument);
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	if (info.name.is_empty()) {
 		info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("_unnamed_arg" + itos(p_argument));
 	}
-#endif
+#endif // DEBUG_ENABLED
 	return info;
 }
 
@@ -82,7 +81,7 @@ void MethodBind::set_name(const StringName &p_name) {
 	name = p_name;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 void MethodBind::set_argument_names(const Vector<StringName> &p_names) {
 	arg_names = p_names;
 }
@@ -91,7 +90,7 @@ Vector<StringName> MethodBind::get_argument_names() const {
 	return arg_names;
 }
 
-#endif
+#endif // DEBUG_ENABLED
 
 void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 	default_arguments = p_defargs;

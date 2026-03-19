@@ -30,6 +30,8 @@
 
 #include "image_loader.h"
 
+#include "core/object/class_db.h"
+
 void ImageFormatLoader::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_NONE);
 	BIND_BITFIELD_FLAG(FLAG_FORCE_LINEAR);
@@ -123,8 +125,6 @@ Ref<ImageFormatLoader> ImageLoader::recognize(const String &p_extension) {
 
 	return nullptr;
 }
-
-Vector<Ref<ImageFormatLoader>> ImageLoader::loader;
 
 void ImageLoader::add_image_format_loader(Ref<ImageFormatLoader> p_loader) {
 	loader.push_back(p_loader);

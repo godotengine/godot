@@ -66,7 +66,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B[0], p_points_B[1]);
 	p_collector->call(*p_points_A, closest_B);
 }
 
@@ -374,9 +374,9 @@ public:
 
 /****** SAT TESTS *******/
 
-#define TEST_POINT(m_a, m_b)                                                                \
-	((!separator.test_axis(((m_a) - (m_b)).normalized())) ||                                \
-			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) ||   \
+#define TEST_POINT(m_a, m_b) \
+	((!separator.test_axis(((m_a) - (m_b)).normalized())) || \
+			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) || \
 			(castB && !separator.test_axis(((m_a) - ((m_b) + p_motion_b)).normalized())) || \
 			(castA && castB && !separator.test_axis(((m_a) + p_motion_a - ((m_b) + p_motion_b)).normalized())))
 

@@ -30,6 +30,8 @@
 
 #include "hinge_joint_3d.h"
 
+#include "core/object/class_db.h"
+
 void HingeJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &HingeJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &HingeJoint3D::get_param);
@@ -122,8 +124,8 @@ void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsB
 
 HingeJoint3D::HingeJoint3D() {
 	params[PARAM_BIAS] = 0.3;
-	params[PARAM_LIMIT_UPPER] = Math_PI * 0.5;
-	params[PARAM_LIMIT_LOWER] = -Math_PI * 0.5;
+	params[PARAM_LIMIT_UPPER] = Math::PI * 0.5;
+	params[PARAM_LIMIT_LOWER] = -Math::PI * 0.5;
 	params[PARAM_LIMIT_BIAS] = 0.3;
 	params[PARAM_LIMIT_SOFTNESS] = 0.9;
 	params[PARAM_LIMIT_RELAXATION] = 1.0;

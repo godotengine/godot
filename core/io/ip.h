@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/ip_address.h"
-#include "core/os/os.h"
+#include "core/variant/type_info.h"
 
 template <typename T>
 class TypedArray;
@@ -67,7 +67,7 @@ private:
 	_IP_ResolverPrivate *resolver = nullptr;
 
 protected:
-	static IP *singleton;
+	static inline IP *singleton = nullptr;
 	static void _bind_methods();
 
 	PackedStringArray _get_local_addresses() const;

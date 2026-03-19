@@ -30,20 +30,18 @@
 
 #pragma once
 
-#include <cstdint>
+#include "core/typedefs.h"
 
 #ifdef THREADS_ENABLED
 
-#include "core/error/error_list.h"
-#include "core/typedefs.h"
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
 #endif
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#include <thirdparty/mingw-std-threads/mingw.condition_variable.h>
+#include <thirdparty/mingw-std-threads/mingw.mutex.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <condition_variable>

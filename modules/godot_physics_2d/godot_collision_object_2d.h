@@ -34,7 +34,6 @@
 #include "godot_shape_2d.h"
 
 #include "core/templates/self_list.h"
-#include "servers/physics_server_2d.h"
 
 class GodotSpace2D;
 
@@ -61,6 +60,7 @@ private:
 		bool disabled = false;
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
+		Vector2 one_way_collision_direction = Vector2(0.0, 1.0);
 	};
 
 	Vector<Shape> shapes;
@@ -139,10 +139,11 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, real_t p_margin) {
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, real_t p_margin, const Vector2 &p_direction) {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		shapes.write[p_idx].one_way_collision = p_one_way_collision;
 		shapes.write[p_idx].one_way_collision_margin = p_margin;
+		shapes.write[p_idx].one_way_collision_direction = p_direction;
 	}
 	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
@@ -152,6 +153,11 @@ public:
 	_FORCE_INLINE_ real_t get_shape_one_way_collision_margin(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		return shapes[p_idx].one_way_collision_margin;
+	}
+
+	Vector2 get_shape_one_way_collision_direction(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		return shapes[p_idx].one_way_collision_direction;
 	}
 
 	void set_collision_mask(uint32_t p_mask) {

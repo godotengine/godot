@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 
 class EditorNetworkProfiler;
@@ -50,8 +50,6 @@ public:
 	virtual bool has_capture(const String &p_capture) const override;
 	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
 	virtual void setup_session(int p_session_id) override;
-
-	MultiplayerEditorDebugger() {}
 };
 
 class ReplicationEditor;
@@ -60,7 +58,6 @@ class MultiplayerEditorPlugin : public EditorPlugin {
 	GDCLASS(MultiplayerEditorPlugin, EditorPlugin);
 
 private:
-	Button *button = nullptr;
 	ReplicationEditor *repl_editor = nullptr;
 	Ref<MultiplayerEditorDebugger> debugger;
 

@@ -30,6 +30,9 @@
 
 #include "physics_body_2d.h"
 
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
@@ -156,16 +159,26 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody2D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
-void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody2D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
+}
+
+PackedStringArray PhysicsBody2D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
+
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
+		warnings.push_back(RTR("PhysicsBody2D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
+	}
+
+	return warnings;
 }

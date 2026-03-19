@@ -11,9 +11,8 @@ lines = "#define MODE_LINES";
 layout(location = 0) out vec3 uv_interp;
 
 void main() {
-
 #ifdef MODE_LINES
-	uv_interp = vec3(0,0,1);
+	uv_interp = vec3(0, 0, 1);
 #endif
 }
 
@@ -28,5 +27,5 @@ void main() {
 layout(location = 0) out vec4 dst_color;
 
 void main() {
-	dst_color = vec4(1,1,0,0);
+	dst_color = vec4(1, 1, 0, 0);
 }

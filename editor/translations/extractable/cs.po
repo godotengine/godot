@@ -18,15 +18,11 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Všechny rozpoznatelné"
+msgid "Save"
+msgstr "Uložit"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Barva: #%s\n"
-"LMB: Nastavit barvu"
+msgid "Clear"
+msgstr "Promazat"
 
 msgid "Add current color as a preset."
 msgstr "Přidat aktuální barvu jako předvolbu."
@@ -40,11 +36,11 @@ msgstr "Otevřít"
 msgid "Select Current Folder"
 msgstr "Vybrat stávající složku"
 
-msgid "Save"
-msgstr "Uložit"
-
 msgid "Select This Folder"
 msgstr "Vybrat tuto složku"
+
+msgid "All Recognized"
+msgstr "Všechny rozpoznatelné"
 
 msgid "All Files"
 msgstr "Všechny soubory"
@@ -79,11 +75,11 @@ msgstr "Cesta:"
 msgid "Refresh files."
 msgstr "Obnovit soubory."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Změnit viditelnost skrytých souborů."
-
 msgid "Directories & Files:"
 msgstr "Složky a soubory:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Změnit viditelnost skrytých souborů."
 
 msgid "File:"
 msgstr "Soubor:"
@@ -117,9 +113,6 @@ msgstr "Vložit"
 
 msgid "Select All"
 msgstr "Označit vše"
-
-msgid "Clear"
-msgstr "Promazat"
 
 msgid "Undo"
 msgstr "Zpět"

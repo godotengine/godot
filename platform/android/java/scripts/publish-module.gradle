@@ -7,19 +7,19 @@ version = PUBLISH_VERSION
 afterEvaluate {
     publishing {
         publications {
-            templateRelease(MavenPublication) {
-                from components.templateRelease
+            templateDebug(MavenPublication) {
+                from components.templateDebug
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
                 groupId ossrhGroupId
-                artifactId PUBLISH_ARTIFACT_ID
+                artifactId DEBUG_PUBLISH_ARTIFACT_ID
                 version PUBLISH_VERSION
 
                 // Mostly self-explanatory metadata
                 pom {
-                    name = PUBLISH_ARTIFACT_ID
-                    description = 'Godot Engine Android Library'
+                    name = DEBUG_PUBLISH_ARTIFACT_ID
+                    description = 'Godot Engine Android Library - (Debug) Template Build'
                     url = 'https://godotengine.org/'
                     licenses {
                         license {
@@ -43,7 +43,115 @@ afterEvaluate {
                             name = 'Rémi Verschelde'
                             email = 'rverschelde@gmail.com'
                         }
-                        // Add all other devs here...
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
+                    }
+
+                    // Version control info - if you're using GitHub, follow the
+                    // format as seen here
+                    scm {
+                        connection = 'scm:git:github.com/godotengine/godot.git'
+                        developerConnection = 'scm:git:ssh://github.com/godotengine/godot.git'
+                        url = 'https://github.com/godotengine/godot/tree/master'
+                    }
+                }
+            }
+            templateRelease(MavenPublication) {
+                from components.templateRelease
+
+                // The coordinates of the library, being set from variables that
+                // we'll set up later
+                groupId ossrhGroupId
+                artifactId PUBLISH_ARTIFACT_ID
+                version PUBLISH_VERSION
+
+                // Mostly self-explanatory metadata
+                pom {
+                    name = PUBLISH_ARTIFACT_ID
+                    description = 'Godot Engine Android Library - Template Build'
+                    url = 'https://godotengine.org/'
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://github.com/godotengine/godot/blob/master/LICENSE.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'm4gr3d'
+                            name = 'Fredia Huya-Kouadio'
+                            email = 'fhuyakou@gmail.com'
+                        }
+                        developer {
+                            id = 'reduz'
+                            name = 'Juan Linietsky'
+                            email = 'reduzio@gmail.com'
+                        }
+                        developer {
+                            id = 'akien-mga'
+                            name = 'Rémi Verschelde'
+                            email = 'rverschelde@gmail.com'
+                        }
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
+                    }
+
+                    // Version control info - if you're using GitHub, follow the
+                    // format as seen here
+                    scm {
+                        connection = 'scm:git:github.com/godotengine/godot.git'
+                        developerConnection = 'scm:git:ssh://github.com/godotengine/godot.git'
+                        url = 'https://github.com/godotengine/godot/tree/master'
+                    }
+                }
+            }
+            toolsRelease(MavenPublication) {
+                from components.editorRelease
+
+                // The coordinates of the library, being set from variables that
+                // we'll set up later
+                groupId ossrhGroupId
+                artifactId TOOLS_PUBLISH_ARTIFACT_ID
+                version PUBLISH_VERSION
+
+                // Mostly self-explanatory metadata
+                pom {
+                    name = TOOLS_PUBLISH_ARTIFACT_ID
+                    description = 'Godot Engine Tools Android Library - Editor Build'
+                    url = 'https://godotengine.org/'
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://github.com/godotengine/godot/blob/master/LICENSE.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'm4gr3d'
+                            name = 'Fredia Huya-Kouadio'
+                            email = 'fhuyakou@gmail.com'
+                        }
+                        developer {
+                            id = 'reduz'
+                            name = 'Juan Linietsky'
+                            email = 'reduzio@gmail.com'
+                        }
+                        developer {
+                            id = 'akien-mga'
+                            name = 'Rémi Verschelde'
+                            email = 'rverschelde@gmail.com'
+                        }
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
                     }
 
                     // Version control info - if you're using GitHub, follow the

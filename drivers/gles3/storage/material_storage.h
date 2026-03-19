@@ -34,15 +34,16 @@
 
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/shader_compiler.h"
-#include "servers/rendering/shader_language.h"
-#include "servers/rendering/storage/material_storage.h"
-#include "servers/rendering/storage/utilities.h"
-
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
+#include "drivers/gles3/shaders/tex_blit.glsl.gen.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/shader_compiler.h"
+#include "servers/rendering/shader_language.h"
+#include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace GLES3 {
 
@@ -63,7 +64,7 @@ struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
 	virtual bool is_animated() const = 0;
 	virtual bool casts_shadows() const = 0;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const { return RenderingServerTypes::ShaderNativeSourceCode(); }
 
 	virtual ~ShaderData() {}
 };
@@ -76,7 +77,7 @@ struct Shader {
 	ShaderData *data = nullptr;
 	String code;
 	String path_hint;
-	RS::ShaderMode mode;
+	RSE::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
 };
@@ -86,6 +87,7 @@ struct Shader {
 struct MaterialData {
 	void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size);
 	void update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+	RID get_default_texture_id(ShaderLanguage::DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 
 	virtual void set_render_priority(int p_priority) = 0;
 	virtual void set_next_pass(RID p_pass) = 0;
@@ -117,7 +119,7 @@ struct Material {
 	MaterialData *data = nullptr;
 	Shader *shader = nullptr;
 	//shortcut to shader data and type
-	RS::ShaderMode shader_mode = RS::SHADER_MAX;
+	RSE::ShaderMode shader_mode = RSE::SHADER_MAX;
 	uint32_t shader_id = 0;
 	bool uniform_dirty = false;
 	bool texture_dirty = false;
@@ -172,7 +174,7 @@ struct CanvasShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	CanvasShaderData();
 	virtual ~CanvasShaderData();
@@ -217,7 +219,7 @@ struct SkyShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 	SkyShaderData();
 	virtual ~SkyShaderData();
 };
@@ -257,7 +259,25 @@ struct SceneShaderData : public ShaderData {
 
 	enum DepthTest {
 		DEPTH_TEST_DISABLED,
-		DEPTH_TEST_ENABLED
+		DEPTH_TEST_ENABLED,
+		DEPTH_TEST_ENABLED_INVERTED,
+	};
+
+	enum StencilCompare {
+		STENCIL_COMPARE_LESS,
+		STENCIL_COMPARE_EQUAL,
+		STENCIL_COMPARE_LESS_OR_EQUAL,
+		STENCIL_COMPARE_GREATER,
+		STENCIL_COMPARE_NOT_EQUAL,
+		STENCIL_COMPARE_GREATER_OR_EQUAL,
+		STENCIL_COMPARE_ALWAYS,
+		STENCIL_COMPARE_MAX // not an actual operator, just the amount of operators
+	};
+
+	enum StencilFlags {
+		STENCIL_FLAG_READ = 1,
+		STENCIL_FLAG_WRITE = 2,
+		STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
 	};
 
 	enum AlphaAntiAliasing {
@@ -283,7 +303,12 @@ struct SceneShaderData : public ShaderData {
 	AlphaAntiAliasing alpha_antialiasing_mode;
 	DepthDraw depth_draw;
 	DepthTest depth_test;
-	RS::CullMode cull_mode;
+	RSE::CullMode cull_mode;
+
+	StencilCompare stencil_compare;
+	uint32_t stencil_flags;
+	int32_t stencil_reference;
+	bool stencil_enabled;
 
 	bool uses_point_size;
 	bool uses_alpha;
@@ -305,6 +330,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_screen_texture_mipmaps;
 	bool uses_depth_texture;
 	bool uses_normal_texture;
+	bool uses_bent_normal_texture;
 	bool uses_time;
 	bool uses_vertex_time;
 	bool uses_fragment_time;
@@ -326,7 +352,7 @@ struct SceneShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	SceneShaderData();
 	virtual ~SceneShaderData();
@@ -378,7 +404,7 @@ struct ParticlesShaderData : public ShaderData {
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 
 	ParticlesShaderData() {}
 	virtual ~ParticlesShaderData();
@@ -399,6 +425,52 @@ struct ParticleProcessMaterialData : public MaterialData {
 
 MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
+/* Texture Blit Shader */
+
+struct TexBlitShaderData : public ShaderData {
+	enum BlendMode { // Used internally.
+		BLEND_MODE_MIX,
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MUL,
+		BLEND_MODE_DISABLED,
+	};
+
+	bool valid;
+	RID version;
+
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size;
+
+	String code;
+
+	BlendMode blend_mode;
+
+	virtual void set_code(const String &p_code);
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
+
+	TexBlitShaderData();
+	virtual ~TexBlitShaderData();
+};
+
+ShaderData *_create_tex_blit_shader_func();
+
+struct TexBlitMaterialData : public MaterialData {
+	TexBlitShaderData *shader_data = nullptr;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~TexBlitMaterialData();
+};
+
+MaterialData *_create_tex_blit_material_func(ShaderData *p_shader);
+
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
 	enum {
@@ -407,7 +479,7 @@ struct GlobalShaderUniforms {
 	struct Variable {
 		HashSet<RID> texture_materials; // materials using this
 
-		RS::GlobalShaderParameterType type;
+		RSE::GlobalShaderParameterType type;
 		Variant value;
 		Variant override;
 		int32_t buffer_index; //for vectors
@@ -468,19 +540,20 @@ private:
 	GlobalShaderUniforms global_shader_uniforms;
 
 	int32_t _global_shader_uniform_allocate(uint32_t p_elements);
-	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderParameterType p_type, const Variant &p_value);
+	void _global_shader_uniform_store_in_buffer(int32_t p_index, RSE::GlobalShaderParameterType p_type, const Variant &p_value);
 	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
 
 	/* SHADER API */
 
-	ShaderDataRequestFunction shader_data_request_func[RS::SHADER_MAX];
+	ShaderDataRequestFunction shader_data_request_func[RSE::SHADER_MAX];
 	mutable RID_Owner<Shader, true> shader_owner;
 
 	/* MATERIAL API */
-	MaterialDataRequestFunction material_data_request_func[RS::SHADER_MAX];
+	MaterialDataRequestFunction material_data_request_func[RSE::SHADER_MAX];
 	mutable RID_Owner<Material, true> material_owner;
 
 	SelfList<Material>::List material_update_list;
+	HashSet<RID> dummy_embedded_set;
 
 public:
 	static MaterialStorage *get_singleton();
@@ -535,26 +608,28 @@ public:
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
 		ParticlesShaderGLES3 particles_process_shader;
+		TexBlitShaderGLES3 tex_blit_shader;
 
 		ShaderCompiler compiler_canvas;
 		ShaderCompiler compiler_scene;
 		ShaderCompiler compiler_particles;
 		ShaderCompiler compiler_sky;
+		ShaderCompiler compiler_tex_blit;
 	} shaders;
 
 	/* GLOBAL SHADER UNIFORM API */
 
 	void _update_global_shader_uniforms();
 
-	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) override;
+	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) override;
 	virtual void global_shader_parameter_remove(const StringName &p_name) override;
 	virtual Vector<StringName> global_shader_parameter_get_list() const override;
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) override;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const override;
-	virtual RS::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
-	RS::GlobalShaderParameterType global_shader_parameter_get_type_internal(const StringName &p_name) const;
+	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
+	RSE::GlobalShaderParameterType global_shader_parameter_get_type_internal(const StringName &p_name) const;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) override;
 	virtual void global_shader_parameters_clear() override;
@@ -573,7 +648,7 @@ public:
 	void _shader_make_dirty(Shader *p_shader);
 
 	virtual RID shader_allocate() override;
-	virtual void shader_initialize(RID p_rid) override;
+	virtual void shader_initialize(RID p_rid, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
@@ -585,7 +660,10 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override;
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_name) const override;
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual void shader_embedded_set_lock() override {}
+	virtual const HashSet<RID> &shader_embedded_set_get() const override { return dummy_embedded_set; }
+	virtual void shader_embedded_set_unlock() override {}
 
 	/* MATERIAL API */
 
@@ -609,7 +687,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
-	virtual RS::CullMode material_get_cull_mode(RID p_material) const override;
+	virtual RSE::CullMode material_get_cull_mode(RID p_material) const override;
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
@@ -620,7 +698,7 @@ public:
 		return material->shader_id;
 	}
 
-	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, RS::ShaderMode p_shader_mode) {
+	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, RSE::ShaderMode p_shader_mode) {
 		Material *material = material_owner.get_or_null(p_material);
 		if (!material || material->shader_mode != p_shader_mode) {
 			return nullptr;

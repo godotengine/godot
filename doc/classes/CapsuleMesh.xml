@@ -11,12 +11,14 @@
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			Total height of the capsule mesh (including the hemispherical ends).
+			[b]Note:[/b] The [member height] of a capsule must be at least twice its [member radius]. Otherwise, the capsule becomes a circle. If the [member height] is less than twice the [member radius], the properties adjust to a valid value.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the capsule mesh.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			Radius of the capsule mesh.
+			[b]Note:[/b] The [member radius] of a capsule cannot be greater than half of its [member height]. Otherwise, the capsule becomes a circle. If the [member radius] is greater than half of the [member height], the properties adjust to a valid value.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="8">
 			Number of rings along the height of the capsule.

@@ -35,10 +35,10 @@
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #ifdef SOWRAP_ENABLED
-#include "pulse-so_wrap.h"
+#include "drivers/pulseaudio/pulse-so_wrap.h" // IWYU pragma: keep. Relies on pulseaudio.h transitive includes.
 #else
 #include <pulse/pulseaudio.h>
 #endif

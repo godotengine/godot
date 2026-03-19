@@ -32,24 +32,33 @@
 
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
-#include "file_access_android.h"
 #include "file_access_filesystem_jandroid.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "net_socket_android.h"
 
-#include "core/config/project_settings.h"
+#ifndef TOOLS_ENABLED
+#include "file_access_android.h"
+#endif
+
+#include "core/config/engine.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/input/input.h"
 #include "core/io/xml_parser.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "editor/plugins/game_view_plugin.h"
-#endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/object/callable_mp.h"
+#include "editor/editor_node.h"
+#include "editor/run/game_view_plugin.h"
+#endif
 
 #include <dlfcn.h>
 #include <sys/system_properties.h>
@@ -72,6 +81,14 @@ String _remove_symlink(const String &dir) {
 	chdir(current_dir_name);
 	return dir_without_symlink;
 }
+
+#ifdef TOOLS_ENABLED
+_FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
+	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
+	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+}
+#endif
 
 class AndroidLogger : public Logger {
 public:
@@ -315,7 +332,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
@@ -325,6 +342,14 @@ String OS_Android::get_version() const {
 	}
 
 	return "";
+}
+
+String OS_Android::get_version_alias() const {
+	String release = get_system_property("ro.build.version.release_or_codename");
+	String sdk_version = get_system_property("ro.build.version.sdk");
+	String build = get_system_property("ro.build.version.incremental");
+
+	return vformat("%s (SDK %s build %s)", release, sdk_version, build);
 }
 
 MainLoop *OS_Android::get_main_loop() const {
@@ -338,15 +363,21 @@ void OS_Android::main_loop_begin() {
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->connect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+
+		if (EditorNode::get_singleton() != nullptr) {
+			EditorNode::get_singleton()->connect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
 		}
 	}
 #endif
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Android::main_loop_iterate");
 	if (!main_loop) {
 		return false;
 	}
@@ -368,9 +399,13 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 void OS_Android::main_loop_end() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->disconnect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+
+		if (EditorNode::get_singleton() != nullptr) {
+			EditorNode::get_singleton()->disconnect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
 		}
 	}
 #endif
@@ -390,18 +425,26 @@ void OS_Android::_on_main_screen_changed(const String &p_screen_name) {
 		OS_Android::get_singleton()->get_godot_java()->on_editor_workspace_selected(p_screen_name);
 	}
 }
+
+void OS_Android::_on_distraction_free_mode_changed(bool p_enable) {
+	if (OS_Android::get_singleton() != nullptr && OS_Android::get_singleton()->get_godot_java() != nullptr) {
+		OS_Android::get_singleton()->get_godot_java()->on_distraction_free_mode_changed(p_enable);
+	}
+}
 #endif
 
 void OS_Android::main_loop_focusout() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
-	audio_driver_android.set_pause(true);
+
+	// Only pause when we are not in PiP mode.
+	audio_driver_android.set_pause(!DisplayServerAndroid::get_singleton()->is_in_pip_mode());
 }
 
 void OS_Android::main_loop_focusin() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
@@ -594,7 +637,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		font_name = font_aliases[font_name];
 	}
 	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
-	String lang_prefix = p_locale.split("_")[0];
+	String lang_prefix = p_locale.get_slicec('_', 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
@@ -858,7 +901,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 
