@@ -734,7 +734,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	};
 
 	auto reuse_previous_sort = [&](const String &p_reason, const char *p_route_uid) -> bool {
-		if (strict_global_sort) {
+		const bool has_valid_sort_buffer = sorting_pipeline && sorting_pipeline->get_sort_indices_buffer().is_valid();
+		if (strict_global_sort && has_valid_sort_buffer) {
 			return false;
 		}
 		if (!sorting_pipeline || sorting_state.sorted_splat_count == 0) {
@@ -763,8 +764,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		return MIN(instance_max_visible_splats, chunk_budget);
 	};
 
-	if (!strict_global_sort &&
-			!force_cpu_sort && instance_pipeline_active && instance_max_visible_splats > 0 &&
+	// Instance sort-cache reuse with identical camera is exact (not approximate),
+	// so it is safe even in strict_global_sort mode.
+	if (!force_cpu_sort && instance_pipeline_active && instance_max_visible_splats > 0 &&
 			instance_visible_chunk_count > 0 && instance_max_chunk_splats > 0) {
 		instance_camera_to_world = p_world_to_camera_transform.affine_inverse();
 		instance_camera_valid = true;
@@ -900,7 +902,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	}
 
 	auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
-		if (strict_global_sort) {
+		const bool has_valid_sort_buffer = sorting_pipeline && sorting_pipeline->get_sort_indices_buffer().is_valid();
+		if (strict_global_sort && has_valid_sort_buffer) {
 			return false;
 		}
 		if (!instance_pipeline_active || !sorting_pipeline) {
