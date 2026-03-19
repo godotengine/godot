@@ -48,9 +48,9 @@ static bool _get_sort_position(const GaussianSplatRenderer &p_renderer, uint32_t
 			streaming_state.current_streaming_system.is_valid()) {
 		uint32_t source_index = 0;
 		if (streaming_state.current_streaming_system->map_buffer_index_to_source(p_index, source_index)) {
-			const auto &scene_state = p_renderer.get_scene_state();
-			if (scene_state.gaussian_data.is_valid()) {
-				const LocalVector<Gaussian> &gaussians = scene_state.gaussian_data->get_gaussian_storage();
+			const auto &streamed_scene_state = p_renderer.get_scene_state();
+			if (streamed_scene_state.gaussian_data.is_valid()) {
+				const LocalVector<Gaussian> &gaussians = streamed_scene_state.gaussian_data->get_gaussian_storage();
 				if (source_index < static_cast<uint32_t>(gaussians.size())) {
 					r_position = gaussians[source_index].position;
 					return true;
@@ -1026,29 +1026,29 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			return false;
 		}
 		uint64_t sort_start = OS::get_singleton()->get_ticks_usec();
-		auto &cull_state = gpu_culler->get_state();
+		auto &cpu_cull_state = gpu_culler->get_state();
 
 		if ((uint32_t)cpu_sort_original_indices_scratch.size() < available_splats) {
 			cpu_sort_original_indices_scratch.resize(available_splats);
 		}
 		for (uint32_t i = 0; i < available_splats; i++) {
-			cpu_sort_original_indices_scratch[i] = cull_state.culled_indices[i];
+			cpu_sort_original_indices_scratch[i] = cpu_cull_state.culled_indices[i];
 		}
 
-		const uint32_t original_distances_count = cull_state.culled_distances_sq.size();
+		const uint32_t original_distances_count = cpu_cull_state.culled_distances_sq.size();
 		if ((uint32_t)cpu_sort_original_distances_scratch.size() < original_distances_count) {
 			cpu_sort_original_distances_scratch.resize(original_distances_count);
 		}
 		for (uint32_t i = 0; i < original_distances_count; i++) {
-			cpu_sort_original_distances_scratch[i] = cull_state.culled_distances_sq[i];
+			cpu_sort_original_distances_scratch[i] = cpu_cull_state.culled_distances_sq[i];
 		}
 
-		const uint32_t original_importance_count = cull_state.culled_importance_weights.size();
+		const uint32_t original_importance_count = cpu_cull_state.culled_importance_weights.size();
 		if ((uint32_t)cpu_sort_original_importance_scratch.size() < original_importance_count) {
 			cpu_sort_original_importance_scratch.resize(original_importance_count);
 		}
 		for (uint32_t i = 0; i < original_importance_count; i++) {
-			cpu_sort_original_importance_scratch[i] = cull_state.culled_importance_weights[i];
+			cpu_sort_original_importance_scratch[i] = cpu_cull_state.culled_importance_weights[i];
 		}
 
 		if ((uint32_t)cpu_sort_entries_scratch.size() < available_splats) {
@@ -1081,24 +1081,24 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			SortArray<CpuSortEntry, CpuSortComparator> sorter;
 			sorter.sort(entries, static_cast<int>(available_splats));
 
-			if ((uint32_t)cull_state.culled_indices.size() != available_splats) {
-				cull_state.culled_indices.resize(available_splats);
+			if ((uint32_t)cpu_cull_state.culled_indices.size() != available_splats) {
+				cpu_cull_state.culled_indices.resize(available_splats);
 			}
-			if ((uint32_t)cull_state.culled_distances_sq.size() < available_splats) {
-				cull_state.culled_distances_sq.resize(available_splats);
+			if ((uint32_t)cpu_cull_state.culled_distances_sq.size() < available_splats) {
+				cpu_cull_state.culled_distances_sq.resize(available_splats);
 			}
-			if ((uint32_t)cull_state.culled_importance_weights.size() < available_splats) {
-				cull_state.culled_importance_weights.resize(available_splats);
+			if ((uint32_t)cpu_cull_state.culled_importance_weights.size() < available_splats) {
+				cpu_cull_state.culled_importance_weights.resize(available_splats);
 			}
 
 			for (uint32_t i = 0; i < available_splats; i++) {
 				const CpuSortEntry &entry = entries[i];
-				cull_state.culled_indices[i] = entry.index;
+				cpu_cull_state.culled_indices[i] = entry.index;
 				if (entry.source_index < original_distances_count) {
-					cull_state.culled_distances_sq[i] = cpu_sort_original_distances_scratch[entry.source_index];
+					cpu_cull_state.culled_distances_sq[i] = cpu_sort_original_distances_scratch[entry.source_index];
 				}
 				if (entry.source_index < original_importance_count) {
-					cull_state.culled_importance_weights[i] = cpu_sort_original_importance_scratch[entry.source_index];
+					cpu_cull_state.culled_importance_weights[i] = cpu_sort_original_importance_scratch[entry.source_index];
 				}
 			}
 		}
@@ -1106,7 +1106,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		sorting_state.sort_index_bytes.resize(available_splats * sizeof(uint32_t));
 		uint32_t *sorted_indices = reinterpret_cast<uint32_t *>(sorting_state.sort_index_bytes.ptrw());
 		for (uint32_t i = 0; i < available_splats; i++) {
-			sorted_indices[i] = cull_state.culled_indices[i];
+			sorted_indices[i] = cpu_cull_state.culled_indices[i];
 		}
 
 		apply_sort_buffer_update(available_splats);
