@@ -123,6 +123,7 @@ PROFILE_WARMUP_SECONDS: dict[str, float] = {
     "showcase": 8.0,
     "parity": 5.0,
 }
+DEFAULT_CAPTURE_LANES: tuple[str, ...] = ("integrity_sentinel", "parity_fidelity")
 TEXT_DEPENDENCY_SUFFIXES: tuple[str, ...] = (".tscn", ".gd", ".tres", ".tscn")
 RES_PATH_PATTERN = re.compile(r"res://[^\s\"'\]\)]+")
 
@@ -281,6 +282,32 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Fail lanes when GPU timestamp timing is unavailable.",
     )
+    parser.add_argument(
+        "--capture-dir",
+        default="",
+        help="Optional directory for benchmark screenshot captures. Defaults to <output-dir>/captures when captures are enabled.",
+    )
+    parser.add_argument(
+        "--reference-dir",
+        default="",
+        help="Optional directory containing reference PNGs for SSIM/PSNR comparisons.",
+    )
+    parser.add_argument(
+        "--capture-lane",
+        action="append",
+        default=[],
+        help="Lane ID to capture screenshots for. Can be repeated. Defaults to deterministic lanes when captures are enabled.",
+    )
+    parser.add_argument(
+        "--no-captures",
+        action="store_true",
+        help="Disable screenshot capture and visual comparisons.",
+    )
+    parser.add_argument(
+        "--no-dashboard",
+        action="store_true",
+        help="Disable benchmark dashboard/chart generation.",
+    )
     return parser.parse_args()
 
 
@@ -313,6 +340,28 @@ def _select_lanes(requested: list[str]) -> list[LaneDefinition]:
     if missing:
         raise ValueError(f"Unknown lane ids: {', '.join(missing)}")
     return selected
+
+
+def _select_capture_lanes(
+    selected_lanes: list[LaneDefinition],
+    requested: list[str],
+    *,
+    captures_disabled: bool,
+    references_requested: bool,
+) -> set[str]:
+    if captures_disabled:
+        return set()
+    valid_lane_ids = {lane.lane_id for lane in selected_lanes}
+    if requested:
+        requested_set = set(requested)
+        missing = sorted(requested_set - valid_lane_ids)
+        if missing:
+            raise ValueError(f"Unknown capture lane ids: {', '.join(missing)}")
+        return requested_set
+    default_capture_lanes = {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
+    if references_requested:
+        return default_capture_lanes
+    return default_capture_lanes
 
 
 def _load_asset_manifest(path: str) -> dict[str, str]:
@@ -547,6 +596,8 @@ def _run_lane(
     asset_override: str,
     pass_headless_summary: bool,
     benchmark_instancing_mode: str,
+    capture_dir: Path | None,
+    reference_dir: Path | None,
     timeout_scale: float | None = None,
     timeout_grace: int | None = None,
 ) -> dict[str, Any]:
@@ -583,6 +634,11 @@ def _run_lane(
         cmd.append(f"--benchmark-asset={asset_override}")
     if benchmark_instancing_mode != "auto":
         cmd.append(f"--benchmark-instancing-mode={benchmark_instancing_mode}")
+    if capture_dir is not None:
+        cmd.extend(["--benchmark-capture-dir", str(capture_dir)])
+        cmd.extend(["--benchmark-capture-tag", profile])
+    if reference_dir is not None:
+        cmd.extend(["--benchmark-reference-dir", str(reference_dir)])
 
     timed_out = False
     timeout_message = ""
@@ -681,6 +737,14 @@ def _run_lane(
     node_total_visible_splats_max = None
     node_primary_visible_splats_max = None
     primary_node_quality = None
+    capture_count = None
+    capture_saved_count = None
+    capture_reference_match_count = None
+    capture_threshold_pass_count = None
+    capture_ssim_min = None
+    capture_ssim_avg = None
+    capture_psnr_min = None
+    capture_psnr_avg = None
     if isinstance(report, dict):
         score = report.get("score")
         summary = report.get("overall", {})
@@ -742,6 +806,16 @@ def _run_lane(
         node_total_visible_splats_max = report.get("node_total_visible_splats_max")
         node_primary_visible_splats_max = report.get("node_primary_visible_splats_max")
         primary_node_quality = report.get("primary_node_quality")
+        visual_summary = report.get("visual_summary")
+        if isinstance(visual_summary, dict):
+            capture_count = visual_summary.get("capture_count")
+            capture_saved_count = visual_summary.get("saved_capture_count")
+            capture_reference_match_count = visual_summary.get("reference_match_count")
+            capture_threshold_pass_count = visual_summary.get("threshold_pass_count")
+            capture_ssim_min = visual_summary.get("ssim_min")
+            capture_ssim_avg = visual_summary.get("ssim_avg")
+            capture_psnr_min = visual_summary.get("psnr_min")
+            capture_psnr_avg = visual_summary.get("psnr_avg")
 
     return {
         "lane_id": lane.lane_id,
@@ -805,6 +879,16 @@ def _run_lane(
         "node_total_visible_splats_max": node_total_visible_splats_max,
         "node_primary_visible_splats_max": node_primary_visible_splats_max,
         "primary_node_quality": primary_node_quality,
+        "capture_count": capture_count,
+        "capture_saved_count": capture_saved_count,
+        "capture_reference_match_count": capture_reference_match_count,
+        "capture_threshold_pass_count": capture_threshold_pass_count,
+        "capture_ssim_min": capture_ssim_min,
+        "capture_ssim_avg": capture_ssim_avg,
+        "capture_psnr_min": capture_psnr_min,
+        "capture_psnr_avg": capture_psnr_avg,
+        "capture_dir": str(capture_dir) if capture_dir is not None else "",
+        "reference_dir": str(reference_dir) if reference_dir is not None else "",
         "summary_source": summary_source,
         "report": report,
     }
@@ -893,8 +977,8 @@ def _write_suite_summary_markdown(
         f"- Profile: `{profile}`",
         f"- Aggregate score: `{aggregate_score:.2f}`",
         "",
-        "| Lane | Source | Score | Avg FPS | P1 FPS | Steady P1 | Warmup P1 | Sync FB | Route FB | Sort ms | Raster ms | Visible | GPU ms | GPU Src | Eff Preset | Eff Max | DistCull | Stall Cnt | Q Pressure | Exec Mode | Mode OK | P99 ms | Samples | Exit |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | --- | ---: | ---: | --- | --- | ---: | ---: | ---: |",
+        "| Lane | Source | Score | Avg FPS | P1 FPS | Steady P1 | Warmup P1 | Sync FB | Route FB | Sort ms | Raster ms | Visible | GPU ms | GPU Src | Eff Preset | Eff Max | DistCull | Stall Cnt | Q Pressure | Exec Mode | Mode OK | P99 ms | Samples | Captures | SSIM min | PSNR min | Exit |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | --- | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for lane in lane_results:
         def _fmt(v: Any, decimals: int = 2) -> str:
@@ -927,9 +1011,37 @@ def _write_suite_summary_markdown(
             f"{'yes' if lane.get('instancing_mode_match', True) else 'no'} | "
             f"{_fmt(lane.get('p99_frame_ms'))} | "
             f"{lane.get('sample_count', 'n/a')} | "
+            f"{_fmt(lane.get('capture_count'), 0)} | "
+            f"{_fmt(lane.get('capture_ssim_min'), 3)} | "
+            f"{_fmt(lane.get('capture_psnr_min'))} | "
             f"{lane.get('exit_code', 'n/a')} |"
         )
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _generate_dashboard(suite_report_path: Path, output_dir: Path) -> list[str]:
+    dashboard_script = _repo_root() / "scripts" / "generate_benchmark_suite_dashboard.py"
+    if not dashboard_script.exists():
+        print(f"[suite] dashboard script missing: {dashboard_script}", file=sys.stderr)
+        return []
+    completed = subprocess.run(
+        [sys.executable, str(dashboard_script), "--suite-report", str(suite_report_path), "--output-dir", str(output_dir)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.stdout:
+        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+    if completed.returncode != 0:
+        if completed.stderr:
+            print(completed.stderr, file=sys.stderr, end="" if completed.stderr.endswith("\n") else "\n")
+        print(f"[suite] dashboard generation failed with exit={completed.returncode}", file=sys.stderr)
+        return []
+    paths: list[str] = []
+    for line in completed.stdout.splitlines():
+        if line.startswith("[dashboard] wrote "):
+            paths.append(line.replace("[dashboard] wrote ", "", 1).strip())
+    return paths
 
 
 def main() -> int:
@@ -954,6 +1066,16 @@ def main() -> int:
 
     try:
         selected_lanes = _select_lanes(args.lane)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    try:
+        capture_lane_ids = _select_capture_lanes(
+            selected_lanes,
+            args.capture_lane,
+            captures_disabled=bool(args.no_captures),
+            references_requested=bool(args.reference_dir),
+        )
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -982,6 +1104,15 @@ def main() -> int:
 
     lane_results: list[dict[str, Any]] = []
     failed = False
+    capture_dir = None if not capture_lane_ids else Path(args.capture_dir).resolve() if args.capture_dir else (output_dir / "captures")
+    if capture_dir is not None:
+        capture_dir.mkdir(parents=True, exist_ok=True)
+    reference_dir = None
+    if args.reference_dir:
+        reference_dir = Path(args.reference_dir).resolve()
+        if not reference_dir.exists():
+            print(f"ERROR: reference directory not found: {reference_dir}", file=sys.stderr)
+            return 2
     for lane in selected_lanes:
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
@@ -997,6 +1128,8 @@ def main() -> int:
             asset_override=asset_override,
             pass_headless_summary=not args.no_headless_summary,
             benchmark_instancing_mode=args.benchmark_instancing_mode,
+            capture_dir=capture_dir if lane.lane_id in capture_lane_ids else None,
+            reference_dir=reference_dir if lane.lane_id in capture_lane_ids else None,
             timeout_scale=args.timeout_scale,
             timeout_grace=args.timeout_grace,
         )
@@ -1030,6 +1163,8 @@ def main() -> int:
         instancing_mode_match = True
         require_gpu_timestamps = _lane_requires_gpu_timestamps(args, lane.lane_id)
         gpu_timing_match = True
+        visual_reference_enforced = bool(result.get("reference_dir")) and int(result.get("capture_count") or 0) > 0
+        visual_reference_match = True
         enforce_no_cpu_sort_route = args.profile == "performance"
         if report_valid:
             visible_output_valid, visibility_failure_detail = _lane_has_visible_output(result["report"])
@@ -1042,6 +1177,10 @@ def main() -> int:
                     instancing_mode_match = actual_mode == args.benchmark_instancing_mode
             if require_gpu_timestamps:
                 gpu_timing_match = bool(result.get("gpu_timing_available"))
+            if visual_reference_enforced:
+                matched = int(result.get("capture_reference_match_count") or 0)
+                passed = int(result.get("capture_threshold_pass_count") or 0)
+                visual_reference_match = matched > 0 and passed == matched
         lane_valid = (
             int(result["exit_code"]) == 0
             and report_valid
@@ -1049,6 +1188,7 @@ def main() -> int:
             and not cpu_sort_route_detected
             and instancing_mode_match
             and gpu_timing_match
+            and visual_reference_match
         )
         result["report_valid"] = report_valid
         result["visible_output_valid"] = visible_output_valid
@@ -1059,6 +1199,8 @@ def main() -> int:
         result["instancing_mode_match"] = instancing_mode_match
         result["gpu_timing_required"] = require_gpu_timestamps
         result["gpu_timing_match"] = gpu_timing_match
+        result["visual_reference_enforced"] = visual_reference_enforced
+        result["visual_reference_match"] = visual_reference_match
         result["lane_valid"] = lane_valid
         lane_failed = not lane_valid
         if lane_failed:
@@ -1094,6 +1236,12 @@ def main() -> int:
                     f"(source={result.get('gpu_frame_time_source', 'unknown')})",
                     file=sys.stderr,
                 )
+            elif not visual_reference_match:
+                print(
+                    f"[suite] lane={lane.lane_id} invalid report: visual references missing or below threshold "
+                    f"(matched={result.get('capture_reference_match_count', 0)} passed={result.get('capture_threshold_pass_count', 0)})",
+                    file=sys.stderr,
+                )
             elif int(result["exit_code"]) != 0:
                 print(
                     f"[suite] lane={lane.lane_id} exited with code {result['exit_code']}: {result['log_path']}",
@@ -1122,6 +1270,9 @@ def main() -> int:
         "dummy_asset_dir": args.dummy_asset_dir,
         "asset_manifest_path": args.asset_manifest,
         "benchmark_instancing_mode": args.benchmark_instancing_mode,
+        "capture_lane_ids": sorted(capture_lane_ids),
+        "capture_dir": str(capture_dir) if capture_dir is not None else "",
+        "reference_dir": str(reference_dir) if reference_dir is not None else "",
         "require_gpu_timestamps": require_gpu_timestamps_global,
         "require_gpu_timestamps_lanes": [
             lane_result.get("lane_id")
@@ -1137,6 +1288,13 @@ def main() -> int:
 
     summary_md_path = output_dir / "benchmark_suite_summary.md"
     _write_suite_summary_markdown(summary_md_path, args.profile, aggregate_score, lane_results)
+
+    dashboard_paths: list[str] = []
+    if not args.no_dashboard:
+        dashboard_paths = _generate_dashboard(suite_report_path, output_dir)
+        if dashboard_paths:
+            suite_report["dashboard_artifacts"] = dashboard_paths
+            suite_report_path.write_text(json.dumps(suite_report, indent=2), encoding="utf-8")
 
     print(f"[suite] aggregate_score={aggregate_score:.2f}")
     print(f"[suite] report={suite_report_path}")

@@ -1,11 +1,15 @@
 extends Node3D
 
 const BenchmarkMetricsUtil = preload("res://scripts/benchmark_metrics.gd")
+const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.gd")
 
 const DEFAULT_BENCHMARK_DURATION := 20.0
 const DEFAULT_BENCHMARK_WARMUP := 3.0
 const DEFAULT_OUTPUT_PATH := "user://benchmark_suite_lane_results.json"
 const DEFAULT_ASSET_PATH := "res://tests/fixtures/test_splats.ply"
+const DEFAULT_CAPTURE_PROGRESS_MARKERS := PackedFloat32Array([0.25, 0.5, 0.75])
+const DEFAULT_VISUAL_SSIM_THRESHOLD := 0.95
+const DEFAULT_VISUAL_PSNR_THRESHOLD := 30.0
 const SETTINGS_APPLY_INTERVAL := 0.1
 const INSTANCE_SINGLE_PASS_SETTING := "rendering/gaussian_splatting/instance_pipeline/true_single_pass_enabled"
 const INSTANCE_BENCH_SERIAL_MULTI_ASSET_SETTING := "rendering/gaussian_splatting/instance_pipeline/benchmark_allow_serial_multi_asset"
@@ -157,6 +161,11 @@ var headless_summary := false
 var lane_tag := ""
 var asset_override_path := ""
 var instancing_mode := "auto"
+var capture_dir := ""
+var reference_dir := ""
+var capture_tag := ""
+var visual_ssim_threshold := DEFAULT_VISUAL_SSIM_THRESHOLD
+var visual_psnr_threshold := DEFAULT_VISUAL_PSNR_THRESHOLD
 
 var _elapsed_s := 0.0
 var _frame_ms: Array = []
@@ -179,11 +188,14 @@ var _instance_nodes: Array = []
 var _max_node_visible_splats := 0
 var _max_total_visible_splats := 0
 var _lane_config: Dictionary = {}
+var _capture_targets: Array[Dictionary] = []
+var _capture_records: Array[Dictionary] = []
 
 func _ready() -> void:
 	benchmark_duration = default_duration_s
 	_parse_args()
 	_setup_runtime_state()
+	_initialize_capture_targets()
 	_snapshot_project_settings()
 	_lane_config = _config_for_preset(lane_preset)
 	_apply_lane_project_settings(_lane_config)
@@ -216,6 +228,8 @@ func _process(delta: float) -> void:
 	if _settings_apply_accum >= SETTINGS_APPLY_INTERVAL:
 		_settings_apply_accum = 0.0
 		_apply_dynamic_lane_settings()
+
+	_capture_due_frames(false)
 
 	if _elapsed_s >= benchmark_duration:
 		_finish_benchmark()
@@ -261,6 +275,38 @@ func _parse_args() -> void:
 			instancing_mode = _normalize_instancing_mode(arg.replace("--benchmark-instancing-mode=", ""))
 		elif arg == "--benchmark-instancing-mode" and i + 1 < args.size():
 			instancing_mode = _normalize_instancing_mode(str(args[i + 1]))
+		elif arg.begins_with("--benchmark-capture-dir="):
+			capture_dir = arg.replace("--benchmark-capture-dir=", "")
+		elif arg == "--benchmark-capture-dir" and i + 1 < args.size():
+			capture_dir = str(args[i + 1])
+		elif arg.begins_with("--benchmark-reference-dir="):
+			reference_dir = arg.replace("--benchmark-reference-dir=", "")
+		elif arg == "--benchmark-reference-dir" and i + 1 < args.size():
+			reference_dir = str(args[i + 1])
+		elif arg.begins_with("--benchmark-capture-tag="):
+			capture_tag = arg.replace("--benchmark-capture-tag=", "")
+		elif arg == "--benchmark-capture-tag" and i + 1 < args.size():
+			capture_tag = str(args[i + 1])
+		elif arg.begins_with("--benchmark-ssim-threshold="):
+			visual_ssim_threshold = maxf(0.0, minf(1.0, float(arg.replace("--benchmark-ssim-threshold=", ""))))
+		elif arg == "--benchmark-ssim-threshold" and i + 1 < args.size():
+			visual_ssim_threshold = maxf(0.0, minf(1.0, float(args[i + 1])))
+		elif arg.begins_with("--benchmark-psnr-threshold="):
+			visual_psnr_threshold = maxf(0.0, float(arg.replace("--benchmark-psnr-threshold=", "")))
+		elif arg == "--benchmark-psnr-threshold" and i + 1 < args.size():
+			visual_psnr_threshold = maxf(0.0, float(args[i + 1]))
+
+func _initialize_capture_targets() -> void:
+	_capture_targets.clear()
+	_capture_records.clear()
+	if capture_dir.is_empty():
+		return
+	for i in range(DEFAULT_CAPTURE_PROGRESS_MARKERS.size()):
+		_capture_targets.append({
+			"index": i,
+			"fraction": float(DEFAULT_CAPTURE_PROGRESS_MARKERS[i]),
+			"captured": false,
+		})
 
 func _normalize_instancing_mode(value: String) -> String:
 	match value.strip_edges().to_lower():
@@ -696,6 +742,7 @@ func _collect_primary_node_quality() -> Dictionary:
 
 func _finish_benchmark() -> void:
 	_state_running = false
+	_capture_due_frames(true)
 	_result_report = _build_report()
 	_restore_project_settings()
 	_write_report(_result_report)
@@ -773,6 +820,7 @@ func _build_report() -> Dictionary:
 		"monitor_max": score_monitor_max,
 		"project_settings": settings_now,
 	})
+	var visual_summary := _build_visual_summary()
 
 	return {
 		"name": "GodotGS Benchmark Lane",
@@ -782,6 +830,7 @@ func _build_report() -> Dictionary:
 		"lane_description": lane_description,
 		"lane_preset": lane_preset,
 		"lane_tag": lane_tag,
+		"capture_tag": _resolved_capture_tag(),
 		"instancing_mode": instancing_mode,
 		"instancing_execution_mode": overall.get("instance_pipeline_execution_mode", ""),
 		"instancing_execution_path": overall.get("instance_pipeline_execution_path", ""),
@@ -790,6 +839,8 @@ func _build_report() -> Dictionary:
 		"configured_duration_s": benchmark_duration,
 		"warmup_duration_s": benchmark_warmup,
 		"output_path": output_path,
+		"capture_output_dir": capture_dir,
+		"capture_reference_dir": reference_dir,
 		"timestamp_unix": Time.get_unix_time_from_system(),
 		"platform": OS.get_name(),
 		"asset_path": _resolved_asset_path(),
@@ -814,6 +865,8 @@ func _build_report() -> Dictionary:
 		"score": score,
 		"warmup_score": warmup_score,
 		"steady_score": steady_score,
+		"captures": _capture_records,
+		"visual_summary": visual_summary,
 		"recommendations": recommendations,
 	}
 
@@ -932,3 +985,140 @@ func _collect_current_project_settings() -> Dictionary:
 
 func _set_project_setting(key: String, value) -> void:
 	ProjectSettings.set_setting(key, value)
+
+func _capture_due_frames(force_all: bool) -> void:
+	if capture_dir.is_empty():
+		return
+	var steady_window := maxf(benchmark_duration - benchmark_warmup, 0.001)
+	var steady_progress := 1.0 if force_all else clampf((_elapsed_s - benchmark_warmup) / steady_window, 0.0, 1.0)
+	for i in range(_capture_targets.size()):
+		var target: Dictionary = _capture_targets[i]
+		if bool(target.get("captured", false)):
+			continue
+		var fraction := float(target.get("fraction", 1.0))
+		if not force_all and (_elapsed_s < benchmark_warmup or steady_progress < fraction):
+			continue
+		target["captured"] = true
+		_capture_targets[i] = target
+		_capture_records.append(_capture_frame(int(target.get("index", i)), fraction))
+
+func _capture_frame(slot_index: int, fraction: float) -> Dictionary:
+	var capture_id := "capture_%02d" % [slot_index + 1]
+	var basename := "%s__%s__%s.png" % [lane_id, _resolved_capture_tag(), capture_id]
+	var capture_path := capture_dir.path_join(basename)
+	var image := BenchmarkVisualMetrics.capture_viewport(get_viewport())
+	var record := {
+		"capture_id": capture_id,
+		"capture_index": slot_index + 1,
+		"capture_fraction": fraction,
+		"capture_elapsed_s": _elapsed_s,
+		"capture_path": capture_path,
+		"reference_path": "",
+		"saved": false,
+		"reference_matched": false,
+		"ssim": null,
+		"psnr": null,
+		"threshold_pass": null,
+	}
+	if image == null:
+		record["capture_error"] = "viewport image unavailable"
+		return record
+
+	record["image_width"] = image.get_width()
+	record["image_height"] = image.get_height()
+	var save_error := BenchmarkVisualMetrics.save_png(image, capture_path)
+	if save_error != OK:
+		record["capture_error"] = "save_png failed (%s)" % [error_string(save_error)]
+		return record
+	record["saved"] = true
+
+	var reference_path := _resolve_reference_path(capture_id)
+	if reference_path.is_empty():
+		return record
+	record["reference_path"] = reference_path
+	var reference_image := BenchmarkVisualMetrics.load_image(reference_path)
+	if reference_image == null:
+		record["comparison_error"] = "reference image could not be loaded"
+		return record
+
+	record["reference_matched"] = true
+	var ssim := BenchmarkVisualMetrics.calculate_ssim(reference_image, image)
+	var psnr := BenchmarkVisualMetrics.calculate_psnr(reference_image, image)
+	record["ssim"] = ssim
+	record["psnr"] = psnr
+	record["threshold_pass"] = ssim >= visual_ssim_threshold and psnr >= visual_psnr_threshold
+	return record
+
+func _resolved_capture_tag() -> String:
+	var tag := capture_tag
+	if tag.is_empty():
+		tag = lane_tag
+	if tag.is_empty():
+		tag = "default"
+	return tag.replace(" ", "_").to_lower()
+
+func _resolve_reference_path(capture_id: String) -> String:
+	if reference_dir.is_empty():
+		return ""
+	var tagged_path := reference_dir.path_join("%s__%s__%s.png" % [lane_id, _resolved_capture_tag(), capture_id])
+	if FileAccess.file_exists(tagged_path):
+		return tagged_path
+	var lane_default_path := reference_dir.path_join("%s__%s.png" % [lane_id, capture_id])
+	if FileAccess.file_exists(lane_default_path):
+		return lane_default_path
+	return ""
+
+func _build_visual_summary() -> Dictionary:
+	var summary := {
+		"capture_count": _capture_records.size(),
+		"saved_capture_count": 0,
+		"reference_match_count": 0,
+		"missing_reference_count": 0,
+		"capture_error_count": 0,
+		"threshold_pass_count": 0,
+		"ssim_threshold": visual_ssim_threshold,
+		"psnr_threshold": visual_psnr_threshold,
+		"ssim_min": null,
+		"ssim_avg": null,
+		"psnr_min": null,
+		"psnr_avg": null,
+	}
+	var ssim_total := 0.0
+	var ssim_count := 0
+	var psnr_total := 0.0
+	var psnr_count := 0
+	for capture_variant in _capture_records:
+		var capture: Dictionary = capture_variant
+		if bool(capture.get("saved", false)):
+			summary["saved_capture_count"] = int(summary["saved_capture_count"]) + 1
+		else:
+			summary["capture_error_count"] = int(summary["capture_error_count"]) + 1
+		if bool(capture.get("reference_matched", false)):
+			summary["reference_match_count"] = int(summary["reference_match_count"]) + 1
+		elif bool(capture.get("saved", false)) and not reference_dir.is_empty():
+			summary["missing_reference_count"] = int(summary["missing_reference_count"]) + 1
+
+		var ssim_value = capture.get("ssim", null)
+		if ssim_value is float or ssim_value is int:
+			var ssim := float(ssim_value)
+			ssim_total += ssim
+			ssim_count += 1
+			if summary["ssim_min"] == null or ssim < float(summary["ssim_min"]):
+				summary["ssim_min"] = ssim
+
+		var psnr_value = capture.get("psnr", null)
+		if psnr_value is float or psnr_value is int:
+			var psnr := float(psnr_value)
+			psnr_total += psnr
+			psnr_count += 1
+			if summary["psnr_min"] == null or psnr < float(summary["psnr_min"]):
+				summary["psnr_min"] = psnr
+
+		if bool(capture.get("threshold_pass", false)):
+			summary["threshold_pass_count"] = int(summary["threshold_pass_count"]) + 1
+
+	if ssim_count > 0:
+		summary["ssim_avg"] = ssim_total / float(ssim_count)
+	if psnr_count > 0:
+		summary["psnr_avg"] = psnr_total / float(psnr_count)
+	return summary

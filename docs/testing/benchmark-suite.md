@@ -69,6 +69,7 @@ Scene lanes (under `res://scenes/benchmark_suite/`):
 - `lane_animation_arena.tscn`
 - `lane_lod_torture.tscn`
 - `lane_integrity_sentinel.tscn`
+- `lane_parity_fidelity.tscn`
 - `lane_long_soak.tscn`
 
 Composite lane:
@@ -101,6 +102,25 @@ python3 tests/runtime/run_benchmark_suite.py \
   --benchmark-instancing-mode serial
 ```
 
+Capture benchmark screenshots and generate the HTML/SVG dashboard:
+
+```bash
+python3 tests/runtime/run_benchmark_suite.py \
+  --profile quick \
+  --capture-lane integrity_sentinel \
+  --capture-lane parity_fidelity
+```
+
+Compare captured frames against golden references with SSIM/PSNR:
+
+```bash
+python3 tests/runtime/run_benchmark_suite.py \
+  --profile parity \
+  --reference-dir <reference-dir>
+```
+
+`<reference-dir>` must contain `<lane_id>/<lane_id>_capture*.png` matches for every selected capture lane.
+
 Require GPU timestamps:
 
 ```bash
@@ -123,3 +143,12 @@ Generated files:
 - `<lane_id>.log`: per-lane stdout/stderr + executed command
 - `benchmark_suite_report.json`: suite aggregate + lane list
 - `benchmark_suite_summary.md`: human-readable summary table
+- `captures/*.png`: captured benchmark frames for selected lanes
+- `benchmark_suite_dashboard.html`: HTML dashboard with chart panels and capture gallery
+- `benchmark_suite_*.svg`: SVG charts for score, FPS, GPU ms, SSIM, and PSNR
+
+Notes:
+
+- deterministic screenshot capture defaults to `integrity_sentinel` and `parity_fidelity`
+- pass `--no-captures` to disable screenshot capture entirely
+- when `--reference-dir` is provided, captured frames are compared against matching reference PNGs and the suite reports `SSIM`/`PSNR` minima per lane
