@@ -36,7 +36,35 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build documentation artifacts.")
     parser.add_argument("--doxygen", action="store_true", help="Generate C++ API docs via Doxygen.")
     parser.add_argument("--gdscript", action="store_true", help="Extract GDScript documentation.")
+    parser.add_argument(
+        "--gdscript-scope",
+        choices=("public", "all"),
+        default="public",
+        help="Scope for GDScript extraction (`public` excludes test/internal scripts).",
+    )
     parser.add_argument("--shaders", action="store_true", help="Generate shader documentation.")
+    parser.add_argument(
+        "--shader-include-undocumented",
+        action="store_true",
+        help="Include undocumented shader entries in generated reference output.",
+    )
+    parser.add_argument(
+        "--shader-strict",
+        action="store_true",
+        help="Fail shader docs generation when undocumented coverage exceeds configured thresholds.",
+    )
+    parser.add_argument(
+        "--shader-max-undocumented-functions",
+        type=int,
+        default=0,
+        help="Allowed undocumented shader functions when --shader-strict is enabled.",
+    )
+    parser.add_argument(
+        "--shader-max-undocumented-fields",
+        type=int,
+        default=0,
+        help="Allowed undocumented shader uniform fields when --shader-strict is enabled.",
+    )
     parser.add_argument("--performance", action="store_true", help="Build performance graphs.")
     parser.add_argument("--compatibility", action="store_true", help="Update compatibility matrix.")
     parser.add_argument("--project-settings", action="store_true", help="Regenerate project settings reference.")
@@ -55,10 +83,27 @@ def main() -> int:
         exit_code |= run_doxygen(config)
 
     if args.gdscript:
-        exit_code |= run_python(ROOT / "scripts" / "extract_gdscript_docs.py")
+        exit_code |= run_python(
+            ROOT / "scripts" / "extract_gdscript_docs.py",
+            "--scope",
+            args.gdscript_scope,
+        )
 
     if args.shaders:
-        exit_code |= run_python(ROOT / "scripts" / "generate_shader_docs.py")
+        shader_args: list[str] = []
+        if args.shader_include_undocumented:
+            shader_args.append("--include-undocumented")
+        if args.shader_strict:
+            shader_args.extend(
+                [
+                    "--strict",
+                    "--max-undocumented-functions",
+                    str(args.shader_max_undocumented_functions),
+                    "--max-undocumented-fields",
+                    str(args.shader_max_undocumented_fields),
+                ]
+            )
+        exit_code |= run_python(ROOT / "scripts" / "generate_shader_docs.py", *shader_args)
 
     if args.performance:
         exit_code |= run_python(ROOT / "scripts" / "generate_performance_graphs.py")

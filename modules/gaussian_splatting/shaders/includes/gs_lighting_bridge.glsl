@@ -42,34 +42,42 @@ vec4 gs_frag_coord_substitute = vec4(0.0);
 #define gl_FragCoord gs_frag_coord_substitute
 #endif // GS_COMPUTE_SHADER
 
+// Compute-shader fallback: projector lights are unavailable.
 bool sc_use_light_projector() {
 	return false;
 }
 
+// Compute-shader fallback: soft shadows are unavailable.
 bool sc_use_light_soft_shadows() {
 	return false;
 }
 
+// Compute-shader fallback: projector mipmaps are unavailable.
 bool sc_projector_use_mipmaps() {
 	return false;
 }
 
+// Compute-shader fallback: soft shadow sampling is disabled.
 uint sc_soft_shadow_samples() {
 	return 0u;
 }
 
+// Compute-shader fallback: penumbra sampling is disabled.
 uint sc_penumbra_shadow_samples() {
 	return 0u;
 }
 
+// Compute-shader fallback: directional soft shadow sampling is disabled.
 uint sc_directional_soft_shadow_samples() {
 	return 0u;
 }
 
+// Compute-shader fallback: directional penumbra sampling is disabled.
 uint sc_directional_penumbra_shadow_samples() {
 	return 0u;
 }
 
+// Compute-shader fallback: keep luminance neutral in the bridge path.
 float sc_luminance_multiplier() {
 	return 1.0;
 }

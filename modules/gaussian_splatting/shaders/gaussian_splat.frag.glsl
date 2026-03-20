@@ -16,6 +16,7 @@ layout(location = 6) in vec2 stylization_seed;
 
 layout(location = 0) out vec4 frag_color;
 
+// Fragment entry point that resolves the final Gaussian splat color.
 void main() {
     float power = painterly_gaussian_power(uv_coord, conic);
 

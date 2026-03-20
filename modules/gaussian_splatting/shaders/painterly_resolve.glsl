@@ -19,12 +19,14 @@ layout(push_constant, std430) uniform PainterlyParams {
 
 const vec2 GOLDEN_RATIO = vec2(1.61803398875, 0.61803398875);
 
+// Generate a repeatable pseudo-random value from UV coordinates.
 float hash(vec2 uv) {
     uv = fract(uv * GOLDEN_RATIO);
     uv += dot(uv, uv + 19.19);
     return fract(uv.x * uv.y);
 }
 
+// Accumulate layered hash noise for painterly modulation.
 float layered_noise(vec2 uv, int octaves) {
     float amplitude = 0.5;
     float frequency = 1.0;
@@ -37,6 +39,7 @@ float layered_noise(vec2 uv, int octaves) {
     return value;
 }
 
+// Apply the active painterly palette transformation.
 vec3 apply_palette(vec3 color) {
 #ifdef PAINTERLY_STYLE_WATERCOLOR
     color = pow(color, vec3(1.25));
@@ -56,6 +59,7 @@ vec3 apply_palette(vec3 color) {
     return color;
 }
 
+// Adjust color response based on splat density and alpha.
 vec3 apply_density_response(vec3 color, float alpha) {
 #ifdef DENSE_SPLATS
     color *= 1.15 + alpha * 0.1;
@@ -69,6 +73,7 @@ vec3 apply_density_response(vec3 color, float alpha) {
     return color;
 }
 
+// Evaluate painterly post-processing for a single pixel sample.
 vec4 evaluate_painterly(vec2 uv, vec4 base_sample) {
     vec4 result = base_sample;
     result.rgb = apply_palette(result.rgb);
@@ -120,6 +125,7 @@ vec4 evaluate_painterly(vec2 uv, vec4 base_sample) {
     return result;
 }
 
+// Compute entry point for painterly resolve output.
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     ivec2 size = imageSize(input_image);

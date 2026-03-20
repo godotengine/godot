@@ -1,6 +1,7 @@
 #ifndef GS_DEFORMATION_GLSL
 #define GS_DEFORMATION_GLSL
 
+// Hash an instance identifier for wind phase variation.
 uint gs_wind_hash_u32(uint v) {
     v ^= v >> 16u;
     v *= 0x7feb352du;
@@ -10,10 +11,12 @@ uint gs_wind_hash_u32(uint v) {
     return v;
 }
 
+// Decode the per-instance wind mode from the packed float value.
 uint gs_decode_instance_wind_mode(float encoded_mode) {
     return uint(clamp(floor(encoded_mode + 0.5), 0.0, float(GS_INSTANCE_WIND_MODE_FORCE_ENABLED)));
 }
 
+// Check whether wind deformation is enabled for the current instance.
 bool gs_is_wind_enabled_for_instance(float encoded_mode, vec4 wind_time_config) {
     bool wind_enabled = wind_time_config.w > 0.5;
     uint mode = gs_decode_instance_wind_mode(encoded_mode);

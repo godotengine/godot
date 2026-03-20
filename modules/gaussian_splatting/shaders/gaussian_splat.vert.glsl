@@ -27,6 +27,7 @@ layout(location = 4) out vec3 painterly_view_dir;
 layout(location = 5) out vec3 painterly_normal_vs;
 layout(location = 6) out vec2 stylization_seed;
 
+// Vertex entry point for Gaussian splat quad expansion.
 void main() {
     vec4 view_pos = matrices.view_matrix * vec4(splat_position, 1.0);
 

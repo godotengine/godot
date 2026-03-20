@@ -8,6 +8,7 @@ uint gs_float_to_sortable_uint(float value) {
     return bits ^ mask;
 }
 
+// Pack depth and tie-break data into a 64-bit sort key.
 uvec2 gs_pack_sort_key64(float depth, uint tie_break) {
     return uvec2(tie_break, gs_float_to_sortable_uint(depth));
 }

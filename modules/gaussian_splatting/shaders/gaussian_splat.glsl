@@ -12,6 +12,7 @@ layout(location = 3) flat out float v_opacity;
 layout(location = 4) out vec2 v_ndc_offset;
 layout(location = 5) flat out vec3 v_view_dir;
 
+// Vertex-stage entry point that prepares splat varyings.
 void main() {
     uint gaussian_index = get_gaussian_count() > 0u ? uint(gl_InstanceIndex) : uint(gl_VertexIndex) / 6u;
     if (gaussian_index >= get_gaussian_count()) {
@@ -87,6 +88,7 @@ layout(location = 5) flat in vec3 f_view_dir;
 
 layout(location = 0) out vec4 frag_color;
 
+// Fragment-stage entry point that shades the current splat.
 void main() {
     vec2 pixel_pos = gl_FragCoord.xy;
     vec2 delta = pixel_pos - f_screen_center;
@@ -106,4 +108,3 @@ void main() {
 
     frag_color = vec4(clamp(color, vec3(0.0), vec3(1.0)), clamp(alpha, 0.0, 1.0));
 }
-

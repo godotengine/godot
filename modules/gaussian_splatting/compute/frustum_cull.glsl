@@ -55,11 +55,13 @@ layout(set = 0, binding = 6, std140) uniform Params {
     uint enable_frustum;
 } params;
 
+// Rotate vector `v` by quaternion `q`.
 vec3 quat_rotate(vec4 q, vec3 v) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Conservative sphere-frustum visibility test for instance culling.
 bool sphere_frustum_visible(vec3 position, float radius) {
     if (params.enable_frustum == 0u) {
         return true;
@@ -78,6 +80,7 @@ bool sphere_frustum_visible(vec3 position, float radius) {
     return true;
 }
 
+// Frustum culling entry point; classifies visible instances for downstream passes.
 void main() {
     uint chunk_index_in_lod = gl_GlobalInvocationID.x;
     uint instance_id = gl_GlobalInvocationID.y;

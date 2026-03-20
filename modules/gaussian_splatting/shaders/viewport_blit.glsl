@@ -53,6 +53,7 @@ vec3 srgb_to_linear(vec3 color) {
     return 0.012522878 * srgb + 0.682171111 * srgb2 + 0.305306011 * srgb3;
 }
 
+// Convert linear color to sRGB for final viewport output.
 vec3 linear_to_srgb(vec3 color) {
     // Fast approximation using nested sqrt: linear^(1/2.2) ≈ polynomial of sqrt(sqrt(sqrt(x)))
     // 3 sqrt ops + 4 mul + 3 add is faster than pow() transcendental
@@ -63,6 +64,7 @@ vec3 linear_to_srgb(vec3 color) {
     return clamp(0.662002687 * S1 + 0.684122060 * S2 - 0.323583601 * S3 - 0.0225411470 * linear, vec3(0.0), vec3(1.0));
 }
 
+// Convert raw scene depth to linear view-space depth.
 float linearize_scene_depth(float raw_depth) {
     if (params.depth_is_orthogonal != 0) {
         float ndc = raw_depth * 2.0 - 1.0;
@@ -71,6 +73,7 @@ float linearize_scene_depth(float raw_depth) {
     return params.depth_linearize_mul / (params.depth_linearize_add - raw_depth);
 }
 
+// Clamp invalid depth values to a stable far-plane fallback.
 float sanitize_view_depth(float depth_value) {
     if (isnan(depth_value) || isinf(depth_value)) {
         return -1.0;
@@ -78,6 +81,7 @@ float sanitize_view_depth(float depth_value) {
     return abs(depth_value);
 }
 
+// Detect background depth samples near the far plane.
 bool is_scene_background_depth(float raw_scene_depth, float scene_view_depth) {
     float scene_depth_from_zero = sanitize_view_depth(linearize_scene_depth(0.0));
     float scene_depth_from_one = sanitize_view_depth(linearize_scene_depth(1.0));
@@ -94,6 +98,7 @@ bool is_scene_background_depth(float raw_scene_depth, float scene_view_depth) {
     return raw_matches_clear || view_matches_far;
 }
 
+// Blit the rendered viewport into the final output target.
 void main() {
     ivec2 local_coord = ivec2(gl_GlobalInvocationID.xy);
     if (local_coord.x >= params.copy_size.x || local_coord.y >= params.copy_size.y) {

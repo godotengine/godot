@@ -135,6 +135,7 @@ shared ProjectedGaussian gs_shared_projected_gaussians[SPLATS_PER_TILE];
 
 #include "includes/tile_raster_common.glsl"
 
+// Compute entry point for tile-local batched rasterization.
 void main() {
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
     // ALL threads must participate in barrier() and cooperative shared memory loads.

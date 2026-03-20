@@ -96,6 +96,7 @@ vec3 gs_apply_tile_grid(vec2 frag_coord, vec3 color, float opacity) {
     return mix(color, color * 0.5, mix_factor);
 }
 
+// Read a sorted spline index from shared memory or the backing buffer.
 uint gs_read_sorted_value(uint local_index, uint range_start) {
 #ifdef GS_TILE_RASTER_USE_SHARED
     if (local_index < gs_shared_splat_count) {
@@ -105,6 +106,7 @@ uint gs_read_sorted_value(uint local_index, uint range_start) {
     return sorted_values.values[range_start + local_index];
 }
 
+// Read a projected Gaussian payload from shared memory or the backing buffer.
 ProjectedGaussian gs_read_projected_gaussian(uint local_index, uint sorted_idx) {
 #ifdef GS_TILE_RASTER_SHARED_PAYLOAD
     if (local_index < gs_shared_splat_count) {
@@ -114,6 +116,7 @@ ProjectedGaussian gs_read_projected_gaussian(uint local_index, uint sorted_idx) 
     return projection_buffer.projected_gaussians[sorted_idx];
 }
 
+// Return the number of visible Gaussians in the current dispatch.
 uint gs_get_visible_gaussian_count() {
     return instance_indirect.element_count;
 }
@@ -244,6 +247,7 @@ bool gs_rasterize_splat_batch(
 
 #endif // GS_TILE_RASTER_USE_SHARED
 
+// Rasterize one tile pixel, optionally emitting debug overlays and stats.
 void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uint original_splat_count,
         out vec4 out_color, out float out_depth, out vec4 out_normal) {
     vec2 pixel_pos = frag_coord - vec2(0.5);

@@ -15,10 +15,12 @@ layout(push_constant, std430) uniform Push {
     float gamma;
 } params;
 
+// Fetch the source color used by the brush accumulation pass.
 vec3 fetch_color(vec2 uv) {
     return texture(u_color_sampler, clamp(uv, vec2(0.0), vec2(1.0))).rgb;
 }
 
+// Accumulate brush contributions into the offscreen resolve target.
 void main() {
     ivec2 target_size = imageSize(u_stylized_target);
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);

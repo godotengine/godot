@@ -2,21 +2,58 @@
 """Extract documentation from GDScript sources into Markdown."""
 from __future__ import annotations
 
-from pathlib import Path
-from datetime import date
+import argparse
+import fnmatch
 import re
+from datetime import date
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "api" / "gdscript_reference.md"
-SOURCE_ROOTS = (
+DEFAULT_SOURCE_ROOTS = (
     ROOT / "modules" / "gaussian_splatting",
     ROOT / "scripts",
     ROOT / "tests" / "runtime",
     ROOT / "tests" / "examples" / "godot" / "test_project",
 )
+DEFAULT_EXCLUDE_GLOBS = ("**/addons/**",)
 
 FUNC_PATTERN = re.compile(r"^\s*func\s+(?P<name>[^(]+)\((?P<params>[^)]*)\)")
 CLASS_PATTERN = re.compile(r"^\s*class_name\s+(?P<name>[A-Za-z0-9_]+)")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Extract Markdown API docs from GDScript files.")
+    parser.add_argument(
+        "--scope",
+        choices=("public", "all"),
+        default="public",
+        help="public: exclude test/internal scripts, all: include every discovered script.",
+    )
+    parser.add_argument(
+        "--source-root",
+        action="append",
+        default=[],
+        help="Optional additional or replacement source roots (repo-relative). Can be repeated.",
+    )
+    parser.add_argument(
+        "--include-glob",
+        action="append",
+        default=[],
+        help="If set, only scripts matching at least one repo-relative glob are included.",
+    )
+    parser.add_argument(
+        "--exclude-glob",
+        action="append",
+        default=[],
+        help="Exclude scripts matching repo-relative glob(s). Can be repeated.",
+    )
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT),
+        help="Output Markdown file path.",
+    )
+    return parser.parse_args()
 
 
 def extract_docs(path: Path) -> dict[str, dict[str, str]]:
@@ -45,15 +82,61 @@ def extract_docs(path: Path) -> dict[str, dict[str, str]]:
     return docs
 
 
-def collect_sources() -> list[Path]:
+def _path_matches_any(rel_path: Path, patterns: list[str]) -> bool:
+    rel = rel_path.as_posix()
+    for pattern in patterns:
+        if fnmatch.fnmatch(rel, pattern):
+            return True
+    return False
+
+
+def _is_internal_script(path: Path) -> bool:
+    rel = path.relative_to(ROOT)
+    if rel.parts and rel.parts[0] == "test_data":
+        return True
+    return "tests" in rel.parts
+
+
+def _resolve_source_roots(source_roots: list[str]) -> list[Path]:
+    if not source_roots:
+        return list(DEFAULT_SOURCE_ROOTS)
+    roots: list[Path] = []
+    for value in source_roots:
+        candidate = Path(value)
+        if not candidate.is_absolute():
+            candidate = ROOT / candidate
+        roots.append(candidate.resolve())
+    return roots
+
+
+def collect_sources(
+    *,
+    scope: str,
+    source_roots: list[str],
+    include_globs: list[str],
+    exclude_globs: list[str],
+) -> list[Path]:
     sources: list[Path] = []
-    for root in SOURCE_ROOTS:
+    roots = _resolve_source_roots(source_roots)
+    effective_excludes = list(DEFAULT_EXCLUDE_GLOBS) + list(exclude_globs)
+
+    for root in roots:
         if not root.exists():
             continue
         for path in root.rglob("*.gd"):
+            if not path.is_file():
+                continue
             if "addons" in path.parts:
                 continue
+            rel = path.relative_to(ROOT)
+            if _path_matches_any(rel, effective_excludes):
+                continue
+            if scope == "public" and _is_internal_script(path):
+                continue
+            if include_globs and not _path_matches_any(rel, include_globs):
+                continue
             sources.append(path)
+
     return sorted(set(sources))
 
 
@@ -82,14 +165,30 @@ def _render_member_table(members: dict[str, str]) -> list[str]:
     return rows
 
 
-def build_reference() -> str:
+def build_reference(
+    *,
+    scope: str,
+    source_roots: list[str],
+    include_globs: list[str],
+    exclude_globs: list[str],
+) -> str:
+    scripts = collect_sources(
+        scope=scope,
+        source_roots=source_roots,
+        include_globs=include_globs,
+        exclude_globs=exclude_globs,
+    )
     sections = [
         "# GDScript API Reference",
         "",
         f"Last generated: {date.today().isoformat()}",
         "",
+        f"Scope: `{scope}`",
+        "",
+        f"Scripts scanned: `{len(scripts)}`",
+        "",
     ]
-    for script in sorted(collect_sources()):
+    for script in scripts:
         docs = extract_docs(script)
         if not docs:
             continue
@@ -125,9 +224,22 @@ def build_reference() -> str:
 
 
 def main() -> None:
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(build_reference(), encoding="utf-8")
-    print(f"[docs] Wrote GDScript reference to {OUTPUT}")
+    args = parse_args()
+    output = Path(args.output)
+    if not output.is_absolute():
+        output = (ROOT / output).resolve()
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        build_reference(
+            scope=args.scope,
+            source_roots=args.source_root,
+            include_globs=args.include_glob,
+            exclude_globs=args.exclude_glob,
+        ),
+        encoding="utf-8",
+    )
+    print(f"[docs] Wrote GDScript reference to {output}")
 
 
 if __name__ == "__main__":

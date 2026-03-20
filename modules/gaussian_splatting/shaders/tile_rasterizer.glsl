@@ -4,6 +4,7 @@
 
 layout(location = 0) out vec2 uv;
 
+// Vertex entry point for the fullscreen raster quad.
 void main() {
     vec2 pos = vec2(float((gl_VertexIndex << 1) & 2), float(gl_VertexIndex & 2));
     uv = pos;
@@ -117,6 +118,7 @@ layout(set = 1, binding = 1, std140) uniform InteractiveState {
 
 #include "includes/tile_raster_common.glsl"
 
+// Fragment entry point for tile rasterization and compositing.
 void main() {
     // Compute tile info first for diagnostics
     vec2 frag_coord = gl_FragCoord.xy;
