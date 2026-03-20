@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       changed-files:
-        description: A list of changed files.
+        description: A list of changed files, pre-filtered for parsing by clangd-tidy.
         required: true
         type: string
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
-            clang-tidy: true
+            clangd-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -186,11 +186,11 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
 
-      - name: Style checks via pre-commit
-        if: matrix.clang-tidy
-        uses: pre-commit/action@v3.0.1
+      - name: Style checks via clangd-tidy
+        if: matrix.clangd-tidy
+        uses: ./.github/actions/clangd-tidy
         with:
-          extra_args: --files ${{ inputs.changed-files }} --hook-stage manual clang-tidy
+          changed-files: ${{ inputs.changed-files }}
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
