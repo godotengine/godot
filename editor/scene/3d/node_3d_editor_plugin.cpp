@@ -2753,7 +2753,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_clear_selected();
 				return;
 			}
-		} else {
+		} else if (!k->is_echo()) {
 			// We're actively transforming, handle keys specially
 			TransformPlane new_plane = TRANSFORM_VIEW;
 			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", event_mod)) {
