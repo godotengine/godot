@@ -2,8 +2,10 @@
 """Generate shader documentation from GLSL comments."""
 from __future__ import annotations
 
-from pathlib import Path
+import argparse
+from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "api" / "shader_reference.md"
@@ -12,29 +14,60 @@ SHADER_ROOTS = [
     ROOT / "modules" / "gaussian_splatting" / "compute",
 ]
 KEYWORDS = {"if", "for", "while", "switch", "return"}
-
 # Characters that form decorative banner/separator lines in comments.
 _BANNER_CHARS = set("=-*#~+")
 
 
-def _is_banner_line(text: str) -> bool:
-    """Return True if *text* is a decorative separator/banner comment.
+@dataclass
+class CoverageStats:
+    documented_functions: int = 0
+    undocumented_functions: int = 0
+    documented_uniform_fields: int = 0
+    undocumented_uniform_fields: int = 0
 
-    A banner line consists primarily of repeated punctuation characters
-    (``=``, ``-``, ``*``, ``#``, ``~``, ``+``) with optional whitespace.
-    Short runs (fewer than 4 punctuation characters) are not treated as
-    banners so that legitimate comments like ``// --flag`` survive.
-    """
+
+def _is_banner_line(text: str) -> bool:
+    """Return True if *text* is a decorative separator/banner comment."""
     stripped = text.strip()
     if not stripped:
         return False
     punct_count = sum(1 for ch in stripped if ch in _BANNER_CHARS)
-    # Consider it a banner when the non-whitespace content is almost entirely
-    # punctuation and there are at least 4 punctuation characters.
     non_ws = stripped.replace(" ", "")
     if not non_ws:
         return False
     return punct_count >= 4 and punct_count / len(non_ws) >= 0.75
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate shader Markdown reference docs.")
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT),
+        help="Output Markdown file path.",
+    )
+    parser.add_argument(
+        "--include-undocumented",
+        action="store_true",
+        help="Include undocumented functions/uniform fields in output tables.",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero when undocumented coverage exceeds thresholds.",
+    )
+    parser.add_argument(
+        "--max-undocumented-functions",
+        type=int,
+        default=0,
+        help="Allowed undocumented function entries when --strict is used.",
+    )
+    parser.add_argument(
+        "--max-undocumented-fields",
+        type=int,
+        default=0,
+        help="Allowed undocumented uniform fields when --strict is used.",
+    )
+    return parser.parse_args()
 
 
 def iter_shader_files() -> list[Path]:
@@ -96,7 +129,7 @@ def parse_shader(path: Path) -> list[tuple[str, list[str]]]:
             if name in KEYWORDS:
                 pending = []
                 continue
-            if len(parts) == 1:  # no explicit return type, likely macro
+            if len(parts) == 1:
                 pending = []
                 continue
             signature = f"{name}({params})" if params else f"{name}()"
@@ -193,7 +226,7 @@ def parse_uniform_blocks(path: Path) -> list[tuple[str, str | None, list[tuple[s
     return blocks
 
 
-def _render_function_table(entries: list[tuple[str, list[str]]]) -> list[str]:
+def _render_function_table(entries: list[tuple[str, str]]) -> list[str]:
     rows = [
         "<table>",
         "  <thead>",
@@ -204,10 +237,7 @@ def _render_function_table(entries: list[tuple[str, list[str]]]) -> list[str]:
         "  </thead>",
         "  <tbody>",
     ]
-    for signature, comments in entries:
-        description = " ".join(comment for comment in comments if comment).strip()
-        if not description:
-            description = "Undocumented."
+    for signature, description in entries:
         rows.extend(
             [
                 "    <tr>",
@@ -233,13 +263,12 @@ def _render_uniform_table(fields: list[tuple[str, str, str]]) -> list[str]:
         "  <tbody>",
     ]
     for field_name, field_type, description in fields:
-        desc = description if description else "Undocumented."
         rows.extend(
             [
                 "    <tr>",
                 f"      <td><pre><code>{field_name}</code></pre></td>",
                 f"      <td><pre><code>{field_type}</code></pre></td>",
-                f"      <td>{desc}</td>",
+                f"      <td>{description}</td>",
                 "    </tr>",
             ]
         )
@@ -247,33 +276,66 @@ def _render_uniform_table(fields: list[tuple[str, str, str]]) -> list[str]:
     return rows
 
 
-def build_reference() -> str:
+def build_reference(*, include_undocumented: bool) -> tuple[str, CoverageStats]:
+    stats = CoverageStats()
     sections = [
         "# Shader Reference",
         "",
         f"Last generated: {date.today().isoformat()}",
         "",
     ]
+
     for shader in iter_shader_files():
         entries = parse_shader(shader)
         uniform_blocks = parse_uniform_blocks(shader)
-        if not entries and not uniform_blocks:
+
+        rendered_functions: list[tuple[str, str]] = []
+        for signature, comments in entries:
+            description = " ".join(comment for comment in comments if comment).strip()
+            if description:
+                stats.documented_functions += 1
+                rendered_functions.append((signature, description))
+                continue
+
+            stats.undocumented_functions += 1
+            if include_undocumented:
+                rendered_functions.append((signature, "Missing shader comment."))
+
+        rendered_blocks: list[tuple[str, str | None, list[tuple[str, str, str]]]] = []
+        for block_name, instance_name, fields in uniform_blocks:
+            rendered_fields: list[tuple[str, str, str]] = []
+            for field_name, field_type, description in fields:
+                normalized = description.strip()
+                is_documented = bool(normalized) and normalized != "(undocumented)"
+                if is_documented:
+                    stats.documented_uniform_fields += 1
+                    rendered_fields.append((field_name, field_type, normalized))
+                    continue
+
+                stats.undocumented_uniform_fields += 1
+                if include_undocumented:
+                    rendered_fields.append((field_name, field_type, "Missing shader field comment."))
+            if rendered_fields:
+                rendered_blocks.append((block_name, instance_name, rendered_fields))
+
+        if not rendered_functions and not rendered_blocks:
             continue
+
         sections.append("## Shader")
         sections.append("")
         sections.append("```")
-        sections.append(str(shader.relative_to(ROOT)))
+        sections.append(shader.relative_to(ROOT).as_posix())
         sections.append("```")
         sections.append("")
-        if entries:
+        if rendered_functions:
             sections.append("### Functions")
             sections.append("")
-            sections.extend(_render_function_table(entries))
+            sections.extend(_render_function_table(rendered_functions))
             sections.append("")
-        if uniform_blocks:
+        if rendered_blocks:
             sections.append("### Uniform Blocks")
             sections.append("")
-            for block_name, instance_name, fields in uniform_blocks:
+            for block_name, instance_name, fields in rendered_blocks:
                 sections.append("#### Block")
                 sections.append("")
                 sections.append("```")
@@ -286,6 +348,13 @@ def build_reference() -> str:
                 sections.extend(_render_uniform_table(fields))
                 sections.append("")
         sections.append("")
+
+    sections.insert(4, f"Coverage summary: `{stats.documented_functions}` documented functions, `{stats.undocumented_functions}` undocumented functions, `{stats.documented_uniform_fields}` documented uniform fields, `{stats.undocumented_uniform_fields}` undocumented uniform fields.")
+    sections.insert(5, "")
+    if not include_undocumented:
+        sections.insert(6, "Undocumented entries are omitted by default. Use `--include-undocumented` to list them.")
+        sections.insert(7, "")
+
     sections.extend(
         [
             "Generated by:",
@@ -295,14 +364,35 @@ def build_reference() -> str:
             "```",
         ]
     )
-    return "\n".join(sections).strip() + "\n"
+    return "\n".join(sections).strip() + "\n", stats
 
 
-def main() -> None:
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(build_reference(), encoding="utf-8")
-    print(f"[docs] Wrote shader reference to {OUTPUT}")
+def main() -> int:
+    args = parse_args()
+    output = Path(args.output)
+    if not output.is_absolute():
+        output = (ROOT / output).resolve()
+
+    content, stats = build_reference(include_undocumented=args.include_undocumented)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
+    print(f"[docs] Wrote shader reference to {output}")
+
+    if args.strict:
+        function_ok = stats.undocumented_functions <= args.max_undocumented_functions
+        fields_ok = stats.undocumented_uniform_fields <= args.max_undocumented_fields
+        if not function_ok or not fields_ok:
+            print(
+                "[docs] Strict coverage failed: "
+                f"undocumented_functions={stats.undocumented_functions} "
+                f"(allowed={args.max_undocumented_functions}), "
+                f"undocumented_uniform_fields={stats.undocumented_uniform_fields} "
+                f"(allowed={args.max_undocumented_fields})"
+            )
+            return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

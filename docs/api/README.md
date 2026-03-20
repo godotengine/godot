@@ -122,10 +122,10 @@ explicit thresholds to use it as a CI gate while documentation is still being
 expanded:
 
 ```bash
-# Allow up to 40 undocumented functions and 10 undocumented fields
+# Allow current baseline coverage and tighten thresholds as comments improve.
 python3 scripts/generate_shader_docs.py --strict \
-    --max-undocumented-functions 40 \
-    --max-undocumented-fields 10
+    --max-undocumented-functions 150 \
+    --max-undocumented-fields 130
 ```
 
 ## Troubleshooting
