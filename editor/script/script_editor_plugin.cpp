@@ -2190,20 +2190,21 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
 
-	if (scr.is_valid() && scr->get_language()->overrides_external_editor()) {
-		if (should_open) {
-			Error err = scr->get_language()->open_in_external_editor(scr, p_line >= 0 ? p_line : 0, p_col);
-			if (err != OK) {
-				ERR_PRINT("Couldn't open script in the overridden external text editor");
+	if (use_external_editor) {
+		// Check Text Editor before language override.
+		if ((EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
+				p_resource->get_path().is_resource_file()) {
+			if (ScriptEditorPlugin::open_in_external_editor(ProjectSettings::get_singleton()->globalize_path(p_resource->get_path()), p_line, p_col)) {
+				return false;
 			}
 		}
-		return false;
-	}
-
-	if (use_external_editor &&
-			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
-			p_resource->get_path().is_resource_file()) {
-		if (ScriptEditorPlugin::open_in_external_editor(ProjectSettings::get_singleton()->globalize_path(p_resource->get_path()), p_line, p_col)) {
+		if (scr.is_valid() && scr->get_language()->overrides_external_editor()) {
+			if (should_open) {
+				Error err = scr->get_language()->open_in_external_editor(scr, p_line >= 0 ? p_line : 0, p_col);
+				if (err != OK) {
+					ERR_PRINT("Couldn't open script in the overridden external text editor");
+				}
+			}
 			return false;
 		} else {
 			ERR_PRINT("Couldn't open external text editor, falling back to the internal editor. Review your `text_editor/external/` editor settings.");
