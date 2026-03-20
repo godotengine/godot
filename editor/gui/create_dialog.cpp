@@ -240,6 +240,8 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 }
 
 void CreateDialog::_update_search() {
+	const String search_text = search_box->get_text();
+	const String last_selected_type = search_text.is_empty() ? get_selected_type_name() : String();
 	search_options->clear();
 	search_options_types.clear();
 
@@ -248,8 +250,6 @@ void CreateDialog::_update_search() {
 	root->set_icon(0, search_options->get_editor_theme_icon(icon_fallback));
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE, "");
-
-	const String search_text = search_box->get_text();
 
 	float highest_score = 0.0f;
 	StringName best_match;
@@ -288,7 +288,22 @@ void CreateDialog::_update_search() {
 
 	// Select the best result.
 	if (search_text.is_empty()) {
-		select_type(base_type);
+		if (!last_selected_type.is_empty()) {
+			TreeItem *last_selected_item = search_options_types[last_selected_type];
+			if (last_selected_item) {
+				last_selected_item->set_collapsed(false);
+
+				TreeItem *parent_item = last_selected_item->get_parent();
+				while (parent_item) {
+					parent_item->set_collapsed(false);
+					parent_item = parent_item->get_parent();
+				}
+			}
+			// Put it at the end to avoid set_collapsed() to emit "cell_selected" signal
+			select_type(last_selected_type);
+		} else {
+			select_type(base_type);
+		}
 	} else if (best_match != StringName()) {
 		select_type(best_match);
 	} else {
