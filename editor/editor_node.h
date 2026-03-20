@@ -373,6 +373,7 @@ private:
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
+	bool stop_download_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
