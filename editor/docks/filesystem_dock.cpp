@@ -2608,7 +2608,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_MENU_DUPLICATE: {
-			if (p_selected.size() != 1) {
+			if (p_selected.size() != 1 || p_selected[0] == "res://") {
 				return;
 			}
 
