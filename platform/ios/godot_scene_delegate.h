@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate.h                                                        */
+/*  godot_scene_delegate.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,13 +30,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
+typedef NSObject<UIWindowSceneDelegate> SceneDelegateService API_AVAILABLE(ios(13.0), tvos(13.0));
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+API_AVAILABLE(ios(13.0), tvos(13.0))
+@interface SceneDelegate : NSObject <UIWindowSceneDelegate>
 
-+ (AppDelegate *)getSingleton;
+@property(class, readonly, strong) NSArray<SceneDelegateService *> *services;
 
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
++ (void)addService:(SceneDelegateService *)service;
 
 @end
