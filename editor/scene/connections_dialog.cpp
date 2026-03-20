@@ -1733,7 +1733,8 @@ void ConnectionsDock::update_tree() {
 
 	connect_button->set_text(TTRC("Connect..."));
 	connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
-	connect_button->set_disabled(true);
+	// Check if connect button can be enabled.
+	_tree_item_selected();
 }
 
 ConnectionsDock::ConnectionsDock() {
