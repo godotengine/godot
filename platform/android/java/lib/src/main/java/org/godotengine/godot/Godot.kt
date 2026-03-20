@@ -647,9 +647,6 @@ class Godot private constructor(val context: Context) {
 			})
 
 			renderView?.queueOnRenderThread {
-				for (plugin in pluginRegistry.allPlugins) {
-					plugin.onRegisterPluginWithGodotNative()
-				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 			}
 
@@ -850,6 +847,7 @@ class Godot private constructor(val context: Context) {
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onRegisterPluginWithGodotNative()
 			plugin.onGodotSetupCompleted()
 		}
 		primaryHost?.onGodotSetupCompleted()
