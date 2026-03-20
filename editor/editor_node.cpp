@@ -1529,6 +1529,9 @@ void EditorNode::_sources_changed(bool p_exist) {
 		}
 
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
+
+		editor_ready = true;
+		editor_data.notify_editor_ready();
 	}
 }
 

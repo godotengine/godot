@@ -449,6 +449,7 @@ private:
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
+	bool editor_ready = false;
 
 	bool select_current_scene_file_requested = false;
 
@@ -740,8 +741,7 @@ public:
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
 
-	// This is a very naive estimation, but we need something now. Will be reworked later.
-	bool is_editor_ready() const { return is_inside_tree() && !waiting_for_first_scan; }
+	bool is_editor_ready() const { return editor_ready; }
 
 	static EditorNode *get_singleton() { return singleton; }
 

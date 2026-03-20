@@ -284,6 +284,10 @@ void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
 	emit_signal(SNAME("scene_saved"), p_scene_filepath);
 }
 
+void EditorPlugin::editor_ready() {
+	GDVIRTUAL_CALL(_editor_ready);
+}
+
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	bool success = false;
 	GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success);
@@ -706,6 +710,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_run_scene, "scene", "args");
 	GDVIRTUAL_BIND(_enable_plugin);
 	GDVIRTUAL_BIND(_disable_plugin);
+	GDVIRTUAL_BIND(_editor_ready);
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));

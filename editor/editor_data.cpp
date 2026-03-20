@@ -376,6 +376,12 @@ void EditorData::notify_scene_saved(const String &p_path) {
 	}
 }
 
+void EditorData::notify_editor_ready() {
+	for (int i = 0; i < editor_plugins.size(); i++) {
+		editor_plugins[i]->editor_ready();
+	}
+}
+
 void EditorData::clear_editor_states() {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->clear();

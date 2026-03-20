@@ -144,6 +144,7 @@ protected:
 	GDVIRTUAL2RC(Vector<String>, _run_scene, String, Vector<String>)
 	GDVIRTUAL0(_enable_plugin)
 	GDVIRTUAL0(_disable_plugin)
+	GDVIRTUAL0(_editor_ready)
 
 #ifndef DISABLE_DEPRECATED
 	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
@@ -184,6 +185,7 @@ public:
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 	void notify_scene_saved(const String &p_scene_filepath);
+	void editor_ready();
 
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
