@@ -153,6 +153,7 @@ class EditorHelp : public VBoxContainer {
 	int scroll_to = -1;
 
 	int line_to_highlight = -1;
+	int line_to_highlight_end = -1;
 
 	void _help_callback(const String &p_topic);
 
@@ -175,6 +176,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _update_search_highlight();
 	void _start_search_highlight_tweener();
+	int _calculate_search_highlight_end(const HashMap<String, int> *query_table);
 
 	void _class_desc_finished();
 	void _class_list_select(const String &p_select);

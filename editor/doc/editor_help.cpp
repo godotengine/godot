@@ -267,11 +267,11 @@ void EditorHelp::_search(bool p_search_previous) {
 }
 
 void EditorHelp::_update_search_highlight() {
-	float y_offset = class_desc->get_paragraph_offset(line_to_highlight);
-	float y_offset2 = class_desc->get_paragraph_offset(line_to_highlight + 2);
+	float start_y = class_desc->get_paragraph_offset(line_to_highlight + 1);
+	float end_y = class_desc->get_paragraph_offset(line_to_highlight_end);
 	float scroll_y = class_desc->get_v_scroll_bar()->get_value();
-	float highlight_position_y = y_offset - scroll_y;
-	float highlight_size_y = y_offset2 - y_offset;
+	float highlight_position_y = start_y - scroll_y;
+	float highlight_size_y = end_y - start_y;
 
 	search_highlight->set_position(Vector2(0, highlight_position_y));
 	search_highlight->set_size(Vector2(class_desc->get_size().x, highlight_size_y));
@@ -286,6 +286,26 @@ void EditorHelp::_start_search_highlight_tweener() {
 	search_highlight->set_modulate(Color(1.0, 1.0, 1.0, 1.0));
 	search_highlight_tween->tween_interval(0.5);
 	search_highlight_tween->tween_property(search_highlight, NodePath("modulate:a"), 0.0, 2.0);
+}
+
+int EditorHelp::_calculate_search_highlight_end(const HashMap<String, int> *query_table) {
+	if (!query_table || query_table->is_empty()) {
+		return line_to_highlight;
+	}
+
+	for (const KeyValue<String, int> &E : *query_table) {
+		if (E.value > line_to_highlight) {
+			return E.value;
+		}
+	}
+
+	for (const Pair<String, int> &E : section_line) {
+		if (E.second > line_to_highlight) {
+			return E.second;
+		}
+	}
+
+	return class_desc->get_paragraph_count() - 1;
 }
 
 void EditorHelp::_class_desc_finished() {
@@ -367,6 +387,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (table->has(link)) {
 			// Found in the current page.
 			line_to_highlight = (*table)[link];
+			line_to_highlight_end = _calculate_search_highlight_end(table);
 			if (class_desc->is_finished()) {
 				emit_signal(SNAME("request_save_history"));
 				class_desc->scroll_to_paragraph((*table)[link]);
@@ -2405,47 +2426,58 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	_request_help(clss); // First go to class.
 
 	int line = 0;
+	const HashMap<String, int> *query_table = nullptr;
 
 	if (what == "class_desc") {
 		line = description_line;
 	} else if (what == "class_signal") {
 		if (signal_line.has(name)) {
 			line = signal_line[name];
+			query_table = &signal_line;
 		}
 	} else if (what == "class_method" || what == "class_method_desc") {
 		if (method_line.has(name)) {
 			line = method_line[name];
+			query_table = &method_line;
 		}
 	} else if (what == "class_property") {
 		if (property_line.has(name)) {
 			line = property_line[name];
+			query_table = &property_line;
 		}
 	} else if (what == "class_enum") {
 		if (enum_line.has(name)) {
 			line = enum_line[name];
+			query_table = &enum_line;
 		}
 	} else if (what == "class_theme_item") {
 		if (theme_property_line.has(name)) {
 			line = theme_property_line[name];
+			query_table = &theme_property_line;
 		}
 	} else if (what == "class_constant") {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+			query_table = &constant_line;
 		}
 	} else if (what == "class_annotation") {
 		if (annotation_line.has(name)) {
 			line = annotation_line[name];
+			query_table = &annotation_line;
 		}
 	} else if (what == "class_global") { // Deprecated.
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+			query_table = &constant_line;
 		} else if (method_line.has(name)) {
 			line = method_line[name];
+			query_table = &method_line;
 		} else {
 			HashMap<String, HashMap<String, int>>::Iterator iter = enum_values_line.begin();
 			while (true) {
 				if (iter->value.has(name)) {
 					line = iter->value[name];
+					query_table = &(iter->value);
 					break;
 				} else if (iter == enum_values_line.last()) {
 					break;
@@ -2457,6 +2489,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	line_to_highlight = line;
+	line_to_highlight_end = _calculate_search_highlight_end(query_table);
 
 	if (class_desc->is_finished()) {
 		class_desc->scroll_to_paragraph(line);
