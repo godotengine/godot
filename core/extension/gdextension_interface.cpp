@@ -31,6 +31,7 @@
 #include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
+#include "core/core_globals.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
@@ -1692,6 +1693,11 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #endif
 }
 
+static void gdextension_register_libgodot_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionLibGodotCallbacks *p_callbacks) {
+	CoreGlobals::global_project_settings_function = (GDInitFunction)p_callbacks->project_settings_func;
+	CoreGlobals::global_world_init_function = (GDWorldInitFunction)p_callbacks->world_init_func;
+}
+
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
@@ -1866,6 +1872,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(image_ptrw);
 	REGISTER_INTERFACE_FUNC(image_ptr);
+	REGISTER_INTERFACE_FUNC(register_libgodot_callbacks);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

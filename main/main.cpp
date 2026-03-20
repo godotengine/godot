@@ -782,6 +782,7 @@ Error Main::test_setup() {
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
+	gd_extension_load_extensions(); // Load GDExtensions that are not embedded
 
 	register_core_singletons();
 
@@ -2050,6 +2051,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 
+	register_early_core_singletons();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	register_core_extensions(); // core extensions registered really early for embedded extensions to override the project settings
+
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, false, editor) == OK) {
 #ifdef TOOLS_ENABLED
@@ -2224,9 +2229,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
 	}
 
-	register_early_core_singletons();
-	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	register_core_extensions(); // core extensions must be registered after globals setup and before display
+	gd_extension_load_extensions(); // Load GDExtensions that are not embedded
 
 	if (!editor) {
 		ResourceUID::get_singleton()->enable_reverse_cache();
@@ -4703,7 +4706,9 @@ int Main::start() {
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_GET("network/tls/certificate_bundle_override"));
 
-			if (!game_path.is_empty()) {
+			if (CoreGlobals::run_global_world_init_function()) {
+				// World initialized by LibGodot callback — skip scene loading.
+			} else if (!game_path.is_empty()) {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {

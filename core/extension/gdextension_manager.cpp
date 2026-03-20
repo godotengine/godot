@@ -63,6 +63,15 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 	return LOAD_STATUS_OK;
 }
 
+void GDExtensionManager::load_embedded_extension() {
+	if (CoreGlobals::global_init_func_libgodot != nullptr) {
+		GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&CoreGlobals::global_init_func_libgodot);
+		CoreGlobals::global_load_status_libgodot = load_extension_from_function("libgodot://main", ptr);
+	} else {
+		CoreGlobals::global_load_status_libgodot = LOAD_STATUS_FAILED;
+	}
+}
+
 void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {
 #ifdef TOOLS_ENABLED
 	// Signals that a new extension is loaded so GDScript can register new class names.

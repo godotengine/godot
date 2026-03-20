@@ -675,6 +675,10 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If nothing was found, error out.
  */
 Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	if (CoreGlobals::run_global_project_settings_function()) {
+		return OK;
+	}
+
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.

@@ -30,6 +30,7 @@
 
 #include "os_windows.h"
 
+#include "core/core_globals.h"
 #include "core/extension/godot_instance.h"
 #include "core/extension/libgodot.h"
 #include "main/main.h"
@@ -41,6 +42,8 @@ static GodotInstance *instance = nullptr;
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created at a time.");
 
+	CoreGlobals::global_init_func_libgodot = p_init_func;
+
 	os = new OS_Windows(GetModuleHandle(nullptr));
 
 	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
@@ -49,7 +52,7 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 	}
 
 	instance = memnew(GodotInstance);
-	if (!instance->initialize(p_init_func)) {
+	if (!instance->initialize()) {
 		memdelete(instance);
 		instance = nullptr;
 		return nullptr;

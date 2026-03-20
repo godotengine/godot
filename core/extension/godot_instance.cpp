@@ -53,12 +53,13 @@ GodotInstance::GodotInstance() {
 GodotInstance::~GodotInstance() {
 }
 
-bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
-	print_verbose("Godot Instance initialization");
-	GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
-	GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&p_init_func);
-	GDExtensionManager::LoadStatus status = gdextension_manager->load_extension_from_function("libgodot://main", ptr);
-	return status == GDExtensionManager::LoadStatus::LOAD_STATUS_OK;
+bool GodotInstance::initialize() {
+	if (CoreGlobals::global_load_status_libgodot == GDExtensionManager::LoadStatus::LOAD_STATUS_OK) {
+		print_verbose("Godot Instance: embedded extension loaded successfully.");
+		return true;
+	}
+	print_verbose("Godot Instance: embedded extension failed to load.");
+	return false;
 }
 
 bool GodotInstance::start() {
@@ -69,7 +70,9 @@ bool GodotInstance::start() {
 	}
 	started = Main::start() == EXIT_SUCCESS;
 	if (started) {
-		OS::get_singleton()->get_main_loop()->initialize();
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->initialize();
+		}
 	}
 	return started;
 }
@@ -86,7 +89,9 @@ bool GodotInstance::iteration() {
 void GodotInstance::stop() {
 	print_verbose("GodotInstance::stop()");
 	if (started) {
-		OS::get_singleton()->get_main_loop()->finalize();
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->finalize();
+		}
 	}
 	started = false;
 }

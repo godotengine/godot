@@ -3488,6 +3488,47 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "GDExtensionLibGodotProjectSettingsCallback",
+            "kind": "function",
+            "return_value": {
+                "type": "GDExtensionBool"
+            },
+            "arguments": [],
+            "description": [
+                "Called during ProjectSettings setup to allow the embedded extension to configure project settings.",
+                "Return true if project settings were handled (skips loading from project.godot file)."
+            ]
+        },
+        {
+            "name": "GDExtensionLibGodotWorldInitCallback",
+            "kind": "function",
+            "arguments": [],
+            "description": [
+                "Called during scene initialization to allow the embedded extension to set up the initial scene.",
+                "When registered, this replaces the default scene loading from a project file."
+            ]
+        },
+        {
+            "name": "GDExtensionLibGodotCallbacks",
+            "kind": "struct",
+            "members": [
+                {
+                    "name": "project_settings_func",
+                    "type": "GDExtensionLibGodotProjectSettingsCallback",
+                    "description": [
+                        "Will be called during ProjectSettings::_setup() to allow overriding project settings."
+                    ]
+                },
+                {
+                    "name": "world_init_func",
+                    "type": "GDExtensionLibGodotWorldInitCallback",
+                    "description": [
+                        "Will be called during Main::start() to set up the initial scene instead of loading from a project file."
+                    ]
+                }
+            ]
         }
     ],
     "interface": [
@@ -9038,6 +9079,30 @@
                 "Registers callbacks to be called at different phases of the main loop."
             ],
             "since": "4.5"
+        },
+        {
+            "name": "register_libgodot_callbacks",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_callbacks",
+                    "type": "const GDExtensionLibGodotCallbacks*",
+                    "description": [
+                        "A pointer to the structure that contains the callbacks."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers callbacks for LibGodot embedded extensions to override project settings and scene initialization.",
+                "This should be called from the extension's entry point function before initialization levels are processed."
+            ],
+            "since": "4.7"
         }
     ]
 }

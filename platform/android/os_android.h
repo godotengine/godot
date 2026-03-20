@@ -32,8 +32,13 @@
 
 #include "audio_driver_opensl.h"
 
+#include "core/extension/libgodot.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
+
+extern "C" {
+LIBGODOT_API void libgodot_register_function(GDExtensionInitializationFunction p_init_func);
+}
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
