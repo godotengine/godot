@@ -907,6 +907,7 @@ struct MSContext {
 	msdfgen::Point2 position;
 	msdfgen::Shape *shape = nullptr;
 	msdfgen::Contour *contour = nullptr;
+	double control_area = 0;
 };
 
 class DistancePixelConversion {
@@ -930,41 +931,59 @@ struct MSDFThreadData {
 	DistancePixelConversion *distancePixelConversion;
 };
 
-static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
-	return msdfgen::Point2(vector.x / 60.0f, vector.y / 60.0f);
+hb_draw_funcs_t *TextServerAdvanced::msdf_draw_funcs = nullptr;
+
+static msdfgen::Point2 hb_point2(float p_to_x, float p_to_y) {
+	return msdfgen::Point2(p_to_x / 60.0f, p_to_y / 60.0f);
 }
 
-static int ft_move_to(const FT_Vector *to, void *user) {
-	MSContext *context = static_cast<MSContext *>(user);
+static void hb_msdf_move_to(hb_draw_funcs_t *p_dfuncs, void *p_draw_data, hb_draw_state_t *p_st, float p_to_x, float p_to_y, void *p_user) {
+	MSContext *context = static_cast<MSContext *>(p_draw_data);
 	if (!(context->contour && context->contour->edges.empty())) {
 		context->contour = &context->shape->addContour();
 	}
-	context->position = ft_point2(*to);
-	return 0;
+	context->position = hb_point2(p_to_x, p_to_y);
 }
 
-static int ft_line_to(const FT_Vector *to, void *user) {
-	MSContext *context = static_cast<MSContext *>(user);
-	msdfgen::Point2 endpoint = ft_point2(*to);
+static void hb_msdf_line_to(hb_draw_funcs_t *p_dfuncs, void *p_draw_data, hb_draw_state_t *p_st, float p_to_x, float p_to_y, void *p_user) {
+	MSContext *context = static_cast<MSContext *>(p_draw_data);
+	msdfgen::Point2 endpoint = hb_point2(p_to_x, p_to_y);
 	if (endpoint != context->position) {
 		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
 		context->position = endpoint;
 	}
-	return 0;
+	context->control_area += p_to_x * p_st->current_y - p_to_y * p_st->current_x;
 }
 
-static int ft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user) {
-	MSContext *context = static_cast<MSContext *>(user);
-	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to)));
-	context->position = ft_point2(*to);
-	return 0;
+static void hb_msdf_quadratic_to(hb_draw_funcs_t *p_dfuncs, void *p_draw_data, hb_draw_state_t *p_st, float p_control_x, float p_control_y, float p_to_x, float p_to_y, void *p_user) {
+	MSContext *context = static_cast<MSContext *>(p_draw_data);
+	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, hb_point2(p_control_x, p_control_y), hb_point2(p_to_x, p_to_y)));
+	context->position = hb_point2(p_to_x, p_to_y);
+	context->control_area += p_to_x * p_st->current_y - p_to_y * p_st->current_x;
 }
 
-static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
-	MSContext *context = static_cast<MSContext *>(user);
-	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
-	context->position = ft_point2(*to);
-	return 0;
+static void hb_msdf_cubic_to(hb_draw_funcs_t *p_dfuncs, void *p_draw_data, hb_draw_state_t *p_st, float p_control1_x, float p_control1_y, float p_control2_x, float p_control2_y, float p_to_x, float p_to_y, void *p_user) {
+	MSContext *context = static_cast<MSContext *>(p_draw_data);
+	context->contour->addEdge(new msdfgen::CubicSegment(context->position, hb_point2(p_control1_x, p_control1_y), hb_point2(p_control2_x, p_control2_y), hb_point2(p_to_x, p_to_y)));
+	context->position = hb_point2(p_to_x, p_to_y);
+	context->control_area += p_to_x * p_st->current_y - p_to_y * p_st->current_x;
+}
+
+static void hb_msdf_close_path(hb_draw_funcs_t *, void *p_draw_data, hb_draw_state_t *p_st, void *p_user) {
+	MSContext *context = static_cast<MSContext *>(p_draw_data);
+	context->contour = nullptr;
+	context->control_area += p_st->current_x * p_st->path_start_y - p_st->current_y * p_st->path_start_x;
+}
+
+void TextServerAdvanced::_msdf_create_font_funcs() {
+	if (msdf_draw_funcs == nullptr) {
+		msdf_draw_funcs = hb_draw_funcs_create();
+		hb_draw_funcs_set_move_to_func(msdf_draw_funcs, (hb_draw_move_to_func_t)hb_msdf_move_to, nullptr, nullptr);
+		hb_draw_funcs_set_line_to_func(msdf_draw_funcs, (hb_draw_line_to_func_t)hb_msdf_line_to, nullptr, nullptr);
+		hb_draw_funcs_set_quadratic_to_func(msdf_draw_funcs, (hb_draw_quadratic_to_func_t)hb_msdf_quadratic_to, nullptr, nullptr);
+		hb_draw_funcs_set_cubic_to_func(msdf_draw_funcs, (hb_draw_cubic_to_func_t)hb_msdf_cubic_to, nullptr, nullptr);
+		hb_draw_funcs_set_close_path_func(msdf_draw_funcs, (hb_draw_close_path_func_t)hb_msdf_close_path, nullptr, nullptr);
+	}
 }
 
 void TextServerAdvanced::_generateMTSDF_threaded(void *p_td, uint32_t p_y) {
@@ -980,7 +999,7 @@ void TextServerAdvanced::_generateMTSDF_threaded(void *p_td, uint32_t p_y) {
 	}
 }
 
-_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const {
+_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, uint32_t p_glyph, const Vector2 &p_advance) const {
 	msdfgen::Shape shape;
 
 	shape.contours.clear();
@@ -988,21 +1007,13 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 
 	MSContext context = {};
 	context.shape = &shape;
-	FT_Outline_Funcs ft_functions;
-	ft_functions.move_to = &ft_move_to;
-	ft_functions.line_to = &ft_line_to;
-	ft_functions.conic_to = &ft_conic_to;
-	ft_functions.cubic_to = &ft_cubic_to;
-	ft_functions.shift = 0;
-	ft_functions.delta = 0;
-
-	int error = FT_Outline_Decompose(p_outline, &ft_functions, &context);
-	ERR_FAIL_COND_V_MSG(error, FontGlyph(), "FreeType: Outline decomposition error: '" + String(FT_Error_String(error)) + "'.");
+	bool ok = hb_font_draw_glyph_or_fail(p_data->hb_handle, (hb_codepoint_t)p_glyph, msdf_draw_funcs, (void *)&context);
+	ERR_FAIL_COND_V_MSG(!ok, FontGlyph(), "HarfBuzz: Outline decomposition failed.");
 	if (!shape.contours.empty() && shape.contours.back().edges.empty()) {
 		shape.contours.pop_back();
 	}
 
-	if (FT_Outline_Get_Orientation(p_outline) == 1) {
+	if (context.control_area < 0) {
 		for (int i = 0; i < (int)shape.contours.size(); ++i) {
 			shape.contours[i].reverse();
 		}
@@ -1406,7 +1417,7 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 		if (!outline) {
 			if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
-				gl = rasterize_msdf(p_font_data, fd, p_font_data->msdf_range, rect_range, &slot->outline, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+				gl = rasterize_msdf(p_font_data, fd, p_font_data->msdf_range, rect_range, glyph_index, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0);
 #else
 				fd->glyph_map[p_glyph] = FontGlyph();
 				ERR_FAIL_V_MSG(false, "Compiled without MSDFGEN support!");
@@ -1446,10 +1457,10 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 							hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
 							if (img) {
 								hb_raster_image_get_extents(img, &ext);
-								gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, true);
+								gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0, true);
 								hb_raster_paint_recycle_image(p_font_data->hb_rdr, img);
 							} else {
-								gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, true);
+								gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0, true);
 							}
 						}
 					}
@@ -1467,16 +1478,16 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						if (img) {
 							is_rasterized = true;
 							hb_raster_image_get_extents(img, &ext);
-							gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, false);
+							gl = rasterize_hb_bitmap(fd, rect_range, img, ext, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0, false);
 							hb_raster_draw_recycle_image(p_font_data->hb_mono, img);
 						} else {
-							gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, false);
+							gl = rasterize_hb_bitmap(fd, rect_range, nullptr, ext, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0, false);
 						}
 					}
 					if (!is_rasterized) {
 						error = FT_Render_Glyph(slot, aa_mode);
 						if (!error) {
-							gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
+							gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2(hb_font_get_glyph_h_advance(fd->hb_handle, (hb_codepoint_t)glyph_index), -hb_font_get_glyph_v_advance(fd->hb_handle, (hb_codepoint_t)glyph_index)) / 64.0, bgra);
 						}
 					}
 				} else {
@@ -8393,6 +8404,7 @@ TextServerAdvanced::TextServerAdvanced() {
 	os_locale = OS::get_singleton()->get_locale();
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
+	_msdf_create_font_funcs();
 	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
 }
