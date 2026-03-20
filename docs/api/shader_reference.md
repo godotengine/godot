@@ -1,16 +1,141 @@
 # Shader Reference
 
-Last generated: 2026-03-19
+Last generated: 2026-03-20
 
-Coverage summary: `49` documented functions, `146` undocumented functions, `68` documented uniform fields, `123` undocumented uniform fields.
+Coverage summary: `193` documented functions, `2` undocumented functions, `68` documented uniform fields, `123` undocumented uniform fields.
 
 Undocumented entries are omitted by default. Use `--include-undocumented` to list them.
 
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/gs_shadow_blit.glsl
+modules\gaussian_splatting\shaders\brush_accumulate.glsl
 ```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>fetch_color(vec2 uv)</code></pre></td>
+      <td>Fetch the source color used by the brush accumulation pass.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Accumulate brush contributions into the offscreen resolve target.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\gaussian_splat.frag.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment entry point that resolves the final Gaussian splat color.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\gaussian_splat.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex-stage entry point that prepares splat varyings.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment-stage entry point that shades the current splat.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\gaussian_splat.vert.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex entry point for Gaussian splat quad expansion.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\gs_shadow_blit.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex entry point for the shadow-map blit quad.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment entry point that copies the shadow-map sample to the output.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Uniform Blocks
 
@@ -74,7 +199,7 @@ Params (params)
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/color_grading_binning.glsl
+modules\gaussian_splatting\shaders\includes\color_grading_binning.glsl
 ```
 
 ### Functions
@@ -89,7 +214,7 @@ modules/gaussian_splatting/shaders/includes/color_grading_binning.glsl
   <tbody>
     <tr>
       <td><pre><code>rgb_to_hsv(vec3 c)</code></pre></td>
-      <td>============================================================================ Binning Stage Color Grading ============================================================================ Applied after SH evaluation, before packing into ProjectedGaussian Cost: ~20 ALU operations per splat = ~0.02ms for 1M splats ============================================================================ RGB to HSV (copy from tonemap.glsl)</td>
+      <td>Binning Stage Color Grading Applied after SH evaluation, before packing into ProjectedGaussian Cost: ~20 ALU operations per splat = ~0.02ms for 1M splats RGB to HSV (copy from tonemap.glsl)</td>
     </tr>
     <tr>
       <td><pre><code>hsv_to_rgb(vec3 c)</code></pre></td>
@@ -106,7 +231,7 @@ modules/gaussian_splatting/shaders/includes/color_grading_binning.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gaussian_splat_common_inc.glsl
+modules\gaussian_splatting\shaders\includes\gaussian_splat_common_inc.glsl
 ```
 
 ### Functions
@@ -120,8 +245,56 @@ modules/gaussian_splatting/shaders/includes/gaussian_splat_common_inc.glsl
   </thead>
   <tbody>
     <tr>
+      <td><pre><code>quaternion_to_matrix(vec4 q)</code></pre></td>
+      <td>Convert a quaternion to a rotation matrix.</td>
+    </tr>
+    <tr>
+      <td><pre><code>build_covariance(vec3 scale, vec4 rotation)</code></pre></td>
+      <td>Build a 3D covariance matrix from scale and rotation.</td>
+    </tr>
+    <tr>
+      <td><pre><code>compute_eigen(mat2 cov)</code></pre></td>
+      <td>Compute the 2D covariance eigensystem for ellipse reconstruction.</td>
+    </tr>
+    <tr>
+      <td><pre><code>get_sigma_multiplier()</code></pre></td>
+      <td>Return the scene sigma multiplier override or its default.</td>
+    </tr>
+    <tr>
+      <td><pre><code>get_gaussian_count()</code></pre></td>
+      <td>Return the encoded Gaussian count stored in scene metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>compute_projected_covariance(vec3 view_pos, vec3 scale, vec4 rotation, vec2 viewport_size)</code></pre></td>
+      <td>Project 3D covariance into screen space for the current viewport.</td>
+    </tr>
+    <tr>
+      <td><pre><code>covariance_to_conic(mat2 cov2d)</code></pre></td>
+      <td>Convert a 2D covariance matrix into conic coefficients.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_first_order_count(uint meta)</code></pre></td>
+      <td>Extract the first-order SH coefficient count from packed metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_high_order_count(uint meta)</code></pre></td>
+      <td>Extract the higher-order SH coefficient count from packed metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_encoded_count(uint meta)</code></pre></td>
+      <td>Extract the total encoded SH coefficient count from packed metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_sh_encoding(uint meta)</code></pre></td>
+      <td>Extract the SH encoding mode from packed metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>decode_rgb9e5(uint packed)</code></pre></td>
+      <td>Decode packed RGB9E5 color data into linear RGB.</td>
+    </tr>
+    <tr>
       <td><pre><code>dither_noise(vec2 frag_coord)</code></pre></td>
-      <td>Lightweight hash-based noise for dithering (spatially varying) Uses fragment position to generate pseudo-random value in [-0.5, 0.5]</td>
+      <td>Simple hash-based noise for dithering (spatially varying) Uses fragment position to generate pseudo-random value in [-0.5, 0.5]</td>
     </tr>
     <tr>
       <td><pre><code>dither_noise_rgb(vec2 frag_coord)</code></pre></td>
@@ -129,7 +302,7 @@ modules/gaussian_splatting/shaders/includes/gaussian_splat_common_inc.glsl
     </tr>
     <tr>
       <td><pre><code>compute_sh_basis_with_bands(vec3 dir, uint max_band, out float basis_values[16])</code></pre></td>
-      <td>----------------------------------------------------------------- SH sign convention (ISSUE-038): Condon-Shortley phase included. This evaluation uses the real spherical harmonics basis with the Condon-Shortley (CS) phase factor applied.  Odd-m basis functions carry a leading minus sign (e.g. Y_1^{-1} = -C1*y, Y_1^1 = -C1*x). PLY coefficients from 3DGS training (Kerbl et al. 2023) are stored with CS phase already baked in, so they are consumed here without any sign adjustment.  The import side (ply_loader.cpp, assemble_sh_coefficients) documents the same convention. ----------------------------------------------------------------- Compute SH basis functions up to the specified band level basis_values[0] = DC (l=0) basis_values[1-3] = 1st order (l=1) basis_values[4-8] = 2nd order (l=2) basis_values[9-15] = 3rd order (l=3)</td>
+      <td>SH sign convention (ISSUE-038): Condon-Shortley phase included. This evaluation uses the real spherical harmonics basis with the Condon-Shortley (CS) phase factor applied.  Odd-m basis functions carry a leading minus sign (e.g. Y_1^{-1} = -C1*y, Y_1^1 = -C1*x). PLY coefficients from 3DGS training (Kerbl et al. 2023) are stored with CS phase already baked in, so they are consumed here without any sign adjustment.  The import side (ply_loader.cpp, assemble_sh_coefficients) documents the same convention. Compute SH basis functions up to the specified band level basis_values[0] = DC (l=0) basis_values[1-3] = 1st order (l=1) basis_values[4-8] = 2nd order (l=2) basis_values[9-15] = 3rd order (l=3)</td>
     </tr>
     <tr>
       <td><pre><code>compute_sh_basis(vec3 dir, out float basis_values[16])</code></pre></td>
@@ -189,7 +362,7 @@ SceneData (scene_data)
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_culling_utils.glsl
+modules\gaussian_splatting\shaders\includes\gs_culling_utils.glsl
 ```
 
 ### Functions
@@ -203,8 +376,16 @@ modules/gaussian_splatting/shaders/includes/gs_culling_utils.glsl
   </thead>
   <tbody>
     <tr>
+      <td><pre><code>gs_hash_u32(uint v)</code></pre></td>
+      <td>Hash a 32-bit value for deterministic culling randomness.</td>
+    </tr>
+    <tr>
       <td><pre><code>gs_should_distance_cull(uint p_stable_splat_key, float world_distance)</code></pre></td>
       <td>Returns true if splat should be culled based on distance. p_stable_splat_key must be stable across camera-motion-induced sort order changes.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_keep_overlap_record(uint gaussian_idx, uint instance_id, uint tile_idx)</code></pre></td>
+      <td>Decide whether to keep an overlap record for diagnostics or coverage sampling.</td>
     </tr>
   </tbody>
 </table>
@@ -213,7 +394,7 @@ modules/gaussian_splatting/shaders/includes/gs_culling_utils.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_deformation.glsl
+modules\gaussian_splatting\shaders\includes\gs_deformation.glsl
 ```
 
 ### Functions
@@ -226,6 +407,18 @@ modules/gaussian_splatting/shaders/includes/gs_deformation.glsl
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><pre><code>gs_wind_hash_u32(uint v)</code></pre></td>
+      <td>Hash an instance identifier for wind phase variation.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_decode_instance_wind_mode(float encoded_mode)</code></pre></td>
+      <td>Decode the per-instance wind mode from the packed float value.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_is_wind_enabled_for_instance(float encoded_mode, vec4 wind_time_config)</code></pre></td>
+      <td>Check whether wind deformation is enabled for the current instance.</td>
+    </tr>
     <tr>
       <td><pre><code>gs_apply_sphere_effector(vec3 world_position, vec4 effector_sphere, vec4 effector_config, float time_seconds, uint stable_seed)</code></pre></td>
       <td>Sphere effector: animates splats within a spherical region effector_sphere: xyz = center, w = radius effector_config: x = enabled, y = strength, z = falloff, w = animation frequency (Hz)</td>
@@ -237,7 +430,7 @@ modules/gaussian_splatting/shaders/includes/gs_deformation.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_directional_shadow.glsl
+modules\gaussian_splatting\shaders\includes\gs_directional_shadow.glsl
 ```
 
 ### Functions
@@ -269,7 +462,7 @@ modules/gaussian_splatting/shaders/includes/gs_directional_shadow.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_eigen_binning.glsl
+modules\gaussian_splatting\shaders\includes\gs_eigen_binning.glsl
 ```
 
 ### Functions
@@ -284,7 +477,11 @@ modules/gaussian_splatting/shaders/includes/gs_eigen_binning.glsl
   <tbody>
     <tr>
       <td><pre><code>compute_opacity_aware_sigma(float opacity, float visibility_threshold, float max_sigma)</code></pre></td>
-      <td>============================================================================ Opacity-Aware Bounding (FlashGS Optimization) ============================================================================ Computes the effective sigma multiplier based on opacity and visibility threshold.  Reduces tile-Gaussian pairs by ~94% for low-opacity splats. Reference: FlashGS — Efficient Gaussian Splatting with Adaptive Bounds ============================================================================ Compute the sigma multiplier for opacity-aware bounds. Returns the effective number of sigmas to use based on opacity. For high opacity (close to 1.0), returns close to max_sigma (conservative). For low opacity, returns a smaller value (aggressive culling).</td>
+      <td>Opacity-Aware Bounding (FlashGS Optimization) Computes the effective sigma multiplier based on opacity and visibility threshold.  Reduces tile-Gaussian pairs by ~94% for low-opacity splats. Reference: FlashGS — Efficient Gaussian Splatting with Adaptive Bounds Compute the sigma multiplier for opacity-aware bounds. Returns the effective number of sigmas to use based on opacity. For high opacity (close to 1.0), returns close to max_sigma (conservative). For low opacity, returns a smaller value (aggressive culling).</td>
+    </tr>
+    <tr>
+      <td><pre><code>compute_eigen(mat2 cov)</code></pre></td>
+      <td>Compute eigenvalues and eigenvectors for tile binning heuristics.</td>
     </tr>
   </tbody>
 </table>
@@ -293,7 +490,123 @@ modules/gaussian_splatting/shaders/includes/gs_eigen_binning.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_render_params.glsl
+modules\gaussian_splatting\shaders\includes\gs_lighting_bridge.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>sc_use_light_projector()</code></pre></td>
+      <td>Compute-shader fallback: projector lights are unavailable.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_use_light_soft_shadows()</code></pre></td>
+      <td>Compute-shader fallback: soft shadows are unavailable.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_projector_use_mipmaps()</code></pre></td>
+      <td>Compute-shader fallback: projector mipmaps are unavailable.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_soft_shadow_samples()</code></pre></td>
+      <td>Compute-shader fallback: soft shadow sampling is disabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_penumbra_shadow_samples()</code></pre></td>
+      <td>Compute-shader fallback: penumbra sampling is disabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_directional_soft_shadow_samples()</code></pre></td>
+      <td>Compute-shader fallback: directional soft shadow sampling is disabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_directional_penumbra_shadow_samples()</code></pre></td>
+      <td>Compute-shader fallback: directional penumbra sampling is disabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sc_luminance_multiplier()</code></pre></td>
+      <td>Compute-shader fallback: keep luminance neutral in the bridge path.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\includes\gs_lighting_common.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>cluster_get_item_range(uint offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to)</code></pre></td>
+      <td>Read the packed item range for one clustered-light record.</td>
+    </tr>
+    <tr>
+      <td><pre><code>cluster_get_range_clip_mask(uint i, uint z_min, uint z_max)</code></pre></td>
+      <td>Compute the clip mask used to reject clustered-light slices outside range.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_use_clustered_lights()</code></pre></td>
+      <td>Return whether clustered lights are active for this frame.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\includes\gs_quat_utils.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>quaternion_to_matrix(vec4 q)</code></pre></td>
+      <td>Convert a quaternion to a rotation matrix.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_quat_rotate(vec4 q, vec3 v)</code></pre></td>
+      <td>Rotate a vector by a quaternion.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_quat_mul(vec4 a, vec4 b)</code></pre></td>
+      <td>Multiply two quaternions.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\includes\gs_render_params.glsl
 ```
 
 ### Functions
@@ -311,6 +624,26 @@ modules/gaussian_splatting/shaders/includes/gs_render_params.glsl
       <td>Helper to get current SH band level from params</td>
     </tr>
     <tr>
+      <td><pre><code>gs_get_sh_amortization_divisor()</code></pre></td>
+      <td>Return the SH amortization divisor from render params.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_get_sh_amortization_phase()</code></pre></td>
+      <td>Return the SH amortization phase from render params.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_is_sh_amortization_enabled()</code></pre></td>
+      <td>Return whether SH amortization is enabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_get_sh_amortization_force_update()</code></pre></td>
+      <td>Return whether SH amortization should force an update this frame.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_is_dc_logit_enabled()</code></pre></td>
+      <td>Return whether DC logit decoding is enabled.</td>
+    </tr>
+    <tr>
       <td><pre><code>gs_is_opacity_aware_culling_enabled()</code></pre></td>
       <td>Helper to check if opacity-aware culling is enabled</td>
     </tr>
@@ -325,6 +658,18 @@ modules/gaussian_splatting/shaders/includes/gs_render_params.glsl
     <tr>
       <td><pre><code>gs_is_lod_blend_enabled()</code></pre></td>
       <td>Helper to check if LOD blending is enabled</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_get_overlap_keep_ratio()</code></pre></td>
+      <td>Return the overlap keep ratio used by culling and diagnostics.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_is_wind_enabled()</code></pre></td>
+      <td>Return whether wind deformation is enabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_is_sphere_effector_enabled()</code></pre></td>
+      <td>Return whether the sphere effector is enabled.</td>
     </tr>
   </tbody>
 </table>
@@ -568,7 +913,7 @@ RenderParams (params)
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_sh_binning.glsl
+modules\gaussian_splatting\shaders\includes\gs_sh_binning.glsl
 ```
 
 ### Functions
@@ -582,8 +927,28 @@ modules/gaussian_splatting/shaders/includes/gs_sh_binning.glsl
   </thead>
   <tbody>
     <tr>
+      <td><pre><code>gaussian_get_first_order_count(uint meta)</code></pre></td>
+      <td>Read the number of first-order SH coefficients encoded in metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_high_order_count(uint meta)</code></pre></td>
+      <td>Read the number of higher-order SH coefficients encoded in metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_encoded_count(uint meta)</code></pre></td>
+      <td>Read the total number of packed SH coefficients stored in metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gaussian_get_sh_encoding(uint meta)</code></pre></td>
+      <td>Read the SH storage format identifier from metadata.</td>
+    </tr>
+    <tr>
+      <td><pre><code>decode_rgb9e5(uint packed)</code></pre></td>
+      <td>Decode one RGB9E5-packed SH coefficient triplet to linear RGB.</td>
+    </tr>
+    <tr>
       <td><pre><code>compute_sh_basis(vec3 dir, uint max_band, out float basis[16])</code></pre></td>
-      <td>----------------------------------------------------------------- SH sign convention (ISSUE-038): Condon-Shortley phase included. This evaluation uses the real spherical harmonics basis with the Condon-Shortley (CS) phase factor.  Matches ply_loader.cpp import convention and gaussian_splat_common_inc.glsl.  See those files for full documentation. ----------------------------------------------------------------- Compute SH basis functions up to the specified band level basis[0] = DC (l=0) basis[1-3] = 1st order (l=1) basis[4-8] = 2nd order (l=2) basis[9-15] = 3rd order (l=3)</td>
+      <td>SH sign convention (ISSUE-038): Condon-Shortley phase included. This evaluation uses the real spherical harmonics basis with the Condon-Shortley (CS) phase factor.  Matches ply_loader.cpp import convention and gaussian_splat_common_inc.glsl.  See those files for full documentation. Compute SH basis functions up to the specified band level basis[0] = DC (l=0) basis[1-3] = 1st order (l=1) basis[4-8] = 2nd order (l=2) basis[9-15] = 3rd order (l=3)</td>
     </tr>
     <tr>
       <td><pre><code>compute_sh_basis_1st_order(vec3 dir, out float basis[4])</code></pre></td>
@@ -604,7 +969,7 @@ modules/gaussian_splatting/shaders/includes/gs_sh_binning.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/gs_sort_key.glsl
+modules\gaussian_splatting\shaders\includes\gs_sort_key.glsl
 ```
 
 ### Functions
@@ -621,6 +986,10 @@ modules/gaussian_splatting/shaders/includes/gs_sort_key.glsl
       <td><pre><code>gs_float_to_sortable_uint(float value)</code></pre></td>
       <td>64-bit key layout: hi = sortable depth, lo = tie-break.</td>
     </tr>
+    <tr>
+      <td><pre><code>gs_pack_sort_key64(float depth, uint tie_break)</code></pre></td>
+      <td>Pack depth and tie-break data into a 64-bit sort key.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -628,8 +997,125 @@ modules/gaussian_splatting/shaders/includes/gs_sort_key.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/painterly_features.glsl
+modules\gaussian_splatting\shaders\includes\painterly_common.glsl
 ```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>painterly_quaternion_to_matrix(vec4 q)</code></pre></td>
+      <td>Convert a quaternion rotation to a 3x3 rotation matrix.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_scale_matrix(vec3 scale)</code></pre></td>
+      <td>Build a diagonal scale matrix from per-axis scale values.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_build_covariance(mat3 rotation_matrix, vec3 scale)</code></pre></td>
+      <td>Build a covariance matrix from rotation and scale in 3D space.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_build_covariance(vec3 scale, vec4 rotation)</code></pre></td>
+      <td>Build a covariance matrix from scale and quaternion inputs.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_project_gaussian(mat3 view_matrix, mat3 covariance_3d)</code></pre></td>
+      <td>Project a 3D covariance into view space and derive the 2D conic form.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_compute_radius(const PainterlyConicData data, float sigma_multiplier)</code></pre></td>
+      <td>Compute a screen-space radius from projected covariance.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_gaussian_power(vec2 uv, vec3 conic)</code></pre></td>
+      <td>Evaluate the quadratic form for a projected Gaussian at a pixel offset.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_gaussian_alpha(float opacity, float power)</code></pre></td>
+      <td>Convert Gaussian power into a clamped alpha contribution.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_hash_scalar(vec3 value)</code></pre></td>
+      <td>Hash a 3D value to a stable scalar in [0, 1).</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_hash_vector(vec3 value)</code></pre></td>
+      <td>Hash a 3D value to a stable 2D seed vector.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_safe_normalize(vec3 v, vec3 fallback)</code></pre></td>
+      <td>Normalize a vector with a fallback for near-zero length inputs.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\includes\painterly_features.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>painterly_apply_palette_quantization(vec3 color, vec2 seeds)</code></pre></td>
+      <td>Snap a color toward the nearest palette entry with optional jitter.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_apply_brush_modulation(vec2 uv, vec2 seeds)</code></pre></td>
+      <td>Turn brush UV and noise seeds into a soft radial brush mask.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_color_temperature(float kelvin)</code></pre></td>
+      <td>Approximate a Kelvin temperature as an RGB tint.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_apply_temperature(vec3 color, float kelvin, float strength)</code></pre></td>
+      <td>Blend a color toward a Kelvin-based tint by the requested strength.</td>
+    </tr>
+    <tr>
+      <td><pre><code>cel_shade(vec3 color, vec3 normal, vec3 light_dir, int bands)</code></pre></td>
+      <td>Quantize diffuse lighting into flat cel-shading bands.</td>
+    </tr>
+    <tr>
+      <td><pre><code>rim_light(vec3 color, vec3 normal, vec3 view_dir, float power)</code></pre></td>
+      <td>Compute a view-dependent rim factor scaled by the power exponent.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gooch_shade_with_dir(vec3 cool_color, vec3 warm_color, vec3 normal, vec3 light_dir)</code></pre></td>
+      <td>Blend between cool and warm colors using a signed light-facing term.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gooch_shade(vec3 cool_color, vec3 warm_color, vec3 normal)</code></pre></td>
+      <td>Gooch-shade using the first configured painterly light direction.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_mix(vec3 base, vec3 light, float brush_texture)</code></pre></td>
+      <td>Mix base and lit colors according to brush influence and texture.</td>
+    </tr>
+    <tr>
+      <td><pre><code>painterly_apply_stylized_lighting(vec3 albedo, vec3 normal_vs, vec3 view_dir_vs)</code></pre></td>
+      <td>Apply the selected painterly lighting style to a view-space fragment.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Uniform Blocks
 
@@ -746,7 +1232,7 @@ PainterlyLighting (painterly_lighting)
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/platform_compat.glsl
+modules\gaussian_splatting\shaders\includes\platform_compat.glsl
 ```
 
 ### Functions
@@ -770,7 +1256,7 @@ modules/gaussian_splatting/shaders/includes/platform_compat.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/quantization_dequant.glsl
+modules\gaussian_splatting\shaders\includes\quantization_dequant.glsl
 ```
 
 ### Functions
@@ -783,6 +1269,14 @@ modules/gaussian_splatting/shaders/includes/quantization_dequant.glsl
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><pre><code>sanitize_quant_bits(uint bits, uint min_bits, uint max_bits)</code></pre></td>
+      <td>Clamp quantization bit depth to the supported range.</td>
+    </tr>
+    <tr>
+      <td><pre><code>compute_inv_quant_max(uint bits, uint min_bits, uint max_bits)</code></pre></td>
+      <td>Compute the reciprocal of the maximum quantized integer for a bit depth.</td>
+    </tr>
     <tr>
       <td><pre><code>extract_quantized_position(uvec2 position_chunk)</code></pre></td>
       <td>Extract quantized position components from packed data</td>
@@ -833,7 +1327,7 @@ modules/gaussian_splatting/shaders/includes/quantization_dequant.glsl
     </tr>
     <tr>
       <td><pre><code>get_max_position_error(ChunkQuantization chunk)</code></pre></td>
-      <td>============================================================================ Utility: Compute quantization error bounds ============================================================================ Calculate maximum position quantization error for a chunk</td>
+      <td>Utility: Compute quantization error bounds Calculate maximum position quantization error for a chunk</td>
     </tr>
     <tr>
       <td><pre><code>get_max_scale_error(ChunkQuantization chunk)</code></pre></td>
@@ -846,7 +1340,7 @@ modules/gaussian_splatting/shaders/includes/quantization_dequant.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/tile_projection_common.glsl
+modules\gaussian_splatting\shaders\includes\tile_projection_common.glsl
 ```
 
 ### Functions
@@ -860,12 +1354,52 @@ modules/gaussian_splatting/shaders/includes/tile_projection_common.glsl
   </thead>
   <tbody>
     <tr>
+      <td><pre><code>gs_pack_screen_xy(vec2 screen_pos)</code></pre></td>
+      <td>Pack screen-space position into two half-floats.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_depth_opacity_flags(float depth, float opacity, uint flags)</code></pre></td>
+      <td>Pack depth, opacity, and 8 bits of flags into one 32-bit word.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_color_r11g11b10(vec3 color)</code></pre></td>
+      <td>Pack linear RGB into the tile color payload format.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_normal_xy(vec3 normal)</code></pre></td>
+      <td>Pack the X/Y normal components into one 32-bit word.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_normal_zw(vec3 normal)</code></pre></td>
+      <td>Pack the Z normal component into the second normal word.</td>
+    </tr>
+    <tr>
       <td><pre><code>gs_pack_conic_y_and_index(float conic_y, uint global_idx)</code></pre></td>
       <td>Legacy function kept for API compatibility</td>
     </tr>
     <tr>
+      <td><pre><code>gs_unpack_screen_xy(uint packed)</code></pre></td>
+      <td>Unpack the packed screen-space position.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_unpack_depth_opacity_flags(uint packed, out float depth, out float opacity, out uint flags)</code></pre></td>
+      <td>Unpack depth, opacity, and flags from the packed payload word.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_unpack_color_r11g11b10(uint packed)</code></pre></td>
+      <td>Unpack the tile color payload back into linear RGB.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_unpack_normal(uint packed_xy, uint packed_zw)</code></pre></td>
+      <td>Unpack the normal payload back into a 3D normal vector.</td>
+    </tr>
+    <tr>
       <td><pre><code>gs_unpack_conic_y_and_index(uint packed, out float conic_y, out uint global_idx)</code></pre></td>
       <td>Legacy function kept for API compatibility</td>
+    </tr>
+    <tr>
+      <td><pre><code>tile_projection_index(uint tile_index, uint slot_index)</code></pre></td>
+      <td>Compute the linear index for a tile/slot pair in the projection buffer.</td>
     </tr>
   </tbody>
 </table>
@@ -874,7 +1408,7 @@ modules/gaussian_splatting/shaders/includes/tile_projection_common.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/includes/tile_raster_common.glsl
+modules\gaussian_splatting\shaders\includes\tile_raster_common.glsl
 ```
 
 ### Functions
@@ -889,7 +1423,7 @@ modules/gaussian_splatting/shaders/includes/tile_raster_common.glsl
   <tbody>
     <tr>
       <td><pre><code>gs_dither_noise(vec2 frag_coord)</code></pre></td>
-      <td>Lightweight hash-based noise for dithering (spatially varying) Uses fragment position to generate pseudo-random value in [-0.5, 0.5]</td>
+      <td>Simple hash-based noise for dithering (spatially varying) Uses fragment position to generate pseudo-random value in [-0.5, 0.5]</td>
     </tr>
     <tr>
       <td><pre><code>gs_dither_noise_rgb(vec2 frag_coord)</code></pre></td>
@@ -899,6 +1433,18 @@ modules/gaussian_splatting/shaders/includes/tile_raster_common.glsl
       <td><pre><code>gs_apply_color_dither(vec3 color, vec2 frag_coord)</code></pre></td>
       <td>Apply dithering to a color to reduce quantization banding Uses flat dithering (not scaled by color) for consistent banding reduction across all tones</td>
     </tr>
+    <tr>
+      <td><pre><code>gs_read_sorted_value(uint local_index, uint range_start)</code></pre></td>
+      <td>Read a sorted splat index from shared memory or the backing buffer.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_read_projected_gaussian(uint local_index, uint sorted_idx)</code></pre></td>
+      <td>Read a projected Gaussian payload from shared memory or the backing buffer.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_get_visible_gaussian_count()</code></pre></td>
+      <td>Return the number of visible Gaussians in the current dispatch.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -906,7 +1452,7 @@ modules/gaussian_splatting/shaders/includes/tile_raster_common.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/tile_prefix_scan.glsl
+modules\gaussian_splatting\shaders\painterly_composite.frag.glsl
 ```
 
 ### Functions
@@ -919,6 +1465,238 @@ modules/gaussian_splatting/shaders/tile_prefix_scan.glsl
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><pre><code>linearize_scene_depth(float raw_depth)</code></pre></td>
+      <td>Convert normalized scene depth to comparable view-space depth.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sanitize_view_depth(float depth_value)</code></pre></td>
+      <td>Clamp invalid depth values to a sentinel for comparisons.</td>
+    </tr>
+    <tr>
+      <td><pre><code>is_scene_background_depth(float raw_scene_depth, float scene_view_depth)</code></pre></td>
+      <td>Detect whether the sampled scene depth corresponds to the background clear value.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment entry point for the painterly composite pass.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\painterly_composite.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex entry point for the fullscreen composite triangle.</td>
+    </tr>
+    <tr>
+      <td><pre><code>linearize_scene_depth(float raw_depth)</code></pre></td>
+      <td>Convert normalized scene depth to comparable view-space depth.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sanitize_view_depth(float depth_value)</code></pre></td>
+      <td>Clamp invalid depth values to a sentinel for comparisons.</td>
+    </tr>
+    <tr>
+      <td><pre><code>is_scene_background_depth(float raw_scene_depth, float scene_view_depth)</code></pre></td>
+      <td>Detect whether the sampled scene depth corresponds to the background clear value.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment entry point for the fullscreen composite pass.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\painterly_composite.vert.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex entry point for the fullscreen composite triangle.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\painterly_resolve.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>hash(vec2 uv)</code></pre></td>
+      <td>Generate a repeatable pseudo-random value from UV coordinates.</td>
+    </tr>
+    <tr>
+      <td><pre><code>layered_noise(vec2 uv, int octaves)</code></pre></td>
+      <td>Accumulate layered hash noise for painterly modulation.</td>
+    </tr>
+    <tr>
+      <td><pre><code>apply_palette(vec3 color)</code></pre></td>
+      <td>Apply the active painterly palette transformation.</td>
+    </tr>
+    <tr>
+      <td><pre><code>apply_density_response(vec3 color, float alpha)</code></pre></td>
+      <td>Adjust color response based on splat density and alpha.</td>
+    </tr>
+    <tr>
+      <td><pre><code>evaluate_painterly(vec2 uv, vec4 base_sample)</code></pre></td>
+      <td>Evaluate painterly post-processing for a single pixel sample.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute entry point for painterly resolve output.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\sobel_outline.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>sample_color(vec2 uv, vec2 offset)</code></pre></td>
+      <td>Sample a neighboring scene color for Sobel edge detection.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute outline intensity from Sobel gradients.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\tile_binning.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>gs_get_visible_gaussian_count()</code></pre></td>
+      <td>Return the number of visible Gaussians scheduled for this dispatch.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_sort_key(uint tile_idx, float linear_depth)</code></pre></td>
+      <td>Pack tile index and depth into a global sort key.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_pack_sort_key(uint tile_idx, float linear_depth)</code></pre></td>
+      <td>Pack tile index and depth into a global sort key.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_build_quantized_sh_metadata(uint encoded_total)</code></pre></td>
+      <td>Pack quantized spherical-harmonic metadata for the renderer.</td>
+    </tr>
+    <tr>
+      <td><pre><code>project_gaussian_2d(Gaussian g, out vec2 screen_pos, out mat2 cov2d, out float linear_depth, out float raw_min_radius)</code></pre></td>
+      <td>Project a Gaussian into screen space and derive its 2D covariance.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute entry point for the active tile binning pass.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\tile_prefix_scan.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute pass 1: local exclusive scan and workgroup totals.</td>
+    </tr>
+    <tr>
+      <td><pre><code>read_pass2_source(uint idx)</code></pre></td>
+      <td>Read the current prefix-scan source buffer for pass 2.</td>
+    </tr>
+    <tr>
+      <td><pre><code>write_pass2_dest(uint idx, uint value)</code></pre></td>
+      <td>Write the current prefix-scan destination buffer for pass 2.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute pass 2: multi-level scan or buffer copy for workgroup offsets.</td>
+    </tr>
     <tr>
       <td><pre><code>main()</code></pre></td>
       <td>Pass 3: add workgroup offsets into base ranges.</td>
@@ -955,7 +1733,111 @@ PrefixParams (params)
 ## Shader
 
 ```
-modules/gaussian_splatting/shaders/viewport_blit.glsl
+modules\gaussian_splatting\shaders\tile_rasterizer.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Vertex entry point for the fullscreen raster quad.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Fragment entry point for tile rasterization and compositing.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\tile_rasterizer_compute.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute entry point for tile-local batched rasterization.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\tile_resolve.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>sample_input_color(ivec2 coord, vec2 uv)</code></pre></td>
+      <td>Sample the resolved input color buffer with optional texel fetch.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sample_input_depth(ivec2 coord, vec2 uv)</code></pre></td>
+      <td>Sample the resolved input depth buffer with optional texel fetch.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sample_input_normal(ivec2 coord, vec2 uv)</code></pre></td>
+      <td>Sample the resolved input normal buffer with optional texel fetch.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sanitize_linear_depth(float depth_value)</code></pre></td>
+      <td>Clamp invalid linear depth values to a safe fallback.</td>
+    </tr>
+    <tr>
+      <td><pre><code>compute_feather_weight(ivec2 coord)</code></pre></td>
+      <td>Compute edge feathering for the current tile.</td>
+    </tr>
+    <tr>
+      <td><pre><code>reconstruct_view_pos(mat4 inv_proj, vec2 screen_uv, float linear_depth, float z_near, float z_far, bool is_ortho)</code></pre></td>
+      <td>Reconstruct a view-space position from screen UV and linear depth.</td>
+    </tr>
+    <tr>
+      <td><pre><code>apply_tile_debug_overlay(vec4 color, ivec2 coord)</code></pre></td>
+      <td>Overlay tile boundaries when tile debug visualization is enabled.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Compute entry point for tile resolve and final shading.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\shaders\viewport_blit.glsl
 ```
 
 ### Functions
@@ -972,6 +1854,26 @@ modules/gaussian_splatting/shaders/viewport_blit.glsl
       <td><pre><code>srgb_to_linear(vec3 color)</code></pre></td>
       <td>Fast sRGB approximations using polynomial/sqrt instead of pow() These avoid expensive pow() calls while maintaining good accuracy Max error ~0.4% which is imperceptible</td>
     </tr>
+    <tr>
+      <td><pre><code>linear_to_srgb(vec3 color)</code></pre></td>
+      <td>Convert linear color to sRGB for final viewport output.</td>
+    </tr>
+    <tr>
+      <td><pre><code>linearize_scene_depth(float raw_depth)</code></pre></td>
+      <td>Convert raw scene depth to linear view-space depth.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sanitize_view_depth(float depth_value)</code></pre></td>
+      <td>Clamp invalid depth values to a stable far-plane fallback.</td>
+    </tr>
+    <tr>
+      <td><pre><code>is_scene_background_depth(float raw_scene_depth, float scene_view_depth)</code></pre></td>
+      <td>Detect background depth samples near the far plane.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Blit the rendered viewport into the final output target.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -979,7 +1881,7 @@ modules/gaussian_splatting/shaders/viewport_blit.glsl
 ## Shader
 
 ```
-modules/gaussian_splatting/compute/cluster_cull.glsl
+modules\gaussian_splatting\compute\cluster_cull.glsl
 ```
 
 ### Functions
@@ -995,6 +1897,10 @@ modules/gaussian_splatting/compute/cluster_cull.glsl
     <tr>
       <td><pre><code>aabb_frustum_visible(vec3 aabb_min, vec3 aabb_max)</code></pre></td>
       <td>AABB-frustum intersection test (conservative)</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Cluster culling entry point; writes visibility decisions for the active workgroup.</td>
     </tr>
   </tbody>
 </table>
@@ -1028,8 +1934,37 @@ ClusterCullParams (params)
 ## Shader
 
 ```
-modules/gaussian_splatting/compute/depth_compute.glsl
+modules\gaussian_splatting\compute\depth_compute.glsl
 ```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>quat_rotate(vec4 q, vec3 v)</code></pre></td>
+      <td>Rotate vector `v` by quaternion `q`.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_sphere_frustum_visible(vec3 position, float radius)</code></pre></td>
+      <td>Conservative sphere-frustum visibility test for compute culling.</td>
+    </tr>
+    <tr>
+      <td><pre><code>gs_compute_screen_size(float depth, float radius)</code></pre></td>
+      <td>Estimate projected screen-space radius from depth and world-space radius.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Depth compute entry point; emits per-instance depth and screen-size data.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Uniform Blocks
 
@@ -1070,8 +2005,57 @@ Params (params)
 ## Shader
 
 ```
-modules/gaussian_splatting/compute/instance_chunk_dispatch.glsl
+modules\gaussian_splatting\compute\frustum_cull.glsl
 ```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>quat_rotate(vec4 q, vec3 v)</code></pre></td>
+      <td>Rotate vector `v` by quaternion `q`.</td>
+    </tr>
+    <tr>
+      <td><pre><code>sphere_frustum_visible(vec3 position, float radius)</code></pre></td>
+      <td>Conservative sphere-frustum visibility test for instance culling.</td>
+    </tr>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Frustum culling entry point; classifies visible instances for downstream passes.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\compute\instance_chunk_dispatch.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Build indirect dispatch counts for chunk-level processing.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Uniform Blocks
 
@@ -1099,6 +2083,30 @@ Params (params)
       <td><pre><code>dispatch_group_x</code></pre></td>
       <td><pre><code>uint</code></pre></td>
       <td>Uses InstanceDepthParamsGPU.pad0 slot.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Shader
+
+```
+modules\gaussian_splatting\compute\instance_count_clamp.glsl
+```
+
+### Functions
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><pre><code>main()</code></pre></td>
+      <td>Clamp indirect instance counts to the configured dispatch budget.</td>
     </tr>
   </tbody>
 </table>

@@ -13,6 +13,29 @@ SHADER_ROOTS = [
 ]
 KEYWORDS = {"if", "for", "while", "switch", "return"}
 
+# Characters that form decorative banner/separator lines in comments.
+_BANNER_CHARS = set("=-*#~+")
+
+
+def _is_banner_line(text: str) -> bool:
+    """Return True if *text* is a decorative separator/banner comment.
+
+    A banner line consists primarily of repeated punctuation characters
+    (``=``, ``-``, ``*``, ``#``, ``~``, ``+``) with optional whitespace.
+    Short runs (fewer than 4 punctuation characters) are not treated as
+    banners so that legitimate comments like ``// --flag`` survive.
+    """
+    stripped = text.strip()
+    if not stripped:
+        return False
+    punct_count = sum(1 for ch in stripped if ch in _BANNER_CHARS)
+    # Consider it a banner when the non-whitespace content is almost entirely
+    # punctuation and there are at least 4 punctuation characters.
+    non_ws = stripped.replace(" ", "")
+    if not non_ws:
+        return False
+    return punct_count >= 4 and punct_count / len(non_ws) >= 0.75
+
 
 def iter_shader_files() -> list[Path]:
     files: list[Path] = []
@@ -26,7 +49,7 @@ def _consume_block_comment(line: str, buffer: list[str]) -> tuple[bool, list[str
     stripped = line.strip()
     if stripped.startswith("/*"):
         content = stripped.lstrip("/* ").rstrip("*/ ").strip()
-        if content:
+        if content and not _is_banner_line(content):
             buffer.append(content)
         return (not stripped.endswith("*/")), buffer
     return False, buffer
@@ -43,20 +66,22 @@ def parse_shader(path: Path) -> list[tuple[str, list[str]]]:
         if stripped.startswith("/*"):
             in_block_comment, block_buffer = _consume_block_comment(line, block_buffer)
             if not in_block_comment:
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
             continue
         if in_block_comment:
             if stripped.endswith("*/"):
                 block_buffer.append(stripped.rstrip("*/ ").strip())
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
                 in_block_comment = False
             else:
                 block_buffer.append(stripped)
             continue
         if stripped.startswith("//"):
-            pending.append(stripped.lstrip("/ "))
+            comment_text = stripped.lstrip("/ ")
+            if not _is_banner_line(comment_text):
+                pending.append(comment_text)
             continue
 
         if stripped.endswith("{") and "(" in stripped and not stripped.startswith("#"):
@@ -96,13 +121,13 @@ def parse_uniform_blocks(path: Path) -> list[tuple[str, str | None, list[tuple[s
         if stripped.startswith("/*"):
             in_block_comment, block_buffer = _consume_block_comment(line, block_buffer)
             if not in_block_comment:
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
             continue
         if in_block_comment:
             if stripped.endswith("*/"):
                 block_buffer.append(stripped.rstrip("*/ ").strip())
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
                 in_block_comment = False
             else:
@@ -131,7 +156,9 @@ def parse_uniform_blocks(path: Path) -> list[tuple[str, str | None, list[tuple[s
             continue
 
         if stripped.startswith("//"):
-            pending.append(stripped.lstrip("/ ").strip())
+            comment_text = stripped.lstrip("/ ").strip()
+            if not _is_banner_line(comment_text):
+                pending.append(comment_text)
             continue
 
         if not stripped or stripped.startswith("#"):
