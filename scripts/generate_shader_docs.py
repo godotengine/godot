@@ -14,6 +14,60 @@ SHADER_ROOTS = [
     ROOT / "modules" / "gaussian_splatting" / "compute",
 ]
 KEYWORDS = {"if", "for", "while", "switch", "return"}
+# Characters that form decorative banner/separator lines in comments.
+_BANNER_CHARS = set("=-*#~+")
+
+
+@dataclass
+class CoverageStats:
+    documented_functions: int = 0
+    undocumented_functions: int = 0
+    documented_uniform_fields: int = 0
+    undocumented_uniform_fields: int = 0
+
+
+def _is_banner_line(text: str) -> bool:
+    """Return True if *text* is a decorative separator/banner comment."""
+    stripped = text.strip()
+    if not stripped:
+        return False
+    punct_count = sum(1 for ch in stripped if ch in _BANNER_CHARS)
+    non_ws = stripped.replace(" ", "")
+    if not non_ws:
+        return False
+    return punct_count >= 4 and punct_count / len(non_ws) >= 0.75
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate shader Markdown reference docs.")
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT),
+        help="Output Markdown file path.",
+    )
+    parser.add_argument(
+        "--include-undocumented",
+        action="store_true",
+        help="Include undocumented functions/uniform fields in output tables.",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero when undocumented coverage exceeds thresholds.",
+    )
+    parser.add_argument(
+        "--max-undocumented-functions",
+        type=int,
+        default=0,
+        help="Allowed undocumented function entries when --strict is used.",
+    )
+    parser.add_argument(
+        "--max-undocumented-fields",
+        type=int,
+        default=0,
+        help="Allowed undocumented uniform fields when --strict is used.",
+    )
+    return parser.parse_args()
 
 
 @dataclass
@@ -68,7 +122,7 @@ def _consume_block_comment(line: str, buffer: list[str]) -> tuple[bool, list[str
     stripped = line.strip()
     if stripped.startswith("/*"):
         content = stripped.lstrip("/* ").rstrip("*/ ").strip()
-        if content:
+        if content and not _is_banner_line(content):
             buffer.append(content)
         return (not stripped.endswith("*/")), buffer
     return False, buffer
@@ -85,20 +139,22 @@ def parse_shader(path: Path) -> list[tuple[str, list[str]]]:
         if stripped.startswith("/*"):
             in_block_comment, block_buffer = _consume_block_comment(line, block_buffer)
             if not in_block_comment:
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
             continue
         if in_block_comment:
             if stripped.endswith("*/"):
                 block_buffer.append(stripped.rstrip("*/ ").strip())
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
                 in_block_comment = False
             else:
                 block_buffer.append(stripped)
             continue
         if stripped.startswith("//"):
-            pending.append(stripped.lstrip("/ "))
+            comment_text = stripped.lstrip("/ ")
+            if not _is_banner_line(comment_text):
+                pending.append(comment_text)
             continue
 
         if stripped.endswith("{") and "(" in stripped and not stripped.startswith("#"):
@@ -138,13 +194,13 @@ def parse_uniform_blocks(path: Path) -> list[tuple[str, str | None, list[tuple[s
         if stripped.startswith("/*"):
             in_block_comment, block_buffer = _consume_block_comment(line, block_buffer)
             if not in_block_comment:
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
             continue
         if in_block_comment:
             if stripped.endswith("*/"):
                 block_buffer.append(stripped.rstrip("*/ ").strip())
-                pending.extend(block_buffer)
+                pending.extend(s for s in block_buffer if not _is_banner_line(s))
                 block_buffer = []
                 in_block_comment = False
             else:
@@ -173,7 +229,9 @@ def parse_uniform_blocks(path: Path) -> list[tuple[str, str | None, list[tuple[s
             continue
 
         if stripped.startswith("//"):
-            pending.append(stripped.lstrip("/ ").strip())
+            comment_text = stripped.lstrip("/ ").strip()
+            if not _is_banner_line(comment_text):
+                pending.append(comment_text)
             continue
 
         if not stripped or stripped.startswith("#"):
@@ -306,7 +364,7 @@ def build_reference(*, include_undocumented: bool) -> tuple[str, CoverageStats]:
         sections.append("## Shader")
         sections.append("")
         sections.append("```")
-        sections.append(str(shader.relative_to(ROOT)))
+        sections.append(shader.relative_to(ROOT).as_posix())
         sections.append("```")
         sections.append("")
         if rendered_functions:

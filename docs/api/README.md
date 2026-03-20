@@ -14,7 +14,7 @@ Use this folder for Gaussian Splatting API references and regeneration scripts.
   </thead>
   <tbody>
     <tr>
-      <td>Read public script API extracted from <code>.gd</code> files (test/internal scripts excluded by default).</td>
+      <td>Read public script API extracted from <code>.gd</code> files (test, internal tooling, and benchmark harness scripts excluded by default).</td>
       <td><a href="gdscript_reference.md"><code>gdscript_reference.md</code></a></td>
       <td><code>scripts/extract_gdscript_docs.py</code></td>
     </tr>
@@ -109,8 +109,23 @@ Use this folder for Gaussian Splatting API references and regeneration scripts.
 python3 scripts/extract_gdscript_docs.py
 python3 scripts/extract_gdscript_docs.py --scope all
 python3 scripts/generate_shader_docs.py
-python3 scripts/generate_shader_docs.py --strict
+python3 scripts/generate_shader_docs.py --include-undocumented
 python3 scripts/docs/check_links.py docs/api
+```
+
+### Strict mode
+
+Use `--strict` to fail the script when undocumented entries exceed a threshold.
+Because many shaders are not yet fully commented, bare `--strict` (which
+defaults to zero allowed undocumented entries) will exit non-zero.  Pass
+explicit thresholds to use it as a CI gate while documentation is still being
+expanded:
+
+```bash
+# Allow current baseline coverage and tighten thresholds as comments improve.
+python3 scripts/generate_shader_docs.py --strict \
+    --max-undocumented-functions 150 \
+    --max-undocumented-fields 130
 ```
 
 ## Troubleshooting
@@ -134,7 +149,7 @@ python3 scripts/docs/check_links.py docs/api
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp:84</code></td>
     </tr>
     <tr>
-      <td>Generated GDScript reference includes internal/test scripts.</td>
+      <td>Generated GDScript reference includes internal/test/tooling scripts.</td>
       <td>Regenerate with default <code>--scope public</code> (or use explicit <code>--scope all</code> only for internal audits).</td>
       <td><code>scripts/extract_gdscript_docs.py</code></td>
     </tr>

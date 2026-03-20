@@ -13,12 +13,13 @@ OUTPUT = ROOT / "docs" / "api" / "gdscript_reference.md"
 DEFAULT_SOURCE_ROOTS = (
     ROOT / "modules" / "gaussian_splatting",
     ROOT / "scripts",
+    ROOT / "templates",
     ROOT / "tests" / "runtime",
     ROOT / "tests" / "examples" / "godot" / "test_project",
 )
 DEFAULT_EXCLUDE_GLOBS = ("**/addons/**",)
 
-FUNC_PATTERN = re.compile(r"^\s*func\s+(?P<name>[^(]+)\((?P<params>[^)]*)\)")
+FUNC_PATTERN = re.compile(r"^\s*func\s+(?P<name>\w+)\s*\(")
 CLASS_PATTERN = re.compile(r"^\s*class_name\s+(?P<name>[A-Za-z0-9_]+)")
 
 
@@ -28,13 +29,13 @@ def parse_args() -> argparse.Namespace:
         "--scope",
         choices=("public", "all"),
         default="public",
-        help="public: exclude test/internal scripts, all: include every discovered script.",
+        help="public: exclude test/internal/tooling scripts, all: include every discovered script.",
     )
     parser.add_argument(
         "--source-root",
         action="append",
         default=[],
-        help="Optional additional or replacement source roots (repo-relative). Can be repeated.",
+        help="Replacement source roots (overrides defaults). Can be repeated.",
     )
     parser.add_argument(
         "--include-glob",
@@ -49,11 +50,37 @@ def parse_args() -> argparse.Namespace:
         help="Exclude scripts matching repo-relative glob(s). Can be repeated.",
     )
     parser.add_argument(
+        "--include-undocumented",
+        action="store_true",
+        help="Include undocumented members in the generated tables.",
+    )
+    parser.add_argument(
         "--output",
         default=str(OUTPUT),
         help="Output Markdown file path.",
     )
     return parser.parse_args()
+
+
+def _extract_balanced_params(line: str, open_pos: int) -> str:
+    """Extract parameter text from *line* starting at the opening '(' at *open_pos*.
+
+    Uses a depth counter so that nested parentheses (e.g. default values like
+    ``PackedInt32Array()``) are handled correctly at arbitrary nesting depth.
+    Returns the text between the outermost parentheses (exclusive).
+    """
+    depth = 0
+    start = open_pos + 1
+    for i in range(open_pos, len(line)):
+        ch = line[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                return line[start:i].strip()
+    # Unbalanced – fall back to everything after the opening paren.
+    return line[start:].strip()
 
 
 def extract_docs(path: Path) -> dict[str, dict[str, str]]:
@@ -70,7 +97,10 @@ def extract_docs(path: Path) -> dict[str, dict[str, str]]:
         func_match = FUNC_PATTERN.match(line)
         if func_match:
             func_name = func_match.group("name").strip()
-            params = func_match.group("params").strip()
+            # Find the opening paren that the regex matched and use balanced
+            # extraction so nested parens in default values are preserved.
+            open_pos = line.index("(", func_match.start())
+            params = _extract_balanced_params(line, open_pos)
             signature = f"{func_name}({params})" if params else f"{func_name}()"
             doc_lines = []
             lookback = idx - 1
@@ -94,7 +124,14 @@ def _is_internal_script(path: Path) -> bool:
     rel = path.relative_to(ROOT)
     if rel.parts and rel.parts[0] == "test_data":
         return True
-    return "tests" in rel.parts
+    if "tests" in rel.parts:
+        return True
+    # Exclude build/tooling scripts that live directly under scripts/ or in
+    # scripts/tools/.  Only scripts/core/ contains user-facing runtime code.
+    rel_posix = rel.as_posix()
+    if rel_posix.startswith("scripts/") and not rel_posix.startswith("scripts/core/"):
+        return True
+    return False
 
 
 def _resolve_source_roots(source_roots: list[str]) -> list[Path]:
@@ -171,6 +208,7 @@ def build_reference(
     source_roots: list[str],
     include_globs: list[str],
     exclude_globs: list[str],
+    include_undocumented: bool,
 ) -> str:
     scripts = collect_sources(
         scope=scope,
@@ -188,6 +226,13 @@ def build_reference(
         f"Scripts scanned: `{len(scripts)}`",
         "",
     ]
+    if not include_undocumented:
+        sections.extend(
+            [
+                "Undocumented members are omitted by default. Use `--include-undocumented` to include them.",
+                "",
+            ]
+        )
     for script in scripts:
         docs = extract_docs(script)
         if not docs:
@@ -195,21 +240,27 @@ def build_reference(
         sections.append("## Script")
         sections.append("")
         sections.append("```")
-        sections.append(str(script.relative_to(ROOT)))
+        sections.append(script.relative_to(ROOT).as_posix())
         sections.append("```")
         sections.append("")
         for class_name, members in docs.items():
+            rendered_members: dict[str, str] = {}
+            for signature, description in members.items():
+                if description == "(undocumented)" and not include_undocumented:
+                    continue
+                rendered_members[signature] = description
+
             sections.append("### Class")
             sections.append("")
             sections.append("```")
             sections.append(class_name)
             sections.append("```")
             sections.append("")
-            if not members:
+            if not rendered_members:
                 sections.append("No documented functions.")
                 sections.append("")
                 continue
-            sections.extend(_render_member_table(members))
+            sections.extend(_render_member_table(rendered_members))
             sections.append("")
     sections.extend(
         [
@@ -236,6 +287,7 @@ def main() -> None:
             source_roots=args.source_root,
             include_globs=args.include_glob,
             exclude_globs=args.exclude_glob,
+            include_undocumented=args.include_undocumented,
         ),
         encoding="utf-8",
     )
