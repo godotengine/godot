@@ -364,10 +364,10 @@ String GridMapEditor::_get_cursor_coordinates() const {
 	if (cursor_visible || !set_items.is_empty() || !clipboard_items.is_empty()) {
 		if (selection.active) {
 			if (selection.begin == selection.end) {
-				text = vformat(String::utf8(u8"(%d, %d, %d)  \u2317  (%d, %d, %d)"),
+				text = vformat(String::utf8("(%d, %d, %d)  \u2317  (%d, %d, %d)"),
 						(int)cursor_gridpos.x, (int)cursor_gridpos.y, (int)cursor_gridpos.z, (int)selection.begin.x, (int)selection.begin.y, (int)selection.begin.z);
 			} else {
-				text = vformat(String::utf8(u8"(%d, %d, %d)  \u2317  (%d, %d, %d) \u2192 (%d, %d, %d)"),
+				text = vformat(String::utf8("(%d, %d, %d)  \u2317  (%d, %d, %d) \u2192 (%d, %d, %d)"),
 						(int)cursor_gridpos.x, (int)cursor_gridpos.y, (int)cursor_gridpos.z, (int)selection.begin.x, (int)selection.begin.y, (int)selection.begin.z, (int)selection.end.x, (int)selection.end.y, (int)selection.end.z);
 			}
 		} else {
