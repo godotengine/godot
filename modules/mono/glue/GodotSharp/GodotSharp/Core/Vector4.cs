@@ -656,6 +656,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="vec">The vector to do nothing to.</param>
+        /// <returns>The original vector.</returns>
+        public static Vector4 operator +(Vector4 vec) => vec;
+
+        /// <summary>
         /// Returns the negative value of the <see cref="Vector4"/>.
         /// This is the same as writing <c>new Vector4(-v.X, -v.Y, -v.Z, -v.W)</c>.
         /// This operation flips the direction of the vector while
