@@ -3747,6 +3747,13 @@ void EditorPropertyResource::fold_resource() {
 	}
 }
 
+void EditorPropertyResource::set_keying(bool p_keying) {
+	EditorProperty::set_keying(p_keying);
+	if (sub_inspector) {
+		sub_inspector->set_keying(p_keying);
+	}
+}
+
 bool EditorPropertyResource::is_colored(ColorationMode p_mode) {
 	switch (p_mode) {
 		case COLORATION_CONTAINER_RESOURCE:
