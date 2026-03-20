@@ -8,9 +8,12 @@ on:
     paths:
       - "docs/**"
       - "scripts/build_documentation.py"
+      - "scripts/generate_engine_patch_report.py"
       - "scripts/stage_public_docs.py"
       - "scripts/build_docs_site.py"
       - "scripts/check_docs_media_budget.py"
+      - "scripts/export_benchmark_vegalite.py"
+      - "docs/reference/engine_patch_sources.yaml"
       - "mkdocs.yml"
       - ".github/workflows/docs_pages.yml"
       - "modules/gaussian_splatting/**"
@@ -51,7 +54,8 @@ jobs:
 
       - name: Generate and stage docs artifacts
         run: |
-          python scripts/build_documentation.py --all
+          python scripts/build_documentation.py --engine-patch --engine-patch-summary-only || true
+          python scripts/build_documentation.py --all --no-engine-patch
           python scripts/stage_public_docs.py \
             --source docs \
             --output .site/public-docs \

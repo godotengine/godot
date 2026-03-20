@@ -26,6 +26,7 @@ This is the canonical documentation entrypoint for this repository.
 
 - [Project settings reference](reference/project-settings.md)
 - [Compatibility matrix](reference/compatibility-matrix.md)
+- [Engine patch report (generated)](reference/engine-patch.md)
 - [Shader API (generated)](api/shader_reference.md)
 
 ## API
