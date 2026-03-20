@@ -780,6 +780,8 @@ public:
 	void set_use_filter(bool p_use);
 	void fold_resource();
 
+	virtual void set_keying(bool p_keying) override;
+
 	virtual bool is_colored(ColorationMode p_mode) override;
 
 	EditorPropertyResource();

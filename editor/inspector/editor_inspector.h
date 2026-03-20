@@ -278,7 +278,7 @@ public:
 	void set_draw_warning(bool p_draw_warning);
 	bool is_draw_warning() const;
 
-	void set_keying(bool p_keying);
+	virtual void set_keying(bool p_keying);
 	bool is_keying() const;
 
 	virtual bool is_colored(ColorationMode p_mode) { return false; }
