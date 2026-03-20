@@ -1,135 +1,53 @@
-# Benchmark Suite Runner
+# Benchmark Runner
 
-## Out-of-the-box Start (single path)
+## Canonical Command
 
-Use exactly this command for a deterministic, repository-only benchmark start:
+Use this as the single benchmark entrypoint:
 
 ```bash
-python3 tests/runtime/run_benchmark_suite.py \
+python3 tests/runtime/run_benchmark.py \
   --godot-binary ./bin/godot.linuxbsd.editor.dev.x86_64 \
-  --project-path ./tests/examples/godot/test_project \
-  --profile quick
+  --project-path ./tests/examples/godot/test_project
 ```
 
-Why this is the default path:
+`--profile` defaults to `everything`.
 
-- benchmark and QA scenes now point to the versioned core fixture set under `res://tests/fixtures/`
-- no external assets are required for the default quick run
-- the runner performs a preflight dependency validation for `res://` references before launching lanes and fails early with a clear list when dependencies are missing
+## Standard Flags
 
-## Core Fixture Set
+- `--profile` (`everything|quick|performance|synthetic-only|ab-only`)
+- `--godot-binary`
+- `--project-path`
+- `--output-dir`
+- `--reference-dir`
+- `--capture`
+- `--fail-fast`
 
-Fixture location: `tests/examples/godot/test_project/tests/fixtures/`
+Compatibility extras are still accepted (`--capture-lane`, `--no-captures`, `--no-dashboard`) but the command above is the supported path.
 
-- Manifest: `core_fixture_set.json`
-- Version: `1.0.0`
-- Default asset: `test_splats.ply`
-- Default world: `test_splats.gsplatworld`
+## Single-Process Execution
 
-## Optional Asset Provisioning Modes
+`run_benchmark.py` launches one Godot process and delegates all lanes to:
 
-Use these only when you intentionally benchmark with alternative datasets.
+- `res://scenes/benchmark_orchestrator.tscn`
 
-Manifest injection (lane-specific assets):
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile quick \
-  --asset-manifest tests/runtime/benchmark_assets_manifest.example.json
-```
-
-Synthetic asset generation:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile quick \
-  --generate-dummy-assets
-```
-
-## Purpose
-
-Run a profile-based set of benchmark lanes with one command, gather per-lane JSON reports, and produce an aggregate suite report.
+The orchestrator loads each lane scene sequentially in-process and writes lane JSON reports with the existing suite-compatible structure.
 
 ## Profiles
 
-- `quick`: short smoke profile
-- `performance`: longer engineering profile
-- `showcase`: longer visual/demo profile
-- `parity`: fidelity-locked profile (requires GPU timestamp timing)
+- `everything`: suite lanes + unified + small baseline + synthetic scenes
+- `quick`: shortened smoke profile
+- `performance`: suite-focused performance profile
+- `synthetic-only`: synthetic scenes only
+- `ab-only`: instance pipeline serial vs single-pass lanes
 
-## Lane Set
+## Asset Policy
 
-Scene lanes (under `res://scenes/benchmark_suite/`):
+Asset generation and mapping are canonicalized through:
 
-- `lane_static_baseline.tscn`
-- `lane_streaming_corridor.tscn`
-- `lane_city_flyover.tscn`
-- `lane_instance_storm.tscn`
-- `lane_lighting_stress.tscn`
-- `lane_animation_arena.tscn`
-- `lane_lod_torture.tscn`
-- `lane_integrity_sentinel.tscn`
-- `lane_parity_fidelity.tscn`
-- `lane_long_soak.tscn`
+- `tests/runtime/prepare_synthetic_assets.py`
+- `tests/fixtures/benchmark_asset_manifest.json`
 
-Composite lane:
-
-- `res://scenes/benchmark_unified.tscn` (included by the Python runner as `unified_composite`)
-
-## Common Usage
-
-Run a subset of lanes:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile quick \
-  --lane static_baseline \
-  --lane lod_torture
-```
-
-Use custom duration scaling:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py --profile performance --duration-scale 0.5
-```
-
-Force lane instancing mode:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile performance \
-  --lane instance_storm \
-  --benchmark-instancing-mode serial
-```
-
-Capture benchmark screenshots and generate the HTML/SVG dashboard:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile quick \
-  --capture-lane integrity_sentinel \
-  --capture-lane parity_fidelity
-```
-
-Compare captured frames against golden references with SSIM/PSNR:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile parity \
-  --reference-dir <reference-dir>
-```
-
-`<reference-dir>` must contain `<lane_id>/<lane_id>_capture*.png` matches for every selected capture lane.
-
-Require GPU timestamps:
-
-```bash
-python3 tests/runtime/run_benchmark_suite.py \
-  --profile performance \
-  --require-gpu-timestamps
-```
-
-`parity` profile and `parity_fidelity` lane require GPU timestamps automatically.
+The benchmark runner calls synthetic asset preparation automatically before execution.
 
 ## Outputs
 
@@ -137,18 +55,62 @@ Default output directory:
 
 `tests/output/benchmark_suite/<timestamp>/`
 
-Generated files:
+Generated artifacts:
 
-- `<lane_id>.json`: per-lane benchmark report
-- `<lane_id>.log`: per-lane stdout/stderr + executed command
-- `benchmark_suite_report.json`: suite aggregate + lane list
-- `benchmark_suite_summary.md`: human-readable summary table
-- `captures/*.png`: captured benchmark frames for selected lanes
-- `benchmark_suite_dashboard.html`: HTML dashboard with chart panels and capture gallery
-- `benchmark_suite_*.svg`: SVG charts for score, FPS, GPU ms, SSIM, and PSNR
+- `benchmark_suite_report.json`
+- `benchmark_suite_summary.md`
+- `benchmark_orchestrator.log`
+- `benchmark_orchestrator_report.json`
+- `<lane_id>.json` per lane
+- optional dashboard artifacts (`benchmark_suite_dashboard.html`, `benchmark_suite_*.svg`)
 
-Notes:
+## Interactive Performance Charts
 
-- deterministic screenshot capture defaults to `integrity_sentinel` and `parity_fidelity`
-- pass `--no-captures` to disable screenshot capture entirely
-- when `--reference-dir` is provided, captured frames are compared against matching reference PNGs and the suite reports `SSIM`/`PSNR` minima per lane
+!!! info "Data source"
+    Charts below render from `assets/data/benchmark_latest.json`, generated by `scripts/export_benchmark_vegalite.py` during the docs build. If no benchmark data is available, charts will show an empty state.
+
+### Lane Scores
+
+```vegalite
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "../assets/data/benchmark_latest.json"},
+  "mark": {"type": "bar", "tooltip": true},
+  "encoding": {
+    "y": {"field": "lane_id", "type": "nominal", "sort": "-x", "title": "Lane"},
+    "x": {"field": "score", "type": "quantitative", "title": "Score"},
+    "color": {"field": "lane_id", "type": "nominal", "legend": null},
+    "tooltip": [
+      {"field": "lane_id", "title": "Lane"},
+      {"field": "score", "title": "Score", "format": ".1f"},
+      {"field": "avg_fps", "title": "Avg FPS", "format": ".1f"}
+    ]
+  },
+  "width": "container",
+  "height": 200,
+  "title": "Benchmark Lane Scores"
+}
+```
+
+### Average FPS by Lane
+
+```vegalite
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "../assets/data/benchmark_latest.json"},
+  "mark": {"type": "bar", "tooltip": true},
+  "encoding": {
+    "y": {"field": "lane_id", "type": "nominal", "sort": "-x", "title": "Lane"},
+    "x": {"field": "avg_fps", "type": "quantitative", "title": "Average FPS"},
+    "color": {"value": "#c96b2c"},
+    "tooltip": [
+      {"field": "lane_id", "title": "Lane"},
+      {"field": "avg_fps", "title": "FPS", "format": ".1f"},
+      {"field": "p99_frame_ms", "title": "P99 ms", "format": ".2f"}
+    ]
+  },
+  "width": "container",
+  "height": 200,
+  "title": "Average FPS per Benchmark Lane"
+}
+```

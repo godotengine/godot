@@ -6,16 +6,23 @@ This page is the canonical command reference.
 
 Run from repository root:
 
-```bash
-# Linux
-scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)
+=== "Linux"
 
-# Windows (Developer Command Prompt)
-scons platform=windows target=editor dev_build=yes -j10
+    ```bash
+    scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)
+    ```
 
-# macOS (Apple Silicon)
-scons platform=macos target=editor dev_build=yes arch=arm64 -j8
-```
+=== "Windows"
+
+    ```bash
+    scons platform=windows target=editor dev_build=yes -j10
+    ```
+
+=== "macOS (Apple Silicon)"
+
+    ```bash
+    scons platform=macos target=editor dev_build=yes arch=arm64 -j8
+    ```
 
 For test-enabled editor builds:
 
@@ -33,7 +40,7 @@ scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 - Runtime validation:
   - `python3 tests/runtime/run_runtime_validation.py --godot-binary <module-built-binary> --gd-mode headless`
 - Benchmark suite:
-  - `python3 tests/runtime/run_benchmark_suite.py --godot-binary <module-built-binary> --profile quick --generate-dummy-assets`
+  - `python3 tests/runtime/run_benchmark.py --godot-binary <module-built-binary> --profile everything`
 
 ## CI Source of Truth
 

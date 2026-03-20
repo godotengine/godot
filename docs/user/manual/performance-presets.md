@@ -79,28 +79,24 @@ These values represent the memory consumed by the Gaussian splat streaming syste
 
 ## Choosing a Preset: Decision Flowchart
 
-```
-Start
-  |
-  v
-Is the target platform mobile or integrated GPU?
-  |-- Yes --> Use "Performance"
-  |-- No
-  |     v
-  |   Does the dataset exceed 500K splats?
-  |     |-- Yes --> Is GPU VRAM >= 6 GB?
-  |     |            |-- Yes --> Use "Quality"
-  |     |            |-- No  --> Use "Balanced"
-  |     |-- No
-  |           v
-  |         Is stable 60 fps required?
-  |           |-- Yes --> Use "Balanced"
-  |           |-- No  --> Use "Quality"
-  |
-  v
-Need per-parameter tuning beyond preset ranges?
-  |-- Yes --> Use "Custom"
-  |-- No  --> Stay with the selected preset
+```mermaid
+flowchart TD
+    Start([Start]) --> MobileCheck{Target platform is<br/>mobile or integrated GPU?}
+    MobileCheck -- Yes --> Performance[Use Performance]
+    MobileCheck -- No --> SplatCheck{Dataset exceeds<br/>500K splats?}
+    SplatCheck -- Yes --> VRAMCheck{GPU VRAM >= 6 GB?}
+    VRAMCheck -- Yes --> Quality1[Use Quality]
+    VRAMCheck -- No --> Balanced1[Use Balanced]
+    SplatCheck -- No --> FPSCheck{Stable 60 fps<br/>required?}
+    FPSCheck -- Yes --> Balanced2[Use Balanced]
+    FPSCheck -- No --> Quality2[Use Quality]
+    Performance --> CustomCheck{Need per-parameter<br/>tuning beyond preset?}
+    Balanced1 --> CustomCheck
+    Balanced2 --> CustomCheck
+    Quality1 --> CustomCheck
+    Quality2 --> CustomCheck
+    CustomCheck -- Yes --> Custom[Use Custom]
+    CustomCheck -- No --> Keep[Stay with selected preset]
 ```
 
 ## When to Use the Custom Preset
