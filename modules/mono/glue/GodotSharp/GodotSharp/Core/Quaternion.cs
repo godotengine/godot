@@ -710,6 +710,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="quat">The quaternion to do nothing to.</param>
+        /// <returns>The original quaternion.</returns>
+        public static Quaternion operator +(Quaternion quat) => quat;
+
+        /// <summary>
         /// Returns the negative value of the <see cref="Quaternion"/>.
         /// This is the same as writing
         /// <c>new Quaternion(-q.X, -q.Y, -q.Z, -q.W)</c>. This operation
