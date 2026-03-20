@@ -168,7 +168,7 @@ vec3 cel_shade(vec3 color, vec3 normal, vec3 light_dir, int bands) {
     return color * clamp(stabilized, 0.0, 1.0);
 }
 
-// Add a view-dependent rim response using the supplied tint.
+// Compute a view-dependent rim factor scaled by the power exponent.
 vec3 rim_light(vec3 color, vec3 normal, vec3 view_dir, float power) {
     float rim = pow(clamp(1.0 - max(dot(normal, painterly_safe_normalize(view_dir, vec3(0.0, 0.0, 1.0))), 0.0), 0.0, 1.0), max(power, 0.001));
     return color * rim;
