@@ -15,6 +15,7 @@ theme:
     - navigation.sections
     - navigation.top
     - content.code.copy
+    - content.code.annotate
     - search.highlight
     - search.suggest
 
@@ -23,10 +24,24 @@ plugins:
   - mike:
       version_selector: true
       canonical_version: latest
+  - awesome-nav
+  - glightbox
+  - git-revision-date-localized:
+      enable_creation_date: true
+      fallback_to_build_date: true
+      enable_git_follow: false
+  - redirects:
+      redirect_maps: {}
+  - charts
 
 extra:
   version:
     provider: mike
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/vega@5
+  - https://cdn.jsdelivr.net/npm/vega-lite@5
+  - https://cdn.jsdelivr.net/npm/vega-embed@6
 
 markdown_extensions:
   - admonition
@@ -36,4 +51,13 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: vegalite
+          class: vegalite
+          format: !!python/name:mkdocs_charts_plugin.fences.fence_vegalite
+  - pymdownx.tabbed:
+      alternate_style: true

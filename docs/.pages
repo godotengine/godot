@@ -1,0 +1,18 @@
+nav:
+  - index.md
+  - getting-started
+  - user
+  - features
+  - api
+  - reference
+  - architecture
+  - performance
+  - testing
+  - development
+  - workflows
+  - contributor
+  - migration
+  - troubleshooting
+  - governance
+  - style
+  - reports

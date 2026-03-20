@@ -18,6 +18,18 @@ This document describes the runtime render pipeline in detail: frame entry, rout
 3. `RenderPipelineStages` runs stage sequence: cull (`execute_cull_stage`), sort (`execute_sort_stage`), then raster/composite (`render_sorted_splats_with_context`).
 4. Output and diagnostics are finalized.
 
+```mermaid
+flowchart LR
+    Entry[render_scene_instance] --> Route{Streaming<br/>ready?}
+    Route -- Yes --> Stream[RenderStreamingOrchestrator]
+    Route -- No --> Resident[Resident Fallback]
+    Stream --> Cull[Cull Stage]
+    Resident --> Cull
+    Cull --> Sort[Sort Stage]
+    Sort --> Raster[Raster / Composite]
+    Raster --> Output[Final Output]
+```
+
 ## Execution Modes (Single-Pass vs Serial)
 
 Instancing mode policy is controlled by project settings:
