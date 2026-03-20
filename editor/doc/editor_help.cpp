@@ -288,12 +288,12 @@ void EditorHelp::_start_search_highlight_tweener() {
 	search_highlight_tween->tween_property(search_highlight, NodePath("modulate:a"), 0.0, 2.0);
 }
 
-int EditorHelp::_calculate_search_highlight_end(const HashMap<String, int> *query_table) {
-	if (!query_table || query_table->is_empty()) {
+int EditorHelp::_calculate_search_highlight_end(const HashMap<String, int> *p_query_table) {
+	if (!p_query_table || p_query_table->is_empty()) {
 		return line_to_highlight;
 	}
 
-	for (const KeyValue<String, int> &E : *query_table) {
+	for (const KeyValue<String, int> &E : *p_query_table) {
 		if (E.value > line_to_highlight) {
 			return E.value;
 		}
