@@ -8,6 +8,7 @@
 #ifndef GS_QUAT_UTILS_GLSL_INCLUDED
 #define GS_QUAT_UTILS_GLSL_INCLUDED
 
+// Convert a quaternion to a rotation matrix.
 mat3 quaternion_to_matrix(vec4 q) {
     float xx = q.x * q.x;
     float yy = q.y * q.y;
@@ -36,11 +37,13 @@ mat3 quaternion_to_matrix(vec4 q) {
     return mat3(col0, col1, col2);
 }
 
+// Rotate a vector by a quaternion.
 vec3 gs_quat_rotate(vec4 q, vec3 v) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Multiply two quaternions.
 vec4 gs_quat_mul(vec4 a, vec4 b) {
     return vec4(
         a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,

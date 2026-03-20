@@ -50,6 +50,7 @@ layout(push_constant, std430) uniform ResolveParams {
     int padding1;
 } resolve_params;
 
+// Sample the resolved input color buffer with optional texel fetch.
 vec4 sample_input_color(ivec2 coord, vec2 uv) {
     if (resolve_params.use_texel_fetch_sampling != 0) {
         return texelFetch(input_color, coord, 0);
@@ -57,6 +58,7 @@ vec4 sample_input_color(ivec2 coord, vec2 uv) {
     return texture(input_color, uv);
 }
 
+// Sample the resolved input depth buffer with optional texel fetch.
 float sample_input_depth(ivec2 coord, vec2 uv) {
     if (resolve_params.use_texel_fetch_sampling != 0) {
         return texelFetch(input_depth, coord, 0).r;
@@ -64,6 +66,7 @@ float sample_input_depth(ivec2 coord, vec2 uv) {
     return texture(input_depth, uv).r;
 }
 
+// Sample the resolved input normal buffer with optional texel fetch.
 vec4 sample_input_normal(ivec2 coord, vec2 uv) {
     if (resolve_params.use_texel_fetch_sampling != 0) {
         return texelFetch(input_normal, coord, 0);
@@ -71,6 +74,7 @@ vec4 sample_input_normal(ivec2 coord, vec2 uv) {
     return texture(input_normal, uv);
 }
 
+// Clamp invalid linear depth values to a safe fallback.
 float sanitize_linear_depth(float depth_value) {
     if (!(depth_value >= 0.0 && depth_value <= 1.0)) {
         return 1.0;
@@ -78,6 +82,7 @@ float sanitize_linear_depth(float depth_value) {
     return depth_value;
 }
 
+// Compute edge feathering for the current tile.
 float compute_feather_weight(ivec2 coord) {
     float feather = max(resolve_params.feather_pixels, 0.0);
     if (feather <= 0.0 || resolve_params.tile_size_pixels <= 0) {
@@ -119,6 +124,7 @@ float compute_feather_weight(ivec2 coord) {
     return clamp(edge_dist / feather, 0.0, 1.0);
 }
 
+// Reconstruct a view-space position from screen UV and linear depth.
 vec3 reconstruct_view_pos(mat4 inv_proj, vec2 screen_uv, float linear_depth, float z_near, float z_far, bool is_ortho) {
     float depth = mix(z_near, z_far, clamp(linear_depth, 0.0, 1.0));
     vec2 ndc = screen_uv * 2.0 - 1.0;
@@ -137,6 +143,7 @@ vec3 reconstruct_view_pos(mat4 inv_proj, vec2 screen_uv, float linear_depth, flo
     return view_far_pos * scale;
 }
 
+// Overlay tile boundaries when tile debug visualization is enabled.
 vec4 apply_tile_debug_overlay(vec4 color, ivec2 coord) {
     if (resolve_params.debug_visualize_tiles == 0) {
         return color;
@@ -152,6 +159,7 @@ vec4 apply_tile_debug_overlay(vec4 color, ivec2 coord) {
     return color;
 }
 
+// Compute entry point for tile resolve and final shading.
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     if (coord.x >= resolve_params.viewport_width || coord.y >= resolve_params.viewport_height) {

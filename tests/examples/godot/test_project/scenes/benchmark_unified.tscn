@@ -1,10 +1,9 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/benchmark_unified.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/benchmark_results_panel.tscn" id="3"]
 [ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="4"]
-[ext_resource type="GaussianSplatAsset" path="res://tests/fixtures/test_splats.ply" id="5"]
 
 [sub_resource type="Environment" id="1"]
 background_mode = 2
@@ -35,7 +34,6 @@ visible = false
 [node name="HeroEffectsAsset" type="GaussianSplatNode3D" parent="."]
 visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
-splat_asset = ExtResource("5")
 quality/preset = 2
 quality/lod_bias = 0.75
 

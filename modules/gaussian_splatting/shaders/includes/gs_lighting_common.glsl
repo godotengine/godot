@@ -1,6 +1,7 @@
 #ifndef GS_LIGHTING_COMMON_GLSL
 #define GS_LIGHTING_COMMON_GLSL
 
+// Read the packed item range for one clustered-light record.
 void cluster_get_item_range(uint offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
     uint item_min_max = cluster_buffer.data[offset];
     item_min = item_min_max & 0xFFFFu;
@@ -9,12 +10,14 @@ void cluster_get_item_range(uint offset, out uint item_min, out uint item_max, o
     item_to = (item_max == 0u) ? 0u : ((item_max - 1u) >> 5) + 1u;
 }
 
+// Compute the clip mask used to reject clustered-light slices outside range.
 uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
     int local_min = clamp(int(z_min) - int(i) * 32, 0, 31);
     int mask_width = min(int(z_max) - int(z_min), 32 - local_min);
     return bitfieldInsert(uint(0), uint(0xFFFFFFFFu), local_min, mask_width);
 }
 
+// Return whether clustered lights are active for this frame.
 bool gs_use_clustered_lights() {
     return (params.light_counts.z != 0u) && (params.cluster_config.z != 0u);
 }

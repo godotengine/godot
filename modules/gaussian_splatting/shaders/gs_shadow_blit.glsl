@@ -12,6 +12,7 @@ layout(push_constant, std430) uniform Params {
     float _pad2;
 } params;
 
+// Vertex entry point for the shadow-map blit quad.
 void main() {
     vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
     uv_interp = base_arr[gl_VertexIndex];
@@ -38,6 +39,7 @@ layout(push_constant, std430) uniform Params {
     float _pad2;
 } params;
 
+// Fragment entry point that copies the shadow-map sample to the output.
 void main() {
     float depth = texture(source_depth, uv_interp).r;
     depth = clamp(depth, 0.0, 1.0);

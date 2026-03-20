@@ -23,6 +23,7 @@ BUILD_METADATA_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_build_metadat
 SHADER_DEPENDENCY_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_shader_dependency_contract.py"
 HISTORY_ARTIFACT_AUDIT_SCRIPT = ROOT / "scripts" / "repo" / "history_artifact_audit.py"
 SYNTHETIC_ASSET_PREP_SCRIPT = ROOT / "tests" / "runtime" / "prepare_synthetic_assets.py"
+BENCHMARK_ASSET_GUARD_SCRIPT = ROOT / "tests" / "runtime" / "check_benchmark_asset_paths.py"
 SOURCE_TREES = (ROOT,)
 MODULE_TEST_FILTERS: tuple[tuple[str, str], ...] = (
     ("GaussianSplatting", "*GaussianSplatting*"),
@@ -443,6 +444,22 @@ def _prepare_synthetic_assets() -> tuple[bool, list[str]]:
     return True, messages
 
 
+def _run_benchmark_asset_guard() -> tuple[bool, list[str]]:
+    if not BENCHMARK_ASSET_GUARD_SCRIPT.is_file():
+        return (
+            False,
+            [f"Missing benchmark asset guard script: {BENCHMARK_ASSET_GUARD_SCRIPT.relative_to(ROOT)}"],
+        )
+
+    code, out, err = _run_command([sys.executable, str(BENCHMARK_ASSET_GUARD_SCRIPT)], cwd=ROOT)
+    output_lines = [line for line in (out + err).splitlines() if line.strip()]
+    if code != 0:
+        if not output_lines:
+            output_lines = [f"Benchmark asset guard failed with exit code {code}."]
+        return False, output_lines
+    return True, output_lines
+
+
 def _run_godot(godot: str, args: Iterable[str]) -> tuple[bool, bool, str]:
     normalized_godot = _normalize_process_arg(godot)
     command = [normalized_godot]
@@ -575,6 +592,16 @@ def main() -> int:
         return 1
     if not shader_dependency_messages:
         print("[module-tests] Shader dependency guard passed.")
+
+    benchmark_asset_guard_ok, benchmark_asset_guard_messages = _run_benchmark_asset_guard()
+    for message in benchmark_asset_guard_messages:
+        prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
+        print(f"{prefix}{message}")
+    if not benchmark_asset_guard_ok:
+        print("[module-tests] Benchmark asset path guard failed.")
+        return 1
+    if not benchmark_asset_guard_messages:
+        print("[module-tests] Benchmark asset path guard passed.")
 
     base_ref: str | None = None
     if not args.skip_render_guards:

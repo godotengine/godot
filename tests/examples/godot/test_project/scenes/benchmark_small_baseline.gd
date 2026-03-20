@@ -1,10 +1,10 @@
 extends Node3D
 
 const BenchmarkMetricsUtil = preload("res://scripts/benchmark_metrics.gd")
+const BenchmarkSceneContract = preload("res://scripts/benchmark_scene_contract.gd")
 
 const DEFAULT_BENCHMARK_DURATION := 20.0
 const DEFAULT_OUTPUT_PATH := "user://benchmark_small_baseline_results.json"
-const BASELINE_PLY_PATH := "res://tests/fixtures/test_splats.ply"
 const GRID_COLS := 1
 const GRID_ROWS := 1
 const GRID_SPACING := 1.0
@@ -31,6 +31,8 @@ const PROJECT_SETTING_KEYS := [
 	"rendering/gaussian_splatting/lod/bias",
 ]
 
+signal benchmark_scene_finished(result: Dictionary)
+
 @onready var camera: Camera3D = $Camera3D
 @onready var instance_root: Node3D = $InstanceRoot
 @onready var performance_overlay: Control = $PerformanceOverlay
@@ -38,6 +40,7 @@ const PROJECT_SETTING_KEYS := [
 var benchmark_duration := DEFAULT_BENCHMARK_DURATION
 var output_path := DEFAULT_OUTPUT_PATH
 var headless_summary := false
+var baseline_asset_path := ""
 
 var _elapsed_s := 0.0
 var _frame_ms: Array = []
@@ -50,9 +53,14 @@ var _state_running := true
 var _focus_point := Vector3.ZERO
 var _primary_renderer_owner: Node3D = null
 var _max_node_visible_splats := 0
+var _pending_contract: Dictionary = {}
+var _orchestrated := false
+
+func apply_benchmark_contract(contract: Dictionary) -> void:
+	_pending_contract = contract.duplicate(true)
 
 func _ready() -> void:
-	_parse_args()
+	_apply_contract()
 	_setup_runtime_state()
 	_snapshot_project_settings()
 	_apply_small_scene_settings()
@@ -90,20 +98,26 @@ func _input(event: InputEvent) -> void:
 func _exit_tree() -> void:
 	_restore_project_settings()
 
-func _parse_args() -> void:
-	var args := OS.get_cmdline_args()
-	for i in range(args.size()):
-		var arg := str(args[i])
-		if arg.begins_with("--benchmark-output="):
-			output_path = arg.replace("--benchmark-output=", "")
-		elif arg == "--benchmark-output" and i + 1 < args.size():
-			output_path = str(args[i + 1])
-		elif arg.begins_with("--benchmark-duration="):
-			benchmark_duration = max(5.0, float(arg.replace("--benchmark-duration=", "")))
-		elif arg == "--benchmark-duration" and i + 1 < args.size():
-			benchmark_duration = max(5.0, float(args[i + 1]))
-		elif arg == "--benchmark-headless-summary":
-			headless_summary = true
+func _apply_contract() -> void:
+	var scene_id := BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	var defaults := {
+		"duration_s": DEFAULT_BENCHMARK_DURATION,
+		"output_path": DEFAULT_OUTPUT_PATH,
+		"headless_summary": false,
+		"asset_path": "",
+		"lane_id": "small_baseline",
+	}
+	var contract := BenchmarkSceneContract.resolve_contract(scene_id, defaults, _pending_contract)
+	_orchestrated = bool(contract.get("orchestrated", false))
+	benchmark_duration = max(5.0, float(contract.get("duration_s", DEFAULT_BENCHMARK_DURATION)))
+	output_path = str(contract.get("output_path", DEFAULT_OUTPUT_PATH))
+	headless_summary = bool(contract.get("headless_summary", false))
+	baseline_asset_path = BenchmarkSceneContract.resolve_asset_path(
+		scene_id,
+		str(contract.get("lane_id", "small_baseline")),
+		str(contract.get("asset_path", "")),
+		"",
+	)
 
 func _setup_runtime_state() -> void:
 	OS.set_low_processor_usage_mode(false)
@@ -120,7 +134,7 @@ func _build_instance_grid() -> void:
 		for col in range(GRID_COLS):
 			var node := GaussianSplatNode3D.new()
 			node.name = "Baseline_%02d_%02d" % [row, col]
-			node.ply_file_path = BASELINE_PLY_PATH
+			node.ply_file_path = baseline_asset_path
 			node.position = Vector3(
 				(float(col) - float(GRID_COLS - 1) * 0.5) * GRID_SPACING,
 				0.0,
@@ -174,6 +188,16 @@ func _finish_benchmark() -> void:
 	_restore_project_settings()
 	_write_report(_result_report)
 
+	if _orchestrated:
+		emit_signal("benchmark_scene_finished", {
+			"success": true,
+			"lane_id": "small_baseline",
+			"report_path": output_path,
+			"report": _result_report,
+		})
+		queue_free()
+		return
+
 	if headless_summary or DisplayServer.get_name() == "headless":
 		_print_headless_summary(_result_report)
 		get_tree().quit(0)
@@ -214,7 +238,7 @@ func _build_report() -> Dictionary:
 		"timestamp_unix": Time.get_unix_time_from_system(),
 		"platform": OS.get_name(),
 		"instance_count": GRID_COLS * GRID_ROWS,
-		"baseline_ply_path": BASELINE_PLY_PATH,
+		"baseline_ply_path": baseline_asset_path,
 		"node_visible_splats_max": _max_node_visible_splats,
 		"overall": overall,
 		"monitor_max": _monitor_max,

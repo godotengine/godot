@@ -21,6 +21,7 @@ layout(set = 0, binding = 2, std140) uniform Params {
     uint pad1;
 } params;
 
+// Build indirect dispatch counts for chunk-level processing.
 void main() {
     uint raw_count = counters.visible_chunk_count;
     uint clamped = min(raw_count, params.max_visible_chunks);

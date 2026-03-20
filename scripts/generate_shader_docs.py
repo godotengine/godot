@@ -70,6 +70,46 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+@dataclass
+class CoverageStats:
+    documented_functions: int = 0
+    undocumented_functions: int = 0
+    documented_uniform_fields: int = 0
+    undocumented_uniform_fields: int = 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate shader Markdown reference docs.")
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT),
+        help="Output Markdown file path.",
+    )
+    parser.add_argument(
+        "--include-undocumented",
+        action="store_true",
+        help="Include undocumented functions/uniform fields in output tables.",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero when undocumented coverage exceeds thresholds.",
+    )
+    parser.add_argument(
+        "--max-undocumented-functions",
+        type=int,
+        default=0,
+        help="Allowed undocumented function entries when --strict is used.",
+    )
+    parser.add_argument(
+        "--max-undocumented-fields",
+        type=int,
+        default=0,
+        help="Allowed undocumented uniform fields when --strict is used.",
+    )
+    return parser.parse_args()
+
+
 def iter_shader_files() -> list[Path]:
     files: list[Path] = []
     for root in SHADER_ROOTS:

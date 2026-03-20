@@ -30,6 +30,7 @@ Define how to include images and videos in docs content while keeping media arti
 - Use descriptive file names tied to feature/use case.
 - For large video files, use Git LFS tracking (`*.mp4`, `*.webm`).
 - Keep total media footprint within CI budget gates.
+- Follow the capture process in [../development/screenshot-capture-spec.md](../development/screenshot-capture-spec.md) for editor screenshots.
 
 ## Git LFS Setup
 

@@ -15,11 +15,13 @@ layout(push_constant, std430) uniform Push {
 
 const vec3 LUMA = vec3(0.299, 0.587, 0.114);
 
+// Sample a neighboring scene color for Sobel edge detection.
 vec3 sample_color(vec2 uv, vec2 offset) {
     vec2 sample_uv = clamp(uv + offset * params.texel_size, vec2(0.0), vec2(1.0));
     return texture(u_color_sampler, sample_uv).rgb;
 }
 
+// Compute outline intensity from Sobel gradients.
 void main() {
     ivec2 target_size = imageSize(u_edge_target);
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);

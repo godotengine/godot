@@ -105,22 +105,27 @@ uint gs_get_sh_band_level() {
     return uint(clamp(params.sh_config.x, 0.0, 3.0));
 }
 
+// Return the SH amortization divisor from render params.
 uint gs_get_sh_amortization_divisor() {
     return max(1u, uint(params.sh_config.y + 0.5));
 }
 
+// Return the SH amortization phase from render params.
 uint gs_get_sh_amortization_phase() {
     return uint(params.sh_config.z + 0.5);
 }
 
+// Return whether SH amortization is enabled.
 bool gs_is_sh_amortization_enabled() {
     return gs_get_sh_amortization_divisor() > 1u;
 }
 
+// Return whether SH amortization should force an update this frame.
 bool gs_get_sh_amortization_force_update() {
     return params.sh_config.w > 0.5;
 }
 
+// Return whether DC logit decoding is enabled.
 bool gs_is_dc_logit_enabled() {
     return params.sh_decode_config.x > 0.5;
 }
@@ -148,14 +153,17 @@ bool gs_is_lod_blend_enabled() {
     return params.lod_blend_config.y > 0.5;
 }
 
+// Return the overlap keep ratio used by culling and diagnostics.
 float gs_get_overlap_keep_ratio() {
     return clamp(params.distance_cull_config.w, 0.0, 1.0);
 }
 
+// Return whether wind deformation is enabled.
 bool gs_is_wind_enabled() {
     return params.wind_time_config.w > 0.5;
 }
 
+// Return whether the sphere effector is enabled.
 bool gs_is_sphere_effector_enabled() {
     return params.effector_config.x > 0.5 && params.effector_sphere.w > 0.0;
 }

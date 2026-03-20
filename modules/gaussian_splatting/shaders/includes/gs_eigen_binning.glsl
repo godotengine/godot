@@ -48,6 +48,7 @@ float compute_opacity_aware_sigma(float opacity, float visibility_threshold, flo
     return min(effective_sigma, max_sigma);
 }
 
+// Compute eigenvalues and eigenvectors for tile binning heuristics.
 EigenInfo compute_eigen(mat2 cov) {
     EigenInfo info;
 

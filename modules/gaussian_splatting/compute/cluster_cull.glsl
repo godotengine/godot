@@ -96,6 +96,7 @@ bool aabb_frustum_visible(vec3 aabb_min, vec3 aabb_max) {
     return true;
 }
 
+// Cluster culling entry point; writes visibility decisions for the active workgroup.
 void main() {
     uint cluster_idx = gl_GlobalInvocationID.x;
 

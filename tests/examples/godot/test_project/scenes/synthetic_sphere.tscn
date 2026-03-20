@@ -4,7 +4,6 @@
 
 [node name="synthetic_sphere" type="Node3D"]
 script = ExtResource("script")
-ply_path = "res://tests/fixtures/test_splats.ply"
 duration = 15.0
 orbit_radius = 12.0
 orbit_height = 5.0

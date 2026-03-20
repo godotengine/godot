@@ -6,6 +6,7 @@
 #ifndef GS_CULLING_UTILS_GLSL_INCLUDED
 #define GS_CULLING_UTILS_GLSL_INCLUDED
 
+// Hash a 32-bit value for deterministic culling randomness.
 uint gs_hash_u32(uint v) {
     v ^= v >> 16u;
     v *= 0x7feb352du;
@@ -45,6 +46,7 @@ bool gs_should_distance_cull(uint p_stable_splat_key, float world_distance) {
     return rand < cull_probability;
 }
 
+// Decide whether to keep an overlap record for diagnostics or coverage sampling.
 bool gs_keep_overlap_record(uint gaussian_idx, uint instance_id, uint tile_idx) {
     float keep_ratio = gs_get_overlap_keep_ratio();
     if (keep_ratio >= 0.9999) {

@@ -12,22 +12,27 @@ const uint SH_METADATA_ENCODED_COUNT_MASK = 0x00FF0000u;
 const uint SH_METADATA_ENCODING_MASK = 0xFF000000u;
 const uint SH_ENCODING_RGB9E5 = 1u;
 
+// Read the number of first-order SH coefficients encoded in metadata.
 uint gaussian_get_first_order_count(uint meta) {
     return meta & SH_METADATA_FIRST_ORDER_MASK;
 }
 
+// Read the number of higher-order SH coefficients encoded in metadata.
 uint gaussian_get_high_order_count(uint meta) {
     return (meta & SH_METADATA_HIGH_ORDER_MASK) >> 8u;
 }
 
+// Read the total number of packed SH coefficients stored in metadata.
 uint gaussian_get_encoded_count(uint meta) {
     return (meta & SH_METADATA_ENCODED_COUNT_MASK) >> 16u;
 }
 
+// Read the SH storage format identifier from metadata.
 uint gaussian_get_sh_encoding(uint meta) {
     return (meta & SH_METADATA_ENCODING_MASK) >> 24u;
 }
 
+// Decode one RGB9E5-packed SH coefficient triplet to linear RGB.
 vec3 decode_rgb9e5(uint packed) {
     uint exponent = (packed >> 27u) & 0x1Fu;
     float scale = exp2(float(exponent) - 24.0);

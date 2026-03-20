@@ -122,6 +122,7 @@ layout(set = 0, binding = 17, std430) buffer SubpixelVisibility {
     uint visible[];
 } subpixel_visibility;
 
+// Return the number of visible Gaussians scheduled for this dispatch.
 uint gs_get_visible_gaussian_count() {
     return instance_indirect.element_count;
 }
@@ -253,6 +254,7 @@ layout(set = 0, binding = 11, std430) buffer SHColorCache {
 
 #ifdef GS_TILE_GLOBAL_SORT_EMIT_PASS
 #if GS_SORT_KEY_BITS == 32
+// Pack tile index and depth into a global sort key.
 uint gs_pack_sort_key(uint tile_idx, float linear_depth) {
     float clamped_depth = clamp(linear_depth, 0.0, 0.999999);
 #if GS_SORT_DEPTH_BITS >= 32
@@ -271,6 +273,7 @@ uint gs_pack_sort_key(uint tile_idx, float linear_depth) {
 #endif
 }
 #else
+// Pack tile index and depth into a global sort key.
 uvec2 gs_pack_sort_key(uint tile_idx, float linear_depth) {
     return uvec2(floatBitsToUint(linear_depth), tile_idx);
 }
@@ -301,12 +304,14 @@ uvec2 gs_pack_sort_key(uint tile_idx, float linear_depth) {
 #include "includes/gs_quat_utils.glsl"
 #include "includes/gs_culling_utils.glsl"
 
+// Pack quantized spherical-harmonic metadata for the renderer.
 uint gs_build_quantized_sh_metadata(uint encoded_total) {
     uint first_count = min(encoded_total, 3u);
     uint high_count = encoded_total > first_count ? (encoded_total - first_count) : 0u;
     return first_count | (high_count << 8u) | (encoded_total << 16u) | (SH_ENCODING_RGB9E5 << 24u);
 }
 
+// Project a Gaussian into screen space and derive its 2D covariance.
 vec3 project_gaussian_2d(Gaussian g, out vec2 screen_pos, out mat2 cov2d, out float linear_depth, out float raw_min_radius) {
     raw_min_radius = 0.0;  // Default: will be set after valid cov2d computation
     linear_depth = 1.0;
@@ -536,6 +541,7 @@ vec3 project_gaussian_2d(Gaussian g, out vec2 screen_pos, out mat2 cov2d, out fl
     return vec3(cov2d[1][1] * inv_det, -cov2d[0][1] * inv_det, cov2d[0][0] * inv_det);
 }
 
+// Compute entry point for the active tile binning pass.
 void main() {
     uint global_idx = gl_GlobalInvocationID.x;
 

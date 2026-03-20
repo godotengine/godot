@@ -12,6 +12,7 @@ methods, or are abstract base types. Each entry notes the registration site in
 
 | Class | Description | Registration |
 |-------|-------------|-------------|
+| **GaussianSplatAsset** | Persistent resource wrapping a Gaussian splat dataset with asset-type metadata, compression flags, and import provenance. | `register_types.cpp:71` |
 | **GaussianSplatSceneDirector** | Singleton coordinator that manages multi-instance rendering, wind mode, and per-world scene orchestration across all active splat nodes. | `register_types.cpp:89` |
 | **VRAMBudgetRegulator** | Monitors GPU memory pressure and throttles chunk loading to stay within a configurable VRAM budget. Used internally by `GaussianStreamingSystem`. | `register_types.cpp:74` |
 
@@ -65,7 +66,6 @@ The following classes **do** have full API reference pages (XML doc_classes or
 dedicated documentation):
 
 - `GaussianData`
-- `GaussianSplatAsset`
 - `GaussianMemoryStream`
 - `GaussianSplatContainer`
 - `GaussianSplatDebugHUD`

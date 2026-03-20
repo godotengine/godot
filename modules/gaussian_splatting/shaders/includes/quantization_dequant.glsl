@@ -61,10 +61,12 @@ const uint POSITION_BITS_MAX = 24u;
 const uint SCALE_BITS_MIN = 8u;
 const uint SCALE_BITS_MAX = 16u;
 
+// Clamp quantization bit depth to the supported range.
 uint sanitize_quant_bits(uint bits, uint min_bits, uint max_bits) {
     return min(max(bits, min_bits), max_bits);
 }
 
+// Compute the reciprocal of the maximum quantized integer for a bit depth.
 float compute_inv_quant_max(uint bits, uint min_bits, uint max_bits) {
     uint safe_bits = sanitize_quant_bits(bits, min_bits, max_bits);
     uint safe_max = (1u << safe_bits) - 1u;

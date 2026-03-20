@@ -8,6 +8,7 @@ const vec2 positions[3] = vec2[](
     vec2(-1.0, 3.0)
 );
 
+// Entry point for the fullscreen composite shader stage.
 void main() {
     vec2 pos = positions[gl_VertexIndex];
     gl_Position = vec4(pos, 0.0, 1.0);
@@ -34,6 +35,7 @@ layout(push_constant, std430) uniform CompositePush {
     float proj_23;
 } params;
 
+// Convert normalized scene depth to comparable view-space depth.
 float linearize_scene_depth(float raw_depth) {
     if (abs(params.proj_23) < 0.5) {
         float ndc = raw_depth * 2.0 - 1.0;
@@ -42,6 +44,7 @@ float linearize_scene_depth(float raw_depth) {
     return abs(params.proj_32 / (params.proj_22 + raw_depth));
 }
 
+// Clamp invalid depth values to a sentinel for comparisons.
 float sanitize_view_depth(float depth_value) {
     if (isnan(depth_value) || isinf(depth_value)) {
         return -1.0;
@@ -49,6 +52,7 @@ float sanitize_view_depth(float depth_value) {
     return abs(depth_value);
 }
 
+// Detect whether the sampled scene depth corresponds to the background clear value.
 bool is_scene_background_depth(float raw_scene_depth, float scene_view_depth) {
     float scene_depth_from_zero = sanitize_view_depth(linearize_scene_depth(0.0));
     float scene_depth_from_one = sanitize_view_depth(linearize_scene_depth(1.0));
@@ -65,6 +69,7 @@ bool is_scene_background_depth(float raw_scene_depth, float scene_view_depth) {
     return raw_matches_clear || view_matches_far;
 }
 
+// Entry point for the fullscreen composite shader stage.
 void main() {
     vec2 sample_uv = clamp(gl_FragCoord.xy * params.inv_viewport_size, vec2(0.0), vec2(1.0));
 

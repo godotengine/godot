@@ -2,10 +2,9 @@ extends Node3D
 
 ## Renders a single synthetic splat scene with configurable camera path.
 ## Camera modes: "orbit" (default), "flythrough" (tunnel), "sweep" (flat grid).
-## Supports --benchmark-output, --benchmark-capture-dir, --benchmark-reference-dir
-## for capture + SSIM/PSNR + JSON report output.
 
 const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.gd")
+const BenchmarkSceneContract = preload("res://scripts/benchmark_scene_contract.gd")
 
 @export var ply_path: String = ""
 @export var duration: float = 15.0
@@ -32,6 +31,8 @@ const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.g
 @export var sweep_height: float = 8.0
 @export var sweep_extent: float = 6.0
 
+signal benchmark_scene_finished(result: Dictionary)
+
 var _elapsed := 0.0
 var _frame_count := 0
 var _fps_samples: Array[float] = []
@@ -39,33 +40,29 @@ var _output_path := ""
 var _capture_dir := ""
 var _reference_dir := ""
 var _scene_name := ""
+var _lane_id := ""
 var _captures: Array[Dictionary] = []
 var _capture_fractions := [0.25, 0.5, 0.75]
 var _captured_at: Dictionary = {}
+var _pending_contract: Dictionary = {}
+var _orchestrated := false
+
+func apply_benchmark_contract(contract: Dictionary) -> void:
+	_pending_contract = contract.duplicate(true)
 
 func _ready() -> void:
+	_apply_contract()
 	Engine.max_fps = 0
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-
-	for arg in OS.get_cmdline_args():
-		if arg.begins_with("--ply-path="):
-			ply_path = arg.substr(len("--ply-path="))
-		elif arg.begins_with("--duration="):
-			duration = float(arg.substr(len("--duration=")))
-		elif arg.begins_with("--camera-mode="):
-			camera_mode = arg.substr(len("--camera-mode="))
-		elif arg.begins_with("--benchmark-output="):
-			_output_path = arg.substr(len("--benchmark-output="))
-		elif arg.begins_with("--benchmark-capture-dir="):
-			_capture_dir = arg.substr(len("--benchmark-capture-dir="))
-		elif arg.begins_with("--benchmark-reference-dir="):
-			_reference_dir = arg.substr(len("--benchmark-reference-dir="))
-
-	_scene_name = get_tree().current_scene.scene_file_path.get_file().get_basename()
+	_scene_name = BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	if _lane_id.is_empty():
+		_lane_id = _scene_name
+	if _output_path.is_empty():
+		_output_path = "user://%s_results.json" % _scene_name
 
 	if ply_path.is_empty():
 		push_error("[SYNTHETIC] No ply_path set")
-		get_tree().quit()
+		_finish_with_error("No ply_path set")
 		return
 
 	var splat_node = GaussianSplatNode3D.new()
@@ -101,6 +98,33 @@ func _ready() -> void:
 		DirAccess.make_dir_recursive_absolute(_capture_dir + "/" + _scene_name)
 
 	print("[SYNTHETIC] %s | camera=%s | %ds" % [ply_path, camera_mode, int(duration)])
+
+func _apply_contract() -> void:
+	var scene_id := BenchmarkSceneContract.scene_id_from_path(get_tree().current_scene.scene_file_path)
+	var defaults := {
+		"lane_id": scene_id,
+		"duration_s": duration,
+		"output_path": "",
+		"capture_dir": "",
+		"reference_dir": "",
+		"camera_mode": camera_mode,
+		"asset_path": "",
+		"orchestrated": false,
+	}
+	var contract := BenchmarkSceneContract.resolve_contract(scene_id, defaults, _pending_contract)
+	_orchestrated = bool(contract.get("orchestrated", false))
+	duration = maxf(1.0, float(contract.get("duration_s", duration)))
+	camera_mode = str(contract.get("camera_mode", camera_mode))
+	_output_path = str(contract.get("output_path", ""))
+	_capture_dir = str(contract.get("capture_dir", ""))
+	_reference_dir = str(contract.get("reference_dir", ""))
+	_lane_id = str(contract.get("lane_id", scene_id))
+	ply_path = BenchmarkSceneContract.resolve_asset_path(
+		scene_id,
+		_lane_id,
+		str(contract.get("asset_path", "")),
+		ply_path,
+	)
 
 func _process(delta: float) -> void:
 	_elapsed += delta
@@ -189,6 +213,8 @@ func _finish() -> void:
 			psnr_values.append(c["psnr"])
 
 	var report := {
+		"name": "GodotGS Synthetic Benchmark",
+		"lane_id": _lane_id,
 		"scene": _scene_name,
 		"ply_path": ply_path,
 		"camera_mode": camera_mode,
@@ -217,8 +243,28 @@ func _finish() -> void:
 			f.store_string(json_str)
 			f.close()
 			print("[SYNTHETIC] Report saved to %s" % _output_path)
+	if _orchestrated:
+		emit_signal("benchmark_scene_finished", {
+			"success": true,
+			"lane_id": _lane_id,
+			"report_path": _output_path,
+			"report": report,
+		})
+		queue_free()
+		return
+	get_tree().quit(0)
 
-	get_tree().quit()
+func _finish_with_error(message: String) -> void:
+	if _orchestrated:
+		emit_signal("benchmark_scene_finished", {
+			"success": false,
+			"lane_id": _lane_id,
+			"report_path": _output_path,
+			"error": message,
+		})
+		queue_free()
+		return
+	get_tree().quit(1)
 
 func _array_mean(arr: Array[float]) -> float:
 	var total := 0.0

@@ -37,6 +37,7 @@ layout(set = 0, binding = 2, std140) uniform Params {
     uint pad1;
 } params;
 
+// Clamp indirect instance counts to the configured dispatch budget.
 void main() {
     uint raw_count = counters.visible_splat_count;
     uint max_visible = params.max_visible_splats;

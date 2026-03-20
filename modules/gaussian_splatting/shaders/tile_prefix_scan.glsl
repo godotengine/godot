@@ -77,6 +77,7 @@ shared uint scratch[GS_PREFIX_LOCAL_SIZE];
 // PERF-7 (#678): Shared flag to track if any thread in workgroup has non-zero count
 shared uint wg_has_nonzero;
 
+// Compute pass 1: local exclusive scan and workgroup totals.
 void main() {
     uint lid = gl_LocalInvocationID.x;
     uint gid = gl_WorkGroupID.x;
@@ -150,6 +151,7 @@ layout(push_constant, std430) uniform PrefixPass2Control {
     uint reserved;
 } pass2_control;
 
+// Read the current prefix-scan source buffer for pass 2.
 uint read_pass2_source(uint idx) {
     if (pass2_control.source_buffer == GS_TILE_PREFIX_PASS2_SOURCE_WG_OFFSETS) {
         return wg_offsets.wg_offsets[idx];
@@ -157,6 +159,7 @@ uint read_pass2_source(uint idx) {
     return wg_sums.wg_sums[idx];
 }
 
+// Write the current prefix-scan destination buffer for pass 2.
 void write_pass2_dest(uint idx, uint value) {
     // Destination is the opposite buffer of source_buffer to keep ping-pong deterministic.
     if (pass2_control.source_buffer == GS_TILE_PREFIX_PASS2_SOURCE_WG_OFFSETS) {
@@ -166,6 +169,7 @@ void write_pass2_dest(uint idx, uint value) {
     }
 }
 
+// Compute pass 2: multi-level scan or buffer copy for workgroup offsets.
 void main() {
     uint global_idx = gl_GlobalInvocationID.x;
     if (global_idx >= params.total_workgroups) {

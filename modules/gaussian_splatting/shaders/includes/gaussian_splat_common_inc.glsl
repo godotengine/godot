@@ -64,6 +64,7 @@ const vec2 QUAD_CORNERS[6] = vec2[](
     vec2(1.0, 1.0)
 );
 
+// Convert a quaternion to a rotation matrix.
 mat3 quaternion_to_matrix(vec4 q) {
     vec4 n = normalize(q);
     float xx = n.x * n.x;
@@ -92,6 +93,7 @@ mat3 quaternion_to_matrix(vec4 q) {
     return mat3(col0, col1, col2);
 }
 
+// Build a 3D covariance matrix from scale and rotation.
 mat3 build_covariance(vec3 scale, vec4 rotation) {
     mat3 rot = quaternion_to_matrix(rotation);
     vec3 s2 = scale * scale;
@@ -103,6 +105,7 @@ mat3 build_covariance(vec3 scale, vec4 rotation) {
     return rot * scale_mat * transpose(rot);
 }
 
+// Compute the 2D covariance eigensystem for ellipse reconstruction.
 EigenBasis compute_eigen(mat2 cov) {
     EigenBasis basis;
     float trace = cov[0][0] + cov[1][1];
@@ -133,14 +136,17 @@ EigenBasis compute_eigen(mat2 cov) {
     return basis;
 }
 
+// Return the scene sigma multiplier override or its default.
 float get_sigma_multiplier() {
     return scene_data.misc.x > 0.0 ? scene_data.misc.x : GAUSSIAN_SIGMA_MULTIPLIER;
 }
 
+// Return the encoded Gaussian count stored in scene metadata.
 uint get_gaussian_count() {
     return uint(max(scene_data.misc.y, 0.0));
 }
 
+// Project 3D covariance into screen space for the current viewport.
 mat2 compute_projected_covariance(vec3 view_pos, vec3 scale, vec4 rotation, vec2 viewport_size) {
     mat3 cov3d = build_covariance(scale, rotation);
 
@@ -168,6 +174,7 @@ mat2 compute_projected_covariance(vec3 view_pos, vec3 scale, vec4 rotation, vec2
     return cov2d;
 }
 
+// Convert a 2D covariance matrix into conic coefficients.
 vec3 covariance_to_conic(mat2 cov2d) {
     float det = cov2d[0][0] * cov2d[1][1] - cov2d[0][1] * cov2d[0][1];
     det = max(det, MIN_DETERMINANT);
@@ -175,22 +182,27 @@ vec3 covariance_to_conic(mat2 cov2d) {
     return vec3(cov2d[1][1] * inv_det, -cov2d[0][1] * inv_det, cov2d[0][0] * inv_det);
 }
 
+// Extract the first-order SH coefficient count from packed metadata.
 uint gaussian_get_first_order_count(uint meta) {
     return meta & SH_METADATA_FIRST_ORDER_MASK;
 }
 
+// Extract the higher-order SH coefficient count from packed metadata.
 uint gaussian_get_high_order_count(uint meta) {
     return (meta & SH_METADATA_HIGH_ORDER_MASK) >> 8u;
 }
 
+// Extract the total encoded SH coefficient count from packed metadata.
 uint gaussian_get_encoded_count(uint meta) {
     return (meta & SH_METADATA_ENCODED_COUNT_MASK) >> 16u;
 }
 
+// Extract the SH encoding mode from packed metadata.
 uint gaussian_get_sh_encoding(uint meta) {
     return (meta & SH_METADATA_ENCODING_MASK) >> 24u;
 }
 
+// Decode packed RGB9E5 color data into linear RGB.
 vec3 decode_rgb9e5(uint packed) {
     uint exponent = (packed >> 27u) & 0x1Fu;
     float scale = exp2(float(exponent) - 24.0);

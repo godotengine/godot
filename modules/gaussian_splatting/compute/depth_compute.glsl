@@ -92,11 +92,13 @@ layout(set = 0, binding = 9, std140) uniform Params {
     vec4 cull_frustum_radius; // x = radius_multiplier, y = frustum_plane_slack, z = enable_frustum, w = reserved
 } params;
 
+// Rotate vector `v` by quaternion `q`.
 vec3 quat_rotate(vec4 q, vec3 v) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Conservative sphere-frustum visibility test for compute culling.
 bool gs_sphere_frustum_visible(vec3 position, float radius) {
     if (params.cull_frustum_radius.z < 0.5) {
         return true;
@@ -112,6 +114,7 @@ bool gs_sphere_frustum_visible(vec3 position, float radius) {
     return true;
 }
 
+// Estimate projected screen-space radius from depth and world-space radius.
 float gs_compute_screen_size(float depth, float radius) {
     if (params.camera_position_ortho.w > 0.5) {
         return (radius * params.cull_screen_distance.x) * 2.0;
@@ -124,6 +127,7 @@ float gs_compute_screen_size(float depth, float radius) {
     return screen_radius * 2.0;
 }
 
+// Depth compute entry point; emits per-instance depth and screen-size data.
 void main() {
     uint splat_index_in_chunk = gl_GlobalInvocationID.x;
     uint visible_chunk_index = gl_GlobalInvocationID.y;

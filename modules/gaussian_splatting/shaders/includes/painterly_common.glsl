@@ -13,6 +13,7 @@ struct PainterlyConicData {
     float determinant;
 };
 
+// Convert a quaternion rotation to a 3x3 rotation matrix.
 mat3 painterly_quaternion_to_matrix(vec4 q) {
     float xx = q.x * q.x;
     float yy = q.y * q.y;
@@ -40,6 +41,7 @@ mat3 painterly_quaternion_to_matrix(vec4 q) {
     return mat3(col0, col1, col2);
 }
 
+// Build a diagonal scale matrix from per-axis scale values.
 mat3 painterly_scale_matrix(vec3 scale) {
     return mat3(
         scale.x, 0.0, 0.0,
@@ -48,17 +50,20 @@ mat3 painterly_scale_matrix(vec3 scale) {
     );
 }
 
+// Build a covariance matrix from rotation and scale in 3D space.
 mat3 painterly_build_covariance(mat3 rotation_matrix, vec3 scale) {
     vec3 scale_sq = scale * scale;
     mat3 scale_matrix = painterly_scale_matrix(scale_sq);
     return rotation_matrix * scale_matrix * transpose(rotation_matrix);
 }
 
+// Build a covariance matrix from scale and quaternion inputs.
 mat3 painterly_build_covariance(vec3 scale, vec4 rotation) {
     mat3 rotation_matrix = painterly_quaternion_to_matrix(rotation);
     return painterly_build_covariance(rotation_matrix, scale);
 }
 
+// Project a 3D covariance into view space and derive the 2D conic form.
 PainterlyConicData painterly_project_gaussian(mat3 view_matrix, mat3 covariance_3d) {
     PainterlyConicData result;
 
@@ -88,33 +93,39 @@ PainterlyConicData painterly_project_gaussian(mat3 view_matrix, mat3 covariance_
     return result;
 }
 
+// Compute a screen-space radius from projected covariance.
 float painterly_compute_radius(const PainterlyConicData data, float sigma_multiplier) {
     float variance = max(data.cov_xx, data.cov_yy);
     variance = max(variance, PAINTERLY_MIN_VARIANCE);
     return sigma_multiplier * sqrt(variance);
 }
 
+// Evaluate the quadratic form for a projected Gaussian at a pixel offset.
 float painterly_gaussian_power(vec2 uv, vec3 conic) {
     float dx = uv.x;
     float dy = uv.y;
     return -0.5 * (conic.x * dx * dx + conic.z * dy * dy) - conic.y * dx * dy;
 }
 
+// Convert Gaussian power into a clamped alpha contribution.
 float painterly_gaussian_alpha(float opacity, float power) {
     float alpha = opacity * exp(power);
     return clamp(alpha, 0.0, 0.99);
 }
 
+// Hash a 3D value to a stable scalar in [0, 1).
 float painterly_hash_scalar(vec3 value) {
     return fract(sin(dot(value, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 }
 
+// Hash a 3D value to a stable 2D seed vector.
 vec2 painterly_hash_vector(vec3 value) {
     float h1 = painterly_hash_scalar(value);
     float h2 = painterly_hash_scalar(value + vec3(19.19, 93.43, 42.43));
     return vec2(h1, h2);
 }
 
+// Normalize a vector with a fallback for near-zero length inputs.
 vec3 painterly_safe_normalize(vec3 v, vec3 fallback) {
     float len_sq = dot(v, v);
     if (len_sq < 1e-6) {

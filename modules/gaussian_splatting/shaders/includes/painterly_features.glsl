@@ -15,6 +15,7 @@ layout(set = 1, binding = 0, std140) uniform PainterlyPalette {
     vec4 params; // x: count, y: blend strength, z: noise strength, w: preserve luminance (>0.5)
 } painterly_palette;
 
+// Snap a color toward the nearest palette entry with optional jitter.
 vec3 painterly_apply_palette_quantization(vec3 color, vec2 seeds) {
     int count = int(round(painterly_palette.params.x));
     count = clamp(count, 0, PAINTERLY_MAX_PALETTE_COLORS);
@@ -65,6 +66,7 @@ layout(set = 1, binding = 1, std140) uniform PainterlyBrush {
     vec4 params1; // x: texture noise strength, yzw: reserved
 } painterly_brush;
 
+// Turn brush UV and noise seeds into a soft radial brush mask.
 float painterly_apply_brush_modulation(vec2 uv, vec2 seeds) {
     vec2 centered = uv;
 
@@ -114,6 +116,7 @@ layout(set = 1, binding = 2, std140) uniform PainterlyLighting {
     PainterlyLight lights[PAINTERLY_MAX_LIGHTS];
 } painterly_lighting;
 
+// Approximate a Kelvin temperature as an RGB tint.
 vec3 painterly_color_temperature(float kelvin) {
     float k = clamp(kelvin, 1000.0, 40000.0) * 0.01;
     float r;
@@ -138,6 +141,7 @@ vec3 painterly_color_temperature(float kelvin) {
     return vec3(r, g, b);
 }
 
+// Blend a color toward a Kelvin-based tint by the requested strength.
 vec3 painterly_apply_temperature(vec3 color, float kelvin, float strength) {
     float tint_strength = clamp(strength, 0.0, 1.0);
     if (tint_strength <= 0.0) {
@@ -147,6 +151,7 @@ vec3 painterly_apply_temperature(vec3 color, float kelvin, float strength) {
     return mix(color, color * tint, tint_strength);
 }
 
+// Quantize diffuse lighting into flat cel-shading bands.
 vec3 cel_shade(vec3 color, vec3 normal, vec3 light_dir, int bands) {
     float ndotl = max(dot(normal, painterly_safe_normalize(light_dir, vec3(0.0, 0.0, -1.0))), 0.0);
     if (bands <= 1) {
@@ -163,28 +168,33 @@ vec3 cel_shade(vec3 color, vec3 normal, vec3 light_dir, int bands) {
     return color * clamp(stabilized, 0.0, 1.0);
 }
 
+// Add a view-dependent rim response using the supplied tint.
 vec3 rim_light(vec3 color, vec3 normal, vec3 view_dir, float power) {
     float rim = pow(clamp(1.0 - max(dot(normal, painterly_safe_normalize(view_dir, vec3(0.0, 0.0, 1.0))), 0.0), 0.0, 1.0), max(power, 0.001));
     return color * rim;
 }
 
+// Blend between cool and warm colors using a signed light-facing term.
 vec3 gooch_shade_with_dir(vec3 cool_color, vec3 warm_color, vec3 normal, vec3 light_dir) {
     float ndotl = clamp(dot(normal, painterly_safe_normalize(light_dir, vec3(0.0, 0.0, -1.0))), -1.0, 1.0);
     float blend = ndotl * 0.5 + 0.5;
     return mix(cool_color, warm_color, blend);
 }
 
+// Gooch-shade using the first configured painterly light direction.
 vec3 gooch_shade(vec3 cool_color, vec3 warm_color, vec3 normal) {
     vec3 light_dir = painterly_lighting.lights[0].direction_falloff.xyz;
     return gooch_shade_with_dir(cool_color, warm_color, normal, light_dir);
 }
 
+// Mix base and lit colors according to brush influence and texture.
 vec3 painterly_mix(vec3 base, vec3 light, float brush_texture) {
     float influence = clamp(painterly_lighting.style_params0.w, 0.0, 1.0);
     float factor = clamp(brush_texture * influence, 0.0, 1.0);
     return mix(base, light, factor);
 }
 
+// Apply the selected painterly lighting style to a view-space fragment.
 vec3 painterly_apply_stylized_lighting(vec3 albedo, vec3 normal_vs, vec3 view_dir_vs) {
     vec3 normal = painterly_safe_normalize(normal_vs, vec3(0.0, 0.0, 1.0));
     vec3 view_dir = painterly_safe_normalize(view_dir_vs, vec3(0.0, 0.0, 1.0));
