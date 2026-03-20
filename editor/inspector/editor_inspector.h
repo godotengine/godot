@@ -466,6 +466,8 @@ class EditorInspectorSection : public Container {
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping_for_unfold = false;
 
+	Rect2 revert_rect;
+	bool revert_hover = false;
 	Rect2 check_rect;
 	bool check_hover = false;
 	Rect2 keying_rect;
@@ -477,6 +479,7 @@ class EditorInspectorSection : public Container {
 	PopupMenu *menu = nullptr;
 
 	HashSet<StringName> revertable_properties;
+	bool can_revert = false;
 
 	void _test_unfold();
 	int _get_header_height();
@@ -490,7 +493,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
-		int key_padding_size = 0;
+		int padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;
@@ -511,6 +514,7 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow_collapsed_mirrored;
+		Ref<Texture2D> icon_gui_revert;
 		Ref<Texture2D> icon_gui_checked;
 		Ref<Texture2D> icon_gui_unchecked;
 		Ref<Texture2D> icon_gui_animation_key;
@@ -518,7 +522,7 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> icon_paste;
 
 		Ref<StyleBoxFlat> indent_box;
-		Ref<StyleBoxFlat> key_hover;
+		Ref<StyleBoxFlat> icon_hover;
 	} theme_cache;
 
 protected:
