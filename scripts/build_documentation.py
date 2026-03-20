@@ -65,16 +65,51 @@ def main() -> int:
         default=0,
         help="Allowed undocumented shader uniform fields when --shader-strict is enabled.",
     )
+    parser.add_argument("--engine-patch", action="store_true", help="Generate upstream engine patch report.")
+    parser.add_argument(
+        "--no-engine-patch",
+        action="store_true",
+        help="Skip engine patch generation (useful with --all for CI step isolation).",
+    )
+    parser.add_argument(
+        "--engine-patch-config",
+        default=None,
+        help="Override engine patch YAML config path.",
+    )
+    parser.add_argument(
+        "--engine-patch-upstream-ref",
+        default=None,
+        help="Override pinned upstream ref for engine patch generation.",
+    )
+    parser.add_argument(
+        "--engine-patch-head-ref",
+        default=None,
+        help="Override head ref for engine patch generation.",
+    )
+    parser.add_argument(
+        "--engine-patch-summary-only",
+        action="store_true",
+        help="Generate summary-only markdown for engine patch output.",
+    )
+    parser.add_argument(
+        "--engine-patch-strict",
+        action="store_true",
+        help="Fail docs build when engine patch generation errors.",
+    )
     parser.add_argument("--performance", action="store_true", help="Build performance graphs.")
     parser.add_argument("--compatibility", action="store_true", help="Update compatibility matrix.")
     parser.add_argument("--project-settings", action="store_true", help="Regenerate project settings reference.")
+    parser.add_argument("--benchmarks", action="store_true", help="Export benchmark data for Vega-Lite charts.")
     parser.add_argument("--report", action="store_true", help="Refresh documentation coverage reports.")
     parser.add_argument("--all", action="store_true", help="Run all documentation tasks.")
     args = parser.parse_args()
 
     if args.all:
         args.doxygen = args.gdscript = args.shaders = True
+        args.benchmarks = True
         args.performance = args.compatibility = args.project_settings = args.report = True
+        if not args.no_engine_patch:
+            args.engine_patch = True
 
     exit_code = 0
 
@@ -104,6 +139,34 @@ def main() -> int:
                 ]
             )
         exit_code |= run_python(ROOT / "scripts" / "generate_shader_docs.py", *shader_args)
+
+    if args.engine_patch and not args.no_engine_patch:
+        engine_patch_args: list[str] = []
+        if args.engine_patch_config:
+            engine_patch_args.extend(["--config", args.engine_patch_config])
+        if args.engine_patch_upstream_ref:
+            engine_patch_args.extend(["--upstream-ref", args.engine_patch_upstream_ref])
+        if args.engine_patch_head_ref:
+            engine_patch_args.extend(["--head-ref", args.engine_patch_head_ref])
+        if args.engine_patch_summary_only:
+            engine_patch_args.append("--summary-only")
+        if args.engine_patch_strict:
+            engine_patch_args.append("--strict")
+
+        engine_patch_exit = run_python(
+            ROOT / "scripts" / "generate_engine_patch_report.py",
+            *engine_patch_args,
+        )
+        if engine_patch_exit != 0:
+            if args.engine_patch_strict:
+                exit_code |= engine_patch_exit
+            else:
+                print(
+                    "[docs] WARNING: engine patch generation failed in non-strict mode; continuing docs build."
+                )
+
+    if args.benchmarks:
+        exit_code |= run_python(ROOT / "scripts" / "export_benchmark_vegalite.py")
 
     if args.performance:
         exit_code |= run_python(ROOT / "scripts" / "generate_performance_graphs.py")

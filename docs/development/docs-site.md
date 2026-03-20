@@ -53,6 +53,21 @@ make docs-site
 5. Publish version:
    - `mike deploy`
 
+## Engine patch report automation
+
+- Generator: `python3 scripts/generate_engine_patch_report.py`
+- Baseline config: `docs/reference/engine_patch_sources.yaml`
+- Outputs (committed):
+  - `docs/reference/engine-patch.md`
+  - `docs/reference/engine-patch.json`
+
+Operational policy:
+
+- Keep `upstream_ref` pinned to a stable commit/tag in `engine_patch_sources.yaml`.
+- Update that pin only as an explicit maintenance change.
+- Generation is non-blocking in docs CI (`|| true` in workflow step).
+- Use `--strict` locally/CI only when intentionally gating on report freshness.
+
 ## Public Scope
 
 The staged docs copy excludes internal docs directories:
