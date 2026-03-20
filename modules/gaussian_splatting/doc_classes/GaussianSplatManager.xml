@@ -1,12 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GaussianSplatManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GaussianSplatManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Singleton manager coordinating module-wide Gaussian splatting state.
 	</brief_description>
 	<description>
-		GaussianSplatManager centralizes shared resources and runtime settings for the module, including GPU resource
-		lifecycle, performance telemetry, and cross-node coordination points used by GaussianSplatRenderer instances.
+		GaussianSplatManager centralizes shared resources and runtime settings for the module, including GPU resource lifecycle, performance telemetry, sorting configuration, and cross-node coordination points used by GaussianSplatRenderer instances. Access via [code]GaussianSplatManager.get_singleton()[/code] in C++ or the engine singleton in GDScript.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_global_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary containing module-wide performance statistics. Keys include [code]"total_gaussians"[/code] (total active splat count across all registered buffers) and [code]"total_memory_usage"[/code] (GPU memory in bytes).
+			</description>
+		</method>
+		<method name="set_gpu_sorting_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables GPU-based depth sorting. When disabled, the module falls back to CPU sorting which may reduce performance for large datasets.
+			</description>
+		</method>
+		<method name="is_gpu_sorting_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if GPU-based depth sorting is enabled.
+			</description>
+		</method>
+		<method name="set_shared_submission_device_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the shared RenderingDevice used for multi-threaded GPU submission. When enabled, multiple renderer instances can queue work asynchronously through a shared compute queue.
+			</description>
+		</method>
+		<method name="is_shared_submission_device_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the shared submission device is enabled for multi-threaded GPU work.
+			</description>
+		</method>
+		<method name="get_sorting_config">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of sorting algorithm configuration thresholds. Keys include [code]"bitonic_max"[/code], [code]"radix_max"[/code], [code]"onesweep_max"[/code], [code]"hybrid_trigger"[/code], [code]"hybrid_batch"[/code], and other sorting heuristic parameters driven by project settings.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="gpu_sorting_enabled" type="bool" setter="set_gpu_sorting_enabled" getter="is_gpu_sorting_enabled" default="true">
+			Controls whether GPU-accelerated depth sorting is used. Disabling this falls back to CPU sorting.
+		</member>
+		<member name="shared_submission_device_enabled" type="bool" setter="set_shared_submission_device_enabled" getter="is_shared_submission_device_enabled" default="false">
+			Controls whether a shared RenderingDevice is created for multi-threaded GPU submission across renderer instances.
+		</member>
+	</members>
 </class>

@@ -1,6 +1,6 @@
 # Compatibility Matrix
 
-Last generated: 2026-02-13
+Last generated: 2026-03-19
 
 ## Purpose
 Use this matrix to track validated platform compatibility status for Gaussian Splatting.
@@ -11,16 +11,22 @@ Use this matrix to track validated platform compatibility status for Gaussian Sp
 | Review current platform status | Read the `Status` and `Notes` columns in the matrix. |
 | Update compatibility evidence | Edit `docs/reference/compatibility_sources.yaml` and regenerate this file. |
 
-## API
-Entries marked `unknown` have no validated test evidence in this repository.
+## Platform Support
 
-| Platform | Status | GPU | Driver | Notes |
-| --- | --- | --- | --- | --- |
-| Windows | unknown | - | - | No validated data in repo; RenderDoc compatibility fallback uses main RenderingDevice only (modules/gaussian_splatting/core/gaussian_splat_manager.cpp:236). |
-| Linux | unknown | - | - | No validated data in repo; no checked-in compatibility matrix entries for Linux GPUs. |
-| macOS | unknown | - | - | No validated data in repo; no checked-in compatibility matrix entries for Metal/MoltenVK paths. |
-| Android | unknown | - | - | No validated data in repo; mobile compatibility requires explicit test evidence. |
-| iOS | unknown | - | - | No validated data in repo; mobile compatibility requires explicit test evidence. |
+Status is derived from `SUPPORTED_PLATFORMS` in `modules/gaussian_splatting/config.py`, which
+gates the build via `can_build()`. Platforms not in that set are rejected at compile time.
+
+| Platform | Status | GPU | Driver | Evidence | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Windows | supported | - | - | `SUPPORTED_PLATFORMS` in `config.py` | Primary development platform. RenderDoc compatibility fallback uses main RenderingDevice only. |
+| Linux | supported | - | - | `SUPPORTED_PLATFORMS` (as `linuxbsd`) in `config.py` | Builds and runs on desktop Linux distributions. |
+| macOS | supported | - | - | `SUPPORTED_PLATFORMS` in `config.py` | Builds via Metal/MoltenVK path. |
+| Android | unsupported | - | - | Not in `SUPPORTED_PLATFORMS` in `config.py` | Build system rejects this platform. |
+| iOS | unsupported | - | - | Not in `SUPPORTED_PLATFORMS` in `config.py` | Build system rejects this platform. |
+
+**Note:** "supported" means the build system accepts the platform and compilation succeeds.
+Per-GPU and per-driver validation data has not yet been collected; those columns will be
+populated as hardware-specific test results become available.
 
 ## Examples
 ```bash

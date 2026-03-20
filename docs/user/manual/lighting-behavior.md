@@ -7,7 +7,7 @@ This page describes what lighting usually looks like on splats and which control
 - Splats react to direct lights, but shading is not identical to mesh materials.
 - Shadowed areas should read clearly, with strength controlled by project lighting settings.
 - Scene readability depends on both direct lighting and indirect/environment contribution.
-- Lighting changes should be obvious after adjusting light intensity, direction, or shadow strength.
+- Lighting changes should be visible after adjusting light intensity, direction, or shadow strength.
 
 ## Common Confusion Points
 
@@ -28,7 +28,7 @@ Reference:
 
 ## When to Use Troubleshooting Docs
 
-Use troubleshooting docs when lighting remains broken after basic adjustments:
+Use troubleshooting docs when lighting remains broken after initial adjustments:
 
 - persistent incorrect shadow behavior
 - severe flicker or unstable lighting from frame to frame
@@ -36,7 +36,6 @@ Use troubleshooting docs when lighting remains broken after basic adjustments:
 
 Start here:
 - [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
-- [../../troubleshooting/quick-reference.md](../../troubleshooting/quick-reference.md)
 
 ## Deeper Architecture (Engineers)
 

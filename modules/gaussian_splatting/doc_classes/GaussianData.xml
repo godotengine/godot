@@ -1,13 +1,396 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GaussianData" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GaussianData" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Resource that stores Gaussian splat datasets for runtime and editor workflows.
 	</brief_description>
 	<description>
-		GaussianData is the canonical data container for the Gaussian Splatting module. It stores the per-splat payload,
-		tracks metadata required by rendering and streaming systems, and exposes import/export-compatible data to other
-		module components.
+		GaussianData is the canonical data container for the Gaussian Splatting module. It stores the per-splat payload, tracks metadata required by rendering and streaming systems, and exposes import/export-compatible data to other module components. Supports PLY and SPZ file formats, spherical harmonics up to degree 3, runtime modification overlays, brush stroke painting, animation, and octree-based spatial queries.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="resize">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Resizes the internal Gaussian storage to hold [param count] splats. Existing data beyond the new size is discarded.
+			</description>
+		</method>
+		<method name="set_positions">
+			<return type="void" />
+			<param index="0" name="positions" type="PackedVector3Array" />
+			<description>
+				Sets the positions of all splats from a packed array. The array length determines the splat count.
+			</description>
+		</method>
+		<method name="set_scales">
+			<return type="void" />
+			<param index="0" name="scales" type="PackedVector3Array" />
+			<description>
+				Sets the per-axis scale factors for all splats from a packed array.
+			</description>
+		</method>
+		<method name="set_rotations">
+			<return type="void" />
+			<param index="0" name="rotations" type="Array" />
+			<description>
+				Sets the orientation quaternions for all splats from a typed array of Quaternion values.
+			</description>
+		</method>
+		<method name="set_opacities">
+			<return type="void" />
+			<param index="0" name="opacities" type="PackedFloat32Array" />
+			<description>
+				Sets the opacity values for all splats from a packed float array.
+			</description>
+		</method>
+		<method name="set_spherical_harmonics">
+			<return type="void" />
+			<param index="0" name="sh_data" type="PackedFloat32Array" />
+			<description>
+				Sets spherical harmonics coefficient data from a flat packed float array. The array is interpreted according to the current SH degree configuration.
+			</description>
+		</method>
+		<method name="get_spherical_harmonics">
+			<return type="PackedFloat32Array" />
+			<param index="0" name="splat_idx" type="int" />
+			<description>
+				Returns the spherical harmonics coefficients for a single splat at [param splat_idx] as a packed float array.
+			</description>
+		</method>
+		<method name="has_full_sh">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dataset contains higher-order spherical harmonics data beyond the DC term.
+			</description>
+		</method>
+		<method name="get_sh_degree">
+			<return type="int" />
+			<description>
+				Returns the current spherical harmonics degree (0-3) computed from the stored coefficient count.
+			</description>
+		</method>
+		<method name="set_palette_ids">
+			<return type="void" />
+			<param index="0" name="palette_ids" type="PackedInt32Array" />
+			<description>
+				Sets the palette color lookup index for each splat. Used by the painterly rendering pipeline to select per-splat brush colors.
+			</description>
+		</method>
+		<method name="set_painterly_flags">
+			<return type="void" />
+			<param index="0" name="painterly_flags" type="PackedInt32Array" />
+			<description>
+				Sets the painterly rendering flags bitfield for each splat. Controls per-splat stylization behavior in the GPU pipeline.
+			</description>
+		</method>
+		<method name="get_brush_override_ids">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the brush override IDs for all splats as a packed integer array. Each value selects a specific brush style in the painterly pipeline.
+			</description>
+		</method>
+		<method name="get_brush_override_ids_buffer">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the brush override IDs buffer. Functionally equivalent to [method get_brush_override_ids].
+			</description>
+		</method>
+		<method name="set_brush_override_ids">
+			<return type="void" />
+			<param index="0" name="brush_override_ids" type="PackedInt32Array" />
+			<description>
+				Sets the brush override IDs for all splats. Each value selects a brush style in the painterly rendering pipeline.
+			</description>
+		</method>
+		<method name="set_brush_axes">
+			<return type="void" />
+			<param index="0" name="brush_axes" type="PackedVector2Array" />
+			<description>
+				Sets the brush stroke axis vectors for each splat. Controls the orientation and aspect ratio of painterly brush strokes on the GPU.
+			</description>
+		</method>
+		<method name="set_stroke_ages">
+			<return type="void" />
+			<param index="0" name="stroke_ages" type="PackedFloat32Array" />
+			<description>
+				Sets the stroke age values for each splat. Used for temporal effects in the painterly rendering pipeline.
+			</description>
+		</method>
+		<method name="set_2d_mode">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables 2D surfel mode. When enabled, splats are rendered as oriented discs using surface normals instead of 3D ellipsoids.
+			</description>
+		</method>
+		<method name="get_2d_mode">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if 2D surfel rendering mode is active.
+			</description>
+		</method>
+		<method name="set_normals">
+			<return type="void" />
+			<param index="0" name="normals" type="PackedVector3Array" />
+			<description>
+				Sets the surface normal vectors for all splats. Normals are used when 2D surfel mode is enabled for oriented disc rendering.
+			</description>
+		</method>
+		<method name="load_from_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads Gaussian splat data from a PLY or SPZ file at the given [param path]. Returns [constant OK] on success or an error code on failure.
+			</description>
+		</method>
+		<method name="save_to_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves the current Gaussian splat data to a file at the given [param path]. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="build_octree">
+			<return type="void" />
+			<param index="0" name="max_depth" type="int" default="8" />
+			<param index="1" name="min_gaussians" type="int" default="32" />
+			<description>
+				Builds an internal octree acceleration structure for spatial queries. [param max_depth] controls the tree depth limit and [param min_gaussians] sets the minimum splat count per leaf before subdivision stops.
+			</description>
+		</method>
+		<method name="query_octree">
+			<return type="int[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns indices of all splats whose positions fall within the given axis-aligned bounding box. Requires [method build_octree] to have been called first.
+			</description>
+		</method>
+		<method name="get_count">
+			<return type="int" />
+			<description>
+				Returns the total number of Gaussian splats stored in this resource.
+			</description>
+		</method>
+		<method name="get_aabb">
+			<return type="AABB" />
+			<description>
+				Computes and returns the axis-aligned bounding box enclosing all splat positions.
+			</description>
+		</method>
+		<method name="get_memory_usage">
+			<return type="float" />
+			<description>
+				Returns the estimated CPU memory usage of the stored Gaussian data in bytes.
+			</description>
+		</method>
+		<method name="set_animation_state_machine">
+			<return type="void" />
+			<param index="0" name="animation" type="GaussianAnimationStateMachine" />
+			<description>
+				Assigns an animation state machine resource that drives per-splat animation of position, color, opacity, scale, and rotation over time.
+			</description>
+		</method>
+		<method name="get_animation_state_machine">
+			<return type="GaussianAnimationStateMachine" />
+			<description>
+				Returns the animation state machine resource, or [code]null[/code] if none is assigned.
+			</description>
+		</method>
+		<method name="has_animation">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an animation state machine resource is assigned and valid.
+			</description>
+		</method>
+		<method name="update_animation">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Advances the animation by [param delta] seconds and updates the internal animation cache. Call this each frame for smooth playback.
+			</description>
+		</method>
+		<method name="apply_animation_at_time">
+			<return type="void" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Seeks the animation to an absolute [param time] in seconds and updates all animated properties. Useful for scrubbing or previewing specific frames.
+			</description>
+		</method>
+		<method name="set_animation_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables animation playback. When disabled, animated property queries return the base (non-animated) values.
+			</description>
+		</method>
+		<method name="is_animation_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if animation playback is enabled.
+			</description>
+		</method>
+		<method name="set_incremental_saver">
+			<return type="void" />
+			<param index="0" name="saver" type="GaussianIncrementalSaver" />
+			<description>
+				Assigns an incremental saver resource for periodic background persistence of modifications.
+			</description>
+		</method>
+		<method name="get_incremental_saver">
+			<return type="GaussianIncrementalSaver" />
+			<description>
+				Returns the assigned incremental saver resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="get_animated_position">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="time" type="float" default="-1.0" />
+			<description>
+				Returns the animated position of the splat at [param index]. If [param time] is negative, uses the last cached animation time.
+			</description>
+		</method>
+		<method name="get_animated_color">
+			<return type="Color" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="time" type="float" default="-1.0" />
+			<description>
+				Returns the animated color of the splat at [param index]. If [param time] is negative, uses the last cached animation time.
+			</description>
+		</method>
+		<method name="get_animated_opacity">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="time" type="float" default="-1.0" />
+			<description>
+				Returns the animated opacity of the splat at [param index]. If [param time] is negative, uses the last cached animation time.
+			</description>
+		</method>
+		<method name="get_animated_scale">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="time" type="float" default="-1.0" />
+			<description>
+				Returns the animated scale of the splat at [param index]. If [param time] is negative, uses the last cached animation time.
+			</description>
+		</method>
+		<method name="get_animated_rotation">
+			<return type="Quaternion" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="time" type="float" default="-1.0" />
+			<description>
+				Returns the animated rotation of the splat at [param index]. If [param time] is negative, uses the last cached animation time.
+			</description>
+		</method>
+		<method name="set_runtime_position">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Overwrites the position of a single splat at [param index] in the runtime modification overlay. Does not alter the original resource data.
+			</description>
+		</method>
+		<method name="set_runtime_color">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Overwrites the color of a single splat at [param index] in the runtime modification overlay. Does not alter the original resource data.
+			</description>
+		</method>
+		<method name="set_runtime_opacity">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="opacity" type="float" />
+			<description>
+				Overwrites the opacity of a single splat at [param index] in the runtime modification overlay. Does not alter the original resource data.
+			</description>
+		</method>
+		<method name="apply_color_range">
+			<return type="void" />
+			<param index="0" name="start" type="int" />
+			<param index="1" name="count" type="int" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Applies [param color] to [param count] splats starting at index [param start] in the runtime modification overlay.
+			</description>
+		</method>
+		<method name="mark_range_dirty">
+			<return type="void" />
+			<param index="0" name="start" type="int" />
+			<param index="1" name="count" type="int" />
+			<description>
+				Marks [param count] splats starting at index [param start] as dirty, signaling the GPU buffer needs re-upload for that range.
+			</description>
+		</method>
+		<method name="commit_runtime_changes">
+			<return type="void" />
+			<description>
+				Commits all pending runtime modifications into the main Gaussian storage. After this call, runtime overlays are merged and the modification state is cleared.
+			</description>
+		</method>
+		<method name="revert_runtime_changes">
+			<return type="void" />
+			<description>
+				Discards all pending runtime modifications, restoring splats to their original stored values.
+			</description>
+		</method>
+		<method name="apply_brush_stroke">
+			<return type="void" />
+			<param index="0" name="center" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="opacity" type="float" />
+			<param index="4" name="hardness" type="float" />
+			<description>
+				Applies a spherical brush stroke at [param center] with the given [param radius], [param color], [param opacity], and [param hardness]. Affected splats have their colors blended in the runtime overlay.
+			</description>
+		</method>
+		<method name="get_brush_strokes">
+			<return type="Array" />
+			<description>
+				Returns an array of dictionaries representing all recorded brush strokes. Each dictionary contains "center", "radius", "color", "opacity", "hardness", and "timestamp" keys.
+			</description>
+		</method>
+		<method name="clear_brush_strokes">
+			<return type="void" />
+			<description>
+				Clears all recorded brush strokes from the internal history.
+			</description>
+		</method>
+		<method name="set_brush_strokes">
+			<return type="void" />
+			<param index="0" name="strokes" type="Array" />
+			<description>
+				Replaces the internal brush stroke history with [param strokes]. Each element must be a dictionary matching the format returned by [method get_brush_strokes].
+			</description>
+		</method>
+		<method name="capture_brush_affected_state">
+			<return type="Dictionary" />
+			<param index="0" name="center" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Captures and returns the current state of all splats within [param radius] of [param center] as a dictionary. Used for undo/redo support in painting workflows.
+			</description>
+		</method>
+		<method name="restore_brush_stroke">
+			<return type="void" />
+			<param index="0" name="saved_state" type="Dictionary" />
+			<description>
+				Restores splat state from a dictionary previously returned by [method capture_brush_affected_state]. Used to undo brush strokes.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="2d_mode" type="bool" setter="set_2d_mode" getter="get_2d_mode" default="false">
+			When enabled, splats are rendered as oriented 2D surfels rather than 3D ellipsoids. Requires surface normals to be set via [method set_normals].
+		</member>
+		<member name="count" type="int" setter="" getter="get_count" default="0">
+			The total number of Gaussian splats in this resource. Read-only.
+		</member>
+		<member name="animation_enabled" type="bool" setter="set_animation_enabled" getter="is_animation_enabled" default="true">
+			Controls whether animation playback is active. When disabled, animated property queries return base values.
+		</member>
+	</members>
 </class>

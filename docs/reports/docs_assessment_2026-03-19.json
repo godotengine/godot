@@ -1,0 +1,379 @@
+{
+  "report_date": "2026-03-19",
+  "assessor": "Automated audit (Claude Opus 4.6)",
+  "benchmark": "Official Godot documentation standards",
+  "overall_score": {
+    "value": 2.41,
+    "scale": 5,
+    "label": "Below Godot-docs parity",
+    "weights_basis": "coverage=20%, accuracy=15%, navigation=10%, task_success=15%, api_completeness=15%, examples=8%, troubleshooting=7%, maintainability=5%, versioning=3%, media=2%"
+  },
+  "dimension_scores": [
+    {
+      "dimension": "Coverage breadth/depth",
+      "weight_percent": 20,
+      "score": 2.5,
+      "confidence": 0.85,
+      "key_evidence": [
+        "modules/gaussian_splatting/register_types.cpp:70-139 (29 registered classes)",
+        "docs/api/ contains 1 maintained class page (gaussian_splat_node3d.md)",
+        "22 of 29 registered classes have zero documentation"
+      ]
+    },
+    {
+      "dimension": "Accuracy/consistency",
+      "weight_percent": 15,
+      "score": 2.2,
+      "confidence": 0.82,
+      "key_evidence": [
+        "docs/getting-started/installation.md:30-33 cites register_types.cpp lines 82-85-100 but actual lines are 77-81-88",
+        "docs/reference/project-settings.md:21 claims 76 registered keys; actual count may differ",
+        "docs/troubleshooting/recurring-issues.md:21 has empty inline-code placeholder",
+        "docs/user/manual/faq.md:5 has empty inline-code placeholder"
+      ]
+    },
+    {
+      "dimension": "Information architecture/navigation",
+      "weight_percent": 10,
+      "score": 2.0,
+      "confidence": 0.90,
+      "key_evidence": [
+        "docs/index.md uses backtick code paths (not markdown links) for all 30+ entries",
+        "docs/index.md:64-67 references 4 release/ files that do not exist",
+        "docs/troubleshooting/quick-reference.md is 5-line redirect stub",
+        "docs/troubleshooting/build-troubleshooting.md is 6-line redirect stub"
+      ]
+    },
+    {
+      "dimension": "Task success orientation",
+      "weight_percent": 15,
+      "score": 3.3,
+      "confidence": 0.80,
+      "key_evidence": [
+        "docs/getting-started/quick-start.md: 4-step flow with verification gates, multi-platform commands",
+        "docs/user/quickstart.md: artist-oriented lane",
+        "docs/workflows/importing.md: complete import workflow with troubleshooting",
+        "docs/workflows/GSPLATWORLD_BAKE.md: bake workflow with all options documented",
+        "docs/features/color-grading-quick-start.md: 5-step grading workflow"
+      ]
+    },
+    {
+      "dimension": "API/reference completeness",
+      "weight_percent": 15,
+      "score": 1.5,
+      "confidence": 0.92,
+      "key_evidence": [
+        "29 classes registered via GDREGISTER_CLASS/GDREGISTER_ABSTRACT_CLASS",
+        "1 maintained API page (GaussianSplatNode3D) with enums/properties/methods/signals",
+        "3 doc_classes XML files, all stub-only (brief description + empty tutorials, no methods/members/signals)",
+        "config.py:get_doc_classes() returns only 3 classes",
+        "docs/api/shader_reference.md: 127 'Undocumented.' function entries, 116 '(undocumented)' field entries"
+      ],
+      "surface_metrics": {
+        "total_registered_classes": 29,
+        "classes_with_api_page": 1,
+        "classes_with_xml_doc": 3,
+        "classes_with_xml_methods": 0,
+        "undocumented_shader_functions": 127,
+        "undocumented_shader_fields": 116
+      }
+    },
+    {
+      "dimension": "Examples quality",
+      "weight_percent": 8,
+      "score": 3.0,
+      "confidence": 0.78,
+      "key_evidence": [
+        "docs/features/ply-loader.md:57-90: complete GDScript examples with error handling",
+        "docs/features/color-grading-quick-start.md:49-72: realistic resource configuration",
+        "docs/features/artist_pipeline.md:40-69: practical brush workflow examples",
+        "docs/api/gaussian_splat_node3d.md:415-438: two complete usage patterns",
+        "Generated shader/GDScript references contain no examples"
+      ]
+    },
+    {
+      "dimension": "Troubleshooting quality",
+      "weight_percent": 7,
+      "score": 2.7,
+      "confidence": 0.75,
+      "key_evidence": [
+        "docs/troubleshooting/recurring-issues.md: 4 categories with symptom/check/fix format",
+        "Feature pages include targeted troubleshooting tables (ply-loader, color-grading, artist_pipeline, importing, GSPLATWORLD_BAKE)",
+        "2 troubleshooting pages are redirect stubs",
+        "Empty placeholder in recurring-issues.md:21"
+      ]
+    },
+    {
+      "dimension": "Maintainability/process",
+      "weight_percent": 5,
+      "score": 2.8,
+      "confidence": 0.80,
+      "key_evidence": [
+        "Docs pipeline: build_docs_site.py, stage_public_docs.py, check_docs_media_budget.py, check_links.py",
+        "Generation scripts: extract_gdscript_docs.py, generate_shader_docs.py, generate_project_settings_reference.py",
+        "Style guide exists: docs/style/documentation-style-guide.md",
+        "Contribution standards require link checks: docs/governance/contribution-standards.md",
+        "Duplicate quickstarts create drift risk"
+      ]
+    },
+    {
+      "dimension": "Versioning/release alignment",
+      "weight_percent": 3,
+      "score": 1.5,
+      "confidence": 0.88,
+      "key_evidence": [
+        "Versioned docs model documented: docs/development/docs-site.md (mike + MkDocs Material)",
+        "CHANGELOG.md line 4: 'This changelog is not maintained.'",
+        "4 release doc references in index.md point to non-existent files",
+        "Compatibility matrix: all 5 platforms 'unknown'",
+        "No release notes exist"
+      ]
+    },
+    {
+      "dimension": "Media/docs UX quality",
+      "weight_percent": 2,
+      "score": 2.5,
+      "confidence": 0.70,
+      "key_evidence": [
+        "docs/features/media.md: media conventions documented with LFS guidance",
+        "docs/assets/images/: 1 SVG (2KB)",
+        "docs/assets/videos/: 2 files (17KB mp4 + 42KB webm)",
+        "0 screenshots of editor UI, inspector, or visual results",
+        "scripts/check_docs_media_budget.py: budget gate exists"
+      ]
+    }
+  ],
+  "top_10_gaps": [
+    {
+      "id": "F1",
+      "priority": "P0",
+      "title": "API documentation covers 1 of 29 registered classes",
+      "evidence": [
+        "modules/gaussian_splatting/register_types.cpp:70-139",
+        "docs/api/gaussian_splat_node3d.md (only maintained API page)",
+        "modules/gaussian_splatting/config.py:85-90"
+      ],
+      "remediation": "Create API pages for user-critical classes; expand doc_classes XML"
+    },
+    {
+      "id": "F2",
+      "priority": "P0",
+      "title": "docs/index.md uses non-navigable code paths and references 4 missing files",
+      "evidence": [
+        "docs/index.md:7-67 (backtick paths, not markdown links)",
+        "docs/index.md:64-67 (release/ directory does not exist)"
+      ],
+      "remediation": "Convert to markdown links; remove/replace missing release references"
+    },
+    {
+      "id": "F3",
+      "priority": "P0",
+      "title": "Compatibility matrix is entirely empty (all platforms 'unknown')",
+      "evidence": [
+        "docs/reference/compatibility-matrix.md:19-23",
+        "docs/reference/compatibility_sources.yaml"
+      ],
+      "remediation": "Add validated test evidence for Windows at minimum"
+    },
+    {
+      "id": "F4",
+      "priority": "P0",
+      "title": "Stale line-level code references in core onboarding docs",
+      "evidence": [
+        "docs/getting-started/installation.md:30-33 vs register_types.cpp:77-81,88"
+      ],
+      "remediation": "Update references; consider automated validation"
+    },
+    {
+      "id": "F5",
+      "priority": "P0",
+      "title": "doc_classes XML files are empty stubs (no methods/properties/signals)",
+      "evidence": [
+        "modules/gaussian_splatting/doc_classes/GaussianData.xml",
+        "modules/gaussian_splatting/doc_classes/GaussianSplatManager.xml",
+        "modules/gaussian_splatting/doc_classes/GaussianSplatRenderer.xml"
+      ],
+      "remediation": "Fill XML with method/member/signal documentation"
+    },
+    {
+      "id": "F6",
+      "priority": "P1",
+      "title": "Generated shader reference is 95%+ placeholder",
+      "evidence": [
+        "docs/api/shader_reference.md: 127 'Undocumented.' functions, 116 '(undocumented)' fields"
+      ],
+      "remediation": "Add shader source-code documentation comments; improve generator"
+    },
+    {
+      "id": "F7",
+      "priority": "P1",
+      "title": "Duplicate quickstart flows create drift risk",
+      "evidence": [
+        "docs/getting-started/quick-start.md",
+        "docs/user/quickstart.md"
+      ],
+      "remediation": "Consolidate to one canonical quickstart with audience-specific deltas"
+    },
+    {
+      "id": "F8",
+      "priority": "P1",
+      "title": "Streaming, animation, and dynamic instancing have zero user docs",
+      "evidence": [
+        "GaussianStreamingSystem registered at :73",
+        "GaussianAnimationStateMachine registered at :134",
+        "GaussianSplatDynamicInstance3D registered at :80"
+      ],
+      "remediation": "Create feature guides for these user-visible systems"
+    },
+    {
+      "id": "F9",
+      "priority": "P1",
+      "title": "Performance presets documentation is skeletal (21 lines)",
+      "evidence": [
+        "docs/user/manual/performance-presets.md"
+      ],
+      "remediation": "Add preset value tables, comparison data, GPU memory guidance"
+    },
+    {
+      "id": "F10",
+      "priority": "P2",
+      "title": "Empty inline-code placeholders in user-facing text",
+      "evidence": [
+        "docs/troubleshooting/recurring-issues.md:21",
+        "docs/user/manual/faq.md:5"
+      ],
+      "remediation": "Fill with correct content"
+    }
+  ],
+  "roadmap_items": [
+    {
+      "horizon": "0-30_days",
+      "milestone": "Fix navigation and trust fundamentals",
+      "owner": "Docs lead + module lead",
+      "effort_days": "8-10",
+      "deliverables": [
+        "Convert docs/index.md to markdown links",
+        "Remove missing release references",
+        "Fix placeholder text artifacts",
+        "Refresh stale line references in installation guide",
+        "Regenerate project-settings reference",
+        "Delete redirect stub pages"
+      ]
+    },
+    {
+      "horizon": "0-30_days",
+      "milestone": "Add docs CI quality gates",
+      "owner": "DevEx",
+      "effort_days": "3-5",
+      "deliverables": [
+        "CI job with check_links.py + check_docs_media_budget.py + mkdocs build --strict"
+      ]
+    },
+    {
+      "horizon": "0-30_days",
+      "milestone": "Fill compatibility matrix for primary platform",
+      "owner": "QA",
+      "effort_days": "1",
+      "deliverables": [
+        "Windows compatibility evidence in compatibility_sources.yaml"
+      ]
+    },
+    {
+      "horizon": "31-60_days",
+      "milestone": "Create API pages for 6 user-critical classes",
+      "owner": "Module maintainers + tech writer",
+      "effort_days": "15-20",
+      "deliverables": [
+        "API pages: GaussianData, GaussianSplatAsset, GaussianSplatWorld3D, GaussianSplatContainer, GaussianSplatDynamicInstance3D, GaussianSplatManager"
+      ]
+    },
+    {
+      "horizon": "31-60_days",
+      "milestone": "Expand doc_classes XML with methods/properties",
+      "owner": "Module maintainers",
+      "effort_days": "8-12",
+      "deliverables": [
+        "Full XML for GaussianData, GaussianSplatManager, GaussianSplatRenderer, GaussianSplatNode3D"
+      ]
+    },
+    {
+      "horizon": "31-60_days",
+      "milestone": "Create streaming + performance tuning guides",
+      "owner": "Module maintainer",
+      "effort_days": "5-8",
+      "deliverables": [
+        "docs/features/streaming.md",
+        "Expanded performance-presets.md with concrete values"
+      ]
+    },
+    {
+      "horizon": "61-90_days",
+      "milestone": "Complete class-reference parity program",
+      "owner": "Module maintainers",
+      "effort_days": "20-30",
+      "deliverables": [
+        "12-15 user-facing classes with filled XML class references",
+        "get_doc_classes() updated to return all documented classes"
+      ]
+    },
+    {
+      "horizon": "61-90_days",
+      "milestone": "Generated docs quality uplift + media program",
+      "owner": "Tooling + docs lead",
+      "effort_days": "11-17",
+      "deliverables": [
+        "Shader placeholder ratio < 5%",
+        "5+ annotated screenshots for core workflows",
+        "GDScript reference with user-API section separated from test scripts"
+      ]
+    },
+    {
+      "horizon": "61-90_days",
+      "milestone": "Release documentation + cross-link pass",
+      "owner": "Release manager + docs lead",
+      "effort_days": "5-8",
+      "deliverables": [
+        "Versioned release notes template",
+        "CHANGELOG.md updated or replaced",
+        "0 public orphan pages"
+      ]
+    }
+  ],
+  "parity_criteria": [
+    "100% of user-visible registered classes have maintained API docs (markdown and/or filled XML) with methods/members/signals documented",
+    "0 stale file:line code references in onboarding/reference docs, enforced by automated validation",
+    "Install → first render → import → tune → troubleshoot user journey completable from docs alone",
+    "docs/index.md uses valid markdown links for all entries; 0 broken references; 0 public orphan pages",
+    "CI enforces link checks, media budget, strict docs build, and generated-doc freshness checks on every PR",
+    "Top 15 recurring issues have structured symptom→cause→fix troubleshooting entries with runnable commands",
+    "Compatibility matrix has validated evidence for ≥3 platforms at every tagged release",
+    "Generated references have < 5% placeholder content",
+    "≥5 annotated screenshots/screencasts covering core workflows",
+    "Versioned release notes published with each mike deploy version",
+    "0 instances of Godot-banned words (obvious, simple, basic, easy, actual, just, clear, however) in user-facing docs",
+    "All doc_classes XML files include brief_description + description + methods + members + signals for their respective classes"
+  ],
+  "validation_results": {
+    "link_checker": "PASS (0 broken links)",
+    "media_budget": "PASS (1 SVG 2KB + 2 videos 59KB)",
+    "todo_fixme_scan": "PASS (0 markers found)",
+    "docs_build_strict": "NOT_TESTED (mkdocs not available in assessment environment)"
+  },
+  "corpus_metrics": {
+    "total_docs_files": 55,
+    "public_docs_files": 45,
+    "total_docs_lines": 15260,
+    "files_with_code_examples": 12,
+    "files_with_troubleshooting": 8,
+    "generated_reference_files": 3,
+    "media_assets": {
+      "images": 1,
+      "videos": 2,
+      "total_size_kb": 61
+    },
+    "registered_classes": 29,
+    "classes_with_api_page": 1,
+    "classes_with_xml_stubs": 3,
+    "classes_with_zero_docs": 22
+  }
+}

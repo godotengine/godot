@@ -1,26 +1,26 @@
 platforms:
   Windows:
-    status: unknown
+    status: supported
     gpu: "-"
     driver: "-"
-    notes: "No validated data in repo; RenderDoc compatibility fallback uses main RenderingDevice only (modules/gaussian_splatting/core/gaussian_splat_manager.cpp:236)."
+    notes: "Primary development platform; listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py. RenderDoc compatibility fallback uses main RenderingDevice only (modules/gaussian_splatting/core/gaussian_splat_manager.cpp:236)."
   Linux:
-    status: unknown
+    status: supported
     gpu: "-"
     driver: "-"
-    notes: "No validated data in repo; no checked-in compatibility matrix entries for Linux GPUs."
+    notes: "Listed in SUPPORTED_PLATFORMS (as 'linuxbsd') in modules/gaussian_splatting/config.py."
   macOS:
-    status: unknown
+    status: supported
     gpu: "-"
     driver: "-"
-    notes: "No validated data in repo; no checked-in compatibility matrix entries for Metal/MoltenVK paths."
+    notes: "Listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py."
   Android:
-    status: unknown
+    status: unsupported
     gpu: "-"
     driver: "-"
-    notes: "No validated data in repo; mobile compatibility requires explicit test evidence."
+    notes: "Not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py; build system rejects this platform."
   iOS:
-    status: unknown
+    status: unsupported
     gpu: "-"
     driver: "-"
-    notes: "No validated data in repo; mobile compatibility requires explicit test evidence."
+    notes: "Not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py; build system rejects this platform."

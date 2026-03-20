@@ -29,7 +29,7 @@ Quick references:
 
 ## When to Use Troubleshooting Docs
 
-Use troubleshooting pages when behavior is persistent, not just a one-time warmup:
+Use troubleshooting pages when behavior is persistent, not a one-time warmup:
 
 - repeated heavy flicker or mis-ordered transparency
 - splats consistently fail to appear
@@ -37,7 +37,6 @@ Use troubleshooting pages when behavior is persistent, not just a one-time warmu
 
 Start here:
 - [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
-- [../../troubleshooting/quick-reference.md](../../troubleshooting/quick-reference.md)
 
 ## Deeper Architecture (Engineers)
 

@@ -15,7 +15,7 @@ Gaussian splatting renders scenes from splat data (`.ply` / `.spz`) instead of t
 ## When to Tune
 
 - Use presets first.
-- Only change advanced settings when you see clear artifacts or performance problems.
+- Only change advanced settings when you see visible artifacts or performance problems.
 
 ## Behavior Guides
 

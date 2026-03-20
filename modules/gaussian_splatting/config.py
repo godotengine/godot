@@ -85,8 +85,19 @@ def configure(env):
 def get_doc_classes():
     return [
         "GaussianData",
-        "GaussianSplatRenderer",
+        "GaussianMemoryStream",
+        "GaussianSplatContainer",
+        "GaussianSplatDebugHUD",
+        "GaussianSplatDynamicInstance3D",
         "GaussianSplatManager",
+        "GaussianSplatNode3D",
+        "GaussianSplatRenderer",
+        "GaussianSplatWorld",
+        "GaussianSplatWorld3D",
+        "GaussianStreamingSystem",
+        "PLYLoader",
+        "PainterlyMaterial",
+        "SPZLoader",
     ]
 
 

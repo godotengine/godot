@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatContainer" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Container node that merges child splat nodes into a single optimized dataset.
+	</brief_description>
+	<description>
+		GaussianSplatContainer collects GaussianSplatNode3D and GaussianSplatWorld3D children, merges their splat data into a single GaussianData resource with spatial chunking, and can apply the result to a target renderer or node. This enables rendering multiple assets as one draw call for improved performance. The container supports automatic merging on ready, chunk-based spatial subdivision, and export to GaussianSplatWorld resources.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_merge_on_ready">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				When enabled, child nodes are automatically merged when this container receives the READY notification.
+			</description>
+		</method>
+		<method name="is_merge_on_ready">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if automatic merge on ready is enabled.
+			</description>
+		</method>
+		<method name="set_chunk_size">
+			<return type="void" />
+			<param index="0" name="size" type="float" />
+			<description>
+				Sets the spatial chunk subdivision size in world units. Smaller values create more chunks with tighter bounding boxes, improving frustum culling precision at the cost of more draw batches.
+			</description>
+		</method>
+		<method name="get_chunk_size">
+			<return type="float" />
+			<description>
+				Returns the current chunk size in world units.
+			</description>
+		</method>
+		<method name="set_hide_children_after_merge">
+			<return type="void" />
+			<param index="0" name="hide" type="bool" />
+			<description>
+				When enabled, child splat nodes are hidden after merging to prevent double rendering.
+			</description>
+		</method>
+		<method name="get_hide_children_after_merge">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if children are hidden after merging.
+			</description>
+		</method>
+		<method name="set_apply_to_target_on_merge">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				When enabled, the merged data is automatically applied to the node at [member target_node_path] after each merge operation.
+			</description>
+		</method>
+		<method name="is_apply_to_target_on_merge">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if automatic target application is enabled.
+			</description>
+		</method>
+		<method name="set_target_node_path">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<description>
+				Sets the node path of the target node that receives merged data when [member apply_to_target_on_merge] is enabled. The target must be a GaussianSplatNode3D or GaussianSplatWorld3D.
+			</description>
+		</method>
+		<method name="get_target_node_path">
+			<return type="NodePath" />
+			<description>
+				Returns the current target node path.
+			</description>
+		</method>
+		<method name="merge_children">
+			<return type="void" />
+			<description>
+				Merges all child splat node data into a single GaussianData resource with spatial chunking. If [member hide_children_after_merge] is enabled, children are hidden. If [member apply_to_target_on_merge] is enabled, the result is applied to the target node.
+			</description>
+		</method>
+		<method name="clear_merged_data">
+			<return type="void" />
+			<description>
+				Clears the merged data and chunk information, releasing the internal GaussianData resource.
+			</description>
+		</method>
+		<method name="apply_to_renderer">
+			<return type="int" enum="Error" />
+			<param index="0" name="renderer" type="GaussianSplatRenderer" />
+			<description>
+				Applies the merged data and chunk layout to the given [param renderer]. Returns [constant OK] on success, or [constant ERR_UNAVAILABLE] if no merged data exists.
+			</description>
+		</method>
+		<method name="apply_to_node">
+			<return type="int" enum="Error" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Applies the merged data to a GaussianSplatNode3D or GaussianSplatWorld3D [param node]. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="merge_children_to_node">
+			<return type="int" enum="Error" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Merges all children and immediately applies the result to the given [param node]. Combines [method merge_children] and [method apply_to_node] in a single call. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="export_world_resource">
+			<return type="GaussianSplatWorld" />
+			<description>
+				Creates and returns a new GaussianSplatWorld resource from the current merged data and chunk layout. Returns [code]null[/code] if no merged data is available.
+			</description>
+		</method>
+		<method name="get_merged_data">
+			<return type="GaussianData" />
+			<description>
+				Returns the merged GaussianData resource, or [code]null[/code] if no merge has been performed.
+			</description>
+		</method>
+		<method name="get_chunk_count">
+			<return type="int" />
+			<description>
+				Returns the number of spatial chunks created during the last merge operation.
+			</description>
+		</method>
+		<method name="get_chunk_sizes">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns an array containing the splat count for each spatial chunk.
+			</description>
+		</method>
+		<method name="get_chunk_aabbs">
+			<return type="Array" />
+			<description>
+				Returns an array of AABB values representing the bounding box of each spatial chunk.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="merge_on_ready" type="bool" setter="set_merge_on_ready" getter="is_merge_on_ready" default="false">
+			When enabled, children are automatically merged when this container is ready.
+		</member>
+		<member name="chunk_size" type="float" setter="set_chunk_size" getter="get_chunk_size" default="8.0">
+			Spatial subdivision chunk size in world units.
+		</member>
+		<member name="hide_children_after_merge" type="bool" setter="set_hide_children_after_merge" getter="get_hide_children_after_merge" default="false">
+			When enabled, child nodes are hidden after merging to avoid double rendering.
+		</member>
+		<member name="apply_to_target_on_merge" type="bool" setter="set_apply_to_target_on_merge" getter="is_apply_to_target_on_merge" default="false">
+			When enabled, merged data is automatically applied to the target node after merging.
+		</member>
+		<member name="target_node_path" type="NodePath" setter="set_target_node_path" getter="get_target_node_path" default="NodePath(&quot;&quot;)">
+			Path to the target node that receives merged data.
+		</member>
+	</members>
+</class>

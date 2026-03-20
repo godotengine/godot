@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatWorld" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Resource that bundles Gaussian splat data with spatial chunking and world-level metadata.
+	</brief_description>
+	<description>
+		GaussianSplatWorld is a persistent resource that combines a [GaussianData] payload with static spatial chunks, bounding volume, and arbitrary metadata. It serves as the on-disk representation of a pre-chunked Gaussian splat scene, enabling the streaming system to load individual spatial regions on demand.
+		Use [member gaussian_data] to access the underlying splat data, [member bounds] to query the world-space extents, and [method get_chunk_count] / [method get_chunk_sizes] / [method get_chunk_aabbs] to inspect the spatial partitioning. The [code].gsplatworld[/code] file extension is the native format for this resource.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_chunk_count">
+			<return type="int" />
+			<description>
+				Returns the number of static spatial chunks in this world resource.
+			</description>
+		</method>
+		<method name="get_chunk_sizes">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns a packed array where each element is the number of splat indices in the corresponding chunk.
+			</description>
+		</method>
+		<method name="get_chunk_aabbs">
+			<return type="Array" />
+			<description>
+				Returns an array of [AABB] values, one per chunk, representing the bounding volume of each spatial region.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all data from this world resource, releasing the [GaussianData] reference, clearing chunks, resetting bounds, and emptying metadata.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="gaussian_data" type="GaussianData" setter="set_gaussian_data" getter="get_gaussian_data">
+			The underlying [GaussianData] resource containing the splat payload for this world.
+		</member>
+		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds">
+			The world-space axis-aligned bounding box enclosing all splats.
+		</member>
+		<member name="metadata" type="Dictionary" setter="set_metadata" getter="get_metadata">
+			Arbitrary metadata dictionary. May contain keys such as [code]lod_levels[/code], source file information, or application-specific tags.
+		</member>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

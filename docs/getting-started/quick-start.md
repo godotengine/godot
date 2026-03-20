@@ -85,6 +85,6 @@ You should see:
 
 ## Need Help?
 
-- Artist quickstart lane: [../user/quickstart.md](../user/quickstart.md)
+- Artist-specific resources: [../user/quickstart.md](../user/quickstart.md)
 - Installation details: [installation.md](installation.md)
 - Recurring fixes: [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)

@@ -2,7 +2,7 @@
 
 ## Why is the node visible in one project but not another?
 
-Most often the editor binary was not built with ``.
+Most often the editor binary was not built with `modules/gaussian_splatting`.
 
 ## Why do tests fail with a stock Godot binary?
 

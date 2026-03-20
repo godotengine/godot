@@ -12,7 +12,7 @@ Start with installation and a fast first visible splat.
 | --- | --- |
 | Installation steps | [installation.md](installation.md) |
 | First-run quick start (artist-friendly) | [quick-start.md](quick-start.md) |
-| User lane quickstart | [../user/quickstart.md](../user/quickstart.md) |
+| Artist-specific resources | [../user/quickstart.md](../user/quickstart.md) |
 | Sample project | `tests/examples/godot/test_project/` |
 | API reference | [../api/README.md](../api/README.md) |
 | Troubleshooting | [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md) |
