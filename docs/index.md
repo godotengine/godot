@@ -70,4 +70,4 @@ This is the canonical documentation entrypoint for this repository.
 
 ## Migration
 
-- [Migration guide and compatibility checklist](migration/README.md)
+- [Migration guide and compatibility checklist](migration/index.md)

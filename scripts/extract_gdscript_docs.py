@@ -13,6 +13,7 @@ OUTPUT = ROOT / "docs" / "api" / "gdscript_reference.md"
 DEFAULT_SOURCE_ROOTS = (
     ROOT / "modules" / "gaussian_splatting",
     ROOT / "scripts",
+    ROOT / "templates",
     ROOT / "tests" / "runtime",
     ROOT / "tests" / "examples" / "godot" / "test_project",
 )
@@ -34,7 +35,7 @@ def parse_args() -> argparse.Namespace:
         "--source-root",
         action="append",
         default=[],
-        help="Optional additional or replacement source roots (repo-relative). Can be repeated.",
+        help="Replacement source roots (overrides defaults). Can be repeated.",
     )
     parser.add_argument(
         "--include-glob",
@@ -47,6 +48,11 @@ def parse_args() -> argparse.Namespace:
         action="append",
         default=[],
         help="Exclude scripts matching repo-relative glob(s). Can be repeated.",
+    )
+    parser.add_argument(
+        "--include-undocumented",
+        action="store_true",
+        help="Include undocumented members in the generated tables.",
     )
     parser.add_argument(
         "--output",
@@ -171,6 +177,7 @@ def build_reference(
     source_roots: list[str],
     include_globs: list[str],
     exclude_globs: list[str],
+    include_undocumented: bool,
 ) -> str:
     scripts = collect_sources(
         scope=scope,
@@ -188,6 +195,13 @@ def build_reference(
         f"Scripts scanned: `{len(scripts)}`",
         "",
     ]
+    if not include_undocumented:
+        sections.extend(
+            [
+                "Undocumented members are omitted by default. Use `--include-undocumented` to include them.",
+                "",
+            ]
+        )
     for script in scripts:
         docs = extract_docs(script)
         if not docs:
@@ -199,17 +213,23 @@ def build_reference(
         sections.append("```")
         sections.append("")
         for class_name, members in docs.items():
+            rendered_members: dict[str, str] = {}
+            for signature, description in members.items():
+                if description == "(undocumented)" and not include_undocumented:
+                    continue
+                rendered_members[signature] = description
+
             sections.append("### Class")
             sections.append("")
             sections.append("```")
             sections.append(class_name)
             sections.append("```")
             sections.append("")
-            if not members:
+            if not rendered_members:
                 sections.append("No documented functions.")
                 sections.append("")
                 continue
-            sections.extend(_render_member_table(members))
+            sections.extend(_render_member_table(rendered_members))
             sections.append("")
     sections.extend(
         [
@@ -236,6 +256,7 @@ def main() -> None:
             source_roots=args.source_root,
             include_globs=args.include_glob,
             exclude_globs=args.exclude_glob,
+            include_undocumented=args.include_undocumented,
         ),
         encoding="utf-8",
     )

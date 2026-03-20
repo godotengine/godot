@@ -8,7 +8,7 @@ const vec2 positions[3] = vec2[](
     vec2(-1.0, 3.0)
 );
 
-// Entry point for the fullscreen composite shader stage.
+// Vertex entry point for the fullscreen composite triangle.
 void main() {
     vec2 pos = positions[gl_VertexIndex];
     gl_Position = vec4(pos, 0.0, 1.0);
@@ -69,7 +69,7 @@ bool is_scene_background_depth(float raw_scene_depth, float scene_view_depth) {
     return raw_matches_clear || view_matches_far;
 }
 
-// Entry point for the fullscreen composite shader stage.
+// Fragment entry point for the fullscreen composite pass.
 void main() {
     vec2 sample_uv = clamp(gl_FragCoord.xy * params.inv_viewport_size, vec2(0.0), vec2(1.0));
 

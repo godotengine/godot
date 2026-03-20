@@ -96,7 +96,7 @@ vec3 gs_apply_tile_grid(vec2 frag_coord, vec3 color, float opacity) {
     return mix(color, color * 0.5, mix_factor);
 }
 
-// Read a sorted spline index from shared memory or the backing buffer.
+// Read a sorted splat index from shared memory or the backing buffer.
 uint gs_read_sorted_value(uint local_index, uint range_start) {
 #ifdef GS_TILE_RASTER_USE_SHARED
     if (local_index < gs_shared_splat_count) {
