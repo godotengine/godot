@@ -189,6 +189,7 @@ public:
 
     // Capability queries - override in subclasses for algorithm-specific behavior
     virtual bool supports_indirect() const { return false; }
+    virtual bool supports_true_async() const { return false; }
 
     // Key configuration (default no-op for algorithms that don't need it)
     virtual void set_key_config(const SortKeyConfig &p_cfg) {}
@@ -253,6 +254,7 @@ public:
     bool supports_non_power_of_two() const override { return true; } // We pad internally
     float get_theoretical_complexity() const override { return 0.5f; } // O(log^2 n) parallel
     bool supports_indirect() const override { return false; } // Bitonic does not support indirect
+    bool supports_true_async() const override { return false; }
 
     // Static capability probe - check if algorithm is supported without instantiation
     static bool is_supported(RenderingDevice *p_rd);
@@ -368,6 +370,7 @@ public:
     bool supports_non_power_of_two() const override { return true; }
     float get_theoretical_complexity() const override { return 1.0f; } // O(n) parallel
     bool supports_indirect() const override { return true; } // RadixSort supports indirect
+    bool supports_true_async() const override { return true; }
     SortPreflightError get_last_preflight_error() const override { return last_preflight_error; }
 
     void set_key_config(const SortKeyConfig &p_cfg) { key_config = p_cfg; }
@@ -435,6 +438,7 @@ public:
     bool supports_non_power_of_two() const override { return true; }
     float get_theoretical_complexity() const override { return 1.0f; } // O(n) with lower constant
     bool supports_indirect() const override { return false; } // OneSweep does not support indirect yet
+    bool supports_true_async() const override { return false; }
 
     // Static capability probe - check if algorithm is supported without instantiation
     static bool is_supported(RenderingDevice *p_rd);

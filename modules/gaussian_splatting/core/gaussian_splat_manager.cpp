@@ -22,9 +22,6 @@
 
 namespace {
 
-static HashMap<ObjectID, RenderingDevice *> s_gaussian_buffer_owner_devices;
-static HashMap<RID, RenderingDevice *> s_dynamic_asset_owner_devices;
-
 // Project settings helpers: delegates to gs_project_settings.h (gs::settings namespace).
 static uint32_t _get_uint_setting(ProjectSettings *ps, const StringName &name, uint32_t fallback) {
     return gs::settings::get_uint(ps, name, fallback);
@@ -223,8 +220,8 @@ GaussianSplatManager::GaussianSplatManager() {
     {
         GS_LOCK_ORDER_GUARD(GaussianSplatManager::LOCK_LEVEL_RESOURCE_MAPS, "resource_maps_mutex");
         MutexLock resource_lock(resource_maps_mutex);
-        s_gaussian_buffer_owner_devices.clear();
-        s_dynamic_asset_owner_devices.clear();
+        gaussian_buffer_owner_devices.clear();
+        dynamic_asset_owner_devices.clear();
     }
 
     // Check for RenderDoc before creating local devices
@@ -288,24 +285,41 @@ void GaussianSplatManager::_release_registered_resources() {
     GS_LOCK_ORDER_GUARD(GaussianSplatManager::LOCK_LEVEL_RESOURCE_MAPS, "resource_maps_mutex");
     MutexLock resource_lock(resource_maps_mutex);
 
+    if (registered_resources_released && gaussian_buffers.is_empty() && dynamic_asset_cache.is_empty()) {
+        return;
+    }
+
+    HashMap<ObjectID, BufferEntry> remaining_gaussian_buffers;
+    HashMap<RID, ObjectID> remaining_buffer_lookup;
+    HashMap<ObjectID, RenderingDevice *> remaining_gaussian_owner_devices;
+    HashMap<RID, DynamicAssetEntry> remaining_dynamic_asset_cache;
+    HashMap<RID, RenderingDevice *> remaining_dynamic_owner_devices;
+
     for (const KeyValue<ObjectID, BufferEntry> &E : gaussian_buffers) {
         if (!E.value.gpu_buffer.is_valid()) {
             continue;
         }
         RenderingDevice *owner_device = nullptr;
-        if (RenderingDevice *const *owner_ptr = s_gaussian_buffer_owner_devices.getptr(E.key)) {
+        if (RenderingDevice *const *owner_ptr = gaussian_buffer_owner_devices.getptr(E.key)) {
             owner_device = *owner_ptr;
         }
         if (!owner_device) {
             ERR_PRINT(vformat("[GaussianSplatManager] Missing owner device for registered buffer %s during shutdown",
                     String::num_uint64(E.value.gpu_buffer.get_id())));
+            remaining_gaussian_buffers.insert(E.key, E.value);
+            remaining_buffer_lookup.insert(E.value.gpu_buffer, E.key);
             continue;
         }
         owner_device->free(E.value.gpu_buffer);
     }
-    gaussian_buffers.clear();
-    buffer_lookup.clear();
-    s_gaussian_buffer_owner_devices.clear();
+    for (const KeyValue<ObjectID, BufferEntry> &E : remaining_gaussian_buffers) {
+        if (RenderingDevice *const *owner_ptr = gaussian_buffer_owner_devices.getptr(E.key)) {
+            remaining_gaussian_owner_devices.insert(E.key, *owner_ptr);
+        }
+    }
+    gaussian_buffers = remaining_gaussian_buffers;
+    buffer_lookup = remaining_buffer_lookup;
+    gaussian_buffer_owner_devices = remaining_gaussian_owner_devices;
 
     for (KeyValue<RID, DynamicAssetEntry> &E : dynamic_asset_cache) {
         DynamicAssetEntry &entry = E.value;
@@ -313,19 +327,31 @@ void GaussianSplatManager::_release_registered_resources() {
             continue;
         }
         RenderingDevice *owner_device = nullptr;
-        if (RenderingDevice *const *owner_ptr = s_dynamic_asset_owner_devices.getptr(E.key)) {
+        if (RenderingDevice *const *owner_ptr = dynamic_asset_owner_devices.getptr(E.key)) {
             owner_device = *owner_ptr;
         }
         if (!owner_device) {
             ERR_PRINT(vformat("[GaussianSplatManager] Missing owner device for dynamic asset buffer %s during shutdown",
                     String::num_uint64(entry.gaussian_buffer.get_id())));
+            remaining_dynamic_asset_cache.insert(E.key, E.value);
             continue;
         }
         owner_device->free(entry.gaussian_buffer);
     }
-    dynamic_asset_cache.clear();
-    s_dynamic_asset_owner_devices.clear();
+    for (const KeyValue<RID, DynamicAssetEntry> &E : remaining_dynamic_asset_cache) {
+        if (RenderingDevice *const *owner_ptr = dynamic_asset_owner_devices.getptr(E.key)) {
+            remaining_dynamic_owner_devices.insert(E.key, *owner_ptr);
+        }
+    }
+    dynamic_asset_cache = remaining_dynamic_asset_cache;
+    dynamic_asset_owner_devices = remaining_dynamic_owner_devices;
 
+    if (!gaussian_buffers.is_empty() || !dynamic_asset_cache.is_empty()) {
+        GS_LOG_WARN_DEFAULT(vformat("[GaussianSplatManager] Deferred shutdown release for %d registered buffers and %d dynamic assets due to missing owner metadata",
+                gaussian_buffers.size(), dynamic_asset_cache.size()));
+    }
+
+    registered_resources_released = gaussian_buffers.is_empty() && dynamic_asset_cache.is_empty();
     _recalculate_totals_unlocked();
 }
 
@@ -335,19 +361,28 @@ bool GaussianSplatManager::_dispatch_local_device_destroy_on_render_thread(Rende
         return false;
     }
 
-    GS_LOCK_ORDER_GUARD(GaussianSplatManager::LOCK_LEVEL_DEVICE_DESTROY, "local_device_destroy_dispatch_mutex");
-    MutexLock dispatch_lock(local_device_destroy_dispatch_mutex);
-    local_device_destroy_pending_primary = p_primary;
-    local_device_destroy_pending_shared = p_shared;
-
-    const uint64_t request_id = local_device_destroy_next_request_id.fetch_add(1, std::memory_order_acq_rel);
-    Callable callable = callable_mp(this, &GaussianSplatManager::_destroy_local_devices_on_render_thread).bind(request_id);
-    rs->call_on_render_thread(callable);
-    while (local_device_destroy_completed_request_id.load(std::memory_order_acquire) < request_id) {
-        local_device_destroy_dispatch_semaphore.wait();
+    GS_LOCK_ORDER_GUARD(GaussianSplatManager::LOCK_LEVEL_DEVICE_DESTROY, "local_device_destroy_request_mutex");
+    MutexLock request_lock(local_device_destroy_request_mutex);
+    {
+        MutexLock pending_lock(local_device_destroy_pending_mutex);
+        local_device_destroy_pending_primary = p_primary;
+        local_device_destroy_pending_shared = p_shared;
     }
 
-    return true;
+    bool dispatch_submitted = false;
+    uint64_t request_id = 0;
+    const bool completed = local_device_destroy_dispatcher.dispatch_call_on_render_thread_blocking(
+            callable_mp(this, &GaussianSplatManager::_destroy_local_devices_on_render_thread),
+            &dispatch_submitted,
+            true,
+            &request_id,
+            "[GaussianSplatManager] Local-device destroy dispatch");
+    if (!completed && dispatch_submitted) {
+        WARN_PRINT(vformat("[GaussianSplatManager] Local-device destroy request %d timed out after render-thread submission; deferring to render-thread callback to avoid unsafe double destroy",
+                uint64_t(request_id)));
+        return true;
+    }
+    return completed;
 }
 
 void GaussianSplatManager::_destroy_local_devices_immediate(RenderingDevice *p_primary, RenderingDevice *p_shared) {
@@ -362,14 +397,18 @@ void GaussianSplatManager::_destroy_local_devices_immediate(RenderingDevice *p_p
 }
 
 void GaussianSplatManager::_destroy_local_devices_on_render_thread(uint64_t p_request_id) {
-    RenderingDevice *pending_primary = local_device_destroy_pending_primary;
-    RenderingDevice *pending_shared = local_device_destroy_pending_shared;
-    local_device_destroy_pending_primary = nullptr;
-    local_device_destroy_pending_shared = nullptr;
+    RenderingDevice *pending_primary = nullptr;
+    RenderingDevice *pending_shared = nullptr;
+    {
+        MutexLock pending_lock(local_device_destroy_pending_mutex);
+        pending_primary = local_device_destroy_pending_primary;
+        pending_shared = local_device_destroy_pending_shared;
+        local_device_destroy_pending_primary = nullptr;
+        local_device_destroy_pending_shared = nullptr;
+    }
 
     _destroy_local_devices_immediate(pending_primary, pending_shared);
-    local_device_destroy_completed_request_id.store(p_request_id, std::memory_order_release);
-    local_device_destroy_dispatch_semaphore.post();
+    local_device_destroy_dispatcher.notify_completed(p_request_id);
 }
 
 void GaussianSplatManager::_destroy_local_devices() {
@@ -679,7 +718,7 @@ RID GaussianSplatManager::register_gaussian_buffer(const Ref<::GaussianData> &p_
     BufferEntry *existing = gaussian_buffers.getptr(data_id);
     if (existing) {
         RenderingDevice *existing_owner = nullptr;
-        if (RenderingDevice *const *owner_ptr = s_gaussian_buffer_owner_devices.getptr(data_id)) {
+        if (RenderingDevice *const *owner_ptr = gaussian_buffer_owner_devices.getptr(data_id)) {
             existing_owner = *owner_ptr;
         }
         ERR_FAIL_NULL_V_MSG(existing_owner, RID(),
@@ -704,7 +743,8 @@ RID GaussianSplatManager::register_gaussian_buffer(const Ref<::GaussianData> &p_
 
     gaussian_buffers[data_id] = entry;
     buffer_lookup[gpu_buffer] = data_id;
-    s_gaussian_buffer_owner_devices.insert(data_id, owner_device);
+    gaussian_buffer_owner_devices.insert(data_id, owner_device);
+    registered_resources_released = false;
 
     _recalculate_totals_unlocked();
 
@@ -735,7 +775,7 @@ void GaussianSplatManager::unregister_gaussian_buffer(RID p_buffer) {
 
     RenderingDevice *owner_device = nullptr;
     if (entry->ref_count == 1 && entry->gpu_buffer.is_valid()) {
-        if (RenderingDevice *const *owner_ptr = s_gaussian_buffer_owner_devices.getptr(data_id)) {
+        if (RenderingDevice *const *owner_ptr = gaussian_buffer_owner_devices.getptr(data_id)) {
             owner_device = *owner_ptr;
         }
         ERR_FAIL_NULL_MSG(owner_device, "[GaussianSplatManager] Missing owner device for gaussian buffer free");
@@ -750,7 +790,7 @@ void GaussianSplatManager::unregister_gaussian_buffer(RID p_buffer) {
     }
 
     gaussian_buffers.erase(data_id);
-    s_gaussian_buffer_owner_devices.erase(data_id);
+    gaussian_buffer_owner_devices.erase(data_id);
     buffer_lookup.erase(p_buffer);
     _recalculate_totals_unlocked();
 }
@@ -793,7 +833,7 @@ GaussianSplatManager::SharedDynamicAssetHandle GaussianSplatManager::acquire_dyn
     ERR_FAIL_NULL_V(entry, handle);
 
     RenderingDevice *tracked_owner_device = nullptr;
-    if (RenderingDevice *const *owner_ptr = s_dynamic_asset_owner_devices.getptr(asset_rid)) {
+    if (RenderingDevice *const *owner_ptr = dynamic_asset_owner_devices.getptr(asset_rid)) {
         tracked_owner_device = *owner_ptr;
     }
     if (entry->gaussian_buffer.is_valid()) {
@@ -811,7 +851,7 @@ GaussianSplatManager::SharedDynamicAssetHandle GaussianSplatManager::acquire_dyn
         if (entry->gaussian_buffer.is_valid()) {
             tracked_owner_device->free(entry->gaussian_buffer);
             entry->gaussian_buffer = RID();
-            s_dynamic_asset_owner_devices.erase(asset_rid);
+            dynamic_asset_owner_devices.erase(asset_rid);
         }
         entry->gaussian_buffer = p_gaussian_data->create_gpu_buffer(owner_device);
         entry->gaussian_count = desired_count;
@@ -819,9 +859,10 @@ GaussianSplatManager::SharedDynamicAssetHandle GaussianSplatManager::acquire_dyn
         if (!entry->gaussian_buffer.is_valid()) {
             entry->gaussian_count = 0;
             entry->memory_usage = 0;
-            s_dynamic_asset_owner_devices.erase(asset_rid);
+            dynamic_asset_owner_devices.erase(asset_rid);
         } else {
-            s_dynamic_asset_owner_devices.insert(asset_rid, owner_device);
+            dynamic_asset_owner_devices.insert(asset_rid, owner_device);
+            registered_resources_released = false;
         }
     }
 
@@ -857,7 +898,7 @@ void GaussianSplatManager::release_dynamic_asset(const SharedDynamicAssetHandle 
 
     RenderingDevice *owner_device = nullptr;
     if (entry->ref_count == 1 && entry->gaussian_buffer.is_valid()) {
-        if (RenderingDevice *const *owner_ptr = s_dynamic_asset_owner_devices.getptr(p_handle.asset_rid)) {
+        if (RenderingDevice *const *owner_ptr = dynamic_asset_owner_devices.getptr(p_handle.asset_rid)) {
             owner_device = *owner_ptr;
         }
         ERR_FAIL_NULL_MSG(owner_device, "[GaussianSplatManager] Missing owner device for dynamic asset buffer free");
@@ -872,7 +913,7 @@ void GaussianSplatManager::release_dynamic_asset(const SharedDynamicAssetHandle 
     }
 
     dynamic_asset_cache.erase(p_handle.asset_rid);
-    s_dynamic_asset_owner_devices.erase(p_handle.asset_rid);
+    dynamic_asset_owner_devices.erase(p_handle.asset_rid);
     _recalculate_totals_unlocked();
 }
 

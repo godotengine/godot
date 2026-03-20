@@ -24,6 +24,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "servers/rendering_server.h"
+#include "../interfaces/render_thread_dispatcher.h"
 #include "gaussian_data.h"
 #include "gaussian_splat_asset.h"
 
@@ -55,7 +56,8 @@ class GaussianSplatNode3D;
 //   Level 1. submission_mutex           (outermost — serializes GPU submission)
 //   Level 2. resource_maps_mutex        (protects gaussian_buffers / buffer_lookup / dynamic_asset_cache)
 //   Level 3. active_nodes_mutex         (protects the active_nodes set)
-//   Level 4. local_device_destroy_dispatch_mutex  (innermost — device teardown only)
+//   Level 4. local_device_destroy_request_mutex / local_device_destroy_pending_mutex
+//            (innermost — local-device teardown dispatch and pending-device handoff)
 //
 // Rules:
 //   - Never acquire a lower-numbered (outer) lock while holding a higher-numbered (inner) one.
@@ -63,7 +65,7 @@ class GaussianSplatNode3D;
 //     the ordering is documented here so that future changes preserve this invariant.
 //   - The destructor acquires them sequentially (not nested):
 //     active_nodes_mutex -> release -> resource_maps_mutex -> release ->
-//     local_device_destroy_dispatch_mutex -> release.
+//     local_device_destroy_request_mutex/local_device_destroy_pending_mutex -> release.
 //
 // Validated at runtime in DEV_ENABLED builds via thread_local lock-level tracking
 // (see _gs_lock_level_guard in the .cpp file).
@@ -101,8 +103,11 @@ private:
 
     HashMap<ObjectID, BufferEntry> gaussian_buffers;
     HashMap<RID, ObjectID> buffer_lookup;
+    HashMap<ObjectID, RenderingDevice *> gaussian_buffer_owner_devices;
     HashMap<RID, DynamicAssetEntry> dynamic_asset_cache;
+    HashMap<RID, RenderingDevice *> dynamic_asset_owner_devices;
     mutable Mutex resource_maps_mutex;
+    bool registered_resources_released = false;
     HashSet<ObjectID> active_nodes;
     Mutex active_nodes_mutex;
     SafeFlag main_thread_dispatch_pending;
@@ -117,10 +122,9 @@ private:
     SafeFlag shared_device_request_pending;
     bool primary_device_render_thread_bound = false;
     bool shared_device_render_thread_bound = false;
-    mutable Mutex local_device_destroy_dispatch_mutex;
-    mutable Semaphore local_device_destroy_dispatch_semaphore;
-    std::atomic<uint64_t> local_device_destroy_next_request_id{ 1 };
-    std::atomic<uint64_t> local_device_destroy_completed_request_id{ 0 };
+    mutable Mutex local_device_destroy_request_mutex;
+    mutable Mutex local_device_destroy_pending_mutex;
+    RenderThreadDispatcher local_device_destroy_dispatcher;
     RenderingDevice *local_device_destroy_pending_primary = nullptr;
     RenderingDevice *local_device_destroy_pending_shared = nullptr;
     // Serializes GPU submissions when multiple threads share the submission queue.

@@ -55,6 +55,8 @@
 #include "../interfaces/rasterizer_interfaces.h"
 #include "../interfaces/culler_interfaces.h"
 #include "../interfaces/gpu_culler.h"
+#include "../interfaces/gpu_sorting_pipeline_interfaces.h"
+#include "../interfaces/render_thread_dispatcher.h"
 #include "../interfaces/render_device_manager.h"
 #include "../interfaces/renderer_interfaces.h"
 #include "render_types/render_config_types.h"
@@ -130,7 +132,7 @@ struct InstanceAssetRegistration {
  *
  * @note This class is RefCounted and should be used with Ref<GaussianSplatRenderer>.
  */
-class GaussianSplatRenderer : public RefCounted, public IRenderer {
+class GaussianSplatRenderer : public RefCounted, public IRenderer, public ISortResultSink, public ISortBufferHostContext {
     GDCLASS(GaussianSplatRenderer, RefCounted);
 
 public:
@@ -527,14 +529,7 @@ public:
     std::unique_ptr<RenderResourceOrchestrator> resource_orchestrator;
     std::unique_ptr<RenderDataOrchestrator> data_orchestrator;
     std::unique_ptr<RenderOutputOrchestrator> output_orchestrator;
-
-    mutable Mutex render_thread_dispatch_mutex;
-    mutable Semaphore render_thread_dispatch_semaphore;
-    std::atomic<uint64_t> render_thread_dispatch_next_request_id{1};
-    std::atomic<uint64_t> render_thread_dispatch_completed_request_id{0};
-    std::atomic<uint64_t> render_thread_dispatch_timeout_usec{15000000}; // 15s default escape.
-    std::atomic<uint64_t> render_thread_dispatch_set_data_latest_request_id{0};
-    Error render_thread_dispatch_set_data_result = OK;
+    std::unique_ptr<IRenderThreadDispatcher> render_thread_dispatcher;
     std::atomic<bool> teardown_resources_started{false};
 
     InstancePipelineBuffers instance_pipeline_buffers;
@@ -726,6 +721,14 @@ public:
         return _load_graphics_shader(p_vertex_paths, p_fragment_paths);
     }
     void synchronize_tile_submission(RenderingDevice *p_device, const char *p_context) { _synchronize_tile_submission(p_device, p_context); }
+    bool ensure_sort_rendering_device(const char *p_context) override;
+    RenderingDevice *get_sort_rendering_device() const override;
+    SortExternalBufferState get_sort_external_buffer_state() const override;
+    bool resize_sort_state_byte_vectors(uint32_t p_cpu_capacity, uint32_t p_key_stride_bytes, const char *p_context) override;
+    void set_sort_buffer_binding_state(bool p_keys_external, bool p_indices_external,
+            bool p_pipeline_managed, uint32_t p_capacity) override;
+    void clear_sort_buffer_binding_state() override;
+    void publish_sorted_indices(const SortPublicationPayload &p_payload) override;
     void forget_tile_renderer_outputs() { _forget_tile_renderer_outputs(); }
     void warn_tile_depth_copy_incompatible() { _warn_tile_depth_copy_incompatible(); }
     void update_tile_renderer_output_tracking(const RID &p_color_output, RenderingDevice *p_color_device,

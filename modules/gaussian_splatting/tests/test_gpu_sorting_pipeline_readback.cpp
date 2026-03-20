@@ -10,6 +10,16 @@
 
 namespace {
 
+struct TestSortResultSink : public ISortResultSink {
+	int publish_count = 0;
+	SortPublicationPayload last_payload;
+
+	void publish_sorted_indices(const SortPublicationPayload &p_payload) override {
+		publish_count++;
+		last_payload = p_payload;
+	}
+};
+
 static Vector<uint8_t> _make_indirect_dispatch_payload(uint32_t p_element_count, uint32_t p_overflow_flag,
 		uint32_t p_unclamped_total) {
 	GaussianSplatting::IndirectDispatchLayout layout = {};
@@ -47,14 +57,15 @@ TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Stale sort readbacks are ignor
 	pipeline->sort_readback_state.snapshot_indices.write[1] = 1;
 	pipeline->sort_readback_state.snapshot_indices.write[2] = 0;
 	pipeline->sort_readback_state.snapshot_indices.write[3] = 2;
-	pipeline->pending_renderer = reinterpret_cast<GaussianSplatRenderer *>(uintptr_t(0x1));
+	TestSortResultSink sink;
+	pipeline->set_sort_result_sink(&sink);
 
 	const Vector<uint8_t> payload = _make_sort_indices_payload(pipeline->sort_readback_state.snapshot_indices);
 
 	pipeline->shutdown();
 	CHECK(pipeline->sort_readback_state.generation == 18);
 	CHECK_FALSE(pipeline->sort_readback_state.pending);
-	CHECK(pipeline->pending_renderer == nullptr);
+	CHECK(pipeline->sort_result_sink == nullptr);
 
 	// Re-arm only the minimal test state needed to verify stale callbacks are ignored.
 	pipeline->sort_readback_state.pending = true;
@@ -64,11 +75,12 @@ TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Stale sort readbacks are ignor
 	pipeline->sort_readback_state.snapshot_indices.write[1] = 1;
 	pipeline->sort_readback_state.snapshot_indices.write[2] = 0;
 	pipeline->sort_readback_state.snapshot_indices.write[3] = 2;
-	pipeline->pending_renderer = reinterpret_cast<GaussianSplatRenderer *>(uintptr_t(0x1));
+	pipeline->set_sort_result_sink(&sink);
 
 	pipeline->_on_sort_readback(payload, 17);
 	CHECK(pipeline->sort_readback_state.pending);
 	CHECK(pipeline->sort_readback_state.generation == 18);
+	CHECK(sink.publish_count == 0);
 	REQUIRE(pipeline->sort_readback_state.snapshot_indices.size() == 4);
 	CHECK(pipeline->sort_readback_state.snapshot_indices[0] == 3);
 	CHECK(pipeline->sort_readback_state.snapshot_indices[1] == 1);

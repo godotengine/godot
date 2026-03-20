@@ -37,6 +37,7 @@ using GaussianSplatting::ScopedGpuMarker;
 // Note: scene/ includes not available in modules - using fallback rendering
 // #include "scene/resources/primitive_meshes.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include <limits>
 
 
 #include "servers/rendering_server.h"
@@ -153,49 +154,67 @@ static void _initialize_lighting_project_settings_defaults() {
     ps->set_initial_value(shadow_bias_max_path, 0.0f);
 }
 
-struct FrameLogSettingsCache {
+class FrameLogSettingsRegistry {
+public:
+    static FrameLogSettingsRegistry &get_singleton() {
+        static FrameLogSettingsRegistry instance;
+        return instance;
+    }
+
+    void ensure_initialized() {
+        if (initialized) {
+            return;
+        }
+        ProjectSettings *ps = ProjectSettings::get_singleton();
+        if (!ps) {
+            return;
+        }
+        Callable callback = callable_mp_static(&FrameLogSettingsRegistry::_on_project_settings_changed);
+        if (!ps->is_connected("settings_changed", callback)) {
+            ps->connect("settings_changed", callback);
+        }
+        initialized = true;
+        refresh();
+    }
+
+    bool is_frame_log_enabled() {
+        ensure_initialized();
+        return enable_all_debug || enable_frame_logging;
+    }
+
+    int get_frame_log_frequency() {
+        ensure_initialized();
+        return frame_log_frequency;
+    }
+
+private:
+    static void _on_project_settings_changed() {
+        get_singleton().refresh();
+    }
+
+    void refresh() {
+        enable_all_debug = false;
+        enable_frame_logging = false;
+        frame_log_frequency = 300;
+        if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
+            enable_all_debug = gs::settings::get_bool(ps,
+                    "rendering/gaussian_splatting/debug/enable_all_debug", false);
+            enable_frame_logging = gs::settings::get_bool(ps,
+                    "rendering/gaussian_splatting/debug/enable_frame_logging", false);
+            frame_log_frequency = static_cast<int>(gs::settings::get_uint(ps,
+                    "rendering/gaussian_splatting/debug/frame_log_frequency",
+                    static_cast<uint32_t>(frame_log_frequency)));
+        }
+        if (enable_all_debug && frame_log_frequency <= 0) {
+            frame_log_frequency = 1;
+        }
+    }
+
     bool initialized = false;
     bool enable_all_debug = false;
     bool enable_frame_logging = false;
     int frame_log_frequency = 300;
 };
-
-static FrameLogSettingsCache g_frame_log_settings;
-
-static void _refresh_frame_log_settings() {
-    g_frame_log_settings.enable_all_debug = false;
-    g_frame_log_settings.enable_frame_logging = false;
-    g_frame_log_settings.frame_log_frequency = 300;
-    if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
-        g_frame_log_settings.enable_all_debug = gs::settings::get_bool(ps,
-                "rendering/gaussian_splatting/debug/enable_all_debug", false);
-        g_frame_log_settings.enable_frame_logging = gs::settings::get_bool(ps,
-                "rendering/gaussian_splatting/debug/enable_frame_logging", false);
-        g_frame_log_settings.frame_log_frequency = static_cast<int>(gs::settings::get_uint(ps,
-                "rendering/gaussian_splatting/debug/frame_log_frequency",
-                static_cast<uint32_t>(g_frame_log_settings.frame_log_frequency)));
-    }
-    if (g_frame_log_settings.enable_all_debug && g_frame_log_settings.frame_log_frequency <= 0) {
-        g_frame_log_settings.frame_log_frequency = 1;
-    }
-}
-
-static void _on_project_settings_changed() {
-    _refresh_frame_log_settings();
-}
-
-static void _ensure_frame_log_settings_cached() {
-    if (g_frame_log_settings.initialized) {
-        return;
-    }
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps) {
-        return;
-    }
-    g_frame_log_settings.initialized = true;
-    ps->connect("settings_changed", callable_mp_static(&_on_project_settings_changed));
-    _refresh_frame_log_settings();
-}
 
 static bool _is_frame_log_enabled() {
 #ifdef GS_SILENCE_LOGS
@@ -207,19 +226,14 @@ static bool _is_frame_log_enabled() {
 #elif defined(DEBUG_ENABLED)
     // PROD-1 (#626): Respect project setting even in debug builds
     // Default is false - set rendering/gaussian_splatting/debug/enable_frame_logging to true if needed
-    _ensure_frame_log_settings_cached();
-    if (g_frame_log_settings.enable_all_debug) {
-        return true;
-    }
-    return g_frame_log_settings.enable_frame_logging;
+    return FrameLogSettingsRegistry::get_singleton().is_frame_log_enabled();
 #else
     return false;
 #endif
 }
 
 static int _get_frame_log_frequency() {
-    _ensure_frame_log_settings_cached();
-    return g_frame_log_settings.frame_log_frequency;
+    return FrameLogSettingsRegistry::get_singleton().get_frame_log_frequency();
 }
 
 static bool _should_log_frame(uint64_t p_frame) {
@@ -534,119 +548,14 @@ const GaussianSplatRenderer::RenderFramePlan *GaussianSplatRenderer::FrameStateP
 
 bool GaussianSplatRenderer::_dispatch_call_on_render_thread_blocking(
         const Callable &p_callable, bool *r_dispatched, bool p_allow_timeout, uint64_t *r_request_id) {
-    if (r_dispatched) {
-        *r_dispatched = false;
-    }
-    if (r_request_id) {
-        *r_request_id = 0;
-    }
-
-    RenderingServer *rs = RenderingServer::get_singleton();
-    if (!rs || rs->is_on_render_thread()) {
-        return false;
-    }
-    if (!rs->is_render_loop_enabled()) {
-        return false;
-    }
-    OS *os = OS::get_singleton();
-    ERR_FAIL_NULL_V(os, false);
-
-    MutexLock dispatch_lock(render_thread_dispatch_mutex);
-    const uint64_t request_id = render_thread_dispatch_next_request_id.fetch_add(1, std::memory_order_acq_rel);
-    if (r_request_id) {
-        *r_request_id = request_id;
-    }
-    const uint64_t dispatch_wait_start_usec = os->get_ticks_usec();
-    static constexpr uint64_t RENDER_THREAD_DISPATCH_STALL_LOG_INTERVAL_USEC = 5000000; // 5s
-    static constexpr uint64_t RENDER_THREAD_DISPATCH_TIMEOUT_DEFAULT_USEC = 15000000; // 15s
-    static constexpr uint32_t RENDER_THREAD_DISPATCH_POLL_SLEEP_USEC = 1000; // 1ms
-    uint64_t dispatch_timeout_usec = render_thread_dispatch_timeout_usec.load(std::memory_order_acquire);
-    if (dispatch_timeout_usec == 0) {
-        dispatch_timeout_usec = RENDER_THREAD_DISPATCH_TIMEOUT_DEFAULT_USEC;
-    }
-    uint64_t next_stall_log_usec = RENDER_THREAD_DISPATCH_STALL_LOG_INTERVAL_USEC;
-    bool logged_stall = false;
-    uint64_t next_render_loop_disabled_log_usec = 0;
-    rs->call_on_render_thread(p_callable.bind(request_id));
-    if (r_dispatched) {
-        *r_dispatched = true;
-    }
-    while (render_thread_dispatch_completed_request_id.load(std::memory_order_acquire) < request_id) {
-        if (render_thread_dispatch_semaphore.try_wait()) {
-            continue;
-        }
-
-        const uint64_t elapsed_usec = os->get_ticks_usec() - dispatch_wait_start_usec;
-        if (!rs->is_render_loop_enabled()) {
-            const uint64_t completed_request_id =
-                    render_thread_dispatch_completed_request_id.load(std::memory_order_acquire);
-            if (p_allow_timeout || next_render_loop_disabled_log_usec == 0 ||
-                    elapsed_usec >= next_render_loop_disabled_log_usec) {
-                const double elapsed_ms = double(elapsed_usec) / 1000.0;
-                ERR_PRINT(vformat("[GaussianSplatRenderer] Render-thread dispatch stalled request_id=%d "
-                                  "(completed=%d elapsed_ms=%.2f): render loop disabled while waiting",
-                        uint64_t(request_id),
-                        uint64_t(completed_request_id),
-                        elapsed_ms));
-                logged_stall = true;
-                if (!p_allow_timeout) {
-                    next_render_loop_disabled_log_usec =
-                            elapsed_usec + RENDER_THREAD_DISPATCH_STALL_LOG_INTERVAL_USEC;
-                }
-            }
-            if (p_allow_timeout) {
-                return false;
-            }
-            os->delay_usec(RENDER_THREAD_DISPATCH_POLL_SLEEP_USEC);
-            continue;
-        }
-        if (p_allow_timeout && elapsed_usec >= dispatch_timeout_usec) {
-            const uint64_t completed_request_id =
-                    render_thread_dispatch_completed_request_id.load(std::memory_order_acquire);
-            const double elapsed_ms = double(elapsed_usec) / 1000.0;
-            ERR_PRINT(vformat("[GaussianSplatRenderer] Render-thread dispatch timed out request_id=%d "
-                              "(completed=%d timeout_ms=%.2f elapsed_ms=%.2f); escaping blocking wait",
-                    uint64_t(request_id),
-                    uint64_t(completed_request_id),
-                    double(dispatch_timeout_usec) / 1000.0,
-                    elapsed_ms));
-            return false;
-        }
-        if (elapsed_usec >= next_stall_log_usec) {
-            const uint64_t completed_request_id =
-                    render_thread_dispatch_completed_request_id.load(std::memory_order_acquire);
-            const double elapsed_ms = double(elapsed_usec) / 1000.0;
-            ERR_PRINT(vformat("[GaussianSplatRenderer] Render-thread dispatch stalled request_id=%d "
-                              "(completed=%d render_loop_enabled=%s elapsed_ms=%.2f); "
-                              "continuing to wait for callback completion",
-                    uint64_t(request_id),
-                    uint64_t(completed_request_id),
-                    rs->is_render_loop_enabled() ? "true" : "false",
-                    elapsed_ms));
-            logged_stall = true;
-            next_stall_log_usec = elapsed_usec + RENDER_THREAD_DISPATCH_STALL_LOG_INTERVAL_USEC;
-        }
-
-        os->delay_usec(RENDER_THREAD_DISPATCH_POLL_SLEEP_USEC);
-    }
-
-    if (logged_stall) {
-        const uint64_t elapsed_usec = os->get_ticks_usec() - dispatch_wait_start_usec;
-        const double elapsed_ms = double(elapsed_usec) / 1000.0;
-        GS_LOG_RENDERER_WARN(vformat("[GaussianSplatRenderer] Render-thread dispatch recovered request_id=%d after %.2f ms",
-                uint64_t(request_id), elapsed_ms));
-    }
-
-    return true;
+    ERR_FAIL_NULL_V(render_thread_dispatcher, false);
+    return render_thread_dispatcher->dispatch_call_on_render_thread_blocking(
+            p_callable, r_dispatched, p_allow_timeout, r_request_id, "[GaussianSplatRenderer] Render-thread dispatch");
 }
 
 void GaussianSplatRenderer::_notify_render_thread_dispatch_completed(uint64_t p_request_id) {
-    uint64_t completed_request_id = render_thread_dispatch_completed_request_id.load(std::memory_order_acquire);
-    while (completed_request_id < p_request_id &&
-            !render_thread_dispatch_completed_request_id.compare_exchange_weak(
-                    completed_request_id, p_request_id, std::memory_order_acq_rel, std::memory_order_acquire)) {
-    }
-    render_thread_dispatch_semaphore.post();
+    ERR_FAIL_NULL(render_thread_dispatcher);
+    render_thread_dispatcher->notify_completed(p_request_id);
 }
 
 GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
@@ -660,6 +569,7 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     }
 
     _initialize_lighting_project_settings_defaults();
+    render_thread_dispatcher = std::make_unique<RenderThreadDispatcher>();
 
     // Initialize modular interface subsystems (Phase 8 migration)
     subsystem_state.device_manager.instantiate();
@@ -797,6 +707,122 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     if (GaussianSplattingPerformanceMonitors *monitors = GaussianSplattingPerformanceMonitors::get_singleton()) {
         monitors->register_splat_renderer(this);
     }
+}
+
+bool GaussianSplatRenderer::ensure_sort_rendering_device(const char *p_context) {
+    return ensure_rendering_device(p_context);
+}
+
+RenderingDevice *GaussianSplatRenderer::get_sort_rendering_device() const {
+    return get_device_state().rd;
+}
+
+SortExternalBufferState GaussianSplatRenderer::get_sort_external_buffer_state() const {
+    SortExternalBufferState state;
+    const ResourceState &resource_state = get_resource_state();
+    if (!resource_state.buffer_manager.is_valid() || !resource_state.buffer_manager_initialized) {
+        return state;
+    }
+
+    GPUBufferManager::BufferHandle manager_keys = resource_state.buffer_manager->get_sort_key_handle();
+    GPUBufferManager::BufferHandle manager_indices = resource_state.buffer_manager->get_sorted_indices_handle();
+    if (!manager_keys.is_valid() || !manager_indices.is_valid() || manager_keys.device != manager_indices.device) {
+        return state;
+    }
+
+    state.keys_buffer = manager_keys.buffer;
+    state.indices_buffer = manager_indices.buffer;
+    state.device = manager_keys.device;
+    state.capacity = resource_state.buffer_manager->get_buffer_capacity();
+    state.valid = true;
+    return state;
+}
+
+bool GaussianSplatRenderer::resize_sort_state_byte_vectors(uint32_t p_cpu_capacity, uint32_t p_key_stride_bytes, const char *p_context) {
+    const uint64_t key_bytes_u64 = uint64_t(p_cpu_capacity) * uint64_t(p_key_stride_bytes);
+    const uint64_t index_bytes_u64 = uint64_t(p_cpu_capacity) * uint64_t(sizeof(uint32_t));
+    const uint64_t byte_limit = MIN(uint64_t(std::numeric_limits<uint32_t>::max()), uint64_t(std::numeric_limits<int>::max()));
+    if (key_bytes_u64 > byte_limit || index_bytes_u64 > byte_limit) {
+        GS_LOG_WARN_DEFAULT(vformat("[GaussianSplatRenderer] %s requested oversized renderer sort buffers (capacity=%s key_stride=%s key_bytes=%s index_bytes=%s limit=%s)",
+                String(p_context),
+                String::num_uint64(p_cpu_capacity),
+                String::num_uint64(p_key_stride_bytes),
+                String::num_uint64(key_bytes_u64),
+                String::num_uint64(index_bytes_u64),
+                String::num_uint64(byte_limit)));
+        return false;
+    }
+
+    SortingState &sorting_state = get_sorting_state();
+    const int key_bytes = int(key_bytes_u64);
+    const int index_bytes = int(index_bytes_u64);
+    if (sorting_state.sort_key_bytes.size() != key_bytes) {
+        sorting_state.sort_key_bytes.resize(key_bytes);
+    }
+    if (sorting_state.sort_index_bytes.size() != index_bytes) {
+        sorting_state.sort_index_bytes.resize(index_bytes);
+    }
+    return true;
+}
+
+void GaussianSplatRenderer::set_sort_buffer_binding_state(bool p_keys_external, bool p_indices_external,
+        bool p_pipeline_managed, uint32_t p_capacity) {
+    SortingState &sorting_state = get_sorting_state();
+    sorting_state.sort_keys_external = p_keys_external;
+    sorting_state.sort_indices_external = p_indices_external;
+    sorting_state.sort_buffers_pipeline_managed = p_pipeline_managed;
+    sorting_state.sort_buffer_capacity = p_capacity;
+}
+
+void GaussianSplatRenderer::clear_sort_buffer_binding_state() {
+    SortingState &sorting_state = get_sorting_state();
+    sorting_state.sort_buffer_capacity = 0;
+    sorting_state.local_sort_buffer_capacity = 0;
+    sorting_state.culled_position_capacity = 0;
+    sorting_state.sort_key_bytes.clear();
+    sorting_state.sort_index_bytes.clear();
+    sorting_state.culled_position_bytes.clear();
+    sorting_state.sort_keys_external = false;
+    sorting_state.sort_indices_external = false;
+    sorting_state.sort_buffers_pipeline_managed = false;
+}
+
+void GaussianSplatRenderer::publish_sorted_indices(const SortPublicationPayload &p_payload) {
+    const uint32_t available_splats = static_cast<uint32_t>(p_payload.sorted_indices.size());
+    if (!subsystem_state.gpu_culler.is_valid()) {
+        return;
+    }
+
+    GPUCuller::CullingState &cull_state = subsystem_state.gpu_culler->get_state();
+    if (static_cast<uint32_t>(cull_state.culled_indices.size()) != available_splats) {
+        cull_state.culled_indices.resize(available_splats);
+    }
+
+    SortingState &sorting_state = get_sorting_state();
+    sorting_state.sort_index_bytes.resize(int(available_splats * sizeof(uint32_t)));
+    uint32_t *final_indices = reinterpret_cast<uint32_t *>(sorting_state.sort_index_bytes.ptrw());
+    for (uint32_t i = 0; i < available_splats; i++) {
+        const uint32_t index = p_payload.sorted_indices[i];
+        cull_state.culled_indices[i] = index;
+        final_indices[i] = index;
+    }
+
+    if (p_payload.sort_indices_buffer.is_valid() && !sorting_state.sort_index_bytes.is_empty()) {
+        RenderingDevice *target_device = get_resource_owner(p_payload.sort_indices_buffer,
+                p_payload.default_device ? p_payload.default_device : get_device_state().rd);
+        if (!target_device) {
+            target_device = p_payload.default_device ? p_payload.default_device : get_device_state().rd;
+        }
+        if (target_device) {
+            target_device->buffer_update(p_payload.sort_indices_buffer, 0,
+                    sorting_state.sort_index_bytes.size(), sorting_state.sort_index_bytes.ptr());
+        }
+    }
+
+    sorting_state.sorted_splat_count = available_splats;
+    get_frame_state().visible_splat_count.store(available_splats, std::memory_order_release);
+    get_performance_state().metrics.rendered_splat_count =
+            get_frame_state().visible_splat_count.load(std::memory_order_acquire);
 }
 
 GaussianSplatRenderer::~GaussianSplatRenderer() {
@@ -2146,11 +2172,13 @@ void GaussianSplatRenderer::test_disable_rasterizer() {
 }
 
 void GaussianSplatRenderer::test_set_render_thread_dispatch_timeout_usec(uint64_t p_timeout_usec) {
-    render_thread_dispatch_timeout_usec.store(p_timeout_usec, std::memory_order_release);
+    if (render_thread_dispatcher) {
+        render_thread_dispatcher->set_timeout_usec(p_timeout_usec);
+    }
 }
 
 uint64_t GaussianSplatRenderer::test_get_render_thread_dispatch_timeout_usec() const {
-    return render_thread_dispatch_timeout_usec.load(std::memory_order_acquire);
+    return render_thread_dispatcher ? render_thread_dispatcher->get_timeout_usec() : 0;
 }
 
 bool GaussianSplatRenderer::test_dispatch_call_on_render_thread_blocking_without_completion() {
@@ -2166,6 +2194,6 @@ void GaussianSplatRenderer::test_notify_render_thread_dispatch_completed(uint64_
 }
 
 uint64_t GaussianSplatRenderer::test_get_render_thread_dispatch_completed_request_id() const {
-    return render_thread_dispatch_completed_request_id.load(std::memory_order_acquire);
+    return render_thread_dispatcher ? render_thread_dispatcher->get_completed_request_id() : 0;
 }
 #endif
