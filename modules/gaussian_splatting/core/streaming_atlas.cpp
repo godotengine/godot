@@ -98,48 +98,48 @@ void GaussianAtlasAllocator::clear() {
 // ==============================================================================
 
 void GaussianStreamingSystem::_build_global_atlas_cpu_state() {
-	atlas_asset_registry_dirty = false;
+	atlas_sync.asset_registry_dirty = false;
 	const bool log_enabled = _is_streaming_debug_enabled();
 
 	uint32_t total_chunks = 0;
-	max_chunk_count_per_asset = 0;
-	max_chunk_splats = 0;
-	for (uint32_t asset_id : atlas_asset_order) {
+	atlas_sync.max_chunk_count_per_asset = 0;
+	atlas_sync.max_chunk_splats = 0;
+	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
 		AtlasAssetState *asset = _get_asset_state(asset_id);
 		if (!asset) {
 			continue;
 		}
 		LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
 		total_chunks += asset_chunks.size();
-		max_chunk_count_per_asset = MAX(max_chunk_count_per_asset, asset_chunks.size());
+		atlas_sync.max_chunk_count_per_asset = MAX(atlas_sync.max_chunk_count_per_asset, asset_chunks.size());
 		for (uint32_t i = 0; i < asset_chunks.size(); i++) {
-			max_chunk_splats = MAX(max_chunk_splats, asset_chunks[i].count);
+			atlas_sync.max_chunk_splats = MAX(atlas_sync.max_chunk_splats, asset_chunks[i].count);
 		}
 	}
-	const uint32_t dense_count = dense_to_asset_id.size();
-	asset_meta_cpu.resize(dense_count);
+	const uint32_t dense_count = asset_registry.dense_to_asset_id.size();
+	atlas_sync.asset_meta_cpu.resize(dense_count);
 	for (uint32_t i = 0; i < dense_count; i++) {
-		asset_meta_cpu[i] = {};
+		atlas_sync.asset_meta_cpu[i] = {};
 	}
 
-	chunk_meta_cpu.resize(total_chunks);
-	asset_chunk_index_cpu.resize(total_chunks);
-	chunk_meta_dirty_flags.resize(total_chunks);
+	atlas_sync.chunk_meta_cpu.resize(total_chunks);
+	atlas_sync.asset_chunk_index_cpu.resize(total_chunks);
+	atlas_sync.chunk_meta_dirty_flags.resize(total_chunks);
 	for (uint32_t i = 0; i < total_chunks; i++) {
-		chunk_meta_dirty_flags[i] = 0;
+		atlas_sync.chunk_meta_dirty_flags[i] = 0;
 	}
-	chunk_meta_dirty_indices.clear();
-	chunk_meta_dirty_indices.reserve(total_chunks);
+	atlas_sync.chunk_meta_dirty_indices.clear();
+	atlas_sync.chunk_meta_dirty_indices.reserve(total_chunks);
 
 	uint32_t chunk_meta_cursor = 0;
 	uint32_t chunk_index_cursor = 0;
 
-	for (uint32_t asset_id : atlas_asset_order) {
+	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
 		AtlasAssetState *asset = _get_asset_state(asset_id);
 		if (!asset) {
 			continue;
 		}
-		if (asset->dense_id == INVALID_ASSET_ID || asset->dense_id >= asset_meta_cpu.size()) {
+		if (asset->dense_id == INVALID_ASSET_ID || asset->dense_id >= atlas_sync.asset_meta_cpu.size()) {
 			continue;
 		}
 
@@ -203,12 +203,12 @@ void GaussianStreamingSystem::_build_global_atlas_cpu_state() {
 					asset_meta.lod_ranges[0].base, asset_meta.lod_ranges[0].count, (int)asset_chunks.size(), asset_radius));
 		}
 
-		asset_meta_cpu[asset->dense_id] = asset_meta;
+		atlas_sync.asset_meta_cpu[asset->dense_id] = asset_meta;
 
 		for (uint32_t i = 0; i < asset_chunks.size(); i++) {
 			const uint32_t global_idx = chunk_meta_cursor + i;
-			if (chunk_index_cursor < asset_chunk_index_cpu.size()) {
-				asset_chunk_index_cpu[chunk_index_cursor].chunk_id = global_idx;
+			if (chunk_index_cursor < atlas_sync.asset_chunk_index_cpu.size()) {
+				atlas_sync.asset_chunk_index_cpu[chunk_index_cursor].chunk_id = global_idx;
 			}
 			_update_chunk_meta_entry(asset_id, i);
 			chunk_index_cursor++;
@@ -219,25 +219,25 @@ void GaussianStreamingSystem::_build_global_atlas_cpu_state() {
 	}
 
 	uint32_t resident_meta_chunks = 0;
-	for (uint32_t i = 0; i < chunk_meta_cpu.size(); i++) {
-		if (chunk_meta_cpu[i].splat_count > 0) {
+	for (uint32_t i = 0; i < atlas_sync.chunk_meta_cpu.size(); i++) {
+		if (atlas_sync.chunk_meta_cpu[i].splat_count > 0) {
 			resident_meta_chunks++;
 		}
 	}
 	if (log_enabled) {
 		const uint64_t system_id = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this));
 		GS_LOG_STREAMING_DEBUG(vformat("[Streaming DIAG] atlas cpu meta built: system=%s total_chunks=%d resident_meta_chunks=%d loaded_chunks_count=%d",
-				String::num_uint64(system_id), chunk_meta_cpu.size(), resident_meta_chunks, budget.loaded_chunks_count));
+				String::num_uint64(system_id), atlas_sync.chunk_meta_cpu.size(), resident_meta_chunks, budget.loaded_chunks_count));
 	}
 
-	asset_meta_dirty = true;
-	asset_chunk_index_dirty = true;
-	chunk_meta_dirty_all = true;
-	atlas_asset_registry_dirty = false;
+	atlas_sync.asset_meta_dirty = true;
+	atlas_sync.asset_chunk_index_dirty = true;
+	atlas_sync.chunk_meta_dirty_all = true;
+	atlas_sync.asset_registry_dirty = false;
 }
 
 void GaussianStreamingSystem::_update_chunk_meta_entry(uint32_t asset_id, uint32_t chunk_idx) {
-	if (atlas_asset_registry_dirty) {
+	if (atlas_sync.asset_registry_dirty) {
 		_build_global_atlas_cpu_state();
 	}
 
@@ -252,7 +252,7 @@ void GaussianStreamingSystem::_update_chunk_meta_entry(uint32_t asset_id, uint32
 	}
 
 	const uint32_t global_idx = asset->chunk_meta_base + chunk_idx;
-	if (global_idx >= chunk_meta_cpu.size()) {
+	if (global_idx >= atlas_sync.chunk_meta_cpu.size()) {
 		return;
 	}
 
@@ -293,7 +293,7 @@ void GaussianStreamingSystem::_update_chunk_meta_entry(uint32_t asset_id, uint32
 	meta.flags = 0;
 	meta.sh_limit = sh_band_limit;
 
-	chunk_meta_cpu[global_idx] = meta;
+	atlas_sync.chunk_meta_cpu[global_idx] = meta;
 }
 
 void GaussianStreamingSystem::_mark_chunk_meta_dirty(uint32_t chunk_idx) {
@@ -301,7 +301,7 @@ void GaussianStreamingSystem::_mark_chunk_meta_dirty(uint32_t chunk_idx) {
 }
 
 void GaussianStreamingSystem::_mark_chunk_meta_dirty(uint32_t asset_id, uint32_t chunk_idx) {
-	if (atlas_asset_registry_dirty) {
+	if (atlas_sync.asset_registry_dirty) {
 		_build_global_atlas_cpu_state();
 	}
 
@@ -310,40 +310,40 @@ void GaussianStreamingSystem::_mark_chunk_meta_dirty(uint32_t asset_id, uint32_t
 		return;
 	}
 	const uint32_t global_idx = asset->chunk_meta_base + chunk_idx;
-	if (global_idx >= chunk_meta_cpu.size()) {
+	if (global_idx >= atlas_sync.chunk_meta_cpu.size()) {
 		return;
 	}
 
 	_update_chunk_meta_entry(asset_id, chunk_idx);
 
-	if (chunk_meta_dirty_all) {
+	if (atlas_sync.chunk_meta_dirty_all) {
 		return;
 	}
 
-	if (chunk_meta_dirty_flags.is_empty() || global_idx >= chunk_meta_dirty_flags.size()) {
+	if (atlas_sync.chunk_meta_dirty_flags.is_empty() || global_idx >= atlas_sync.chunk_meta_dirty_flags.size()) {
 		return;
 	}
 
-	if (chunk_meta_dirty_flags[global_idx] == 0) {
-		chunk_meta_dirty_flags[global_idx] = 1;
-		chunk_meta_dirty_indices.push_back(global_idx);
+	if (atlas_sync.chunk_meta_dirty_flags[global_idx] == 0) {
+		atlas_sync.chunk_meta_dirty_flags[global_idx] = 1;
+		atlas_sync.chunk_meta_dirty_indices.push_back(global_idx);
 	}
 }
 
 void GaussianStreamingSystem::_apply_requested_residency() {
-	if (!request_pending) {
+	if (!asset_registry.request_pending) {
 		return;
 	}
 	const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
 	if (trace_enabled) {
 		GaussianSplatting::debug_trace_record_event("streaming",
-				vformat("ApplyResidency START: atlas_asset_order=%d", atlas_asset_order.size()),
+				vformat("ApplyResidency START: atlas_asset_order=%d", asset_registry.atlas_asset_order.size()),
 				false);
 	}
 
 	const bool can_async_pack = uploads.async_pack_enabled && uploads.pack_thread_running.load();
 	bool has_deferred_requested_chunks = false;
-	for (uint32_t asset_id : atlas_asset_order) {
+	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
 		if (asset_id == PRIMARY_ASSET_ID) {
 			if (trace_enabled) {
 				GaussianSplatting::debug_trace_record_event("streaming",
@@ -380,8 +380,8 @@ void GaussianStreamingSystem::_apply_requested_residency() {
 				vformat("ApplyResidency END: loaded_chunks_count=%d vram=%s", budget.loaded_chunks_count, String::num_uint64(_get_total_vram_usage_bytes())),
 				false);
 	}
-	request_pending = has_deferred_requested_chunks;
-	request_collection_active = false;
+	asset_registry.request_pending = has_deferred_requested_chunks;
+	asset_registry.request_collection_active = false;
 }
 
 void GaussianStreamingSystem::_evict_unrequested_chunks(uint32_t asset_id, AtlasAssetState &asset,
@@ -389,7 +389,7 @@ void GaussianStreamingSystem::_evict_unrequested_chunks(uint32_t asset_id, Atlas
 	for (uint32_t i = 0; i < asset_chunks.size(); i++) {
 		StreamingChunk &chunk = asset_chunks[i];
 		const RequestedChunkState *state = asset.requested_chunk_state.getptr(i);
-		const bool requested = state && state->stamp == request_generation;
+		const bool requested = state && state->stamp == asset_registry.request_generation;
 		if (requested) {
 			continue;
 		}
@@ -453,19 +453,19 @@ bool GaussianStreamingSystem::_load_requested_chunks(uint32_t asset_id, AtlasAss
 }
 
 void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
-	global_atlas_state.atlas_gaussian_buffer = persistent_buffer;
-	global_atlas_state.atlas_gaussian_count = get_buffer_capacity_splats();
-	global_atlas_state.quantization_buffer = per_chunk_quantization_enabled ? quantization_buffer : RID();
+	atlas_sync.global_atlas_state.atlas_gaussian_buffer = persistent_buffer;
+	atlas_sync.global_atlas_state.atlas_gaussian_count = get_buffer_capacity_splats();
+	atlas_sync.global_atlas_state.quantization_buffer = per_chunk_quantization_enabled ? quantization_buffer : RID();
 
 	const bool quantization_rebuild = quantization_dirty;
 	const uint32_t quantization_expected_size = uint32_t(quantization_gpu_data.size()) * sizeof(ChunkQuantizationGPU);
-	bool atlas_dirty = quantization_rebuild || atlas_asset_registry_dirty || asset_meta_dirty ||
-			asset_chunk_index_dirty || chunk_meta_dirty_all || !chunk_meta_dirty_indices.is_empty();
+	bool atlas_dirty = quantization_rebuild || atlas_sync.asset_registry_dirty || atlas_sync.asset_meta_dirty ||
+			atlas_sync.asset_chunk_index_dirty || atlas_sync.chunk_meta_dirty_all || !atlas_sync.chunk_meta_dirty_indices.is_empty();
 	if (per_chunk_quantization_enabled &&
 			(quantization_dirty || !quantization_buffer.is_valid() || quantization_buffer_size != quantization_expected_size)) {
 		const bool quantization_resource_changed = _upload_quantization_buffer(p_rd);
 		atlas_dirty = atlas_dirty || quantization_resource_changed;
-		global_atlas_state.quantization_buffer = quantization_buffer;
+		atlas_sync.global_atlas_state.quantization_buffer = quantization_buffer;
 	} else if (!per_chunk_quantization_enabled) {
 		if (_release_quantization_buffer(p_rd, "_sync_global_atlas_state(disabled)", true)) {
 			atlas_dirty = true;
@@ -474,21 +474,21 @@ void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
 	}
 
 	uint32_t total_chunks = 0;
-	for (uint32_t asset_id : atlas_asset_order) {
+	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
 		AtlasAssetState *asset = _get_asset_state(asset_id);
 		if (!asset) {
 			continue;
 		}
 		total_chunks += _get_asset_chunks(*asset).size();
 	}
-	const uint32_t dense_count = dense_to_asset_id.size();
+	const uint32_t dense_count = asset_registry.dense_to_asset_id.size();
 
-	if (atlas_asset_registry_dirty ||
+	if (atlas_sync.asset_registry_dirty ||
 			quantization_rebuild ||
-			asset_meta_cpu.is_empty() ||
-			asset_meta_cpu.size() != dense_count ||
-			chunk_meta_cpu.size() != total_chunks ||
-			asset_chunk_index_cpu.size() != total_chunks) {
+			atlas_sync.asset_meta_cpu.is_empty() ||
+			atlas_sync.asset_meta_cpu.size() != dense_count ||
+			atlas_sync.chunk_meta_cpu.size() != total_chunks ||
+			atlas_sync.asset_chunk_index_cpu.size() != total_chunks) {
 		atlas_dirty = true;
 		_build_global_atlas_cpu_state();
 	}
@@ -497,58 +497,58 @@ void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
 		if (atlas_dirty) {
 			WARN_PRINT_ONCE("[Streaming DIAG] _sync_global_atlas_state skipped GPU upload because RenderingDevice is null while atlas is dirty.");
 		}
-		global_atlas_state.asset_meta_buffer = asset_meta_buffer;
-		global_atlas_state.chunk_meta_buffer = chunk_meta_buffer;
-		global_atlas_state.asset_chunk_index_buffer = asset_chunk_index_buffer;
+		atlas_sync.global_atlas_state.asset_meta_buffer = atlas_sync.asset_meta_buffer;
+		atlas_sync.global_atlas_state.chunk_meta_buffer = atlas_sync.chunk_meta_buffer;
+		atlas_sync.global_atlas_state.asset_chunk_index_buffer = atlas_sync.asset_chunk_index_buffer;
 		return;
 	}
 
-	const uint32_t asset_meta_size = asset_meta_cpu.size() * sizeof(AssetMetaGPU);
+	const uint32_t asset_meta_size = atlas_sync.asset_meta_cpu.size() * sizeof(AssetMetaGPU);
 	if (asset_meta_size > 0) {
-		Span<const AssetMetaGPU> asset_span(asset_meta_cpu.ptr(), asset_meta_cpu.size());
-		if (!asset_meta_buffer.is_valid() || asset_meta_buffer_size != asset_meta_size) {
-			if (asset_meta_buffer.is_valid()) {
-				p_rd->free(asset_meta_buffer);
+		Span<const AssetMetaGPU> asset_span(atlas_sync.asset_meta_cpu.ptr(), atlas_sync.asset_meta_cpu.size());
+		if (!atlas_sync.asset_meta_buffer.is_valid() || atlas_sync.asset_meta_buffer_size != asset_meta_size) {
+			if (atlas_sync.asset_meta_buffer.is_valid()) {
+				p_rd->free(atlas_sync.asset_meta_buffer);
 			}
-			asset_meta_buffer = p_rd->storage_buffer_create(asset_meta_size, asset_span.reinterpret<uint8_t>());
-			p_rd->set_resource_name(asset_meta_buffer, "GS_Streaming_AssetMetaBuffer");
-			asset_meta_buffer_size = asset_meta_size;
-			asset_meta_dirty = false;
+			atlas_sync.asset_meta_buffer = p_rd->storage_buffer_create(asset_meta_size, asset_span.reinterpret<uint8_t>());
+			p_rd->set_resource_name(atlas_sync.asset_meta_buffer, "GS_Streaming_AssetMetaBuffer");
+			atlas_sync.asset_meta_buffer_size = asset_meta_size;
+			atlas_sync.asset_meta_dirty = false;
 			atlas_dirty = true;
-		} else if (asset_meta_dirty) {
-			p_rd->buffer_update(asset_meta_buffer, 0, asset_meta_size, asset_span.reinterpret<uint8_t>().ptr());
-			asset_meta_dirty = false;
+		} else if (atlas_sync.asset_meta_dirty) {
+			p_rd->buffer_update(atlas_sync.asset_meta_buffer, 0, asset_meta_size, asset_span.reinterpret<uint8_t>().ptr());
+			atlas_sync.asset_meta_dirty = false;
 			atlas_dirty = true;
 		}
 	}
 
-	const uint32_t chunk_meta_size = chunk_meta_cpu.size() * sizeof(ChunkMetaGPU);
+	const uint32_t chunk_meta_size = atlas_sync.chunk_meta_cpu.size() * sizeof(ChunkMetaGPU);
 	if (chunk_meta_size > 0) {
-		Span<const ChunkMetaGPU> chunk_span(chunk_meta_cpu.ptr(), chunk_meta_cpu.size());
-		if (!chunk_meta_buffer.is_valid() || chunk_meta_buffer_size != chunk_meta_size) {
-			if (chunk_meta_buffer.is_valid()) {
-				p_rd->free(chunk_meta_buffer);
+		Span<const ChunkMetaGPU> chunk_span(atlas_sync.chunk_meta_cpu.ptr(), atlas_sync.chunk_meta_cpu.size());
+		if (!atlas_sync.chunk_meta_buffer.is_valid() || atlas_sync.chunk_meta_buffer_size != chunk_meta_size) {
+			if (atlas_sync.chunk_meta_buffer.is_valid()) {
+				p_rd->free(atlas_sync.chunk_meta_buffer);
 			}
-			chunk_meta_buffer = p_rd->storage_buffer_create(chunk_meta_size, chunk_span.reinterpret<uint8_t>());
-			p_rd->set_resource_name(chunk_meta_buffer, "GS_Streaming_ChunkMetaBuffer");
-			chunk_meta_buffer_size = chunk_meta_size;
-			chunk_meta_dirty_all = false;
-			chunk_meta_dirty_indices.clear();
-			for (uint32_t i = 0; i < chunk_meta_dirty_flags.size(); i++) {
-				chunk_meta_dirty_flags[i] = 0;
-			}
-			atlas_dirty = true;
-		} else if (chunk_meta_dirty_all) {
-			p_rd->buffer_update(chunk_meta_buffer, 0, chunk_meta_size, chunk_span.reinterpret<uint8_t>().ptr());
-			chunk_meta_dirty_all = false;
-			chunk_meta_dirty_indices.clear();
-			for (uint32_t i = 0; i < chunk_meta_dirty_flags.size(); i++) {
-				chunk_meta_dirty_flags[i] = 0;
+			atlas_sync.chunk_meta_buffer = p_rd->storage_buffer_create(chunk_meta_size, chunk_span.reinterpret<uint8_t>());
+			p_rd->set_resource_name(atlas_sync.chunk_meta_buffer, "GS_Streaming_ChunkMetaBuffer");
+			atlas_sync.chunk_meta_buffer_size = chunk_meta_size;
+			atlas_sync.chunk_meta_dirty_all = false;
+			atlas_sync.chunk_meta_dirty_indices.clear();
+			for (uint32_t i = 0; i < atlas_sync.chunk_meta_dirty_flags.size(); i++) {
+				atlas_sync.chunk_meta_dirty_flags[i] = 0;
 			}
 			atlas_dirty = true;
-		} else if (!chunk_meta_dirty_indices.is_empty()) {
-			uint32_t dirty_count = chunk_meta_dirty_indices.size();
-			uint32_t *dirty_ptr = chunk_meta_dirty_indices.ptr();
+		} else if (atlas_sync.chunk_meta_dirty_all) {
+			p_rd->buffer_update(atlas_sync.chunk_meta_buffer, 0, chunk_meta_size, chunk_span.reinterpret<uint8_t>().ptr());
+			atlas_sync.chunk_meta_dirty_all = false;
+			atlas_sync.chunk_meta_dirty_indices.clear();
+			for (uint32_t i = 0; i < atlas_sync.chunk_meta_dirty_flags.size(); i++) {
+				atlas_sync.chunk_meta_dirty_flags[i] = 0;
+			}
+			atlas_dirty = true;
+		} else if (!atlas_sync.chunk_meta_dirty_indices.is_empty()) {
+			uint32_t dirty_count = atlas_sync.chunk_meta_dirty_indices.size();
+			uint32_t *dirty_ptr = atlas_sync.chunk_meta_dirty_indices.ptr();
 			std::sort(dirty_ptr, dirty_ptr + dirty_count);
 
 			// In-place dedupe and bounds-filter before coalescing contiguous ranges.
@@ -556,7 +556,7 @@ void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
 			uint32_t last_idx = UINT32_MAX;
 			for (uint32_t i = 0; i < dirty_count; i++) {
 				const uint32_t idx = dirty_ptr[i];
-				if (idx >= chunk_meta_cpu.size() || idx == last_idx) {
+				if (idx >= atlas_sync.chunk_meta_cpu.size() || idx == last_idx) {
 					continue;
 				}
 				dirty_ptr[filtered_count++] = idx;
@@ -584,10 +584,10 @@ void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
 				const uint32_t range_count = range_end - range_start + 1u;
 				const uint32_t offset = range_start * sizeof(ChunkMetaGPU);
 				const uint32_t update_size = range_count * sizeof(ChunkMetaGPU);
-				p_rd->buffer_update(chunk_meta_buffer, offset, update_size, chunk_meta_cpu.ptr() + range_start);
+				p_rd->buffer_update(atlas_sync.chunk_meta_buffer, offset, update_size, atlas_sync.chunk_meta_cpu.ptr() + range_start);
 				for (uint32_t clear_idx = range_start; clear_idx <= range_end; clear_idx++) {
-					if (clear_idx < chunk_meta_dirty_flags.size()) {
-						chunk_meta_dirty_flags[clear_idx] = 0;
+					if (clear_idx < atlas_sync.chunk_meta_dirty_flags.size()) {
+						atlas_sync.chunk_meta_dirty_flags[clear_idx] = 0;
 					}
 				}
 
@@ -600,46 +600,46 @@ void GaussianStreamingSystem::_sync_global_atlas_state(RenderingDevice *p_rd) {
 				}
 			}
 
-			chunk_meta_dirty_indices.clear();
+			atlas_sync.chunk_meta_dirty_indices.clear();
 			atlas_dirty = true;
 		}
 	}
 
-	const uint32_t chunk_index_size = asset_chunk_index_cpu.size() * sizeof(AssetChunkIndexGPU);
+	const uint32_t chunk_index_size = atlas_sync.asset_chunk_index_cpu.size() * sizeof(AssetChunkIndexGPU);
 	if (chunk_index_size > 0) {
-		Span<const AssetChunkIndexGPU> chunk_index_span(asset_chunk_index_cpu.ptr(), asset_chunk_index_cpu.size());
-		if (!asset_chunk_index_buffer.is_valid() || asset_chunk_index_buffer_size != chunk_index_size) {
-			if (asset_chunk_index_buffer.is_valid()) {
-				p_rd->free(asset_chunk_index_buffer);
+		Span<const AssetChunkIndexGPU> chunk_index_span(atlas_sync.asset_chunk_index_cpu.ptr(), atlas_sync.asset_chunk_index_cpu.size());
+		if (!atlas_sync.asset_chunk_index_buffer.is_valid() || atlas_sync.asset_chunk_index_buffer_size != chunk_index_size) {
+			if (atlas_sync.asset_chunk_index_buffer.is_valid()) {
+				p_rd->free(atlas_sync.asset_chunk_index_buffer);
 			}
-			asset_chunk_index_buffer = p_rd->storage_buffer_create(chunk_index_size, chunk_index_span.reinterpret<uint8_t>());
-			p_rd->set_resource_name(asset_chunk_index_buffer, "GS_Streaming_AssetChunkIndexBuffer");
-			asset_chunk_index_buffer_size = chunk_index_size;
-			asset_chunk_index_dirty = false;
+			atlas_sync.asset_chunk_index_buffer = p_rd->storage_buffer_create(chunk_index_size, chunk_index_span.reinterpret<uint8_t>());
+			p_rd->set_resource_name(atlas_sync.asset_chunk_index_buffer, "GS_Streaming_AssetChunkIndexBuffer");
+			atlas_sync.asset_chunk_index_buffer_size = chunk_index_size;
+			atlas_sync.asset_chunk_index_dirty = false;
 			atlas_dirty = true;
-		} else if (asset_chunk_index_dirty) {
-			p_rd->buffer_update(asset_chunk_index_buffer, 0, chunk_index_size, chunk_index_span.reinterpret<uint8_t>().ptr());
-			asset_chunk_index_dirty = false;
+		} else if (atlas_sync.asset_chunk_index_dirty) {
+			p_rd->buffer_update(atlas_sync.asset_chunk_index_buffer, 0, chunk_index_size, chunk_index_span.reinterpret<uint8_t>().ptr());
+			atlas_sync.asset_chunk_index_dirty = false;
 			atlas_dirty = true;
 		}
 	}
 
-	global_atlas_state.asset_meta_buffer = asset_meta_buffer;
-	global_atlas_state.chunk_meta_buffer = chunk_meta_buffer;
-	global_atlas_state.asset_chunk_index_buffer = asset_chunk_index_buffer;
+	atlas_sync.global_atlas_state.asset_meta_buffer = atlas_sync.asset_meta_buffer;
+	atlas_sync.global_atlas_state.chunk_meta_buffer = atlas_sync.chunk_meta_buffer;
+	atlas_sync.global_atlas_state.asset_chunk_index_buffer = atlas_sync.asset_chunk_index_buffer;
 	static int atlas_sync_diag_counter = 0;
 	if (++atlas_sync_diag_counter <= 20) {
 		print_line(vformat("[Streaming DIAG] atlas sync publish: system=%s chunk_meta_rid=%d asset_meta_rid=%d chunk_index_rid=%d chunks=%d",
 				String::num_uint64(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this))),
-				chunk_meta_buffer.get_id(),
-				asset_meta_buffer.get_id(),
-				asset_chunk_index_buffer.get_id(),
-				chunk_meta_cpu.size()));
+				atlas_sync.chunk_meta_buffer.get_id(),
+				atlas_sync.asset_meta_buffer.get_id(),
+				atlas_sync.asset_chunk_index_buffer.get_id(),
+				atlas_sync.chunk_meta_cpu.size()));
 	}
 	if (atlas_dirty) {
-		global_atlas_state.atlas_generation++;
-		if (global_atlas_state.atlas_generation == 0) {
-			global_atlas_state.atlas_generation = 1;
+		atlas_sync.global_atlas_state.atlas_generation++;
+		if (atlas_sync.global_atlas_state.atlas_generation == 0) {
+			atlas_sync.global_atlas_state.atlas_generation = 1;
 		}
 	}
 }

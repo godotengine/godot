@@ -289,7 +289,7 @@ bool GaussianStreamingSystem::_upload_quantization_buffer(RenderingDevice *p_rd)
     const bool rebuild_cache = !quantization_cpu_cache_valid || quantization_dirty;
     if (rebuild_cache) {
         uint32_t total_chunks = 0;
-        for (uint32_t asset_id : atlas_asset_order) {
+        for (uint32_t asset_id : asset_registry.atlas_asset_order) {
             AtlasAssetState *asset = _get_asset_state(asset_id);
             if (!asset) {
                 continue;
@@ -300,7 +300,7 @@ bool GaussianStreamingSystem::_upload_quantization_buffer(RenderingDevice *p_rd)
         quantization_gpu_data.clear();
         quantization_gpu_data.reserve(total_chunks);
 
-        for (uint32_t asset_id : atlas_asset_order) {
+        for (uint32_t asset_id : asset_registry.atlas_asset_order) {
             AtlasAssetState *asset = _get_asset_state(asset_id);
             if (!asset) {
                 continue;
@@ -397,13 +397,13 @@ Dictionary GaussianStreamingSystem::get_quantization_stats() const {
     stats["scale_bits"] = quantization_scale_bits;
     stats["scales_quantized"] = quantization_scales_enabled;
 
-    if (per_chunk_quantization_enabled && !atlas_asset_order.is_empty()) {
+    if (per_chunk_quantization_enabled && !asset_registry.atlas_asset_order.is_empty()) {
         // Calculate average and max errors across all chunks
         float total_pos_error = 0.0f;
         float max_pos_error = 0.0f;
         uint32_t computed_count = 0;
 
-        for (uint32_t asset_id : atlas_asset_order) {
+        for (uint32_t asset_id : asset_registry.atlas_asset_order) {
             const AtlasAssetState *asset = _get_asset_state(asset_id);
             if (!asset) {
                 continue;
