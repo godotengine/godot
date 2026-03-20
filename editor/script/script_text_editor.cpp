@@ -454,21 +454,36 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->deselect();
 	String code = code_editor->get_text_editor()->get_text();
 	int pos = language->find_function(p_function, code);
+	if (pos != -1) {
+		// ScriptLanguage::find_function() returns 1-based line numbers.
+		pos = MAX(0, pos - 1);
+	}
 	if (pos == -1) {
 		// Function does not exist, create it at the end of the file.
 		int last_line = code_editor->get_text_editor()->get_line_count() - 1;
 		String func = language->make_function("", p_function, p_args);
 		code_editor->get_text_editor()->insert_text("\n\n" + func, last_line, code_editor->get_text_editor()->get_line(last_line).length());
-		pos = last_line + 3;
+		// Recompute the function position from the updated text, as the function body may vary in size.
+		String updated_code = code_editor->get_text_editor()->get_text();
+		int new_pos = language->find_function(p_function, updated_code);
+		if (new_pos != -1) {
+			pos = MAX(0, new_pos - 1);
+		} else {
+			pos = last_line + 3; // Fallback if function lookup fails.
+		}
 	}
 	// Put caret on the line after the function, after the indent.
 	int indent_column = 1;
 	if (EDITOR_GET("text_editor/behavior/indent/type")) {
 		indent_column = EDITOR_GET("text_editor/behavior/indent/size");
 	}
-	code_editor->get_text_editor()->set_caret_line(pos, true, true, -1);
-	code_editor->get_text_editor()->set_caret_column(indent_column);
+	const int line_count = code_editor->get_text_editor()->get_line_count();
+	const int body_line = CLAMP(pos + 1, 0, line_count - 1);
+	code_editor->get_text_editor()->set_caret_line(body_line, false, true, -1);
+	code_editor->get_text_editor()->set_caret_column(indent_column, false);
 	code_editor->get_text_editor()->end_complex_operation();
+	// Ensure the viewport follows the caret after edits/layout updates.
+	code_editor->get_text_editor()->call_deferred("adjust_viewport_to_caret");
 }
 
 bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
