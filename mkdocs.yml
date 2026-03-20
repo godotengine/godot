@@ -27,6 +27,7 @@ plugins:
   - awesome-nav
   - glightbox
   - git-revision-date-localized:
+      enabled: !ENV [ENABLE_GIT_DATES, true]
       enable_creation_date: true
       fallback_to_build_date: true
       enable_git_follow: false

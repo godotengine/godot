@@ -69,6 +69,7 @@ jobs:
       - name: Validate MkDocs build (strict)
         env:
           DOCS_REPO_URL: https://github.com/${{ github.repository }}
+          ENABLE_GIT_DATES: "false"
         run: |
           mkdocs build --strict --config-file mkdocs.yml
 
