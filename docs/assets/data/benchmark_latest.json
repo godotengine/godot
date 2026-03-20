@@ -1,0 +1,13 @@
+[
+  {
+    "lane_id": "static_baseline",
+    "lane_name": "Low-noise raster baseline",
+    "score": 90.6599944374817,
+    "avg_fps": 74.0247959897142,
+    "p99_frame_ms": 15.6216666666666,
+    "gpu_time_frame_ms": 0.0,
+    "capture_ssim_min": null,
+    "capture_psnr_min": null,
+    "weight": 12.0
+  }
+]
