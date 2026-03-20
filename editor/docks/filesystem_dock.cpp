@@ -2606,6 +2606,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				make_dir_dialog->config(to_duplicate.path.get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
 						DirectoryCreateDialog::MODE_FILE, TTR("Duplicating file:") + " " + name, name);
 			} else {
+				// Raise error for res:// directory edge case.
+				if (to_duplicate.path == "res://") {
+					ERR_PRINT("Cannot duplicate res:// directory.");
+					break;
+				}
 				String name = to_duplicate.path.trim_suffix("/").get_file();
 				make_dir_dialog->config(to_duplicate.path.trim_suffix("/").get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
 						DirectoryCreateDialog::MODE_DIRECTORY, TTR("Duplicating folder:") + " " + name, name);
