@@ -56,6 +56,7 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/animation/tween.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/line_edit.h"
 #include "servers/display/display_server.h"
@@ -276,10 +277,22 @@ void EditorHelp::_update_search_highlight() {
 	search_highlight->set_size(Vector2(class_desc->get_size().x, highlight_size_y));
 }
 
+void EditorHelp::_start_search_highlight_tweener() {
+	if (search_highlight_tween.is_valid() && search_highlight_tween->is_running()) {
+		search_highlight_tween->kill();
+	}
+
+	search_highlight_tween = class_desc->create_tween();
+	search_highlight->set_modulate(Color(1.0, 1.0, 1.0, 1.0));
+	search_highlight_tween->tween_interval(0.5);
+	search_highlight_tween->tween_property(search_highlight, NodePath("modulate:a"), 0.0, 2.0);
+}
+
 void EditorHelp::_class_desc_finished() {
 	if (scroll_to >= 0) {
 		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(scroll_to), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		_update_search_highlight();
+		_start_search_highlight_tweener();
 	}
 	scroll_to = -1;
 }
@@ -357,6 +370,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			if (class_desc->is_finished()) {
 				emit_signal(SNAME("request_save_history"));
 				class_desc->scroll_to_paragraph((*table)[link]);
+				_update_search_highlight();
+				_start_search_highlight_tweener();
 			} else {
 				scroll_to = (*table)[link];
 			}
@@ -2446,6 +2461,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	if (class_desc->is_finished()) {
 		class_desc->scroll_to_paragraph(line);
 		_update_search_highlight();
+		_start_search_highlight_tweener();
 	} else {
 		scroll_to = line;
 	}
@@ -3475,7 +3491,7 @@ EditorHelp::EditorHelp() {
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
 	search_highlight = memnew(ColorRect);
-	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.15));
+	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.25));
 	search_highlight->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	search_highlight->set_size(Vector2(0, 0));
 	search_highlight->set_position(Vector2(0, 0));
