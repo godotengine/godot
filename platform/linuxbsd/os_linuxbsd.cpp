@@ -245,11 +245,16 @@ bool OS_LinuxBSD::is_sandboxed() const {
 	if (has_environment("SNAP") && has_environment("SNAP_NAME") && has_environment("SNAP_REVISION")) {
 		return true;
 	}
-
+	
+	// For openKylin Kaiming
+	if (has_environment("KAIMING_ID")) {
+		return true;
+	}
+	
 	if (access("/run/host/container-manager", F_OK) == 0) {
 		return true;
 	}
-
+	
 	return false;
 }
 
