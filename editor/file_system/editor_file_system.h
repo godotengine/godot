@@ -308,7 +308,7 @@ class EditorFileSystem : public Node {
 	void _pending_scan_fs_changes(EditorFileSystemDirectory *p_dir, bool p_recursive = true);
 	void _scan_dirs_changes(bool p_full_scan = true);
 
-	void _delete_internal_files(const String &p_file);
+	void _delete_internal_files(const String &p_file, const EditorFileInfo *p_fi = nullptr, uint32_t p_old_status = 0);
 
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;

@@ -1955,7 +1955,7 @@ void EditorFileSystem::_file_info_remove(EditorFileInfo *p_file, const String &p
 		_create_action(nullptr, p_file, p_path, ItemAction::ACTION_FILE_REMOVE, ItemAction::STEP_FILE_REMOVE);
 	}
 
-	_delete_internal_files(p_path);
+	_delete_internal_files(p_path, p_file, p_file->status);
 	_create_actions_from_uid_change(p_file, p_path, p_file->uid);
 
 	if (p_file->status & EditorFileInfo::IS_PACKEDSCENE) {
@@ -1982,7 +1982,7 @@ void EditorFileSystem::_file_info_update(EditorFileInfo *p_file, const String &p
 
 	if (p_file->status & EditorFileInfo::IS_IMPORTABLE) {
 		if (!(old_status & EditorFileInfo::IS_IMPORTABLE)) {
-			_delete_internal_files(p_path);
+			_delete_internal_files(p_path, p_file, old_status);
 			if (old_status & EditorFileInfo::IS_PACKEDSCENE) {
 				_scene_info_update(p_file, p_path);
 			} else if (old_status & EditorFileInfo::IS_SCRIPT) {
@@ -1994,7 +1994,7 @@ void EditorFileSystem::_file_info_update(EditorFileInfo *p_file, const String &p
 		_import_validate(p_file, p_path);
 		return;
 	} else if (old_status & EditorFileInfo::IS_IMPORTABLE) {
-		_delete_internal_files(p_path);
+		_delete_internal_files(p_path, p_file, old_status);
 	}
 
 	// Since the timestamp obtained is accurate to 1 second, so in projects using Git for version control,
@@ -2296,23 +2296,39 @@ void EditorFileSystem::pending_scan_fs_changes(const String &p_dir, bool p_recur
 	_pending_scan_fs_changes(efd, p_recursive);
 }
 
-void EditorFileSystem::_delete_internal_files(const String &p_file) {
+void EditorFileSystem::_delete_internal_files(const String &p_file, const EditorFileInfo *p_fi, uint32_t p_old_status) {
 	if (FileAccess::exists(p_file)) {
 		return; // It is just ignored because it is not supported, so there is no need to delete its internal files.
 	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
+	if (p_fi) {
+		if (p_old_status & EditorFileInfo::IS_IMPORTABLE) {
+			for (const String &E : p_fi->import_dest_paths) {
+				da->remove(E);
+			}
+			da->remove(p_file + ".import");
+			const String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_file);
+			da->remove(base_path + ".md5");
+		} else if (!(p_old_status & EditorFileInfo::HAS_CUSTOM_UID_SUPPORT)) {
+			da->remove(p_file + ".uid");
+		}
+		return;
+	}
+
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (const String &E : paths) {
 			da->remove(E);
-			da->remove(E.get_basename() + ".md5");
 		}
 		da->remove(p_file + ".import");
+	} else {
+		da->remove(p_file + ".uid");
 	}
-	if (FileAccess::exists(p_file + ".uid")) {
-		DirAccess::remove_absolute(p_file + ".uid");
-	}
+	const String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_file);
+	da->remove(base_path + ".md5");
 }
 
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
