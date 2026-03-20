@@ -14,4 +14,4 @@ Artist-first guidance for day-to-day use of Gaussian splats.
 ## If Something Looks Wrong
 
 - Recurring issues and fixes: [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
-- Build/runtime setup issues: [../../troubleshooting/build-troubleshooting.md](../../troubleshooting/build-troubleshooting.md)
+- Build/runtime setup issues: [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)

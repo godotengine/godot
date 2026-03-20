@@ -27,10 +27,10 @@ Use [../BUILDING.md](../BUILDING.md) for platform package setup.
 ## API
 | Item | Reference |
 | --- | --- |
-| `GaussianSplatNode3D` registration | `modules/gaussian_splatting/register_types.cpp:82` |
-| `GaussianSplatDynamicInstance3D` registration | `modules/gaussian_splatting/register_types.cpp:84` |
-| `GaussianSplatWorld3D` registration | `modules/gaussian_splatting/register_types.cpp:85` |
-| `GaussianSplatManager` singleton registration | `modules/gaussian_splatting/register_types.cpp:100` |
+| `GaussianSplatNode3D` registration | `modules/gaussian_splatting/register_types.cpp:77` |
+| `GaussianSplatDynamicInstance3D` registration | `modules/gaussian_splatting/register_types.cpp:80` |
+| `GaussianSplatWorld3D` registration | `modules/gaussian_splatting/register_types.cpp:81` |
+| `GaussianSplatManager` singleton registration | `modules/gaussian_splatting/register_types.cpp:92-100` |
 
 ## Examples
 ```gdscript
@@ -40,7 +40,7 @@ var node := GaussianSplatNode3D.new()
 ## Troubleshooting
 | Symptom | Action | Source |
 | --- | --- | --- |
-| `GaussianSplatNode3D` is missing in the editor. | Rebuild the editor from repository root, then relaunch the binary from `bin/`. | `modules/gaussian_splatting/register_types.cpp:82` |
+| `GaussianSplatNode3D` is missing in the editor. | Rebuild the editor from repository root, then relaunch the binary from `bin/`. | `modules/gaussian_splatting/register_types.cpp:77` |
 | Linux launch command cannot find executable. | Use the `dev_build=yes` binary name (`godot.linuxbsd.editor.dev.x86_64`). | [docs/getting-started/quick-start.md](quick-start.md) |
 | Linux build logs show `WARNING: wayland-scanner not found`. | Install `libwayland-bin` (and `wayland-protocols`) from [docs/BUILDING.md](../BUILDING.md) and rebuild if you need Wayland backend support. | [docs/BUILDING.md](../BUILDING.md) |
 | `GaussianData.load_from_file()` is unresolved in scripts. | Use the bound API exactly as declared and bound. | `modules/gaussian_splatting/core/gaussian_data.h:447`, `modules/gaussian_splatting/core/gaussian_data.cpp:174` |

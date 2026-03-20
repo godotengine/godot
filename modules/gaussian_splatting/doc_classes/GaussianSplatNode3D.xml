@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatNode3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		3D scene node for displaying Gaussian splat content in a Godot scene.
+	</brief_description>
+	<description>
+		GaussianSplatNode3D is the primary scene node for integrating Gaussian Splatting into Godot projects. It handles asset loading from PLY and SPZ files, quality preset management, level-of-detail control, painterly brush-stroke effects, wind simulation, color grading, and debug visualization. The node participates in the shared scene renderer registry and supports both editor preview and runtime rendering.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_ply_file_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the file path for loading Gaussian splat data. Accepts both [code].ply[/code] and [code].spz[/code] formats. Triggers an asset reload if [member auto_load] is enabled.
+			</description>
+		</method>
+		<method name="get_ply_file_path">
+			<return type="String" />
+			<description>
+				Returns the currently configured splat file path.
+			</description>
+		</method>
+		<method name="set_splat_asset">
+			<return type="void" />
+			<param index="0" name="asset" type="GaussianSplatAsset" />
+			<description>
+				Assigns a GaussianSplatAsset resource as the data source. When set, this takes precedence over [member ply_file_path].
+			</description>
+		</method>
+		<method name="get_splat_asset">
+			<return type="GaussianSplatAsset" />
+			<description>
+				Returns the currently assigned GaussianSplatAsset resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="set_auto_load">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables automatic loading of the splat asset when the node enters the scene tree or when the file path changes.
+			</description>
+		</method>
+		<method name="is_auto_load_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if automatic asset loading is enabled.
+			</description>
+		</method>
+		<method name="reload_asset">
+			<return type="void" />
+			<description>
+				Forces a reload of the splat asset from disk. Useful after external modifications to the source file.
+			</description>
+		</method>
+		<method name="is_asset_loading">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an asset load operation is currently in progress.
+			</description>
+		</method>
+		<method name="set_splat_data">
+			<return type="void" />
+			<param index="0" name="positions" type="PackedVector3Array" />
+			<param index="1" name="colors" type="PackedColorArray" default="PackedColorArray()" />
+			<param index="2" name="scales" type="PackedVector3Array" default="PackedVector3Array()" />
+			<param index="3" name="opacities" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="4" name="rotations" type="Array" default="[]" />
+			<param index="5" name="spherical_harmonics" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="6" name="palette_ids" type="PackedInt32Array" default="PackedInt32Array()" />
+			<param index="7" name="painterly_flags" type="PackedInt32Array" default="PackedInt32Array()" />
+			<param index="8" name="normals" type="PackedVector3Array" default="PackedVector3Array()" />
+			<param index="9" name="brush_axes" type="PackedVector2Array" default="PackedVector2Array()" />
+			<param index="10" name="stroke_ages" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="11" name="is_2d_mode" type="bool" default="false" />
+			<description>
+				Creates a Gaussian splat dataset from raw arrays and assigns it to this node. Only [param positions] is required; all other arrays default to empty or sensible values. This is the programmatic alternative to loading a PLY file.
+			</description>
+		</method>
+		<method name="set_quality_preset">
+			<return type="void" />
+			<param index="0" name="preset" type="int" enum="GaussianSplatNode3D.QualityPreset" />
+			<description>
+				Applies a quality preset that configures LOD bias, max render distance, and splat count limits in one operation.
+			</description>
+		</method>
+		<method name="get_quality_preset">
+			<return type="int" enum="GaussianSplatNode3D.QualityPreset" />
+			<description>
+				Returns the current quality preset.
+			</description>
+		</method>
+		<method name="set_lod_bias">
+			<return type="void" />
+			<param index="0" name="bias" type="float" />
+			<description>
+				Sets the LOD bias multiplier (0.1 to 4.0). Higher values keep more splats visible at greater distances.
+			</description>
+		</method>
+		<method name="get_lod_bias">
+			<return type="float" />
+			<description>
+				Returns the current LOD bias multiplier.
+			</description>
+		</method>
+		<method name="set_max_render_distance">
+			<return type="void" />
+			<param index="0" name="distance" type="float" />
+			<description>
+				Sets the maximum distance in meters at which splats are rendered. Splats beyond this distance are culled.
+			</description>
+		</method>
+		<method name="get_max_render_distance">
+			<return type="float" />
+			<description>
+				Returns the current maximum render distance in meters.
+			</description>
+		</method>
+		<method name="set_max_splat_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the maximum number of splats to render per frame. Excess splats are culled by importance.
+			</description>
+		</method>
+		<method name="get_max_splat_count">
+			<return type="int" />
+			<description>
+				Returns the current maximum splat count.
+			</description>
+		</method>
+		<method name="set_enable_painterly">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables painterly post-processing effects for this node.
+			</description>
+		</method>
+		<method name="is_painterly_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if painterly effects are enabled.
+			</description>
+		</method>
+		<method name="set_edge_threshold">
+			<return type="void" />
+			<param index="0" name="threshold" type="float" />
+			<description>
+				Sets the edge detection sensitivity for painterly stroke placement. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_edge_threshold">
+			<return type="float" />
+			<description>
+				Returns the current painterly edge threshold.
+			</description>
+		</method>
+		<method name="set_stroke_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the opacity of painterly brush strokes. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_stroke_opacity">
+			<return type="float" />
+			<description>
+				Returns the current painterly stroke opacity.
+			</description>
+		</method>
+		<method name="set_stroke_width">
+			<return type="void" />
+			<param index="0" name="width" type="float" />
+			<description>
+				Sets the width of painterly brush strokes. Range is 0.1 to 5.0.
+			</description>
+		</method>
+		<method name="get_stroke_width">
+			<return type="float" />
+			<description>
+				Returns the current painterly stroke width.
+			</description>
+		</method>
+		<method name="set_color_variation">
+			<return type="void" />
+			<param index="0" name="variation" type="float" />
+			<description>
+				Sets the color variation amount for painterly effects. Legacy method retained for compatibility with existing scenes and scripts.
+			</description>
+		</method>
+		<method name="get_color_variation">
+			<return type="float" />
+			<description>
+				Returns the current color variation amount.
+			</description>
+		</method>
+		<method name="set_temporal_blend">
+			<return type="void" />
+			<param index="0" name="blend" type="float" />
+			<description>
+				Sets the temporal blending factor for painterly effects. Controls smoothness of frame-to-frame transitions. Range is 0.01 to 1.0.
+			</description>
+		</method>
+		<method name="get_temporal_blend">
+			<return type="float" />
+			<description>
+				Returns the current temporal blend factor.
+			</description>
+		</method>
+		<method name="set_painterly_seed">
+			<return type="void" />
+			<param index="0" name="seed" type="int" />
+			<description>
+				Sets the random seed for painterly noise generation. Range is 0 to 65535.
+			</description>
+		</method>
+		<method name="get_painterly_seed">
+			<return type="int" />
+			<description>
+				Returns the current painterly seed.
+			</description>
+		</method>
+		<method name="set_update_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="GaussianSplatNode3D.ViewportUpdateMode" />
+			<description>
+				Sets when the node's splat rendering is updated. See [enum ViewportUpdateMode] for available options.
+			</description>
+		</method>
+		<method name="get_update_mode">
+			<return type="int" enum="GaussianSplatNode3D.ViewportUpdateMode" />
+			<description>
+				Returns the current update mode.
+			</description>
+		</method>
+		<method name="set_cast_shadow">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables shadow casting from this splat node.
+			</description>
+		</method>
+		<method name="get_cast_shadow">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if shadow casting is enabled.
+			</description>
+		</method>
+		<method name="set_use_frustum_culling">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables frustum culling for this node's splats.
+			</description>
+		</method>
+		<method name="is_frustum_culling_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if frustum culling is enabled.
+			</description>
+		</method>
+		<method name="set_use_occlusion_culling">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables occlusion culling. Legacy method retained for compatibility with existing scenes and scripts.
+			</description>
+		</method>
+		<method name="is_occlusion_culling_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if occlusion culling is enabled.
+			</description>
+		</method>
+		<method name="set_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the overall opacity for this node's splats. Range is 0.0 (fully transparent) to 1.0 (fully opaque).
+			</description>
+		</method>
+		<method name="get_opacity">
+			<return type="float" />
+			<description>
+				Returns the current opacity value.
+			</description>
+		</method>
+		<method name="set_wind_override_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables per-node wind parameter overrides. When enabled, this node uses its own wind settings instead of the global defaults.
+			</description>
+		</method>
+		<method name="is_wind_override_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if per-node wind overrides are enabled.
+			</description>
+		</method>
+		<method name="set_wind_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables wind simulation for this node's splats.
+			</description>
+		</method>
+		<method name="is_wind_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if wind simulation is enabled.
+			</description>
+		</method>
+		<method name="set_wind_strength">
+			<return type="void" />
+			<param index="0" name="strength" type="float" />
+			<description>
+				Sets the wind strength multiplier for splat displacement.
+			</description>
+		</method>
+		<method name="get_wind_strength">
+			<return type="float" />
+			<description>
+				Returns the current wind strength.
+			</description>
+		</method>
+		<method name="set_wind_direction">
+			<return type="void" />
+			<param index="0" name="direction" type="Vector3" />
+			<description>
+				Sets the wind direction vector. Does not need to be normalized; the magnitude affects displacement amplitude.
+			</description>
+		</method>
+		<method name="get_wind_direction">
+			<return type="Vector3" />
+			<description>
+				Returns the current wind direction vector.
+			</description>
+		</method>
+		<method name="set_wind_frequency">
+			<return type="void" />
+			<param index="0" name="frequency" type="float" />
+			<description>
+				Sets the wind oscillation frequency. Higher values produce faster wind gusts.
+			</description>
+		</method>
+		<method name="get_wind_frequency">
+			<return type="float" />
+			<description>
+				Returns the current wind frequency.
+			</description>
+		</method>
+		<method name="set_color_grading">
+			<return type="void" />
+			<param index="0" name="grading" type="ColorGradingResource" />
+			<description>
+				Assigns a ColorGradingResource that applies color correction transforms to splat colors.
+			</description>
+		</method>
+		<method name="get_color_grading">
+			<return type="ColorGradingResource" />
+			<description>
+				Returns the assigned ColorGradingResource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="bake_color_grading">
+			<return type="int" enum="Error" />
+			<description>
+				Permanently applies the current color grading transform to all splat colors. The original colors are backed up and can be restored via [method restore_color_grading]. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="bake_color_grading_snapshot">
+			<return type="int" enum="Error" />
+			<param index="0" name="grading_snapshot" type="ColorGradingResource" />
+			<description>
+				Permanently applies the given [param grading_snapshot] color grading transform to all splat colors. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="restore_color_grading">
+			<return type="void" />
+			<description>
+				Reverts all splat colors to their state before the first [method bake_color_grading] call, restoring the original unbaked colors.
+			</description>
+		</method>
+		<method name="is_color_grading_baked">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if color grading has been baked into the splat colors and can be restored.
+			</description>
+		</method>
+		<method name="get_visible_splat_count">
+			<return type="int" />
+			<description>
+				Returns the number of splats that were visible and rendered in the most recent frame.
+			</description>
+		</method>
+		<method name="get_total_splat_count">
+			<return type="int" />
+			<description>
+				Returns the total number of splats in the loaded dataset.
+			</description>
+		</method>
+		<method name="get_last_update_time_ms">
+			<return type="float" />
+			<description>
+				Returns the time spent on the most recent rendering update in milliseconds.
+			</description>
+		</method>
+		<method name="get_gpu_memory_mb">
+			<return type="float" />
+			<description>
+				Returns the GPU memory used by this node's splat data in megabytes.
+			</description>
+		</method>
+		<method name="get_statistics">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of detailed rendering statistics for this node, including splat counts, timing, memory usage, and quality settings.
+			</description>
+		</method>
+		<method name="get_configuration_warnings">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of configuration warning messages for the editor. Warns about missing data, unsupported configurations, or performance concerns.
+			</description>
+		</method>
+		<method name="set_preview_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables editor preview rendering for this node.
+			</description>
+		</method>
+		<method name="is_preview_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if editor preview is enabled.
+			</description>
+		</method>
+		<method name="set_show_bounds">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the axis-aligned bounding box wireframe overlay.
+			</description>
+		</method>
+		<method name="is_showing_bounds">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the bounds overlay is visible.
+			</description>
+		</method>
+		<method name="set_show_statistics">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the statistics overlay in the viewport.
+			</description>
+		</method>
+		<method name="is_showing_statistics">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the statistics overlay is visible.
+			</description>
+		</method>
+		<method name="set_show_tile_grid">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the tile grid debug overlay.
+			</description>
+		</method>
+		<method name="is_showing_tile_grid">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the tile grid overlay is visible.
+			</description>
+		</method>
+		<method name="set_show_density_heatmap">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the per-tile density heatmap overlay.
+			</description>
+		</method>
+		<method name="is_showing_density_heatmap">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the density heatmap is visible.
+			</description>
+		</method>
+		<method name="set_show_performance_hud">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the performance HUD overlay.
+			</description>
+		</method>
+		<method name="is_showing_performance_hud">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the performance HUD is visible.
+			</description>
+		</method>
+		<method name="set_show_lod_spheres">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables visualization of LOD transition spheres in the viewport.
+			</description>
+		</method>
+		<method name="is_showing_lod_spheres">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if LOD sphere visualization is active.
+			</description>
+		</method>
+		<method name="set_show_performance_overlay">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the runtime performance overlay.
+			</description>
+		</method>
+		<method name="is_showing_performance_overlay">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the performance overlay is visible.
+			</description>
+		</method>
+		<method name="set_debug_overlay_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the opacity of debug overlays. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_debug_overlay_opacity">
+			<return type="float" />
+			<description>
+				Returns the current debug overlay opacity.
+			</description>
+		</method>
+		<method name="set_debug_draw_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="GaussianSplatNode3D.DebugDrawMode" />
+			<description>
+				Sets the debug visualization mode for this node.
+			</description>
+		</method>
+		<method name="get_debug_draw_mode">
+			<return type="int" enum="GaussianSplatNode3D.DebugDrawMode" />
+			<description>
+				Returns the current debug draw mode.
+			</description>
+		</method>
+		<method name="set_runtime_preview_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables runtime preview rendering. When enabled, the splat output is rendered in a play-mode viewport overlay.
+			</description>
+		</method>
+		<method name="is_runtime_preview_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if runtime preview rendering is enabled.
+			</description>
+		</method>
+		<method name="set_show_residency_hud">
+			<return type="void" />
+			<param index="0" name="show" type="bool" />
+			<description>
+				Enables or disables the GPU residency HUD overlay.
+			</description>
+		</method>
+		<method name="is_showing_residency_hud">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the residency HUD is visible.
+			</description>
+		</method>
+		<method name="get_renderer">
+			<return type="GaussianSplatRenderer" />
+			<description>
+				Returns the internal GaussianSplatRenderer instance used by this node. May be shared with other nodes in the scene registry.
+			</description>
+		</method>
+		<method name="update_splats">
+			<return type="void" />
+			<description>
+				Manually triggers a splat rendering update. Required when [member rendering/update_mode] is set to [constant UPDATE_MODE_MANUAL].
+			</description>
+		</method>
+		<method name="force_update">
+			<return type="void" />
+			<description>
+				Forces an immediate full rendering update, bypassing visibility and caching checks.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ply_file_path" type="String" setter="set_ply_file_path" getter="get_ply_file_path" default="&quot;&quot;">
+			Path to a PLY or SPZ file to load. Accepts [code]*.ply[/code] and [code]*.spz[/code] file formats.
+		</member>
+		<member name="splat_asset" type="GaussianSplatAsset" setter="set_splat_asset" getter="get_splat_asset">
+			The GaussianSplatAsset resource providing splat data. Takes precedence over [member ply_file_path] when set.
+		</member>
+		<member name="auto_load" type="bool" setter="set_auto_load" getter="is_auto_load_enabled" default="true">
+			When enabled, the asset is loaded automatically when the node enters the scene tree.
+		</member>
+		<member name="quality/preset" type="int" setter="set_quality_preset" getter="get_quality_preset" enum="GaussianSplatNode3D.QualityPreset" default="1">
+			The quality preset controlling LOD, distance, and splat count tradeoffs.
+		</member>
+		<member name="quality/lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
+			LOD bias multiplier (0.1 to 4.0). Higher values keep more splats visible at distance.
+		</member>
+		<member name="quality/max_render_distance" type="float" setter="set_max_render_distance" getter="get_max_render_distance" default="1000.0">
+			Maximum rendering distance in meters.
+		</member>
+		<member name="quality/max_splat_count" type="int" setter="set_max_splat_count" getter="get_max_splat_count" default="1000000">
+			Maximum number of splats to render per frame.
+		</member>
+		<member name="painterly/enabled" type="bool" setter="set_enable_painterly" getter="is_painterly_enabled" default="false">
+			Enables painterly post-processing effects.
+		</member>
+		<member name="painterly/edge_threshold" type="float" setter="set_edge_threshold" getter="get_edge_threshold" default="0.1">
+			Edge detection sensitivity for painterly stroke placement.
+		</member>
+		<member name="painterly/stroke_opacity" type="float" setter="set_stroke_opacity" getter="get_stroke_opacity" default="0.8">
+			Opacity of painterly brush strokes.
+		</member>
+		<member name="painterly/stroke_width" type="float" setter="set_stroke_width" getter="get_stroke_width" default="1.0">
+			Width of painterly brush strokes.
+		</member>
+		<member name="painterly/temporal_blend" type="float" setter="set_temporal_blend" getter="get_temporal_blend" default="0.5">
+			Temporal blending factor for frame-to-frame smoothness of painterly effects.
+		</member>
+		<member name="painterly/seed" type="int" setter="set_painterly_seed" getter="get_painterly_seed" default="0">
+			Random seed for painterly noise generation.
+		</member>
+		<member name="rendering/update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="GaussianSplatNode3D.ViewportUpdateMode" default="0">
+			Controls when rendering updates occur.
+		</member>
+		<member name="rendering/cast_shadow" type="bool" setter="set_cast_shadow" getter="get_cast_shadow" default="false">
+			Enables shadow casting from this splat node.
+		</member>
+		<member name="rendering/frustum_culling" type="bool" setter="set_use_frustum_culling" getter="is_frustum_culling_enabled" default="true">
+			Enables frustum culling of offscreen splats.
+		</member>
+		<member name="rendering/opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">
+			Global opacity for all splats in this node.
+		</member>
+		<member name="rendering/wind_override_enabled" type="bool" setter="set_wind_override_enabled" getter="is_wind_override_enabled" default="false">
+			Enables per-node wind parameter overrides.
+		</member>
+		<member name="rendering/wind_enabled" type="bool" setter="set_wind_enabled" getter="is_wind_enabled" default="false">
+			Enables wind simulation for this node's splats.
+		</member>
+		<member name="rendering/wind_strength" type="float" setter="set_wind_strength" getter="get_wind_strength" default="1.0">
+			Wind displacement strength multiplier.
+		</member>
+		<member name="rendering/wind_direction" type="Vector3" setter="set_wind_direction" getter="get_wind_direction" default="Vector3(1, 0, 0)">
+			Wind direction vector.
+		</member>
+		<member name="rendering/wind_frequency" type="float" setter="set_wind_frequency" getter="get_wind_frequency" default="1.0">
+			Wind oscillation frequency.
+		</member>
+		<member name="rendering/color_grading" type="ColorGradingResource" setter="set_color_grading" getter="get_color_grading">
+			Color grading transform applied to splat colors.
+		</member>
+		<member name="debug/preview_enabled" type="bool" setter="set_preview_enabled" getter="is_preview_enabled" default="false">
+			Enables editor preview rendering.
+		</member>
+		<member name="debug/show_bounds" type="bool" setter="set_show_bounds" getter="is_showing_bounds" default="false">
+			Shows the AABB wireframe overlay.
+		</member>
+		<member name="debug/show_statistics" type="bool" setter="set_show_statistics" getter="is_showing_statistics" default="false">
+			Shows the statistics overlay.
+		</member>
+		<member name="debug/show_tile_grid" type="bool" setter="set_show_tile_grid" getter="is_showing_tile_grid" default="false">
+			Shows the tile grid debug overlay.
+		</member>
+		<member name="debug/show_density_heatmap" type="bool" setter="set_show_density_heatmap" getter="is_showing_density_heatmap" default="false">
+			Shows the per-tile density heatmap.
+		</member>
+		<member name="debug/show_performance_hud" type="bool" setter="set_show_performance_hud" getter="is_showing_performance_hud" default="false">
+			Shows the performance HUD overlay.
+		</member>
+		<member name="debug/show_lod_spheres" type="bool" setter="set_show_lod_spheres" getter="is_showing_lod_spheres" default="false">
+			Shows LOD transition sphere visualization.
+		</member>
+		<member name="debug/show_performance_overlay" type="bool" setter="set_show_performance_overlay" getter="is_showing_performance_overlay" default="false">
+			Shows the runtime performance overlay.
+		</member>
+		<member name="debug/overlay_opacity" type="float" setter="set_debug_overlay_opacity" getter="get_debug_overlay_opacity" default="0.5">
+			Opacity of debug overlays.
+		</member>
+		<member name="debug/debug_draw_mode" type="int" setter="set_debug_draw_mode" getter="get_debug_draw_mode" enum="GaussianSplatNode3D.DebugDrawMode" default="0">
+			Debug visualization mode.
+		</member>
+		<member name="debug/runtime_preview" type="bool" setter="set_runtime_preview_enabled" getter="is_runtime_preview_enabled" default="false">
+			Enables runtime preview viewport overlay.
+		</member>
+		<member name="debug/show_residency_hud" type="bool" setter="set_show_residency_hud" getter="is_showing_residency_hud" default="false">
+			Shows the GPU residency HUD overlay.
+		</member>
+	</members>
+	<signals>
+		<signal name="asset_loaded">
+			<description>
+				Emitted when the splat asset has been successfully loaded and the node is ready to render.
+			</description>
+		</signal>
+		<signal name="asset_loading_failed">
+			<param index="0" name="error" type="String" />
+			<description>
+				Emitted when the splat asset fails to load. [param error] contains a description of what went wrong.
+			</description>
+		</signal>
+		<signal name="viewport_visibility_changed">
+			<param index="0" name="visible" type="bool" />
+			<description>
+				Emitted when the node's visibility within its viewport changes. [param visible] is [code]true[/code] when the node becomes visible.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="QUALITY_PERFORMANCE" value="0" enum="QualityPreset">
+			Prioritizes rendering speed with aggressive LOD culling and lower splat limits.
+		</constant>
+		<constant name="QUALITY_BALANCED" value="1" enum="QualityPreset">
+			Balanced tradeoff between visual quality and rendering performance.
+		</constant>
+		<constant name="QUALITY_QUALITY" value="2" enum="QualityPreset">
+			Prioritizes visual fidelity with higher splat limits and less aggressive culling.
+		</constant>
+		<constant name="QUALITY_CUSTOM" value="3" enum="QualityPreset">
+			Manual configuration of all quality parameters.
+		</constant>
+		<constant name="UPDATE_MODE_ALWAYS" value="0" enum="ViewportUpdateMode">
+			Updates rendering every frame regardless of visibility.
+		</constant>
+		<constant name="UPDATE_MODE_WHEN_VISIBLE" value="1" enum="ViewportUpdateMode">
+			Updates rendering only when the node is visible in a viewport.
+		</constant>
+		<constant name="UPDATE_MODE_WHEN_PARENT_VISIBLE" value="2" enum="ViewportUpdateMode">
+			Updates rendering only when the node's parent is visible.
+		</constant>
+		<constant name="UPDATE_MODE_MANUAL" value="3" enum="ViewportUpdateMode">
+			Rendering is only updated when [method update_splats] is called explicitly.
+		</constant>
+		<constant name="DEBUG_DRAW_OFF" value="0" enum="DebugDrawMode">
+			Normal rendering with no debug visualization.
+		</constant>
+		<constant name="DEBUG_DRAW_WIREFRAME" value="1" enum="DebugDrawMode">
+			Wireframe visualization of splat ellipses.
+		</constant>
+		<constant name="DEBUG_DRAW_POINTS" value="2" enum="DebugDrawMode">
+			Point cloud visualization showing splat centers.
+		</constant>
+		<constant name="DEBUG_DRAW_HEATMAP" value="3" enum="DebugDrawMode">
+			Heatmap visualization of per-pixel splat density.
+		</constant>
+	</constants>
+</class>

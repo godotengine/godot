@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianMemoryStream" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Triple-buffered GPU memory stream for asynchronous Gaussian splat data uploads.
+	</brief_description>
+	<description>
+		GaussianMemoryStream manages the GPU-side memory pipeline for Gaussian splat rendering. It implements a triple-buffering scheme that overlaps data upload with rendering, targeting less than 5% GPU stall rates on modern hardware.
+		The stream maintains an internal memory pool with suballocation, defragmentation, and bandwidth monitoring. It supports both asynchronous and immediate upload paths, and tracks detailed statistics including bytes transferred, stall counts, and spherical harmonics compression ratios.
+		Initialize with a [RenderingDevice] reference, then use [method swap_buffers] each frame to rotate the triple buffer. The [GaussianStreamingSystem] typically drives this class; direct usage is needed only for custom streaming pipelines.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="initialize">
+			<return type="int" enum="Error" />
+			<param index="0" name="rendering_device" type="RenderingDevice" />
+			<param index="1" name="max_gaussians" type="int" />
+			<param index="2" name="buffer_size_mb" type="int" default="256" />
+			<description>
+				Initializes the memory stream with the given [RenderingDevice], maximum Gaussian capacity, and memory pool budget in megabytes. Creates the triple-buffer set and internal memory pool. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="shutdown">
+			<return type="void" />
+			<description>
+				Waits for all pending uploads and releases all GPU buffers and pool memory. Call before discarding this stream.
+			</description>
+		</method>
+		<method name="get_current_gpu_buffer">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the GPU buffer that is currently ready for rendering.
+			</description>
+		</method>
+		<method name="swap_buffers">
+			<return type="void" />
+			<description>
+				Rotates the triple buffer, advancing the write buffer and making the most recently uploaded buffer available for rendering. Call once per frame.
+			</description>
+		</method>
+		<method name="is_upload_complete">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if all pending asynchronous uploads have finished.
+			</description>
+		</method>
+		<method name="wait_for_all_uploads">
+			<return type="void" />
+			<description>
+				Blocks the calling thread until all pending GPU uploads have completed. Use sparingly to avoid stalling the render thread.
+			</description>
+		</method>
+		<method name="compact_memory">
+			<return type="void" />
+			<description>
+				Compacts the internal memory pool by releasing unused blocks and merging adjacent free regions.
+			</description>
+		</method>
+		<method name="get_allocated_memory_mb">
+			<return type="int" />
+			<description>
+				Returns the total allocated GPU memory in megabytes, including free pool space.
+			</description>
+		</method>
+		<method name="get_used_memory_mb">
+			<return type="int" />
+			<description>
+				Returns the actively used GPU memory in megabytes.
+			</description>
+		</method>
+		<method name="get_memory_efficiency">
+			<return type="float" />
+			<description>
+				Returns the memory efficiency ratio (used / allocated) as a value between [code]0.0[/code] and [code]1.0[/code]. Values below [code]0.7[/code] may indicate fragmentation.
+			</description>
+		</method>
+		<method name="get_task_debug_state">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary containing buffer state details, fence values, and upload progress for debugging purposes.
+			</description>
+		</method>
+	</methods>
+	<members>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PLYLoader" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Loader for PLY (Polygon File Format) files containing Gaussian splat data.
+	</brief_description>
+	<description>
+		PLYLoader reads PLY files, the standard interchange format for Gaussian Splatting, and produces a [GaussianData] resource. It supports ASCII, binary little-endian, and binary big-endian PLY encodings.
+		Required PLY vertex properties are: [code]x, y, z[/code] (position), [code]f_dc_0, f_dc_1, f_dc_2[/code] (base color spherical harmonic DC term), [code]scale_0, scale_1, scale_2[/code] (log-encoded scale), [code]rot_0, rot_1, rot_2, rot_3[/code] (rotation quaternion in WXYZ order), and [code]opacity[/code] (logit-encoded). Optional properties include surface normals ([code]nx, ny, nz[/code]) and higher-order spherical harmonic coefficients ([code]f_rest_*[/code]).
+		Scale values are stored as log-scale (actual = exp(stored)) and opacity as logit (actual = sigmoid(stored)), matching the conventions from the original 3D Gaussian Splatting paper. The loader implements an on-disk cache to accelerate repeated loads of unchanged files.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads a PLY file from the given filesystem path. Returns [constant OK] on success. After loading, retrieve the result with [method get_gaussian_data].
+			</description>
+		</method>
+		<method name="get_gaussian_data">
+			<return type="GaussianData" />
+			<description>
+				Returns the [GaussianData] resource produced by the most recent [method load_file] call, or [code]null[/code] if no file has been loaded.
+			</description>
+		</method>
+		<method name="get_splat_count">
+			<return type="int" />
+			<description>
+				Returns the number of Gaussian splats parsed from the loaded PLY file.
+			</description>
+		</method>
+		<method name="get_load_statistics">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of load performance statistics including header parse time, data parse time, cache hit status, and total load time in microseconds.
+			</description>
+		</method>
+		<method name="has_property">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the parsed PLY header contains a vertex property with the given name.
+			</description>
+		</method>
+		<method name="get_property_names">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the names of all vertex properties found in the PLY header.
+			</description>
+		</method>
+	</methods>
+	<members>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

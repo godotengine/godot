@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatDebugHUD" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		In-viewport debug overlay that displays Gaussian Splatting performance statistics.
+	</brief_description>
+	<description>
+		GaussianSplatDebugHUD is a Control node that draws runtime performance statistics directly in the game or editor viewport. It renders splat count, FPS, GPU memory usage, streaming status, sort/render timings, and other key metrics collected from the linked [GaussianSplatRenderer].
+		The HUD is created and managed by [GaussianSplatNode3D] when its debug HUD property is enabled. Use [member corner] to choose which viewport corner displays the overlay, [member update_interval] to control refresh frequency, and [member font_size] or [member background_color] to adjust visual presentation.
+		The HUD automatically ignores mouse input so it does not interfere with scene interaction.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="refresh_stats">
+			<return type="void" />
+			<description>
+				Forces an immediate refresh of the displayed statistics, bypassing the normal [member update_interval] cadence.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="corner" type="int" setter="set_corner" getter="get_corner" default="0" enum="GaussianSplatDebugHUD.Corner">
+			Which corner of the viewport the HUD panel appears in. See [enum Corner] for valid values.
+		</member>
+		<member name="update_interval" type="float" setter="set_update_interval" getter="get_update_interval" default="0.1">
+			How often the HUD refreshes its statistics, in seconds. Lower values provide more responsive readouts at a small CPU cost. Clamped to the range [code]0.016[/code] to [code]1.0[/code].
+		</member>
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="14">
+			Size of the HUD text in pixels. Clamped to the range [code]8[/code] to [code]32[/code].
+		</member>
+		<member name="background_color" type="Color" setter="set_background_color" getter="get_background_color" default="Color(0, 0, 0, 0.7)">
+			Background color of the HUD panel. Adjust the alpha component to control transparency.
+		</member>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+		<constant name="CORNER_TOP_LEFT" value="0" enum="Corner">
+			Position the HUD in the top-left corner of the viewport.
+		</constant>
+		<constant name="CORNER_TOP_RIGHT" value="1" enum="Corner">
+			Position the HUD in the top-right corner of the viewport.
+		</constant>
+		<constant name="CORNER_BOTTOM_LEFT" value="2" enum="Corner">
+			Position the HUD in the bottom-left corner of the viewport.
+		</constant>
+		<constant name="CORNER_BOTTOM_RIGHT" value="3" enum="Corner">
+			Position the HUD in the bottom-right corner of the viewport.
+		</constant>
+	</constants>
+</class>

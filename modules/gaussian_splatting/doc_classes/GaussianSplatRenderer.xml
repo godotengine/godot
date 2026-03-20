@@ -1,12 +1,1243 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GaussianSplatRenderer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GaussianSplatRenderer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		RefCounted renderer backend used to draw Gaussian splat datasets.
 	</brief_description>
 	<description>
-		GaussianSplatRenderer owns the GPU-side pipeline for culling, sorting, and rasterizing Gaussian splats.
-		It is typically created by scene integration code and configured with GaussianData resources and render settings.
+		GaussianSplatRenderer owns the GPU-side pipeline for culling, sorting, and rasterizing Gaussian splats. It is typically created by scene integration code and configured with GaussianData resources and render settings. Supports tile-based rasterization, multiple sorting algorithms (bitonic, radix, onesweep), painterly post-processing, debug overlays, and interactive visual effects.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="initialize">
+			<return type="void" />
+			<description>
+				Initializes the GPU rendering pipeline, creating shader programs, compute pipelines, and GPU buffers. Must be called before the first render frame.
+			</description>
+		</method>
+		<method name="set_gaussian_data">
+			<return type="int" enum="Error" />
+			<param index="0" name="data" type="GaussianData" />
+			<description>
+				Assigns the Gaussian splat data resource to render. Returns [constant OK] on success. Triggers GPU buffer allocation and upload.
+			</description>
+		</method>
+		<method name="get_gaussian_data">
+			<return type="GaussianData" />
+			<description>
+				Returns the currently assigned GaussianData resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="set_painterly_material">
+			<return type="void" />
+			<param index="0" name="material" type="PainterlyMaterial" />
+			<description>
+				Assigns a PainterlyMaterial resource that configures brush textures and stylization parameters for painterly post-processing.
+			</description>
+		</method>
+		<method name="get_painterly_material">
+			<return type="PainterlyMaterial" />
+			<description>
+				Returns the currently assigned PainterlyMaterial resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="force_sort_for_view">
+			<return type="void" />
+			<param index="0" name="camera_transform" type="Transform3D" />
+			<description>
+				Forces an immediate depth sort using the provided camera [param camera_transform]. Useful for ensuring correct draw order after teleporting the camera.
+			</description>
+		</method>
+		<method name="set_render_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="GaussianSplatRenderer.RenderMode" />
+			<description>
+				Sets the rendering mode. Use [constant MODE_3D] for standard 3D ellipsoid rendering, [constant MODE_2D] for surfel discs, or [constant MODE_HYBRID] for automatic selection based on splat data.
+			</description>
+		</method>
+		<method name="get_render_mode">
+			<return type="int" enum="GaussianSplatRenderer.RenderMode" />
+			<description>
+				Returns the current rendering mode.
+			</description>
+		</method>
+		<method name="set_opacity_multiplier">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets a global opacity multiplier applied to all splats during rendering. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_opacity_multiplier">
+			<return type="float" />
+			<description>
+				Returns the current global opacity multiplier.
+			</description>
+		</method>
+		<method name="set_static_sort_cache_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables caching of depth sort results for static scenes. When the camera has not moved, the cached sort order is reused to save GPU time.
+			</description>
+		</method>
+		<method name="is_static_sort_cache_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the static sort cache is enabled.
+			</description>
+		</method>
+		<method name="set_cached_render_reuse_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables reuse of the previous frame's render output when the scene is unchanged. Reduces GPU load for static viewpoints.
+			</description>
+		</method>
+		<method name="is_cached_render_reuse_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if cached render reuse is enabled.
+			</description>
+		</method>
+		<method name="set_lod_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables level-of-detail culling. When enabled, small or distant splats are progressively discarded.
+			</description>
+		</method>
+		<method name="get_lod_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if LOD culling is enabled.
+			</description>
+		</method>
+		<method name="set_lod_bias">
+			<return type="void" />
+			<param index="0" name="bias" type="float" />
+			<description>
+				Sets the LOD bias multiplier. Higher values keep more splats visible at greater distances. Range is typically 0.01 to 8.0.
+			</description>
+		</method>
+		<method name="get_lod_bias">
+			<return type="float" />
+			<description>
+				Returns the current LOD bias multiplier.
+			</description>
+		</method>
+		<method name="set_lod_min_screen_size">
+			<return type="void" />
+			<param index="0" name="pixels" type="float" />
+			<description>
+				Sets the minimum projected screen size in pixels. Splats smaller than this threshold are culled.
+			</description>
+		</method>
+		<method name="get_lod_min_screen_size">
+			<return type="float" />
+			<description>
+				Returns the minimum screen size threshold in pixels.
+			</description>
+		</method>
+		<method name="set_lod_max_distance">
+			<return type="void" />
+			<param index="0" name="distance" type="float" />
+			<description>
+				Sets the maximum distance from the camera at which splats are rendered. Splats beyond this distance are culled.
+			</description>
+		</method>
+		<method name="get_lod_max_distance">
+			<return type="float" />
+			<description>
+				Returns the maximum render distance.
+			</description>
+		</method>
+		<method name="set_importance_cull_threshold">
+			<return type="void" />
+			<param index="0" name="threshold" type="float" />
+			<description>
+				Sets the importance culling threshold (0.0 to 1.0). Splats with an importance value below this are discarded. Lower values preserve more detail.
+			</description>
+		</method>
+		<method name="get_importance_cull_threshold">
+			<return type="float" />
+			<description>
+				Returns the current importance culling threshold.
+			</description>
+		</method>
+		<method name="set_cull_radius_multiplier">
+			<return type="void" />
+			<param index="0" name="multiplier" type="float" />
+			<description>
+				Sets the multiplier for splat bounding radius during frustum culling. Higher values are more conservative, keeping more splats near frustum edges.
+			</description>
+		</method>
+		<method name="get_cull_radius_multiplier">
+			<return type="float" />
+			<description>
+				Returns the current cull radius multiplier.
+			</description>
+		</method>
+		<method name="set_cull_frustum_plane_slack">
+			<return type="void" />
+			<param index="0" name="slack" type="float" />
+			<description>
+				Sets the slack added to frustum planes during culling. Higher values extend the effective frustum to reduce popping artifacts at screen edges.
+			</description>
+		</method>
+		<method name="get_cull_frustum_plane_slack">
+			<return type="float" />
+			<description>
+				Returns the current frustum plane slack.
+			</description>
+		</method>
+		<method name="set_cull_near_tolerance">
+			<return type="void" />
+			<param index="0" name="tolerance" type="float" />
+			<description>
+				Sets the near-plane culling tolerance. Splats within this tolerance of the near plane are preserved.
+			</description>
+		</method>
+		<method name="get_cull_near_tolerance">
+			<return type="float" />
+			<description>
+				Returns the current near-plane culling tolerance.
+			</description>
+		</method>
+		<method name="set_cull_far_tolerance">
+			<return type="void" />
+			<param index="0" name="tolerance" type="float" />
+			<description>
+				Sets the far-plane culling tolerance. Splats within this tolerance of the far plane are preserved.
+			</description>
+		</method>
+		<method name="get_cull_far_tolerance">
+			<return type="float" />
+			<description>
+				Returns the current far-plane culling tolerance.
+			</description>
+		</method>
+		<method name="set_tiny_splat_screen_radius">
+			<return type="void" />
+			<param index="0" name="pixels" type="float" />
+			<description>
+				Sets the screen-space radius threshold below which splats are considered too small to render and are culled.
+			</description>
+		</method>
+		<method name="get_tiny_splat_screen_radius">
+			<return type="float" />
+			<description>
+				Returns the tiny splat screen radius threshold in pixels.
+			</description>
+		</method>
+		<method name="set_opacity_aware_culling">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables opacity-aware culling. When enabled, nearly transparent splats are culled earlier.
+			</description>
+		</method>
+		<method name="is_opacity_aware_culling">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if opacity-aware culling is enabled.
+			</description>
+		</method>
+		<method name="set_visibility_threshold">
+			<return type="void" />
+			<param index="0" name="threshold" type="float" />
+			<description>
+				Sets the visibility threshold for opacity-aware culling. Splats with opacity below this value are discarded.
+			</description>
+		</method>
+		<method name="get_visibility_threshold">
+			<return type="float" />
+			<description>
+				Returns the current visibility threshold.
+			</description>
+		</method>
+		<method name="set_distance_cull_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables progressive distance-based culling. When enabled, an increasing fraction of splats are culled as distance from camera grows.
+			</description>
+		</method>
+		<method name="is_distance_cull_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if distance-based culling is enabled.
+			</description>
+		</method>
+		<method name="set_distance_cull_start">
+			<return type="void" />
+			<param index="0" name="distance" type="float" />
+			<description>
+				Sets the distance at which progressive distance culling begins. Splats closer than this are not affected.
+			</description>
+		</method>
+		<method name="get_distance_cull_start">
+			<return type="float" />
+			<description>
+				Returns the distance cull start value.
+			</description>
+		</method>
+		<method name="set_distance_cull_max_rate">
+			<return type="void" />
+			<param index="0" name="rate" type="float" />
+			<description>
+				Sets the maximum cull rate at the far end of the distance cull range. A value of 1.0 means all splats are culled at maximum distance.
+			</description>
+		</method>
+		<method name="get_distance_cull_max_rate">
+			<return type="float" />
+			<description>
+				Returns the maximum distance cull rate.
+			</description>
+		</method>
+		<method name="set_overflow_autotune_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables automatic tuning of tile overflow limits based on runtime performance.
+			</description>
+		</method>
+		<method name="is_overflow_autotune_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if overflow auto-tuning is enabled.
+			</description>
+		</method>
+		<method name="set_max_splats">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the hard limit on the number of visible splats per frame. Excess splats are culled by importance.
+			</description>
+		</method>
+		<method name="get_max_splats">
+			<return type="int" />
+			<description>
+				Returns the current maximum splat count limit.
+			</description>
+		</method>
+		<method name="set_frustum_culling">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables frustum culling. When enabled, splats outside the camera frustum are discarded before sorting.
+			</description>
+		</method>
+		<method name="get_frustum_culling">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if frustum culling is enabled.
+			</description>
+		</method>
+		<method name="set_painterly_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the painterly post-processing pass. When enabled, rendered splats receive stylized brush-stroke effects.
+			</description>
+		</method>
+		<method name="get_painterly_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if painterly rendering is enabled.
+			</description>
+		</method>
+		<method name="set_painterly_low_end_mode">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the low-end painterly mode that uses cheaper shader variants for reduced GPU cost.
+			</description>
+		</method>
+		<method name="get_painterly_low_end_mode">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if low-end painterly mode is active.
+			</description>
+		</method>
+		<method name="set_painterly_enable_strokes">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the brush stroke overlay pass in painterly rendering.
+			</description>
+		</method>
+		<method name="get_painterly_enable_strokes">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the brush stroke overlay is enabled.
+			</description>
+		</method>
+		<method name="set_painterly_internal_scale">
+			<return type="void" />
+			<param index="0" name="scale" type="float" />
+			<description>
+				Sets the internal render resolution scale for the painterly pass. Lower values reduce GPU cost at the expense of detail. Range is 0.25 to 1.0.
+			</description>
+		</method>
+		<method name="get_painterly_internal_scale">
+			<return type="float" />
+			<description>
+				Returns the current painterly internal resolution scale.
+			</description>
+		</method>
+		<method name="set_painterly_edge_threshold">
+			<return type="void" />
+			<param index="0" name="threshold" type="float" />
+			<description>
+				Sets the edge detection sensitivity for painterly stroke placement. Higher values produce fewer detected edges.
+			</description>
+		</method>
+		<method name="get_painterly_edge_threshold">
+			<return type="float" />
+			<description>
+				Returns the current painterly edge threshold.
+			</description>
+		</method>
+		<method name="set_painterly_edge_intensity">
+			<return type="void" />
+			<param index="0" name="intensity" type="float" />
+			<description>
+				Sets the intensity of edge-line rendering in the painterly pass. Higher values produce darker, more visible edge lines.
+			</description>
+		</method>
+		<method name="get_painterly_edge_intensity">
+			<return type="float" />
+			<description>
+				Returns the current painterly edge intensity.
+			</description>
+		</method>
+		<method name="set_painterly_stroke_length">
+			<return type="void" />
+			<param index="0" name="pixels" type="float" />
+			<description>
+				Sets the length of brush strokes in pixels for the painterly overlay.
+			</description>
+		</method>
+		<method name="get_painterly_stroke_length">
+			<return type="float" />
+			<description>
+				Returns the current painterly stroke length in pixels.
+			</description>
+		</method>
+		<method name="set_painterly_stroke_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the opacity of brush strokes in the painterly overlay. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_painterly_stroke_opacity">
+			<return type="float" />
+			<description>
+				Returns the current painterly stroke opacity.
+			</description>
+		</method>
+		<method name="set_painterly_gamma">
+			<return type="void" />
+			<param index="0" name="gamma" type="float" />
+			<description>
+				Sets the gamma correction value for the painterly output. Used to match the stylized look to the scene's color space.
+			</description>
+		</method>
+		<method name="get_painterly_gamma">
+			<return type="float" />
+			<description>
+				Returns the current painterly gamma value.
+			</description>
+		</method>
+		<method name="set_quality_preset">
+			<return type="void" />
+			<param index="0" name="preset" type="String" />
+			<description>
+				Applies a named quality preset that configures multiple rendering parameters at once. Accepted values are [code]"ultra"[/code], [code]"high"[/code], [code]"medium"[/code], and [code]"low"[/code].
+			</description>
+		</method>
+		<method name="get_quality_preset">
+			<return type="String" />
+			<description>
+				Returns the name of the current quality preset ([code]"ultra"[/code], [code]"high"[/code], [code]"medium"[/code], or [code]"low"[/code]).
+			</description>
+		</method>
+		<method name="set_interactive_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="GaussianSplatRenderer.InteractiveState" />
+			<description>
+				Sets the interactive visual state. Controls editor feedback effects such as hover highlighting and selection outlines.
+			</description>
+		</method>
+		<method name="get_interactive_state">
+			<return type="int" enum="GaussianSplatRenderer.InteractiveState" />
+			<description>
+				Returns the current interactive state.
+			</description>
+		</method>
+		<method name="enable_highlight_effect">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Applies a highlight tint effect over all rendered splats using the given [param color]. Commonly used for hover feedback in the editor.
+			</description>
+		</method>
+		<method name="enable_outline_effect">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<param index="1" name="width" type="float" />
+			<description>
+				Applies an outline effect around the splat volume with the given [param color] and [param width]. Commonly used for selection feedback.
+			</description>
+		</method>
+		<method name="remove_visual_effects">
+			<return type="void" />
+			<description>
+				Removes all active visual effects (highlight, outline) from this renderer instance.
+			</description>
+		</method>
+		<method name="get_render_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of per-frame rendering performance statistics including splat counts, sort timing, and GPU utilization metrics.
+			</description>
+		</method>
+		<method name="get_binning_debug_counters">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of tile binning diagnostic counters. Includes per-tile splat counts, overflow statistics, and bin utilization data.
+			</description>
+		</method>
+		<method name="benchmark_sorting_performance">
+			<return type="void" />
+			<description>
+				Runs an internal sorting performance benchmark and logs the results. Tests all available sorting algorithms with the current dataset.
+			</description>
+		</method>
+		<method name="run_sort_benchmark">
+			<return type="Array" />
+			<param index="0" name="sizes" type="PackedInt32Array" />
+			<description>
+				Runs sorting benchmarks for each dataset size in [param sizes] and returns an array of result dictionaries containing timing data for each algorithm.
+			</description>
+		</method>
+		<method name="get_last_sort_metrics">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary with metrics from the most recent depth sort pass, including algorithm used, element count, and timing.
+			</description>
+		</method>
+		<method name="get_sort_metrics_history">
+			<return type="Array" />
+			<description>
+				Returns an array of recent sort metric dictionaries, one per frame. The history length is controlled by project settings.
+			</description>
+		</method>
+		<method name="get_sort_time_ms">
+			<return type="float" />
+			<description>
+				Returns the GPU time spent on sorting in the most recent frame, measured in milliseconds.
+			</description>
+		</method>
+		<method name="get_render_time_ms">
+			<return type="float" />
+			<description>
+				Returns the GPU time spent on the full render pass in the most recent frame, measured in milliseconds.
+			</description>
+		</method>
+		<method name="get_overflow_tile_count">
+			<return type="int" />
+			<description>
+				Returns the number of tiles that overflowed their splat capacity in the most recent frame.
+			</description>
+		</method>
+		<method name="get_clamped_records">
+			<return type="int" />
+			<description>
+				Returns the number of splat records that were clamped due to per-tile capacity limits in the most recent frame.
+			</description>
+		</method>
+		<method name="get_aggregated_count">
+			<return type="int" />
+			<description>
+				Returns the total aggregated splat count across all tiles in the most recent frame.
+			</description>
+		</method>
+		<method name="get_overflow_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary with tile overflow statistics from the most recent frame, including overflow tile count, clamped records, and aggregated totals.
+			</description>
+		</method>
+		<method name="get_visible_splat_count">
+			<return type="int" />
+			<description>
+				Returns the number of splats that passed culling and were rendered in the most recent frame.
+			</description>
+		</method>
+		<method name="was_last_viewport_copy_successful">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the most recent viewport texture copy operation completed without errors.
+			</description>
+		</method>
+		<method name="get_last_viewport_copy_source_size">
+			<return type="Vector2i" />
+			<description>
+				Returns the source texture size of the most recent viewport copy operation.
+			</description>
+		</method>
+		<method name="get_last_viewport_copy_dest_size">
+			<return type="Vector2i" />
+			<description>
+				Returns the destination texture size of the most recent viewport copy operation.
+			</description>
+		</method>
+		<method name="get_pipeline_trace_snapshot">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary snapshot of the current pipeline trace state when pipeline tracing is enabled. Contains timing and state data for each pipeline stage.
+			</description>
+		</method>
+		<method name="get_pipeline_trace_json">
+			<return type="String" />
+			<description>
+				Returns the current pipeline trace data formatted as a JSON string.
+			</description>
+		</method>
+		<method name="dump_pipeline_trace_to_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Writes the current pipeline trace data to a file at [param path] in JSON format. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="set_debug_show_tile_grid">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the tile grid debug overlay, showing tile boundaries over the rendered output.
+			</description>
+		</method>
+		<method name="is_debug_show_tile_grid">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the tile grid overlay is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_density_heatmap">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the density heatmap overlay, visualizing per-tile splat density as a color gradient.
+			</description>
+		</method>
+		<method name="is_debug_show_density_heatmap">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the density heatmap overlay is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_performance_hud">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the performance HUD overlay displaying frame timing, splat counts, and sort metrics.
+			</description>
+		</method>
+		<method name="is_debug_show_performance_hud">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the performance HUD is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_residency_hud">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the residency HUD overlay showing GPU memory and streaming state.
+			</description>
+		</method>
+		<method name="is_debug_show_residency_hud">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the residency HUD is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_tile_bounds">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the tile bounds debug overlay.
+			</description>
+		</method>
+		<method name="get_debug_show_tile_bounds">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the tile bounds overlay is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_splat_coverage">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables the splat coverage debug overlay, highlighting screen areas covered by splat contributions.
+			</description>
+		</method>
+		<method name="get_debug_show_splat_coverage">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the splat coverage overlay is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_overflow_tiles">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables highlighting of tiles that exceeded their splat capacity.
+			</description>
+		</method>
+		<method name="get_debug_show_overflow_tiles">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if overflow tile highlighting is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_projection_issues">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables highlighting of splats with projection anomalies (e.g., behind-camera or degenerate covariance).
+			</description>
+		</method>
+		<method name="get_debug_show_projection_issues">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if projection issue highlighting is visible.
+			</description>
+		</method>
+		<method name="set_debug_show_white_albedo">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables overriding all splat colors with white, useful for inspecting geometry without color influence.
+			</description>
+		</method>
+		<method name="get_debug_show_white_albedo">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if white albedo override is active.
+			</description>
+		</method>
+		<method name="set_debug_show_shadow_opacity">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables visualization of the shadow opacity channel as a grayscale overlay.
+			</description>
+		</method>
+		<method name="get_debug_show_shadow_opacity">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if shadow opacity visualization is active.
+			</description>
+		</method>
+		<method name="set_debug_show_device_boundaries">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables visualization of GPU device submission boundaries for multi-device debugging.
+			</description>
+		</method>
+		<method name="is_debug_show_device_boundaries">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if device boundary visualization is active.
+			</description>
+		</method>
+		<method name="set_debug_show_texture_states">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables visualization of internal texture states for diagnosing resource lifecycle issues.
+			</description>
+		</method>
+		<method name="is_debug_show_texture_states">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if texture state visualization is active.
+			</description>
+		</method>
+		<method name="set_debug_compute_raster_policy">
+			<return type="void" />
+			<param index="0" name="policy" type="int" />
+			<description>
+				Overrides the compute rasterization policy for debugging. Use 0 for default automatic selection, 1 to force on, or 2 to force off.
+			</description>
+		</method>
+		<method name="get_debug_compute_raster_policy">
+			<return type="int" />
+			<description>
+				Returns the current compute rasterization policy override.
+			</description>
+		</method>
+		<method name="set_debug_dump_gpu_counters">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables dumping of GPU performance counter values to the log each frame.
+			</description>
+		</method>
+		<method name="get_debug_dump_gpu_counters">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if GPU counter dumping is enabled.
+			</description>
+		</method>
+		<method name="set_debug_binning_counters_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables collection of tile binning diagnostic counters. Has a small GPU cost when enabled.
+			</description>
+		</method>
+		<method name="get_debug_binning_counters_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if binning counter collection is enabled.
+			</description>
+		</method>
+		<method name="set_debug_pipeline_trace_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables pipeline trace recording, capturing per-stage timing and state data for performance analysis.
+			</description>
+		</method>
+		<method name="get_debug_pipeline_trace_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if pipeline trace recording is enabled.
+			</description>
+		</method>
+		<method name="set_debug_state_guardrails_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables runtime state guardrail checks that validate pipeline invariants. Useful for catching rendering state bugs.
+			</description>
+		</method>
+		<method name="get_debug_state_guardrails_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if state guardrails are enabled.
+			</description>
+		</method>
+		<method name="set_debug_cull_guardrails_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables culling guardrail checks that validate splat counts before and after culling stages.
+			</description>
+		</method>
+		<method name="get_debug_cull_guardrails_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if culling guardrails are enabled.
+			</description>
+		</method>
+		<method name="set_debug_splat_audit_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables per-frame splat data auditing that reads back and validates GPU buffer contents.
+			</description>
+		</method>
+		<method name="get_debug_splat_audit_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if splat auditing is enabled.
+			</description>
+		</method>
+		<method name="set_debug_splat_audit_sample_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the number of splats to sample during each audit pass. Higher values increase diagnostic coverage but cost more GPU time.
+			</description>
+		</method>
+		<method name="get_debug_splat_audit_sample_count">
+			<return type="int" />
+			<description>
+				Returns the current splat audit sample count.
+			</description>
+		</method>
+		<method name="set_debug_overlay_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the opacity of debug overlay visualizations. Range is 0.0 (fully transparent) to 1.0 (fully opaque).
+			</description>
+		</method>
+		<method name="get_debug_overlay_opacity">
+			<return type="float" />
+			<description>
+				Returns the current debug overlay opacity.
+			</description>
+		</method>
+		<method name="set_solid_coverage_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables solid coverage mode, which raises the minimum alpha of accumulated splat contributions to create a more opaque appearance.
+			</description>
+		</method>
+		<method name="is_solid_coverage_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if solid coverage mode is enabled.
+			</description>
+		</method>
+		<method name="set_solid_coverage_alpha_floor">
+			<return type="void" />
+			<param index="0" name="alpha_floor" type="float" />
+			<description>
+				Sets the minimum alpha floor for solid coverage mode. Pixels with accumulated alpha above this threshold are treated as fully opaque.
+			</description>
+		</method>
+		<method name="get_solid_coverage_alpha_floor">
+			<return type="float" />
+			<description>
+				Returns the current solid coverage alpha floor.
+			</description>
+		</method>
+		<method name="set_debug_show_resolve_input">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables visualization of the resolve pass input texture for diagnosing compositing issues.
+			</description>
+		</method>
+		<method name="get_debug_show_resolve_input">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if resolve input visualization is active.
+			</description>
+		</method>
+		<method name="set_debug_show_resolve_output">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables visualization of the resolve pass output texture for diagnosing compositing issues.
+			</description>
+		</method>
+		<method name="get_debug_show_resolve_output">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if resolve output visualization is active.
+			</description>
+		</method>
+		<method name="reload_pipeline_feature_set">
+			<return type="void" />
+			<description>
+				Reloads the pipeline feature set configuration from project settings, updating which GPU features and shader variants are active.
+			</description>
+		</method>
+		<method name="set_jacobian_bypass_radius_depth_floor">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables bypassing the radius-depth floor in the Jacobian projection. Diagnostic toggle for investigating radial stretching artifacts.
+			</description>
+		</method>
+		<method name="get_jacobian_bypass_radius_depth_floor">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the Jacobian radius-depth floor bypass is active.
+			</description>
+		</method>
+		<method name="set_jacobian_bypass_j_col2_clamp">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables bypassing the J column-2 clamp in the Jacobian projection. Diagnostic toggle for investigating distortion artifacts.
+			</description>
+		</method>
+		<method name="get_jacobian_bypass_j_col2_clamp">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the J column-2 clamp bypass is active.
+			</description>
+		</method>
+		<method name="set_jacobian_invert_j_col2_sign">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables inverting the sign of J column-2 in the Jacobian projection. Diagnostic toggle for investigating mirroring artifacts.
+			</description>
+		</method>
+		<method name="get_jacobian_invert_j_col2_sign">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if J column-2 sign inversion is active.
+			</description>
+		</method>
+		<method name="set_max_conic_aspect">
+			<return type="void" />
+			<param index="0" name="aspect" type="float" />
+			<description>
+				Sets the maximum conic aspect ratio allowed for projected splat ellipses. Limits extreme elongation from oblique viewing angles.
+			</description>
+		</method>
+		<method name="get_max_conic_aspect">
+			<return type="float" />
+			<description>
+				Returns the current maximum conic aspect ratio.
+			</description>
+		</method>
+		<method name="set_debug_preview_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="GaussianSplatRenderer.DebugPreviewMode" />
+			<description>
+				Sets the debug preview visualization mode for the rendered output.
+			</description>
+		</method>
+		<method name="get_debug_preview_mode">
+			<return type="int" enum="GaussianSplatRenderer.DebugPreviewMode" />
+			<description>
+				Returns the current debug preview mode.
+			</description>
+		</method>
+		<method name="get_runtime_diagnostic_snapshot">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary containing a comprehensive snapshot of current runtime state for diagnostic purposes, including buffer states, pipeline configuration, and error conditions.
+			</description>
+		</method>
+		<method name="get_tile_renderer">
+			<return type="TileRenderer" />
+			<description>
+				Returns the internal TileRenderer instance used by this renderer for tile-based rasterization.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="gaussian_data" type="GaussianData" setter="set_gaussian_data" getter="get_gaussian_data">
+			The GaussianData resource to render. Assigning a new resource triggers GPU buffer reallocation.
+		</member>
+		<member name="painterly_material" type="PainterlyMaterial" setter="set_painterly_material" getter="get_painterly_material">
+			The PainterlyMaterial resource configuring brush textures and stylization parameters.
+		</member>
+		<member name="render_mode" type="int" setter="set_render_mode" getter="get_render_mode" enum="GaussianSplatRenderer.RenderMode" default="0">
+			The rendering mode: 3D ellipsoids, 2D surfels, or hybrid automatic selection.
+		</member>
+		<member name="render/opacity_multiplier" type="float" setter="set_opacity_multiplier" getter="get_opacity_multiplier" default="1.0">
+			Global opacity multiplier applied to all splats. Range is 0.0 to 1.0.
+		</member>
+		<member name="sort/static_cache_enabled" type="bool" setter="set_static_sort_cache_enabled" getter="is_static_sort_cache_enabled" default="false">
+			When enabled, sort results are cached and reused when the camera has not moved.
+		</member>
+		<member name="render/cached_render_reuse_enabled" type="bool" setter="set_cached_render_reuse_enabled" getter="is_cached_render_reuse_enabled" default="false">
+			When enabled, the previous frame's render output is reused when the scene is unchanged.
+		</member>
+		<member name="interactive_state" type="int" setter="set_interactive_state" getter="get_interactive_state" enum="GaussianSplatRenderer.InteractiveState" default="0">
+			The interactive visual state controlling editor feedback effects.
+		</member>
+		<member name="lod_enabled" type="bool" setter="set_lod_enabled" getter="get_lod_enabled" default="true">
+			Enables level-of-detail culling of small or distant splats.
+		</member>
+		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
+			LOD bias multiplier. Higher values keep more splats visible at distance.
+		</member>
+		<member name="lod_min_screen_size" type="float" setter="set_lod_min_screen_size" getter="get_lod_min_screen_size" default="1.0">
+			Minimum projected screen size in pixels below which splats are culled.
+		</member>
+		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="500.0">
+			Maximum distance from camera beyond which splats are culled.
+		</member>
+		<member name="cull/importance_threshold" type="float" setter="set_importance_cull_threshold" getter="get_importance_cull_threshold" default="0.0">
+			Importance culling threshold. Splats below this value are discarded.
+		</member>
+		<member name="cull/radius_multiplier" type="float" setter="set_cull_radius_multiplier" getter="get_cull_radius_multiplier" default="3.0">
+			Multiplier for splat bounding radius during frustum culling.
+		</member>
+		<member name="cull/frustum_plane_slack" type="float" setter="set_cull_frustum_plane_slack" getter="get_cull_frustum_plane_slack" default="2.0">
+			Extra slack added to frustum planes to reduce popping at screen edges.
+		</member>
+		<member name="cull/near_tolerance" type="float" setter="set_cull_near_tolerance" getter="get_cull_near_tolerance" default="0.01">
+			Near-plane culling tolerance.
+		</member>
+		<member name="cull/far_tolerance" type="float" setter="set_cull_far_tolerance" getter="get_cull_far_tolerance" default="0.01">
+			Far-plane culling tolerance.
+		</member>
+		<member name="cull/tiny_splat_screen_radius" type="float" setter="set_tiny_splat_screen_radius" getter="get_tiny_splat_screen_radius" default="0.5">
+			Screen radius in pixels below which splats are culled.
+		</member>
+		<member name="cull/opacity_aware_culling" type="bool" setter="set_opacity_aware_culling" getter="is_opacity_aware_culling" default="false">
+			When enabled, nearly transparent splats are culled earlier.
+		</member>
+		<member name="cull/visibility_threshold" type="float" setter="set_visibility_threshold" getter="get_visibility_threshold" default="0.005">
+			Opacity threshold below which splats are discarded during opacity-aware culling.
+		</member>
+		<member name="cull/distance_cull_enabled" type="bool" setter="set_distance_cull_enabled" getter="is_distance_cull_enabled" default="false">
+			Enables progressive distance-based culling.
+		</member>
+		<member name="cull/distance_cull_start" type="float" setter="set_distance_cull_start" getter="get_distance_cull_start" default="100.0">
+			Distance at which progressive distance culling begins.
+		</member>
+		<member name="cull/distance_cull_max_rate" type="float" setter="set_distance_cull_max_rate" getter="get_distance_cull_max_rate" default="0.5">
+			Maximum fraction of splats culled at the far end of the distance range.
+		</member>
+		<member name="cull/overflow_autotune_enabled" type="bool" setter="set_overflow_autotune_enabled" getter="is_overflow_autotune_enabled" default="false">
+			When enabled, tile overflow limits are automatically tuned based on runtime performance.
+		</member>
+		<member name="max_splats" type="int" setter="set_max_splats" getter="get_max_splats" default="1000000">
+			Hard limit on visible splats per frame. Excess splats are culled by importance.
+		</member>
+		<member name="frustum_culling" type="bool" setter="set_frustum_culling" getter="get_frustum_culling" default="true">
+			Enables frustum culling of splats outside the camera view.
+		</member>
+		<member name="painterly/enabled" type="bool" setter="set_painterly_enabled" getter="get_painterly_enabled" default="false">
+			Enables the painterly post-processing pass for stylized brush-stroke effects.
+		</member>
+		<member name="painterly/low_end_mode" type="bool" setter="set_painterly_low_end_mode" getter="get_painterly_low_end_mode" default="false">
+			Uses cheaper shader variants for the painterly pass.
+		</member>
+		<member name="painterly/enable_strokes" type="bool" setter="set_painterly_enable_strokes" getter="get_painterly_enable_strokes" default="true">
+			Enables the brush stroke overlay pass.
+		</member>
+		<member name="painterly/internal_scale" type="float" setter="set_painterly_internal_scale" getter="get_painterly_internal_scale" default="0.5">
+			Internal render resolution scale for the painterly pass (0.25 to 1.0).
+		</member>
+		<member name="painterly/edge_threshold" type="float" setter="set_painterly_edge_threshold" getter="get_painterly_edge_threshold" default="0.1">
+			Edge detection sensitivity for painterly stroke placement.
+		</member>
+		<member name="painterly/edge_intensity" type="float" setter="set_painterly_edge_intensity" getter="get_painterly_edge_intensity" default="1.0">
+			Intensity of edge lines in the painterly output.
+		</member>
+		<member name="painterly/stroke_length" type="float" setter="set_painterly_stroke_length" getter="get_painterly_stroke_length" default="16.0">
+			Length of brush strokes in pixels.
+		</member>
+		<member name="painterly/stroke_opacity" type="float" setter="set_painterly_stroke_opacity" getter="get_painterly_stroke_opacity" default="0.8">
+			Opacity of brush strokes in the painterly overlay.
+		</member>
+		<member name="painterly/gamma" type="float" setter="set_painterly_gamma" getter="get_painterly_gamma" default="1.0">
+			Gamma correction for the painterly output.
+		</member>
+		<member name="debug/show_tile_grid" type="bool" setter="set_debug_show_tile_grid" getter="is_debug_show_tile_grid" default="false">
+			Shows the tile grid debug overlay.
+		</member>
+		<member name="debug/show_density_heatmap" type="bool" setter="set_debug_show_density_heatmap" getter="is_debug_show_density_heatmap" default="false">
+			Shows the per-tile density heatmap overlay.
+		</member>
+		<member name="debug/show_performance_hud" type="bool" setter="set_debug_show_performance_hud" getter="is_debug_show_performance_hud" default="false">
+			Shows the performance HUD overlay.
+		</member>
+		<member name="debug/show_residency_hud" type="bool" setter="set_debug_show_residency_hud" getter="is_debug_show_residency_hud" default="false">
+			Shows the GPU residency HUD overlay.
+		</member>
+		<member name="debug/show_tile_bounds" type="bool" setter="set_debug_show_tile_bounds" getter="get_debug_show_tile_bounds" default="false">
+			Shows the tile bounds debug overlay.
+		</member>
+		<member name="debug/show_splat_coverage" type="bool" setter="set_debug_show_splat_coverage" getter="get_debug_show_splat_coverage" default="false">
+			Shows the splat coverage debug overlay.
+		</member>
+		<member name="debug/show_overflow_tiles" type="bool" setter="set_debug_show_overflow_tiles" getter="get_debug_show_overflow_tiles" default="false">
+			Highlights tiles that exceeded their splat capacity.
+		</member>
+		<member name="debug/show_projection_issues" type="bool" setter="set_debug_show_projection_issues" getter="get_debug_show_projection_issues" default="false">
+			Highlights splats with projection anomalies.
+		</member>
+		<member name="debug/show_white_albedo" type="bool" setter="set_debug_show_white_albedo" getter="get_debug_show_white_albedo" default="false">
+			Overrides all splat colors with white for geometry inspection.
+		</member>
+		<member name="debug/show_shadow_opacity" type="bool" setter="set_debug_show_shadow_opacity" getter="get_debug_show_shadow_opacity" default="false">
+			Visualizes the shadow opacity channel as grayscale.
+		</member>
+		<member name="debug/show_resolve_input" type="bool" setter="set_debug_show_resolve_input" getter="get_debug_show_resolve_input" default="false">
+			Visualizes the resolve pass input texture.
+		</member>
+		<member name="debug/show_resolve_output" type="bool" setter="set_debug_show_resolve_output" getter="get_debug_show_resolve_output" default="false">
+			Visualizes the resolve pass output texture.
+		</member>
+		<member name="debug/show_device_boundaries" type="bool" setter="set_debug_show_device_boundaries" getter="is_debug_show_device_boundaries" default="false">
+			Visualizes GPU device submission boundaries.
+		</member>
+		<member name="debug/show_texture_states" type="bool" setter="set_debug_show_texture_states" getter="is_debug_show_texture_states" default="false">
+			Visualizes internal texture resource states.
+		</member>
+		<member name="debug/compute_raster_policy" type="int" setter="set_debug_compute_raster_policy" getter="get_debug_compute_raster_policy" default="0">
+			Compute rasterization policy override (0=Default, 1=ForceOn, 2=ForceOff).
+		</member>
+		<member name="debug/dump_gpu_counters" type="bool" setter="set_debug_dump_gpu_counters" getter="get_debug_dump_gpu_counters" default="false">
+			Dumps GPU performance counters to the log each frame.
+		</member>
+		<member name="debug/enable_pipeline_trace" type="bool" setter="set_debug_pipeline_trace_enabled" getter="get_debug_pipeline_trace_enabled" default="false">
+			Enables pipeline trace recording for performance analysis.
+		</member>
+		<member name="debug/enable_state_guardrails" type="bool" setter="set_debug_state_guardrails_enabled" getter="get_debug_state_guardrails_enabled" default="false">
+			Enables runtime state invariant validation.
+		</member>
+		<member name="debug/enable_splat_audit" type="bool" setter="set_debug_splat_audit_enabled" getter="get_debug_splat_audit_enabled" default="false">
+			Enables per-frame GPU buffer auditing.
+		</member>
+		<member name="debug/splat_audit_sample_count" type="int" setter="set_debug_splat_audit_sample_count" getter="get_debug_splat_audit_sample_count" default="8">
+			Number of splats sampled per audit pass.
+		</member>
+		<member name="debug/overlay_opacity" type="float" setter="set_debug_overlay_opacity" getter="get_debug_overlay_opacity" default="0.5">
+			Opacity of debug overlay visualizations.
+		</member>
+		<member name="render/solid_coverage_enabled" type="bool" setter="set_solid_coverage_enabled" getter="is_solid_coverage_enabled" default="false">
+			Raises the minimum alpha of accumulated contributions for a more opaque appearance.
+		</member>
+		<member name="render/solid_coverage_alpha_floor" type="float" setter="set_solid_coverage_alpha_floor" getter="get_solid_coverage_alpha_floor" default="0.5">
+			Minimum alpha floor for solid coverage mode.
+		</member>
+		<member name="debug/preview_mode" type="int" setter="set_debug_preview_mode" getter="get_debug_preview_mode" enum="GaussianSplatRenderer.DebugPreviewMode" default="0">
+			Debug preview visualization mode for the rendered output.
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_3D" value="0" enum="RenderMode">
+			Standard 3D ellipsoid Gaussian rendering.
+		</constant>
+		<constant name="MODE_2D" value="1" enum="RenderMode">
+			2D surfel (oriented disc) rendering using surface normals.
+		</constant>
+		<constant name="MODE_HYBRID" value="2" enum="RenderMode">
+			Automatic selection between 3D and 2D modes based on splat data.
+		</constant>
+		<constant name="STATE_NORMAL" value="0" enum="InteractiveState">
+			Default visual state with no interactive feedback.
+		</constant>
+		<constant name="STATE_HOVERED" value="1" enum="InteractiveState">
+			Hovered state with a subtle highlight effect.
+		</constant>
+		<constant name="STATE_SELECTED" value="2" enum="InteractiveState">
+			Selected state with an outline effect.
+		</constant>
+		<constant name="STATE_DISABLED" value="3" enum="InteractiveState">
+			Disabled state with muted visual appearance.
+		</constant>
+		<constant name="DEBUG_PREVIEW_OFF" value="0" enum="DebugPreviewMode">
+			No debug preview; renders normally.
+		</constant>
+		<constant name="DEBUG_PREVIEW_WIREFRAME" value="1" enum="DebugPreviewMode">
+			Wireframe visualization of splat ellipses.
+		</constant>
+		<constant name="DEBUG_PREVIEW_POINTS" value="2" enum="DebugPreviewMode">
+			Point cloud visualization showing splat centers.
+		</constant>
+		<constant name="DEBUG_PREVIEW_DEPTH" value="3" enum="DebugPreviewMode">
+			Depth buffer visualization as a grayscale gradient.
+		</constant>
+		<constant name="DEBUG_PREVIEW_HEATMAP" value="4" enum="DebugPreviewMode">
+			Heatmap visualization of per-pixel splat density.
+		</constant>
+		<constant name="DEBUG_PREVIEW_RUNTIME_MODIFICATIONS" value="5" enum="DebugPreviewMode">
+			Highlights splats that have runtime modifications applied.
+		</constant>
+	</constants>
 </class>

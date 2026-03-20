@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SPZLoader" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Loader for Niantic's SPZ compressed Gaussian Splatting format.
+	</brief_description>
+	<description>
+		SPZLoader reads SPZ files, a compressed format that provides approximately 10x file size reduction compared to PLY with minimal visual degradation. SPZ is used by Scaniverse and other mobile-oriented Gaussian Splatting applications.
+		The format uses a 16-byte header with magic number [code]0x5053474E[/code] ("NGSP"), followed by gzip-compressed packed splat attributes. Positions are 24-bit fixed-point, scales are 8-bit log-encoded, rotations use smallest-three quaternion encoding, and alphas are 8-bit sigmoid-encoded. Spherical harmonics coefficients are included when the header's SH degree is greater than zero.
+		Both version 2 (3-byte rotations) and version 3 (4-byte rotations with improved precision) are supported. Files may be raw SPZ or fully gzip-wrapped.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads an SPZ file from the given filesystem path. Returns [constant OK] on success. After loading, retrieve the result with [method get_gaussian_data].
+			</description>
+		</method>
+		<method name="get_gaussian_data">
+			<return type="GaussianData" />
+			<description>
+				Returns the [GaussianData] resource produced by the most recent [method load_file] call, or [code]null[/code] if no file has been loaded.
+			</description>
+		</method>
+		<method name="get_splat_count">
+			<return type="int" />
+			<description>
+				Returns the number of Gaussian splats parsed from the loaded SPZ file.
+			</description>
+		</method>
+		<method name="get_load_statistics">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of load statistics including format version, SH degree, splat count, and world-space bounds.
+			</description>
+		</method>
+	</methods>
+	<members>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

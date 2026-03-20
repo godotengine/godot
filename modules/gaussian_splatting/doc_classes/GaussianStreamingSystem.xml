@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianStreamingSystem" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		GPU memory streaming system that manages chunk-based loading and LOD for large Gaussian datasets.
+	</brief_description>
+	<description>
+		GaussianStreamingSystem is the primary orchestrator for streaming Gaussian splat data between disk, CPU memory, and GPU VRAM. It divides a [GaussianData] resource into fixed-size chunks (64K splats each by default), manages a ring-buffered upload pipeline, and selects which chunks to keep resident based on camera proximity, frustum culling, VRAM budget, and distance-based LOD.
+		Attach a [GaussianMemoryStream] via [method attach_memory_stream] to enable GPU-side triple-buffered uploads. The streaming system supports chunk frustum culling, predictive prefetching, VRAM budget regulation, and Octree-GS style distance-based LOD transitions.
+		Call [method update_streaming] each frame with the current camera transform and projection to drive the visibility and loading decisions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="initialize">
+			<return type="void" />
+			<param index="0" name="data" type="GaussianData" />
+			<description>
+				Initializes the streaming system with the given [GaussianData] resource. Builds the internal chunk layout and resets all streaming state.
+			</description>
+		</method>
+		<method name="attach_memory_stream">
+			<return type="void" />
+			<param index="0" name="stream" type="GaussianMemoryStream" />
+			<description>
+				Attaches a [GaussianMemoryStream] for GPU-side buffer management. This enables triple-buffered asynchronous uploads.
+			</description>
+		</method>
+		<method name="update_streaming">
+			<return type="void" />
+			<param index="0" name="camera_pos" type="Vector3" />
+			<param index="1" name="projection" type="Projection" />
+			<param index="2" name="frame_delta_seconds" type="float" default="-1.0" />
+			<description>
+				Performs a streaming update using the given camera position and projection. Evaluates chunk visibility, triggers loads and evictions, updates LOD levels, and streams data to GPU buffers. Call once per frame.
+			</description>
+		</method>
+		<method name="begin_residency_requests">
+			<return type="void" />
+			<description>
+				Begins a manual residency request batch. Use with [method request_chunk_residency] and [method finalize_residency_requests] to explicitly control which chunks are loaded.
+			</description>
+		</method>
+		<method name="request_chunk_residency">
+			<return type="void" />
+			<param index="0" name="asset_id" type="int" />
+			<param index="1" name="chunk_id" type="int" />
+			<param index="2" name="lod_level" type="int" />
+			<description>
+				Requests that a specific chunk at a given LOD level be made GPU-resident. Must be called between [method begin_residency_requests] and [method finalize_residency_requests].
+			</description>
+		</method>
+		<method name="request_asset_residency">
+			<return type="void" />
+			<param index="0" name="asset_id" type="int" />
+			<param index="1" name="lod_level" type="int" />
+			<description>
+				Requests that all chunks of an asset at a given LOD level be made GPU-resident.
+			</description>
+		</method>
+		<method name="finalize_residency_requests">
+			<return type="void" />
+			<description>
+				Finalizes the current batch of residency requests and triggers chunk loading.
+			</description>
+		</method>
+		<method name="get_visible_count">
+			<return type="int" />
+			<description>
+				Returns the number of splats currently visible and GPU-resident.
+			</description>
+		</method>
+		<method name="begin_frame">
+			<return type="void" />
+			<description>
+				Signals the start of a new rendering frame. Call before [method update_streaming].
+			</description>
+		</method>
+		<method name="end_frame">
+			<return type="void" />
+			<description>
+				Signals the end of the current rendering frame. Call after rendering is complete.
+			</description>
+		</method>
+		<method name="get_vram_usage">
+			<return type="int" />
+			<description>
+				Returns the estimated VRAM usage in bytes for currently loaded chunks.
+			</description>
+		</method>
+		<method name="get_loaded_chunks">
+			<return type="int" />
+			<description>
+				Returns the number of chunks currently loaded in GPU memory.
+			</description>
+		</method>
+		<method name="get_task_debug_state">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary containing internal task queue debug information, including pending uploads and eviction state.
+			</description>
+		</method>
+		<method name="get_streaming_analytics">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of streaming performance analytics including load/eviction counts, timing data, and queue depths.
+			</description>
+		</method>
+		<method name="set_chunk_frustum_culling_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables chunk-level frustum culling. When enabled, chunks whose bounding volumes fall outside the camera frustum are not loaded.
+			</description>
+		</method>
+		<method name="is_chunk_frustum_culling_enabled">
+			<return type="bool" />
+			<description>
+				Returns whether chunk-level frustum culling is enabled.
+			</description>
+		</method>
+		<method name="set_chunk_frustum_padding">
+			<return type="void" />
+			<param index="0" name="padding" type="float" />
+			<description>
+				Sets the frustum padding multiplier for chunk culling. Higher values keep chunks loaded slightly beyond the visible frustum to reduce pop-in.
+			</description>
+		</method>
+		<method name="get_chunk_frustum_padding">
+			<return type="float" />
+			<description>
+				Returns the current frustum padding multiplier for chunk culling.
+			</description>
+		</method>
+		<method name="get_chunk_culling_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of chunk culling statistics including the number of chunks tested, culled, and visible.
+			</description>
+		</method>
+		<method name="get_vram_debug_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns VRAM budget regulation debug statistics, including budget limits, current usage, and regulation state.
+			</description>
+		</method>
+		<method name="is_vram_budget_warning_active">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the VRAM budget regulator is currently throttling chunk loads due to budget pressure.
+			</description>
+		</method>
+		<method name="get_effective_max_chunks">
+			<return type="int" />
+			<description>
+				Returns the effective maximum number of chunks that can be GPU-resident, accounting for VRAM budget regulation.
+			</description>
+		</method>
+		<method name="get_lod_debug_stats">
+			<return type="Dictionary" />
+			<description>
+				Returns distance-based LOD debug statistics including current LOD levels per chunk and transition states.
+			</description>
+		</method>
+		<method name="get_effective_splat_count">
+			<return type="int" />
+			<description>
+				Returns the effective splat count after LOD and culling have been applied.
+			</description>
+		</method>
+	</methods>
+	<members>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

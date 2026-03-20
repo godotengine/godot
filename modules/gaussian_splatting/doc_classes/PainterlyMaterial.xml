@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PainterlyMaterial" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Resource that defines painterly and non-photorealistic shading styles for Gaussian splats.
+	</brief_description>
+	<description>
+		PainterlyMaterial controls how Gaussian splats are stylized during rendering. It supports multiple shading styles (realistic, cel, painterly, Gooch), palette-based color quantization, brush stroke modulation, and configurable lighting with rim, specular, and shadow parameters.
+		Enable individual feature groups with [member palette_quantization_enabled], [member brush_modulation_enabled], and [member lighting_stylization_enabled]. Use [member style_preset] to apply a predefined configuration, or set [member shading_style] and individual parameters for full control.
+		Palette textures and noise lookup tables can be assigned to drive color quantization and brush variation. A stroke density curve allows spatially varying brush density across the rendered scene.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_palette_texture">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<description>
+				Appends a palette texture to the palette texture list.
+			</description>
+		</method>
+		<method name="remove_palette_texture">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the palette texture at the given index.
+			</description>
+		</method>
+		<method name="get_palette_texture_count">
+			<return type="int" />
+			<description>
+				Returns the number of palette textures currently assigned.
+			</description>
+		</method>
+		<method name="add_noise_lut">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<description>
+				Appends a noise lookup table texture.
+			</description>
+		</method>
+		<method name="remove_noise_lut">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the noise lookup table texture at the given index.
+			</description>
+		</method>
+		<method name="get_noise_lut_count">
+			<return type="int" />
+			<description>
+				Returns the number of noise lookup table textures currently assigned.
+			</description>
+		</method>
+		<method name="get_stroke_density_lut">
+			<return type="PackedFloat32Array" />
+			<description>
+				Returns the baked stroke density lookup table computed from [member stroke_density_curve]. The array length matches [member stroke_density_resolution].
+			</description>
+		</method>
+		<method name="get_shader_define_strings">
+			<return type="PackedStringArray" />
+			<description>
+				Returns shader preprocessor define strings reflecting the current material configuration, for use by the rendering pipeline.
+			</description>
+		</method>
+		<method name="has_required_resources">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if all resources needed by the enabled feature set are assigned (e.g., palette textures when quantization is on).
+			</description>
+		</method>
+		<method name="get_missing_resources">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of human-readable descriptions of resources that are needed but not yet assigned.
+			</description>
+		</method>
+		<method name="serialize">
+			<return type="Dictionary" />
+			<description>
+				Serializes the full material state to a [Dictionary] for storage or network transfer.
+			</description>
+		</method>
+		<method name="deserialize">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary" />
+			<description>
+				Restores the material state from a [Dictionary] produced by [method serialize].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="palette_textures" type="Array" setter="set_palette_textures" getter="get_palette_textures">
+			Array of [Texture2D] resources used as color palettes for quantization.
+		</member>
+		<member name="noise_luts" type="Array" setter="set_noise_luts" getter="get_noise_luts">
+			Array of [Texture2D] resources used as noise lookup tables for brush variation.
+		</member>
+		<member name="stroke_density_curve" type="Curve" setter="set_stroke_density_curve" getter="get_stroke_density_curve">
+			A [Curve] that maps normalized distance to stroke density, baked into a lookup table at [member stroke_density_resolution].
+		</member>
+		<member name="stroke_density_resolution" type="int" setter="set_stroke_density_resolution" getter="get_stroke_density_resolution" default="256">
+			Resolution of the baked stroke density lookup table. Higher values provide finer gradation.
+		</member>
+		<member name="stroke_density_strength" type="float" setter="set_stroke_density_strength" getter="get_stroke_density_strength" default="1.0">
+			Multiplier applied to the stroke density curve output.
+		</member>
+		<member name="palette_quantization_enabled" type="bool" setter="set_palette_quantization_enabled" getter="is_palette_quantization_enabled" default="false">
+			When enabled, splat colors are quantized toward the assigned palette colors.
+		</member>
+		<member name="brush_modulation_enabled" type="bool" setter="set_brush_modulation_enabled" getter="is_brush_modulation_enabled" default="false">
+			When enabled, splat shapes are modulated by brush parameters to produce painterly stroke effects.
+		</member>
+		<member name="lighting_stylization_enabled" type="bool" setter="set_lighting_stylization_enabled" getter="is_lighting_stylization_enabled" default="false">
+			When enabled, stylized lighting (cel shading, Gooch, rim) is applied to the splats.
+		</member>
+		<member name="palette_colors" type="PackedColorArray" setter="set_palette_colors" getter="get_palette_colors">
+			The color palette used for quantization. Supports up to 8 colors.
+		</member>
+		<member name="palette_blend_strength" type="float" setter="set_palette_blend_strength" getter="get_palette_blend_strength" default="0.75">
+			Controls how strongly splat colors are pulled toward the nearest palette color. Range [code]0.0[/code] (no effect) to [code]1.0[/code] (full snap).
+		</member>
+		<member name="palette_noise_strength" type="float" setter="set_palette_noise_strength" getter="get_palette_noise_strength" default="0.15">
+			Amount of noise added during palette quantization to break up uniform regions.
+		</member>
+		<member name="palette_preserve_luminance" type="bool" setter="set_palette_preserve_luminance" getter="get_palette_preserve_luminance" default="true">
+			When enabled, the original luminance is preserved during palette quantization so that depth cues are not lost.
+		</member>
+		<member name="shading_style" type="int" setter="set_shading_style" getter="get_shading_style" default="0" enum="PainterlyMaterial.ShadingStyle">
+			The active shading style. See [enum ShadingStyle] for options.
+		</member>
+		<member name="style_preset" type="int" setter="set_style_preset" getter="get_style_preset" default="0" enum="PainterlyMaterial.StylePreset">
+			Applies a predefined configuration to all material parameters. See [enum StylePreset].
+		</member>
+		<member name="cel_band_count" type="int" setter="set_cel_band_count" getter="get_cel_band_count" default="4">
+			Number of discrete shading bands for cel shading. Range [code]1[/code] to [code]16[/code].
+		</member>
+		<member name="cel_smoothness" type="float" setter="set_cel_smoothness" getter="get_cel_smoothness" default="0.35">
+			Controls the softness of transitions between cel shading bands. Range [code]0.0[/code] (hard) to [code]1.0[/code] (smooth).
+		</member>
+		<member name="painterly_mix_strength" type="float" setter="set_painterly_mix_strength" getter="get_painterly_mix_strength" default="0.6">
+			Strength of the painterly color mixing effect. Range [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="brush_texture_influence" type="float" setter="set_brush_texture_influence" getter="get_brush_texture_influence" default="0.5">
+			How much the brush texture affects the final splat appearance. Range [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="brush_scale" type="float" setter="set_brush_scale" getter="get_brush_scale" default="1.6">
+			Scale multiplier for the brush stroke effect.
+		</member>
+		<member name="brush_softness" type="float" setter="set_brush_softness" getter="get_brush_softness" default="1.4">
+			Softness of brush stroke edges.
+		</member>
+		<member name="brush_anisotropy" type="float" setter="set_brush_anisotropy" getter="get_brush_anisotropy" default="1.0">
+			Anisotropy ratio for brush strokes. Values above [code]1.0[/code] elongate strokes.
+		</member>
+		<member name="brush_rotation_jitter" type="float" setter="set_brush_rotation_jitter" getter="get_brush_rotation_jitter" default="0.15">
+			Random rotation variation applied to each brush stroke. Range [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="brush_shape_noise" type="float" setter="set_brush_shape_noise" getter="get_brush_shape_noise" default="0.25">
+			Amount of shape noise applied to brush strokes to produce organic variation.
+		</member>
+		<member name="light_color" type="Color" setter="set_light_color" getter="get_light_color" default="Color(1, 0.95, 0.9, 1)">
+			Color of the primary directional light used in stylized lighting.
+		</member>
+		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color(0.12, 0.12, 0.12, 1)">
+			Ambient fill light color for stylized lighting.
+		</member>
+		<member name="light_direction" type="Vector3" setter="set_light_direction" getter="get_light_direction">
+			Direction vector of the primary light source used in stylized lighting calculations.
+		</member>
+		<member name="diffuse_strength" type="float" setter="set_diffuse_strength" getter="get_diffuse_strength" default="0.85">
+			Strength of diffuse lighting contribution.
+		</member>
+		<member name="specular_strength" type="float" setter="set_specular_strength" getter="get_specular_strength" default="0.2">
+			Strength of specular highlight contribution.
+		</member>
+		<member name="rim_strength" type="float" setter="set_rim_strength" getter="get_rim_strength" default="0.25">
+			Strength of rim lighting effect along silhouette edges.
+		</member>
+		<member name="specular_power" type="float" setter="set_specular_power" getter="get_specular_power" default="24.0">
+			Exponent controlling specular highlight sharpness.
+		</member>
+		<member name="rim_power" type="float" setter="set_rim_power" getter="get_rim_power" default="2.5">
+			Exponent controlling rim lighting falloff.
+		</member>
+		<member name="rim_color" type="Color" setter="set_rim_color" getter="get_rim_color" default="Color(1, 0.92, 0.78, 1)">
+			Color of the rim lighting effect.
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0.22, 0.19, 0.24, 0.5)">
+			Color tint applied to shadowed regions in stylized lighting.
+		</member>
+		<member name="highlight_color" type="Color" setter="set_highlight_color" getter="get_highlight_color" default="Color(1.05, 0.98, 0.88, 0.7)">
+			Color tint applied to highlighted regions in stylized lighting.
+		</member>
+		<member name="color_temperature" type="float" setter="set_color_temperature" getter="get_color_temperature" default="6500.0">
+			White point color temperature in Kelvin. Range [code]1000[/code] to [code]20000[/code].
+		</member>
+		<member name="color_temperature_strength" type="float" setter="set_color_temperature_strength" getter="get_color_temperature_strength" default="0.2">
+			Strength of the color temperature adjustment effect.
+		</member>
+		<member name="temporal_stability" type="float" setter="set_temporal_stability" getter="get_temporal_stability" default="0.5">
+			Controls temporal filtering strength for reducing frame-to-frame flickering in stylized shading.
+		</member>
+		<member name="gooch_cool_mix" type="float" setter="set_gooch_cool_mix" getter="get_gooch_cool_mix" default="0.45">
+			Cool tone mix factor for Gooch shading style.
+		</member>
+		<member name="gooch_warm_mix" type="float" setter="set_gooch_warm_mix" getter="get_gooch_warm_mix" default="0.55">
+			Warm tone mix factor for Gooch shading style.
+		</member>
+		<member name="lighting_intensity" type="float" setter="set_lighting_intensity" getter="get_lighting_intensity" default="1.0">
+			Overall intensity multiplier for all stylized lighting contributions.
+		</member>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+		<constant name="SHADING_STYLE_REALISTIC" value="0" enum="ShadingStyle">
+			Standard physically-based shading with no stylization.
+		</constant>
+		<constant name="SHADING_STYLE_CEL" value="1" enum="ShadingStyle">
+			Cel (toon) shading with discrete light bands controlled by [member cel_band_count].
+		</constant>
+		<constant name="SHADING_STYLE_PAINTERLY" value="2" enum="ShadingStyle">
+			Painterly shading that simulates hand-painted surfaces with color mixing.
+		</constant>
+		<constant name="SHADING_STYLE_GOOCH" value="3" enum="ShadingStyle">
+			Gooch cool-to-warm shading often used in technical illustration.
+		</constant>
+		<constant name="STYLE_PRESET_CUSTOM" value="0" enum="StylePreset">
+			No preset applied; all parameters are manually configured.
+		</constant>
+		<constant name="STYLE_PRESET_REALISTIC" value="1" enum="StylePreset">
+			Preset that configures parameters for a realistic look with minimal stylization.
+		</constant>
+		<constant name="STYLE_PRESET_TOON" value="2" enum="StylePreset">
+			Preset that configures cel shading with strong bands and outline-like rim lighting.
+		</constant>
+		<constant name="STYLE_PRESET_PAINTERLY" value="3" enum="StylePreset">
+			Preset that configures a painterly look with brush modulation and palette influence.
+		</constant>
+		<constant name="STYLE_PRESET_TECHNICAL" value="4" enum="StylePreset">
+			Preset that configures Gooch-style shading suited for technical or scientific visualization.
+		</constant>
+	</constants>
+</class>

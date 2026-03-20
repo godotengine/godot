@@ -18,14 +18,14 @@ This page is the canonical recurring bug and build/runtime issue reference.
 ### Typical Fixes
 - verify shader and host sort contracts are synchronized
 - verify requested sort mode is supported by the active device
-- rebuild and rerun with a module-enabled binary (``)
+- rebuild and rerun with a module-enabled binary (`modules/gaussian_splatting`)
 
 ## 2) Tile Overflow / Underfill / Edge Artifacts
 
 ### Symptoms
 - missing splats near screen edges
 - dense areas showing abrupt holes or popping
-- obvious tile boundaries
+- visible tile boundaries
 
 ### Checks
 - run pipeline lane:

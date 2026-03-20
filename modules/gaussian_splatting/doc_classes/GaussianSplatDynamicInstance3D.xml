@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatDynamicInstance3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Lightweight node that feeds dynamic splat instances into the streaming renderer.
+	</brief_description>
+	<description>
+		GaussianSplatDynamicInstance3D does not render by itself. Instead, it registers an instance in the scene director so the instance pipeline can render it alongside other splat nodes in a unified draw pass. This is ideal for scenes with many independently-transformable splat objects that share a common renderer, such as scattered props, foliage clusters, or procedurally placed elements. The node supports asset loading from PLY/SPZ files, GaussianSplatAsset resources, or direct GaussianData assignment.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_ply_file_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the file path to a PLY or SPZ file for this instance's splat data. Triggers a reload if [member auto_load] is enabled and the node is in the tree.
+			</description>
+		</method>
+		<method name="get_ply_file_path">
+			<return type="String" />
+			<description>
+				Returns the currently configured PLY/SPZ file path.
+			</description>
+		</method>
+		<method name="set_splat_asset">
+			<return type="void" />
+			<param index="0" name="asset" type="GaussianSplatAsset" />
+			<description>
+				Assigns a GaussianSplatAsset resource as the data source for this instance. Takes precedence over [member ply_file_path].
+			</description>
+		</method>
+		<method name="get_splat_asset">
+			<return type="GaussianSplatAsset" />
+			<description>
+				Returns the currently assigned GaussianSplatAsset resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="set_gaussian_data">
+			<return type="void" />
+			<param index="0" name="data" type="GaussianData" />
+			<description>
+				Directly assigns a GaussianData resource as this instance's splat data. Useful for procedurally generated content or runtime modifications.
+			</description>
+		</method>
+		<method name="get_gaussian_data">
+			<return type="GaussianData" />
+			<description>
+				Returns the currently assigned GaussianData resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="set_auto_load">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables automatic loading of splat data when the node enters the scene tree.
+			</description>
+		</method>
+		<method name="is_auto_load_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if automatic loading is enabled.
+			</description>
+		</method>
+		<method name="reload_asset">
+			<return type="void" />
+			<description>
+				Forces a reload of the splat data from the configured file path or asset resource. Triggers re-registration with the scene director.
+			</description>
+		</method>
+		<method name="register_instance">
+			<return type="void" />
+			<description>
+				Manually registers this instance with the scene director's instance pipeline. Called automatically when the node enters the tree with valid data.
+			</description>
+		</method>
+		<method name="unregister_instance">
+			<return type="void" />
+			<description>
+				Manually unregisters this instance from the scene director's instance pipeline. Called automatically when the node exits the tree.
+			</description>
+		</method>
+		<method name="is_registered">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this instance is currently registered with the scene director and eligible for rendering.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ply_file_path" type="String" setter="set_ply_file_path" getter="get_ply_file_path" default="&quot;&quot;">
+			Path to a PLY or SPZ file for this instance's splat data.
+		</member>
+		<member name="splat_asset" type="GaussianSplatAsset" setter="set_splat_asset" getter="get_splat_asset">
+			The GaussianSplatAsset resource providing data for this instance.
+		</member>
+		<member name="gaussian_data" type="GaussianData" setter="set_gaussian_data" getter="get_gaussian_data">
+			The GaussianData resource providing splat data for this instance.
+		</member>
+		<member name="auto_load" type="bool" setter="set_auto_load" getter="is_auto_load_enabled" default="true">
+			When enabled, data is loaded automatically when the node enters the scene tree.
+		</member>
+	</members>
+</class>

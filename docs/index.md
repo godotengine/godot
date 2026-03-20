@@ -4,64 +4,70 @@ This is the canonical documentation entrypoint for this repository.
 
 ## Overview
 
-- Project overview: `../README.md`
-- Build guide: `../BUILDING.md`
-- Module overview: `../modules/gaussian_splatting/README.md`
+- [Project overview](../README.md)
+- [Build guide](../BUILDING.md)
+- [Module overview](../modules/gaussian_splatting/README.md)
 
 ## Quickstart
 
-- Getting started hub: `getting-started/README.md`
-- Installation: `getting-started/installation.md`
-- Quick start: `getting-started/quick-start.md`
+- [Getting started hub](getting-started/README.md)
+- [Installation](getting-started/installation.md)
+- [Quick start](getting-started/quick-start.md)
 
 ## Usage
 
-- Workflows: `workflows/`
-- Feature guides: `features/`
-- Media conventions: `features/media.md`
+- [Workflows](workflows/importing.md)
+- [Feature guides](features/README.md)
+- [Streaming](features/streaming.md)
+- [Animation](features/animation.md)
+- [Media conventions](features/media.md)
 
 ## Configuration
 
-- Project settings reference: `reference/project-settings.md`
-- Compatibility matrix: `reference/compatibility-matrix.md`
-- Shader API (generated): `api/shader_reference.md`
+- [Project settings reference](reference/project-settings.md)
+- [Compatibility matrix](reference/compatibility-matrix.md)
+- [Shader API (generated)](api/shader_reference.md)
 
 ## API
 
-- API index: `api/README.md`
-- Node API: `api/gaussian_splat_node3d.md`
-- GDScript API (generated): `api/gdscript_reference.md`
-- Shader API (generated): `api/shader_reference.md`
+- [API index](api/README.md)
+- [Node API](api/gaussian_splat_node3d.md)
+- [GaussianData](api/gaussian_data.md)
+- [GaussianSplatAsset](api/gaussian_splat_asset.md)
+- [GaussianSplatWorld3D](api/gaussian_splat_world3d.md)
+- [GaussianSplatContainer](api/gaussian_splat_container.md)
+- [GaussianSplatDynamicInstance3D](api/gaussian_splat_dynamic_instance3d.md)
+- [GaussianSplatManager](api/gaussian_splat_manager.md)
+- [GaussianSplatRenderer](api/gaussian_splat_renderer.md)
+- [Internal classes](api/internal-classes.md)
+- [GDScript API (generated)](api/gdscript_reference.md)
+- [Shader API (generated)](api/shader_reference.md)
 
 ## Troubleshooting
 
-- Troubleshooting index: `troubleshooting/recurring-issues.md`
-- Build troubleshooting: `troubleshooting/build-troubleshooting.md`
-- Quick reference: `troubleshooting/quick-reference.md`
+- [Recurring issues](troubleshooting/recurring-issues.md)
 
 ## Developer Workflow
 
-- Development index: `development/README.md`
-- Versioned docs site: `development/docs-site.md`
-- Testing setup: `testing/setup-guide.md`
-- Benchmark suite runner: `testing/benchmark-suite.md`
-- CI workflows: `../.github/workflows/README.md`
-- Documentation style guide: `style/documentation-style-guide.md`
+- [Development index](development/README.md)
+- [Versioned docs site](development/docs-site.md)
+- [Screenshot capture specification](development/screenshot-capture-spec.md)
+- [Testing setup](testing/setup-guide.md)
+- [Benchmark suite runner](testing/benchmark-suite.md)
+- [CI workflows](../.github/workflows/README.md)
+- [Documentation style guide](style/documentation-style-guide.md)
 
 ## Architecture
 
-- Architecture index: `architecture/README.md`
-- Module architecture source of truth: `../modules/gaussian_splatting/ARCHITECTURE.md`
-- Memory subsystem and invariants: `../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md`
+- [Architecture index](architecture/README.md)
+- [Module architecture source of truth](../modules/gaussian_splatting/ARCHITECTURE.md)
+- [Memory subsystem and invariants](../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
 
 ## Policies
 
-- Contributing: `../CONTRIBUTING.md`
-- Changelog policy: `../CHANGELOG.md`
+- [Contributing](../CONTRIBUTING.md)
+- [Changelog policy](../CHANGELOG.md)
 
-## Release
+## Migration
 
-- Public beta readiness audit (2026-03-18): `release/public-beta-readiness-audit-2026-03-18.md`
-- Real fork migration plan: `release/real-fork-migration-plan.md`
-- Fork cutover follow-up runbook: `release/fork-cutover-follow-up.md`
-- History rewrite runbook (artifact bloat cleanup): `release/history-rewrite-artifact-cleanup.md`
+- [Migration guide and compatibility checklist](migration/README.md)

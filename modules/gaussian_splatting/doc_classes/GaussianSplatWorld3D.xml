@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GaussianSplatWorld3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Scene node that renders a GaussianSplatWorld resource as a merged multi-asset scene.
+	</brief_description>
+	<description>
+		GaussianSplatWorld3D renders an entire GaussianSplatWorld resource containing multiple merged splat datasets as a single unified scene. It manages its own GaussianSplatRenderer instance, handles GPU resource lifecycle, and supports quality settings parity with GaussianSplatNode3D. Use [method apply_world] to load and display the world data, or enable [member auto_apply_on_ready] for automatic initialization.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_world">
+			<return type="void" />
+			<param index="0" name="world" type="GaussianSplatWorld" />
+			<description>
+				Assigns a GaussianSplatWorld resource containing the merged splat data to render. Call [method apply_world] after assignment to upload the data to the GPU.
+			</description>
+		</method>
+		<method name="get_world">
+			<return type="GaussianSplatWorld" />
+			<description>
+				Returns the currently assigned GaussianSplatWorld resource, or [code]null[/code] if none is set.
+			</description>
+		</method>
+		<method name="set_auto_apply_on_ready">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				When enabled, the world data is automatically applied and uploaded to the GPU when the node receives the READY notification.
+			</description>
+		</method>
+		<method name="is_auto_apply_on_ready">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if automatic apply on ready is enabled.
+			</description>
+		</method>
+		<method name="set_cast_shadow">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables shadow casting from this world node.
+			</description>
+		</method>
+		<method name="is_cast_shadow">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if shadow casting is enabled.
+			</description>
+		</method>
+		<method name="set_lod_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables level-of-detail culling for the world's splats.
+			</description>
+		</method>
+		<method name="is_lod_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if LOD culling is enabled.
+			</description>
+		</method>
+		<method name="set_lod_bias">
+			<return type="void" />
+			<param index="0" name="bias" type="float" />
+			<description>
+				Sets the LOD bias multiplier (0.1 to 4.0). Higher values keep more splats visible.
+			</description>
+		</method>
+		<method name="get_lod_bias">
+			<return type="float" />
+			<description>
+				Returns the current LOD bias multiplier.
+			</description>
+		</method>
+		<method name="set_max_render_distance">
+			<return type="void" />
+			<param index="0" name="distance" type="float" />
+			<description>
+				Sets the maximum distance in meters at which splats are rendered.
+			</description>
+		</method>
+		<method name="get_max_render_distance">
+			<return type="float" />
+			<description>
+				Returns the current maximum render distance in meters.
+			</description>
+		</method>
+		<method name="set_max_splat_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the maximum number of splats to render per frame.
+			</description>
+		</method>
+		<method name="get_max_splat_count">
+			<return type="int" />
+			<description>
+				Returns the current maximum splat count.
+			</description>
+		</method>
+		<method name="set_use_frustum_culling">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables frustum culling for the world's splats.
+			</description>
+		</method>
+		<method name="is_frustum_culling_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if frustum culling is enabled.
+			</description>
+		</method>
+		<method name="set_async_upload_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables asynchronous GPU buffer uploads. When enabled, data is streamed to the GPU without blocking the main thread.
+			</description>
+		</method>
+		<method name="is_async_upload_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if asynchronous uploads are enabled.
+			</description>
+		</method>
+		<method name="set_opacity">
+			<return type="void" />
+			<param index="0" name="opacity" type="float" />
+			<description>
+				Sets the global opacity for all splats in this world. Range is 0.0 to 1.0.
+			</description>
+		</method>
+		<method name="get_opacity">
+			<return type="float" />
+			<description>
+				Returns the current opacity value.
+			</description>
+		</method>
+		<method name="apply_world">
+			<return type="void" />
+			<description>
+				Loads the assigned GaussianSplatWorld resource into the renderer and uploads all splat data to the GPU. Must be called after [method set_world] unless [member auto_apply_on_ready] is enabled.
+			</description>
+		</method>
+		<method name="clear_world">
+			<return type="void" />
+			<description>
+				Removes all splat data from the renderer and releases associated GPU resources.
+			</description>
+		</method>
+		<method name="get_renderer">
+			<return type="GaussianSplatRenderer" />
+			<description>
+				Returns the internal GaussianSplatRenderer instance managed by this node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="world" type="GaussianSplatWorld" setter="set_world" getter="get_world">
+			The GaussianSplatWorld resource containing merged splat datasets to render.
+		</member>
+		<member name="auto_apply_on_ready" type="bool" setter="set_auto_apply_on_ready" getter="is_auto_apply_on_ready" default="true">
+			When enabled, the world is automatically applied when the node enters the tree.
+		</member>
+		<member name="cast_shadow" type="bool" setter="set_cast_shadow" getter="is_cast_shadow" default="false">
+			Enables shadow casting from this world node.
+		</member>
+		<member name="quality/lod_enabled" type="bool" setter="set_lod_enabled" getter="is_lod_enabled" default="true">
+			Enables level-of-detail culling.
+		</member>
+		<member name="quality/lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
+			LOD bias multiplier (0.1 to 4.0).
+		</member>
+		<member name="quality/max_render_distance" type="float" setter="set_max_render_distance" getter="get_max_render_distance" default="1000.0">
+			Maximum rendering distance in meters.
+		</member>
+		<member name="quality/max_splat_count" type="int" setter="set_max_splat_count" getter="get_max_splat_count" default="1000000">
+			Maximum number of splats rendered per frame.
+		</member>
+		<member name="rendering/frustum_culling" type="bool" setter="set_use_frustum_culling" getter="is_frustum_culling_enabled" default="true">
+			Enables frustum culling of offscreen splats.
+		</member>
+		<member name="rendering/async_upload_enabled" type="bool" setter="set_async_upload_enabled" getter="is_async_upload_enabled" default="true">
+			Enables asynchronous GPU buffer uploads.
+		</member>
+		<member name="rendering/opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">
+			Global opacity for all splats.
+		</member>
+	</members>
+</class>
