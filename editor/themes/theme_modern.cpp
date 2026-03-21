@@ -2723,6 +2723,46 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitTooltipContent", style);
 	}
 
+	// EditorToaster & Toast.
+	{
+		Ref<StyleBoxFlat> base_toast_style = p_config.base_style->duplicate();
+		base_toast_style->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		base_toast_style->set_content_margin_all(p_config.base_margin * 1.5 * EDSCALE);
+		base_toast_style->set_bg_color(p_config.base_color.lerp(p_config.mono_color, 0.05));
+		base_toast_style->set_border_width_all(Math::round(EDSCALE));
+		base_toast_style->set_expand_margin_all(Math::round(EDSCALE));
+		if (p_config.draw_extra_borders) {
+			base_toast_style->set_border_color(p_config.extra_border_color_1);
+		} else {
+			base_toast_style->set_border_color(p_config.button_border_normal_color);
+		}
+
+		Ref<StyleBoxFlat> warning_toast_style = base_toast_style->duplicate();
+		warning_toast_style->set_bg_color(p_config.base_color.lerp(p_config.warning_color, 0.05));
+
+		Ref<StyleBoxFlat> error_toast_style = base_toast_style->duplicate();
+		error_toast_style->set_bg_color(p_config.base_color.lerp(p_config.error_color, 0.05));
+
+		// Progress styles.
+		Ref<StyleBoxFlat> base_progress_style = base_toast_style->duplicate();
+		base_progress_style->set_bg_color(p_config.base_color.lerp(p_config.mono_color, 0.07));
+		base_progress_style->set_expand_margin_all(0);
+		base_progress_style->set_border_width_all(0);
+
+		Ref<StyleBoxFlat> warning_progress_style = base_progress_style->duplicate();
+		warning_progress_style->set_bg_color(p_config.base_color.lerp(p_config.warning_color, 0.08));
+
+		Ref<StyleBoxFlat> error_progress_style = base_progress_style->duplicate();
+		error_progress_style->set_bg_color(p_config.base_color.lerp(p_config.error_color, 0.08));
+
+		p_theme->set_stylebox("info", "Toast", base_toast_style);
+		p_theme->set_stylebox("info_progress", "Toast", base_progress_style);
+		p_theme->set_stylebox("warning", "Toast", warning_toast_style);
+		p_theme->set_stylebox("warning_progress", "Toast", warning_progress_style);
+		p_theme->set_stylebox("error", "Toast", error_toast_style);
+		p_theme->set_stylebox("error_progress", "Toast", error_progress_style);
+	}
+
 	// Asset Library.
 	p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
 	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);

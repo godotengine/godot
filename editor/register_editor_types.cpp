@@ -162,6 +162,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorFileDialog);
 	GDREGISTER_VIRTUAL_CLASS(EditorSettings);
 	GDREGISTER_ABSTRACT_CLASS(EditorToaster);
+	GDREGISTER_ABSTRACT_CLASS(Toast);
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
