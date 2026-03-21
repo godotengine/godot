@@ -8856,7 +8856,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/new_inherited_scene", TTRC("New Inherited Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::N);
 	ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T);
-	ED_SHORTCUT_AND_COMMAND("editor/prev_scene_in_history", TTRC("Previous Scene in History"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::LEFT);
+	ED_SHORTCUT_AND_COMMAND("editor/prev_scene_in_history", TTRC("Previous Scene in History"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::BACKSLASH);
 
 
 	ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTRC("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S);
