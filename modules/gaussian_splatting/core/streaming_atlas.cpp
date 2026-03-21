@@ -341,7 +341,7 @@ void GaussianStreamingSystem::_apply_requested_residency() {
 				false);
 	}
 
-	const bool can_async_pack = uploads.async_pack_enabled && uploads.pack_thread_running.load();
+	const bool can_async_pack = upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
 	bool has_deferred_requested_chunks = false;
 	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
 		if (asset_id == PRIMARY_ASSET_ID) {
@@ -395,7 +395,7 @@ void GaussianStreamingSystem::_evict_unrequested_chunks(uint32_t asset_id, Atlas
 		}
 
 		if (chunk.upload_pending) {
-			uploads.cancel_chunk_jobs(*this, asset_id, i, chunk.buffer_slot);
+			upload_pipeline.cancel_chunk_jobs(*this, asset_id, i, chunk.buffer_slot);
 			eviction.chunks_evicted_this_frame++;
 		}
 		if (chunk.is_loaded) {

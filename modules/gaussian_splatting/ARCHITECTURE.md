@@ -54,10 +54,10 @@ Related docs: [MEMORY_SUBSYSTEM](MEMORY_SUBSYSTEM.md), [READING_ORDER](READING_O
 
 ## State Structs (from T8 Refactor)
 
-The streaming system in `core/gaussian_streaming.h` uses four state structs for clear separation:
+The streaming system in `core/gaussian_streaming.h` uses state structs and companion classes for clear separation:
 - `VisibilityState` - Chunk culling, camera tracking, LOD blending
 - `EvictionState` - LRU eviction, hysteresis tracking
-- `UploadQueueState` - Async pack threads, upload bandwidth
+- `StreamingUploadPipeline` - Async pack threads, upload bandwidth (extracted to `core/streaming_upload_pipeline.h`)
 - `BudgetState` - VRAM regulation, loaded chunk tracking
 
 See [READING_ORDER](READING_ORDER.md) for a guided walkthrough and [ABBREVIATIONS](ABBREVIATIONS.md) for naming conventions.
