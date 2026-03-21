@@ -546,6 +546,8 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	List<ScriptLanguage::CodeCompletionOption> options;
 	get_workspace()->completion(params, &options);
 
+	const Vector<String> &lines = get_parse_result(workspace->get_file_path(params.textDocument.uri))->get_lines();
+
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
@@ -566,6 +568,12 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			} else {
 				// Trim braces.
 				item.insertText = item.insertText.trim_suffix("(");
+			}
+
+			if (option.text_edit.is_set()) {
+				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+				item.textEdit.newText = option.text_edit.new_text;
+				item.textEdit.range = range.to_lsp(lines);
 			}
 
 			switch (option.kind) {
