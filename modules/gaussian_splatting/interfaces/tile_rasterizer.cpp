@@ -161,6 +161,7 @@ void TileRasterizer::set_tile_renderer(Ref<TileRenderer> p_renderer) {
 	tile_renderer = p_renderer;
 	using_external_renderer = p_renderer.is_valid();
 	if (tile_renderer.is_valid()) {
+		tile_renderer->set_device_manager(device_manager.ptr());
 		tile_renderer->set_contract_main_device(_get_manager_main_device(device_manager));
 	}
 	_bind_output_invalidation_callback();
@@ -169,6 +170,7 @@ void TileRasterizer::set_tile_renderer(Ref<TileRenderer> p_renderer) {
 void TileRasterizer::set_device_manager(Ref<RenderDeviceManager> p_device_manager) {
     device_manager = p_device_manager;
     if (tile_renderer.is_valid()) {
+		tile_renderer->set_device_manager(device_manager.ptr());
 		tile_renderer->set_contract_main_device(_get_manager_main_device(device_manager));
     }
 }
@@ -191,63 +193,16 @@ void TileRasterizer::_unbind_output_invalidation_callback() {
 
 void TileRasterizer::track_output_resources(const RID &p_color_output, RenderingDevice *p_color_device,
 		const RID &p_depth_output, RenderingDevice *p_depth_device) {
-	if (!device_manager.is_valid()) {
+	if (!tile_renderer.is_valid()) {
 		return;
 	}
-
-	RenderingDevice *main_device = _get_contract_main_device(device_manager);
-	RenderDeviceManager *manager_ptr = device_manager.ptr();
-
-	if (p_color_output.is_valid()) {
-		if (tracked_color_output.is_valid() && tracked_color_output != p_color_output) {
-			device_manager->forget_resource(tracked_color_output);
-		}
-		RenderingDevice *owner = p_color_device ? p_color_device : main_device;
-		OutputOwnershipContractResult contract = _enforce_texture_owner_contract(
-				"tile_color_output", p_color_output, owner, manager_ptr, main_device);
-		if (contract != OutputOwnershipContractResult::VIOLATION) {
-			device_manager->track_resource(p_color_output, owner, false, "tile_renderer_color_output");
-			tracked_color_output = p_color_output;
-		} else if (tracked_color_output.is_valid()) {
-			device_manager->forget_resource(tracked_color_output);
-			tracked_color_output = RID();
-		}
-	} else if (tracked_color_output.is_valid()) {
-		device_manager->forget_resource(tracked_color_output);
-		tracked_color_output = RID();
-    }
-
-	if (p_depth_output.is_valid()) {
-		if (tracked_depth_output.is_valid() && tracked_depth_output != p_depth_output) {
-			device_manager->forget_resource(tracked_depth_output);
-		}
-		RenderingDevice *owner = p_depth_device ? p_depth_device : main_device;
-		OutputOwnershipContractResult contract = _enforce_texture_owner_contract(
-				"tile_depth_output", p_depth_output, owner, manager_ptr, main_device);
-		if (contract != OutputOwnershipContractResult::VIOLATION) {
-			device_manager->track_resource(p_depth_output, owner, false, "tile_renderer_depth_output");
-			tracked_depth_output = p_depth_output;
-		} else if (tracked_depth_output.is_valid()) {
-			device_manager->forget_resource(tracked_depth_output);
-			tracked_depth_output = RID();
-		}
-	} else if (tracked_depth_output.is_valid()) {
-		device_manager->forget_resource(tracked_depth_output);
-        tracked_depth_output = RID();
-    }
+	tile_renderer->track_output_resources(p_color_output, p_color_device, p_depth_output, p_depth_device);
 }
 
 void TileRasterizer::clear_output_resource_tracking() {
-    if (device_manager.is_valid()) {
-        if (tracked_color_output.is_valid()) {
-            device_manager->forget_resource(tracked_color_output);
-        }
-        if (tracked_depth_output.is_valid()) {
-            device_manager->forget_resource(tracked_depth_output);
-        }
+    if (tile_renderer.is_valid()) {
+        tile_renderer->clear_output_resource_tracking();
     }
-    tracked_color_output = RID();
-    tracked_depth_output = RID();
 }
 
 Error TileRasterizer::initialize(RenderingDevice *p_device, const Vector2i &p_initial_viewport,
@@ -259,6 +214,7 @@ Error TileRasterizer::initialize(RenderingDevice *p_device, const Vector2i &p_in
     _bind_output_invalidation_callback();
 
     if (tile_renderer.is_valid()) {
+        tile_renderer->set_device_manager(device_manager.ptr());
         tile_renderer->set_contract_main_device(_get_manager_main_device(device_manager));
         tile_renderer->set_gpu_timestamp_capture_enabled(g_gpu_sorting_config.enable_stage_timestamps);
     }

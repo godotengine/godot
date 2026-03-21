@@ -397,7 +397,8 @@ void GPUSortingPipeline::shutdown() {
 
     initialized = false;
     rd = nullptr;
-    pending_renderer = nullptr;
+    sort_result_sink = nullptr;
+    sort_buffer_host_context = nullptr;
     sort_readback_state.pending = false;
     sort_readback_state.generation++;
     instance_count_readback_state.pending = false;
@@ -408,6 +409,14 @@ void GPUSortingPipeline::shutdown() {
     last_instance_visible_splat_count_valid = false;
     last_instance_visible_splat_count_frame = 0;
     last_compute_error = String();
+}
+
+void GPUSortingPipeline::set_sort_result_sink(ISortResultSink *p_sink) {
+    sort_result_sink = p_sink;
+}
+
+void GPUSortingPipeline::set_sort_buffer_host_context(ISortBufferHostContext *p_context) {
+    sort_buffer_host_context = p_context;
 }
 
 void GPUSortingPipeline::set_device_manager(Ref<RenderDeviceManager> p_device_manager) {
@@ -750,35 +759,29 @@ void GPUSortingPipeline::ensure_buffers(uint32_t p_required_elements) {
     }
 }
 
-void GPUSortingPipeline::_apply_sorted_results(GaussianSplatRenderer &p_renderer, const Vector<uint8_t> &p_sorted_index_bytes) {
+bool GPUSortingPipeline::_publish_sorted_results(const Vector<uint8_t> &p_sorted_index_bytes) {
+    if (!sort_result_sink) {
+        return false;
+    }
     if (sort_readback_state.expected_count == 0) {
-        return;
+        return false;
     }
 
     const uint32_t available_splats = sort_readback_state.expected_count;
     const uint32_t expected_bytes = available_splats * sizeof(uint32_t);
     if (static_cast<uint32_t>(p_sorted_index_bytes.size()) < expected_bytes) {
         GS_LOG_WARN_DEFAULT("[GPU Sort] Async readback returned insufficient sorted indices");
-        return;
+        return false;
     }
 
     const uint32_t *sorted_order = reinterpret_cast<const uint32_t *>(p_sorted_index_bytes.ptr());
-    auto &subsystem_state = p_renderer.get_subsystem_state();
-    auto &sorting_state = p_renderer.get_sorting_state();
-    auto &device_state = p_renderer.get_device_state();
-    auto &frame_state = p_renderer.get_frame_state();
-    auto &performance_state = p_renderer.get_performance_state();
 
     // BUF-3 optimization: Read from snapshot indices instead of copied arrays.
     // The sorted_order tells us for each output position which input position to read from.
     // We only snapshotted the indices; distances/importance are not needed for sorting.
     const uint32_t snapshot_count = static_cast<uint32_t>(sort_readback_state.snapshot_indices.size());
-
-    // Prepare output arrays in culler state
-    GPUCuller::CullingState &cull_state = subsystem_state.gpu_culler->get_state();
-    if (static_cast<uint32_t>(cull_state.culled_indices.size()) != available_splats) {
-        cull_state.culled_indices.resize(available_splats);
-    }
+    Vector<uint32_t> resolved_indices;
+    resolved_indices.resize(available_splats);
 
     // BUF-3: Only reorder the indices using the sorted permutation.
     // Distances and importance weights are not used by the rendering path after sorting,
@@ -788,36 +791,27 @@ void GPUSortingPipeline::_apply_sorted_results(GaussianSplatRenderer &p_renderer
         if (src >= snapshot_count) {
             src = snapshot_count > 0 ? (snapshot_count - 1) : 0;
         }
-        cull_state.culled_indices[i] = sort_readback_state.snapshot_indices[src];
+        resolved_indices.write[i] = sort_readback_state.snapshot_indices[src];
     }
 
-    // Copy sorted indices to GPU buffer
-    sorting_state.sort_index_bytes.resize(expected_bytes);
-    uint32_t *final_indices = reinterpret_cast<uint32_t *>(sorting_state.sort_index_bytes.ptrw());
-    for (uint32_t i = 0; i < available_splats; i++) {
-        final_indices[i] = cull_state.culled_indices[i];
-    }
-    if (sort_indices_buffer.is_valid() && device_state.rd && !sorting_state.sort_index_bytes.is_empty()) {
-        RenderingDevice *target_device = device_manager.is_valid() ?
-                device_manager->get_resource_owner(sort_indices_buffer, device_state.rd) : device_state.rd;
-        target_device->buffer_update(sort_indices_buffer, 0, sorting_state.sort_index_bytes.size(), sorting_state.sort_index_bytes.ptr());
-    }
-
-    sorting_state.sorted_splat_count = available_splats;
-    frame_state.visible_splat_count.store(available_splats, std::memory_order_release);
-    performance_state.metrics.rendered_splat_count = frame_state.visible_splat_count.load(std::memory_order_acquire);
+    SortPublicationPayload payload;
+    payload.sorted_indices = resolved_indices;
+    payload.sort_indices_buffer = sort_indices_buffer;
+    payload.default_device = sort_resource_device ? sort_resource_device : rd;
+    sort_result_sink->publish_sorted_indices(payload);
 
     // BUF-3: Clear snapshot after use
     sort_readback_state.snapshot_indices.clear();
+    return true;
 }
 
 void GPUSortingPipeline::_on_sort_readback(const Vector<uint8_t> &p_data, int64_t p_generation) {
-    if (!pending_renderer || !sort_readback_state.pending || p_generation != (int64_t)sort_readback_state.generation) {
+    if (!sort_result_sink || !sort_readback_state.pending || p_generation != (int64_t)sort_readback_state.generation) {
         return;
     }
 
     sort_readback_state.pending = false;
-    _apply_sorted_results(*pending_renderer, p_data);
+    _publish_sorted_results(p_data);
 }
 
 void GPUSortingPipeline::_on_instance_count_readback(const Vector<uint8_t> &p_data, int64_t p_generation) {
@@ -858,13 +852,10 @@ SortBufferHandles GPUSortingPipeline::get_buffer_handles() const {
     return handles;
 }
 
-void GPUSortingPipeline::release_sort_buffers(GaussianSplatRenderer *p_renderer) {
-    if (!p_renderer) {
+void GPUSortingPipeline::release_sort_buffers() {
+    if (!sort_buffer_host_context) {
         return;
     }
-
-    GaussianSplatRenderer &renderer = *p_renderer;
-    auto &sorting_state = renderer.get_sorting_state();
 
     if (is_managing_buffers()) {
         release_buffers();
@@ -928,16 +919,16 @@ void GPUSortingPipeline::release_sort_buffers(GaussianSplatRenderer *p_renderer)
         sort_resource_device = nullptr;
         remap_resource_device = nullptr;
     }
+    sort_buffer_host_context->clear_sort_buffer_binding_state();
+}
 
-    sorting_state.sort_buffer_capacity = 0;
-    sorting_state.local_sort_buffer_capacity = 0;
-    sorting_state.culled_position_capacity = 0;
-    sorting_state.sort_key_bytes.clear();
-    sorting_state.sort_index_bytes.clear();
-    sorting_state.culled_position_bytes.clear();
-    sorting_state.sort_keys_external = false;
-    sorting_state.sort_indices_external = false;
-    sorting_state.sort_buffers_pipeline_managed = false;
+void GPUSortingPipeline::release_sort_buffers(GaussianSplatRenderer *p_renderer) {
+    if (!p_renderer) {
+        return;
+    }
+    set_sort_result_sink(p_renderer);
+    set_sort_buffer_host_context(p_renderer);
+    release_sort_buffers();
 }
 
 void GPUSortingPipeline::set_external_sort_indices(RID p_buffer, RenderingDevice *p_device) {
@@ -1000,35 +991,27 @@ void GPUSortingPipeline::clear_instance_pipeline_inputs() {
     instance_count_readback_state.bootstrap_sync_attempted = false;
 }
 
-void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, uint32_t p_required_elements) {
-    if (!p_renderer) {
+void GPUSortingPipeline::ensure_sort_buffers(uint32_t p_required_elements) {
+    if (!sort_buffer_host_context) {
         return;
     }
 
-    GaussianSplatRenderer &renderer = *p_renderer;
-    auto &sorting_state = renderer.get_sorting_state();
-    auto &resource_state = renderer.get_resource_state();
-    auto &device_state = renderer.get_device_state();
-
-    if (!renderer.ensure_rendering_device("ensure_sort_buffers")) {
+    if (!sort_buffer_host_context->ensure_sort_rendering_device("ensure_sort_buffers")) {
         return;
     }
 
-    DEV_ASSERT(!(sorting_state.sort_keys_external && sorting_state.sort_buffers_pipeline_managed));
-    DEV_ASSERT(!(sorting_state.sort_indices_external && sorting_state.sort_buffers_pipeline_managed));
     const bool pipeline_manages_buffers = is_managing_buffers();
-    DEV_ASSERT(!sorting_state.sort_buffers_pipeline_managed || pipeline_manages_buffers);
 
-    if (!rd && device_state.rd) {
-        rd = device_state.rd;
+    if (!rd && sort_buffer_host_context->get_sort_rendering_device()) {
+        rd = sort_buffer_host_context->get_sort_rendering_device();
     }
 
     GaussianSplatting::SortPaddingInfo padding = GaussianSplatting::get_sort_padding(p_required_elements);
     uint32_t padded_required = padding.padded_elements;
 
     uint32_t sorter_capacity = 0;
-    if (sorting_state.gpu_sorter.is_valid() && sorting_state.gpu_sorter->get_max_elements() > 0) {
-        sorter_capacity = sorting_state.gpu_sorter->get_max_elements();
+    if (gpu_sorter.is_valid() && gpu_sorter->get_max_elements() > 0) {
+        sorter_capacity = gpu_sorter->get_max_elements();
     }
 
     uint32_t max_elements = padded_required;
@@ -1036,26 +1019,21 @@ void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, 
         max_elements = MIN(padded_required, sorter_capacity);
     }
 
-    if (resource_state.buffer_manager.is_valid() && resource_state.buffer_manager_initialized) {
-        uint32_t manager_capacity = resource_state.buffer_manager->get_buffer_capacity();
+    SortExternalBufferState external_state = sort_buffer_host_context->get_sort_external_buffer_state();
+    if (external_state.valid) {
+        uint32_t manager_capacity = external_state.capacity;
         if (manager_capacity > 0) {
-            if (max_elements == 0) {
-                max_elements = manager_capacity;
-            } else {
-                max_elements = MIN(max_elements, manager_capacity);
-            }
+            max_elements = max_elements == 0 ? manager_capacity : MIN(max_elements, manager_capacity);
         }
 
-        GPUBufferManager::BufferHandle manager_keys = resource_state.buffer_manager->get_sort_key_handle();
-        GPUBufferManager::BufferHandle manager_indices = resource_state.buffer_manager->get_sorted_indices_handle();
-        if (manager_keys.is_valid() && manager_indices.is_valid() && manager_keys.device == manager_indices.device) {
+        if (external_state.keys_buffer.is_valid() && external_state.indices_buffer.is_valid() && external_state.device) {
             if (sort_keys_buffer.is_valid() || sort_indices_buffer.is_valid()) {
                 release_buffers();
             }
 
-            sort_resource_device = manager_keys.device;
-            sort_keys_buffer = manager_keys.buffer;
-            sort_indices_buffer = manager_indices.buffer;
+            sort_resource_device = external_state.device;
+            sort_keys_buffer = external_state.keys_buffer;
+            sort_indices_buffer = external_state.indices_buffer;
             sort_keys_external = true;
             sort_indices_external = true;
             _track_resource(sort_keys_buffer, sort_resource_device, false, "sort_keys_external");
@@ -1069,19 +1047,15 @@ void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, 
 			uint32_t key_stride_bytes = _get_sort_key_stride_bytes();
 			if (!_resize_sort_byte_vectors(sort_key_bytes, sort_index_bytes, cpu_capacity, key_stride_bytes, "ensure_sort_buffers(external/local)")) {
 				GS_LOG_WARN_DEFAULT("[GPU Sort] Failed to size local sort CPU buffers for external sort handles");
-				release_sort_buffers(&renderer);
+				release_sort_buffers();
 				return;
 			}
-			if (!_resize_sort_byte_vectors(sorting_state.sort_key_bytes, sorting_state.sort_index_bytes, cpu_capacity, key_stride_bytes, "ensure_sort_buffers(external/state)")) {
+			if (!sort_buffer_host_context->resize_sort_state_byte_vectors(cpu_capacity, key_stride_bytes, "ensure_sort_buffers(external/state)")) {
 				GS_LOG_WARN_DEFAULT("[GPU Sort] Failed to size renderer sort CPU buffers for external sort handles");
-				release_sort_buffers(&renderer);
+				release_sort_buffers();
 				return;
 			}
-
-            sorting_state.sort_keys_external = true;
-            sorting_state.sort_indices_external = true;
-            sorting_state.sort_buffers_pipeline_managed = false;
-            sorting_state.sort_buffer_capacity = sort_buffer_capacity;
+            sort_buffer_host_context->set_sort_buffer_binding_state(true, true, false, sort_buffer_capacity);
             return;
         } else {
             GS_LOG_WARN_DEFAULT("[GPU Sort] GPU buffer manager returned invalid sort buffers; using local buffers instead");
@@ -1130,27 +1104,34 @@ void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, 
 
     if (!sort_keys_buffer.is_valid() || !sort_indices_buffer.is_valid()) {
         GS_LOG_WARN_DEFAULT("[GPU Sort] Failed to allocate sorting buffers");
-        release_sort_buffers(&renderer);
+        release_sort_buffers();
         return;
     }
 
-	sorting_state.sort_keys_external = false;
-	sorting_state.sort_indices_external = false;
-	sorting_state.sort_buffers_pipeline_managed = pipeline_manages_buffers;
-	sorting_state.sort_buffer_capacity = sort_buffer_capacity > 0 ? sort_buffer_capacity : desired_capacity;
+    const uint32_t effective_capacity = sort_buffer_capacity > 0 ? sort_buffer_capacity : desired_capacity;
+    sort_buffer_host_context->set_sort_buffer_binding_state(false, false, pipeline_manages_buffers, effective_capacity);
 
-	uint32_t cpu_capacity = MIN(padded_required, sorting_state.sort_buffer_capacity);
+	uint32_t cpu_capacity = MIN(padded_required, effective_capacity);
 	uint32_t key_stride_bytes = _get_sort_key_stride_bytes();
 	if (!_resize_sort_byte_vectors(sort_key_bytes, sort_index_bytes, cpu_capacity, key_stride_bytes, "ensure_sort_buffers(local/local)")) {
 		GS_LOG_WARN_DEFAULT("[GPU Sort] Failed to size local sort CPU buffers");
-		release_sort_buffers(&renderer);
+		release_sort_buffers();
 		return;
 	}
-	if (!_resize_sort_byte_vectors(sorting_state.sort_key_bytes, sorting_state.sort_index_bytes, cpu_capacity, key_stride_bytes, "ensure_sort_buffers(local/state)")) {
+	if (!sort_buffer_host_context->resize_sort_state_byte_vectors(cpu_capacity, key_stride_bytes, "ensure_sort_buffers(local/state)")) {
 		GS_LOG_WARN_DEFAULT("[GPU Sort] Failed to size renderer sort CPU buffers");
-		release_sort_buffers(&renderer);
+		release_sort_buffers();
 		return;
 	}
+}
+
+void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, uint32_t p_required_elements) {
+    if (!p_renderer) {
+        return;
+    }
+    set_sort_result_sink(p_renderer);
+    set_sort_buffer_host_context(p_renderer);
+    ensure_sort_buffers(p_required_elements);
 }
 
 void GPUSortingPipeline::ensure_depth_resources(RenderingDevice *p_device) {
@@ -2779,6 +2760,8 @@ bool GPUSortingPipeline::sort_gaussians_gpu(GaussianSplatRenderer *p_renderer, c
     }
 
     GaussianSplatRenderer &renderer = *p_renderer;
+    set_sort_result_sink(&renderer);
+    set_sort_buffer_host_context(&renderer);
     if (GaussianSplatting::debug_trace_is_enabled()) {
         GaussianSplatting::debug_trace_record_event("sort",
                 vformat("SortGaussiansGPU ENTER: inst_pipe=YES inst_inputs_valid=%s",
@@ -2797,6 +2780,7 @@ bool GPUSortingPipeline::sort_gaussians_gpu(GaussianSplatRenderer *p_renderer, c
 
 SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params) {
     SortOperationResult result;
+    result.completion_mode = SortCompletionMode::FAILED;
 
     if (!gpu_sorter.is_valid()) {
         result.error_code = SortOperationErrorCode::SORTER_NOT_INITIALIZED;
@@ -2842,11 +2826,12 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
         return result;
     }
 
-	gpu_sorter->wait_for_completion();
+    gpu_sorter->wait_for_completion();
 	sorting_in_progress = false;
 	result.success = true;
 	result.error_code = SortOperationErrorCode::NONE;
 	result.fallback_policy = SortRendererFallbackPolicy::NONE;
+    result.completion_mode = SortCompletionMode::SYNC_COMPLETED;
 	result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
 	if (g_gpu_sorting_config.validate_sorted_output) {
 		const uint32_t sorter_capacity = gpu_sorter->get_max_elements();
@@ -2860,6 +2845,7 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
 			result.success = false;
 			result.error_code = SortOperationErrorCode::INVALID_COUNT_BUFFER;
 			result.fallback_policy = _fallback_policy_for_error(result.error_code);
+            result.completion_mode = SortCompletionMode::FAILED;
 			result.error = validation_error;
 			return result;
 		}
@@ -2870,6 +2856,7 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
 				result.success = false;
 				result.error_code = SortOperationErrorCode::RESOURCE_DEVICE_UNAVAILABLE;
 				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+                result.completion_mode = SortCompletionMode::FAILED;
 				result.error = "[GPU Sort Validation] Missing owner device for key buffer";
 				GS_LOG_ERROR_DEFAULT(result.error);
 				return result;
@@ -2880,6 +2867,7 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
 				result.success = false;
 				result.error_code = SortOperationErrorCode::SORT_SUBMISSION_FAILED;
 				result.fallback_policy = _fallback_policy_for_error(result.error_code);
+                result.completion_mode = SortCompletionMode::FAILED;
 				result.error = validation_error;
 				return result;
 			}
@@ -2890,6 +2878,7 @@ SortOperationResult GPUSortingPipeline::sort(const SortOperationParams &p_params
 
 SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_params) {
     SortOperationResult result;
+    result.completion_mode = SortCompletionMode::FAILED;
 
     if (!gpu_sorter.is_valid()) {
         result.error_code = SortOperationErrorCode::SORTER_NOT_INITIALIZED;
@@ -2904,6 +2893,16 @@ SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_
                 : SortOperationErrorCode::INVALID_VALUES_BUFFER;
         result.fallback_policy = _fallback_policy_for_error(result.error_code);
         result.error = "Invalid buffer handles";
+        return result;
+    }
+
+    const bool validation_forces_sync = g_gpu_sorting_config.validate_sorted_output;
+    const bool sorter_supports_true_async = gpu_sorter->supports_true_async();
+    if (validation_forces_sync || !sorter_supports_true_async) {
+        result = sort(p_params);
+        if (result.success) {
+            result.completion_mode = sorter_supports_true_async ? SortCompletionMode::SYNC_COMPLETED : SortCompletionMode::FALLBACK_USED;
+        }
         return result;
     }
 
@@ -2941,56 +2940,10 @@ SortOperationResult GPUSortingPipeline::sort_async(const SortOperationParams &p_
 		return result;
 	}
 
-	if (g_gpu_sorting_config.validate_sorted_output) {
-		// Flush any pending GPU work before waiting — the radix indirect path
-		// may not have issued a submit yet, so wait_for_completion() alone can
-		// return while the sort is still in flight.
-		RenderingDevice *sync_device = sort_resource_device ? sort_resource_device : rd;
-		if (sync_device) {
-			gs_device_utils::safe_submit_and_sync(sync_device);
-		}
-		wait_for_completion();
-		result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
-		const uint32_t sorter_capacity = gpu_sorter->get_max_elements();
-		const uint32_t key_stride_bytes = _get_sort_key_stride_bytes();
-		RenderingDevice *fallback_device = sort_resource_device ? sort_resource_device : rd;
-		uint32_t effective_count = 0;
-		String validation_error;
-		if (!_resolve_effective_sort_count(p_params, device_manager, fallback_device,
-				sorter_capacity, effective_count, validation_error)) {
-			GS_LOG_ERROR_DEFAULT(validation_error);
-			result.success = false;
-			result.error_code = SortOperationErrorCode::INVALID_COUNT_BUFFER;
-			result.fallback_policy = _fallback_policy_for_error(result.error_code);
-			result.error = validation_error;
-			return result;
-		}
-		if (effective_count > 1) {
-			RenderingDevice *keys_device =
-					_resolve_buffer_owner_device(device_manager, p_params.keys_buffer, fallback_device);
-			if (!keys_device) {
-				result.success = false;
-				result.error_code = SortOperationErrorCode::RESOURCE_DEVICE_UNAVAILABLE;
-				result.fallback_policy = _fallback_policy_for_error(result.error_code);
-				result.error = "[GPU Sort Validation] Missing owner device for key buffer";
-				GS_LOG_ERROR_DEFAULT(result.error);
-				return result;
-			}
-			if (!_validate_sorted_key_order(keys_device, p_params.keys_buffer,
-					effective_count, key_stride_bytes, validation_error)) {
-				GS_LOG_ERROR_DEFAULT(validation_error);
-				result.success = false;
-				result.error_code = SortOperationErrorCode::SORT_SUBMISSION_FAILED;
-				result.fallback_policy = _fallback_policy_for_error(result.error_code);
-				result.error = validation_error;
-				return result;
-			}
-		}
-	}
-
 	result.success = true;
 	result.error_code = SortOperationErrorCode::NONE;
 	result.fallback_policy = SortRendererFallbackPolicy::NONE;
+    result.completion_mode = SortCompletionMode::ASYNC_PENDING;
     result.gpu_time_ms = gpu_sorter->get_last_sort_time_ms();
     return result;
 }

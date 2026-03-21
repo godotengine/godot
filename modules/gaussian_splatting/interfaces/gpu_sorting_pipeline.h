@@ -57,6 +57,10 @@ public:
     void ensure_buffers(uint32_t p_required_elements) override;
     void release_buffers() override;
     SortBufferHandles get_buffer_handles() const override;
+    void set_sort_result_sink(ISortResultSink *p_sink);
+    void set_sort_buffer_host_context(ISortBufferHostContext *p_context);
+    void ensure_sort_buffers(uint32_t p_required_elements);
+    void release_sort_buffers();
     void ensure_sort_buffers(GaussianSplatRenderer *p_renderer, uint32_t p_required_elements);
     void release_sort_buffers(GaussianSplatRenderer *p_renderer);
     void set_external_sort_indices(RID p_buffer, RenderingDevice *p_device);
@@ -210,7 +214,8 @@ private:
         uint32_t pending_frame_counter = 0;
         bool bootstrap_sync_attempted = false;
     } instance_count_readback_state;
-    GaussianSplatRenderer *pending_renderer = nullptr;
+    ISortResultSink *sort_result_sink = nullptr;
+    ISortBufferHostContext *sort_buffer_host_context = nullptr;
 
     // PERF (#662): cache camera inverse to avoid redundant affine_inverse() calls.
     Transform3D cached_camera_transform;
@@ -223,7 +228,7 @@ private:
     void _free_owned_resource(RenderingDevice *p_fallback_device, RID &p_rid, bool p_is_auto_free = false);
     void ensure_remap_resources(RenderingDevice *p_device);
     void ensure_gather_resources(RenderingDevice *p_device);
-    void _apply_sorted_results(GaussianSplatRenderer &p_renderer, const Vector<uint8_t> &p_sorted_index_bytes);
+    bool _publish_sorted_results(const Vector<uint8_t> &p_sorted_index_bytes);
     void _on_sort_readback(const Vector<uint8_t> &p_data, int64_t p_generation);
     void _on_instance_count_readback(const Vector<uint8_t> &p_data, int64_t p_generation);
     void _ensure_instance_param_buffer(RenderingDevice *p_device);

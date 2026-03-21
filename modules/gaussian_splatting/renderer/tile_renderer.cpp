@@ -127,35 +127,6 @@ uint64_t _hash_shader_defines(const Vector<String> &p_defines) {
 
 static constexpr uint32_t ADAPTIVE_OVERLAP_BUDGET_RECENT_RAW_WINDOW = 16u;
 
-struct AdaptiveOverlapBudgetRuntimeState {
-	uint32_t suggested_budget_records = 0u;
-	uint32_t low_utilization_frames = 0u;
-	uint32_t recent_raw_usage_records[ADAPTIVE_OVERLAP_BUDGET_RECENT_RAW_WINDOW] = {};
-	uint32_t recent_raw_usage_count = 0u;
-	uint32_t recent_raw_usage_write_index = 0u;
-	uint32_t recent_raw_usage_peak = 0u;
-};
-
-static HashMap<uint64_t, AdaptiveOverlapBudgetRuntimeState> adaptive_overlap_budget_runtime_states;
-
-static uint64_t _adaptive_overlap_budget_key(const TileRenderer *p_renderer) {
-	return uint64_t(reinterpret_cast<uintptr_t>(p_renderer));
-}
-
-static AdaptiveOverlapBudgetRuntimeState &_get_adaptive_overlap_budget_state(const TileRenderer *p_renderer) {
-	const uint64_t key = _adaptive_overlap_budget_key(p_renderer);
-	AdaptiveOverlapBudgetRuntimeState *state = adaptive_overlap_budget_runtime_states.getptr(key);
-	if (!state) {
-		adaptive_overlap_budget_runtime_states.insert(key, AdaptiveOverlapBudgetRuntimeState());
-		state = adaptive_overlap_budget_runtime_states.getptr(key);
-	}
-	return *state;
-}
-
-static void _clear_adaptive_overlap_budget_state(const TileRenderer *p_renderer) {
-	adaptive_overlap_budget_runtime_states.erase(_adaptive_overlap_budget_key(p_renderer));
-}
-
 static bool _is_adaptive_overlap_budget_enabled() {
 	return g_gpu_sorting_config.adaptive_overlap_budget_enabled;
 }
@@ -174,7 +145,7 @@ static uint32_t _compute_overlap_budget_with_headroom(uint32_t p_raw_records) {
 	return uint32_t(MIN<uint64_t>((raw * 6u + 4u) / 5u, uint64_t(UINT32_MAX)));
 }
 
-static void _record_adaptive_overlap_raw_usage(AdaptiveOverlapBudgetRuntimeState &r_state, uint32_t p_raw_records) {
+static void _record_adaptive_overlap_raw_usage(TileRenderer::AdaptiveOverlapBudgetRuntimeState &r_state, uint32_t p_raw_records) {
 	r_state.recent_raw_usage_records[r_state.recent_raw_usage_write_index] = p_raw_records;
 	r_state.recent_raw_usage_write_index = (r_state.recent_raw_usage_write_index + 1u) % ADAPTIVE_OVERLAP_BUDGET_RECENT_RAW_WINDOW;
 	if (r_state.recent_raw_usage_count < ADAPTIVE_OVERLAP_BUDGET_RECENT_RAW_WINDOW) {
@@ -189,8 +160,8 @@ static void _record_adaptive_overlap_raw_usage(AdaptiveOverlapBudgetRuntimeState
 }
 
 static bool _adaptive_overlap_budget_has_history(const TileRenderer *p_renderer) {
-	const AdaptiveOverlapBudgetRuntimeState *state =
-			adaptive_overlap_budget_runtime_states.getptr(_adaptive_overlap_budget_key(p_renderer));
+	const TileRenderer::AdaptiveOverlapBudgetRuntimeState *state =
+			p_renderer->get_adaptive_overlap_budget_runtime_state_ptr();
 	return state && state->recent_raw_usage_count > 0u;
 }
 
@@ -211,7 +182,8 @@ static uint32_t _get_adaptive_overlap_budget_suggestion(const TileRenderer *p_re
 	if (!_is_adaptive_overlap_budget_enabled()) {
 		return 0u;
 	}
-	const AdaptiveOverlapBudgetRuntimeState *state = adaptive_overlap_budget_runtime_states.getptr(_adaptive_overlap_budget_key(p_renderer));
+	const TileRenderer::AdaptiveOverlapBudgetRuntimeState *state =
+			p_renderer->get_adaptive_overlap_budget_runtime_state_ptr();
 	if (!state || state->suggested_budget_records == 0u) {
 		return 0u;
 	}
@@ -226,7 +198,8 @@ static uint32_t _get_adaptive_overlap_budget_floor(const TileRenderer *p_rendere
 	}
 	const uint32_t hard_cap = _get_adaptive_overlap_budget_hard_cap();
 	const uint32_t min_budget = _get_adaptive_overlap_budget_min();
-	AdaptiveOverlapBudgetRuntimeState &state = _get_adaptive_overlap_budget_state(p_renderer);
+	TileRenderer::AdaptiveOverlapBudgetRuntimeState &state =
+			const_cast<TileRenderer *>(p_renderer)->access_adaptive_overlap_budget_runtime_state();
 	if (state.suggested_budget_records == 0u) {
 		state.suggested_budget_records = min_budget;
 	}
@@ -240,13 +213,14 @@ static uint32_t _update_adaptive_overlap_budget(const TileRenderer *p_renderer, 
 	constexpr uint32_t SHRINK_STEP_PERCENT = 90u; // shrink by at most 10% per hysteresis window
 
 	if (!_is_adaptive_overlap_budget_enabled()) {
-		_clear_adaptive_overlap_budget_state(p_renderer);
+		const_cast<TileRenderer *>(p_renderer)->clear_adaptive_overlap_budget_runtime_state();
 		return 0u;
 	}
 
 	const uint32_t hard_cap = _get_adaptive_overlap_budget_hard_cap();
 	const uint32_t min_budget = _get_adaptive_overlap_budget_min();
-	AdaptiveOverlapBudgetRuntimeState &state = _get_adaptive_overlap_budget_state(p_renderer);
+	TileRenderer::AdaptiveOverlapBudgetRuntimeState &state =
+			const_cast<TileRenderer *>(p_renderer)->access_adaptive_overlap_budget_runtime_state();
 	_record_adaptive_overlap_raw_usage(state, p_raw_records);
 
 	const uint32_t raw_budget_basis = MAX(p_raw_records, state.recent_raw_usage_peak);
@@ -1260,7 +1234,7 @@ GaussianSplatting::TileRenderParams::TileRenderParams() {
 TileRenderer::TileRenderer() : debug_stats(*this), params_builder(*this), prefix_scan_stage(*this), binning_stage(*this), raster_stage(*this),
         resolve_stage(*this), adaptive_controller(*this), async_readback(*this), global_sort_resources(*this),
         uniform_buffers(*this), projection_buffers(*this), sh_cache_buffers(*this), subpixel_history_buffers(*this),
-        subpixel_visibility_buffers(*this), shader_resources(*this), render_targets(*this) {
+        subpixel_visibility_buffers(*this), shader_resources(*this), resource_controller(*this), render_targets(*this) {
     adaptive_controller.reset_state(config_state.tile_size);
     device_context.resource_rd = nullptr;
     device_context.submission_rd = nullptr;
@@ -1376,7 +1350,7 @@ bool TileRenderer::_is_main_rendering_device(RenderingDevice *p_device) {
 }
 
 TileRenderer::~TileRenderer() {
-    _clear_adaptive_overlap_budget_state(this);
+    clear_adaptive_overlap_budget_runtime_state();
     // Unregister from performance monitors
     if (GaussianSplattingPerformanceMonitors *monitors = GaussianSplattingPerformanceMonitors::get_singleton()) {
         monitors->unregister_renderer(this);
@@ -1428,7 +1402,7 @@ Error TileRenderer::initialize(RenderingDevice *p_rendering_device, const Vector
 
 void TileRenderer::cleanup() {
 	clear_output_resource_tracking();
-	_clear_adaptive_overlap_budget_state(this);
+	clear_adaptive_overlap_budget_runtime_state();
     RenderingDevice *device = _get_resource_device();
     RenderingDevice *pipeline_owner = shader_resources.shader_device ? shader_resources.shader_device : device;
     if (device) {
@@ -1543,6 +1517,20 @@ void TileRenderer::clear_output_invalidation_callback() {
 
 void TileRenderer::set_adaptive_settings(const AdaptiveSettings &p_settings) {
     adaptive_controller.set_settings(p_settings, config_state.tile_size);
+}
+
+TileRenderer::AdaptiveOverlapBudgetRuntimeState &TileRenderer::access_adaptive_overlap_budget_runtime_state() {
+	adaptive_overlap_budget_runtime_state_initialized = true;
+	return adaptive_overlap_budget_runtime_state;
+}
+
+const TileRenderer::AdaptiveOverlapBudgetRuntimeState *TileRenderer::get_adaptive_overlap_budget_runtime_state_ptr() const {
+	return adaptive_overlap_budget_runtime_state_initialized ? &adaptive_overlap_budget_runtime_state : nullptr;
+}
+
+void TileRenderer::clear_adaptive_overlap_budget_runtime_state() {
+	adaptive_overlap_budget_runtime_state = AdaptiveOverlapBudgetRuntimeState();
+	adaptive_overlap_budget_runtime_state_initialized = false;
 }
 
 Error TileRenderer::_ensure_resources(const Vector2i &p_size, int p_tile_size, RD::DataFormat p_format) {
@@ -1924,7 +1912,6 @@ void TileRenderer::_detect_subgroup_support(RenderingDevice *p_device) {
 		return;
 	}
 
-	static HashMap<uint64_t, bool> subgroup_support_cache;
 	uint64_t device_id = p_device->get_device_instance_id();
 	const bool *cached = subgroup_support_cache.getptr(device_id);
 	if (cached) {
@@ -2923,124 +2910,22 @@ TileRenderer::SplatAuditSnapshot TileRenderer::get_splat_audit_snapshot() const 
 
 bool TileRenderer::_resolve_texture_owner(const char *p_label, const RID &p_texture, RenderingDevice *&r_owner,
 		RenderingDevice *p_main_device, RenderDeviceManager *p_manager, bool p_log_errors) {
-	if (!p_texture.is_valid()) {
-		r_owner = nullptr;
-		return true;
-	}
-	if (!r_owner && p_manager) {
-		r_owner = p_manager->get_resource_owner(p_texture, nullptr);
-	}
-	if (!r_owner && p_main_device && p_main_device->texture_is_valid(p_texture)) {
-		r_owner = p_main_device;
-		if (p_log_errors) {
-			GS_LOG_WARN_DEFAULT(vformat("[TileRenderer] %s owner missing; using main RenderingDevice for RID=%s",
-					String(p_label), String::num_uint64(p_texture.get_id())));
-		}
-		return true;
-	}
-	if (!r_owner) {
-		if (p_log_errors) {
-			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: missing owner for RID=%s",
-					String(p_label), String::num_uint64(p_texture.get_id())));
-		}
-		return false;
-	}
-	if (!r_owner->texture_is_valid(p_texture)) {
-		if (p_main_device && p_main_device != r_owner && p_main_device->texture_is_valid(p_texture)) {
-			if (p_manager) {
-				p_manager->push_cross_device_operation(
-						String(p_label) + String("_owner_remap"), r_owner, p_main_device);
-			}
-			r_owner = p_main_device;
-			return true;
-		}
-		if (p_log_errors) {
-			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: owner does not validate RID=%s",
-					String(p_label), String::num_uint64(p_texture.get_id())));
-		}
-		return false;
-	}
-	if (p_main_device && r_owner != p_main_device) {
-		const bool visible_on_main = p_main_device->texture_is_valid(p_texture);
-		if (visible_on_main) {
-			if (p_manager) {
-				p_manager->push_cross_device_operation(
-						String(p_label) + String("_owner_remap"), r_owner, p_main_device);
-			}
-			r_owner = p_main_device;
-			return true;
-		}
-		if (p_manager) {
-			p_manager->push_cross_device_operation(
-					String(p_label) + String("_contract_violation"), r_owner, p_main_device);
-		}
-		if (p_log_errors) {
-			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: RID=%s is not visible on the main RenderingDevice",
-					String(p_label), String::num_uint64(p_texture.get_id())));
-		}
-		return false;
-	}
-	return true;
+	(void)p_main_device;
+	(void)p_manager;
+	return resource_controller.resolve_texture_owner(p_label, p_texture, r_owner, p_log_errors);
 }
 
 void TileRenderer::set_device_manager(RenderDeviceManager *p_device_manager) {
-	tracked_device_manager = p_device_manager;
+	resource_controller.set_device_manager(p_device_manager);
 }
 
 void TileRenderer::track_output_resources(const RID &p_color_output, RenderingDevice *p_color_device,
 		const RID &p_depth_output, RenderingDevice *p_depth_device) {
-	if (!tracked_device_manager) {
-		return;
-	}
-
-	RenderingDevice *main_device = _get_contract_main_device();
-
-	if (p_color_output.is_valid()) {
-		if (tracked_color_output.is_valid() && tracked_color_output != p_color_output) {
-			tracked_device_manager->forget_resource(tracked_color_output);
-		}
-		RenderingDevice *owner = p_color_device ? p_color_device : main_device;
-		if (_resolve_texture_owner("tile_color_output", p_color_output, owner, main_device, tracked_device_manager, false)) {
-			tracked_device_manager->track_resource(p_color_output, owner, false, "tile_renderer_color_output");
-			tracked_color_output = p_color_output;
-		} else if (tracked_color_output.is_valid()) {
-			tracked_device_manager->forget_resource(tracked_color_output);
-			tracked_color_output = RID();
-		}
-	} else if (tracked_color_output.is_valid()) {
-		tracked_device_manager->forget_resource(tracked_color_output);
-		tracked_color_output = RID();
-	}
-
-	if (p_depth_output.is_valid()) {
-		if (tracked_depth_output.is_valid() && tracked_depth_output != p_depth_output) {
-			tracked_device_manager->forget_resource(tracked_depth_output);
-		}
-		RenderingDevice *owner = p_depth_device ? p_depth_device : main_device;
-		if (_resolve_texture_owner("tile_depth_output", p_depth_output, owner, main_device, tracked_device_manager, false)) {
-			tracked_device_manager->track_resource(p_depth_output, owner, false, "tile_renderer_depth_output");
-			tracked_depth_output = p_depth_output;
-		} else if (tracked_depth_output.is_valid()) {
-			tracked_device_manager->forget_resource(tracked_depth_output);
-			tracked_depth_output = RID();
-		}
-	} else if (tracked_depth_output.is_valid()) {
-		tracked_device_manager->forget_resource(tracked_depth_output);
-		tracked_depth_output = RID();
-	}
+	resource_controller.track_output_resources(p_color_output, p_color_device, p_depth_output, p_depth_device);
 }
 
 void TileRenderer::clear_output_resource_tracking() {
-	if (tracked_device_manager) {
-		if (tracked_color_output.is_valid()) {
-			tracked_device_manager->forget_resource(tracked_color_output);
-		}
-		if (tracked_depth_output.is_valid()) {
-			tracked_device_manager->forget_resource(tracked_depth_output);
-		}
-	}
-	tracked_color_output = RID();
-	tracked_depth_output = RID();
+	resource_controller.clear_output_resource_tracking();
 }
 
 TileRenderer::RenderResult TileRenderer::render_with_contract(RenderingDevice *p_device, const RenderParams &p_params) {
@@ -3073,10 +2958,7 @@ TileRenderer::RenderResult TileRenderer::render_with_contract(RenderingDevice *p
 	result.has_depth = has_depth_output() && result.depth_texture.is_valid();
 	result.depth_copy_compatible = result.has_depth && is_depth_copy_compatible();
 
-	RenderingDevice *main_device = _get_contract_main_device();
-	RenderDeviceManager *manager_ptr = tracked_device_manager;
-
-	if (!_resolve_texture_owner("tile_color_output", result.output_texture, result.output_owner, main_device, manager_ptr, true)) {
+	if (!_resolve_texture_owner("tile_color_output", result.output_texture, result.output_owner, nullptr, nullptr, true)) {
 		GS_LOG_ERROR_DEFAULT("[TileRenderer] Color output contract failed; output is disabled for this frame");
 		clear_output_resource_tracking();
 		result = RenderResult();
@@ -3084,7 +2966,7 @@ TileRenderer::RenderResult TileRenderer::render_with_contract(RenderingDevice *p
 	}
 
 	if (result.has_depth) {
-		if (!_resolve_texture_owner("tile_depth_output", result.depth_texture, result.depth_owner, main_device, manager_ptr, true)) {
+		if (!_resolve_texture_owner("tile_depth_output", result.depth_texture, result.depth_owner, nullptr, nullptr, true)) {
 			GS_LOG_WARN_DEFAULT("[TileRenderer] Depth output contract failed; depth output is disabled for this frame");
 			result.depth_texture = RID();
 			result.depth_owner = nullptr;

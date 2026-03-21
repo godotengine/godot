@@ -381,19 +381,14 @@ Error GaussianSplatRenderer::set_gaussian_data(const Ref<::GaussianData> &p_data
 					true,
 					&dispatched_request_id)) {
 			if (log_enabled) {
-				GS_LOG_RENDERER_DEBUG(vformat("[GSR-SET-DATA] EXIT err=%d (render-thread dispatch)", render_thread_dispatch_set_data_result));
+				GS_LOG_RENDERER_DEBUG(vformat("[GSR-SET-DATA] EXIT err=%d (render-thread dispatch)",
+						render_thread_dispatcher ? int(render_thread_dispatcher->get_latest_data_result()) : int(ERR_UNAVAILABLE)));
 			}
-			return render_thread_dispatch_set_data_result;
+			return render_thread_dispatcher ? render_thread_dispatcher->get_latest_data_result() : ERR_UNAVAILABLE;
 		}
 		if (dispatch_submitted) {
-			uint64_t previous_request_id =
-					render_thread_dispatch_set_data_latest_request_id.load(std::memory_order_acquire);
-			while (previous_request_id < dispatched_request_id &&
-					!render_thread_dispatch_set_data_latest_request_id.compare_exchange_weak(
-							previous_request_id,
-							dispatched_request_id,
-							std::memory_order_acq_rel,
-							std::memory_order_acquire)) {
+			if (render_thread_dispatcher) {
+				render_thread_dispatcher->promote_latest_data_request_id(dispatched_request_id);
 			}
 			if (log_enabled) {
 				GS_LOG_RENDERER_WARN("[GSR-SET-DATA] Render-thread dispatch timed out after submit; skipping unsafe local fallback");
@@ -403,16 +398,9 @@ Error GaussianSplatRenderer::set_gaussian_data(const Ref<::GaussianData> &p_data
 	}
 
 	Error err = data_orchestrator->set_gaussian_data(p_data);
-	const uint64_t request_id_floor =
-			render_thread_dispatch_next_request_id.load(std::memory_order_acquire);
-	uint64_t previous_request_id =
-			render_thread_dispatch_set_data_latest_request_id.load(std::memory_order_acquire);
-	while (previous_request_id < request_id_floor &&
-			!render_thread_dispatch_set_data_latest_request_id.compare_exchange_weak(
-					previous_request_id,
-					request_id_floor,
-					std::memory_order_acq_rel,
-					std::memory_order_acquire)) {
+	if (render_thread_dispatcher) {
+		const uint64_t request_id_floor = render_thread_dispatcher->get_next_request_id();
+		render_thread_dispatcher->promote_latest_data_request_id(request_id_floor);
 	}
 	if (log_enabled) {
 		GS_LOG_RENDERER_DEBUG(vformat("[GSR-SET-DATA] EXIT err=%d", err));
@@ -422,24 +410,27 @@ Error GaussianSplatRenderer::set_gaussian_data(const Ref<::GaussianData> &p_data
 
 void GaussianSplatRenderer::_set_gaussian_data_on_render_thread(const Ref<::GaussianData> &p_data, uint64_t p_request_id) {
 	const uint64_t latest_request_id =
-			render_thread_dispatch_set_data_latest_request_id.load(std::memory_order_acquire);
+			render_thread_dispatcher ? render_thread_dispatcher->get_latest_data_request_id() : 0;
 	if (p_request_id < latest_request_id) {
 		_notify_render_thread_dispatch_completed(p_request_id);
 		return;
 	}
-	uint64_t previous_request_id = latest_request_id;
-	while (previous_request_id < p_request_id &&
-			!render_thread_dispatch_set_data_latest_request_id.compare_exchange_weak(
-					previous_request_id,
-					p_request_id,
-					std::memory_order_acq_rel,
-					std::memory_order_acquire)) {
+	if (render_thread_dispatcher) {
+		render_thread_dispatcher->promote_latest_data_request_id(p_request_id);
 	}
+	// Re-read after promotion because another request may have advanced the latest ID
+	// between our initial stale check and the dispatcher update above. If that happened,
+	// this request must still exit as stale and avoid overwriting newer set-data state.
+	const uint64_t previous_request_id =
+			render_thread_dispatcher ? render_thread_dispatcher->get_latest_data_request_id() : p_request_id;
 	if (p_request_id < previous_request_id) {
 		_notify_render_thread_dispatch_completed(p_request_id);
 		return;
 	}
-	render_thread_dispatch_set_data_result = data_orchestrator->set_gaussian_data(p_data);
+	const Error set_data_result = data_orchestrator->set_gaussian_data(p_data);
+	if (render_thread_dispatcher) {
+		render_thread_dispatcher->set_latest_data_result(set_data_result);
+	}
 	_notify_render_thread_dispatch_completed(p_request_id);
 }
 

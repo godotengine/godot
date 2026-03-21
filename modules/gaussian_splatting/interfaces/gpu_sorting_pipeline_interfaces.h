@@ -24,6 +24,20 @@ struct SortBufferHandles {
     bool valid = false;
 };
 
+struct SortExternalBufferState {
+    RID keys_buffer;
+    RID indices_buffer;
+    RenderingDevice *device = nullptr;
+    uint32_t capacity = 0;
+    bool valid = false;
+};
+
+struct SortPublicationPayload {
+    Vector<uint32_t> sorted_indices;
+    RID sort_indices_buffer;
+    RenderingDevice *default_device = nullptr;
+};
+
 struct SortPositionInputs {
     const GaussianData *gaussian_data = nullptr;
     const LocalVector<Vector3> *test_positions = nullptr;
@@ -80,6 +94,13 @@ enum class SortRendererFallbackPolicy : uint8_t {
     USE_SORT_FAILURE_FALLBACK,
 };
 
+enum class SortCompletionMode : uint8_t {
+    FAILED = 0,
+    SYNC_COMPLETED,
+    ASYNC_PENDING,
+    FALLBACK_USED,
+};
+
 // Result of a sort operation
 struct SortOperationResult {
     bool success = false;
@@ -88,6 +109,27 @@ struct SortOperationResult {
     String error;
     SortOperationErrorCode error_code = SortOperationErrorCode::NONE;
     SortRendererFallbackPolicy fallback_policy = SortRendererFallbackPolicy::NONE;
+    SortCompletionMode completion_mode = SortCompletionMode::FAILED;
+};
+
+class ISortResultSink {
+public:
+    virtual ~ISortResultSink() = default;
+
+    virtual void publish_sorted_indices(const SortPublicationPayload &p_payload) = 0;
+};
+
+class ISortBufferHostContext {
+public:
+    virtual ~ISortBufferHostContext() = default;
+
+    virtual bool ensure_sort_rendering_device(const char *p_context) = 0;
+    virtual RenderingDevice *get_sort_rendering_device() const = 0;
+    virtual SortExternalBufferState get_sort_external_buffer_state() const = 0;
+    virtual bool resize_sort_state_byte_vectors(uint32_t p_cpu_capacity, uint32_t p_key_stride_bytes, const char *p_context) = 0;
+    virtual void set_sort_buffer_binding_state(bool p_keys_external, bool p_indices_external,
+            bool p_pipeline_managed, uint32_t p_capacity) = 0;
+    virtual void clear_sort_buffer_binding_state() = 0;
 };
 
 // Pure abstract interface for GPU sorting pipeline management
