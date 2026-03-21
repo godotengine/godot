@@ -2606,7 +2606,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				make_dir_dialog->config(to_duplicate.path.get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
 						DirectoryCreateDialog::MODE_FILE, TTR("Duplicating file:") + " " + name, name);
 			} else {
-				// Raise error for res:// directory edge case.
+				// Prevent duplication popup for res:// directory edge case.
 				if (to_duplicate.path == "res://") {
 					break;
 				}
