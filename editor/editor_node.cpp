@@ -425,7 +425,9 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			editor_main_screen->select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			editor_main_screen->select_prev();
-		} else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
+		}else if (ED_IS_SHORTCUT("editor/prev_scene_in_history", p_event)) {
+			_navigate_to_previous_scene();
+		}else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
@@ -4634,6 +4636,7 @@ void EditorNode::_set_current_scene(int p_idx) {
 		return; // Pointless.
 	}
 
+	_update_previous_scene_path();
 	_set_current_scene_nocheck(p_idx);
 }
 
@@ -5377,6 +5380,26 @@ void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_a
 		file_menu->set_item_disabled(file_menu->get_item_index(SCENE_OPEN_PREV), prev_closed_scenes.is_empty());
 	}
 }
+
+void EditorNode::_update_previous_scene_path() {
+	int current_idx = editor_data.get_edited_scene();
+	if (current_idx < 0) {
+		return;
+	}
+	String current_path = editor_data.get_scene_path(current_idx);
+	if (current_path.is_empty()) {
+		return;
+	}
+	previous_scene_path = current_path;
+}
+
+void EditorNode::_navigate_to_previous_scene() {
+	if (previous_scene_path.is_empty()) {
+		return;
+	}
+	load_scene(previous_scene_path, false, false, true);
+}
+
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
@@ -8833,6 +8856,8 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/new_inherited_scene", TTRC("New Inherited Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::N);
 	ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T);
+	ED_SHORTCUT_AND_COMMAND("editor/prev_scene_in_history", TTRC("Previous Scene in History"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::LEFT);
+
 
 	ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTRC("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S);
 	ED_SHORTCUT_AND_COMMAND("editor/save_scene_as", TTRC("Save Scene As..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::S);

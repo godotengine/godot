@@ -370,6 +370,7 @@ private:
 	List<String> prev_closed_scenes;
 	String defer_load_scene;
 	Node *_last_instantiated_scene = nullptr;
+	String previous_scene_path;
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
@@ -608,6 +609,8 @@ private:
 	void _project_run_stopped();
 
 	void _update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene);
+	void _update_previous_scene_path();
+	void _navigate_to_previous_scene();
 
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
