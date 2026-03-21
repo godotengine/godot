@@ -139,6 +139,7 @@ void OutputCompositor::invalidate_cached_render() {
     output_cache.cached_render_valid = false;
     output_cache.cached_render_depth = RID();
     output_cache.cached_render_content_generation = 0;
+    output_cache.cached_render_cull_config_signature = 0;
     output_cache.cached_render_color_grading_signature = 0;
     output_cache.cached_render_lighting_signature = 0;
 }
@@ -156,6 +157,7 @@ bool OutputCompositor::_is_depth_texture_valid(const RID &p_depth_texture) const
 bool OutputCompositor::can_reuse_cached_render(const Transform3D &p_world_to_camera_to_world_transform, const Projection &p_projection,
         const Size2i &p_viewport_size, bool p_painterly_active, const RID &p_final_render_texture,
         uint64_t p_content_generation,
+        uint64_t p_cull_config_signature,
         uint64_t p_color_grading_signature, uint64_t p_lighting_signature,
         bool p_require_valid_depth) const {
     if (!cached_render_reuse_enabled) {
@@ -179,6 +181,9 @@ bool OutputCompositor::can_reuse_cached_render(const Transform3D &p_world_to_cam
     if (output_cache.cached_render_content_generation != p_content_generation) {
         return false;
     }
+    if (output_cache.cached_render_cull_config_signature != p_cull_config_signature) {
+        return false;
+    }
     if (output_cache.cached_render_color_grading_signature != p_color_grading_signature) {
         return false;
     }
@@ -195,6 +200,7 @@ void OutputCompositor::update_render_cache_signature(const Transform3D &p_world_
         const Size2i &p_viewport_size, bool p_painterly_active, const RID &p_cached_depth,
         const Size2i &p_internal_size, const RID &p_final_render_texture,
         uint64_t p_content_generation,
+        uint64_t p_cull_config_signature,
         uint64_t p_color_grading_signature, uint64_t p_lighting_signature,
         bool p_require_valid_depth) {
     const bool cached_depth_valid = _is_depth_texture_valid(p_cached_depth);
@@ -206,6 +212,7 @@ void OutputCompositor::update_render_cache_signature(const Transform3D &p_world_
     output_cache.cached_render_depth = cached_depth_valid ? p_cached_depth : RID();
     output_cache.cached_render_valid = p_final_render_texture.is_valid() && (!p_require_valid_depth || cached_depth_valid);
     output_cache.cached_render_content_generation = p_content_generation;
+    output_cache.cached_render_cull_config_signature = p_cull_config_signature;
     output_cache.cached_render_color_grading_signature = p_color_grading_signature;
     output_cache.cached_render_lighting_signature = p_lighting_signature;
 }

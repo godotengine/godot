@@ -408,6 +408,7 @@ public:
         RD::DataFormat viewport_format = RD::DATA_FORMAT_MAX;
         uint32_t sorted_splat_count = 0;
         uint64_t content_generation = 0;
+        uint64_t cull_config_signature = 0;
         uint64_t color_grading_signature = 0;
         uint64_t lighting_signature = 0;
         float sort_time_ms = 0.0f;
