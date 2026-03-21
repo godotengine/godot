@@ -61,7 +61,7 @@ TestRenderingDeviceHandle _get_test_rendering_device() {
 
 TEST_CASE("[Streaming Pipeline] stop_pack_threads clears partial lifecycle state") {
     GaussianStreamingSystem system;
-    auto &uploads = system._internal_get_upload_state();
+    auto &uploads = system._internal_get_upload_pipeline();
 
     uploads.pack_thread_running.store(false, std::memory_order_release);
     uploads.pack_thread_exit.store(true, std::memory_order_release);
