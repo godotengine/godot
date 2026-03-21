@@ -569,7 +569,7 @@
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
-		<method name="should_ignore_device" qualifiers="const">
+		<method name="should_ignore_device" qualifiers="const" deprecated="Game code should not have to ignore unwanted devices by itself. If a device that should be ignored gets detected by Godot, please report it as a bug.">
 			<return type="bool" />
 			<param index="0" name="vendor_id" type="int" />
 			<param index="1" name="product_id" type="int" />
