@@ -4892,14 +4892,8 @@ void DisplayServerX11::process_events() {
 	bool ignore_events = mouse_process_popups();
 
 	if (app_focused) {
-		//verify that one of the windows has focus, else send focus out notification
-		bool focus_found = false;
-		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-			if (E.value.focused) {
-				focus_found = true;
-				break;
-			}
-		}
+		// Verify that one of the windows has focus, else send focus out notification.
+		bool focus_found = _window_focus_check();
 
 		if (!focus_found) {
 			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_no_focus;
@@ -4909,6 +4903,12 @@ void DisplayServerX11::process_events() {
 				if (OS::get_singleton()->get_main_loop()) {
 					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				}
+				// Clear stale focus state on no-focus popups when the app loses focus.
+				for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+					if (E.value.focused && E.value.is_popup && E.value.no_focus) {
+						E.value.focused = false;
+					}
 				}
 				app_focused = false;
 			}
