@@ -29,8 +29,13 @@
 /**************************************************************************/
 
 #include "nine_patch_sprite.h"
+
+#include "core/config/engine.h"
 #include "core/math/rect2.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary NinePatchSprite::_edit_get_state() const {
@@ -99,7 +104,7 @@ void NinePatchSprite::_notification(int p_what) {
 			Rect2 rect = get_rect();
 			Rect2 src_rect = region_rect;
 			RID ci = get_canvas_item();
-			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RenderingServerEnums::NinePatchAxisMode(axis_h), RenderingServerEnums::NinePatchAxisMode(axis_v), draw_center);
 		} break;
 	}
 }
