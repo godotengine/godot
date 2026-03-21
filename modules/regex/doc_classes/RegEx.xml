@@ -4,7 +4,7 @@
 		Class for searching text for patterns using regular expressions.
 	</brief_description>
 	<description>
-		A regular expression (or regex) is a compact language that can be used to recognize strings that follow a specific pattern, such as URLs, email addresses, complete sentences, etc. For example, a regex of [code]ab[0-9][/code] would find any string that is [code]ab[/code] followed by any number from [code]0[/code] to [code]9[/code]. For a more in-depth look, you can easily find various tutorials and detailed explanations on the Internet.
+		A regular expression (or regex) is a compact language that can be used to recognize strings that follow a specific pattern, such as URLs, email addresses, complete sentences, etc. For example, a regex of [code]ab[0-9][/code] would find any string that is [code]ab[/code] followed by any number from [code]0[/code] to [code]9[/code]. A regex is case-sensitive by default (see the flags section below for instructions on toggling case sensitivity). For a more in-depth look, you can easily find various tutorials and detailed explanations on the Internet.
 		To begin, the RegEx object needs to be compiled with the search pattern using [method compile] before it can be used. Alternatively, the static method [method create_from_string] can be used to create and compile a RegEx object in a single method call.
 		[codeblock]
 		var regex = RegEx.new()
@@ -42,6 +42,16 @@
 			results.push_back(result.get_string())
 		print(results) # Prints ["One", "Two", "Three"]
 		[/codeblock]
+		Some flags can also be passed at the beginning of a regex to change its behavior. Commonly used flags include:
+		[codeblock lang=text]
+		(?i) - Case-insensitive matching.
+		(?m) - Multiline mode. Changes the behavior of ^ and $ to match the start and end of lines, instead of the whole string.
+		(?n) - No capture. Disables capturing groups, so that parentheses will not create groups and will not be included in the results.
+		(?s) - Dotall mode. Changes the behavior of . to match newline characters as well.
+		(?x) - Verbose mode. Ignores whitespace and line breaks, and allows comments that start with # in the pattern for better readability. Whitespace can be matched with an escaped space ("\ ") or a character class like "[ \t]".
+		(?U) - Ungreedy mode. By default, a regex is greedy, which means it matches as much of the searched text as possible. This flag makes the regex match as little of the searched text as possible.
+		[/codeblock]
+		Flag letters are case-sensitive. Multiple flags can be combined by specifying multiple letters in the parentheses; for example, [code](?ix)[/code] enables both case-insensitive and multiline modes. The order of flags does not matter.
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.
 	</description>
