@@ -26,6 +26,7 @@ class ResidencyBudgetController;
 #include "streaming_vram_regulator.h"
 #include "streaming_visibility_controller.h"
 #include "streaming_atlas.h"
+#include "streaming_global_atlas_registry.h"
 #include "streaming_eviction_controller.h"
 #include "streaming_upload_pipeline.h"
 
@@ -35,6 +36,7 @@ class GaussianStreamingSystem : public RefCounted {
     friend class StreamingUploadPipeline;
     friend class StreamingEvictionController;
     friend class StreamingVisibilityController;
+    friend class StreamingGlobalAtlasRegistry;
 
 public:
     static constexpr uint32_t CHUNK_SIZE = 65536;  // 64K splats per chunk
@@ -204,27 +206,8 @@ private:
         LocalVector<uint32_t> primary_chunk_source_indices;
     } asset_registry;
 
-    struct AtlasSyncState {
-        GaussianAtlasAllocator allocator;
-        uint32_t max_chunk_count_per_asset = 0;
-        uint32_t max_chunk_splats = 0;
-        GlobalAtlasState global_atlas_state;
-        RID asset_meta_buffer;
-        RID chunk_meta_buffer;
-        RID asset_chunk_index_buffer;
-        uint32_t asset_meta_buffer_size = 0;
-        uint32_t chunk_meta_buffer_size = 0;
-        uint32_t asset_chunk_index_buffer_size = 0;
-        LocalVector<AssetMetaGPU> asset_meta_cpu;
-        LocalVector<ChunkMetaGPU> chunk_meta_cpu;
-        LocalVector<AssetChunkIndexGPU> asset_chunk_index_cpu;
-        LocalVector<uint32_t> chunk_meta_dirty_indices;
-        LocalVector<uint8_t> chunk_meta_dirty_flags;
-        bool asset_meta_dirty = false;
-        bool asset_chunk_index_dirty = false;
-        bool chunk_meta_dirty_all = false;
-        bool asset_registry_dirty = false;
-    } atlas_sync;
+    GaussianAtlasAllocator atlas_allocator;
+    StreamingGlobalAtlasRegistry global_atlas_registry;
 
     // Chunk management
     LocalVector<StreamingChunk> chunks;
@@ -462,8 +445,8 @@ public:
     Dictionary get_vram_debug_stats() const;
     bool is_vram_budget_warning_active() const;
     uint32_t get_effective_max_chunks() const;
-    uint32_t get_max_chunk_count_per_asset() const { return atlas_sync.max_chunk_count_per_asset; }
-    uint32_t get_max_chunk_splats() const { return atlas_sync.max_chunk_splats; }
+    uint32_t get_max_chunk_count_per_asset() const { return global_atlas_registry.get_max_chunk_count_per_asset(); }
+    uint32_t get_max_chunk_splats() const { return global_atlas_registry.get_max_chunk_splats(); }
 
     float get_global_lod_blend_factor() const { return visibility.current_lod_blend_factor; }
     void set_lod_blend_enabled(bool p_enabled) { visibility.lod_blend_config.blend_enabled = p_enabled; }
@@ -507,14 +490,14 @@ public:
     bool remap_instance_asset_ids(LocalVector<InstanceDataGPU> &p_instances, bool p_warn_on_missing = true) const;
 
     // Global atlas (instance pipeline) accessors
-    const GlobalAtlasState &get_global_atlas_state() const { return atlas_sync.global_atlas_state; }
-    RID get_atlas_gaussian_buffer() const { return atlas_sync.global_atlas_state.atlas_gaussian_buffer; }
-    uint32_t get_atlas_gaussian_count() const { return atlas_sync.global_atlas_state.atlas_gaussian_count; }
-    RID get_asset_meta_buffer() const { return atlas_sync.global_atlas_state.asset_meta_buffer; }
-    RID get_chunk_meta_buffer() const { return atlas_sync.global_atlas_state.chunk_meta_buffer; }
-    RID get_asset_chunk_index_buffer() const { return atlas_sync.global_atlas_state.asset_chunk_index_buffer; }
-    RID get_atlas_quantization_buffer() const { return atlas_sync.global_atlas_state.quantization_buffer; }
-    uint64_t get_atlas_generation() const { return atlas_sync.global_atlas_state.atlas_generation; }
+    const GlobalAtlasState &get_global_atlas_state() const { return global_atlas_registry.get_global_atlas_state(); }
+    RID get_atlas_gaussian_buffer() const { return global_atlas_registry.get_global_atlas_state().atlas_gaussian_buffer; }
+    uint32_t get_atlas_gaussian_count() const { return global_atlas_registry.get_global_atlas_state().atlas_gaussian_count; }
+    RID get_asset_meta_buffer() const { return global_atlas_registry.get_global_atlas_state().asset_meta_buffer; }
+    RID get_chunk_meta_buffer() const { return global_atlas_registry.get_global_atlas_state().chunk_meta_buffer; }
+    RID get_asset_chunk_index_buffer() const { return global_atlas_registry.get_global_atlas_state().asset_chunk_index_buffer; }
+    RID get_atlas_quantization_buffer() const { return global_atlas_registry.get_global_atlas_state().quantization_buffer; }
+    uint64_t get_atlas_generation() const { return global_atlas_registry.get_atlas_generation(); }
 
     // Distance-based LOD (Octree-GS) - chunk-level LOD selection and reduction
     Dictionary get_lod_debug_stats() const;
@@ -615,17 +598,11 @@ private:
     bool _upload_quantization_buffer(RenderingDevice *p_rd);
     ChunkQuantizationGPU _create_gpu_quantization_data(const ChunkQuantizationInfo &info, uint32_t start_idx, uint32_t count) const;
 
-    // Global atlas metadata helpers (instance pipeline)
-    void _build_global_atlas_cpu_state();
-    void _update_chunk_meta_entry(uint32_t asset_id, uint32_t chunk_idx);
-    void _mark_chunk_meta_dirty(uint32_t chunk_idx);
-    void _mark_chunk_meta_dirty(uint32_t asset_id, uint32_t chunk_idx);
     void _apply_requested_residency();
     void _evict_unrequested_chunks(uint32_t asset_id, AtlasAssetState &asset,
             LocalVector<StreamingChunk> &asset_chunks);
     bool _load_requested_chunks(uint32_t asset_id, AtlasAssetState &asset,
             LocalVector<StreamingChunk> &asset_chunks, bool trace_enabled, bool can_async_pack);
-    void _sync_global_atlas_state(RenderingDevice *p_rd);
     bool _ensure_atlas_slot_available(uint32_t requesting_asset_id);
     bool _evict_non_primary_lru();
 

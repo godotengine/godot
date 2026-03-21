@@ -173,3 +173,77 @@ TEST_CASE("[Streaming Pipeline] update_streaming publishes phase timings before 
         CHECK(chunk_index_stable);
     }
 }
+
+TEST_CASE("[Streaming Pipeline] initialize_empty republishes atlas state after registry cleanup") {
+    const TestRenderingDeviceHandle rd_handle = _get_test_rendering_device();
+    RenderingDevice *rd = rd_handle.rd;
+    if (!rd) {
+        MESSAGE("Skipping - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianStreamingSystem> system;
+    system.instantiate();
+    system->initialize_empty(rd);
+    if (!system->is_runtime_ready()) {
+        MESSAGE("Skipping - Streaming runtime not ready");
+        return;
+    }
+
+    const uint32_t asset_id = 27182;
+    system->register_asset(asset_id, _create_streaming_phase_order_test_data());
+
+    Transform3D camera_transform;
+    camera_transform.origin = Vector3(0.0f, 0.0f, 5.0f);
+    Projection projection;
+    projection.set_perspective(60.0f, 1.0f, 0.1f, 2000.0f);
+
+    system->begin_frame();
+    system->update_streaming(camera_transform, projection);
+    system->end_frame();
+
+    const uint64_t generation_before_reinit = system->get_atlas_generation();
+    CHECK(generation_before_reinit > 0);
+    CHECK(system->get_asset_meta_buffer().is_valid());
+    CHECK(system->get_chunk_meta_buffer().is_valid());
+    CHECK(system->get_asset_chunk_index_buffer().is_valid());
+
+    system->initialize_empty(rd);
+    CHECK(system->is_runtime_ready());
+    CHECK(system->get_atlas_generation() > generation_before_reinit);
+    CHECK(system->get_asset_meta_buffer().is_valid());
+    CHECK(system->get_chunk_meta_buffer().is_valid());
+    CHECK(system->get_asset_chunk_index_buffer().is_valid());
+    CHECK_FALSE(system->has_asset(asset_id));
+}
+
+TEST_CASE("[Streaming Pipeline] initialize_empty keeps atlas metadata buffers valid with zero chunks") {
+    const TestRenderingDeviceHandle rd_handle = _get_test_rendering_device();
+    RenderingDevice *rd = rd_handle.rd;
+    if (!rd) {
+        MESSAGE("Skipping - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianStreamingSystem> system;
+    system.instantiate();
+    system->initialize_empty(rd);
+    if (!system->is_runtime_ready()) {
+        MESSAGE("Skipping - Streaming runtime not ready");
+        return;
+    }
+
+    const uint64_t first_generation = system->get_atlas_generation();
+    CHECK(first_generation > 0);
+    CHECK(system->get_asset_meta_buffer().is_valid());
+    CHECK(system->get_chunk_meta_buffer().is_valid());
+    CHECK(system->get_asset_chunk_index_buffer().is_valid());
+
+    system->initialize_empty(rd);
+
+    CHECK(system->is_runtime_ready());
+    CHECK(system->get_atlas_generation() > first_generation);
+    CHECK(system->get_asset_meta_buffer().is_valid());
+    CHECK(system->get_chunk_meta_buffer().is_valid());
+    CHECK(system->get_asset_chunk_index_buffer().is_valid());
+}
