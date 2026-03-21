@@ -25,12 +25,14 @@ class ResidencyBudgetController;
 #include "streaming_quantization.h"
 #include "streaming_vram_regulator.h"
 #include "streaming_atlas.h"
+#include "streaming_eviction_controller.h"
 #include "streaming_upload_pipeline.h"
 
 // GPU memory streaming system with ring buffer for large datasets
 class GaussianStreamingSystem : public RefCounted {
     GDCLASS(GaussianStreamingSystem, RefCounted);
     friend class StreamingUploadPipeline;
+    friend class StreamingEvictionController;
 
 public:
     static constexpr uint32_t CHUNK_SIZE = 65536;  // 64K splats per chunk
@@ -149,12 +151,7 @@ private:
         uint64_t frame_number = 0;
     };
 
-    enum class EvictionResult {
-        NoEviction,
-        EvictedNonVisible,
-        EvictedVisible,
-        SkippedAllVisible,
-    };
+    using EvictionResult = StreamingEvictionController::EvictionResult;
 
     struct ChunkCullingStats {
         uint32_t total_chunks = 0;
@@ -228,32 +225,6 @@ private:
         uint64_t stall_detections = 0;
     };
 
-    struct EvictionState {
-        struct NonPrimaryEvictionCandidate {
-            uint32_t asset_id = UINT32_MAX;
-            uint32_t chunk_id = UINT32_MAX;
-            uint64_t last_used_frame = UINT64_MAX;
-            float distance = 0.0f;
-        };
-
-        uint64_t chunk_load_counter = 0;
-        uint32_t eviction_hysteresis_frames = 5;
-        uint32_t max_evictions_per_frame = 4;
-        uint32_t chunks_evicted_this_frame = 0;
-        uint32_t visible_chunks_evicted_this_frame = 0;
-        uint64_t last_stabilize_log_frame = 0;
-        uint64_t cached_eviction_frame = UINT64_MAX;
-        uint64_t cached_non_primary_lru_frame = UINT64_MAX;
-        uint32_t cached_non_primary_lru_cursor = 0;
-        LocalVector<NonPrimaryEvictionCandidate> cached_non_primary_lru_candidates;
-        LocalVector<uint32_t> cached_visible_chunks;
-        LocalVector<uint32_t> cached_nonvisible_chunks;
-
-        EvictionResult evict_least_recently_used(GaussianStreamingSystem &system, bool p_allow_visible_eviction);
-        bool evict_non_primary_lru(GaussianStreamingSystem &system);
-        bool ensure_atlas_slot_available(GaussianStreamingSystem &system, uint32_t requesting_asset_id);
-    };
-
     struct BudgetState {
         Ref<VRAMBudgetRegulator> vram_regulator;
         uint32_t loaded_chunks_count = 0;
@@ -276,7 +247,7 @@ private:
 
     VisibilityState visibility;
     ZeroVisibleRecoveryState zero_visible_recovery;
-    EvictionState eviction;
+    StreamingEvictionController eviction_controller;
     StreamingUploadPipeline upload_pipeline;
     BudgetState budget;
 
@@ -574,8 +545,8 @@ public:
 
     // Streaming change tracking
     uint32_t get_chunks_loaded_this_frame() const { return budget.chunks_loaded_this_frame; }
-    uint32_t get_chunks_evicted_this_frame() const { return eviction.chunks_evicted_this_frame; }
-    uint32_t get_visible_chunks_evicted_this_frame() const { return eviction.visible_chunks_evicted_this_frame; }
+    uint32_t get_chunks_evicted_this_frame() const { return eviction_controller.get_chunks_evicted_this_frame(); }
+    uint32_t get_visible_chunks_evicted_this_frame() const { return eviction_controller.get_visible_chunks_evicted_this_frame(); }
     float get_visible_chunk_change_ratio() const;
     float get_effective_count_change_ratio() const;
     uint32_t get_buffer_capacity_splats() const;
