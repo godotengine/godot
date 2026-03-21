@@ -1221,6 +1221,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 					reset_sort_metrics();
 					renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_SORT_FAILED;
 					sorting_state.sorted_splat_count = 0;
+					sorting_state.last_sort_transform_valid = false;
 					renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 					return;
 			}
@@ -1228,6 +1229,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		reset_sort_metrics();
 		renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_SORT_FAILED;
 		sorting_state.sorted_splat_count = 0;
+		sorting_state.last_sort_transform_valid = false;
 		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 	};
 
@@ -1247,6 +1249,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		reset_sort_metrics();
 		renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_NO_DEVICE;
 		sorting_state.sorted_splat_count = 0;
+		sorting_state.last_sort_transform_valid = false;
 		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 		return build_summary();
 	}
