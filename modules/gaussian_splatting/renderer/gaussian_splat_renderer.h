@@ -528,15 +528,12 @@ public:
             GaussianSplatManager::ScopedSubmissionLock &r_lock) const;
     RenderingDevice *get_texture_owner_device(const RID &p_texture) const;
     RD::TextureFormat _get_texture_format(RenderingDevice *p_device, RID p_texture) const;
-    void _forget_resource_owner(const RID &p_rid);
     void _set_manual_viewport_format(RD::DataFormat p_format, const char *p_context);
     void _set_active_viewport_format(RD::DataFormat p_format, const char *p_context);
     void _free_owned_resource(RenderingDevice *p_fallback_device, RID &p_rid);
     // Removed: _upload_test_splats_to_gpu (dead code)
-    void _refresh_gpu_sorter(const char *p_context);
     // Removed: _flush_depth_submission (dead code)
     void _update_gpu_pass_metrics_from_tile_renderer();
-    void _update_pipeline_features(RenderingDevice *p_device);
     void _prepare_render_frame_context(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
             const Projection &p_projection, const Projection &p_render_projection, bool p_defer_render_buffers_commit,
             RenderFrameContext &r_context);
@@ -645,9 +642,9 @@ public:
     void track_resource_owner(const RID &p_rid, RenderingDevice *p_device, bool p_owned = true, const char *p_label = nullptr) {
         _track_resource_owner(p_rid, p_device, p_owned, p_label);
     }
-    void forget_resource_owner(const RID &p_rid) { _forget_resource_owner(p_rid); }
+    void forget_resource_owner(const RID &p_rid);
     void free_owned_resource(RenderingDevice *p_fallback_device, RID &p_rid) { _free_owned_resource(p_fallback_device, p_rid); }
-    void refresh_gpu_sorter(const char *p_context) { _refresh_gpu_sorter(p_context); }
+    void refresh_gpu_sorter(const char *p_context);
     void update_gpu_pass_metrics_from_tile_renderer() { _update_gpu_pass_metrics_from_tile_renderer(); }
     void update_debug_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats);
     void clear_debug_overlay_dirty_flags();
@@ -689,7 +686,7 @@ public:
     RD::TextureFormat get_texture_format(RenderingDevice *p_device, RID p_texture) const { return _get_texture_format(p_device, p_texture); }
     void set_manual_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_manual_viewport_format(p_format, p_context); }
     void set_active_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_active_viewport_format(p_format, p_context); }
-    void update_pipeline_features(RenderingDevice *p_device) { _update_pipeline_features(p_device); }
+    void update_pipeline_features(RenderingDevice *p_device);
     CullStageOutput cull_for_view(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size) {
         return _cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size);
     }

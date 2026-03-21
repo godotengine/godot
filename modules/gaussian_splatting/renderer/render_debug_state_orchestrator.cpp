@@ -1238,7 +1238,7 @@ int GaussianSplatRenderer::get_debug_splat_audit_sample_count() const {
 void GaussianSplatRenderer::reload_pipeline_feature_set() {
 	g_pipeline_feature_set.load_from_project_settings();
 	pipeline_features_warning_cache = String();
-	_update_pipeline_features(get_device_state().rd);
+	update_pipeline_features(get_device_state().rd);
 }
 
 void GaussianSplatRenderer::set_jacobian_bypass_radius_depth_floor(bool p_enabled) {
