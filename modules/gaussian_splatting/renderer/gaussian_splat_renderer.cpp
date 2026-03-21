@@ -1075,7 +1075,7 @@ void GaussianSplatRenderer::update_depth_range(float p_near, float p_far) {
     (void)p_far;
 }
 
-void GaussianSplatRenderer::ShadowBlitState::clear(RenderingDevice *p_device) {
+void GaussianRenderFacadeState::ShadowBlitState::clear(RenderingDevice *p_device) {
     if (sampler.is_valid()) {
         RenderingDevice *owner = sampler_owner.device ? sampler_owner.device : p_device;
         if (owner) {
