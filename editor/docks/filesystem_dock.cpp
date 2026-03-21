@@ -2608,7 +2608,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			} else {
 				// Raise error for res:// directory edge case.
 				if (to_duplicate.path == "res://") {
-					ERR_PRINT("Cannot duplicate res:// directory.");
 					break;
 				}
 				String name = to_duplicate.path.trim_suffix("/").get_file();
