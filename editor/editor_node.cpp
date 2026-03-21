@@ -5400,7 +5400,6 @@ void EditorNode::_navigate_to_previous_scene() {
 	load_scene(previous_scene_path, false, false, true);
 }
 
-
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	if (rc.has(p_scene)) {
@@ -8857,7 +8856,6 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T);
 	ED_SHORTCUT_AND_COMMAND("editor/prev_scene_in_history", TTRC("Previous Scene in History"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::BACKSLASH);
-
 
 	ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTRC("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S);
 	ED_SHORTCUT_AND_COMMAND("editor/save_scene_as", TTRC("Save Scene As..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::S);
