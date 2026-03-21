@@ -96,7 +96,6 @@ public:
         Size2i cached_render_internal_size = Size2i();
         RID cached_render_depth;
         bool cached_render_painterly = false;
-        uint32_t cached_render_sorted_count = 0;
         uint64_t cached_render_content_generation = 0;
         uint64_t cached_render_color_grading_signature = 0;
         uint64_t cached_render_lighting_signature = 0;
@@ -121,13 +120,13 @@ public:
     void invalidate_cached_render();
     bool can_reuse_cached_render(const Transform3D &p_view_transform, const Projection &p_projection,
             const Size2i &p_viewport_size, bool p_painterly_active, const RID &p_final_render_texture,
-            uint32_t p_sorted_count = 0, uint64_t p_content_generation = 0,
+            uint64_t p_content_generation = 0,
             uint64_t p_color_grading_signature = 0, uint64_t p_lighting_signature = 0,
             bool p_require_valid_depth = false) const;
     void update_render_cache_signature(const Transform3D &p_view_transform, const Projection &p_projection,
             const Size2i &p_viewport_size, bool p_painterly_active, const RID &p_cached_depth,
             const Size2i &p_internal_size, const RID &p_final_render_texture,
-            uint32_t p_sorted_count = 0, uint64_t p_content_generation = 0,
+            uint64_t p_content_generation = 0,
             uint64_t p_color_grading_signature = 0, uint64_t p_lighting_signature = 0,
             bool p_require_valid_depth = false);
 

@@ -875,7 +875,6 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	if (can_validate_previous_global_sort) {
 		cull_signature_untracked = !sorting_state.last_cull_indices_signature_valid;
 		if (!cull_signature_untracked &&
-				sorting_state.last_sort_transform_valid &&
 				!camera_moved &&
 				!gpu_culler->get_config().cull_params_dirty &&
 				!override_state_changed) {

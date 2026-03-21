@@ -1930,18 +1930,16 @@ TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when de
 
     compositor->set_has_valid_render(true);
     compositor->update_render_cache_signature(view_transform, projection, resolution, false,
-            depth_texture, resolution, final_texture, 7, 11, 13, 17, true);
+            depth_texture, resolution, final_texture, 11, 13, 17, true);
     CHECK(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 7, 11, 13, 17, true));
-    CHECK(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 99, 11, 13, 17, true));
+            final_texture, 11, 13, 17, true));
     CHECK_FALSE(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 99, 12, 13, 17, true));
+            final_texture, 12, 13, 17, true));
 
     compositor->update_render_cache_signature(view_transform, projection, resolution, false,
-            RID(), resolution, final_texture, 7, 11, 13, 17, true);
+            RID(), resolution, final_texture, 11, 13, 17, true);
     CHECK_FALSE(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 7, 11, 13, 17, true));
+            final_texture, 11, 13, 17, true));
 
     local_rd->free(final_texture);
     local_rd->free(depth_texture);

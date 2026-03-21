@@ -1321,7 +1321,7 @@ struct RenderPipelineStages::RasterCompositeStage {
 				output_compositor->update_render_cache_signature(raster_input.world_to_camera_transform,
 						raster_input.projection, raster_input.viewport_size, r_raster_output.painterly_active,
 						r_raster_output.depth, r_raster_output.internal_size, r_raster_output.color,
-						raster_input.sorted_splat_count, raster_input.content_generation,
+						raster_input.content_generation,
 						raster_input.color_grading_signature, raster_input.lighting_signature, require_scene_depth);
 			}
 		}
@@ -1898,7 +1898,7 @@ bool RenderPipelineStages::RasterStage::try_reuse_cached_render(const GaussianSp
 	RID cached_render = output_compositor->get_final_render_texture();
 	if (!output_compositor->can_reuse_cached_render(p_input.world_to_camera_transform, p_input.projection,
 				p_input.viewport_size, r_output.painterly_active, cached_render,
-				p_input.sorted_splat_count, p_input.content_generation,
+				p_input.content_generation,
 				p_input.color_grading_signature, p_input.lighting_signature, require_scene_depth)) {
 		return false;
 	}
