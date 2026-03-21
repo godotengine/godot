@@ -159,6 +159,9 @@ bool OutputCompositor::can_reuse_cached_render(const Transform3D &p_world_to_cam
         uint32_t p_sorted_count, uint64_t p_content_generation,
         uint64_t p_color_grading_signature, uint64_t p_lighting_signature,
         bool p_require_valid_depth) const {
+    // The renderer can reuse a cached render even if CPU-side sorted-count telemetry
+    // lags behind the GPU-authoritative sorted index buffer for a frame.
+    (void)p_sorted_count;
     if (!cached_render_reuse_enabled) {
         return false;
     }
@@ -175,9 +178,6 @@ bool OutputCompositor::can_reuse_cached_render(const Transform3D &p_world_to_cam
         return false;
     }
     if (!output_cache.cached_render_camera_to_world_transform.is_equal_approx(p_world_to_camera_to_world_transform)) {
-        return false;
-    }
-    if (output_cache.cached_render_sorted_count != p_sorted_count) {
         return false;
     }
     if (output_cache.cached_render_content_generation != p_content_generation) {
