@@ -1316,7 +1316,6 @@
 			[/codeblock]
 			When using static typing it is recommended to disable this setting, since it will mostly add false positives for typed code.
 			[b]Note:[/b] This setting also influences how symbols are resolved when using renaming capabilities.
-			[b]Note:[/b] The default value of this setting might change in future versions.
 		</member>
 		<member name="network/language_server/poll_limit_usec" type="int" setter="" getter="">
 			The upper limit of time, that the language server spends for IO each poll.

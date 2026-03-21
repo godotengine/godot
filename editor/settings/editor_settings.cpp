@@ -1130,7 +1130,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* GDScript Language Server */
 	_initial_set("network/language_server/remote_host", "127.0.0.1"); // Hints provided in setup_network
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "network/language_server/remote_port", 6005, "1,65535,1");
-	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/enable_smart_resolve", true, String());
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/enable_smart_resolve", false, String());
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/show_native_symbols_in_editor", false, String());
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/language_server/use_thread", false, String());
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_NONE, "network/language_server/poll_limit_usec", 100000, "");
