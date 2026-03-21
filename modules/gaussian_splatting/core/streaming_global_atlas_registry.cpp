@@ -36,6 +36,25 @@ void _clear_dirty_flags(LocalVector<uint8_t> &flags) {
 	}
 }
 
+bool _ensure_placeholder_buffer(RenderingDevice *p_rd, RID &r_buffer, uint32_t &r_logical_size, const char *p_name) {
+	ERR_FAIL_NULL_V(p_rd, false);
+
+	if (r_buffer.is_valid() && r_logical_size == 0) {
+		return false;
+	}
+
+	if (r_buffer.is_valid()) {
+		p_rd->free(r_buffer);
+	}
+
+	const uint32_t zero = 0;
+	Span<const uint32_t> zero_span(&zero, 1);
+	r_buffer = p_rd->storage_buffer_create(sizeof(uint32_t), zero_span.reinterpret<uint8_t>());
+	p_rd->set_resource_name(r_buffer, p_name);
+	r_logical_size = 0;
+	return true;
+}
+
 } // namespace
 
 uint64_t StreamingGlobalAtlasRegistry::get_auxiliary_vram_overhead_bytes() const {
@@ -364,7 +383,11 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 	}
 
 	const uint32_t asset_meta_size = asset_meta_cpu.size() * sizeof(AssetMetaGPU);
-	if (asset_meta_size > 0) {
+	if (asset_meta_size == 0) {
+		asset_meta_dirty = false;
+		atlas_dirty = _ensure_placeholder_buffer(p_rd, asset_meta_buffer, asset_meta_buffer_size,
+				"GS_Streaming_AssetMetaBuffer_Empty") || atlas_dirty;
+	} else {
 		Span<const AssetMetaGPU> asset_span(asset_meta_cpu.ptr(), asset_meta_cpu.size());
 		if (!asset_meta_buffer.is_valid() || asset_meta_buffer_size != asset_meta_size) {
 			if (asset_meta_buffer.is_valid()) {
@@ -383,7 +406,13 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 	}
 
 	const uint32_t chunk_meta_size = chunk_meta_cpu.size() * sizeof(ChunkMetaGPU);
-	if (chunk_meta_size > 0) {
+	if (chunk_meta_size == 0) {
+		chunk_meta_dirty_all = false;
+		chunk_meta_dirty_indices.clear();
+		_clear_dirty_flags(chunk_meta_dirty_flags);
+		atlas_dirty = _ensure_placeholder_buffer(p_rd, chunk_meta_buffer, chunk_meta_buffer_size,
+				"GS_Streaming_ChunkMetaBuffer_Empty") || atlas_dirty;
+	} else {
 		Span<const ChunkMetaGPU> chunk_span(chunk_meta_cpu.ptr(), chunk_meta_cpu.size());
 		if (!chunk_meta_buffer.is_valid() || chunk_meta_buffer_size != chunk_meta_size) {
 			if (chunk_meta_buffer.is_valid()) {
@@ -461,7 +490,11 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 	}
 
 	const uint32_t chunk_index_size = asset_chunk_index_cpu.size() * sizeof(AssetChunkIndexGPU);
-	if (chunk_index_size > 0) {
+	if (chunk_index_size == 0) {
+		asset_chunk_index_dirty = false;
+		atlas_dirty = _ensure_placeholder_buffer(p_rd, asset_chunk_index_buffer, asset_chunk_index_buffer_size,
+				"GS_Streaming_AssetChunkIndexBuffer_Empty") || atlas_dirty;
+	} else {
 		Span<const AssetChunkIndexGPU> chunk_index_span(asset_chunk_index_cpu.ptr(), asset_chunk_index_cpu.size());
 		if (!asset_chunk_index_buffer.is_valid() || asset_chunk_index_buffer_size != chunk_index_size) {
 			if (asset_chunk_index_buffer.is_valid()) {
