@@ -304,11 +304,6 @@ void StreamingUploadPipeline::load_streaming_tuning_config_from_project_settings
         }
     }
 
-    system.eviction.eviction_hysteresis_frames = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/eviction_hysteresis_frames",
-            system.eviction.eviction_hysteresis_frames);
-    system.eviction.max_evictions_per_frame = gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/max_evictions_per_frame",
-            system.eviction.max_evictions_per_frame);
-
     if (async_pack_enabled && pack_worker_threads == 0) {
         async_pack_enabled = false;
     }

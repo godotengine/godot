@@ -396,11 +396,11 @@ void GaussianStreamingSystem::_evict_unrequested_chunks(uint32_t asset_id, Atlas
 
 		if (chunk.upload_pending) {
 			upload_pipeline.cancel_chunk_jobs(*this, asset_id, i, chunk.buffer_slot);
-			eviction.chunks_evicted_this_frame++;
+			eviction_controller.record_total_eviction();
 		}
 		if (chunk.is_loaded) {
 			_unload_chunk(asset_id, i);
-			eviction.chunks_evicted_this_frame++;
+			eviction_controller.record_total_eviction();
 		}
 	}
 }
@@ -421,7 +421,7 @@ bool GaussianStreamingSystem::_load_requested_chunks(uint32_t asset_id, AtlasAss
 		if (chunk.is_loaded || chunk.upload_pending) {
 			chunks_already_loaded++;
 			if (chunk.is_loaded) {
-				chunk.last_used_frame = ++eviction.chunk_load_counter;
+				eviction_controller.touch_chunk_use(chunk.last_used_frame);
 			}
 			continue;
 		}

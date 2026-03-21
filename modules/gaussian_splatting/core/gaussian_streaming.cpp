@@ -2560,8 +2560,7 @@ void GaussianStreamingSystem::_handle_zero_visible_chunk_recovery() {
 void GaussianStreamingSystem::_reset_per_frame_counters() {
     budget.chunks_loaded_this_frame = 0;
     budget.vram_chunk_cap_hit_this_frame = false;
-    eviction.chunks_evicted_this_frame = 0;
-    eviction.visible_chunks_evicted_this_frame = 0;
+    eviction_controller.reset_per_frame_counters();
     upload_pipeline.queued_chunk_loads_this_frame = 0;
     upload_pipeline.upload_frame_cap_hit_this_frame = false;
     upload_pipeline.upload_slice_cap_hit_this_frame = false;
@@ -2594,7 +2593,8 @@ void GaussianStreamingSystem::_reset_per_frame_counters() {
 }
 
 void GaussianStreamingSystem::_evict_for_vram_budget(uint32_t &evictions_left, bool &eviction_blocked) {
-    evictions_left = eviction.max_evictions_per_frame == 0 ? UINT32_MAX : eviction.max_evictions_per_frame;
+    const uint32_t max_evictions_per_frame = eviction_controller.get_max_evictions_per_frame();
+    evictions_left = max_evictions_per_frame == 0 ? UINT32_MAX : max_evictions_per_frame;
     eviction_blocked = false;
     bool force_visible_eviction = false;
     const uint64_t total_vram_usage = _get_total_vram_usage_bytes();
@@ -2621,10 +2621,7 @@ void GaussianStreamingSystem::_evict_for_vram_budget(uint32_t &evictions_left, b
 
         EvictionResult result = _evict_least_recently_used(force_visible_eviction);
         if (result == EvictionResult::EvictedNonVisible || result == EvictionResult::EvictedVisible) {
-            eviction.chunks_evicted_this_frame++;
-            if (result == EvictionResult::EvictedVisible) {
-                eviction.visible_chunks_evicted_this_frame++;
-            }
+            eviction_controller.record_eviction_result(result);
             evictions_left--;
             continue;
         }
@@ -2777,10 +2774,7 @@ void GaussianStreamingSystem::_load_visible_chunks(uint32_t effective_max, uint3
                 }
             }
             if (result == EvictionResult::EvictedNonVisible || result == EvictionResult::EvictedVisible) {
-                eviction.chunks_evicted_this_frame++;
-                if (result == EvictionResult::EvictedVisible) {
-                    eviction.visible_chunks_evicted_this_frame++;
-                }
+                eviction_controller.record_eviction_result(result);
                 ResidencyBudgetController::note_successful_eviction(admission_budget);
             } else {
                 ResidencyBudgetController::note_blocked_eviction(admission_budget);
@@ -2824,7 +2818,7 @@ void GaussianStreamingSystem::_build_visible_chunk_list() {
         StreamingChunk &chunk = chunks[chunk_idx];
         if (chunk.is_loaded && chunk.distance < visible_threshold) {
             frame.visible_chunks.push_back(chunk_idx);
-            chunk.last_used_frame = ++eviction.chunk_load_counter;
+            eviction_controller.touch_chunk_use(chunk.last_used_frame);
         }
     }
 }
@@ -2928,7 +2922,7 @@ void GaussianStreamingSystem::_update_vram_regulator() {
     }
 
     budget.vram_regulator->update(_get_total_vram_usage_bytes(), budget.loaded_chunks_count,
-            budget.chunks_loaded_this_frame, eviction.chunks_evicted_this_frame,
+            budget.chunks_loaded_this_frame, eviction_controller.get_chunks_evicted_this_frame(),
             total_frame_count);
 }
 
@@ -3423,7 +3417,7 @@ void GaussianStreamingSystem::_complete_chunk_load_common(uint32_t asset_id, uin
     chunk.is_loaded = true;
     chunk.upload_pending = false;
     chunk.last_loaded_frame = total_frame_count;
-    chunk.last_used_frame = ++eviction.chunk_load_counter;
+    eviction_controller.touch_chunk_use(chunk.last_used_frame);
     budget.loaded_chunks_count++;
     budget.vram_usage += chunk.count * sizeof(PackedGaussian);
     _mark_chunk_meta_dirty(asset_id, chunk_idx);
@@ -3464,193 +3458,15 @@ void GaussianStreamingSystem::_unload_chunk(uint32_t asset_id, uint32_t chunk_id
 }
 
 GaussianStreamingSystem::EvictionResult GaussianStreamingSystem::_evict_least_recently_used(bool p_allow_visible_eviction) {
-    return eviction.evict_least_recently_used(*this, p_allow_visible_eviction);
+    return eviction_controller.evict_least_recently_used(*this, p_allow_visible_eviction);
 }
 
 bool GaussianStreamingSystem::_evict_non_primary_lru() {
-    return eviction.evict_non_primary_lru(*this);
+    return eviction_controller.evict_non_primary_lru(*this);
 }
 
 bool GaussianStreamingSystem::_ensure_atlas_slot_available(uint32_t requesting_asset_id) {
-    return eviction.ensure_atlas_slot_available(*this, requesting_asset_id);
-}
-
-GaussianStreamingSystem::EvictionResult GaussianStreamingSystem::EvictionState::evict_least_recently_used(
-        GaussianStreamingSystem &system, bool p_allow_visible_eviction) {
-    if (cached_eviction_frame != system.total_frame_count) {
-        cached_visible_chunks.clear();
-        cached_nonvisible_chunks.clear();
-        for (uint32_t i = 0; i < system.chunks.size(); i++) {
-            const StreamingChunk &chunk = system.chunks[i];
-            if (!chunk.is_loaded) {
-                continue;
-            }
-            if (eviction_hysteresis_frames > 0 &&
-                    system.total_frame_count - chunk.last_loaded_frame < eviction_hysteresis_frames) {
-                continue;
-            }
-            if (chunk.is_visible) {
-                cached_visible_chunks.push_back(i);
-            } else {
-                cached_nonvisible_chunks.push_back(i);
-            }
-        }
-        cached_eviction_frame = system.total_frame_count;
-    }
-
-    // Two-pass eviction: prefer non-visible chunks, then visible if necessary.
-    uint32_t best_nonvis_idx = UINT32_MAX;
-    uint64_t best_nonvis_frame = UINT64_MAX;
-    float best_nonvis_distance = -1.0f;
-
-    uint32_t best_vis_idx = UINT32_MAX;
-    uint64_t best_vis_frame = UINT64_MAX;
-    float best_vis_distance = -1.0f;
-
-    for (uint32_t i : cached_nonvisible_chunks) {
-        const StreamingChunk &chunk = system.chunks[i];
-        if (!chunk.is_loaded) {
-            continue;
-        }
-        const uint64_t used_frame = chunk.last_used_frame;
-        const float dist = chunk.distance;
-
-        // Non-visible chunk: prefer older (LRU), then farther (distance tie-breaker).
-        if (used_frame < best_nonvis_frame ||
-                (used_frame == best_nonvis_frame && dist > best_nonvis_distance)) {
-            best_nonvis_frame = used_frame;
-            best_nonvis_distance = dist;
-            best_nonvis_idx = i;
-        }
-    }
-
-    for (uint32_t i : cached_visible_chunks) {
-        const StreamingChunk &chunk = system.chunks[i];
-        if (!chunk.is_loaded) {
-            continue;
-        }
-        const uint64_t used_frame = chunk.last_used_frame;
-        const float dist = chunk.distance;
-
-        // Visible chunk: only consider if no non-visible candidates exist.
-        if (used_frame < best_vis_frame ||
-                (used_frame == best_vis_frame && dist > best_vis_distance)) {
-            best_vis_frame = used_frame;
-            best_vis_distance = dist;
-            best_vis_idx = i;
-        }
-    }
-
-    if (best_nonvis_idx != UINT32_MAX) {
-        system._unload_chunk(best_nonvis_idx);
-        return EvictionResult::EvictedNonVisible;
-    }
-
-    if (best_vis_idx != UINT32_MAX) {
-        if (!p_allow_visible_eviction) {
-            if (system.total_frame_count - last_stabilize_log_frame >= 300) { // Log every 5 seconds at 60fps
-                GS_LOG_STREAMING_DEBUG(vformat("[STREAM-STABLE] All %d loaded chunks are visible - stabilizing (not evicting)",
-                        system.budget.loaded_chunks_count));
-                last_stabilize_log_frame = system.total_frame_count;
-            }
-            return EvictionResult::SkippedAllVisible;
-        }
-
-        system._unload_chunk(best_vis_idx);
-        return EvictionResult::EvictedVisible;
-    }
-
-    return EvictionResult::NoEviction;
-}
-
-bool GaussianStreamingSystem::EvictionState::evict_non_primary_lru(GaussianStreamingSystem &system) {
-    if (max_evictions_per_frame > 0 && chunks_evicted_this_frame >= max_evictions_per_frame) {
-        return false;
-    }
-
-    if (cached_non_primary_lru_frame != system.total_frame_count) {
-        cached_non_primary_lru_candidates.clear();
-        for (uint32_t asset_id : system.asset_registry.atlas_asset_order) {
-            if (asset_id == PRIMARY_ASSET_ID) {
-                continue;
-            }
-            AtlasAssetState *asset = system._get_asset_state(asset_id);
-            if (!asset) {
-                continue;
-            }
-            LocalVector<StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
-            for (uint32_t chunk_id = 0; chunk_id < asset_chunks.size(); chunk_id++) {
-                const StreamingChunk &chunk = asset_chunks[chunk_id];
-                if (!chunk.is_loaded) {
-                    continue;
-                }
-                NonPrimaryEvictionCandidate candidate;
-                candidate.asset_id = asset_id;
-                candidate.chunk_id = chunk_id;
-                candidate.last_used_frame = chunk.last_used_frame;
-                candidate.distance = chunk.distance;
-                cached_non_primary_lru_candidates.push_back(candidate);
-            }
-        }
-        if (!cached_non_primary_lru_candidates.is_empty()) {
-            NonPrimaryEvictionCandidate *candidate_ptr = cached_non_primary_lru_candidates.ptr();
-            std::sort(candidate_ptr, candidate_ptr + cached_non_primary_lru_candidates.size(),
-                    [](const NonPrimaryEvictionCandidate &a, const NonPrimaryEvictionCandidate &b) {
-                        if (a.last_used_frame != b.last_used_frame) {
-                            return a.last_used_frame < b.last_used_frame;
-                        }
-                        if (a.distance != b.distance) {
-                            return a.distance > b.distance;
-                        }
-                        if (a.asset_id != b.asset_id) {
-                            return a.asset_id < b.asset_id;
-                        }
-                        return a.chunk_id < b.chunk_id;
-                    });
-        }
-        cached_non_primary_lru_cursor = 0;
-        cached_non_primary_lru_frame = system.total_frame_count;
-        system.scheduler.last_non_primary_scan_count = cached_non_primary_lru_candidates.size();
-    }
-
-    while (cached_non_primary_lru_cursor < cached_non_primary_lru_candidates.size()) {
-        const NonPrimaryEvictionCandidate &candidate = cached_non_primary_lru_candidates[cached_non_primary_lru_cursor++];
-        AtlasAssetState *asset = system._get_asset_state(candidate.asset_id);
-        if (!asset) {
-            continue;
-        }
-        LocalVector<StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
-        if (candidate.chunk_id >= asset_chunks.size()) {
-            continue;
-        }
-        if (!asset_chunks[candidate.chunk_id].is_loaded) {
-            continue;
-        }
-
-        const bool was_visible = asset_chunks[candidate.chunk_id].is_visible;
-        system._unload_chunk(candidate.asset_id, candidate.chunk_id);
-        chunks_evicted_this_frame++;
-        if (was_visible) {
-            visible_chunks_evicted_this_frame++;
-        }
-        return true;
-    }
-
-    return false;
-}
-
-bool GaussianStreamingSystem::EvictionState::ensure_atlas_slot_available(GaussianStreamingSystem &system, uint32_t requesting_asset_id) {
-    (void)requesting_asset_id;
-    if (system.atlas_sync.allocator.has_free_slots()) {
-        return true;
-    }
-
-    // Prefer evicting non-primary chunks to make space, even for non-primary requests.
-    if (evict_non_primary_lru(system)) {
-        return system.atlas_sync.allocator.has_free_slots();
-    }
-
-    return false;
+    return eviction_controller.ensure_atlas_slot_available(*this, requesting_asset_id);
 }
 
 void GaussianStreamingSystem::begin_frame() {
@@ -3679,7 +3495,7 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["visible_splats"] = get_visible_count();
     analytics_snapshot["effective_max_chunks"] = get_effective_max_chunks();
     analytics_snapshot["chunks_loaded_this_frame"] = budget.chunks_loaded_this_frame;
-    analytics_snapshot["chunks_evicted_this_frame"] = eviction.chunks_evicted_this_frame;
+    analytics_snapshot["chunks_evicted_this_frame"] = eviction_controller.get_chunks_evicted_this_frame();
     analytics_snapshot["zero_visible_consecutive_frames"] = zero_visible_recovery.zero_visible_consecutive_frames;
     analytics_snapshot["zero_visible_recoveries_triggered"] = (int)zero_visible_recovery.recoveries_triggered;
     analytics_snapshot["zero_visible_stall_detections"] = (int)zero_visible_recovery.stall_detections;
@@ -4431,6 +4247,7 @@ void GaussianStreamingSystem::VisibilityState::update_culling_config_from_projec
 }
 
 void GaussianStreamingSystem::_load_streaming_tuning_config_from_project_settings() {
+    eviction_controller.load_streaming_tuning_config_from_project_settings();
     upload_pipeline.load_streaming_tuning_config_from_project_settings(*this);
 }
 
@@ -4683,10 +4500,7 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
                 }
             }
             if (result == EvictionResult::EvictedNonVisible || result == EvictionResult::EvictedVisible) {
-                eviction.chunks_evicted_this_frame++;
-                if (result == EvictionResult::EvictedVisible) {
-                    eviction.visible_chunks_evicted_this_frame++;
-                }
+                eviction_controller.record_eviction_result(result);
                 ResidencyBudgetController::note_successful_eviction(admission_budget);
             } else {
                 ResidencyBudgetController::note_blocked_eviction(admission_budget);
@@ -5199,7 +5013,7 @@ float GaussianStreamingSystem::get_visible_chunk_change_ratio() const {
 float GaussianStreamingSystem::get_effective_count_change_ratio() const {
     // Combines visibility change with eviction churn for the regulator.
     float vis_ratio = get_visible_count_change_ratio();
-    uint32_t evicted = eviction.visible_chunks_evicted_this_frame;
+    uint32_t evicted = eviction_controller.get_visible_chunks_evicted_this_frame();
     uint32_t visible = visibility.visible_chunk_indices.size();
     if (visible == 0) {
         return vis_ratio;

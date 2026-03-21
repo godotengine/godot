@@ -56,7 +56,7 @@ Related docs: [MEMORY_SUBSYSTEM](MEMORY_SUBSYSTEM.md), [READING_ORDER](READING_O
 
 The streaming system in `core/gaussian_streaming.h` uses state structs and companion classes for clear separation:
 - `VisibilityState` - Chunk culling, camera tracking, LOD blending
-- `EvictionState` - LRU eviction, hysteresis tracking
+- `StreamingEvictionController` - LRU eviction, hysteresis tracking (extracted to `core/streaming_eviction_controller.h`)
 - `StreamingUploadPipeline` - Async pack threads, upload bandwidth (extracted to `core/streaming_upload_pipeline.h`)
 - `BudgetState` - VRAM regulation, loaded chunk tracking
 
