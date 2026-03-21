@@ -21,7 +21,7 @@
 // ==============================================================================
 
 void GaussianStreamingSystem::_load_lod_blend_config_from_project_settings() {
-	visibility.load_lod_blend_config_from_project_settings(*this);
+	visibility.load_lod_blend_config_from_project_settings();
 }
 
 float GaussianStreamingSystem::_calculate_lod_blend_factor(float distance, float lod_distance) const {
@@ -30,93 +30,6 @@ float GaussianStreamingSystem::_calculate_lod_blend_factor(float distance, float
 
 void GaussianStreamingSystem::_update_chunk_lod_blend_factors(const Vector3 &camera_pos) {
 	visibility.update_chunk_lod_blend_factors(*this, camera_pos);
-}
-
-void GaussianStreamingSystem::VisibilityState::load_lod_blend_config_from_project_settings(GaussianStreamingSystem &system) {
-	(void)system;
-	lod_blend_config = LODBlendConfig::load_from_project_settings();
-}
-
-float GaussianStreamingSystem::VisibilityState::calculate_lod_blend_factor(float distance, float lod_distance) const {
-	if (!lod_blend_config.blend_enabled) {
-		return 1.0f; // No blending, full opacity
-	}
-
-	float blend_distance = lod_blend_config.blend_distance;
-	if (blend_distance <= 0.0f) {
-		return 1.0f;
-	}
-
-	// LODGE technique: smoothstep blend near LOD boundaries
-	// lod_distance is the threshold where LOD would change
-	float lower_bound = lod_distance - blend_distance;
-	float upper_bound = lod_distance + blend_distance;
-
-	// smoothstep for smooth transition
-	if (distance <= lower_bound) {
-		return 1.0f; // Fully visible (high quality LOD)
-	} else if (distance >= upper_bound) {
-		return 0.0f; // Fading out (transitioning to lower LOD)
-	} else {
-		// Smoothstep interpolation within the blend zone
-		float t = (distance - lower_bound) / (upper_bound - lower_bound);
-		// smoothstep: 3t^2 - 2t^3
-		return 1.0f - (t * t * (3.0f - 2.0f * t));
-	}
-}
-
-void GaussianStreamingSystem::VisibilityState::update_chunk_lod_blend_factors(GaussianStreamingSystem &system, const Vector3 &camera_pos) {
-	(void)camera_pos;
-	if (!lod_blend_config.blend_enabled) {
-		// Reset all blend factors to 1.0 if blending disabled
-		for (uint32_t i = 0; i < system.chunks.size(); i++) {
-			system.chunks[i].lod_blend_factor = 1.0f;
-		}
-		current_lod_blend_factor = 1.0f;
-		return;
-	}
-
-	// Apply LOD distance multiplier from regulator for quality degradation
-	float lod_mult = system.budget.vram_regulator.is_valid() ? system.budget.vram_regulator->get_lod_distance_multiplier() : 1.0f;
-
-	// Base LOD distance threshold (same as used in update_streaming)
-	float base_lod_distance = STREAMING_LOAD_DISTANCE_BASE / lod_mult;
-
-	float weighted_blend_sum = 0.0f;
-	float total_weight = 0.0f;
-
-	for (uint32_t i = 0; i < system.chunks.size(); i++) {
-		StreamingChunk &chunk = system.chunks[i];
-
-		// Apply hysteresis: use smoothed distance to prevent flickering
-		float hysteresis = lod_blend_config.hysteresis_zone;
-		float effective_distance = chunk.distance;
-
-		// Hysteresis: only update if distance changed significantly
-		if (Math::abs(effective_distance - chunk.previous_distance) > hysteresis) {
-			chunk.previous_distance = effective_distance;
-		} else {
-			// Use previous distance within hysteresis zone
-			effective_distance = chunk.previous_distance;
-		}
-
-		// Calculate blend factor for this chunk
-		chunk.lod_blend_factor = calculate_lod_blend_factor(effective_distance, base_lod_distance);
-
-		// Accumulate weighted average for global blend factor
-		if (chunk.is_visible && chunk.is_loaded) {
-			float weight = float(chunk.count);
-			weighted_blend_sum += chunk.lod_blend_factor * weight;
-			total_weight += weight;
-		}
-	}
-
-	// Calculate global blend factor as weighted average of visible chunks
-	if (total_weight > 0.0f) {
-		current_lod_blend_factor = weighted_blend_sum / total_weight;
-	} else {
-		current_lod_blend_factor = 1.0f;
-	}
 }
 
 // ==============================================================================
@@ -130,96 +43,6 @@ void GaussianStreamingSystem::_load_lod_config_from_project_settings() {
 
 void GaussianStreamingSystem::_update_chunk_lod_parameters(const Vector3 &camera_pos) {
 	visibility.update_chunk_lod_parameters(*this, camera_pos);
-}
-
-void GaussianStreamingSystem::VisibilityState::update_chunk_lod_parameters(
-		GaussianStreamingSystem &system, const Vector3 &camera_pos) {
-	(void)camera_pos;
-	lod_transitions_this_frame = 0;
-	// Update LOD parameters for all chunks based on distance using Octree-GS formula
-	// L = floor(min(max(log2(d_max/d), 0), K-1))
-
-	const LODConfig &lod_config = system._get_lod_config();
-	const auto mark_resident_chunk_meta_if_lod_changed = [&](uint32_t chunk_idx,
-																  const StreamingChunk &chunk,
-																  uint32_t prev_effective_count,
-																  uint32_t prev_lod_level,
-																  int prev_sh_band_level) {
-		if (chunk.effective_count == prev_effective_count &&
-				chunk.current_lod_level == prev_lod_level &&
-				chunk.sh_band_level == prev_sh_band_level) {
-			return;
-		}
-
-		const bool resident = chunk.is_loaded && !chunk.upload_pending && chunk.buffer_slot != UINT32_MAX;
-		if (resident) {
-			system._mark_chunk_meta_dirty(chunk_idx);
-		}
-	};
-
-	if (!lod_config.enabled) {
-		// LOD disabled - use full quality for all chunks
-		for (uint32_t i = 0; i < system.chunks.size(); i++) {
-			StreamingChunk &chunk = system.chunks[i];
-			const uint32_t prev_effective_count = chunk.effective_count;
-			const uint32_t prev_lod_level = chunk.current_lod_level;
-			const uint32_t prev_target_lod_level = chunk.target_lod_level;
-			const int prev_sh_band_level = chunk.sh_band_level;
-			chunk.current_lod_level = 0;
-			chunk.target_lod_level = 0;
-			chunk.sh_band_level = 3; // Full SH quality
-			chunk.splat_skip_factor = 1; // Render all splats
-			chunk.opacity_multiplier = 1.0f;
-			chunk.effective_count = chunk.count;
-			if (prev_lod_level != chunk.current_lod_level ||
-					prev_target_lod_level != chunk.target_lod_level) {
-				lod_transitions_this_frame++;
-			}
-
-			mark_resident_chunk_meta_if_lod_changed(i, chunk, prev_effective_count, prev_lod_level, prev_sh_band_level);
-		}
-		return;
-	}
-
-	for (uint32_t i = 0; i < system.chunks.size(); i++) {
-		StreamingChunk &chunk = system.chunks[i];
-		const uint32_t prev_effective_count = chunk.effective_count;
-		const uint32_t prev_lod_level = chunk.current_lod_level;
-		const uint32_t prev_target_lod_level = chunk.target_lod_level;
-		const int prev_sh_band_level = chunk.sh_band_level;
-
-		// Distance is already calculated in _update_chunk_visibility, no need to recalculate
-		float distance = chunk.distance;
-
-		// Calculate LOD level using Octree-GS formula
-		int lod_level = lod_config.calculate_lod_level(distance);
-		if (prev_lod_level != uint32_t(lod_level)) {
-			lod_transitions_this_frame++;
-		}
-
-		// Update target LOD level (for smooth transitions)
-		chunk.target_lod_level = lod_level;
-
-		// For now, immediately apply target LOD (smooth transitions handled by LODGE blend)
-		chunk.current_lod_level = lod_level;
-		if (prev_lod_level != chunk.current_lod_level ||
-				prev_target_lod_level != chunk.target_lod_level) {
-			lod_transitions_this_frame++;
-		}
-
-		// Calculate LOD reduction parameters
-		chunk.sh_band_level = lod_config.get_sh_band_for_lod(lod_level);
-		chunk.splat_skip_factor = lod_config.get_splat_skip_factor(lod_level);
-		chunk.opacity_multiplier = lod_config.get_opacity_multiplier(distance);
-
-		// Calculate effective splat count after LOD reduction
-		chunk.effective_count = chunk.count / chunk.splat_skip_factor;
-		if (chunk.effective_count == 0 && chunk.count > 0) {
-			chunk.effective_count = 1; // Always render at least 1 splat
-		}
-
-		mark_resident_chunk_meta_if_lod_changed(i, chunk, prev_effective_count, prev_lod_level, prev_sh_band_level);
-	}
 }
 
 Dictionary GaussianStreamingSystem::get_lod_debug_stats() const {

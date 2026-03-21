@@ -878,11 +878,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     runtime_capacity_guard_initialized = true;
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
-    zero_visible_recovery.zero_visible_consecutive_frames = 0;
-    zero_visible_recovery.last_recovery_frame = UINT64_MAX;
-    zero_visible_recovery.last_stall_log_frame = UINT64_MAX;
-    zero_visible_recovery.recoveries_triggered = 0;
-    zero_visible_recovery.stall_detections = 0;
+    visibility.reset_runtime_state();
     diagnostics.visible_evict_fallback_attempts = 0;
     diagnostics.visible_evict_fallback_successes = 0;
     scheduler.visible_scan_cursor = 0;
@@ -1035,11 +1031,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     runtime_capacity_guard_initialized = true;
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
-    zero_visible_recovery.zero_visible_consecutive_frames = 0;
-    zero_visible_recovery.last_recovery_frame = UINT64_MAX;
-    zero_visible_recovery.last_stall_log_frame = UINT64_MAX;
-    zero_visible_recovery.recoveries_triggered = 0;
-    zero_visible_recovery.stall_detections = 0;
+    visibility.reset_runtime_state();
     diagnostics.visible_evict_fallback_attempts = 0;
     diagnostics.visible_evict_fallback_successes = 0;
     scheduler.visible_scan_cursor = 0;
@@ -1199,8 +1191,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
         asset->generation = _advance_asset_generation(PRIMARY_ASSET_ID);
     }
 
-    visibility.visible_chunk_indices.clear();
-    visibility.culling_stats.reset();
+    visibility.clear_visible_state();
     scheduler.visible_scan_cursor = 0;
     scheduler.prefetch_scan_cursor = 0;
     scheduler.sync_fallback_chunk_load_queue.clear();
@@ -2446,115 +2437,15 @@ uint64_t GaussianStreamingSystem::_get_total_vram_usage_bytes() const {
 }
 
 void GaussianStreamingSystem::_load_zero_visible_recovery_config_from_project_settings() {
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps) {
-        return;
-    }
-
-    const StringName recovery_mode_path = "rendering/gaussian_splatting/streaming/zero_visible_recovery_mode";
-    if (ps->has_setting(recovery_mode_path)) {
-        Variant mode_value = ps->get_setting_with_override(recovery_mode_path);
-        if (mode_value.get_type() == Variant::BOOL) {
-            zero_visible_recovery.mode = mode_value.operator bool()
-                    ? ZeroVisibleRecoveryMode::PERSISTENT
-                    : ZeroVisibleRecoveryMode::STARTUP_ONLY;
-        } else if (mode_value.get_type() == Variant::INT) {
-            const int64_t mode_int = mode_value.operator int64_t();
-            zero_visible_recovery.mode = mode_int <= 0
-                    ? ZeroVisibleRecoveryMode::STARTUP_ONLY
-                    : ZeroVisibleRecoveryMode::PERSISTENT;
-        } else if (mode_value.get_type() == Variant::STRING) {
-            const String mode_text = String(mode_value).to_lower();
-            if (mode_text == "startup_only" || mode_text == "startup-only" || mode_text == "startup") {
-                zero_visible_recovery.mode = ZeroVisibleRecoveryMode::STARTUP_ONLY;
-            } else if (mode_text == "persistent" || mode_text == "always") {
-                zero_visible_recovery.mode = ZeroVisibleRecoveryMode::PERSISTENT;
-            }
-        }
-    }
-
-    zero_visible_recovery.persistent_trigger_frames = MAX(
-            gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_trigger_frames",
-                    zero_visible_recovery.persistent_trigger_frames),
-            uint32_t(1));
-    zero_visible_recovery.persistent_cooldown_frames = gs::settings::get_uint(ps,
-            "rendering/gaussian_splatting/streaming/zero_visible_recovery_cooldown_frames",
-            zero_visible_recovery.persistent_cooldown_frames);
-    zero_visible_recovery.stall_log_interval_frames = MAX(
-            gs::settings::get_uint(ps, "rendering/gaussian_splatting/streaming/zero_visible_recovery_log_interval_frames",
-                    zero_visible_recovery.stall_log_interval_frames),
-            uint32_t(1));
+    visibility.load_zero_visible_recovery_config_from_project_settings();
 }
 
 void GaussianStreamingSystem::_update_camera_tracking(const Vector3 &camera_pos, float p_frame_delta_seconds) {
-    visibility.camera_tracker.update(camera_pos, p_frame_delta_seconds);
+    visibility.update_camera_tracking(camera_pos, p_frame_delta_seconds);
 }
 
 void GaussianStreamingSystem::_handle_zero_visible_chunk_recovery() {
-    const uint32_t total_chunks = visibility.culling_stats.total_chunks;
-    if (!visibility.chunk_frustum_culling_enabled || total_chunks == 0) {
-        zero_visible_recovery.zero_visible_consecutive_frames = 0;
-        return;
-    }
-
-    if (visibility.culling_stats.visible_chunks != 0) {
-        zero_visible_recovery.zero_visible_consecutive_frames = 0;
-        return;
-    }
-
-    zero_visible_recovery.zero_visible_consecutive_frames++;
-
-    const uint32_t zero_visible_frames = zero_visible_recovery.zero_visible_consecutive_frames;
-    const bool persistent_mode = zero_visible_recovery.mode == ZeroVisibleRecoveryMode::PERSISTENT;
-    const bool startup_guard_match = budget.loaded_chunks_count == 0 && zero_visible_frames == 1;
-    const bool persistent_trigger = persistent_mode &&
-            zero_visible_frames >= zero_visible_recovery.persistent_trigger_frames;
-    const uint64_t cooldown_frames = zero_visible_recovery.persistent_cooldown_frames;
-    const bool cooldown_ready =
-            zero_visible_recovery.last_recovery_frame == UINT64_MAX ||
-            total_frame_count >= zero_visible_recovery.last_recovery_frame + cooldown_frames;
-    const bool should_force_visible = startup_guard_match || (persistent_trigger && cooldown_ready);
-
-    const bool should_log_stall = startup_guard_match || persistent_trigger;
-    if (should_log_stall &&
-            (zero_visible_recovery.last_stall_log_frame == UINT64_MAX ||
-                    total_frame_count >= zero_visible_recovery.last_stall_log_frame +
-                            zero_visible_recovery.stall_log_interval_frames)) {
-        zero_visible_recovery.last_stall_log_frame = total_frame_count;
-        zero_visible_recovery.stall_detections++;
-        WARN_PRINT(vformat("[Streaming] Zero-visible chunk stall detected (frame=%d mode=%s zero_visible_frames=%d total_chunks=%d loaded_chunks=%d culling=%s).",
-                total_frame_count,
-                persistent_mode ? "persistent" : "startup_only",
-                zero_visible_frames,
-                total_chunks,
-                budget.loaded_chunks_count,
-                visibility.chunk_frustum_culling_enabled ? "on" : "off"));
-    }
-
-    if (!should_force_visible) {
-        return;
-    }
-
-    for (uint32_t i = 0; i < chunks.size(); i++) {
-        chunks[i].is_visible = true;
-    }
-    visibility.visible_chunk_indices.clear();
-    visibility.visible_chunk_indices.reserve(chunks.size());
-    for (uint32_t i = 0; i < chunks.size(); i++) {
-        visibility.visible_chunk_indices.push_back(i);
-    }
-    visibility.culling_stats.visible_chunks = total_chunks;
-    visibility.culling_stats.frustum_culled_chunks = 0;
-    zero_visible_recovery.last_recovery_frame = total_frame_count;
-    zero_visible_recovery.recoveries_triggered++;
-
-    if (debug_logging_enabled) {
-        GS_LOG_STREAMING_INFO(vformat("[Streaming] Zero-visible recovery activated (frame=%d mode=%s zero_visible_frames=%d forced_visible_chunks=%d).",
-                total_frame_count,
-                persistent_mode ? "persistent" : "startup_only",
-                zero_visible_frames,
-                total_chunks));
-    }
+    visibility.handle_zero_visible_chunk_recovery(*this);
 }
 
 void GaussianStreamingSystem::_reset_per_frame_counters() {
@@ -2958,74 +2849,6 @@ void GaussianStreamingSystem::_log_streaming_frame_stats(uint32_t effective_max)
 
 void GaussianStreamingSystem::_update_chunk_visibility(const Transform3D &camera_transform, const Projection &projection) {
     visibility.update_chunk_visibility(*this, camera_transform, projection);
-}
-
-void GaussianStreamingSystem::VisibilityState::update_chunk_visibility(
-        GaussianStreamingSystem &system,
-        const Transform3D &camera_transform,
-        const Projection &projection) {
-    // Culling config is now reloaded in the throttled config reload in update_streaming()
-    // No need to reload every frame here
-
-    // Reset culling stats for this frame
-    culling_stats.reset();
-    culling_stats.total_chunks = system.chunks.size();
-    visible_chunk_indices.clear();
-    visible_chunk_indices.reserve(culling_stats.total_chunks);
-
-    // Extract camera position for distance calculations
-    Vector3 camera_pos = camera_transform.origin;
-
-    // Extract frustum planes from projection matrix using the FULL camera transform
-    // This includes rotation so the frustum is correctly oriented in world space
-    // Previously this only used position (identity rotation), causing view-dependent culling bugs
-    Vector<Plane> frustum_planes = projection.get_projection_planes(camera_transform);
-
-    // Update chunk distances and perform frustum culling
-    for (uint32_t i = 0; i < system.chunks.size(); i++) {
-        system.chunks[i].distance = camera_pos.distance_to(system.chunks[i].center);
-
-        // Frustum culling check
-        if (chunk_frustum_culling_enabled) {
-            // Apply conservative padding to the AABB to prevent popping at edges
-            AABB padded_bounds = system.chunks[i].bounds;
-            if (chunk_radius_multiplier > 1.0f && system.chunks[i].max_radius > 0.0f) {
-                float radius_pad = system.chunks[i].max_radius * (chunk_radius_multiplier - 1.0f);
-                Vector3 radius_vec(radius_pad, radius_pad, radius_pad);
-                padded_bounds.position -= radius_vec;
-                padded_bounds.size += radius_vec * 2.0f;
-            }
-            Vector3 padding_vec = padded_bounds.size * (chunk_frustum_padding - 1.0f) * 0.5f;
-            padded_bounds.position -= padding_vec;
-            padded_bounds.size += padding_vec * 2.0f;
-
-            system.chunks[i].is_visible = is_chunk_in_frustum(padded_bounds, frustum_planes);
-
-            if (!system.chunks[i].is_visible) {
-                culling_stats.frustum_culled_chunks++;
-            }
-        } else {
-            system.chunks[i].is_visible = true;
-        }
-
-        if (system.chunks[i].is_visible) {
-            culling_stats.visible_chunks++;
-            visible_chunk_indices.push_back(i);
-        }
-        if (system.chunks[i].is_loaded) {
-            culling_stats.loaded_chunks++;
-        }
-    }
-
-    // Log culling stats periodically (every 300 frames)
-    static uint64_t log_counter = 0;
-    if (system.debug_logging_enabled && (++log_counter % 300) == 0 && chunk_frustum_culling_enabled) {
-        GS_LOG_STREAMING_DEBUG(vformat("[Streaming] Chunk culling: %d total, %d visible, %d culled (%.1f%% reduction)",
-                culling_stats.total_chunks,
-                culling_stats.visible_chunks,
-                culling_stats.frustum_culled_chunks,
-                culling_stats.total_chunks > 0 ? (culling_stats.frustum_culled_chunks * 100.0f / culling_stats.total_chunks) : 0.0f));
-    }
 }
 
 void GaussianStreamingSystem::_load_chunk(uint32_t chunk_idx) {
@@ -3496,11 +3319,11 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["effective_max_chunks"] = get_effective_max_chunks();
     analytics_snapshot["chunks_loaded_this_frame"] = budget.chunks_loaded_this_frame;
     analytics_snapshot["chunks_evicted_this_frame"] = eviction_controller.get_chunks_evicted_this_frame();
-    analytics_snapshot["zero_visible_consecutive_frames"] = zero_visible_recovery.zero_visible_consecutive_frames;
-    analytics_snapshot["zero_visible_recoveries_triggered"] = (int)zero_visible_recovery.recoveries_triggered;
-    analytics_snapshot["zero_visible_stall_detections"] = (int)zero_visible_recovery.stall_detections;
+    analytics_snapshot["zero_visible_consecutive_frames"] = visibility.zero_visible_recovery.zero_visible_consecutive_frames;
+    analytics_snapshot["zero_visible_recoveries_triggered"] = (int)visibility.zero_visible_recovery.recoveries_triggered;
+    analytics_snapshot["zero_visible_stall_detections"] = (int)visibility.zero_visible_recovery.stall_detections;
     analytics_snapshot["zero_visible_recovery_mode"] =
-            zero_visible_recovery.mode == ZeroVisibleRecoveryMode::PERSISTENT ? "persistent" : "startup_only";
+            visibility.zero_visible_recovery.mode == ZeroVisibleRecoveryMode::PERSISTENT ? "persistent" : "startup_only";
     analytics_snapshot["runtime_ready"] = is_runtime_ready();
     analytics_snapshot["runtime_capacity_zero"] = is_runtime_capacity_zero();
     analytics_snapshot["runtime_buffer_invalid"] = is_persistent_buffer_invalid();
@@ -4195,55 +4018,8 @@ bool GaussianStreamingSystem::_is_chunk_in_frustum(const AABB &p_bounds, const V
     return visibility.is_chunk_in_frustum(p_bounds, p_frustum_planes);
 }
 
-bool GaussianStreamingSystem::VisibilityState::is_chunk_in_frustum(const AABB &p_bounds, const Vector<Plane> &p_frustum_planes) const {
-    // Test AABB against all frustum planes
-    // A chunk is visible if it's at least partially inside all planes
-    // This uses the "negative vertex" optimization for outward-pointing frustum normals
-    for (int i = 0; i < p_frustum_planes.size(); i++) {
-        const Plane &plane = p_frustum_planes[i];
-
-        // Find the negative vertex (the corner of the AABB most opposite the plane normal)
-        Vector3 negative_vertex;
-        negative_vertex.x = (plane.normal.x >= 0) ? p_bounds.position.x : (p_bounds.position.x + p_bounds.size.x);
-        negative_vertex.y = (plane.normal.y >= 0) ? p_bounds.position.y : (p_bounds.position.y + p_bounds.size.y);
-        negative_vertex.z = (plane.normal.z >= 0) ? p_bounds.position.z : (p_bounds.position.z + p_bounds.size.z);
-
-        // If the negative vertex is in front of the plane, the entire AABB is outside the frustum
-        if (plane.distance_to(negative_vertex) > 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
 void GaussianStreamingSystem::_update_culling_config_from_project_settings() {
-    visibility.update_culling_config_from_project_settings(*this);
-}
-
-void GaussianStreamingSystem::VisibilityState::update_culling_config_from_project_settings(GaussianStreamingSystem &system) {
-    (void)system;
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps) {
-        return;
-    }
-
-    // Check if chunk frustum culling is enabled
-    if (ps->has_setting("rendering/gaussian_splatting/streaming/chunk_frustum_culling_enabled")) {
-        Variant value = ps->get_setting_with_override("rendering/gaussian_splatting/streaming/chunk_frustum_culling_enabled");
-        if (value.get_type() == Variant::BOOL) {
-            chunk_frustum_culling_enabled = value.operator bool();
-        }
-    }
-
-    // Check for padding configuration
-    if (ps->has_setting("rendering/gaussian_splatting/streaming/chunk_frustum_padding")) {
-        Variant value = ps->get_setting_with_override("rendering/gaussian_splatting/streaming/chunk_frustum_padding");
-        if (value.get_type() == Variant::FLOAT) {
-            chunk_frustum_padding = MAX(1.0f, (float)value.operator double());
-        } else if (value.get_type() == Variant::INT) {
-            chunk_frustum_padding = MAX(1.0f, (float)value.operator int64_t());
-        }
-    }
+    visibility.update_culling_config_from_project_settings();
 }
 
 void GaussianStreamingSystem::_load_streaming_tuning_config_from_project_settings() {
@@ -4607,11 +4383,11 @@ Dictionary GaussianStreamingSystem::get_chunk_culling_stats() const {
     stats["loaded_chunks"] = visibility.culling_stats.loaded_chunks;
     stats["culling_enabled"] = visibility.chunk_frustum_culling_enabled;
     stats["frustum_padding"] = visibility.chunk_frustum_padding;
-    stats["zero_visible_consecutive_frames"] = zero_visible_recovery.zero_visible_consecutive_frames;
-    stats["zero_visible_recoveries_triggered"] = (int)zero_visible_recovery.recoveries_triggered;
-    stats["zero_visible_stall_detections"] = (int)zero_visible_recovery.stall_detections;
+    stats["zero_visible_consecutive_frames"] = visibility.zero_visible_recovery.zero_visible_consecutive_frames;
+    stats["zero_visible_recoveries_triggered"] = (int)visibility.zero_visible_recovery.recoveries_triggered;
+    stats["zero_visible_stall_detections"] = (int)visibility.zero_visible_recovery.stall_detections;
     stats["zero_visible_recovery_mode"] =
-            zero_visible_recovery.mode == ZeroVisibleRecoveryMode::PERSISTENT ? "persistent" : "startup_only";
+            visibility.zero_visible_recovery.mode == ZeroVisibleRecoveryMode::PERSISTENT ? "persistent" : "startup_only";
     stats["runtime_capacity_zero"] = is_runtime_capacity_zero();
     stats["runtime_buffer_invalid"] = is_persistent_buffer_invalid();
     stats["invalid_camera_input_events"] = (int)invalid_camera_input_events;
@@ -4650,309 +4426,13 @@ Dictionary GaussianStreamingSystem::get_chunk_culling_stats() const {
     return stats;
 }
 
-// Camera velocity tracking implementation
-void GaussianStreamingSystem::CameraVelocityTracker::update(const Vector3 &current_pos, float delta_time) {
-    if (!has_previous_position) {
-        last_position = current_pos;
-        velocity = Vector3();
-        has_previous_position = true;
-        return;
-    }
-
-    if (delta_time > 0.0001f) {
-        velocity = (current_pos - last_position) / delta_time;
-    }
-    last_position = current_pos;
-}
-
-Vector3 GaussianStreamingSystem::CameraVelocityTracker::predict_position(const Vector3 &current_pos, float lookahead_distance) const {
-    if (!has_previous_position || velocity.length_squared() < 0.0001f) {
-        return current_pos;
-    }
-
-    // Calculate time to travel lookahead_distance at current velocity
-    float speed = velocity.length();
-    if (speed < 0.0001f) {
-        return current_pos;
-    }
-
-    // Predict position at lookahead_distance ahead in the direction of movement
-    Vector3 direction = velocity.normalized();
-    return current_pos + direction * lookahead_distance;
-}
-
 void GaussianStreamingSystem::_load_prefetch_config_from_project_settings() {
-    visibility.load_prefetch_config_from_project_settings(*this);
-}
-
-void GaussianStreamingSystem::VisibilityState::load_prefetch_config_from_project_settings(GaussianStreamingSystem &system) {
-    (void)system;
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps) {
-        return;
-    }
-
-    // Load predictive prefetch enabled setting
-    if (ps->has_setting("rendering/gaussian_splatting/streaming/predictive_prefetch_enabled")) {
-        Variant value = ps->get_setting_with_override("rendering/gaussian_splatting/streaming/predictive_prefetch_enabled");
-        if (value.get_type() == Variant::BOOL) {
-            predictive_prefetch_enabled = value.operator bool();
-        }
-    }
-
-    // Load lookahead distance setting
-    if (ps->has_setting("rendering/gaussian_splatting/streaming/prefetch_lookahead_distance")) {
-        Variant value = ps->get_setting_with_override("rendering/gaussian_splatting/streaming/prefetch_lookahead_distance");
-        if (value.get_type() == Variant::FLOAT) {
-            prefetch_lookahead_distance = MAX(0.0f, (float)value.operator double());
-        } else if (value.get_type() == Variant::INT) {
-            prefetch_lookahead_distance = MAX(0.0f, (float)value.operator int64_t());
-        }
-    }
+    visibility.load_prefetch_config_from_project_settings();
 }
 
 uint32_t GaussianStreamingSystem::_prefetch_chunks_at_predicted_position(const Vector3 &predicted_pos,
         uint32_t available_slots, uint32_t load_budget, uint32_t max_scan_budget) {
     return visibility.prefetch_chunks_at_predicted_position(*this, predicted_pos, available_slots, load_budget, max_scan_budget);
-}
-
-uint32_t GaussianStreamingSystem::VisibilityState::prefetch_chunks_at_predicted_position(
-        GaussianStreamingSystem &system,
-        const Vector3 &predicted_pos,
-        uint32_t available_slots,
-        uint32_t load_budget,
-        uint32_t max_scan_budget) {
-    // Find chunks near the predicted position and start loading them
-    // This is async and non-blocking - we just queue the chunks for loading
-    uint32_t max_prefetch = get_prefetch_limit(system, available_slots, load_budget);
-    if (max_prefetch == 0) {
-        return 0;
-    }
-
-    LocalVector<uint32_t> candidates;
-    collect_prefetch_candidates(system, predicted_pos, max_prefetch, max_scan_budget, candidates);
-    return schedule_prefetch_loads(system, predicted_pos, candidates, available_slots, load_budget);
-}
-
-uint32_t GaussianStreamingSystem::VisibilityState::get_prefetch_limit(
-        GaussianStreamingSystem &system, uint32_t available_slots, uint32_t load_budget) const {
-    if (camera_tracker.velocity.length_squared() < 0.01f) {
-        return 0;
-    }
-
-    if (available_slots == 0 || load_budget == 0) {
-        return 0;
-    }
-
-    if (system.budget.vram_regulator.is_valid() &&
-            !system.budget.vram_regulator->can_load_more_chunks(system.budget.loaded_chunks_count)) {
-        return 0;
-    }
-
-    if (system.scheduler.max_prefetch_loads_per_frame == 0) {
-        return 0;
-    }
-    return MIN(system.scheduler.max_prefetch_loads_per_frame, MIN(available_slots, load_budget));
-}
-
-void GaussianStreamingSystem::VisibilityState::collect_prefetch_candidates(
-        GaussianStreamingSystem &system, const Vector3 &predicted_pos,
-        uint32_t max_prefetch, uint32_t max_scan_budget, LocalVector<uint32_t> &out_candidates) const {
-    struct ChunkCandidate {
-        uint32_t idx = UINT32_MAX;
-        float distance_sq = FLT_MAX;
-    };
-
-    LocalVector<ChunkCandidate> closest;
-    closest.resize(max_prefetch);
-    for (uint32_t i = 0; i < max_prefetch; i++) {
-        closest[i].idx = UINT32_MAX;
-        closest[i].distance_sq = FLT_MAX;
-    }
-
-    float prefetch_threshold_sq = prefetch_lookahead_distance * prefetch_lookahead_distance * 2.25f;
-
-    out_candidates.clear();
-    out_candidates.resize(max_prefetch);
-    for (uint32_t i = 0; i < max_prefetch; i++) {
-        out_candidates[i] = UINT32_MAX;
-    }
-
-    const uint32_t chunk_count = system.chunks.size();
-    if (chunk_count == 0 || max_prefetch == 0) {
-        return;
-    }
-
-    uint32_t scan_budget = 0;
-    if (system.scheduler.max_prefetch_chunk_scan_per_frame == 0) {
-        scan_budget = chunk_count;
-    } else {
-        const uint32_t remaining_scan_budget = system.scheduler.prefetch_scan_budget_remaining_this_frame;
-        scan_budget = MIN(chunk_count, remaining_scan_budget);
-    }
-    if (max_scan_budget != UINT32_MAX) {
-        scan_budget = MIN(scan_budget, max_scan_budget);
-    }
-    uint32_t pack_queue_depth = 0;
-    uint32_t upload_queue_depth = 0;
-    system.upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
-    const uint32_t sync_fallback_queue_depth = system._get_sync_fallback_queue_depth();
-    const uint32_t observed_throttle_queue_depth =
-            MAX(sync_fallback_queue_depth, MAX(pack_queue_depth, upload_queue_depth));
-    const bool can_async_pack = system.upload_pipeline.async_pack_enabled && system.upload_pipeline.pack_thread_running.load();
-    uint32_t enqueue_headroom = UINT32_MAX;
-    if (can_async_pack) {
-        enqueue_headroom = _compute_async_enqueue_headroom(
-                system.upload_pipeline.queued_chunk_loads_this_frame,
-                system.upload_pipeline.max_chunk_loads_per_frame,
-                system.upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed),
-                system.upload_pipeline.max_pack_jobs_in_flight);
-    }
-    StreamingQueuePressureController::ScanBudgetInput throttle_input;
-    throttle_input.base_scan_budget = scan_budget;
-    throttle_input.throttle_enabled = system.scheduler.queue_pressure_candidate_scan_throttle_enabled;
-    throttle_input.throttle_min_queue_depth = system.scheduler.queue_pressure_candidate_scan_throttle_min_queue_depth;
-    throttle_input.observed_queue_depth = observed_throttle_queue_depth;
-    throttle_input.throttle_scan_cap = system.scheduler.queue_pressure_candidate_scan_throttle_prefetch_scan_cap;
-    throttle_input.scanned_this_frame = system.scheduler.last_prefetch_scan_count;
-    throttle_input.enqueue_headroom = enqueue_headroom;
-    const StreamingQueuePressureController::ScanBudgetResult throttle_result =
-            StreamingQueuePressureController::compute_candidate_scan_budget(throttle_input);
-    scan_budget = throttle_result.scan_budget;
-    system.scheduler.queue_pressure_candidate_scan_throttle_active =
-            system.scheduler.queue_pressure_candidate_scan_throttle_active || throttle_result.throttle_active;
-    system.scheduler.queue_pressure_candidate_scan_throttle_queue_depth =
-            MAX(system.scheduler.queue_pressure_candidate_scan_throttle_queue_depth,
-                    throttle_result.effective_queue_depth);
-    system.scheduler.last_prefetch_scan_budget_effective =
-            MAX(system.scheduler.last_prefetch_scan_budget_effective, scan_budget);
-    if (scan_budget == 0) {
-        return;
-    }
-    if (system.scheduler.prefetch_scan_cursor >= chunk_count) {
-        system.scheduler.prefetch_scan_cursor = 0;
-    }
-
-    // PERF: Optimized from O(scan × max_prefetch²) array shifting to O(scan × max_prefetch)
-    // by tracking the farthest candidate index instead of maintaining sorted order.
-    // The output candidates just need to be the N closest chunks - order doesn't matter for prefetch.
-    uint32_t farthest_idx = 0;  // Index into closest[] of the farthest candidate
-    uint32_t valid_count = 0;   // Number of valid candidates found so far
-
-    for (uint32_t scanned = 0; scanned < scan_budget; scanned++) {
-        const uint32_t chunk_idx = (system.scheduler.prefetch_scan_cursor + scanned) % chunk_count;
-        const auto &chunk = system.chunks[chunk_idx];
-        if (chunk.is_loaded) {
-            continue;
-        }
-        if (chunk.upload_pending) {
-            system.scheduler.last_prefetch_upload_pending_skip_count++;
-            continue;
-        }
-
-        float dist_sq = (predicted_pos - chunk.center).length_squared();
-        if (dist_sq >= prefetch_threshold_sq) {
-            continue;
-        }
-
-        if (valid_count < max_prefetch) {
-            // Still have empty slots, just add the candidate
-            closest[valid_count].idx = chunk_idx;
-            closest[valid_count].distance_sq = dist_sq;
-            // Update farthest if this is farther than current farthest
-            if (dist_sq > closest[farthest_idx].distance_sq) {
-                farthest_idx = valid_count;
-            }
-            valid_count++;
-        } else if (dist_sq < closest[farthest_idx].distance_sq) {
-            // Replace the farthest candidate with this closer one
-            closest[farthest_idx].idx = chunk_idx;
-            closest[farthest_idx].distance_sq = dist_sq;
-            // Find new farthest (O(max_prefetch) but only when replacing, not on every insert)
-            for (uint32_t j = 0; j < max_prefetch; j++) {
-                if (closest[j].distance_sq > closest[farthest_idx].distance_sq) {
-                    farthest_idx = j;
-                }
-            }
-        }
-    }
-    system.scheduler.prefetch_scan_cursor = (system.scheduler.prefetch_scan_cursor + scan_budget) % chunk_count;
-    if (system.scheduler.max_prefetch_chunk_scan_per_frame > 0) {
-        system.scheduler.prefetch_scan_budget_remaining_this_frame =
-                scan_budget >= system.scheduler.prefetch_scan_budget_remaining_this_frame
-                ? 0
-                : (system.scheduler.prefetch_scan_budget_remaining_this_frame - scan_budget);
-    }
-    system.scheduler.last_prefetch_scan_count += scan_budget;
-    system.scheduler.last_prefetch_scan_budget_effective =
-            MAX(system.scheduler.last_prefetch_scan_budget_effective, scan_budget);
-    uint32_t candidate_count = 0;
-    for (uint32_t i = 0; i < max_prefetch; i++) {
-        out_candidates[i] = closest[i].idx;
-        if (closest[i].idx != UINT32_MAX) {
-            candidate_count++;
-        }
-    }
-    system.scheduler.last_prefetch_candidate_count += candidate_count;
-}
-
-uint32_t GaussianStreamingSystem::VisibilityState::schedule_prefetch_loads(
-        GaussianStreamingSystem &system, const Vector3 &predicted_pos,
-        const LocalVector<uint32_t> &candidates, uint32_t available_slots, uint32_t load_budget) {
-    uint32_t remaining_slots = available_slots;
-    uint32_t remaining_budget = load_budget;
-    uint32_t queued_count = 0;
-    const bool can_async_pack = system.upload_pipeline.async_pack_enabled && system.upload_pipeline.pack_thread_running.load();
-
-    for (uint32_t i = 0; i < candidates.size(); i++) {
-        if (candidates[i] == UINT32_MAX) {
-            break;
-        }
-
-        if (remaining_slots == 0 || remaining_budget == 0) {
-            break;
-        }
-        if (can_async_pack &&
-                _compute_async_enqueue_headroom(
-                        system.upload_pipeline.queued_chunk_loads_this_frame,
-                        system.upload_pipeline.max_chunk_loads_per_frame,
-                        system.upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed),
-                        system.upload_pipeline.max_pack_jobs_in_flight) == 0) {
-            system.scheduler.last_prefetch_enqueue_headroom_stall_count++;
-            break;
-        }
-
-        if (system.budget.vram_regulator.is_valid() &&
-                !system.budget.vram_regulator->can_load_more_chunks(system.budget.loaded_chunks_count)) {
-            break;
-        }
-
-        const bool queued = system._enqueue_chunk_load_request(GaussianStreamingSystem::PRIMARY_ASSET_ID, candidates[i], can_async_pack);
-
-        if (!queued) {
-            if (can_async_pack &&
-                    _compute_async_enqueue_headroom(
-                            system.upload_pipeline.queued_chunk_loads_this_frame,
-                            system.upload_pipeline.max_chunk_loads_per_frame,
-                            system.upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed),
-                            system.upload_pipeline.max_pack_jobs_in_flight) == 0) {
-                system.scheduler.last_prefetch_enqueue_headroom_stall_count++;
-                break;
-            }
-            continue;
-        }
-
-        queued_count++;
-        remaining_slots = remaining_slots > 0 ? (remaining_slots - 1) : 0;
-        if (remaining_budget != UINT32_MAX) {
-            remaining_budget = remaining_budget > 0 ? (remaining_budget - 1) : 0;
-        }
-
-        GS_LOG_STREAMING_DEBUG(vformat("[Streaming] Prefetched chunk %d at predicted position (%.1f, %.1f, %.1f)",
-                candidates[i], predicted_pos.x, predicted_pos.y, predicted_pos.z));
-    }
-
-    return queued_count;
 }
 
 Dictionary GaussianStreamingSystem::get_vram_debug_stats() const {
@@ -4997,12 +4477,7 @@ uint32_t GaussianStreamingSystem::BudgetState::get_effective_max_chunks() const 
 }
 
 float GaussianStreamingSystem::get_visible_count_change_ratio() const {
-    uint32_t current = visibility.visible_chunk_indices.size();
-    uint32_t prev = visibility.prev_visible_count;
-    if (prev == 0) {
-        return current > 0 ? 1.0f : 0.0f;
-    }
-    return Math::abs(float(current) - float(prev)) / float(prev);
+    return visibility.get_visible_count_change_ratio();
 }
 
 float GaussianStreamingSystem::get_visible_chunk_change_ratio() const {
@@ -5011,15 +4486,7 @@ float GaussianStreamingSystem::get_visible_chunk_change_ratio() const {
 }
 
 float GaussianStreamingSystem::get_effective_count_change_ratio() const {
-    // Combines visibility change with eviction churn for the regulator.
-    float vis_ratio = get_visible_count_change_ratio();
-    uint32_t evicted = eviction_controller.get_visible_chunks_evicted_this_frame();
-    uint32_t visible = visibility.visible_chunk_indices.size();
-    if (visible == 0) {
-        return vis_ratio;
-    }
-    float evict_ratio = float(evicted) / float(visible);
-    return MAX(vis_ratio, evict_ratio);
+    return visibility.get_effective_count_change_ratio(eviction_controller.get_visible_chunks_evicted_this_frame());
 }
 
 uint32_t GaussianStreamingSystem::get_buffer_capacity_splats() const {
