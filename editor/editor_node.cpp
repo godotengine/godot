@@ -425,9 +425,9 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			editor_main_screen->select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			editor_main_screen->select_prev();
-		}else if (ED_IS_SHORTCUT("editor/prev_scene_in_history", p_event)) {
+		} else if (ED_IS_SHORTCUT("editor/prev_scene_in_history", p_event)) {
 			_navigate_to_previous_scene();
-		}else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
+		} else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
