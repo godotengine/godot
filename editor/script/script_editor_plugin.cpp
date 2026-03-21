@@ -1392,7 +1392,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
-	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), scripts_sort_by_recent || tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), res.is_null());
@@ -1459,6 +1459,7 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			members_overview_alphabeta_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+			scripts_sort_by_recent_button->set_button_icon(get_editor_theme_icon(SNAME("SortRecent")));
 
 			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
 			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
@@ -1757,6 +1758,28 @@ void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
 	_update_members_overview();
 }
 
+void ScriptEditor::_toggle_scripts_sort_by_recent(bool p_sort_by_recent) {
+	scripts_sort_by_recent = p_sort_by_recent;
+	_update_script_names();
+}
+
+void ScriptEditor::_scripts_list_mouse_entered() {
+	mouse_over_script_list = true;
+}
+
+void ScriptEditor::_scripts_list_mouse_exited() {
+	mouse_over_script_list = false;
+	if (scripts_sort_by_recent && !context_menu->is_visible()) {
+		_update_script_names();
+	}
+}
+
+void ScriptEditor::_on_script_list_context_menu_closed() {
+	if (scripts_sort_by_recent && !mouse_over_script_list) {
+		_update_script_names();
+	}
+}
+
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
 
@@ -1894,6 +1917,10 @@ void ScriptEditor::_update_script_colors() {
 
 void ScriptEditor::_update_script_names() {
 	if (restoring_layout) {
+		return;
+	}
+
+	if (scripts_sort_by_recent && mouse_over_script_list) {
 		return;
 	}
 
@@ -2063,6 +2090,25 @@ void ScriptEditor::_update_script_names() {
 		for (const FuzzySearchResult &res : results) {
 			sedata_filtered.push_back(sedata[res.original_index]);
 		}
+	}
+
+	if (scripts_sort_by_recent && !sedata_filtered.is_empty()) {
+		struct EditorPassSortComparator {
+			TabContainer *tab_container;
+
+			bool operator()(const _ScriptEditorItemData &a, const _ScriptEditorItemData &b) const {
+				Node *na = tab_container->get_tab_control(a.index);
+				Node *nb = tab_container->get_tab_control(b.index);
+				int pass_a = na ? (int)na->get_meta("__editor_pass", -1) : -1;
+				int pass_b = nb ? (int)nb->get_meta("__editor_pass", -1) : -1;
+				if (pass_a != pass_b) {
+					return pass_a > pass_b;
+				}
+				return a.index < b.index;
+			}
+		};
+
+		sedata_filtered.sort_custom<EditorPassSortComparator>(EditorPassSortComparator{ tab_container });
 	}
 
 	Color tool_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -3124,9 +3170,9 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() <= 0);
 	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
 	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
-	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
-	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_MOVE_UP), tab_container->get_current_tab() <= 0);
-	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_MOVE_DOWN), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
+	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), scripts_sort_by_recent || tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
+	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_MOVE_UP), scripts_sort_by_recent || tab_container->get_current_tab() <= 0);
+	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_MOVE_DOWN), scripts_sort_by_recent || tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	context_menu->set_item_disabled(context_menu->get_item_index(FILE_MENU_SORT), tab_container->get_tab_count() <= 1);
 
 	// Context menu plugin.
@@ -3262,6 +3308,11 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
+	if (p_layout->has_section_key("ScriptEditor", "scripts_sort_by_recent")) {
+		scripts_sort_by_recent = p_layout->get_value("ScriptEditor", "scripts_sort_by_recent");
+		scripts_sort_by_recent_button->set_pressed(scripts_sort_by_recent);
+	}
+
 	restoring_layout = false;
 
 	_update_script_names();
@@ -3309,6 +3360,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
 	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 	p_layout->set_value("ScriptEditor", "zoom_factor", zoom_factor);
+	p_layout->set_value("ScriptEditor", "scripts_sort_by_recent", scripts_sort_by_recent);
 
 	// Save the cache.
 	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
@@ -3821,12 +3873,24 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	list_split->add_child(scripts_vbox);
 
+	HBoxContainer *scripts_filter_hbox = memnew(HBoxContainer);
+	scripts_vbox->add_child(scripts_filter_hbox);
+
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTRC("Filter Scripts"));
 	filter_scripts->set_accessibility_name(TTRC("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
+	filter_scripts->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
-	scripts_vbox->add_child(filter_scripts);
+	scripts_filter_hbox->add_child(filter_scripts);
+
+	scripts_sort_by_recent_button = memnew(Button);
+	scripts_sort_by_recent_button->set_theme_type_variation(SceneStringName(FlatButton));
+	scripts_sort_by_recent_button->set_tooltip_text(TTRC("Toggle sorting scripts by most recently opened."));
+	scripts_sort_by_recent_button->set_toggle_mode(true);
+	scripts_sort_by_recent_button->set_pressed(false);
+	scripts_sort_by_recent_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_scripts_sort_by_recent));
+	scripts_filter_hbox->add_child(scripts_sort_by_recent_button);
 
 	_sort_list_on_update = true;
 	script_list = memnew(ItemList);
@@ -3838,11 +3902,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_list->set_allow_rmb_select(true);
 	scripts_vbox->add_child(script_list);
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
+	script_list->connect(SceneStringName(mouse_entered), callable_mp(this, &ScriptEditor::_scripts_list_mouse_entered));
+	script_list->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptEditor::_scripts_list_mouse_exited));
 	SET_DRAG_FORWARDING_GCD(script_list, ScriptEditor);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
+	context_menu->connect("popup_hide", callable_mp(this, &ScriptEditor::_on_script_list_context_menu_closed));
 
 	overview_vbox = memnew(VBoxContainer);
 	overview_vbox->set_custom_minimum_size(Size2(0, 90));
