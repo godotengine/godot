@@ -638,7 +638,7 @@ bool StreamingUploadPipeline::queue_chunk_load(GaussianStreamingSystem &system, 
 
     const uint64_t chunk_key = system._make_chunk_key(asset_id, chunk_idx);
     uint32_t buffer_slot = UINT32_MAX;
-    if (!system.atlas_sync.allocator.allocate_slot(chunk_key, buffer_slot)) {
+    if (!system.atlas_allocator.allocate_slot(chunk_key, buffer_slot)) {
         return false;
     }
 
@@ -649,14 +649,14 @@ bool StreamingUploadPipeline::queue_chunk_load(GaussianStreamingSystem &system, 
             system._assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "queue_chunk_load.recheck");
         }
         if (!chunk.is_loaded && !chunk.upload_pending) {
-            _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, buffer_slot);
+            _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, buffer_slot);
         }
         return false;
     }
 
     job.buffer_slot = buffer_slot;
     if (!system._begin_chunk_upload(asset_id, chunk_idx, chunk, buffer_slot)) {
-        _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, buffer_slot);
+        _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, buffer_slot);
         return false;
     }
     queued_chunk_loads_this_frame++;
@@ -691,14 +691,14 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
         const uint64_t chunk_key = system._make_chunk_key(job->asset_id, job->chunk_idx);
         GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(job->asset_id);
         if (!asset) {
-            _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, job->buffer_slot);
+            _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, job->buffer_slot);
             memdelete(job);
             return false;
         }
 
         LocalVector<GaussianStreamingSystem::StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
         if (job->chunk_idx >= asset_chunks.size()) {
-            _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, job->buffer_slot);
+            _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, job->buffer_slot);
             memdelete(job);
             return false;
         }
@@ -713,7 +713,7 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
             const bool current_chunk_owns_job_slot = (stale_chunk.buffer_slot == job->buffer_slot) &&
                     (stale_chunk.upload_pending || stale_chunk.is_loaded);
             if (!current_chunk_owns_job_slot) {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, job->buffer_slot);
+                _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, job->buffer_slot);
             }
             memdelete(job);
             return false;
@@ -724,21 +724,21 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
             if (!resolved_chunk.is_loaded && resolved_chunk.buffer_slot == job->buffer_slot) {
                 system._rollback_pending_chunk(job->asset_id, job->chunk_idx, resolved_chunk, true);
             } else if (!resolved_chunk.is_loaded) {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, job->buffer_slot);
+                _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, job->buffer_slot);
             }
             memdelete(job);
             return false;
         }
 
         uint32_t mapped_slot = UINT32_MAX;
-        if (!_chunk_slot_matches_allocator(system.atlas_sync.allocator, chunk_key, job->buffer_slot, &mapped_slot)) {
+        if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, job->buffer_slot, &mapped_slot)) {
             if (!resolved_chunk.is_loaded && resolved_chunk.upload_pending) {
                 system._rollback_pending_chunk(job->asset_id, job->chunk_idx, resolved_chunk, false);
             }
             if (mapped_slot != UINT32_MAX) {
-                system.atlas_sync.allocator.release_slot(chunk_key);
+                system.atlas_allocator.release_slot(chunk_key);
             } else {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, job->buffer_slot);
+                _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, job->buffer_slot);
             }
             memdelete(job);
             return false;
@@ -829,12 +829,12 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
 
         const uint64_t chunk_key = system._make_chunk_key(job->asset_id, job->chunk_idx);
         uint32_t mapped_slot = UINT32_MAX;
-        if (!_chunk_slot_matches_allocator(system.atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
+        if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
             if (!chunk.is_loaded && chunk.upload_pending) {
                 system._rollback_pending_chunk(job->asset_id, job->chunk_idx, chunk, false);
             }
             if (mapped_slot != UINT32_MAX) {
-                system.atlas_sync.allocator.release_slot(chunk_key);
+                system.atlas_allocator.release_slot(chunk_key);
             }
             memdelete(job);
             return;
@@ -1181,17 +1181,17 @@ void StreamingUploadPipeline::cancel_chunk_jobs(
             }
             if (!chunk.is_loaded && chunk.upload_pending) {
                 uint32_t mapped_slot = UINT32_MAX;
-                if (!_chunk_slot_matches_allocator(system.atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
+                if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
                     if (mapped_slot != UINT32_MAX) {
-                        system.atlas_sync.allocator.release_slot(chunk_key);
+                        system.atlas_allocator.release_slot(chunk_key);
                     }
                     system._rollback_pending_chunk(asset_id, chunk_idx, chunk, false);
                 }
             }
             if (!chunk.is_loaded && !chunk.upload_pending) {
                 uint32_t mapped_slot = UINT32_MAX;
-                if (system.atlas_sync.allocator.get_slot(chunk_key, mapped_slot)) {
-                    system.atlas_sync.allocator.release_slot(chunk_key);
+                if (system.atlas_allocator.get_slot(chunk_key, mapped_slot)) {
+                    system.atlas_allocator.release_slot(chunk_key);
                 }
             }
             system._assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "cancel_chunk_jobs.post");
@@ -1199,7 +1199,7 @@ void StreamingUploadPipeline::cancel_chunk_jobs(
     }
 
     if (release_slot) {
-        _release_chunk_slot_if_matches(system.atlas_sync.allocator, chunk_key, buffer_slot);
+        _release_chunk_slot_if_matches(system.atlas_allocator, chunk_key, buffer_slot);
     }
 }
 
@@ -1259,7 +1259,7 @@ void StreamingUploadPipeline::cancel_asset_jobs(GaussianStreamingSystem &system,
     }
 
     for (uint32_t i = 0; i < slots_to_release.size(); i++) {
-        _release_chunk_slot_if_matches(system.atlas_sync.allocator, slots_to_release[i].chunk_key, slots_to_release[i].slot);
+        _release_chunk_slot_if_matches(system.atlas_allocator, slots_to_release[i].chunk_key, slots_to_release[i].slot);
     }
 
     GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(asset_id);
@@ -1277,8 +1277,8 @@ void StreamingUploadPipeline::cancel_asset_jobs(GaussianStreamingSystem &system,
             }
             if (!chunk.is_loaded && !chunk.upload_pending) {
                 uint32_t mapped_slot = UINT32_MAX;
-                if (system.atlas_sync.allocator.get_slot(chunk_key, mapped_slot)) {
-                    system.atlas_sync.allocator.release_slot(chunk_key);
+                if (system.atlas_allocator.get_slot(chunk_key, mapped_slot)) {
+                    system.atlas_allocator.release_slot(chunk_key);
                 }
             }
             system._assert_chunk_state_invariant(asset_id, i, chunk, "cancel_asset_jobs.post");
@@ -1286,9 +1286,9 @@ void StreamingUploadPipeline::cancel_asset_jobs(GaussianStreamingSystem &system,
         }
         if (!chunk.is_loaded) {
             uint32_t mapped_slot = UINT32_MAX;
-            if (!_chunk_slot_matches_allocator(system.atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
+            if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
                 if (mapped_slot != UINT32_MAX) {
-                    system.atlas_sync.allocator.release_slot(chunk_key);
+                    system.atlas_allocator.release_slot(chunk_key);
                 }
                 system._rollback_pending_chunk(asset_id, i, chunk, false);
             }
@@ -1312,13 +1312,13 @@ void StreamingUploadPipeline::clear_pending_uploads(GaussianStreamingSystem &sys
             removed_pack_jobs++;
             GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(job.asset_id);
             if (!asset) {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                _release_chunk_slot_if_matches(system.atlas_allocator,
                         system._make_chunk_key(job.asset_id, job.chunk_idx), job.buffer_slot);
                 continue;
             }
             LocalVector<GaussianStreamingSystem::StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
             if (job.chunk_idx >= asset_chunks.size()) {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                _release_chunk_slot_if_matches(system.atlas_allocator,
                         system._make_chunk_key(job.asset_id, job.chunk_idx), job.buffer_slot);
                 continue;
             }
@@ -1326,7 +1326,7 @@ void StreamingUploadPipeline::clear_pending_uploads(GaussianStreamingSystem &sys
             if (chunk.upload_pending && chunk.buffer_slot == job.buffer_slot && !chunk.is_loaded) {
                 system._rollback_pending_chunk(job.asset_id, job.chunk_idx, chunk, true);
             } else {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                _release_chunk_slot_if_matches(system.atlas_allocator,
                         system._make_chunk_key(job.asset_id, job.chunk_idx), job.buffer_slot);
             }
         }
@@ -1340,7 +1340,7 @@ void StreamingUploadPipeline::clear_pending_uploads(GaussianStreamingSystem &sys
             }
             GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(job->asset_id);
             if (!asset) {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                _release_chunk_slot_if_matches(system.atlas_allocator,
                         system._make_chunk_key(job->asset_id, job->chunk_idx), job->buffer_slot);
                 memdelete(job);
                 continue;
@@ -1351,11 +1351,11 @@ void StreamingUploadPipeline::clear_pending_uploads(GaussianStreamingSystem &sys
                 if (chunk.upload_pending && chunk.buffer_slot == job->buffer_slot && !chunk.is_loaded) {
                     system._rollback_pending_chunk(job->asset_id, job->chunk_idx, chunk, true);
                 } else {
-                    _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                    _release_chunk_slot_if_matches(system.atlas_allocator,
                             system._make_chunk_key(job->asset_id, job->chunk_idx), job->buffer_slot);
                 }
             } else {
-                _release_chunk_slot_if_matches(system.atlas_sync.allocator,
+                _release_chunk_slot_if_matches(system.atlas_allocator,
                         system._make_chunk_key(job->asset_id, job->chunk_idx), job->buffer_slot);
             }
             memdelete(job);
@@ -1380,17 +1380,17 @@ void StreamingUploadPipeline::clear_pending_uploads(GaussianStreamingSystem &sys
             }
             if (!chunk.is_loaded && chunk.upload_pending) {
                 uint32_t mapped_slot = UINT32_MAX;
-                if (!_chunk_slot_matches_allocator(system.atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
+                if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot)) {
                     if (mapped_slot != UINT32_MAX) {
-                        system.atlas_sync.allocator.release_slot(chunk_key);
+                        system.atlas_allocator.release_slot(chunk_key);
                     }
                     system._rollback_pending_chunk(asset_id, chunk_idx, chunk, false);
                 }
             }
             if (!chunk.is_loaded && !chunk.upload_pending) {
                 uint32_t mapped_slot = UINT32_MAX;
-                if (system.atlas_sync.allocator.get_slot(chunk_key, mapped_slot)) {
-                    system.atlas_sync.allocator.release_slot(chunk_key);
+                if (system.atlas_allocator.get_slot(chunk_key, mapped_slot)) {
+                    system.atlas_allocator.release_slot(chunk_key);
                 }
             }
             system._assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "clear_pending_upload_pipeline.post");

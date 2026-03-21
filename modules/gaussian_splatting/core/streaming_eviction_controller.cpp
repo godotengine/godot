@@ -201,12 +201,12 @@ bool StreamingEvictionController::evict_non_primary_lru(GaussianStreamingSystem 
 
 bool StreamingEvictionController::ensure_atlas_slot_available(GaussianStreamingSystem &system, uint32_t requesting_asset_id) {
     (void)requesting_asset_id;
-    if (system.atlas_sync.allocator.has_free_slots()) {
+    if (system.atlas_allocator.has_free_slots()) {
         return true;
     }
 
     if (evict_non_primary_lru(system)) {
-        return system.atlas_sync.allocator.has_free_slots();
+        return system.atlas_allocator.has_free_slots();
     }
 
     return false;
