@@ -9,7 +9,6 @@
 #include "core/os/os.h"
 #include "core/templates/span.h"
 #include "gaussian_splat_manager.h"
-#include "quality_tier_config.h"
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../logger/gs_debug_trace.h"
 #include "../renderer/gpu_memory_stream.h"
@@ -54,73 +53,6 @@ struct StreamingTierCapPolicy {
     uint32_t min_chunks_in_vram = 0;
     uint32_t max_chunks_in_vram = 0;
 };
-
-bool _project_setting_has_override(ProjectSettings *ps, const StringName &name) {
-    if (!ps || !ps->has_setting(name) || !ps->property_can_revert(name)) {
-        return false;
-    }
-    return ps->get_setting_with_override(name) != ps->property_get_revert(name);
-}
-
-uint32_t _resolve_tiered_cap_uint(ProjectSettings *ps, const StringName &name, uint32_t fallback,
-        bool tier_active, uint32_t tier_value, String &r_source) {
-    const uint32_t configured_value = gs::settings::get_uint(ps, name, fallback);
-    const bool has_project_override = _project_setting_has_override(ps, name);
-    if (tier_active && !has_project_override) {
-        r_source = "tier_preset";
-        return tier_value;
-    }
-    r_source = has_project_override ? "project_override" : "project_default";
-    return configured_value;
-}
-
-StreamingTierCapPolicy _resolve_streaming_tier_cap_policy(ProjectSettings *ps) {
-    StreamingTierCapPolicy policy;
-    if (!ps) {
-        return policy;
-    }
-
-    const StringName tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
-    const Variant tier_preset_value = ps->has_setting(tier_preset_setting)
-            ? ps->get_setting_with_override(tier_preset_setting)
-            : Variant("custom");
-    policy.tier_preset = String(tier_preset_value)
-                                 .strip_edges()
-                                 .to_lower();
-    const bool apply_tier_budgets =
-            gs::settings::get_bool(ps, "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
-    if (!apply_tier_budgets) {
-        return policy;
-    }
-
-    QualityTierConfig tier_config;
-    if (!get_quality_tier_config(policy.tier_preset, tier_config)) {
-        return policy;
-    }
-
-    policy.active = true;
-    policy.upload_mb_per_frame = tier_config.streaming_upload_mb_per_frame;
-    policy.upload_mb_per_slice = tier_config.streaming_upload_mb_per_slice;
-    policy.upload_mb_per_second = tier_config.streaming_upload_mb_per_second;
-    policy.vram_budget_mb = tier_config.streaming_vram_budget_mb;
-    policy.min_chunks_in_vram = tier_config.streaming_min_chunks_in_vram;
-    policy.max_chunks_in_vram = tier_config.streaming_max_chunks_in_vram;
-    return policy;
-}
-
-bool _is_streaming_debug_enabled() {
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps) {
-        return false;
-    }
-    if (gs::settings::is_all_debug_enabled(ps)) {
-        return true;
-    }
-    if (gs::settings::get_bool(ps, "rendering/gaussian_splatting/debug/enable_frame_logging", false)) {
-        return true;
-    }
-    return gs::settings::get_bool(ps, "rendering/gaussian_splatting/debug/enable_data_logging", false);
-}
 
 enum class LayoutHintUsage : uint8_t {
     IO = 0,
@@ -586,24 +518,6 @@ bool _validate_layout_hint_ranges(const Vector<GaussianStreamingSystem::ChunkLay
     return true;
 }
 
-void _atomic_saturating_sub(std::atomic<uint32_t> &p_value, uint32_t p_amount) {
-    if (p_amount == 0) {
-        return;
-    }
-    uint32_t current = p_value.load(std::memory_order_relaxed);
-    while (true) {
-        const uint32_t next = current > p_amount ? (current - p_amount) : 0;
-        if (p_value.compare_exchange_weak(current, next, std::memory_order_relaxed, std::memory_order_relaxed)) {
-            return;
-        }
-    }
-}
-
-uint64_t _ticks_usec_now() {
-    OS *os = OS::get_singleton();
-    return os ? os->get_ticks_usec() : 0;
-}
-
 uint32_t _compute_async_enqueue_headroom(
         uint32_t p_queued_chunk_loads_this_frame,
         uint32_t p_max_chunk_loads_per_frame,
@@ -780,16 +694,7 @@ GaussianStreamingSystem::~GaussianStreamingSystem() {
             : (last_upload_device ? last_upload_device
                     : (manager ? manager->get_primary_rendering_device() : nullptr));
     _release_persistent_buffer(rd, "destructor");
-
-    if (rd && atlas_sync.asset_meta_buffer.is_valid()) {
-        rd->free(atlas_sync.asset_meta_buffer);
-    }
-    if (rd && atlas_sync.chunk_meta_buffer.is_valid()) {
-        rd->free(atlas_sync.chunk_meta_buffer);
-    }
-    if (rd && atlas_sync.asset_chunk_index_buffer.is_valid()) {
-        rd->free(atlas_sync.asset_chunk_index_buffer);
-    }
+    global_atlas_registry.cleanup(rd);
 
     for (auto &chunk : chunks) {
         if (chunk.gpu_buffer.is_valid() && rd) {
@@ -913,6 +818,12 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     scheduler.last_cpu_unattributed_ms = 0.0;
     source_data = p_data;
     if (source_data.is_null()) {
+        GaussianSplatManager *manager = GaussianSplatManager::get_singleton();
+        RenderingDevice *rd = primary_device_override ? primary_device_override
+                : (last_upload_device ? last_upload_device
+                        : (manager ? manager->get_primary_rendering_device() : nullptr));
+        global_atlas_registry.cleanup(rd);
+        atlas_allocator.clear();
         chunks.clear();
         asset_registry.primary_chunk_source_indices.clear();
         primary_chunk_layout_metrics.reset();
@@ -936,6 +847,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
             : (last_upload_device ? last_upload_device
                     : (manager ? manager->get_primary_rendering_device() : nullptr));
     last_upload_device = rd;
+    global_atlas_registry.cleanup(rd);
     _release_persistent_buffer(rd, "initialize");
 
     // Initialize VRAM budget regulator
@@ -972,7 +884,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     }
 
     // Initialize atlas allocator slots (use effective max chunks)
-    atlas_sync.allocator.reset(effective_max_chunks);
+    atlas_allocator.reset(effective_max_chunks);
     const uint32_t runtime_capacity_max = _compute_runtime_chunk_capacity_limit();
     const bool persistent_buffer_valid = persistent_buffer.is_valid() && persistent_buffer_size > 0;
     if (effective_max_chunks == 0 || runtime_capacity_max == 0 || !persistent_buffer_valid) {
@@ -1000,8 +912,8 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
                 quantization_scales_enabled ? vformat("%d bits scale", quantization_scale_bits) : "scale unquantized"));
     }
 
-    _build_global_atlas_cpu_state();
-    _sync_global_atlas_state(rd);
+    global_atlas_registry.build_cpu_state(*this);
+    global_atlas_registry.sync_to_gpu(*this, rd);
 
     GS_LOG_STREAMING_INFO(vformat("[Streaming] Initialized with %d chunks for %d splats (VRAM budget: %d MB, max chunks: %d)",
             chunks.size(), total_splat_count,
@@ -1077,6 +989,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
             : (last_upload_device ? last_upload_device
                     : (manager ? manager->get_primary_rendering_device() : nullptr));
     last_upload_device = rd;
+    global_atlas_registry.cleanup(rd);
     _release_persistent_buffer(rd, "initialize_empty");
 
     budget.vram_regulator.instantiate();
@@ -1109,7 +1022,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
         }
     }
 
-    atlas_sync.allocator.reset(effective_max_chunks);
+    atlas_allocator.reset(effective_max_chunks);
     const uint32_t runtime_capacity_max = _compute_runtime_chunk_capacity_limit();
     const bool persistent_buffer_valid = persistent_buffer.is_valid() && persistent_buffer_size > 0;
     if (effective_max_chunks == 0 || runtime_capacity_max == 0 || !persistent_buffer_valid) {
@@ -1128,8 +1041,8 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     _reload_debug_logging_config();
 
     quantization_dirty = true;
-    _build_global_atlas_cpu_state();
-    _sync_global_atlas_state(rd);
+    global_atlas_registry.build_cpu_state(*this);
+    global_atlas_registry.sync_to_gpu(*this, rd);
 
     GS_LOG_STREAMING_INFO(vformat("[Streaming] Initialized empty system (VRAM budget: %d MB, max chunks: %d)",
             budget.vram_regulator->get_config().budget_mb, effective_max_chunks));
@@ -1156,7 +1069,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
     for (uint32_t i = 0; i < chunks.size(); i++) {
         StreamingChunk &chunk = chunks[i];
         if (chunk.buffer_slot != UINT32_MAX) {
-            atlas_sync.allocator.release_slot(_make_chunk_key(PRIMARY_ASSET_ID, i));
+            atlas_allocator.release_slot(_make_chunk_key(PRIMARY_ASSET_ID, i));
             chunk.buffer_slot = UINT32_MAX;
         }
         if (chunk.is_loaded) {
@@ -1204,7 +1117,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
         quantization_dirty = true;
     }
     quantization_cpu_cache_valid = false;
-    atlas_sync.asset_registry_dirty = true;
+    global_atlas_registry.mark_asset_registry_dirty();
 
     print_line(vformat("[Streaming DIAG] update_primary_asset_data complete: system=%s splats=%d chunks=%d",
             String::num_uint64(system_id), total_splat_count, (uint32_t)chunks.size()));
@@ -1420,7 +1333,7 @@ void GaussianStreamingSystem::register_asset(uint32_t asset_id, const Ref<Gaussi
         for (uint32_t i = 0; i < existing_chunks.size(); i++) {
             StreamingChunk &chunk = existing_chunks[i];
             if (chunk.buffer_slot != UINT32_MAX) {
-                atlas_sync.allocator.release_slot(_make_chunk_key(asset_id, i));
+                atlas_allocator.release_slot(_make_chunk_key(asset_id, i));
                 chunk.buffer_slot = UINT32_MAX;
             }
             if (chunk.is_loaded) {
@@ -1456,7 +1369,7 @@ void GaussianStreamingSystem::register_asset(uint32_t asset_id, const Ref<Gaussi
     }
     quantization_cpu_cache_valid = false;
 
-    atlas_sync.asset_registry_dirty = true;
+    global_atlas_registry.mark_asset_registry_dirty();
 }
 
 void GaussianStreamingSystem::unregister_asset(uint32_t asset_id) {
@@ -1476,7 +1389,7 @@ void GaussianStreamingSystem::unregister_asset(uint32_t asset_id) {
     for (uint32_t i = 0; i < asset_chunks.size(); i++) {
         StreamingChunk &chunk = asset_chunks[i];
         if (chunk.buffer_slot != UINT32_MAX) {
-            atlas_sync.allocator.release_slot(_make_chunk_key(asset_id, i));
+            atlas_allocator.release_slot(_make_chunk_key(asset_id, i));
             chunk.buffer_slot = UINT32_MAX;
         }
         if (chunk.is_loaded) {
@@ -1506,7 +1419,7 @@ void GaussianStreamingSystem::unregister_asset(uint32_t asset_id) {
         asset_registry.io_chunk_layout_asset_id = INVALID_ASSET_ID;
     }
 
-    atlas_sync.asset_registry_dirty = true;
+    global_atlas_registry.mark_asset_registry_dirty();
     quantization_dirty = true;
     quantization_cpu_cache_valid = false;
 }
@@ -2084,7 +1997,7 @@ void GaussianStreamingSystem::_register_primary_asset() {
     asset_registry.asset_id_to_dense[PRIMARY_ASSET_ID] = PRIMARY_ASSET_ID;
     asset_registry.dense_to_asset_id.push_back(PRIMARY_ASSET_ID);
     asset_registry.dense_id_generation.push_back(1);
-    atlas_sync.asset_registry_dirty = true;
+    global_atlas_registry.mark_asset_registry_dirty();
 }
 
 uint32_t GaussianStreamingSystem::_advance_asset_generation(uint32_t asset_id) {
@@ -2322,7 +2235,7 @@ void GaussianStreamingSystem::_run_streaming_frame_pipeline(const Transform3D &c
         WARN_PRINT_ONCE("[Streaming DIAG] update_streaming has no RenderingDevice; atlas GPU sync is deferred.");
     }
     scheduler.last_update_cpu_ms = sample_cpu_ms(scheduler_start_usec);
-    _sync_global_atlas_state(rd);
+    global_atlas_registry.sync_to_gpu(*this, rd);
 }
 
 void GaussianStreamingSystem::_log_streaming_telemetry() {
@@ -2414,7 +2327,7 @@ float GaussianStreamingSystem::_resolve_frame_delta_seconds(float p_frame_delta_
 }
 
 uint32_t GaussianStreamingSystem::_compute_runtime_chunk_capacity_limit() const {
-    const uint32_t allocator_capacity_chunks = atlas_sync.allocator.get_capacity();
+    const uint32_t allocator_capacity_chunks = atlas_allocator.get_capacity();
     const uint64_t chunk_bytes = uint64_t(CHUNK_SIZE) * sizeof(PackedGaussian);
     const uint32_t buffer_capacity_chunks = chunk_bytes > 0
             ? static_cast<uint32_t>(uint64_t(persistent_buffer_size) / chunk_bytes)
@@ -2427,9 +2340,7 @@ uint32_t GaussianStreamingSystem::_compute_runtime_chunk_capacity_limit() const 
 
 uint64_t GaussianStreamingSystem::_get_auxiliary_vram_overhead_bytes() const {
     return uint64_t(quantization_buffer_size) +
-            uint64_t(atlas_sync.asset_meta_buffer_size) +
-            uint64_t(atlas_sync.chunk_meta_buffer_size) +
-            uint64_t(atlas_sync.asset_chunk_index_buffer_size);
+            global_atlas_registry.get_auxiliary_vram_overhead_bytes();
 }
 
 uint64_t GaussianStreamingSystem::_get_total_vram_usage_bytes() const {
@@ -2888,7 +2799,7 @@ void GaussianStreamingSystem::_assert_chunk_state_invariant(uint32_t asset_id, u
             return;
         }
         uint32_t mapped_slot = UINT32_MAX;
-        const bool slot_match = _chunk_slot_matches_allocator(atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot);
+        const bool slot_match = _chunk_slot_matches_allocator(atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot);
         if (record_invariant(!slot_match, diagnostics.invariant_slot_ownership_violations,
                     vformat("[Streaming] Invalid chunk state (%s): asset=%d chunk=%d upload_pending slot=%d not tracked by allocator (mapped=%d).",
                             context, asset_id, chunk_idx, chunk.buffer_slot, mapped_slot == UINT32_MAX ? -1 : int(mapped_slot)))) {
@@ -2904,7 +2815,7 @@ void GaussianStreamingSystem::_assert_chunk_state_invariant(uint32_t asset_id, u
             return;
         }
         uint32_t mapped_slot = UINT32_MAX;
-        const bool slot_match = _chunk_slot_matches_allocator(atlas_sync.allocator, chunk_key, chunk.buffer_slot, &mapped_slot);
+        const bool slot_match = _chunk_slot_matches_allocator(atlas_allocator, chunk_key, chunk.buffer_slot, &mapped_slot);
         if (record_invariant(!slot_match, diagnostics.invariant_slot_ownership_violations,
                     vformat("[Streaming] Invalid chunk state (%s): asset=%d chunk=%d loaded slot=%d not tracked by allocator (mapped=%d).",
                             context, asset_id, chunk_idx, chunk.buffer_slot, mapped_slot == UINT32_MAX ? -1 : int(mapped_slot)))) {
@@ -2914,7 +2825,7 @@ void GaussianStreamingSystem::_assert_chunk_state_invariant(uint32_t asset_id, u
     }
 
     uint32_t mapped_slot = UINT32_MAX;
-    const bool slot_tracked = atlas_sync.allocator.get_slot(chunk_key, mapped_slot);
+    const bool slot_tracked = atlas_allocator.get_slot(chunk_key, mapped_slot);
     if (record_invariant(chunk.buffer_slot != UINT32_MAX, diagnostics.invariant_upload_lifecycle_violations,
                 vformat("[Streaming] Invalid chunk state (%s): asset=%d chunk=%d has buffer_slot=%d while not loaded/pending.",
                         context, asset_id, chunk_idx, chunk.buffer_slot))) {
@@ -2939,19 +2850,19 @@ bool GaussianStreamingSystem::_begin_chunk_upload(uint32_t asset_id, uint32_t ch
     const uint64_t chunk_key = _make_chunk_key(asset_id, chunk_idx);
     if (chunk.buffer_slot != UINT32_MAX) {
         // Defensive cleanup: stale slot assignment must not block new upload_pipeline.
-        _release_chunk_slot_if_matches(atlas_sync.allocator, chunk_key, chunk.buffer_slot);
+        _release_chunk_slot_if_matches(atlas_allocator, chunk_key, chunk.buffer_slot);
         chunk.buffer_slot = UINT32_MAX;
     }
 
     uint32_t mapped_slot = UINT32_MAX;
-    ERR_FAIL_COND_V_MSG(!_chunk_slot_matches_allocator(atlas_sync.allocator, chunk_key, buffer_slot, &mapped_slot),
+    ERR_FAIL_COND_V_MSG(!_chunk_slot_matches_allocator(atlas_allocator, chunk_key, buffer_slot, &mapped_slot),
             false,
             vformat("[Streaming] Begin upload rejected: allocator slot mismatch asset=%d chunk=%d expected=%d mapped=%d.",
                     asset_id, chunk_idx, buffer_slot, mapped_slot == UINT32_MAX ? -1 : int(mapped_slot)));
 
     chunk.buffer_slot = buffer_slot;
     chunk.upload_pending = true;
-    _mark_chunk_meta_dirty(asset_id, chunk_idx);
+    global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_begin_chunk_upload");
     return true;
 }
@@ -2968,12 +2879,12 @@ void GaussianStreamingSystem::_rollback_pending_chunk(uint32_t asset_id, uint32_
 
     const uint32_t slot = chunk.buffer_slot;
     if (release_slot && slot != UINT32_MAX) {
-        _release_chunk_slot_if_matches(atlas_sync.allocator, _make_chunk_key(asset_id, chunk_idx), slot);
+        _release_chunk_slot_if_matches(atlas_allocator, _make_chunk_key(asset_id, chunk_idx), slot);
     }
 
     chunk.upload_pending = false;
     chunk.buffer_slot = UINT32_MAX;
-    _mark_chunk_meta_dirty(asset_id, chunk_idx);
+    global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_rollback_pending_chunk",
             !release_slot);
 }
@@ -3011,12 +2922,12 @@ void GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx)
     }
 
     uint32_t buffer_slot = UINT32_MAX;
-    if (!atlas_sync.allocator.allocate_slot(_make_chunk_key(asset_id, chunk_idx), buffer_slot)) {
+    if (!atlas_allocator.allocate_slot(_make_chunk_key(asset_id, chunk_idx), buffer_slot)) {
         return;
     }
 
     if (!_begin_chunk_upload(asset_id, chunk_idx, chunk, buffer_slot)) {
-        atlas_sync.allocator.release_slot(_make_chunk_key(asset_id, chunk_idx));
+        atlas_allocator.release_slot(_make_chunk_key(asset_id, chunk_idx));
         return;
     }
 
@@ -3243,7 +3154,7 @@ void GaussianStreamingSystem::_complete_chunk_load_common(uint32_t asset_id, uin
     eviction_controller.touch_chunk_use(chunk.last_used_frame);
     budget.loaded_chunks_count++;
     budget.vram_usage += chunk.count * sizeof(PackedGaussian);
-    _mark_chunk_meta_dirty(asset_id, chunk_idx);
+    global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_complete_chunk_load_common");
 }
 
@@ -3265,13 +3176,13 @@ void GaussianStreamingSystem::_unload_chunk(uint32_t asset_id, uint32_t chunk_id
     StreamingChunk &chunk = asset_chunks[chunk_idx];
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_unload_chunk.pre");
     if (chunk.buffer_slot != UINT32_MAX) {
-        atlas_sync.allocator.release_slot(_make_chunk_key(asset_id, chunk_idx));
+        atlas_allocator.release_slot(_make_chunk_key(asset_id, chunk_idx));
     }
 
     chunk.is_loaded = false;
     chunk.upload_pending = false;
     chunk.buffer_slot = UINT32_MAX; // Clear buffer slot
-    _mark_chunk_meta_dirty(asset_id, chunk_idx);
+    global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_unload_chunk.post");
     budget.loaded_chunks_count--;
     const uint64_t chunk_bytes = uint64_t(chunk.count) * sizeof(PackedGaussian);
@@ -3708,7 +3619,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             queue_pressure_active ? 1 : 0,
             queue_pressure_source,
             queue_pressure_reason,
-            static_cast<int64_t>(atlas_sync.global_atlas_state.atlas_generation),
+            static_cast<int64_t>(global_atlas_registry.get_atlas_generation()),
             static_cast<int64_t>(asset_registry.request_generation),
             static_cast<int64_t>(diagnostics.invariant_slot_ownership_violations),
             static_cast<int64_t>(diagnostics.invariant_upload_lifecycle_violations),
@@ -3853,7 +3764,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(diagnostics.invariant_generation_violations);
     diagnostics_snapshot["last_invariant_context"] = diagnostics.last_invariant_context;
     diagnostics_snapshot["last_invariant_message"] = diagnostics.last_invariant_message;
-    diagnostics_snapshot["atlas_generation"] = static_cast<int64_t>(atlas_sync.global_atlas_state.atlas_generation);
+    diagnostics_snapshot["atlas_generation"] = static_cast<int64_t>(global_atlas_registry.get_atlas_generation());
     diagnostics_snapshot["request_generation"] = static_cast<int64_t>(asset_registry.request_generation);
 
     return diagnostics_snapshot;
@@ -3969,7 +3880,7 @@ bool GaussianStreamingSystem::is_runtime_capacity_zero() const {
     if (_compute_runtime_chunk_capacity_limit() == 0) {
         return true;
     }
-    return atlas_sync.allocator.get_capacity() == 0;
+    return atlas_allocator.get_capacity() == 0;
 }
 
 bool GaussianStreamingSystem::is_persistent_buffer_invalid() const {
@@ -4490,7 +4401,7 @@ float GaussianStreamingSystem::get_effective_count_change_ratio() const {
 }
 
 uint32_t GaussianStreamingSystem::get_buffer_capacity_splats() const {
-    return atlas_sync.allocator.get_capacity() * CHUNK_SIZE;
+    return atlas_allocator.get_capacity() * CHUNK_SIZE;
 }
 
 bool GaussianStreamingSystem::map_buffer_index_to_source(uint32_t buffer_index, uint32_t &out_source_index) const {

@@ -360,7 +360,7 @@ void StreamingVisibilityController::update_chunk_lod_parameters(GaussianStreamin
 
         const bool resident = chunk.is_loaded && !chunk.upload_pending && chunk.buffer_slot != UINT32_MAX;
         if (resident) {
-            system._mark_chunk_meta_dirty(chunk_idx);
+            system.global_atlas_registry.mark_chunk_meta_dirty(system, chunk_idx);
         }
     };
 
