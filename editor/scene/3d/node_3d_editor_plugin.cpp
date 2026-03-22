@@ -4795,6 +4795,10 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	}
 	if (p_state.has("lock_rotation")) {
 		_set_lock_view_rotation(p_state["lock_rotation"]);
+	} else {
+		// Explicitly reset lock rotation when state doesn't contain it.
+		// This ensures consistent behavior when opening/creating scenes.
+		_set_lock_view_rotation(false);
 	}
 	if (p_state.has("use_environment")) {
 		bool env = p_state["use_environment"];
@@ -4961,6 +4965,10 @@ void Node3DEditorViewport::reset() {
 	last_message = "";
 
 	view_3d_controller->cursor = View3DController::Cursor();
+
+	// Reset lock rotation to ensure consistent state when opening/creating scenes.
+	// The UI checkbox state is managed separately via set_state/get_state.
+	view_3d_controller->set_lock_rotation(false);
 }
 
 void Node3DEditorViewport::focus_selection() {
