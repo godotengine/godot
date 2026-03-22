@@ -435,6 +435,7 @@ protected:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
+	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
 
 	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
@@ -790,6 +791,7 @@ public:
 
 	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
 	AutoTranslateMode get_tooltip_auto_translate_mode() const;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const;
 
 	// Extra properties.
 

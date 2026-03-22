@@ -2077,6 +2077,14 @@ String ItemList::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
+Node::AutoTranslateMode ItemList::get_tooltip_auto_translate_mode_at(const Point2 &p_at) const {
+	int closest = get_item_at_position(p_at, true);
+	if (closest != -1) {
+		return items[closest].auto_translate_mode;
+	}
+	return Control::get_tooltip_auto_translate_mode_at(p_at);
+}
+
 void ItemList::sort_items_by_text() {
 	items.sort();
 	queue_accessibility_update();
