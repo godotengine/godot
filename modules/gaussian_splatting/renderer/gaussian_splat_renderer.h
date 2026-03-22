@@ -61,6 +61,7 @@
 #include "../interfaces/renderer_interfaces.h"
 #include "render_types/render_config_types.h"
 #include "render_types/render_debug_types.h"
+#include "render_types/render_facade_state_types.h"
 #include "render_types/render_frame_types.h"
 #include "render_types/render_performance_types.h"
 #include "render_types/render_pipeline_io_types.h"
@@ -244,10 +245,14 @@ public:
     using InteractiveStateConfig = GaussianRenderConfig::InteractiveStateConfig<InteractiveState>;
     using DebugConfig = GaussianRenderDebug::DebugConfig;
     using DebugState = GaussianRenderDebug::DebugState<DebugPreviewMode, StageMetrics, PipelineEvent>;
+    using DeviceState = GaussianRenderFacadeState::DeviceState;
+    using ResourceState = GaussianRenderFacadeState::ResourceState;
+    using TestDataState = GaussianRenderFacadeState::TestDataState;
+    using TileRendererState = GaussianRenderFacadeState::TileRendererState;
+    using SubsystemState = GaussianRenderFacadeState::SubsystemState;
+    using ShadowBlitState = GaussianRenderFacadeState::ShadowBlitState;
 
     // Stage types exposed for RenderPipelineStages and orchestrators
-    struct ResourceState;
-    struct SubsystemState;
     class IFrameStateProvider;
 
     struct RenderFrameContext {
@@ -445,58 +450,12 @@ public:
 
 public:
     PerformanceState performance_state;
-
-    // Direct access to Godot's rendering backend
-    struct DeviceState {
-        RendererSceneRenderRD *scene_render = nullptr;
-        RenderingDevice *rd = nullptr;
-        bool reported_missing_submission_device = false;
-        bool reported_missing_render_device = false;
-    };
-
-    struct ResourceState {
-        bool gpu_resources_initialized = false;
-        bool gpu_initialization_pending = false;
-        Ref<GPUBufferManager> buffer_manager;
-        bool buffer_manager_initialized = false;
-        GPUBufferManager::DeferredDeletionQueue deletion_queue;
-        RID instance_buffer;
-        uint32_t instance_buffer_capacity = 0;
-        RID instance_visible_chunk_buffer;
-        uint32_t instance_visible_chunk_capacity = 0;
-        RID instance_splat_ref_buffer;
-        uint32_t instance_splat_ref_capacity = 0;
-        RID instance_counter_buffer;
-        RID instance_chunk_dispatch_buffer;
-        RID instance_indirect_count_buffer;
-        RID instance_count_buffer;
-        uint64_t instance_pipeline_content_generation = 0;
-    };
-
-    // Micro-MVP: Test splat data
-    struct TestDataState {
-        LocalVector<Vector3> positions;
-        LocalVector<Color> colors;
-        LocalVector<Vector3> scales;
-        LocalVector<Object*> mesh_instances; // Placeholder - scene classes not available in modules
-        RID vertex_buffer;
-        RID position_buffer;
-        RID scale_buffer;
-        RID rotation_buffer;
-        RID sh_buffer;
-        uint64_t content_generation = 0;
-        uint64_t uploaded_generation = 0;
-        uint32_t uploaded_count = 0;
-    } test_data_state;
+    TestDataState test_data_state;
 
     // Phase 15: painterly texture RIDs removed - now managed by PainterlyMaterialManager
 
     // Tile-based renderer
-    struct TileRendererState {
-        Ref<TileRenderer> renderer;
-        GPUPerformanceMonitor gpu_performance_monitor;
-        bool init_failed = false;
-    } tile_renderer_state;
+    TileRendererState tile_renderer_state;
 
     void _update_tile_renderer_output_tracking(const RID &p_color_output, RenderingDevice *p_color_device,
             const RID &p_depth_output, RenderingDevice *p_depth_device);
@@ -505,18 +464,7 @@ public:
 
     // Modular interface subsystems (Phase 8 migration)
     // These will gradually replace the inline debug/interactive state management
-    struct SubsystemState {
-        Ref<RenderDeviceManager> device_manager;  // Phase 8: Device tracking and resource ownership
-        Ref<DebugOverlaySystem> debug_overlay_system;
-        Ref<InteractiveStateManager> interactive_state_manager;
-        Ref<TileRasterizer> rasterizer;  // Wraps tile_renderer through IRasterizer interface
-        Ref<GPUCuller> gpu_culler;  // GPU frustum culler through ICuller interface (Phase 8)
-        Ref<class OutputCompositor> output_compositor;  // Phase 9: Output composition and framebuffer management
-        Ref<class GPUSortingPipeline> sorting_pipeline;  // Phase 10: GPU sorting buffer management
-        Ref<class OverflowAutoTuner> overflow_auto_tuner;  // Phase 11: Overflow-based culling auto-tuning
-        Ref<PainterlyRenderer> painterly_renderer;  // Phase 12: Painterly rendering pipeline
-        Ref<class PainterlyMaterialManager> painterly_material_manager;  // Phase 12: Painterly material resources
-    } subsystem_state;
+    SubsystemState subsystem_state;
 
     std::unique_ptr<RenderPipelineStages> pipeline_stages;
     std::unique_ptr<RenderDeviceOrchestrator> device_orchestrator;
@@ -618,18 +566,6 @@ public:
     RID _load_graphics_shader(const Vector<String> &p_vertex_paths, const Vector<String> &p_fragment_paths);
     void _on_painterly_material_changed();
     void _synchronize_tile_submission(RenderingDevice *p_device, const char *p_context);
-
-    struct ShadowBlitState {
-        bool shader_source_initialized = false;
-        uint64_t device_id = 0;
-        std::unique_ptr<GsShadowBlitShaderRD> shader_source;
-        RID shader;
-        PipelineCacheRD pipeline_cache;
-        RID sampler;
-        GaussianSplatting::BufferOwnership sampler_owner;
-
-        void clear(RenderingDevice *p_device);
-    };
 
     Ref<class OutputCompositor> shadow_output_compositor;
     uint64_t shadow_output_device_id = 0;
