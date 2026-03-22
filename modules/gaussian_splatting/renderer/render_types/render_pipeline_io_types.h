@@ -21,6 +21,7 @@
 namespace GaussianRenderPipeline {
 
 using IndexDomain = GaussianRenderState::IndexDomain;
+using CullStageOutput = GaussianRenderState::CullStageOutput;
 
 struct RenderFrameSnapshot {
 	bool valid = false;
@@ -141,6 +142,32 @@ struct RasterStageOutput {
 	uint32_t sorted_splat_count = 0;
 	uint64_t content_generation = 0;
 	uint64_t shader_defines_hash = 0;
+};
+
+struct StageMetrics {
+	CullStageOutput cull;
+	StageResult cull_result;
+	SortStageOutput sort;
+	StageResult sort_result;
+	RasterStageOutput raster;
+	StageResult raster_result;
+	float composite_time_ms = 0.0f;
+	bool composite_executed = false;
+	StageResult composite_result;
+	StageIO cull_io;
+	StageIO sort_io;
+	StageIO raster_io;
+	StageIO composite_io;
+};
+
+struct PipelineEvent {
+	String stage;
+	String message;
+	String route_uid;
+	uint32_t input_count = 0;
+	uint32_t output_count = 0;
+	bool is_error = false;
+	RenderFallbackReason fallback_reason = RenderFallbackReason::NONE;
 };
 
 /**

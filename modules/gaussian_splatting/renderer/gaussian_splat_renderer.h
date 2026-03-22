@@ -226,13 +226,26 @@ public:
 public:
     // Extracted types (ISSUE-029 Phase 2)
     using ErrorRecoveryStateMachine = GaussianRenderFrame::ErrorRecoveryStateMachine;
+    using RuntimeErrorStatistics = GaussianRenderFrame::RuntimeErrorStatistics;
+    using TextureTraceEntry = GaussianRenderFrame::TextureTraceEntry;
+    using CrossDeviceOperation = GaussianRenderFrame::CrossDeviceOperation;
+    using FrameTimingSample = GaussianRenderFrame::FrameTimingSample;
+    using DiagnosticsState = GaussianRenderFrame::DiagnosticsState;
     using JacobianDebugConfig = GaussianRenderDebug::JacobianDebugConfig;
+    using SplatAuditSummary = GaussianRenderDebug::SplatAuditSummary;
     using PainterlyCompositePushConstant = GaussianRenderPipeline::PainterlyCompositePushConstant;
     using RenderFramePlan = GaussianRenderPipeline::RenderFramePlan;
+    using StageMetrics = GaussianRenderPipeline::StageMetrics;
+    using PipelineEvent = GaussianRenderPipeline::PipelineEvent;
+    using RenderConfig = GaussianRenderConfig::RenderConfig<RenderMode>;
+    using CullingConfig = GaussianRenderConfig::CullingConfig;
+    using PainterlyConfig = GaussianRenderConfig::PainterlyConfig;
+    using StateUniformData = GaussianRenderConfig::StateUniformData;
+    using InteractiveStateConfig = GaussianRenderConfig::InteractiveStateConfig<InteractiveState>;
+    using DebugConfig = GaussianRenderDebug::DebugConfig;
+    using DebugState = GaussianRenderDebug::DebugState<DebugPreviewMode, StageMetrics, PipelineEvent>;
 
     // Stage types exposed for RenderPipelineStages and orchestrators
-    struct StageMetrics;
-    struct RenderConfig;
     struct ResourceState;
     struct SubsystemState;
     class IFrameStateProvider;
@@ -430,11 +443,6 @@ public:
         const IFrameStateProvider *state_provider = nullptr;
     };
 
-#include "gaussian_splat_renderer_pipeline_types.inc"
-
-public:
-#include "gaussian_splat_renderer_diagnostics_state.inc"
-
 public:
     PerformanceState performance_state;
 
@@ -445,8 +453,6 @@ public:
         bool reported_missing_submission_device = false;
         bool reported_missing_render_device = false;
     };
-
-#include "gaussian_splat_renderer_config_state.inc"
 
     struct ResourceState {
         bool gpu_resources_initialized = false;
@@ -496,12 +502,6 @@ public:
             const RID &p_depth_output, RenderingDevice *p_depth_device);
     void _forget_tile_renderer_outputs();
     void _warn_tile_depth_copy_incompatible();
-
-    // Interactive state system
-#include "gaussian_splat_renderer_interactive_state.inc"
-
-public:
-#include "gaussian_splat_renderer_debug_state.inc"
 
     // Modular interface subsystems (Phase 8 migration)
     // These will gradually replace the inline debug/interactive state management
