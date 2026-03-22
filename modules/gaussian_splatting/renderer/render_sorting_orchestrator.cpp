@@ -1336,7 +1336,7 @@ void RenderSortingOrchestrator::force_sort_for_view(const Transform3D &p_world_t
 	(void)sort_gaussians_for_view(view_transform, cull_output.visible_domain);
 }
 
-void GaussianSplatRenderer::_refresh_gpu_sorter(const char *p_context) {
+void GaussianSplatRenderer::refresh_gpu_sorter(const char *p_context) {
 	sorting_orchestrator->refresh_gpu_sorter(p_context);
 }
 

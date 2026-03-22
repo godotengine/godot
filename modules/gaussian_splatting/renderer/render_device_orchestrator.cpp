@@ -200,6 +200,11 @@ void RenderDeviceOrchestrator::track_resource_owner(const RID &p_rid, RenderingD
 	device_manager->track_resource(p_rid, p_device, p_owned, p_label);
 }
 
+void RenderDeviceOrchestrator::forget_resource_owner(const RID &p_rid) {
+	ERR_FAIL_NULL_MSG(device_manager, "RenderDeviceManager not initialized");
+	device_manager->forget_resource(p_rid);
+}
+
 RenderingDevice *RenderDeviceOrchestrator::get_resource_owner(const RID &p_rid, RenderingDevice *p_fallback) const {
 	// Phase 8/C: Delegate to RenderDeviceManager (inline fallback removed)
 	if (device_manager) {
@@ -468,6 +473,10 @@ Dictionary GaussianSplatRenderer::_build_device_capability_report() const {
 
 void GaussianSplatRenderer::_track_resource_owner(const RID &p_rid, RenderingDevice *p_device, bool p_owned, const char *p_label) {
 	device_orchestrator->track_resource_owner(p_rid, p_device, p_owned, p_label);
+}
+
+void GaussianSplatRenderer::forget_resource_owner(const RID &p_rid) {
+	device_orchestrator->forget_resource_owner(p_rid);
 }
 
 RenderingDevice *GaussianSplatRenderer::_get_resource_owner(const RID &p_rid, RenderingDevice *p_fallback) const {

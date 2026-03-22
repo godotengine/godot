@@ -12,11 +12,17 @@
 #include <cstring>
 
 RenderResourceOrchestrator::RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer,
-		GaussianSplatRenderer::DeviceState *p_device_state) :
+		GaussianSplatRenderer::DeviceState *p_device_state,
+		PipelineFeatureSet *p_pipeline_features_effective,
+		String *p_pipeline_features_warning_cache) :
 		renderer(p_renderer),
-		device_state(p_device_state) {
+		device_state(p_device_state),
+		pipeline_features_effective(p_pipeline_features_effective),
+		pipeline_features_warning_cache(p_pipeline_features_warning_cache) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(device_state);
+	ERR_FAIL_NULL(pipeline_features_effective);
+	ERR_FAIL_NULL(pipeline_features_warning_cache);
 	resource_state.gpu_resources_initialized = false;
 	resource_state.gpu_initialization_pending = false;
 	resource_state.buffer_manager.instantiate();
@@ -451,6 +457,32 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	}
 }
 
+void RenderResourceOrchestrator::update_pipeline_features(RenderingDevice *p_device) {
+	ERR_FAIL_NULL(pipeline_features_effective);
+	ERR_FAIL_NULL(pipeline_features_warning_cache);
+
+	String warnings;
+	PipelineFeatureSet effective = g_pipeline_feature_set.get_effective(
+			p_device,
+			g_gpu_sorting_config.enable_compute_raster,
+			true,
+			&warnings);
+
+	if (!warnings.is_empty() && warnings != *pipeline_features_warning_cache) {
+		GS_LOG_WARN_DEFAULT("[Pipeline Feature Set] Capability validation warnings:");
+		PackedStringArray lines = warnings.split("\n", false);
+		for (int i = 0; i < lines.size(); ++i) {
+			const String &line = lines[i];
+			if (!line.is_empty()) {
+				GS_LOG_WARN_DEFAULT(vformat("[Pipeline Feature Set] %s", line));
+			}
+		}
+	}
+
+	*pipeline_features_warning_cache = warnings;
+	*pipeline_features_effective = effective;
+}
+
 void RenderResourceOrchestrator::update_gpu_pass_metrics_from_tile_renderer() {
 	if (!renderer->get_tile_renderer_state().renderer.is_valid()) {
 		renderer->get_performance_state().metrics.gpu_tile_binning_time_ms = 0.0f;
@@ -590,6 +622,10 @@ void GaussianSplatRenderer::_create_gpu_resources_safe() {
 
 void GaussianSplatRenderer::_update_gpu_pass_metrics_from_tile_renderer() {
 	resource_orchestrator->update_gpu_pass_metrics_from_tile_renderer();
+}
+
+void GaussianSplatRenderer::update_pipeline_features(RenderingDevice *p_device) {
+	resource_orchestrator->update_pipeline_features(p_device);
 }
 
 RID GaussianSplatRenderer::_load_graphics_shader(const Vector<String> &p_vertex_paths,

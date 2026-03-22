@@ -387,13 +387,6 @@ bool GaussianSplatRenderer::validate_cull_projection_contract(RenderDataRD *p_re
 	return false;
 }
 
-void GaussianSplatRenderer::_forget_resource_owner(const RID &p_rid) {
-    // Phase 8/C: Delegate to RenderDeviceManager (inline fallback removed)
-    if (subsystem_state.device_manager.is_valid()) {
-        subsystem_state.device_manager->forget_resource(p_rid);
-    }
-}
-
 void GaussianSplatRenderer::_forget_tile_renderer_outputs() {
     if (subsystem_state.rasterizer.is_valid()) {
         subsystem_state.rasterizer->clear_output_resource_tracking();
@@ -681,7 +674,8 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
                 render_sorted_splats(p_render_data, p_world_to_camera_transform, p_projection,
                         p_render_projection, p_defer_render_buffers_commit);
             });
-    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(this, &get_device_state());
+    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(
+            this, &get_device_state(), &pipeline_features_effective, &pipeline_features_warning_cache);
     data_orchestrator = std::make_unique<RenderDataOrchestrator>(
             this,
             [this]() { _release_shared_dynamic_asset(); },
@@ -1448,29 +1442,6 @@ void GaussianSplatRenderer::_set_manual_viewport_format(RD::DataFormat p_format,
 void GaussianSplatRenderer::_set_active_viewport_format(RD::DataFormat p_format, const char *p_context) {
     (void)p_context;
     get_view_state().active_viewport_color_format = p_format;
-}
-
-void GaussianSplatRenderer::_update_pipeline_features(RenderingDevice *p_device) {
-    String warnings;
-    PipelineFeatureSet effective = g_pipeline_feature_set.get_effective(
-            p_device,
-            g_gpu_sorting_config.enable_compute_raster,
-            true,
-            &warnings);
-
-    if (!warnings.is_empty() && warnings != pipeline_features_warning_cache) {
-        GS_LOG_WARN_DEFAULT("[Pipeline Feature Set] Capability validation warnings:");
-        PackedStringArray lines = warnings.split("\n", false);
-        for (int i = 0; i < lines.size(); ++i) {
-            const String &line = lines[i];
-            if (!line.is_empty()) {
-                GS_LOG_WARN_DEFAULT(vformat("[Pipeline Feature Set] %s", line));
-            }
-        }
-    }
-
-    pipeline_features_warning_cache = warnings;
-    pipeline_features_effective = effective;
 }
 
 void GaussianSplatRenderer::_prepare_render_frame_context(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
