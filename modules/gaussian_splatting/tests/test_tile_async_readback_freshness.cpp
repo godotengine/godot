@@ -52,6 +52,31 @@ TEST_CASE("[TileRenderer] Async overflow readback rejects stale callbacks") {
 	CHECK(state.last_unclamped_total == 2048);
 }
 
+TEST_CASE("[TileRenderer] Async overflow readback ignores short payloads without completing overlap state") {
+	TileRenderer renderer;
+	auto &state = renderer.async_readback.overflow_state;
+
+	state.pending_readback = true;
+	state.requested_frame_serial = 17;
+	state.overflow_detected = true;
+	state.last_unclamped_total = 64;
+	state.first_frame_complete = false;
+
+	Vector<uint8_t> short_payload;
+	short_payload.resize(4);
+	short_payload.write[0] = 0xAA;
+	short_payload.write[1] = 0xBB;
+	short_payload.write[2] = 0xCC;
+	short_payload.write[3] = 0xDD;
+
+	renderer._on_overflow_flag_readback(short_payload, 17);
+	CHECK_FALSE(state.pending_readback);
+	CHECK(state.requested_frame_serial == 0);
+	CHECK_FALSE(state.first_frame_complete);
+	CHECK(state.overflow_detected);
+	CHECK(state.last_unclamped_total == 64);
+}
+
 TEST_CASE("[TileRenderer] Async tile-count readback rejects stale callbacks") {
 	TileRenderer renderer;
 	auto &state = renderer.async_readback.tile_counts_state;
@@ -77,4 +102,32 @@ TEST_CASE("[TileRenderer] Async tile-count readback rejects stale callbacks") {
 	REQUIRE(state.cached_counts.size() == 2);
 	CHECK(state.cached_counts[0] == 5);
 	CHECK(state.cached_counts[1] == 9);
+}
+
+TEST_CASE("[TileRenderer] Async tile-count readback ignores short payloads without advancing freshness") {
+	TileRenderer renderer;
+	auto &state = renderer.async_readback.tile_counts_state;
+
+	state.pending_readback = true;
+	state.requested_frame_serial = 23;
+	state.cached_total_tiles = 2;
+	state.cached_counts.resize(2);
+	state.cached_counts.write[0] = 11;
+	state.cached_counts.write[1] = 13;
+	state.first_frame_complete = false;
+
+	Vector<uint8_t> short_payload;
+	short_payload.resize(4);
+	short_payload.write[0] = 0x11;
+	short_payload.write[1] = 0x22;
+	short_payload.write[2] = 0x33;
+	short_payload.write[3] = 0x44;
+
+	renderer._on_tile_counts_readback(short_payload, 23);
+	CHECK_FALSE(state.pending_readback);
+	CHECK(state.requested_frame_serial == 0);
+	CHECK_FALSE(state.first_frame_complete);
+	REQUIRE(state.cached_counts.size() == 2);
+	CHECK(state.cached_counts[0] == 11);
+	CHECK(state.cached_counts[1] == 13);
 }

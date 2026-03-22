@@ -1930,14 +1930,18 @@ TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when de
 
     compositor->set_has_valid_render(true);
     compositor->update_render_cache_signature(view_transform, projection, resolution, false,
-            depth_texture, resolution, final_texture, 7, 11, 13, 17, true);
+            depth_texture, resolution, final_texture, 11, 19, 13, 17, true);
     CHECK(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 7, 11, 13, 17, true));
+            final_texture, 11, 19, 13, 17, true));
+    CHECK_FALSE(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
+            final_texture, 12, 19, 13, 17, true));
+    CHECK_FALSE(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
+            final_texture, 11, 23, 13, 17, true));
 
     compositor->update_render_cache_signature(view_transform, projection, resolution, false,
-            RID(), resolution, final_texture, 7, 11, 13, 17, true);
+            RID(), resolution, final_texture, 11, 19, 13, 17, true);
     CHECK_FALSE(compositor->can_reuse_cached_render(view_transform, projection, resolution, false,
-            final_texture, 7, 11, 13, 17, true));
+            final_texture, 11, 19, 13, 17, true));
 
     local_rd->free(final_texture);
     local_rd->free(depth_texture);
@@ -1982,6 +1986,43 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch times out when ca
     CHECK(elapsed_usec < 2000000);
 }
 
+TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch only advances completion state on success") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - RenderingServer unavailable");
+        return;
+    }
+    if (rs->is_on_render_thread()) {
+        MESSAGE("Skipping test - Test must run off the render thread");
+        return;
+    }
+    if (!rs->is_render_loop_enabled()) {
+        MESSAGE("Skipping test - Render loop disabled");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate();
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+
+    const uint64_t original_timeout_usec = renderer->test_get_render_thread_dispatch_timeout_usec();
+    const uint64_t completed_before = renderer->test_get_render_thread_dispatch_completed_request_id();
+    renderer->test_set_render_thread_dispatch_timeout_usec(10000); // 10 ms timeout for test.
+
+    const bool timed_out_dispatch = renderer->test_dispatch_call_on_render_thread_blocking_without_completion();
+    CHECK_FALSE(timed_out_dispatch);
+    CHECK(renderer->test_get_render_thread_dispatch_completed_request_id() == completed_before);
+
+    const bool completed_dispatch = renderer->test_dispatch_call_on_render_thread_blocking_with_completion();
+    CHECK(completed_dispatch);
+    CHECK(renderer->test_get_render_thread_dispatch_completed_request_id() > completed_before);
+
+    renderer->test_set_render_thread_dispatch_timeout_usec(original_timeout_usec);
+}
+
 TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch preserves forward progress after timeout escape") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
@@ -2020,6 +2061,47 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch preserves forward
         renderer->test_notify_render_thread_dispatch_completed(completed_before_stale - 1);
         CHECK(renderer->test_get_render_thread_dispatch_completed_request_id() == completed_before_stale);
     }
+}
+
+TEST_CASE("[GaussianSplatting] Render-thread dispatch teardown remains bounded after timeout recovery") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    OS *os = OS::get_singleton();
+    if (rs == nullptr || os == nullptr) {
+        MESSAGE("Skipping test - RenderingServer/OS unavailable");
+        return;
+    }
+    if (rs->is_on_render_thread()) {
+        MESSAGE("Skipping test - Test must run off the render thread");
+        return;
+    }
+    if (!rs->is_render_loop_enabled()) {
+        MESSAGE("Skipping test - Render loop disabled");
+        return;
+    }
+
+    const uint64_t start_usec = os->get_ticks_usec();
+    {
+        Ref<GaussianSplatRenderer> renderer;
+        renderer.instantiate();
+        CHECK(renderer.is_valid());
+        if (!renderer.is_valid()) {
+            return;
+        }
+
+        const uint64_t original_timeout_usec = renderer->test_get_render_thread_dispatch_timeout_usec();
+        renderer->test_set_render_thread_dispatch_timeout_usec(10000); // 10 ms timeout for test.
+
+        const bool timed_out_dispatch = renderer->test_dispatch_call_on_render_thread_blocking_without_completion();
+        CHECK_FALSE(timed_out_dispatch);
+        const bool recovered_dispatch = renderer->test_dispatch_call_on_render_thread_blocking_with_completion();
+        CHECK(recovered_dispatch);
+
+        renderer->test_set_render_thread_dispatch_timeout_usec(original_timeout_usec);
+    }
+    const uint64_t elapsed_usec = os->get_ticks_usec() - start_usec;
+
+    // Characterization guard: teardown after a dispatch cycle should remain bounded and not hang.
+    CHECK(elapsed_usec < 5000000);
 }
 
 } // namespace TestGaussianSplatting

@@ -5,6 +5,7 @@
 #include "gaussian_gpu_layout.h"
 #include "pipeline_io_contracts.h"
 #include "gpu_sorting_config.h"
+#include "../interfaces/render_device_manager.h"
 #include "../interfaces/sync_policy.h"
 #include "../logger/gs_logger.h"
 #include "../shaders/tile_binning.glsl.gen.h"
@@ -92,6 +93,167 @@ TileSHCacheResizePlan tile_compute_sh_cache_resize_plan(uint32_t p_required_byte
 	return plan;
 }
 
+void TileResourceController::set_contract_main_device(RenderingDevice *p_main_device) {
+	contract_main_device = p_main_device;
+}
+
+RenderingDevice *TileResourceController::get_contract_main_device() const {
+	if (contract_main_device) {
+		return contract_main_device;
+	}
+	return RenderingDevice::get_singleton();
+}
+
+void TileResourceController::set_device_manager(RenderDeviceManager *p_device_manager) {
+	if (tracked_device_manager == p_device_manager) {
+		return;
+	}
+	clear_output_resource_tracking();
+	tracked_device_manager = p_device_manager;
+}
+
+bool TileResourceController::resolve_texture_owner(const char *p_label, const RID &p_texture, RenderingDevice *&r_owner,
+		bool p_log_errors) const {
+	if (!p_texture.is_valid()) {
+		r_owner = nullptr;
+		return true;
+	}
+
+	RenderingDevice *main_device = get_contract_main_device();
+	if (!r_owner && tracked_device_manager) {
+		r_owner = tracked_device_manager->get_resource_owner(p_texture, nullptr);
+	}
+	if (!r_owner && main_device && main_device->texture_is_valid(p_texture)) {
+		r_owner = main_device;
+		if (p_log_errors) {
+			GS_LOG_WARN_DEFAULT(vformat("[TileRenderer] %s owner missing; using main RenderingDevice for RID=%s",
+					String(p_label), String::num_uint64(p_texture.get_id())));
+		}
+		return true;
+	}
+	if (!r_owner) {
+		if (p_log_errors) {
+			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: missing owner for RID=%s",
+					String(p_label), String::num_uint64(p_texture.get_id())));
+		}
+		return false;
+	}
+	if (!r_owner->texture_is_valid(p_texture)) {
+		if (main_device && main_device != r_owner && main_device->texture_is_valid(p_texture)) {
+			if (tracked_device_manager) {
+				tracked_device_manager->push_cross_device_operation(
+						String(p_label) + String("_owner_remap"), r_owner, main_device);
+			}
+			r_owner = main_device;
+			return true;
+		}
+		if (p_log_errors) {
+			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: owner does not validate RID=%s",
+					String(p_label), String::num_uint64(p_texture.get_id())));
+		}
+		return false;
+	}
+	if (main_device && r_owner != main_device) {
+		const bool visible_on_main = main_device->texture_is_valid(p_texture);
+		if (visible_on_main) {
+			if (tracked_device_manager) {
+				tracked_device_manager->push_cross_device_operation(
+						String(p_label) + String("_owner_remap"), r_owner, main_device);
+			}
+			r_owner = main_device;
+			return true;
+		}
+		if (tracked_device_manager) {
+			tracked_device_manager->push_cross_device_operation(
+					String(p_label) + String("_contract_violation"), r_owner, main_device);
+		}
+		if (p_log_errors) {
+			GS_LOG_ERROR_DEFAULT(vformat("[TileRenderer] %s ownership contract violation: RID=%s is not visible on the main RenderingDevice",
+					String(p_label), String::num_uint64(p_texture.get_id())));
+		}
+		return false;
+	}
+	return true;
+}
+
+RenderingDevice *TileResourceController::get_output_texture_owner(const TileRenderTargets &p_targets, bool p_prefer_raw, bool p_force_resolved) const {
+	RenderingDevice *resolved_owner = p_targets.resolved_texture_owner.device ? p_targets.resolved_texture_owner.device : p_targets.output_texture_owner.device;
+	if (p_force_resolved && (p_targets.resolved_texture.is_valid() || p_targets.resolved_texture_external.is_valid())) {
+		return resolved_owner;
+	}
+	if (!p_prefer_raw && (p_targets.resolved_texture.is_valid() || p_targets.resolved_texture_external.is_valid())) {
+		return resolved_owner;
+	}
+	return p_targets.output_texture_owner.device;
+}
+
+RenderingDevice *TileResourceController::get_depth_texture_owner(const TileRenderTargets &p_targets, bool p_prefer_raw, bool p_force_resolved) const {
+	RenderingDevice *resolved_owner = p_targets.resolved_depth_texture_owner.device ? p_targets.resolved_depth_texture_owner.device : p_targets.depth_texture_owner.device;
+	if (p_force_resolved && (p_targets.resolved_depth_texture.is_valid() || p_targets.resolved_depth_texture_external.is_valid())) {
+		return resolved_owner;
+	}
+	if (!p_prefer_raw && (p_targets.resolved_depth_texture.is_valid() || p_targets.resolved_depth_texture_external.is_valid())) {
+		return resolved_owner;
+	}
+	return p_targets.depth_texture_owner.device;
+}
+
+void TileResourceController::track_output_resources(const RID &p_color_output, RenderingDevice *p_color_device,
+		const RID &p_depth_output, RenderingDevice *p_depth_device) {
+	if (!tracked_device_manager) {
+		return;
+	}
+
+	RenderingDevice *main_device = get_contract_main_device();
+
+	if (p_color_output.is_valid()) {
+		if (tracked_color_output.is_valid() && tracked_color_output != p_color_output) {
+			tracked_device_manager->forget_resource(tracked_color_output);
+		}
+		RenderingDevice *owner_device = p_color_device ? p_color_device : main_device;
+		if (resolve_texture_owner("tile_color_output", p_color_output, owner_device, false)) {
+			tracked_device_manager->track_resource(p_color_output, owner_device, false, "tile_renderer_color_output");
+			tracked_color_output = p_color_output;
+		} else if (tracked_color_output.is_valid()) {
+			tracked_device_manager->forget_resource(tracked_color_output);
+			tracked_color_output = RID();
+		}
+	} else if (tracked_color_output.is_valid()) {
+		tracked_device_manager->forget_resource(tracked_color_output);
+		tracked_color_output = RID();
+	}
+
+	if (p_depth_output.is_valid()) {
+		if (tracked_depth_output.is_valid() && tracked_depth_output != p_depth_output) {
+			tracked_device_manager->forget_resource(tracked_depth_output);
+		}
+		RenderingDevice *owner_device = p_depth_device ? p_depth_device : main_device;
+		if (resolve_texture_owner("tile_depth_output", p_depth_output, owner_device, false)) {
+			tracked_device_manager->track_resource(p_depth_output, owner_device, false, "tile_renderer_depth_output");
+			tracked_depth_output = p_depth_output;
+		} else if (tracked_depth_output.is_valid()) {
+			tracked_device_manager->forget_resource(tracked_depth_output);
+			tracked_depth_output = RID();
+		}
+	} else if (tracked_depth_output.is_valid()) {
+		tracked_device_manager->forget_resource(tracked_depth_output);
+		tracked_depth_output = RID();
+	}
+}
+
+void TileResourceController::clear_output_resource_tracking() {
+	if (tracked_device_manager) {
+		if (tracked_color_output.is_valid()) {
+			tracked_device_manager->forget_resource(tracked_color_output);
+		}
+		if (tracked_depth_output.is_valid()) {
+			tracked_device_manager->forget_resource(tracked_depth_output);
+		}
+	}
+	tracked_color_output = RID();
+	tracked_depth_output = RID();
+}
+
 TileShaderResources::TileShaderResources(TileRenderer &p_owner) :
 		owner(p_owner),
 		tile_binning_shader_source(std::make_unique<TileBinningShaderRD>()),
@@ -126,25 +288,11 @@ RID TileRenderTargets::get_depth_texture(bool p_prefer_raw, bool p_force_resolve
 }
 
 RenderingDevice *TileRenderTargets::get_output_texture_owner(bool p_prefer_raw, bool p_force_resolved) const {
-	RenderingDevice *resolved_owner = resolved_texture_owner.device ? resolved_texture_owner.device : output_texture_owner.device;
-	if (p_force_resolved && (resolved_texture.is_valid() || resolved_texture_external.is_valid())) {
-		return resolved_owner;
-	}
-	if (!p_prefer_raw && (resolved_texture.is_valid() || resolved_texture_external.is_valid())) {
-		return resolved_owner;
-	}
-	return output_texture_owner.device;
+	return owner.resource_controller.get_output_texture_owner(*this, p_prefer_raw, p_force_resolved);
 }
 
 RenderingDevice *TileRenderTargets::get_depth_texture_owner(bool p_prefer_raw, bool p_force_resolved) const {
-	RenderingDevice *resolved_owner = resolved_depth_texture_owner.device ? resolved_depth_texture_owner.device : depth_texture_owner.device;
-	if (p_force_resolved && (resolved_depth_texture.is_valid() || resolved_depth_texture_external.is_valid())) {
-		return resolved_owner;
-	}
-	if (!p_prefer_raw && (resolved_depth_texture.is_valid() || resolved_depth_texture_external.is_valid())) {
-		return resolved_owner;
-	}
-	return depth_texture_owner.device;
+	return owner.resource_controller.get_depth_texture_owner(*this, p_prefer_raw, p_force_resolved);
 }
 
 void TileRenderTargets::destroy_output_textures() {

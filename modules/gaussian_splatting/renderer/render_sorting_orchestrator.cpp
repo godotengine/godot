@@ -852,7 +852,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			sorting_state.last_sort_world_to_camera_transform,
 			p_world_to_camera_transform);
 	}
-	bool sorted_count_mismatch = (sorting_state.sorted_splat_count != available_splats);
+	// Async CPU readback can lag the actual sorted index buffer by a frame.
+	// Keep the mismatch for diagnostics only; do not let it drive re-sort decisions.
+	const bool stale_cpu_count_mismatch = (sorting_state.sorted_splat_count != available_splats);
 	uint32_t instance_visible_splats = (instance_pipeline_active && sorting_pipeline && instance_max_visible_splats > 0)
 			? MIN(sorting_pipeline->get_last_instance_visible_splat_count(), instance_max_visible_splats)
 			: 0u;
@@ -864,12 +866,15 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 
 	bool cull_signature_untracked = false;
 	bool cull_signature_mismatch = false;
-	if (!instance_pipeline_active &&
+	const bool can_validate_previous_global_sort =
+			!instance_pipeline_active &&
 			available_splats > 0 &&
-			sorting_state.sorted_splat_count == available_splats) {
+			sorting_state.last_sort_transform_valid &&
+			sorting_pipeline &&
+			sorting_pipeline->get_sort_indices_buffer().is_valid();
+	if (can_validate_previous_global_sort) {
 		cull_signature_untracked = !sorting_state.last_cull_indices_signature_valid;
 		if (!cull_signature_untracked &&
-				sorting_state.last_sort_transform_valid &&
 				!camera_moved &&
 				!gpu_culler->get_config().cull_params_dirty &&
 				!override_state_changed) {
@@ -878,7 +883,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 	}
 
-	bool need_sort = camera_moved || sorted_count_mismatch ||
+	bool need_sort = camera_moved ||
 			!sorting_state.last_sort_transform_valid ||
 			gpu_culler->get_config().cull_params_dirty ||
 			override_state_changed ||
@@ -893,7 +898,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			GS_LOG_GPU_SORT_DEBUG(vformat("[SORT-PATH] need_sort=%s camera_moved=%s count_mismatch=%s transform_valid=%s cull_dirty=%s override_changed=%s available=%d",
 				need_sort ? "YES" : "no",
 				camera_moved ? "YES" : "no",
-				sorted_count_mismatch ? "YES" : "no",
+				stale_cpu_count_mismatch ? "cpu-ignored" : "no",
 				sorting_state.last_sort_transform_valid ? "yes" : "NO",
 				gpu_culler->get_config().cull_params_dirty ? "YES" : "no",
 				override_state_changed ? "YES" : "no",
@@ -951,11 +956,15 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	if (!need_sort) {
 		const bool can_reuse_previous_sorted =
 				sorting_pipeline &&
-				sorting_state.sorted_splat_count == available_splats &&
-				sorting_state.sorted_splat_count > 0 &&
-				sorting_pipeline->get_sort_indices_buffer().is_valid();
+				sorting_pipeline->get_sort_indices_buffer().is_valid() &&
+				((!instance_pipeline_active && available_splats > 0) ||
+						(instance_pipeline_active && sorting_state.sorted_splat_count > 0));
 		if (can_reuse_previous_sorted) {
-			renderer->get_frame_state().visible_splat_count.store(sorting_state.sorted_splat_count, std::memory_order_release);
+			// In the global path the current cull domain is authoritative. Reuse the
+			// previous sorted buffer without trusting a possibly stale CPU-side count.
+			const uint32_t reused_count = instance_pipeline_active ? sorting_state.sorted_splat_count : available_splats;
+			sorting_state.sorted_splat_count = reused_count;
+			renderer->get_frame_state().visible_splat_count.store(reused_count, std::memory_order_release);
 			renderer->get_performance_state().metrics.rendered_splat_count =
 					renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
 		} else if (publish_instance_identity_fallback("Missing previous sorted buffer on camera-stable frame")) {
@@ -1212,6 +1221,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 					reset_sort_metrics();
 					renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_SORT_FAILED;
 					sorting_state.sorted_splat_count = 0;
+					sorting_state.last_sort_transform_valid = false;
 					renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 					return;
 			}
@@ -1219,6 +1229,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		reset_sort_metrics();
 		renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_SORT_FAILED;
 		sorting_state.sorted_splat_count = 0;
+		sorting_state.last_sort_transform_valid = false;
 		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 	};
 
@@ -1238,6 +1249,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		reset_sort_metrics();
 		renderer->get_debug_state().sort_route_uid = RenderRouteUID::COMMON_FAIL_NO_DEVICE;
 		sorting_state.sorted_splat_count = 0;
+		sorting_state.last_sort_transform_valid = false;
 		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
 		return build_summary();
 	}
@@ -1324,7 +1336,7 @@ void RenderSortingOrchestrator::force_sort_for_view(const Transform3D &p_world_t
 	(void)sort_gaussians_for_view(view_transform, cull_output.visible_domain);
 }
 
-void GaussianSplatRenderer::_refresh_gpu_sorter(const char *p_context) {
+void GaussianSplatRenderer::refresh_gpu_sorter(const char *p_context) {
 	sorting_orchestrator->refresh_gpu_sorter(p_context);
 }
 

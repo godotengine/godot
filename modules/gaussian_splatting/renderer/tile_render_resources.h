@@ -14,6 +14,7 @@ class TileResolveShaderRD;
 
 class GPUPerformanceMonitor;
 class TileRenderer;
+class RenderDeviceManager;
 
 namespace GaussianSplatting {
 
@@ -70,6 +71,30 @@ struct TileRenderTargets {
 	BufferOwnership resolved_depth_texture_owner;
 	RenderingDevice *resolved_depth_texture_local_owner = nullptr;
 	bool depth_texture_copy_compatible = false;
+};
+
+struct TileResourceController {
+	explicit TileResourceController(TileRenderer &p_owner) : owner(p_owner) {}
+
+	void set_contract_main_device(RenderingDevice *p_main_device);
+	RenderingDevice *get_contract_main_device() const;
+
+	void set_device_manager(RenderDeviceManager *p_device_manager);
+	RenderDeviceManager *get_device_manager() const { return tracked_device_manager; }
+
+	bool resolve_texture_owner(const char *p_label, const RID &p_texture, RenderingDevice *&r_owner, bool p_log_errors) const;
+	RenderingDevice *get_output_texture_owner(const TileRenderTargets &p_targets, bool p_prefer_raw, bool p_force_resolved) const;
+	RenderingDevice *get_depth_texture_owner(const TileRenderTargets &p_targets, bool p_prefer_raw, bool p_force_resolved) const;
+
+	void track_output_resources(const RID &p_color_output, RenderingDevice *p_color_device,
+			const RID &p_depth_output, RenderingDevice *p_depth_device);
+	void clear_output_resource_tracking();
+
+	TileRenderer &owner;
+	RenderingDevice *contract_main_device = nullptr;
+	RenderDeviceManager *tracked_device_manager = nullptr;
+	RID tracked_color_output;
+	RID tracked_depth_output;
 };
 
 struct TileDeviceContext {

@@ -67,7 +67,17 @@ public:
     using TileSHCacheBuffers = GaussianSplatting::TileSHCacheBuffers;
     using TileSubpixelHistoryBuffers = GaussianSplatting::TileSubpixelHistoryBuffers;
     using TileSubpixelVisibilityBuffers = GaussianSplatting::TileSubpixelVisibilityBuffers;
+    using TileResourceController = GaussianSplatting::TileResourceController;
     using ShaderVariant = TileShaderCompilation::ShaderVariant;
+
+    struct AdaptiveOverlapBudgetRuntimeState {
+        uint32_t suggested_budget_records = 0u;
+        uint32_t low_utilization_frames = 0u;
+        uint32_t recent_raw_usage_records[16] = {};
+        uint32_t recent_raw_usage_count = 0u;
+        uint32_t recent_raw_usage_write_index = 0u;
+        uint32_t recent_raw_usage_peak = 0u;
+    };
 
     static constexpr ResolveDebugMode RESOLVE_DEBUG_NONE = GaussianSplatting::RESOLVE_DEBUG_NONE;
     static constexpr ResolveDebugMode RESOLVE_DEBUG_INPUT = GaussianSplatting::RESOLVE_DEBUG_INPUT;
@@ -115,7 +125,7 @@ public:
     int get_tile_splat_capacity() const { return config_state.effective_splat_capacity; }
 
     void set_performance_monitor(GPUPerformanceMonitor *p_monitor) { device_context.performance_monitor = p_monitor; }
-    void set_contract_main_device(RenderingDevice *p_main_device) { contract_main_device = p_main_device; }
+    void set_contract_main_device(RenderingDevice *p_main_device) { resource_controller.set_contract_main_device(p_main_device); }
     void set_device_manager(RenderDeviceManager *p_device_manager);
     void track_output_resources(const RID &p_color_output, RenderingDevice *p_color_device,
             const RID &p_depth_output, RenderingDevice *p_depth_device);
@@ -144,6 +154,9 @@ public:
 
     void set_adaptive_settings(const AdaptiveSettings &p_settings);
     AdaptiveSettings get_adaptive_settings() const { return adaptive_controller.get_settings(); }
+    AdaptiveOverlapBudgetRuntimeState &access_adaptive_overlap_budget_runtime_state();
+    const AdaptiveOverlapBudgetRuntimeState *get_adaptive_overlap_budget_runtime_state_ptr() const;
+    void clear_adaptive_overlap_budget_runtime_state();
 
     float get_tile_assignment_time() const { return perf_metrics.tile_assignment_ms; }
     float get_rasterization_time() const { return perf_metrics.rasterization_ms; }
@@ -283,10 +296,7 @@ private:
     void _update_adaptive_state(const RenderStats &p_stats);
     static bool _is_main_rendering_device(RenderingDevice *p_device);
     RenderingDevice *_get_contract_main_device() const {
-        if (contract_main_device) {
-            return contract_main_device;
-        }
-        return RenderingDevice::get_singleton();
+        return resource_controller.get_contract_main_device();
     }
 	RenderingDevice *_get_resource_device() const;
 	RenderingDevice *_get_submission_device();
@@ -350,12 +360,16 @@ private:
     TileSubpixelVisibilityBuffers subpixel_visibility_buffers;
     std::unique_ptr<ShaderCompilationManager> shader_compilation_manager;
     TileShaderResources shader_resources;
+    HashMap<uint64_t, bool> subgroup_support_cache;
     TileTimingState timing_state;
     TilePerformanceMetrics perf_metrics;
     TileDiagnosticsState diagnostics;
     TileConfigState config_state;
     TileGridState grid_state;
     TileRenderSettings render_settings;
+    AdaptiveOverlapBudgetRuntimeState adaptive_overlap_budget_runtime_state;
+    bool adaptive_overlap_budget_runtime_state_initialized = false;
+    TileResourceController resource_controller;
     struct InstancePipelineBindings {
         RID instance_buffer;
         RID splat_ref_buffer;
@@ -367,10 +381,6 @@ private:
     bool sh_cache_needs_full_update = false;
     TileFrameState frame_state;
     TileDeviceContext device_context;
-    RenderingDevice *contract_main_device = nullptr;
-    RenderDeviceManager *tracked_device_manager = nullptr;
-    RID tracked_color_output;
-    RID tracked_depth_output;
     bool gpu_timestamp_capture_enabled = true;
     TileRenderTargets render_targets;
 

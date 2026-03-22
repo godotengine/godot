@@ -5,7 +5,8 @@
 
 class RenderResourceOrchestrator {
 public:
-	RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer, GaussianSplatRenderer::DeviceState *p_device_state);
+	RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer, GaussianSplatRenderer::DeviceState *p_device_state,
+			PipelineFeatureSet *p_pipeline_features_effective, String *p_pipeline_features_warning_cache);
 
 	GaussianSplatRenderer::PipelineState &get_pipeline_state() { return pipeline_state; }
 	const GaussianSplatRenderer::PipelineState &get_pipeline_state() const { return pipeline_state; }
@@ -16,12 +17,15 @@ public:
 	void create_gpu_resources_safe();
 	RID load_graphics_shader(const Vector<String> &p_vertex_paths, const Vector<String> &p_fragment_paths);
 	void update_gpu_pass_metrics_from_tile_renderer();
+	void update_pipeline_features(RenderingDevice *p_device);
 
 private:
 	GaussianSplatRenderer::PipelineState pipeline_state;
 	GaussianSplatRenderer::ResourceState resource_state;
 	GaussianSplatRenderer *renderer = nullptr;
 	GaussianSplatRenderer::DeviceState *device_state = nullptr;
+	PipelineFeatureSet *pipeline_features_effective = nullptr;
+	String *pipeline_features_warning_cache = nullptr;
 };
 
 #endif

@@ -44,6 +44,21 @@ public:
                     p_device->framebuffer_is_valid(p_rid);
         }
 
+        static void _free_pending_delete(const PendingDelete &p_pending_delete) {
+            if (!p_pending_delete.rid.is_valid() || !p_pending_delete.device) {
+                return;
+            }
+
+            if (p_pending_delete.auto_free) {
+                // Auto-free types (PR 103113): only free if still valid.
+                if (_auto_free_is_valid(p_pending_delete.device, p_pending_delete.rid)) {
+                    p_pending_delete.device->free(p_pending_delete.rid);
+                }
+            } else {
+                p_pending_delete.device->free(p_pending_delete.rid);
+            }
+        }
+
     public:
         void queue_free(RenderingDevice *p_device, const RID &p_rid, uint32_t p_delay = 2) {
             if (!p_device || !p_rid.is_valid()) {
@@ -55,35 +70,25 @@ public:
 
         void process_frame() {
             current_frame++;
-            for (int i = pending.size() - 1; i >= 0; i--) {
-                if (pending[i].frame_delay <= current_frame) {
-                    if (pending[i].rid.is_valid() && pending[i].device) {
-                        if (pending[i].auto_free) {
-                            // Auto-free types (PR 103113): only free if still valid.
-                            if (_auto_free_is_valid(pending[i].device, pending[i].rid)) {
-                                pending[i].device->free(pending[i].rid);
-                            }
-                        } else {
-                            pending[i].device->free(pending[i].rid);
-                        }
-                    }
-                    pending.remove_at(i);
+            uint32_t write_index = 0;
+            const uint32_t pending_count = pending.size();
+            for (uint32_t read_index = 0; read_index < pending_count; read_index++) {
+                if (pending[read_index].frame_delay <= current_frame) {
+                    _free_pending_delete(pending[read_index]);
+                    continue;
                 }
+
+                if (write_index != read_index) {
+                    pending[write_index] = pending[read_index];
+                }
+                write_index++;
             }
+            pending.resize(write_index);
         }
 
         void flush_all() {
             for (uint32_t i = 0; i < pending.size(); i++) {
-                if (pending[i].rid.is_valid() && pending[i].device) {
-                    if (pending[i].auto_free) {
-                        // Auto-free types (PR 103113): only free if still valid.
-                        if (_auto_free_is_valid(pending[i].device, pending[i].rid)) {
-                            pending[i].device->free(pending[i].rid);
-                        }
-                    } else {
-                        pending[i].device->free(pending[i].rid);
-                    }
-                }
+                _free_pending_delete(pending[i]);
             }
             pending.clear();
         }

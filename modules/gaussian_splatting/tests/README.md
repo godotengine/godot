@@ -24,7 +24,7 @@ The tests are organized using Godot's built-in **doctest** framework:
 To build Godot with tests enabled, run from repository root:
 
 ```bash
-scons platform=<windows|linuxbsd|macos> tools=yes tests=yes optimize=speed -j4 modules/gaussian_splatting
+scons platform=<windows|linuxbsd|macos> target=editor dev_build=yes tests=yes -j4 modules/gaussian_splatting
 ```
 
 ## Running Tests
@@ -42,9 +42,9 @@ This wildcard matches all test cases with the `[GaussianSplatting]` tag.
 
 Typical editor binary names:
 
-- Windows: `bin/godot.windows.editor.x86_64.exe`
-- Linux: `bin/godot.linuxbsd.editor.x86_64`
-- macOS: `bin/godot.macos.editor.universal`
+- Windows: `bin/godot.windows.editor.dev.x86_64.exe`
+- Linux: `bin/godot.linuxbsd.editor.dev.x86_64`
+- macOS: `bin/godot.macos.editor.dev.universal`
 
 **Important:** Use `--test-case` (not `--test-suite`) to run all Gaussian Splatting tests, as most tests are defined with `TEST_CASE` macros and exist in the default suite. Using `--test-suite` would skip these tests.
 

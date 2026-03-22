@@ -438,6 +438,43 @@ static uint64_t _compute_lighting_signature(const RenderDataRD *p_render_data, u
 	return seed;
 }
 
+static uint64_t _compute_cull_config_signature(const GaussianSplatRenderer &p_renderer,
+		const GaussianSplatRenderer::IFrameStateProvider &p_state_provider) {
+	uint64_t seed = HASH_MURMUR3_SEED;
+	const GPUCuller *gpu_culler = p_state_provider.get_gpu_culler();
+	if (!gpu_culler) {
+		return _hash_u64(0ull, seed);
+	}
+
+	const GPUCuller::CullingConfig &config = gpu_culler->get_config();
+	const GPUCuller::CullingState &state = gpu_culler->get_state();
+	seed = _hash_bool(config.lod_enabled, seed);
+	seed = _hash_float_bits(config.lod_bias, seed);
+	seed = _hash_bool(config.frustum_culling, seed);
+	seed = _hash_bool(config.gpu_culling_enabled, seed);
+	seed = _hash_bool(config.temporal_coherence, seed);
+	seed = _hash_bool(config.cluster_culling_enabled, seed);
+	seed = _hash_u64(config.cluster_target_size, seed);
+	seed = _hash_float_bits(config.cluster_frustum_slack, seed);
+	seed = _hash_bool(config.cluster_use_morton_order, seed);
+	seed = _hash_bool(config.cluster_use_indirect_dispatch, seed);
+	seed = _hash_float_bits(config.lod_min_screen_size, seed);
+	seed = _hash_float_bits(config.lod_max_distance, seed);
+	seed = _hash_float_bits(config.importance_cull_threshold, seed);
+	seed = _hash_float_bits(config.cull_radius_multiplier, seed);
+	seed = _hash_float_bits(config.cull_frustum_plane_slack, seed);
+	seed = _hash_float_bits(config.cull_near_tolerance, seed);
+	seed = _hash_float_bits(config.cull_far_tolerance, seed);
+	seed = _hash_bool(config.opacity_aware_culling, seed);
+	seed = _hash_float_bits(config.visibility_threshold, seed);
+	seed = _hash_bool(config.distance_cull_enabled, seed);
+	seed = _hash_float_bits(config.distance_cull_start, seed);
+	seed = _hash_float_bits(config.distance_cull_max_rate, seed);
+	seed = _hash_float_bits(state.tiny_splat_screen_radius_px, seed);
+	seed = _hash_u64(static_cast<uint64_t>(MAX(0, p_renderer.get_performance_settings().max_splats)), seed);
+	return seed;
+}
+
 
 static void _record_validation_event(GaussianSplatRenderer *p_renderer, const char *p_stage,
 		const GaussianSplatRenderer::StageIO &p_io) {
@@ -1228,11 +1265,12 @@ struct RenderPipelineStages::RasterCompositeStage {
 			} else {
 				raster_input.sorted_splat_count = 0;
 				raster_input.sort_time_ms = 0.0f;
-				raster_input.sorted_index_domain = GaussianSplatRenderer::IndexDomain::UNKNOWN;
-			}
-		raster_input.content_generation = renderer->get_instance_pipeline_content_generation();
-		raster_input.color_grading_signature = _compute_color_grading_signature(state_provider.get_render_config());
-		raster_input.lighting_signature = _compute_lighting_signature(p_context.render_data, p_context.frame_id);
+		raster_input.sorted_index_domain = GaussianSplatRenderer::IndexDomain::UNKNOWN;
+	}
+	raster_input.content_generation = renderer->get_instance_pipeline_content_generation();
+		raster_input.cull_config_signature = _compute_cull_config_signature(*renderer, state_provider);
+	raster_input.color_grading_signature = _compute_color_grading_signature(state_provider.get_render_config());
+	raster_input.lighting_signature = _compute_lighting_signature(p_context.render_data, p_context.frame_id);
 		raster_input.metrics = p_context.metrics;
 		raster_input.state_provider = &state_provider;
 		raster_input.painterly_requested = p_context.painterly_enabled;
@@ -1321,7 +1359,7 @@ struct RenderPipelineStages::RasterCompositeStage {
 				output_compositor->update_render_cache_signature(raster_input.world_to_camera_transform,
 						raster_input.projection, raster_input.viewport_size, r_raster_output.painterly_active,
 						r_raster_output.depth, r_raster_output.internal_size, r_raster_output.color,
-						raster_input.sorted_splat_count, raster_input.content_generation,
+						raster_input.content_generation, raster_input.cull_config_signature,
 						raster_input.color_grading_signature, raster_input.lighting_signature, require_scene_depth);
 			}
 		}
@@ -1898,7 +1936,7 @@ bool RenderPipelineStages::RasterStage::try_reuse_cached_render(const GaussianSp
 	RID cached_render = output_compositor->get_final_render_texture();
 	if (!output_compositor->can_reuse_cached_render(p_input.world_to_camera_transform, p_input.projection,
 				p_input.viewport_size, r_output.painterly_active, cached_render,
-				p_input.sorted_splat_count, p_input.content_generation,
+				p_input.content_generation, p_input.cull_config_signature,
 				p_input.color_grading_signature, p_input.lighting_signature, require_scene_depth)) {
 		return false;
 	}

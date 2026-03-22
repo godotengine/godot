@@ -30,6 +30,10 @@ For test-enabled editor builds:
 scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 ```
 
+> **Binary naming:** `dev_build=yes` adds a `.dev` segment to the output binary name.
+> For example, Windows produces `bin/godot.windows.editor.dev.x86_64.exe`
+> (not `bin/godot.windows.editor.x86_64.exe`).
+
 ## Test Runners
 
 - Baseline QA:

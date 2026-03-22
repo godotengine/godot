@@ -55,10 +55,13 @@
 #include "../interfaces/rasterizer_interfaces.h"
 #include "../interfaces/culler_interfaces.h"
 #include "../interfaces/gpu_culler.h"
+#include "../interfaces/gpu_sorting_pipeline_interfaces.h"
+#include "../interfaces/render_thread_dispatcher.h"
 #include "../interfaces/render_device_manager.h"
 #include "../interfaces/renderer_interfaces.h"
 #include "render_types/render_config_types.h"
 #include "render_types/render_debug_types.h"
+#include "render_types/render_facade_state_types.h"
 #include "render_types/render_frame_types.h"
 #include "render_types/render_performance_types.h"
 #include "render_types/render_pipeline_io_types.h"
@@ -130,7 +133,7 @@ struct InstanceAssetRegistration {
  *
  * @note This class is RefCounted and should be used with Ref<GaussianSplatRenderer>.
  */
-class GaussianSplatRenderer : public RefCounted, public IRenderer {
+class GaussianSplatRenderer : public RefCounted, public IRenderer, public ISortResultSink, public ISortBufferHostContext {
     GDCLASS(GaussianSplatRenderer, RefCounted);
 
 public:
@@ -224,15 +227,32 @@ public:
 public:
     // Extracted types (ISSUE-029 Phase 2)
     using ErrorRecoveryStateMachine = GaussianRenderFrame::ErrorRecoveryStateMachine;
+    using RuntimeErrorStatistics = GaussianRenderFrame::RuntimeErrorStatistics;
+    using TextureTraceEntry = GaussianRenderFrame::TextureTraceEntry;
+    using CrossDeviceOperation = GaussianRenderFrame::CrossDeviceOperation;
+    using FrameTimingSample = GaussianRenderFrame::FrameTimingSample;
+    using DiagnosticsState = GaussianRenderFrame::DiagnosticsState;
     using JacobianDebugConfig = GaussianRenderDebug::JacobianDebugConfig;
+    using SplatAuditSummary = GaussianRenderDebug::SplatAuditSummary;
     using PainterlyCompositePushConstant = GaussianRenderPipeline::PainterlyCompositePushConstant;
     using RenderFramePlan = GaussianRenderPipeline::RenderFramePlan;
+    using StageMetrics = GaussianRenderPipeline::StageMetrics;
+    using PipelineEvent = GaussianRenderPipeline::PipelineEvent;
+    using RenderConfig = GaussianRenderConfig::RenderConfig<RenderMode>;
+    using CullingConfig = GaussianRenderConfig::CullingConfig;
+    using PainterlyConfig = GaussianRenderConfig::PainterlyConfig;
+    using StateUniformData = GaussianRenderConfig::StateUniformData;
+    using InteractiveStateConfig = GaussianRenderConfig::InteractiveStateConfig<InteractiveState>;
+    using DebugConfig = GaussianRenderDebug::DebugConfig;
+    using DebugState = GaussianRenderDebug::DebugState<DebugPreviewMode, StageMetrics, PipelineEvent>;
+    using DeviceState = GaussianRenderFacadeState::DeviceState;
+    using ResourceState = GaussianRenderFacadeState::ResourceState;
+    using TestDataState = GaussianRenderFacadeState::TestDataState;
+    using TileRendererState = GaussianRenderFacadeState::TileRendererState;
+    using SubsystemState = GaussianRenderFacadeState::SubsystemState;
+    using ShadowBlitState = GaussianRenderFacadeState::ShadowBlitState;
 
     // Stage types exposed for RenderPipelineStages and orchestrators
-    struct StageMetrics;
-    struct RenderConfig;
-    struct ResourceState;
-    struct SubsystemState;
     class IFrameStateProvider;
 
     struct RenderFrameContext {
@@ -406,6 +426,7 @@ public:
         RD::DataFormat viewport_format = RD::DATA_FORMAT_MAX;
         uint32_t sorted_splat_count = 0;
         uint64_t content_generation = 0;
+        uint64_t cull_config_signature = 0;
         uint64_t color_grading_signature = 0;
         uint64_t lighting_signature = 0;
         float sort_time_ms = 0.0f;
@@ -427,93 +448,23 @@ public:
         const IFrameStateProvider *state_provider = nullptr;
     };
 
-#include "gaussian_splat_renderer_pipeline_types.inc"
-
-public:
-#include "gaussian_splat_renderer_diagnostics_state.inc"
-
 public:
     PerformanceState performance_state;
-
-    // Direct access to Godot's rendering backend
-    struct DeviceState {
-        RendererSceneRenderRD *scene_render = nullptr;
-        RenderingDevice *rd = nullptr;
-        bool reported_missing_submission_device = false;
-        bool reported_missing_render_device = false;
-    };
-
-#include "gaussian_splat_renderer_config_state.inc"
-
-    struct ResourceState {
-        bool gpu_resources_initialized = false;
-        bool gpu_initialization_pending = false;
-        Ref<GPUBufferManager> buffer_manager;
-        bool buffer_manager_initialized = false;
-        GPUBufferManager::DeferredDeletionQueue deletion_queue;
-        RID instance_buffer;
-        uint32_t instance_buffer_capacity = 0;
-        RID instance_visible_chunk_buffer;
-        uint32_t instance_visible_chunk_capacity = 0;
-        RID instance_splat_ref_buffer;
-        uint32_t instance_splat_ref_capacity = 0;
-        RID instance_counter_buffer;
-        RID instance_chunk_dispatch_buffer;
-        RID instance_indirect_count_buffer;
-        RID instance_count_buffer;
-        uint64_t instance_pipeline_content_generation = 0;
-    };
-
-    // Micro-MVP: Test splat data
-    struct TestDataState {
-        LocalVector<Vector3> positions;
-        LocalVector<Color> colors;
-        LocalVector<Vector3> scales;
-        LocalVector<Object*> mesh_instances; // Placeholder - scene classes not available in modules
-        RID vertex_buffer;
-        RID position_buffer;
-        RID scale_buffer;
-        RID rotation_buffer;
-        RID sh_buffer;
-        uint64_t content_generation = 0;
-        uint64_t uploaded_generation = 0;
-        uint32_t uploaded_count = 0;
-    } test_data_state;
+    TestDataState test_data_state;
 
     // Phase 15: painterly texture RIDs removed - now managed by PainterlyMaterialManager
 
     // Tile-based renderer
-    struct TileRendererState {
-        Ref<TileRenderer> renderer;
-        GPUPerformanceMonitor gpu_performance_monitor;
-        bool init_failed = false;
-    } tile_renderer_state;
+    TileRendererState tile_renderer_state;
 
     void _update_tile_renderer_output_tracking(const RID &p_color_output, RenderingDevice *p_color_device,
             const RID &p_depth_output, RenderingDevice *p_depth_device);
     void _forget_tile_renderer_outputs();
     void _warn_tile_depth_copy_incompatible();
 
-    // Interactive state system
-#include "gaussian_splat_renderer_interactive_state.inc"
-
-public:
-#include "gaussian_splat_renderer_debug_state.inc"
-
     // Modular interface subsystems (Phase 8 migration)
     // These will gradually replace the inline debug/interactive state management
-    struct SubsystemState {
-        Ref<RenderDeviceManager> device_manager;  // Phase 8: Device tracking and resource ownership
-        Ref<DebugOverlaySystem> debug_overlay_system;
-        Ref<InteractiveStateManager> interactive_state_manager;
-        Ref<TileRasterizer> rasterizer;  // Wraps tile_renderer through IRasterizer interface
-        Ref<GPUCuller> gpu_culler;  // GPU frustum culler through ICuller interface (Phase 8)
-        Ref<class OutputCompositor> output_compositor;  // Phase 9: Output composition and framebuffer management
-        Ref<class GPUSortingPipeline> sorting_pipeline;  // Phase 10: GPU sorting buffer management
-        Ref<class OverflowAutoTuner> overflow_auto_tuner;  // Phase 11: Overflow-based culling auto-tuning
-        Ref<PainterlyRenderer> painterly_renderer;  // Phase 12: Painterly rendering pipeline
-        Ref<class PainterlyMaterialManager> painterly_material_manager;  // Phase 12: Painterly material resources
-    } subsystem_state;
+    SubsystemState subsystem_state;
 
     std::unique_ptr<RenderPipelineStages> pipeline_stages;
     std::unique_ptr<RenderDeviceOrchestrator> device_orchestrator;
@@ -527,14 +478,7 @@ public:
     std::unique_ptr<RenderResourceOrchestrator> resource_orchestrator;
     std::unique_ptr<RenderDataOrchestrator> data_orchestrator;
     std::unique_ptr<RenderOutputOrchestrator> output_orchestrator;
-
-    mutable Mutex render_thread_dispatch_mutex;
-    mutable Semaphore render_thread_dispatch_semaphore;
-    std::atomic<uint64_t> render_thread_dispatch_next_request_id{1};
-    std::atomic<uint64_t> render_thread_dispatch_completed_request_id{0};
-    std::atomic<uint64_t> render_thread_dispatch_timeout_usec{15000000}; // 15s default escape.
-    std::atomic<uint64_t> render_thread_dispatch_set_data_latest_request_id{0};
-    Error render_thread_dispatch_set_data_result = OK;
+    std::unique_ptr<IRenderThreadDispatcher> render_thread_dispatcher;
     std::atomic<bool> teardown_resources_started{false};
 
     InstancePipelineBuffers instance_pipeline_buffers;
@@ -584,15 +528,12 @@ public:
             GaussianSplatManager::ScopedSubmissionLock &r_lock) const;
     RenderingDevice *get_texture_owner_device(const RID &p_texture) const;
     RD::TextureFormat _get_texture_format(RenderingDevice *p_device, RID p_texture) const;
-    void _forget_resource_owner(const RID &p_rid);
     void _set_manual_viewport_format(RD::DataFormat p_format, const char *p_context);
     void _set_active_viewport_format(RD::DataFormat p_format, const char *p_context);
     void _free_owned_resource(RenderingDevice *p_fallback_device, RID &p_rid);
     // Removed: _upload_test_splats_to_gpu (dead code)
-    void _refresh_gpu_sorter(const char *p_context);
     // Removed: _flush_depth_submission (dead code)
     void _update_gpu_pass_metrics_from_tile_renderer();
-    void _update_pipeline_features(RenderingDevice *p_device);
     void _prepare_render_frame_context(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
             const Projection &p_projection, const Projection &p_render_projection, bool p_defer_render_buffers_commit,
             RenderFrameContext &r_context);
@@ -622,18 +563,6 @@ public:
     RID _load_graphics_shader(const Vector<String> &p_vertex_paths, const Vector<String> &p_fragment_paths);
     void _on_painterly_material_changed();
     void _synchronize_tile_submission(RenderingDevice *p_device, const char *p_context);
-
-    struct ShadowBlitState {
-        bool shader_source_initialized = false;
-        uint64_t device_id = 0;
-        std::unique_ptr<GsShadowBlitShaderRD> shader_source;
-        RID shader;
-        PipelineCacheRD pipeline_cache;
-        RID sampler;
-        GaussianSplatting::BufferOwnership sampler_owner;
-
-        void clear(RenderingDevice *p_device);
-    };
 
     Ref<class OutputCompositor> shadow_output_compositor;
     uint64_t shadow_output_device_id = 0;
@@ -713,9 +642,9 @@ public:
     void track_resource_owner(const RID &p_rid, RenderingDevice *p_device, bool p_owned = true, const char *p_label = nullptr) {
         _track_resource_owner(p_rid, p_device, p_owned, p_label);
     }
-    void forget_resource_owner(const RID &p_rid) { _forget_resource_owner(p_rid); }
+    void forget_resource_owner(const RID &p_rid);
     void free_owned_resource(RenderingDevice *p_fallback_device, RID &p_rid) { _free_owned_resource(p_fallback_device, p_rid); }
-    void refresh_gpu_sorter(const char *p_context) { _refresh_gpu_sorter(p_context); }
+    void refresh_gpu_sorter(const char *p_context);
     void update_gpu_pass_metrics_from_tile_renderer() { _update_gpu_pass_metrics_from_tile_renderer(); }
     void update_debug_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats);
     void clear_debug_overlay_dirty_flags();
@@ -726,6 +655,14 @@ public:
         return _load_graphics_shader(p_vertex_paths, p_fragment_paths);
     }
     void synchronize_tile_submission(RenderingDevice *p_device, const char *p_context) { _synchronize_tile_submission(p_device, p_context); }
+    bool ensure_sort_rendering_device(const char *p_context) override;
+    RenderingDevice *get_sort_rendering_device() const override;
+    SortExternalBufferState get_sort_external_buffer_state() const override;
+    bool resize_sort_state_byte_vectors(uint32_t p_cpu_capacity, uint32_t p_key_stride_bytes, const char *p_context) override;
+    void set_sort_buffer_binding_state(bool p_keys_external, bool p_indices_external,
+            bool p_pipeline_managed, uint32_t p_capacity) override;
+    void clear_sort_buffer_binding_state() override;
+    void publish_sorted_indices(const SortPublicationPayload &p_payload) override;
     void forget_tile_renderer_outputs() { _forget_tile_renderer_outputs(); }
     void warn_tile_depth_copy_incompatible() { _warn_tile_depth_copy_incompatible(); }
     void update_tile_renderer_output_tracking(const RID &p_color_output, RenderingDevice *p_color_device,
@@ -749,7 +686,7 @@ public:
     RD::TextureFormat get_texture_format(RenderingDevice *p_device, RID p_texture) const { return _get_texture_format(p_device, p_texture); }
     void set_manual_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_manual_viewport_format(p_format, p_context); }
     void set_active_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_active_viewport_format(p_format, p_context); }
-    void update_pipeline_features(RenderingDevice *p_device) { _update_pipeline_features(p_device); }
+    void update_pipeline_features(RenderingDevice *p_device);
     CullStageOutput cull_for_view(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size) {
         return _cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size);
     }

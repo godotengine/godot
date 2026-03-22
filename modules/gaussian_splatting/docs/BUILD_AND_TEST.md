@@ -59,7 +59,7 @@ python3 tests/ci/run_module_tests.py
 python3 tests/ci/run_module_tests.py --godot-binary /path/to/godot-editor
 ```
 
-On Windows, the explicit path is typically `bin\\godot.windows.editor.x86_64.exe`.
+On Windows, the explicit path is typically `bin\\godot.windows.editor.dev.x86_64.exe` (the `.dev` segment is added by `dev_build=yes`).
 
 ## Convenience Wrappers
 

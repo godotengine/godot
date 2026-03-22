@@ -1,0 +1,323 @@
+name: Release Builds
+
+on:
+  pull_request:
+    branches: [master, main, develop]
+    paths:
+      - "core/**"
+      - "drivers/**"
+      - "editor/**"
+      - "main/**"
+      - "modules/**"
+      - "platform/**"
+      - "scene/**"
+      - "servers/**"
+      - "thirdparty/**"
+      - "*.py"
+      - "SConstruct"
+      - ".github/workflows/release_builds.yml"
+  push:
+    branches: [master, main, develop]
+    tags:
+      - "v*"
+    paths:
+      - "core/**"
+      - "drivers/**"
+      - "editor/**"
+      - "main/**"
+      - "modules/**"
+      - "platform/**"
+      - "scene/**"
+      - "servers/**"
+      - "thirdparty/**"
+      - "*.py"
+      - "SConstruct"
+      - ".github/workflows/release_builds.yml"
+  schedule:
+    # Nightly preview build at 02:30 UTC.
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+    inputs:
+      publish_channel:
+        description: "Release channel for manual runs"
+        required: false
+        default: none
+        type: choice
+        options:
+          - none
+          - nightly
+          - stable
+      release_tag:
+        description: "Tag used for manual stable publish (required when publish_channel=stable)"
+        required: false
+        type: string
+      release_name:
+        description: "Optional custom release name for manual publish"
+        required: false
+        type: string
+      keep_nightlies:
+        description: "Nightly prereleases to keep when pruning (manual nightly only)"
+        required: false
+        default: "14"
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-builds-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build_linux:
+    name: Build Linux Editor + Publish Channels
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      channel: ${{ steps.meta.outputs.channel }}
+      publish: ${{ steps.meta.outputs.publish }}
+      keep_nightlies: ${{ steps.meta.outputs.keep_nightlies }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            scons \
+            pkg-config \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxi-dev \
+            libxrandr-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libudev-dev \
+            libvulkan-dev \
+            mesa-vulkan-drivers
+
+      - name: Restore SCons build cache
+        uses: actions/cache@v4
+        with:
+          path: .scons_cache
+          key: release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-${{ github.sha }}
+          restore-keys: |
+            release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-
+            release-scons-linux-
+
+      - name: Resolve channel metadata
+        id: meta
+        env:
+          INPUT_CHANNEL: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_channel || 'none' }}
+          INPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || '' }}
+          INPUT_RELEASE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.release_name || '' }}
+          INPUT_KEEP_NIGHTLIES: ${{ github.event_name == 'workflow_dispatch' && inputs.keep_nightlies || '14' }}
+        run: |
+          set -euo pipefail
+
+          channel="ci"
+          publish="false"
+          prerelease="false"
+          tag=""
+          release_name=""
+          keep_nightlies="${INPUT_KEEP_NIGHTLIES:-14}"
+
+          if ! [[ "$keep_nightlies" =~ ^[0-9]+$ ]]; then
+            keep_nightlies="14"
+          fi
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            channel="stable"
+            publish="true"
+            prerelease="false"
+            tag="${GITHUB_REF#refs/tags/}"
+            release_name="GodotGS ${tag}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            channel="nightly"
+            publish="true"
+            prerelease="true"
+            date_utc="$(date -u +%Y%m%d)"
+            tag="nightly-${date_utc}"
+            release_name="GodotGS Nightly ${date_utc}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            case "${INPUT_CHANNEL}" in
+              nightly)
+                channel="nightly"
+                publish="true"
+                prerelease="true"
+                date_utc="$(date -u +%Y%m%d)"
+                tag="nightly-${date_utc}"
+                release_name="GodotGS Nightly ${date_utc}"
+                ;;
+              stable)
+                if [[ -z "${INPUT_RELEASE_TAG}" ]]; then
+                  echo "Manual stable publish requires release_tag input."
+                  exit 1
+                fi
+                channel="stable"
+                publish="true"
+                prerelease="false"
+                tag="${INPUT_RELEASE_TAG}"
+                release_name="GodotGS ${tag}"
+                ;;
+              *)
+                channel="ci"
+                publish="false"
+                prerelease="false"
+                ;;
+            esac
+          fi
+
+          if [[ -n "${INPUT_RELEASE_NAME}" && "${publish}" == "true" ]]; then
+            release_name="${INPUT_RELEASE_NAME}"
+          fi
+
+          echo "channel=${channel}" >> "$GITHUB_OUTPUT"
+          echo "publish=${publish}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "release_name=${release_name}" >> "$GITHUB_OUTPUT"
+          echo "keep_nightlies=${keep_nightlies}" >> "$GITHUB_OUTPUT"
+
+      - name: Build module-enabled Linux editor
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.meta.outputs.channel }}" == "stable" ]]; then
+            scons platform=linuxbsd target=editor cache_path=.scons_cache cache_limit=10 -j"$(nproc)"
+          else
+            scons platform=linuxbsd target=editor dev_build=yes cache_path=.scons_cache cache_limit=10 -j"$(nproc)"
+          fi
+
+      - name: Resolve built binary
+        id: binary
+        run: |
+          set -euo pipefail
+          godot_bin="$(find bin -maxdepth 1 -type f -executable -name 'godot*linuxbsd*editor*' | sort | head -n 1)"
+          if [[ -z "${godot_bin}" ]]; then
+            echo "Could not locate built Linux editor binary in bin/"
+            ls -la bin || true
+            exit 1
+          fi
+          echo "path=${godot_bin}" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "${godot_bin}")" >> "$GITHUB_OUTPUT"
+
+      - name: Package artifacts + checksums
+        id: package
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist
+
+          binary_path="${{ steps.binary.outputs.path }}"
+          binary_name="${{ steps.binary.outputs.name }}"
+          cp "${binary_path}" "dist/${binary_name}"
+
+          version_label="${{ steps.meta.outputs.tag }}"
+          if [[ -z "${version_label}" ]]; then
+            version_label="${GITHUB_SHA:0:12}"
+          fi
+
+          archive_base="godotgs-linux-x86_64-${version_label}"
+          archive_path="dist/${archive_base}.tar.xz"
+          checksum_path="dist/${archive_base}.sha256"
+
+          tar -C dist -cJf "${archive_path}" "${binary_name}"
+          sha256sum "${archive_path}" > "${checksum_path}"
+
+          cat > dist/BUILD-INFO.txt <<EOF
+          channel=${{ steps.meta.outputs.channel }}
+          publish=${{ steps.meta.outputs.publish }}
+          tag=${{ steps.meta.outputs.tag }}
+          commit=${GITHUB_SHA}
+          binary=${binary_name}
+          generated_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          echo "archive=${archive_path}" >> "$GITHUB_OUTPUT"
+          echo "checksum=${checksum_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload contributor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotgs-linux-${{ steps.meta.outputs.channel }}-${{ github.run_number }}
+          path: |
+            ${{ steps.package.outputs.archive }}
+            ${{ steps.package.outputs.checksum }}
+            dist/BUILD-INFO.txt
+          retention-days: 14
+
+      - name: Publish GitHub release
+        if: steps.meta.outputs.publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.release_name }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+          draft: false
+          generate_release_notes: true
+          files: |
+            ${{ steps.package.outputs.archive }}
+            ${{ steps.package.outputs.checksum }}
+            dist/BUILD-INFO.txt
+          overwrite_files: true
+
+  prune_nightly_history:
+    name: Prune old nightly prereleases
+    runs-on: ubuntu-latest
+    needs: build_linux
+    if: needs.build_linux.outputs.channel == 'nightly' && needs.build_linux.outputs.publish == 'true'
+    steps:
+      - name: Delete old nightly releases/tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const keepCount = Number('${{ needs.build_linux.outputs.keep_nightlies }}' || '14');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const releases = await github.paginate(github.rest.repos.listReleases, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+            const nightlies = releases
+              .filter((release) => release.tag_name && release.tag_name.startsWith('nightly-'))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            const stale = nightlies.slice(Math.max(keepCount, 0));
+            core.info(`Nightly releases found: ${nightlies.length}. Keeping: ${keepCount}. Pruning: ${stale.length}.`);
+
+            for (const release of stale) {
+              core.info(`Deleting release ${release.tag_name} (${release.id})`);
+              await github.rest.repos.deleteRelease({
+                owner,
+                repo,
+                release_id: release.id,
+              });
+
+              try {
+                await github.rest.git.deleteRef({
+                  owner,
+                  repo,
+                  ref: `tags/${release.tag_name}`,
+                });
+                core.info(`Deleted tag ${release.tag_name}`);
+              } catch (error) {
+                core.warning(`Failed to delete tag ${release.tag_name}: ${error.message}`);
+              }
+            }

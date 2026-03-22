@@ -21,10 +21,34 @@ class ColorGradingResource;
  * @namespace GaussianRenderConfig
  * @brief Contains standalone configuration types that can be used independently.
  *
- * Note: Some config types (RenderConfig, CullingConfig, PainterlyConfig) remain
- * defined inside GaussianSplatRenderer class because they reference class enums.
+ * Renderer-scoped config types live here as standalone types or small templates.
+ * GaussianSplatRenderer re-exports them with class-local aliases.
  */
 namespace GaussianRenderConfig {
+
+template <typename RenderModeT>
+struct RenderConfig {
+	RenderModeT render_mode = {};
+	float opacity_multiplier = 1.0f;
+	Ref<class ColorGradingResource> color_grading;
+};
+
+struct CullingConfig {
+	bool solid_coverage_enabled = false;
+	float solid_coverage_alpha_floor = 0.95f;
+};
+
+struct PainterlyConfig {
+	bool enabled = false;
+	bool enable_strokes = true;
+	bool low_end_mode = false;
+	float internal_scale = 1.0f;
+	float edge_threshold = 0.25f;
+	float edge_intensity = 1.5f;
+	float stroke_length = 32.0f;
+	float stroke_opacity = 0.8f;
+	float gamma = 2.2f;
+};
 
 /**
  * @struct StateUniformData
@@ -42,6 +66,19 @@ struct StateUniformData {
     Color outline_color = Color(1.0, 0.5, 0.0, 1.0);
 };
 static_assert(sizeof(StateUniformData) % 16 == 0, "StateUniformData must stay 16-byte aligned for std140 uploads");
+
+template <typename InteractiveStateT>
+struct InteractiveStateConfig {
+	StateUniformData uniform_data;
+	InteractiveStateT current_state = {};
+	HashMap<InteractiveStateT, RID> state_shaders;
+	bool state_dirty = false;
+	Color highlight_color = Color(1.2, 1.2, 0.8, 1.0);
+	Color outline_color = Color(1.0, 0.5, 0.0, 1.0);
+	float outline_width = 2.0f;
+	bool highlight_enabled = false;
+	bool outline_enabled = false;
+};
 
 } // namespace GaussianRenderConfig
 

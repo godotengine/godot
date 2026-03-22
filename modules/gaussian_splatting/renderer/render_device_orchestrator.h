@@ -27,6 +27,7 @@ public:
 	Dictionary build_device_capability_report() const;
 
 	void track_resource_owner(const RID &p_rid, RenderingDevice *p_device, bool p_owned, const char *p_label);
+	void forget_resource_owner(const RID &p_rid);
 	RenderingDevice *get_resource_owner(const RID &p_rid, RenderingDevice *p_fallback) const;
 	RenderingDevice *get_texture_owner_device(const RID &p_texture) const;
 	RenderingDevice *acquire_submission_device_for(RenderingDevice *p_device,

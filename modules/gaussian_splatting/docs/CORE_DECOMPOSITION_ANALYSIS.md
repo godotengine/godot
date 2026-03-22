@@ -34,7 +34,7 @@ Top 3 recommendations:
 | Candidate | Lines (approx) | Description | Effort |
 |-----------|----------------|-------------|--------|
 | `StreamingVisibilityController` | ~700 | Frustum culling, visibility lists, predictive prefetch, LOD blend calc (`VisibilityState`, `_update_chunk_visibility`, prefetch helpers) | Medium |
-| `StreamingUploadQueue` | ~450 | Async pack threads, upload budgeting, queue processing (`UploadQueueState`, `_pack_chunk_data`, `_process_upload_queue`) | Medium |
+| `StreamingUploadPipeline` | ~450 | Async pack threads, upload budgeting, queue processing (`StreamingUploadPipeline`, `_pack_chunk_data`, `_process_upload_queue`) — **extracted** to `core/streaming_upload_pipeline.h/.cpp` | Done |
 | `GlobalAtlasRegistry` | ~550 | Asset/chunk metadata, atlas buffers, residency sync (`_build_global_atlas_cpu_state`, `_sync_global_atlas_state`, request/evict/load helpers) | Medium-High |
 | `ChunkQuantization` | ~280 | `ChunkQuantizationInfo` + quantization config, buffer build/upload (`_compute_chunk_quantization`, `_upload_quantization_buffer`) | Medium |
 | `VRAMBudgetRegulator` | ~260 | Move to its own file with config + stats + update logic | Low |
@@ -44,7 +44,7 @@ Top 3 recommendations:
 
 #### Recommendations
 - **Short term**: Extract `VRAMBudgetRegulator` + `ChunkQuantization` into separate files (lowest coupling, well-bounded).
-- **Medium term**: Extract `UploadQueueState` and `VisibilityState` into companion classes with clear inputs/outputs to simplify `update_streaming`.
+- **Medium term**: Extract `VisibilityState` into a companion class with clear inputs/outputs to simplify `update_streaming`. (`UploadQueueState` already extracted as `StreamingUploadPipeline`.)
 - **Long term**: Move global atlas + residency into a dedicated registry module. This is the largest seam and will reduce complexity in streaming's main update loop.
 
 #### Notes / Potential dead or incomplete areas

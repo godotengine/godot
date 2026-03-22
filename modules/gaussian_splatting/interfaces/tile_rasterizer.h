@@ -85,8 +85,6 @@ private:
     RasterDebugOptions current_debug_options;
     bool using_external_renderer = false;
     Ref<RenderDeviceManager> device_manager;
-    RID tracked_color_output;
-    RID tracked_depth_output;
     void _bind_output_invalidation_callback();
     void _unbind_output_invalidation_callback();
 };
