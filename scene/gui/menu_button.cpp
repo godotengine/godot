@@ -244,7 +244,7 @@ MenuButton::MenuButton(const String &p_text) :
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
-	set_process_shortcut_input(true);
+	_update_shortcut_input();
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
@@ -255,7 +255,4 @@ MenuButton::MenuButton(const String &p_text) :
 	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed).bind(false));
 
 	property_helper.setup_for_instance(base_property_helper, this);
-}
-
-MenuButton::~MenuButton() {
 }
