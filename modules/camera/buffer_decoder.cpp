@@ -200,13 +200,106 @@ void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 
 JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
+	tj_instance = tj3Init(TJINIT_DECOMPRESS);
+	if (tj_instance) {
+		// Allow partial/corrupt JPEG decoding for streaming sources like cameras.
+		tj3Set(tj_instance, TJPARAM_STOPONWARNING, 0);
+	}
+	y_image.instantiate();
+	cbcr_image.instantiate();
+}
+
+JpegBufferDecoder::~JpegBufferDecoder() {
+	if (tj_instance) {
+		tj3Destroy(tj_instance);
+		tj_instance = nullptr;
+	}
 }
 
 void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
-	image_data.resize(p_buffer.length);
-	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
-	if (image->load_jpg_from_buffer(image_data) == OK) {
-		camera_feed->set_rgb_image(image);
+	if (!tj_instance) {
+		return;
 	}
+
+	size_t data_size = p_buffer.bytes_used > 0 ? p_buffer.bytes_used : p_buffer.length;
+	uint8_t *src = (uint8_t *)p_buffer.start;
+
+	// Verify JPEG SOI marker (FFD8).
+	if (data_size < 2 || src[0] != 0xFF || src[1] != 0xD8) {
+		return;
+	}
+
+	if (tj3DecompressHeader(tj_instance, src, data_size) < 0) {
+		return;
+	}
+
+	const int jpeg_width = tj3Get(tj_instance, TJPARAM_JPEGWIDTH);
+	const int jpeg_height = tj3Get(tj_instance, TJPARAM_JPEGHEIGHT);
+	const TJCS colorspace = (TJCS)tj3Get(tj_instance, TJPARAM_COLORSPACE);
+	const TJSAMP subsamp = (TJSAMP)tj3Get(tj_instance, TJPARAM_SUBSAMP);
+
+	if (tj3Get(tj_instance, TJPARAM_PRECISION) > 8) {
+		return;
+	}
+
+	// Grayscale images: decode directly.
+	if (colorspace == TJCS_GRAY || subsamp == TJSAMP_GRAY) {
+		// Resize buffer only if dimensions changed.
+		if (jpeg_width != buffer_width || jpeg_height != buffer_height) {
+			buffer_width = jpeg_width;
+			buffer_height = jpeg_height;
+			y_plane_buffer.resize(buffer_width * buffer_height);
+		}
+
+		if (tj3Decompress8(tj_instance, src, data_size, y_plane_buffer.ptrw(), 0, TJPF_GRAY) < 0) {
+			return;
+		}
+
+		image->set_data(buffer_width, buffer_height, false, Image::FORMAT_L8, y_plane_buffer);
+		camera_feed->set_rgb_image(image);
+		return;
+	}
+
+	// Color images: decode to YUV planes and pass to GPU shader for conversion.
+	const int y_plane_width = tj3YUVPlaneWidth(0, jpeg_width, subsamp);
+	const int y_plane_height = tj3YUVPlaneHeight(0, jpeg_height, subsamp);
+	const int cb_plane_width = tj3YUVPlaneWidth(1, jpeg_width, subsamp);
+	const int cb_plane_height = tj3YUVPlaneHeight(1, jpeg_height, subsamp);
+	const size_t y_size = (size_t)y_plane_width * y_plane_height;
+	const size_t cb_size = (size_t)cb_plane_width * cb_plane_height;
+
+	// Resize buffers only if dimensions changed.
+	if (jpeg_width != buffer_width || jpeg_height != buffer_height) {
+		buffer_width = jpeg_width;
+		buffer_height = jpeg_height;
+
+		y_plane_buffer.resize(y_size);
+		cb_plane_buffer.resize(cb_size);
+		cr_plane_buffer.resize(cb_size);
+		// CbCr interleaved buffer (LA8 format: L=Cb, A=Cr).
+		cbcr_buffer.resize(cb_size * 2);
+	}
+
+	// Set up YUV plane pointers (separate buffers, no extra copy needed for Y).
+	uint8_t *y_ptr = y_plane_buffer.ptrw();
+	uint8_t *cb_ptr = cb_plane_buffer.ptrw();
+	uint8_t *cr_ptr = cr_plane_buffer.ptrw();
+
+	unsigned char *planes[3] = { y_ptr, cb_ptr, cr_ptr };
+	int strides[3] = { y_plane_width, cb_plane_width, cb_plane_width };
+
+	if (tj3DecompressToYUVPlanes8(tj_instance, src, data_size, planes, strides) < 0) {
+		return;
+	}
+
+	// Interleave Cb and Cr into RG8 format for GPU shader (R=Cb, G=Cr).
+	uint8_t *cbcr_dst = cbcr_buffer.ptrw();
+	for (size_t i = 0; i < cb_size; i++) {
+		*cbcr_dst++ = cb_ptr[i]; // R channel = Cb (U)
+		*cbcr_dst++ = cr_ptr[i]; // G channel = Cr (V)
+	}
+
+	y_image->set_data(y_plane_width, y_plane_height, false, Image::FORMAT_L8, y_plane_buffer);
+	cbcr_image->set_data(cb_plane_width, cb_plane_height, false, Image::FORMAT_RG8, cbcr_buffer);
+	camera_feed->set_ycbcr_images(y_image, cbcr_image);
 }
