@@ -43,6 +43,9 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
+#include "core/io/dir_access.h"
+#include "core/io/json.h"
+#include "core/os/os.h"
 #endif
 
 #ifdef TESTS_ENABLED
@@ -3052,3 +3055,95 @@ void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> 
 bool ResourceFormatSaverGDScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<GDScript>(*p_resource) != nullptr;
 }
+
+#ifdef TOOLS_ENABLED
+
+void GDScriptLanguage::_check_snippets_reload() {
+	uint64_t current_time = OS::get_singleton()->get_ticks_usec();
+	if (current_time - snippets_last_check_time < 1000000) {
+		return;
+	}
+	snippets_last_check_time = current_time;
+
+	if (snippets_dir_path.is_empty()) {
+		snippets_dir_path = ProjectSettings::get_singleton()->get_resource_path() + "/snippets";
+	}
+
+	if (!DirAccess::exists(snippets_dir_path)) {
+		return;
+	}
+
+	Ref<DirAccess> dir = DirAccess::open(snippets_dir_path);
+	if (dir.is_null()) {
+		return;
+	}
+
+	uint64_t latest_timestamp = 0;
+	dir->list_dir_begin();
+	String file_name = dir->get_next();
+	while (!file_name.is_empty()) {
+		if (!dir->current_is_dir() && file_name.ends_with(".json")) {
+			String file_path = snippets_dir_path + "/" + file_name;
+			uint64_t file_time = FileAccess::get_modified_time(file_path);
+			if (file_time > latest_timestamp) {
+				latest_timestamp = file_time;
+			}
+		}
+		file_name = dir->get_next();
+	}
+	dir->list_dir_end();
+
+	if (latest_timestamp != snippets_dir_timestamp) {
+		snippets_dir_timestamp = latest_timestamp;
+		load_snippets();
+	}
+}
+
+void GDScriptLanguage::load_snippets() {
+	snippets.clear();
+	if (snippets_dir_path.is_empty() || !DirAccess::exists(snippets_dir_path)) {
+		return;
+	}
+
+	Ref<DirAccess> dir = DirAccess::open(snippets_dir_path);
+	if (dir.is_null()) {
+		return;
+	}
+
+	dir->list_dir_begin();
+	String file_name = dir->get_next();
+	while (!file_name.is_empty()) {
+		if (!dir->current_is_dir() && file_name.ends_with(".json")) {
+			_load_snippet_file(snippets_dir_path + "/" + file_name);
+		}
+		file_name = dir->get_next();
+	}
+	dir->list_dir_end();
+}
+
+void GDScriptLanguage::_load_snippet_file(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return;
+	}
+
+	String content = f->get_as_text();
+	JSON json;
+	if (json.parse(content) != OK) {
+		return;
+	}
+
+	Dictionary snippet_data = json.get_data();
+	if (!snippet_data.has("prefix") || !snippet_data.has("body")) {
+		return;
+	}
+
+	SnippetConfig config(snippet_data.get("prefix", ""), snippet_data.get("body", ""),
+			snippet_data.get("description", ""));
+
+	if (!config.prefix.is_empty() && !config.body.is_empty()) {
+		snippets[config.prefix] = config;
+	}
+}
+
+#endif // TOOLS_ENABLED

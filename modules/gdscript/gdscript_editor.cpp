@@ -3446,6 +3446,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 }
 
 ::Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+	_check_snippets_reload();
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
@@ -3847,6 +3848,18 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 			_find_identifiers_in_class(completion_context.current_class, true, false, false, true, !_guess_expecting_callable(completion_context), options, 0);
 		} break;
+	}
+
+	if (completion_context.type == GDScriptParser::COMPLETION_IDENTIFIER ||
+		completion_context.type == GDScriptParser::COMPLETION_METHOD ||
+		completion_context.type == GDScriptParser::COMPLETION_NONE) {
+		for (const KeyValue<String, SnippetConfig> &E : snippets) {
+			const SnippetConfig &snippet = E.value;
+			ScriptLanguage::CodeCompletionOption option(snippet.prefix, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			option.insert_text = snippet.body;
+			option.display = snippet.prefix + "\t[snippet] " + snippet.description;
+			options.insert(option.display, option);
+		}
 	}
 
 	for (const KeyValue<String, ScriptLanguage::CodeCompletionOption> &E : options) {

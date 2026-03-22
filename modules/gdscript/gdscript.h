@@ -419,6 +419,26 @@ class GDScriptLanguage : public ScriptLanguage {
 	HashMap<StringName, Variant> named_globals;
 	Vector<int> global_array_empty_indexes;
 
+#ifdef TOOLS_ENABLED
+	struct SnippetConfig {
+		String prefix;
+		String body;
+		String description;
+
+		SnippetConfig() {}
+
+		SnippetConfig(const String &p_prefix, const String &p_body, const String &p_description) :
+				prefix(p_prefix), body(p_body), description(p_description) {}
+	};
+
+	HashMap<String, SnippetConfig> snippets;
+	String snippets_dir_path;
+	uint64_t snippets_dir_timestamp = 0;
+	uint64_t snippets_last_check_time = 0;
+	void _load_snippet_file(const String &p_path);
+	void _check_snippets_reload();
+#endif
+
 	struct CallLevel {
 		Variant *stack = nullptr;
 		GDScriptFunction *function = nullptr;
@@ -605,6 +625,7 @@ public:
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
+	void load_snippets();
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif
 	virtual String _get_indentation() const;
