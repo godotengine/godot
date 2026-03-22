@@ -37,17 +37,23 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/version_generated.gen.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/scene/material_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/sky.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
+
+#include "modules/regex/regex.h"
 
 /*** SHADER SYNTAX HIGHLIGHTER ****/
 
@@ -98,6 +104,503 @@ void GDShaderSyntaxHighlighter::set_disabled_branch_color(const Color &p_color) 
 	clear_highlighting_cache();
 }
 
+/*** SHADER PREVIEW LINE LAYER ****/
+
+void TextShaderPreviewLineLayer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			line_color = Color(EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor)), 0.7);
+		} break;
+		case NOTIFICATION_DRAW: {
+			const Rect2i visible_rect = scroll_container->get_global_rect();
+
+			for (const KeyValue<int, TextShaderPreview *> &E : *previews) {
+				const Control *surface_container = E.value->get_surface_container();
+
+				Point2 start_pos = surface_container->get_global_position() + surface_container->get_size() * Point2(1.0, 0.5) + Point2(1.0, 0.0) * EDSCALE;
+				if (!visible_rect.has_point(start_pos)) {
+					continue;
+				}
+
+				Point2i end_pos = code_editor->get_pos_at_line_column(E.key, 0);
+				if (end_pos.x == -1) {
+					continue;
+				}
+				end_pos.y -= code_editor->get_line_height() / 2;
+				end_pos.x = code_editor->get_line_start_margin() + code_editor->get_gutter_width(0) / 2.0;
+
+				draw_line(start_pos, code_editor->get_global_position() + end_pos, line_color, EDSCALE, true);
+			}
+		} break;
+	}
+}
+
+void TextShaderPreviewLineLayer::set_previews(HashMap<int, TextShaderPreview *> &p_previews) {
+	previews = &p_previews;
+}
+
+void TextShaderPreviewLineLayer::set_code_editor(CodeEdit *p_code_editor) {
+	code_editor = p_code_editor;
+}
+
+void TextShaderPreviewLineLayer::set_scroll_container(ScrollContainer *p_scroll_container) {
+	scroll_container = p_scroll_container;
+}
+
+TextShaderPreviewLineLayer::TextShaderPreviewLineLayer() {
+	set_as_top_level(true);
+}
+
+/***  SHADER PREVIEW ****/
+
+HashMap<String, String> TextShaderPreview::spatial_assignments = {
+	{ "bool", "ALBEDO = vec3(float(%s)); ALPHA = 1.0;" },
+	{ "int", "ALBEDO = vec3(float(%s)); ALPHA = 1.0;" },
+	{ "float", "ALBEDO = vec3(%s); ALPHA = 1.0;" },
+	{ "vec2", "ALBEDO = vec3(%s.rg, 0.0); ALPHA = 1.0;" },
+	{ "vec3", "ALBEDO = %s; ALPHA = 1.0;" },
+	{ "vec4", "vec4 __sp_v4 = %s; ALBEDO = __sp_v4.rgb; ALPHA = __sp_v4.a;" },
+};
+
+HashMap<String, String> TextShaderPreview::canvas_assignments = {
+	{ "bool", "COLOR = vec4(vec3(float(%s)), 1.0);" },
+	{ "int", "COLOR = vec4(vec3(float(%s)), 1.0);" },
+	{ "float", "COLOR = vec4(vec3(%s), 1.0);" },
+	{ "vec2", "COLOR = vec4(%s, 0.0, 1.0);" },
+	{ "vec3", "COLOR = vec4(%s, 1.0);" },
+	{ "vec4", "COLOR = %s;" },
+};
+
+HashMap<String, String> TextShaderPreview::builtin_spatial_types = {
+	{ "NORMAL_MAP_DEPTH", "float" },
+	{ "DEPTH", "float" },
+	{ "ALPHA", "float" },
+	{ "ALPHA_SCISSOR_THRESHOLD", "float" },
+	{ "ALPHA_HASH_SCALE", "float" },
+	{ "ALPHA_ANTIALIASING_EDGE", "float" },
+	{ "PREMUL_ALPHA_FACTOR", "float" },
+	{ "METALLIC", "float" },
+	{ "SPECULAR", "float" },
+	{ "ROUGHNESS", "float" },
+	{ "RIM", "float" },
+	{ "RIM_TINT", "float" },
+	{ "CLEARCOAT", "float" },
+	{ "CLEARCOAT_ROUGHNESS", "float" },
+	{ "ANISOTROPY", "float" },
+	{ "SSS_STRENGTH", "float" },
+	{ "SSS_TRANSMITTANCE_DEPTH", "float" },
+	{ "SSS_TRANSMITTANCE_BOOST", "float" },
+	{ "AO", "float" },
+	{ "AO_LIGHT_AFFECT", "float" },
+
+	{ "ALPHA_TEXTURE_COORDINATE", "vec2" },
+	{ "ANISOTROPY_FLOW", "vec2" },
+
+	{ "NORMAL", "vec3" },
+	{ "NORMAL_MAP", "vec3" },
+	{ "LIGHT_VERTEX", "vec3" },
+	{ "TANGENT", "vec3" },
+	{ "BINORMAL", "vec3" },
+	{ "ALBEDO", "vec3" },
+	{ "BACKLIGHT", "vec3" },
+	{ "EMISSION", "vec3" },
+	{ "BENT_NORMAL_MAP", "vec3" },
+
+	{ "FOG", "vec4" },
+	{ "RADIANCE", "vec4" },
+	{ "IRRADIANCE", "vec4" },
+	{ "SSS_TRANSMITTANCE_COLOR", "vec4" },
+};
+
+HashMap<String, String> TextShaderPreview::builtin_canvas_types = {
+	{ "NORMAL_MAP_DEPTH", "float" },
+
+	{ "SHADOW_VERTEX", "vec2" },
+	{ "VERTEX", "vec2" },
+
+	{ "NORMAL", "vec3" },
+	{ "NORMAL_MAP", "vec3" },
+	{ "LIGHT_VERTEX", "vec3" },
+
+	{ "COLOR", "vec4" },
+};
+
+TextShaderPreview::TextShaderPreview() {
+	surface_container = memnew(MarginContainer);
+	surface_container->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
+	add_child(surface_container);
+
+	env.instantiate();
+	Ref<Sky> sky = memnew(Sky);
+	env->set_sky(sky);
+	env->set_background(Environment::BG_COLOR);
+	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+
+	surface = memnew(MaterialEditor);
+	surface_container->add_child(surface);
+
+	error_label = memnew(Label);
+	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	error_label->set_v_size_flags(SIZE_EXPAND_FILL);
+	error_label->hide();
+	surface_container->add_child(error_label);
+
+	HBoxContainer *buttons_hbox = memnew(HBoxContainer);
+	add_child(buttons_hbox);
+
+	goto_button = memnew(Button);
+	goto_button->connect(SceneStringName(pressed), callable_mp(this, &TextShaderPreview::_goto_pressed));
+	goto_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	buttons_hbox->add_child(goto_button);
+
+	delete_button = memnew(Button);
+	delete_button->connect(SceneStringName(pressed), callable_mp(this, &TextShaderPreview::_delete_pressed));
+	buttons_hbox->add_child(delete_button);
+
+	shader_material.instantiate();
+}
+
+void TextShaderPreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			delete_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			goto_button->set_text(vformat(TTR("Go to Line %d"), line + 1));
+		} break;
+	}
+}
+
+void TextShaderPreview::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("goto_btn_pressed"));
+	ADD_SIGNAL(MethodInfo("remove_btn_pressed"));
+}
+
+void TextShaderPreview::_goto_pressed() {
+	emit_signal("goto_btn_pressed");
+}
+
+void TextShaderPreview::_delete_pressed() {
+	emit_signal("remove_btn_pressed");
+}
+
+String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lines, int p_line) const {
+	int brace_stack = 0;
+
+	Ref<RegEx> regex;
+	regex.instantiate();
+	regex->compile(R"(void\s+(\w+)\s*\()");
+
+	for (int i = p_line; i >= 0; i--) {
+		// Strip comments and trailing whitespace.
+		String clean_line = p_lines[i].split("//")[0].strip_edges();
+		if (clean_line.is_empty()) {
+			continue;
+		}
+
+		brace_stack += clean_line.count("}");
+		brace_stack -= clean_line.count("{");
+
+		if (brace_stack < 0) {
+			Ref<RegExMatch> m = regex->search(clean_line);
+			if (m.is_valid()) {
+				return m->get_string(1);
+			}
+		}
+	}
+
+	return String(); // Global scope.
+}
+
+bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const {
+	Ref<RegEx> var_regex;
+	var_regex.instantiate();
+	var_regex->compile(R"(([\w.]+)\s*([+\-*/%]?=)(?!=))");
+
+	// Walk backward from the caret to find the line with the assignment operator.
+	int start = p_line;
+	Ref<RegExMatch> var_match = var_regex->search(p_lines[start]);
+	while (!var_match.is_valid() && start > 0) {
+		String current_line = p_lines[start].strip_edges();
+
+		if (start < p_line && (current_line.is_empty() || current_line.ends_with(";") || current_line.ends_with("{") || current_line.ends_with("}"))) {
+			return false;
+		}
+
+		start -= 1;
+		var_match = var_regex->search(p_lines[start]);
+	}
+
+	if (!var_match.is_valid()) {
+		return false;
+	}
+
+	// Flow control selection can't be previewed.
+	Ref<RegEx> flow_regex;
+	flow_regex.instantiate();
+	flow_regex->compile(R"(^(else\s+)?(if|while|for)\b)");
+	if (flow_regex->search(p_lines[start].strip_edges()).is_valid()) {
+		return false;
+	}
+
+	int end = start;
+	int max_scan = MIN(start + 20, p_lines.size() - 1);
+	while (end < max_scan && !p_lines[end].strip_edges().ends_with(";")) {
+		end += 1;
+	}
+
+	if (!p_lines[end].strip_edges().ends_with(";")) {
+		return false;
+	}
+
+	if (p_line > end) {
+		return false;
+	}
+
+	String full_captured_path = var_match->get_string(1); // e.g my_vec.xy.
+	r_var_name = full_captured_path.split(".")[0]; // e.g my_vec.
+	r_start = start;
+	r_end = end;
+
+	return true;
+}
+
+String TextShaderPreview::_find_var_type(const PackedStringArray &p_lines, const String &p_var_name, int p_line, bool p_mode_3d) {
+	HashMap<String, String> &builtin_types = p_mode_3d ? builtin_spatial_types : builtin_canvas_types;
+	if (builtin_types.has(p_var_name)) {
+		return builtin_types[p_var_name];
+	}
+
+	Ref<RegEx> type_regex;
+	type_regex.instantiate();
+
+	// Matches a type keyword, followed by anything except a semicolon, then the variable name.
+	// This safely handles: "float my_var;" and "float a, b, my_var;"
+	type_regex->compile(R"(\b(float|vec2|vec3|vec4|int|bool)\b[^(;]*\b)" + p_var_name + R"(\b)");
+
+	// Walk backwards from the end of the assignment statement.
+	for (int i = p_line; i >= 0; i--) {
+		// Strip out comments before checking so we don't catch commented-out declarations.
+		String clean_line = p_lines[i].split("//")[0];
+
+		Ref<RegExMatch> m = type_regex->search(clean_line);
+		if (m.is_valid()) {
+			return m->get_string(1);
+		}
+	}
+
+	return String();
+}
+
+bool TextShaderPreview::_match_uniforms(const Ref<ShaderMaterial> &p_source, const Ref<ShaderMaterial> &p_target) const {
+	if (p_source->get_shader().is_null() || p_target->get_shader().is_null()) {
+		return false;
+	}
+
+	List<PropertyInfo> source_params;
+	List<PropertyInfo> target_params;
+
+	p_source->get_shader()->get_shader_uniform_list(&source_params);
+	p_target->get_shader()->get_shader_uniform_list(&target_params);
+
+	if (source_params.size() != target_params.size()) {
+		return false;
+	}
+
+	RBSet<String> target_set;
+	for (const PropertyInfo &p : target_params) {
+		target_set.insert(p.name + itos(p.type));
+	}
+
+	for (const PropertyInfo &p : source_params) {
+		String key = p.name + itos(p.type);
+		if (!target_set.has(key)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void TextShaderPreview::_sync_shader_parameters(const Ref<ShaderMaterial> &p_source, Ref<ShaderMaterial> &p_target) {
+	if (p_source->get_shader().is_null()) {
+		return;
+	}
+
+	List<PropertyInfo> params;
+	p_source->get_shader()->get_shader_uniform_list(&params);
+
+	for (const PropertyInfo &p : params) {
+		String param_name = p.name;
+		Variant param_value = p_source->get_shader_parameter(param_name);
+
+		p_target->set_shader_parameter(param_name, param_value);
+	}
+}
+
+void TextShaderPreview::_reset_shader_parameters(Ref<ShaderMaterial> &p_target) {
+	List<PropertyInfo> params;
+	p_target->get_shader()->get_shader_uniform_list(&params);
+
+	for (const PropertyInfo &p : params) {
+		String param_name = p.name;
+		p_target->set_shader_parameter(param_name, Variant());
+	}
+}
+
+void TextShaderPreview::_show_error(const String &p_error) {
+	surface->edit(Ref<Material>(), env);
+	error_label->set_text(p_error);
+	error_label->show();
+}
+
+void TextShaderPreview::show_shader_compile_error() {
+	_show_error(TTRC("Shader must be compiled correctly."));
+}
+
+void TextShaderPreview::recompile(const String &p_code) {
+	set_shader_code(p_code, line, in_comment);
+}
+
+Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
+	const Object *object = InspectorDock::get_inspector_singleton()->get_edited_object();
+	if (!object) {
+		return Ref<ShaderMaterial>();
+	}
+
+	const CanvasItem *ci = Object::cast_to<CanvasItem>(object);
+	if (ci) {
+		const Ref<ShaderMaterial> canvas_material = ci->get_material();
+		if (canvas_material.is_valid() && _match_uniforms(canvas_material, shader_material)) {
+			return canvas_material;
+		}
+
+		return Ref<ShaderMaterial>();
+	}
+
+	const GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(object);
+	if (gi) {
+		const Ref<ShaderMaterial> material_overlay = gi->get_material_overlay();
+		if (material_overlay.is_valid() && _match_uniforms(material_overlay, shader_material)) {
+			return material_overlay;
+		}
+
+		const Ref<ShaderMaterial> material_override = gi->get_material_override();
+		if (material_override.is_valid() && _match_uniforms(material_override, shader_material)) {
+			return material_override;
+		}
+
+		const MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(object);
+		if (mi) {
+			const Ref<Mesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()) {
+				for (int i = 0; i < mesh->get_surface_count(); i++) {
+					const Ref<ShaderMaterial> surface_material = Object::cast_to<ShaderMaterial>(mi->get_surface_override_material(i).ptr());
+
+					if (surface_material.is_valid() && _match_uniforms(surface_material, shader_material)) {
+						return surface_material;
+					}
+				}
+			}
+		}
+	}
+
+	return Ref<ShaderMaterial>();
+}
+
+void TextShaderPreview::sync_shader_parameters() {
+	if (shader_material->get_shader().is_null()) {
+		return;
+	}
+	const Ref<ShaderMaterial> src_mat = _get_source_material();
+	if (src_mat.is_valid()) {
+		_sync_shader_parameters(src_mat, shader_material);
+	} else {
+		_reset_shader_parameters(shader_material);
+	}
+}
+
+MarginContainer *TextShaderPreview::get_surface_container() const {
+	return surface_container;
+}
+
+void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p_in_comment) {
+	line = p_line;
+	in_comment = p_in_comment;
+	goto_button->set_text(vformat(TTR("Go to Line %d"), line + 1));
+
+	String shader_type = ShaderLanguage::get_shader_type(p_code);
+	bool mode_3d = shader_type == "spatial";
+
+	if (shader_type != "canvas_item" && !mode_3d) {
+		_show_error(TTRC("Shader type must be either `canvas_item` or `spatial` to correctly set a preview."));
+		return;
+	}
+
+	const PackedStringArray lines = p_code.split("\n");
+	String enclosing_function = _get_enclosing_function(lines, p_line);
+
+	if (enclosing_function != "fragment") {
+		_show_error(TTRC("Preview only supports assignments in the `fragment()` function."));
+		return;
+	}
+
+	String var_name;
+	int start;
+	int end;
+
+	if (in_comment || !_find_statement(lines, p_line, var_name, start, end)) {
+		_show_error(TTRC("The selected line needs to be an assignment."));
+		return;
+	}
+
+	String type = _find_var_type(lines, var_name, end, mode_3d);
+
+	// All code before assignment stays as it was.
+	PackedStringArray truncated_lines = lines.slice(0, end + 1);
+
+	String injection;
+	HashMap<String, String> &assignments = mode_3d ? spatial_assignments : canvas_assignments;
+	if (!assignments.has(type)) {
+		_show_error(TTRC("Preview unavailable for current assignment.\nSupported types are: `bool`, `int`, `float`, `vec2`, `vec3`, `vec4`."));
+		return;
+	}
+	injection = assignments[type].replace("%s", var_name);
+	truncated_lines.append(injection);
+
+	String full_truncated_text = "\n";
+	full_truncated_text = full_truncated_text.join(truncated_lines);
+
+	int open_braces = full_truncated_text.count("{");
+	int closed_braces = full_truncated_text.count("}");
+	int needed_closures = open_braces - closed_braces;
+
+	for (int i = 0; i < needed_closures; i++) {
+		full_truncated_text += "\n}";
+	}
+
+	Ref<Shader> shader;
+	shader.instantiate();
+	shader->set_code(full_truncated_text);
+	shader_material->set_shader(shader);
+
+	const Ref<ShaderMaterial> src_mat = _get_source_material();
+	if (src_mat.is_valid()) {
+		_sync_shader_parameters(src_mat, shader_material);
+	} else {
+		_reset_shader_parameters(shader_material);
+	}
+
+	surface->show();
+	error_label->hide();
+	surface->edit(shader_material.ptr(), env);
+}
+
 /*** SHADER SCRIPT EDITOR ****/
 
 static bool saved_warnings_enabled = false;
@@ -108,6 +611,9 @@ static uint32_t saved_warning_flags = 0U;
 void ShaderTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			get_text_editor()->add_theme_color_override("breakpoint_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor)));
+			get_text_editor()->add_theme_icon_override("breakpoint", get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+
 			if (is_visible_in_tree()) {
 				_load_theme_settings();
 				if (warnings.size() > 0 && last_compile_result == OK) {
@@ -189,6 +695,69 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 
 	_validate_script();
 	_line_col_changed();
+}
+
+void ShaderTextEditor::goto_shader_preview(int p_line) {
+	goto_line_centered(p_line);
+}
+
+void ShaderTextEditor::clear_previews() {
+	for (KeyValue<int, TextShaderPreview *> pair : previews) {
+		pair.value->queue_free();
+	}
+	previews.clear();
+}
+
+void ShaderTextEditor::redraw_preview_lines() {
+	preview_line_layer->queue_redraw();
+}
+
+void ShaderTextEditor::recompile_previews() {
+	for (KeyValue<int, TextShaderPreview *> &E : previews) {
+		E.value->recompile(get_text_editor()->get_text());
+	}
+}
+
+void ShaderTextEditor::update_parameters() {
+	for (KeyValue<int, TextShaderPreview *> &E : previews) {
+		E.value->sync_shader_parameters();
+	}
+}
+
+TextShaderPreviewLineLayer *ShaderTextEditor::get_preview_line_layer() const {
+	return preview_line_layer;
+}
+
+TextShaderPreview *ShaderTextEditor::get_preview(int p_line) const {
+	if (previews.has(p_line)) {
+		return previews[p_line];
+	}
+	return nullptr;
+}
+
+void ShaderTextEditor::toggle_shader_preview(int p_line) {
+	CodeEdit *tx = get_text_editor();
+
+	TextShaderPreview *preview = memnew(TextShaderPreview);
+	previews.insert(p_line, preview);
+
+	if (last_compile_result != OK) {
+		preview->show_shader_compile_error();
+	} else {
+		preview->set_shader_code(tx->get_text(), p_line, tx->is_in_comment(p_line) != -1);
+	}
+
+	preview->connect("goto_btn_pressed", callable_mp(this, &ShaderTextEditor::goto_shader_preview).bind(p_line));
+	preview->connect("remove_btn_pressed", callable_mp(this, &ShaderTextEditor::remove_shader_preview).bind(p_line));
+	preview_box->add_child(preview);
+}
+
+void ShaderTextEditor::remove_shader_preview(int p_line) {
+	get_text_editor()->set_line_as_breakpoint(p_line, false);
+}
+
+void ShaderTextEditor::set_preview_box(Control *p_box) {
+	preview_box = p_box;
 }
 
 void ShaderTextEditor::reload_text() {
@@ -502,8 +1071,10 @@ void ShaderTextEditor::_validate_script() {
 	String filename;
 	if (shader.is_valid()) {
 		filename = shader->get_path();
+		get_text_editor()->set_draw_breakpoints_gutter(true);
 	} else if (shader_inc.is_valid()) {
 		filename = shader_inc->get_path();
+		get_text_editor()->set_draw_breakpoints_gutter(false);
 	}
 	last_compile_result = preprocessor.preprocess(code, filename, code_pp, &error_pp, &err_positions, &regions);
 
@@ -554,6 +1125,10 @@ void ShaderTextEditor::_validate_script() {
 		get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
 
 		set_warning_count(0);
+
+		for (KeyValue<int, TextShaderPreview *> pair : previews) {
+			pair.value->show_shader_compile_error();
+		}
 	} else {
 		ShaderLanguage sl;
 
@@ -624,8 +1199,16 @@ void ShaderTextEditor::_validate_script() {
 			set_error_pos(err_line - 1, 0);
 
 			get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
+
+			for (KeyValue<int, TextShaderPreview *> pair : previews) {
+				pair.value->show_shader_compile_error();
+			}
 		} else {
 			set_error("");
+
+			for (KeyValue<int, TextShaderPreview *> pair : previews) {
+				pair.value->set_shader_code(code, pair.key, get_text_editor()->is_in_comment(pair.key) != -1);
+			}
 		}
 
 		if (warnings.size() > 0 || last_compile_result != OK) {
@@ -696,62 +1279,70 @@ void ShaderTextEditor::_bind_methods() {
 ShaderTextEditor::ShaderTextEditor() {
 	syntax_highlighter.instantiate();
 	get_text_editor()->set_syntax_highlighter(syntax_highlighter);
+
+	preview_line_layer = memnew(TextShaderPreviewLineLayer);
+	preview_line_layer->set_previews(previews);
+	preview_line_layer->set_code_editor(get_text_editor());
+	add_child(preview_line_layer);
+
+	InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(this, &ShaderTextEditor::recompile_previews));
 }
 
 /*** SCRIPT EDITOR ******/
 
 void TextShaderEditor::_menu_option(int p_option) {
-	code_editor->get_text_editor()->apply_ime();
+	CodeEdit *tx = code_editor->get_text_editor();
+	tx->apply_ime();
 
 	switch (p_option) {
 		case EDIT_UNDO: {
-			code_editor->get_text_editor()->undo();
+			tx->undo();
 		} break;
 		case EDIT_REDO: {
-			code_editor->get_text_editor()->redo();
+			tx->redo();
 		} break;
 		case EDIT_CUT: {
-			code_editor->get_text_editor()->cut();
+			tx->cut();
 		} break;
 		case EDIT_COPY: {
-			code_editor->get_text_editor()->copy();
+			tx->copy();
 		} break;
 		case EDIT_PASTE: {
-			code_editor->get_text_editor()->paste();
+			tx->paste();
 		} break;
 		case EDIT_SELECT_ALL: {
-			code_editor->get_text_editor()->select_all();
+			tx->select_all();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-			code_editor->get_text_editor()->move_lines_up();
+			tx->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-			code_editor->get_text_editor()->move_lines_down();
+			tx->move_lines_down();
 		} break;
 		case EDIT_INDENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-			code_editor->get_text_editor()->indent_lines();
+			tx->indent_lines();
 		} break;
 		case EDIT_UNINDENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-			code_editor->get_text_editor()->unindent_lines();
+			tx->unindent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
-			code_editor->get_text_editor()->delete_lines();
+			tx->delete_lines();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
-			code_editor->get_text_editor()->duplicate_selection();
+			tx->duplicate_selection();
 		} break;
 		case EDIT_DUPLICATE_LINES: {
-			code_editor->get_text_editor()->duplicate_lines();
+			tx->duplicate_lines();
 		} break;
 		case EDIT_TOGGLE_WORD_WRAP: {
-			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
-			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
+			TextEdit::LineWrappingMode wrap = tx->get_line_wrapping_mode();
+			tx->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
@@ -760,7 +1351,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->toggle_inline_comment("//");
 		} break;
 		case EDIT_COMPLETE: {
-			code_editor->get_text_editor()->request_code_completion();
+			tx->request_code_completion();
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -789,18 +1380,94 @@ void TextShaderEditor::_menu_option(int p_option) {
 		case BOOKMARK_REMOVE_ALL: {
 			code_editor->remove_all_bookmarks();
 		} break;
+		case PREVIEW_TOGGLE: {
+			Vector<int> sorted_carets = tx->get_sorted_carets();
+			int last_line = -1;
+
+			for (const int &c : sorted_carets) {
+				int from = tx->get_selection_from_line(c);
+				from += from == last_line ? 1 : 0;
+
+				int to = tx->get_selection_to_line(c);
+				if (to < from) {
+					continue;
+				}
+
+				// Check first if there's any lines with breakpoints in the selection.
+				bool selection_has_breakpoints = false;
+				for (int line = from; line <= to; line++) {
+					if (tx->is_line_breakpointed(line)) {
+						selection_has_breakpoints = true;
+						break;
+					}
+				}
+
+				// Set breakpoint on caret or remove all bookmarks from the selection.
+				if (!selection_has_breakpoints) {
+					if (tx->get_caret_line(c) != last_line) {
+						tx->set_line_as_breakpoint(tx->get_caret_line(c), true);
+					}
+				} else {
+					for (int line = from; line <= to; line++) {
+						tx->set_line_as_breakpoint(line, false);
+					}
+				}
+
+				last_line = to;
+			}
+		} break;
+		case PREVIEW_REMOVE_ALL: {
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
+
+			for (int i = 0; i < bpoints.size(); i++) {
+				int line = bpoints[i];
+				bool dobreak = !tx->is_line_breakpointed(line);
+
+				tx->set_line_as_breakpoint(line, dobreak);
+			}
+		} break;
+		case PREVIEW_GOTO_NEXT: {
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
+			if (bpoints.is_empty()) {
+				return;
+			}
+
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = 0;
+			if (current_line < (int)bpoints[bpoints.size() - 1]) {
+				while (bpoint_idx < bpoints.size() && bpoints[bpoint_idx] <= current_line) {
+					bpoint_idx++;
+				}
+			}
+			_focus_preview_line(bpoints[bpoint_idx]);
+		} break;
+		case PREVIEW_GOTO_PREV: {
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
+			if (bpoints.is_empty()) {
+				return;
+			}
+
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = bpoints.size() - 1;
+			if (current_line > (int)bpoints[0]) {
+				while (bpoint_idx >= 0 && bpoints[bpoint_idx] >= current_line) {
+					bpoint_idx--;
+				}
+			}
+			_focus_preview_line(bpoints[bpoint_idx]);
+		} break;
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", GODOT_VERSION_DOCS_URL));
 		} break;
 		case EDIT_EMOJI_AND_SYMBOL: {
-			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
+			tx->show_emoji_and_symbol_picker();
 		} break;
 		case EDIT_JOIN_LINES: {
-			code_editor->get_text_editor()->join_lines();
+			tx->join_lines();
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred(false);
+		callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 	}
 }
 
@@ -819,6 +1486,16 @@ void TextShaderEditor::_notification(int p_what) {
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
 				_apply_editor_settings();
 			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree() && preview_timer->is_inside_tree()) {
+				preview_timer->start();
+			}
+		} break;
+
+		case NOTIFICATION_RESIZED: {
+			preview_timer->start();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -855,15 +1532,22 @@ void TextShaderEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validation_changed"));
 }
 
-void TextShaderEditor::ensure_select_current() {
-}
-
 void TextShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
 void TextShaderEditor::_project_settings_changed() {
 	_update_warnings(true);
+}
+
+void TextShaderEditor::_focus_preview_line(int p_line) {
+	code_editor->goto_line_centered(p_line);
+
+	TextShaderPreview *preview = code_editor->get_preview(p_line);
+	if (preview) {
+		preview_sbox->ensure_control_visible(preview);
+	}
+	preview_timer->start();
 }
 
 void TextShaderEditor::_update_warnings(bool p_validate) {
@@ -1129,6 +1813,36 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 }
 
+void TextShaderEditor::_on_shader_preview_toggled(int p_line) {
+	if (!pending_update_shader_previews) {
+		pending_update_shader_previews = true;
+		callable_mp(this, &TextShaderEditor::_update_shader_previews).call_deferred();
+	}
+}
+
+void TextShaderEditor::_update_shader_previews() {
+	pending_update_shader_previews = false;
+
+	const CodeEdit *ce = code_editor->get_text_editor();
+	code_editor->clear_previews();
+	bool found = false;
+
+	for (int i = 0; i < ce->get_line_count(); i++) {
+		if (ce->is_line_breakpointed(i)) {
+			found = true;
+			code_editor->toggle_shader_preview(i);
+		}
+	}
+
+	code_editor->redraw_preview_lines();
+
+	if (!found) {
+		preview_box->hide();
+		return;
+	}
+	preview_box->show();
+}
+
 void TextShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->clear();
 
@@ -1164,10 +1878,49 @@ void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
+void TextShaderEditor::_update_shader_preview_list() {
+	previews_menu->clear();
+	previews_menu->reset_size();
+
+	previews_menu->add_shortcut(ED_GET_SHORTCUT("shader_text_editor/toggle_shader_preview"), PREVIEW_TOGGLE);
+	previews_menu->add_shortcut(ED_GET_SHORTCUT("shader_text_editor/remove_all_shader_previews"), PREVIEW_REMOVE_ALL);
+	previews_menu->add_shortcut(ED_GET_SHORTCUT("shader_text_editor/goto_next_shader_preview"), PREVIEW_GOTO_NEXT);
+	previews_menu->add_shortcut(ED_GET_SHORTCUT("shader_text_editor/goto_previous_shader_preview"), PREVIEW_GOTO_PREV);
+
+	PackedInt32Array breakpoint_list = get_code_editor()->get_text_editor()->get_breakpointed_lines();
+	if (breakpoint_list.is_empty()) {
+		return;
+	}
+
+	previews_menu->add_separator();
+
+	for (int i = 0; i < breakpoint_list.size(); i++) {
+		// Strip edges to remove spaces or tabs.
+		// Also replace any tabs by spaces, since we can't print tabs in the menu.
+		String line = get_code_editor()->get_text_editor()->get_line(breakpoint_list[i]).replace("\t", "  ").strip_edges();
+
+		// Limit the size of the line if too big.
+		if (line.length() > 50) {
+			line = line.substr(0, 50);
+		}
+
+		previews_menu->add_item(String::num_int64(breakpoint_list[i] + 1) + " - `" + line + "`");
+		previews_menu->set_item_metadata(-1, breakpoint_list[i]);
+	}
+}
+
+void TextShaderEditor::_shader_preview_item_pressed(int p_idx) {
+	if (p_idx < 4) { // Any item before the separator.
+		_menu_option(previews_menu->get_item_id(p_idx));
+	} else {
+		_focus_preview_line(previews_menu->get_item_metadata(p_idx));
+	}
+}
+
 void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	if (p_selection) {
@@ -1195,6 +1948,16 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 	context_menu->popup();
 }
 
+void TextShaderEditor::register_editor() {
+	ED_SHORTCUT("shader_text_editor/toggle_shader_preview", TTRC("Toggle Shader Preview"), Key::F9);
+	ED_SHORTCUT_OVERRIDE("shader_text_editor/toggle_shader_preview", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
+
+	ED_SHORTCUT("shader_text_editor/remove_all_shader_previews", TTRC("Remove All Shader Previews"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);
+	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
+	ED_SHORTCUT("shader_text_editor/goto_next_shader_preview", TTRC("Go to Next Shader Preview"), KeyModifierMask::CTRL | Key::PERIOD);
+	ED_SHORTCUT("shader_text_editor/goto_previous_shader_preview", TTRC("Go to Previous Shader Preview"), KeyModifierMask::CTRL | Key::COMMA);
+}
+
 TextShaderEditor::TextShaderEditor() {
 	_update_warnings(false);
 
@@ -1211,9 +1974,12 @@ TextShaderEditor::TextShaderEditor() {
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
-	code_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
+	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &TextShaderEditor::_on_shader_preview_toggled));
+	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
+	code_editor->get_text_editor()->connect("theme_changed", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
+	code_editor->get_text_editor()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1));
 
 	code_editor->update_editor_settings();
 
@@ -1229,7 +1995,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->set_flat(false);
 	edit_menu->set_theme_type_variation("FlatMenuButton");
 	edit_menu->set_shortcut_context(this);
-	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_text(TTRC("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_prepare_edit_menu));
 
@@ -1260,7 +2026,7 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->set_flat(false);
 	search_menu->set_theme_type_variation("FlatMenuButton");
 	search_menu->set_shortcut_context(this);
-	search_menu->set_text(TTR("Search"));
+	search_menu->set_text(TTRC("Search"));
 	search_menu->set_switch_on_hover(true);
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -1273,7 +2039,7 @@ TextShaderEditor::TextShaderEditor() {
 	goto_menu->set_flat(false);
 	goto_menu->set_theme_type_variation("FlatMenuButton");
 	goto_menu->set_shortcut_context(this);
-	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_text(TTRC("Go To"));
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
@@ -1281,10 +2047,16 @@ TextShaderEditor::TextShaderEditor() {
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
+
+	previews_menu = memnew(PopupMenu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Shader Previews"), previews_menu);
+	_update_shader_preview_list();
+	previews_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_shader_preview_list));
+	previews_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_shader_preview_item_pressed));
 
 	add_child(main_container);
 	main_container->add_child(menu_bar_hbox);
@@ -1296,17 +2068,47 @@ TextShaderEditor::TextShaderEditor() {
 	site_search = memnew(Button);
 	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &TextShaderEditor::_menu_option).bind(HELP_DOCS));
-	site_search->set_text(TTR("Online Docs"));
-	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
+	site_search->set_text(TTRC("Online Docs"));
+	site_search->set_tooltip_text(TTRC("Open Godot online documentation."));
 	menu_bar_hbox->add_child(site_search);
 
 	menu_bar_hbox->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+
+	HSplitContainer *main_box = memnew(HSplitContainer);
+	main_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	preview_box = memnew(VBoxContainer);
+	preview_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_box->hide();
+
+	Button *update_params_btn = memnew(Button);
+	update_params_btn->set_text(TTRC("Update Parameters"));
+	preview_box->add_child(update_params_btn);
+	update_params_btn->connect(SceneStringName(pressed), callable_mp(code_editor, &ShaderTextEditor::update_parameters));
+	update_params_btn->set_tooltip_text(TTRC("Updates shader parameters in previews to match the values in the current `ShaderMaterial` inspector."));
+
+	preview_sbox = memnew(ScrollContainer);
+	preview_sbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_sbox->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	preview_sbox->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1));
+	preview_sbox->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_RESERVE);
+	code_editor->get_preview_line_layer()->set_scroll_container(preview_sbox);
+
+	VBoxContainer *preview_vbox = memnew(VBoxContainer);
+	preview_vbox->connect(SceneStringName(sort_children), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
+	preview_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	code_editor->set_preview_box(preview_vbox);
+	preview_sbox->add_child(preview_vbox);
+	preview_box->add_child(preview_sbox);
+	main_box->add_child(preview_box);
+	main_box->add_child(code_editor);
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	editor_box->add_child(code_editor);
+	editor_box->add_child(main_box);
 
 	FindReplaceBar *bar = memnew(FindReplaceBar);
 	main_container->add_child(bar);
@@ -1336,16 +2138,22 @@ TextShaderEditor::TextShaderEditor() {
 
 	Label *dl = memnew(Label);
 	dl->set_focus_mode(FOCUS_ACCESSIBILITY);
-	dl->set_text(TTR("This shader has been modified on disk.\nWhat action should be taken?"));
+	dl->set_text(TTRC("This shader has been modified on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 
 	disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &TextShaderEditor::_reload));
-	disk_changed->set_ok_button_text(TTR("Reload"));
+	disk_changed->set_ok_button_text(TTRC("Reload"));
 
-	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+	disk_changed->add_button(TTRC("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &TextShaderEditor::save_external_data));
 
 	add_child(disk_changed);
+
+	preview_timer = memnew(Timer);
+	add_child(preview_timer);
+	preview_timer->set_one_shot(true);
+	preview_timer->set_wait_time(0.001);
+	preview_timer->connect("timeout", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
 
 	_apply_editor_settings();
 	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.
