@@ -3851,8 +3851,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	}
 
 	if (completion_context.type == GDScriptParser::COMPLETION_IDENTIFIER ||
-		completion_context.type == GDScriptParser::COMPLETION_METHOD ||
-		completion_context.type == GDScriptParser::COMPLETION_NONE) {
+			completion_context.type == GDScriptParser::COMPLETION_METHOD ||
+			completion_context.type == GDScriptParser::COMPLETION_NONE) {
 		for (const KeyValue<String, SnippetConfig> &E : snippets) {
 			const SnippetConfig &snippet = E.value;
 			ScriptLanguage::CodeCompletionOption option(snippet.prefix, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);

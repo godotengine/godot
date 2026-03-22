@@ -42,10 +42,10 @@
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/gdscript_docgen.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/os/os.h"
+#include "editor/gdscript_docgen.h"
 #endif
 
 #ifdef TESTS_ENABLED
