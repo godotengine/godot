@@ -34,8 +34,10 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
+#include "scene/resources/node_binding.h"
 
 char32_t VariantParser::Stream::get_char() {
 	// is within buffer?
@@ -918,7 +920,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Color(args[0], args[1], args[2], args[3]);
-		} else if (id == "NodePath") {
+		} else if (id == "NodePath" || id == "NodeBinding") {
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
@@ -931,7 +933,14 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = NodePath(String(token.value));
+			NodePath path = NodePath(String(token.value));
+			if (id == "NodePath") {
+				value = path;
+			} else if (id == "NodeBinding") {
+				NodeBinding *binding = memnew(NodeBinding);
+				binding->path = path;
+				value = binding;
+			}
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -2185,6 +2194,12 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			if (!obj) {
 				p_store_string_func(p_store_string_ud, "null");
 				break; // don't save it
+			}
+
+			if (NodeBinding *binding = Object::cast_to<NodeBinding>(obj)) {
+				String path_str = String(binding->path);
+				p_store_string_func(p_store_string_ud, "NodeBinding(\"" + path_str.c_escape() + "\")");
+				break;
 			}
 
 			Ref<Resource> res = p_variant;
