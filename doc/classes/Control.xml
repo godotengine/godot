@@ -141,6 +141,13 @@
 				[b]Note:[/b] If this method returns an empty [String] and [method _make_custom_tooltip] is not overridden, no tooltip is displayed.
 			</description>
 		</method>
+		<method name="_get_tooltip_auto_translate_mode_at" qualifiers="virtual const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Return the auto-translation mode at the given [param at_position]. If not implemented, the [member tooltip_auto_translate_mode] property will be used instead.
+			</description>
+		</method>
 		<method name="_gui_input" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />

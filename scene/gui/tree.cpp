@@ -6691,6 +6691,26 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
+Node::AutoTranslateMode Tree::get_tooltip_auto_translate_mode_at(const Point2 &p_at) const {
+	Point2 pos = p_at - theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+
+	// `pos.y` less than 0 indicates we're in the header.
+	if (pos.y < 0) {
+		// Columns don't have auto-translate mode, so return the default.
+		return Control::get_tooltip_auto_translate_mode_at(p_at);
+	}
+
+	TreeItem *it;
+	int col, index, section;
+	_find_button_at_pos(p_at, it, col, index, section);
+
+	if (it) {
+		return it->get_auto_translate_mode(col);
+	}
+	return Control::get_tooltip_auto_translate_mode_at(p_at);
+}
+
 void Tree::set_cursor_can_exit_tree(bool p_enable) {
 	cursor_can_exit_tree = p_enable;
 }

@@ -3952,6 +3952,15 @@ Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode() const {
 	return data.tooltip_auto_translate_mode;
 }
 
+Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const {
+	ERR_READ_THREAD_GUARD_V(AUTO_TRANSLATE_MODE_INHERIT);
+	AutoTranslateMode auto_translating;
+	if (GDVIRTUAL_CALL(_get_tooltip_auto_translate_mode_at, p_at, auto_translating)) {
+		return auto_translating;
+	}
+	return get_tooltip_auto_translate_mode();
+}
+
 // Extra properties.
 
 void Control::set_tooltip_text(const String &p_hint) {
@@ -4756,6 +4765,7 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
 	GDVIRTUAL_BIND(_get_minimum_size);
 	GDVIRTUAL_BIND(_get_tooltip, "at_position");
+	GDVIRTUAL_BIND(_get_tooltip_auto_translate_mode_at, "at_position");
 
 	GDVIRTUAL_BIND(_get_drag_data, "at_position");
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
