@@ -5025,7 +5025,26 @@ bool Node3DEditorViewport::_create_gaussian_instance(Node *p_parent, const Strin
 	}
 
 	gaussian_node->set("splat_asset", p_resource);
-	gaussian_node->set("ply_file_path", p_path);
+
+	// Preserve raw source path semantics: `ply_file_path` should point to .ply/.spz source,
+	// not to the imported .gaussiansplat resource path.
+	String source_path;
+	if (p_resource->has_method("get_source_path")) {
+		source_path = p_resource->call("get_source_path");
+	}
+	if (source_path.is_empty() && p_resource->has_method("get_import_metadata")) {
+		const Variant metadata_variant = p_resource->call("get_import_metadata");
+		if (metadata_variant.get_type() == Variant::DICTIONARY) {
+			const Dictionary import_metadata = metadata_variant;
+			if (import_metadata.has(StringName("source_path"))) {
+				source_path = import_metadata[StringName("source_path")];
+			}
+		}
+	}
+	const String source_extension = source_path.get_extension().to_lower();
+	if (!source_path.is_empty() && (source_extension == "ply" || source_extension == "spz")) {
+		gaussian_node->set("ply_file_path", source_path);
+	}
 
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
@@ -5241,7 +5260,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						continue;
 					} else if (!is_other_valid && audio.is_valid()) {
 						is_other_valid = true;
-					} else if (is_gaussian) {
+					} else if (!is_other_valid && is_gaussian) {
 						is_other_valid = true;
 					} else {
 						continue;

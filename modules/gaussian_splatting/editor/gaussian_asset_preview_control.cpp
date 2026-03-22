@@ -344,7 +344,9 @@ void GaussianAssetPreviewControl::_rebuild_scene_from_asset() {
 	orbit_yaw = 0.7f;
 	orbit_pitch = -0.35f;
 	if (preview_root) {
-		preview_root->set_position(-orbit_center);
+		// Vertex and instance transforms are centered around `orbit_center` already.
+		// Keep the preview root at origin to avoid applying the offset twice.
+		preview_root->set_position(Vector3());
 	}
 
 	_build_bounds_mesh(bounds);

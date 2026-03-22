@@ -299,7 +299,27 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
         ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unsupported Gaussian splat format: .%s (supported: .ply, .spz)", extension));
     }
 
-    HashMap<StringName, Variant> options = _dictionary_to_hashmap(p_options);
+    Dictionary effective_options = p_options;
+    if (effective_options.is_empty() && current_node) {
+        Ref<GaussianSplatAsset> node_asset = current_node->get_splat_asset();
+        if (node_asset.is_valid()) {
+            Dictionary import_metadata = node_asset->get_import_metadata();
+            if (import_metadata.has(StringName("options"))) {
+                effective_options = import_metadata[StringName("options")];
+            }
+        }
+    }
+    if (effective_options.is_empty() && active_asset.is_valid()) {
+        Dictionary import_metadata = active_asset->get_import_metadata();
+        if (import_metadata.has(StringName("options"))) {
+            effective_options = import_metadata[StringName("options")];
+        }
+    }
+    if (effective_options.is_empty()) {
+        effective_options = last_import_options;
+    }
+
+    HashMap<StringName, Variant> options = _dictionary_to_hashmap(effective_options);
     fs->reimport_file_with_custom_parameters(p_path, importer_name, options);
 
     Ref<GaussianSplatAsset> asset = ResourceLoader::load(p_path);
@@ -314,7 +334,7 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
     }
 
     ObjectID node_id = current_node ? current_node->get_instance_id() : ObjectID();
-    _track_hot_reload_source(p_path, p_options, node_id);
+    _track_hot_reload_source(p_path, effective_options, node_id);
     if (active_asset.is_valid() && !active_asset->get_path().is_empty()) {
         _track_hot_reload_source(active_asset->get_path(), Dictionary(), node_id);
     }
@@ -336,7 +356,7 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
         }
     }
 
-    last_import_options = p_options;
+    last_import_options = effective_options;
     _refresh_active_asset_metadata();
     return OK;
 }
@@ -718,7 +738,17 @@ void GaussianEditorPlugin::request_asset_reimport(const Ref<GaussianSplatAsset> 
     }
 
     _refresh_active_asset_metadata();
-    _show_reimport_dialog(p_override);
+
+    Dictionary override_options = p_override;
+    if (override_options.is_empty()) {
+        Dictionary import_metadata = p_asset->get_import_metadata();
+        if (import_metadata.has(StringName("options"))) {
+            override_options = import_metadata[StringName("options")];
+        } else {
+            override_options = last_import_options;
+        }
+    }
+    _show_reimport_dialog(override_options);
 }
 
 void GaussianEditorPlugin::_update_stats() {
