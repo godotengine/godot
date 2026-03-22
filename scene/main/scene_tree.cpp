@@ -879,9 +879,10 @@ void SceneTree::finalize() {
 	tweens.clear();
 }
 
+// [CHANGED] Replaced manual Thread::is_main_thread() check with ERR_MAIN_THREAD_GUARD.
+// Consistent with the pattern established in PR #75901.
 void SceneTree::quit(int p_exit_code) {
-	_THREAD_SAFE_METHOD_
-
+	ERR_MAIN_THREAD_GUARD;
 	OS::get_singleton()->set_exit_code(p_exit_code);
 	_quit = true;
 }
@@ -1118,8 +1119,10 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	return debug_contact_mesh;
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
+// The suspended check is kept as a separate ERR_FAIL after the guard, matching project conventions.
 void SceneTree::set_pause(bool p_enabled) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Pause can only be set from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND_MSG(suspended, "Pause state cannot be modified while suspended.");
 
 	if (p_enabled == paused) {
@@ -1143,8 +1146,9 @@ bool SceneTree::is_paused() const {
 	return paused;
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
 void SceneTree::set_suspend(bool p_enabled) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Suspend can only be set from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 
 	if (p_enabled == suspended) {
 		return;
@@ -1655,8 +1659,9 @@ Node *SceneTree::get_edited_scene_root() const {
 #endif
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
 void SceneTree::set_current_scene(Node *p_scene) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(p_scene && p_scene->get_parent() != root);
 	current_scene = p_scene;
 }
@@ -1695,8 +1700,9 @@ void SceneTree::_flush_scene_change() {
 	}
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD_V.
 Error SceneTree::change_scene_to_file(const String &p_path) {
-	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Changing scene can only be done from the main thread.");
+	ERR_MAIN_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
@@ -1705,7 +1711,9 @@ Error SceneTree::change_scene_to_file(const String &p_path) {
 	return change_scene_to_packed(new_scene);
 }
 
+// [CHANGED] Added missing ERR_MAIN_THREAD_GUARD_V — this function had no thread check at all.
 Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
+	ERR_MAIN_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
 	EXTRACT_PARAM_OR_FAIL_V_MSG(p_scene, rp_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
@@ -1714,7 +1722,9 @@ Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
 	return change_scene_to_node(new_scene);
 }
 
+// [CHANGED] Added missing ERR_MAIN_THREAD_GUARD_V — this function had no thread check at all.
 Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
+	ERR_MAIN_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
 	EXTRACT_PARAM_OR_FAIL_V_MSG(p_node, rp_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
 	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
 
@@ -1739,15 +1749,17 @@ Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
 	return OK;
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD_V.
 Error SceneTree::reload_current_scene() {
-	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Reloading scene can only be done from the main thread.");
+	ERR_MAIN_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
 	return change_scene_to_file(fname);
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
 void SceneTree::unload_current_scene() {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Unloading the current scene can only be done from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	if (current_scene) {
 		memdelete(current_scene);
 		current_scene = nullptr;
@@ -1755,7 +1767,7 @@ void SceneTree::unload_current_scene() {
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Adding a current scene can only be done from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	current_scene = p_current;
 	root->add_child(p_current);
 }
@@ -1804,8 +1816,9 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD_V.
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
-	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
+	ERR_MAIN_THREAD_GUARD_V(Ref<MultiplayerAPI>());
 	if (p_for_path.is_empty()) {
 		return multiplayer;
 	}
@@ -1833,8 +1846,9 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 	return multiplayer;
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Multiplayer can only be manipulated from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	if (p_root_path.is_empty()) {
 		ERR_FAIL_COND(p_multiplayer.is_null());
 		if (multiplayer.is_valid()) {
@@ -1873,8 +1887,9 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	}
 }
 
+// [CHANGED] Replaced ERR_FAIL_COND_MSG(!Thread::is_main_thread(), ...) with ERR_MAIN_THREAD_GUARD.
 void SceneTree::set_multiplayer_poll_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Multiplayer can only be manipulated from the main thread.");
+	ERR_MAIN_THREAD_GUARD;
 	multiplayer_poll = p_enabled;
 }
 
