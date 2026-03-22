@@ -2935,7 +2935,7 @@ void EditorInspectorArray::_control_dropping_draw() {
 			from = xform.xform(Vector2(0, child->get_size().y));
 			to = xform.xform(Vector2(elements_vbox->get_size().x, child->get_size().y));
 		}
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		control_dropping->draw_line(from, to, color, 2);
 	}
 }
@@ -3856,7 +3856,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.indent_size = p_control->get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 	p_cache.key_padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 
-	p_cache.warning_color = p_control->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	p_cache.warning_color = p_control->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 	p_cache.prop_subsection = p_control->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	p_cache.font_color = p_control->get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	p_cache.font_disabled_color = p_control->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -3950,7 +3950,7 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 
 	p_cache.property_color = p_control->get_theme_color(SNAME("property_color"), SNAME("EditorProperty"));
 	p_cache.readonly_property_color = p_control->get_theme_color(SNAME("readonly_color"), SNAME("EditorProperty"));
-	p_cache.warning_color = p_control->get_theme_color(SNAME("warning_color"), SNAME("EditorProperty"));
+	p_cache.warning_color = p_control->get_theme_color(EditorStringName(warning_color), SNAME("EditorProperty"));
 	p_cache.readonly_warning_color = p_control->get_theme_color(SNAME("readonly_warning_color"), SNAME("EditorProperty"));
 	p_cache.property_color_x = p_control->get_theme_color(SNAME("property_color_x"), EditorStringName(Editor));
 	p_cache.property_color_y = p_control->get_theme_color(SNAME("property_color_y"), EditorStringName(Editor));

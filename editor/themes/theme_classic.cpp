@@ -48,7 +48,7 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		// Base colors.
 
 		p_theme->set_color("base_color", EditorStringName(Editor), p_config.base_color);
-		p_theme->set_color("accent_color", EditorStringName(Editor), p_config.accent_color);
+		p_theme->set_color(EditorStringName(accent_color), EditorStringName(Editor), p_config.accent_color);
 
 		// White (dark theme) or black (light theme), will be used to generate the rest of the colors
 		p_config.mono_color = p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
@@ -92,9 +92,9 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("contrast_color_2", EditorStringName(Editor), p_config.contrast_color_2);
 		p_theme->set_color("highlight_color", EditorStringName(Editor), p_config.highlight_color);
 		p_theme->set_color("highlight_disabled_color", EditorStringName(Editor), p_config.highlight_disabled_color);
-		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
-		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
-		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+		p_theme->set_color(EditorStringName(success_color), EditorStringName(Editor), p_config.success_color);
+		p_theme->set_color(EditorStringName(warning_color), EditorStringName(Editor), p_config.warning_color);
+		p_theme->set_color(EditorStringName(error_color), EditorStringName(Editor), p_config.error_color);
 		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.dark_color_2);
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
@@ -2109,7 +2109,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		p_theme->set_color("property_color", "EditorProperty", property_color);
 		p_theme->set_color("readonly_color", "EditorProperty", readonly_color);
-		p_theme->set_color("warning_color", "EditorProperty", p_config.warning_color);
+		p_theme->set_color(EditorStringName(warning_color), "EditorProperty", p_config.warning_color);
 		p_theme->set_color("readonly_warning_color", "EditorProperty", readonly_warning_color);
 
 		Ref<StyleBoxFlat> style_property_group_note = p_config.base_style->duplicate();
@@ -2459,7 +2459,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		{
 			p_theme->set_stylebox(SceneStringName(panel), "GraphStateMachine", p_config.tree_panel_style);
 			p_theme->set_stylebox("error_panel", "GraphStateMachine", p_config.tree_panel_style);
-			p_theme->set_color("error_color", "GraphStateMachine", p_config.error_color);
+			p_theme->set_color(EditorStringName(error_color), "GraphStateMachine", p_config.error_color);
 
 			const int sm_margin_side = 10 * EDSCALE;
 			const int sm_margin_bottom = 2;

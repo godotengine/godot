@@ -755,9 +755,9 @@ void GameView::_update_speed_state_color() {
 	if (time_scale_index == DEFAULT_TIME_SCALE_INDEX) {
 		text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	} else if (time_scale_index > DEFAULT_TIME_SCALE_INDEX) {
-		text_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
+		text_color = get_theme_color(EditorStringName(success_color), EditorStringName(Editor));
 	} else if (time_scale_index < DEFAULT_TIME_SCALE_INDEX) {
-		text_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+		text_color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 	}
 	speed_state_button->add_theme_color_override(SceneStringName(font_color), text_color);
 }
@@ -862,7 +862,7 @@ void GameView::_update_ui() {
 			state_label->remove_theme_color_override(SceneStringName(font_color));
 		}
 	} else {
-		state_label->add_theme_color_override(SceneStringName(font_color), state_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		state_label->add_theme_color_override(SceneStringName(font_color), state_label->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 	}
 
 	game_size_label->set_visible(show_game_size);

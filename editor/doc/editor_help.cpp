@@ -510,7 +510,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 
 #define DEPRECATED_DOC_TAG \
 	class_desc->push_font(theme_cache.doc_bold_font); \
-	class_desc->push_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor))); \
+	class_desc->push_color(get_theme_color(EditorStringName(error_color), EditorStringName(Editor))); \
 	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError")); \
 	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height()); \
 	class_desc->add_text(String::chr(160) + TTR("Deprecated")); \
@@ -519,7 +519,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 
 #define EXPERIMENTAL_DOC_TAG \
 	class_desc->push_font(theme_cache.doc_bold_font); \
-	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor))); \
+	class_desc->push_color(get_theme_color(EditorStringName(warning_color), EditorStringName(Editor))); \
 	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning")); \
 	class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height()); \
 	class_desc->add_text(String::chr(160) + TTR("Experimental")); \
@@ -532,7 +532,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 	Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError")); \
 	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height()); \
 	class_desc->add_text(nbsp); \
-	class_desc->push_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor))); \
+	class_desc->push_color(get_theme_color(EditorStringName(error_color), EditorStringName(Editor))); \
 	class_desc->push_font(theme_cache.doc_bold_font); \
 	class_desc->add_text(TTR("Deprecated:")); \
 	class_desc->pop(); \
@@ -548,7 +548,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 	Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning")); \
 	class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height()); \
 	class_desc->add_text(nbsp); \
-	class_desc->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor))); \
+	class_desc->push_color(get_theme_color(EditorStringName(warning_color), EditorStringName(Editor))); \
 	class_desc->push_font(theme_cache.doc_bold_font); \
 	class_desc->add_text(TTR("Experimental:")); \
 	class_desc->pop(); \
@@ -2462,9 +2462,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Color code_dark_color = Color(code_color, 0.8);
 
 	const Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
-	const Color link_method_color = p_owner_node->get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-	const Color link_property_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)), 0.25);
-	const Color link_annotation_color = link_color.lerp(p_owner_node->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)), 0.5);
+	const Color link_method_color = p_owner_node->get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
+	const Color link_property_color = link_color.lerp(p_owner_node->get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)), 0.25);
+	const Color link_annotation_color = link_color.lerp(p_owner_node->get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)), 0.5);
 
 	const Color code_bg_color = p_owner_node->get_theme_color(SNAME("code_bg_color"), SNAME("EditorHelp"));
 	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
@@ -2691,7 +2691,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_bgcolor(code_bg_color);
-			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), EditorStringName(Editor)), 0.6));
+			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(EditorStringName(error_color), EditorStringName(Editor)), 0.6));
 
 			p_rt->add_text(_fix_newlines(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1))));
 
@@ -4130,7 +4130,7 @@ void EditorHelpBit::_update_labels() {
 		Ref<Texture2D> error_icon = get_editor_theme_icon(SNAME("StatusError"));
 		content->add_image(error_icon, error_icon->get_width(), error_icon->get_height());
 		content->add_text(nbsp);
-		content->push_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		content->push_color(get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		content->push_font(doc_bold_font);
 		content->add_text(TTR("Deprecated:"));
 		content->pop(); // font
@@ -4148,7 +4148,7 @@ void EditorHelpBit::_update_labels() {
 		Ref<Texture2D> warning_icon = get_editor_theme_icon(SNAME("NodeWarning"));
 		content->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height());
 		content->add_text(nbsp);
-		content->push_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		content->push_color(get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		content->push_font(doc_bold_font);
 		content->add_text(TTR("Experimental:"));
 		content->pop(); // font
@@ -5034,7 +5034,7 @@ void FindBar::_notification(int p_what) {
 			find_prev->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 			hide_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
-			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -5117,7 +5117,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		if (results_count == 0) {
 			matches_label->set_text(TTR("No match"));
 		} else if (results_count_to_current == 0) {

@@ -1040,8 +1040,8 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.33), false, 2.0);
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.17), true);
+	_results_display->draw_rect(match_rect, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.33), false, 2.0);
+	_results_display->draw_rect(match_rect, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.17), true);
 
 	// Text is drawn by Tree already.
 }

@@ -91,9 +91,9 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		color_conversion_map_light[E.key] = E.value;
 	}
 	// These colors should be converted even if we are using a dark theme.
-	const Color error_color = p_theme->get_color(SNAME("error_color"), EditorStringName(Editor));
-	const Color success_color = p_theme->get_color(SNAME("success_color"), EditorStringName(Editor));
-	const Color warning_color = p_theme->get_color(SNAME("warning_color"), EditorStringName(Editor));
+	const Color error_color = p_theme->get_color(EditorStringName(error_color), EditorStringName(Editor));
+	const Color success_color = p_theme->get_color(EditorStringName(success_color), EditorStringName(Editor));
+	const Color warning_color = p_theme->get_color(EditorStringName(warning_color), EditorStringName(Editor));
 	color_conversion_map_dark[Color::html("#ff5f5f")] = error_color;
 	color_conversion_map_dark[Color::html("#5fff97")] = success_color;
 	color_conversion_map_dark[Color::html("#ffdd65")] = warning_color;
@@ -118,7 +118,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	Dictionary accent_color_map;
 	HashSet<StringName> accent_color_icons;
 
-	const Color accent_color = p_theme->get_color(SNAME("accent_color"), EditorStringName(Editor));
+	const Color accent_color = p_theme->get_color(EditorStringName(accent_color), EditorStringName(Editor));
 	accent_color_map[Color::html("699ce8")] = accent_color;
 	if (accent_color.get_luminance() > 0.75) {
 		accent_color_map[Color::html("ffffff")] = Color(0.2, 0.2, 0.2);

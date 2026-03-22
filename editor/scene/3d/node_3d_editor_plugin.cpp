@@ -3749,7 +3749,7 @@ void Node3DEditorViewport::_draw() {
 				handle_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
 				break;
 			default:
-				handle_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				handle_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				break;
 		}
 
@@ -5531,7 +5531,7 @@ void Node3DEditorViewport::_show_tooltip(const String &p_title, const String &p_
 	tooltip_panel->set_text(
 			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
 					get_theme_default_font_size() + 2,
-					get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).to_html(false),
+					get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)).to_html(false),
 					p_title, p_description));
 	tooltip_panel->show();
 }

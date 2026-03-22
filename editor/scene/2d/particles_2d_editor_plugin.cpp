@@ -308,7 +308,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin() {
 	error_message = memnew(Label);
 	error_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	error_message->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	error_message->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
+	error_message->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(error_color), EditorStringName(Editor)));
 	emvb->add_child(error_message);
 
 	EditorNode::get_singleton()->get_gui_base()->add_child(emission_mask_dialog);

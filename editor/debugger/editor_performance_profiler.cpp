@@ -143,7 +143,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 		rect.position += graph_style_box->get_offset();
 		rect.size -= graph_style_box->get_minimum_size();
-		Color draw_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color draw_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
 		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 

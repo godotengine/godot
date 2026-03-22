@@ -62,9 +62,9 @@ void EditorValidationPanel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_cache.valid_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
-			theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
-			theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			theme_cache.valid_color = get_theme_color(EditorStringName(success_color), EditorStringName(Editor));
+			theme_cache.warning_color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
+			theme_cache.error_color = get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

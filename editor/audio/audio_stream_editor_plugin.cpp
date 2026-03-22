@@ -159,7 +159,7 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	const Color col = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(

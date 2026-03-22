@@ -1891,7 +1891,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		int h = editor->box_selection_container->get_global_position().y - get_global_position().y;
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 		play_position->draw_texture(
@@ -2214,7 +2214,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				String text;
 				Color text_color = color;
 				if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-					text_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+					text_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				}
 
 				if (in_group) {
@@ -2536,7 +2536,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			if (dropping_at != 0) {
-				Color drop_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				Color drop_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				if (dropping_at < 0) {
 					draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color, Math::round(EDSCALE));
 				} else {
@@ -2801,7 +2801,7 @@ void AnimationTrackEdit::_play_position_draw() {
 	int px = (-timeline->get_value() + play_position_pos) * scale + timeline->get_name_limit();
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
@@ -3827,7 +3827,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			if (root) {
 				Node *n = root->get_node_or_null(node);
 				if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
-					color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+					color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				}
 			}
 
@@ -3929,7 +3929,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 			if (px >= timeline->get_name_limit() && px < limit_end) {
-				const Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				const Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 			}
 
@@ -8851,7 +8851,7 @@ void AnimationMarkerEdit::_play_position_draw() {
 	int px = (play_position_pos - timeline->get_value()) * scale + timeline->get_name_limit();
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		play_position->draw_line(Point2(px, 0), Point2(px, get_size().height), color, Math::round(2 * EDSCALE));
 	}
 }

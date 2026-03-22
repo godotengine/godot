@@ -912,7 +912,7 @@ void ScriptTextEditor::_update_warnings() {
 				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.callable.get_object())));
 
 				warnings_panel->push_cell();
-				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				warnings_panel->push_color(warnings_panel->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 				warnings_panel->pop(); // Color.
 				warnings_panel->pop(); // Cell.
@@ -938,7 +938,7 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
 		warnings_panel->push_color(
-				warnings_panel->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.5f));
+				warnings_panel->get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.5f));
 		warnings_panel->add_text(TTR("[Ignore]"));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta ignore.
@@ -946,7 +946,7 @@ void ScriptTextEditor::_update_warnings() {
 
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.start_line - 1);
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		warnings_panel->push_color(warnings_panel->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		warnings_panel->add_text(vformat(TTR("Line %d (%s):"), w.start_line, w.string_code));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta goto.
@@ -972,7 +972,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
-		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		errors_panel->push_color(warnings_panel->get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
@@ -1006,7 +1006,7 @@ void ScriptTextEditor::_update_errors() {
 
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
-			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			errors_panel->push_color(errors_panel->get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 			errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 			errors_panel->pop(); // Color.
 			errors_panel->pop(); // Meta goto.

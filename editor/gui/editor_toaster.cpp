@@ -127,10 +127,10 @@ void EditorToaster::_notification(int p_what) {
 			info_panel_style_background->set_bg_color(bg_color);
 
 			warning_panel_style_background->set_bg_color(bg_color);
-			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			warning_panel_style_background->set_border_color(get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 
 			error_panel_style_background->set_bg_color(bg_color);
-			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_panel_style_background->set_border_color(get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 
 			// Styleboxes progress.
 			const Color bg_progress_color = base_color.lerp(get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.135);
@@ -138,10 +138,10 @@ void EditorToaster::_notification(int p_what) {
 			info_panel_style_progress->set_bg_color(bg_progress_color);
 
 			warning_panel_style_progress->set_bg_color(bg_progress_color);
-			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			warning_panel_style_progress->set_border_color(get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 
 			error_panel_style_progress->set_bg_color(bg_progress_color);
-			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_panel_style_progress->set_border_color(get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -296,13 +296,13 @@ void EditorToaster::_draw_button() {
 	real_t button_radius = main_button->get_size().x / 8;
 	switch (highest_severity) {
 		case SEVERITY_INFO:
-			color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			break;
 		case SEVERITY_WARNING:
-			color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+			color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 			break;
 		case SEVERITY_ERROR:
-			color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			color = get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 			break;
 		default:
 			break;

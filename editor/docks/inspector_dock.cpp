@@ -491,7 +491,7 @@ void InspectorDock::_notification(int p_what) {
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
 				info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 			} else {
 				info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
@@ -531,7 +531,7 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 
 	if (info_is_warning) {
 		info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 	} else {
 		info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));

@@ -500,7 +500,7 @@ void GradientEdit::_redraw() {
 				draw_line(Vector2(handle_start_x + handle_thickness / 2.0, h * 0.9 - handle_thickness), Vector2(handle_start_x + handle_width - handle_thickness / 2.0, h * 0.9 - handle_thickness), border_col, handle_thickness);
 			}
 			rect = rect.grow(-handle_thickness);
-			const Color focus_col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			const Color focus_col = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect(rect, has_focus() ? focus_col : focus_col.darkened(0.4), false, handle_thickness);
 			rect = rect.grow(-handle_thickness);
 			draw_rect(rect, border_col, false, handle_thickness);

@@ -852,11 +852,11 @@ void CurveEdit::_redraw() {
 
 	if (selected_index >= 0) {
 		const Vector2 point_pos = curve->get_point_position(selected_index);
-		const Color selected_point_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		const Color selected_point_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 		// Draw tangents if not dragging a point, or if holding a point without having moved it yet.
 		if (grabbing == GRAB_NONE || initial_grab_pos == point_pos || selected_tangent_index != TANGENT_NONE) {
-			const Color selected_tangent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).darkened(0.25);
+			const Color selected_tangent_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)).darkened(0.25);
 			const Color tangent_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)).darkened(0.25);
 
 			if (selected_index != 0) {

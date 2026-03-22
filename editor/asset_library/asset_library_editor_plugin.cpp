@@ -708,7 +708,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			library_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			downloads_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("downloads"), SNAME("AssetLib")));
-			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override("color", get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

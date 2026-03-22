@@ -92,7 +92,7 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
-			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			favorite_focus_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			_update_favorite_button_focus_color();
 			if (is_favorite) {
 				favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));

@@ -692,7 +692,7 @@ bool EditorResourcePicker::handle_menu_selected(int p_which) {
 
 void EditorResourcePicker::_button_draw() {
 	if (dropping) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		assign_button->draw_rect(Rect2(Point2(), assign_button->get_size()), color, false);
 	}
 }
@@ -1719,7 +1719,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), points, colors);
 
 		if (tagged_frame_offset_count) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 			for (uint32_t i = 0; i < tagged_frame_offset_count; i++) {
 				int x = CLAMP(tagged_frame_offsets[i] * size.width / preview_len, 0, size.width);
@@ -1738,7 +1738,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 	if (tagged_frame_offset_count > 0) {
 		icon = get_editor_theme_icon(SNAME("Play"));
 		if ((OS::get_singleton()->get_ticks_msec() % 500) > 250) {
-			icon_modulate = Color(1, 0.5, 0.5, 1); // get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			icon_modulate = Color(1, 0.5, 0.5, 1); // get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		}
 	} else {
 		icon = EditorNode::get_singleton()->get_object_icon(audio_stream.operator->());

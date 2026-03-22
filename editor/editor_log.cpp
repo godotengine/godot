@@ -129,9 +129,9 @@ void EditorLog::_update_theme() {
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	theme_cache.error_color = get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
-	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	theme_cache.warning_color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
 	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }

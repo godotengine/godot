@@ -75,7 +75,7 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 	draw_texture(icon, ofs);
 
 	if (p_selected) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		draw_rect_clipped(Rect2(ofs, icon->get_size()), color, false);
 	}
 }
@@ -182,7 +182,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	draw_rect_clipped(rect, color);
 
 	if (p_selected) {
-		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		draw_rect_clipped(rect, accent, false);
 		if (color.get_luminance() > 0.3) {
 			draw_rect_clipped(rect.grow(-1), Color(0.0, 0.0, 0.0, 0.5), false);
@@ -334,7 +334,7 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -347,7 +347,7 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}
@@ -559,7 +559,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		return;
 	}
 
-	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	Color bg = accent;
 	bg.a = 0.15;
 
@@ -718,7 +718,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -731,7 +731,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}
@@ -954,7 +954,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 
 	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
-	Color cut_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Color cut_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	cut_color.a = 0.7;
 	if (start_ofs > 0 && pixel_begin > p_clip_left) {
 		draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
@@ -964,7 +964,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	}
 
 	if (p_selected) {
-		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		draw_rect(rect, accent, false);
 	}
 }
@@ -1320,7 +1320,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -1333,7 +1333,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}

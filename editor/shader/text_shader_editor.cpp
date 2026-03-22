@@ -666,7 +666,7 @@ void ShaderTextEditor::_update_warning_panel() {
 
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		warnings_panel->push_color(warnings_panel->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		if (line != -1) {
 			warnings_panel->push_meta(line - 1);
 			warnings_panel->add_text(vformat(TTR("Line %d (%s):"), line, w.get_name()));

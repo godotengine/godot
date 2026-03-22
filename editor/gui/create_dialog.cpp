@@ -388,7 +388,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_meta(SNAME("_script_path"), script_path);
 		if (is_tool) {
 			int button_index = r_item->get_button_count(0) - 1;
-			r_item->set_button_color(0, button_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+			r_item->set_button_color(0, button_index, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 		}
 	} else {
 		is_custom_type = true;

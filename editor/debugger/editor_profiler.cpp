@@ -151,7 +151,7 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 }
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	Color bc = get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 	double rot = Math::abs(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());

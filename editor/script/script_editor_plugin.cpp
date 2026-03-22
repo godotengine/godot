@@ -1863,7 +1863,7 @@ void ScriptEditor::_update_script_colors() {
 	bool script_temperature_enabled = EDITOR_GET("text_editor/script_list/script_temperature_enabled");
 
 	int hist_size = EDITOR_GET("text_editor/script_list/script_temperature_history_size");
-	Color hot_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Color hot_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	hot_color.set_s(hot_color.get_s() * 0.9);
 	Color cold_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
@@ -2065,7 +2065,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	Color tool_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Color tool_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	tool_color.set_s(tool_color.get_s() * 1.5);
 	for (int i = 0; i < sedata_filtered.size(); i++) {
 		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
