@@ -269,8 +269,8 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		}
 
 		bool clamp_velocities_to_tile = RSG::camera_attributes->camera_attributes_get_motion_blur_clamp_velocities_to_tile(p_camera_attributes);
-		float velocity_lower_threshold = RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_lower_threshold(p_camera_attributes);
-		float velocity_upper_threshold = RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_upper_threshold(p_camera_attributes);
+		float velocity_lower_threshold = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_lower_threshold(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
+		float velocity_upper_threshold = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_upper_threshold(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
 
 		// TODO: add these multipliers to settings
 		motion_blur.preprocess_push_constant.movement_velocity_multiplier = RSG::camera_attributes->camera_attributes_get_motion_blur_movement_velocity_multiplier(p_camera_attributes);
