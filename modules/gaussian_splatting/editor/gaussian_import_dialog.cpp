@@ -59,6 +59,12 @@ static String _format_option_value(const String &p_key, const Variant &p_value) 
 }
 }
 
+GaussianImportDialog *GaussianImportDialog::singleton = nullptr;
+
+GaussianImportDialog *GaussianImportDialog::get_singleton() {
+    return singleton;
+}
+
 void GaussianImportDialog::_bind_methods() {
     ADD_SIGNAL(MethodInfo("import_requested", PropertyInfo(Variant::STRING, "source_path"),
             PropertyInfo(Variant::DICTIONARY, "options")));
@@ -66,6 +72,7 @@ void GaussianImportDialog::_bind_methods() {
 }
 
 GaussianImportDialog::GaussianImportDialog() {
+    singleton = this;
     thumbnail_generator.instantiate();
     set_title(TTR("Gaussian Splat Import"));
     set_min_size(Size2(720, 520));
@@ -130,7 +137,7 @@ VBoxContainer *GaussianImportDialog::_create_quality_tab() {
     asset_type_selector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
     asset_type_selector->add_item(TTR("Static"), 0);
     asset_type_selector->add_item(TTR("Dynamic"), 1);
-    asset_type_selector->connect("item_selected", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    asset_type_selector->connect("item_selected", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     grid->add_child(asset_type_selector);
 
     Label *max_splats_label = memnew(Label);
@@ -143,7 +150,7 @@ VBoxContainer *GaussianImportDialog::_create_quality_tab() {
     max_splats_spin->set_max(5000000);
     max_splats_spin->set_min(0);
     max_splats_spin->set_step(5000);
-    max_splats_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    max_splats_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     grid->add_child(max_splats_spin);
 
     Label *density_label = memnew(Label);
@@ -155,37 +162,37 @@ VBoxContainer *GaussianImportDialog::_create_quality_tab() {
     density_spin->set_min(0.1);
     density_spin->set_max(1.0);
     density_spin->set_step(0.05);
-    density_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    density_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     grid->add_child(density_spin);
 
     lod_checkbox = memnew(CheckBox);
     lod_checkbox->set_text(TTR("Enable Level of Detail"));
-    lod_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    lod_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(lod_checkbox);
 
     optimize_checkbox = memnew(CheckBox);
     optimize_checkbox->set_text(TTR("Optimize for GPU Upload"));
-    optimize_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    optimize_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(optimize_checkbox);
 
     validate_checkbox = memnew(CheckBox);
     validate_checkbox->set_text(TTR("Validate Required Properties"));
-    validate_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    validate_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(validate_checkbox);
 
     warn_checkbox = memnew(CheckBox);
     warn_checkbox->set_text(TTR("Warn about Missing Optional Properties"));
-    warn_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    warn_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(warn_checkbox);
 
     normalize_checkbox = memnew(CheckBox);
     normalize_checkbox->set_text(TTR("Normalize Opacity Range"));
-    normalize_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    normalize_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(normalize_checkbox);
 
     sort_checkbox = memnew(CheckBox);
     sort_checkbox->set_text(TTR("Sort Splats by Opacity"));
-    sort_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    sort_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(sort_checkbox);
 
     return tab;
@@ -198,29 +205,29 @@ VBoxContainer *GaussianImportDialog::_create_compression_tab() {
 
     compress_positions_checkbox = memnew(CheckBox);
     compress_positions_checkbox->set_text(TTR("Quantize Positions"));
-    compress_positions_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    compress_positions_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(compress_positions_checkbox);
 
     compress_colors_checkbox = memnew(CheckBox);
     compress_colors_checkbox->set_text(TTR("Quantize Colors"));
-    compress_colors_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    compress_colors_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(compress_colors_checkbox);
 
     compress_scales_checkbox = memnew(CheckBox);
     compress_scales_checkbox->set_text(TTR("Quantize Scales"));
-    compress_scales_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    compress_scales_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(compress_scales_checkbox);
 
     compress_rotations_checkbox = memnew(CheckBox);
     compress_rotations_checkbox->set_text(TTR("Quantize Rotations"));
-    compress_rotations_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    compress_rotations_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(compress_rotations_checkbox);
 
     pack_opacity_checkbox = memnew(CheckBox);
     pack_opacity_checkbox->set_text(TTR("Pack Opacity (Deprecated)"));
     pack_opacity_checkbox->set_disabled(true);
     pack_opacity_checkbox->set_tooltip_text(TTR("Deprecated option retained for compatibility. It is ignored during import."));
-    pack_opacity_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    pack_opacity_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(pack_opacity_checkbox);
 
     return tab;
@@ -235,7 +242,7 @@ VBoxContainer *GaussianImportDialog::_create_preview_tab() {
     thumbnail_checkbox = memnew(CheckBox);
     thumbnail_checkbox->set_text(TTR("Generate Thumbnail"));
     thumbnail_checkbox->set_pressed(true);
-    thumbnail_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    thumbnail_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(thumbnail_checkbox);
 
     GridContainer *thumbnail_options = memnew(GridContainer);
@@ -270,7 +277,7 @@ VBoxContainer *GaussianImportDialog::_create_preview_tab() {
     thumbnail_size_spin->set_max(512);
     thumbnail_size_spin->set_step(16);
     thumbnail_size_spin->set_value(128);
-    thumbnail_size_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    thumbnail_size_spin->connect("value_changed", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     thumbnail_options->add_child(thumbnail_size_spin);
 
     thumbnail_preview = memnew(TextureRect);
@@ -291,12 +298,12 @@ VBoxContainer *GaussianImportDialog::_create_metadata_tab() {
 
     include_stats_checkbox = memnew(CheckBox);
     include_stats_checkbox->set_text(TTR("Include Loader Statistics"));
-    include_stats_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    include_stats_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(include_stats_checkbox);
 
     include_memory_checkbox = memnew(CheckBox);
     include_memory_checkbox->set_text(TTR("Include Memory Estimates"));
-    include_memory_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed));
+    include_memory_checkbox->connect("toggled", callable_mp(this, &GaussianImportDialog::_on_settings_changed).unbind(1));
     tab->add_child(include_memory_checkbox);
 
     splat_summary_label = memnew(Label);

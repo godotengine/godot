@@ -4,6 +4,7 @@
 
 #include "spz_loader.h"
 #include "gaussian_import_preset.h"
+#include "../editor/gaussian_import_settings_dialog.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/math/aabb.h"
@@ -423,6 +424,17 @@ Error ResourceImporterSPZ::import(ResourceUID::ID p_source_id, const String &p_s
 
     GS_LOG_STREAMING_INFO(vformat("SPZ import successful: %d/%d splats from %s", final_count, original_count, p_source_file));
     return OK;
+}
+
+bool ResourceImporterSPZ::has_advanced_options() const {
+    return true;
+}
+
+void ResourceImporterSPZ::show_advanced_options(const String &p_path) {
+    GaussianImportSettingsDialog *dialog = GaussianImportSettingsDialog::get_singleton();
+    if (dialog) {
+        dialog->open_settings(p_path);
+    }
 }
 
 #endif // TOOLS_ENABLED

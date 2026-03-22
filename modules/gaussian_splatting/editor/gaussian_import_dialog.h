@@ -29,7 +29,11 @@ class VBoxContainer;
 class GaussianImportDialog : public AcceptDialog {
     GDCLASS(GaussianImportDialog, AcceptDialog);
 
+    static GaussianImportDialog *singleton;
+
 public:
+    static GaussianImportDialog *get_singleton();
+
     /**
      * @struct ImportConfiguration
      * @brief Import settings for Gaussian splat files.

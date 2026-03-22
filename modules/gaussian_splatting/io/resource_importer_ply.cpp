@@ -4,6 +4,7 @@
 
 #include "ply_loader.h"
 #include "gaussian_import_preset.h"
+#include "../editor/gaussian_import_settings_dialog.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/math/aabb.h"
@@ -583,6 +584,17 @@ void ResourceImporterPLY::log_missing_properties(const Ref<PLYLoader> &p_loader)
     if (data.is_valid() && data->get_count() > 0) {
         AABB bounds = data->get_aabb();
         GS_LOG_STREAMING_INFO(vformat("PLY Import Info: Bounds = %v to %v", bounds.position, bounds.position + bounds.size));
+    }
+}
+
+bool ResourceImporterPLY::has_advanced_options() const {
+    return true;
+}
+
+void ResourceImporterPLY::show_advanced_options(const String &p_path) {
+    GaussianImportSettingsDialog *dialog = GaussianImportSettingsDialog::get_singleton();
+    if (dialog) {
+        dialog->open_settings(p_path);
     }
 }
 

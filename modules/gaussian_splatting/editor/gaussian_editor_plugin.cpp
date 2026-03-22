@@ -2,6 +2,7 @@
 
 #include "gaussian_editor_plugin.h"
 #include "gaussian_editor_services.h"
+#include "gaussian_import_settings_dialog.h"
 #include "gaussian_resource_preview_generator.h"
 #include "editor/editor_node.h"
 #include "editor/editor_interface.h"
@@ -104,6 +105,10 @@ GaussianEditorPlugin::GaussianEditorPlugin() {
     import_settings_dialog->connect("import_requested", callable_mp(this, &GaussianEditorPlugin::_on_import_settings_confirmed));
     import_settings_dialog->connect("watch_path_requested", callable_mp(this, &GaussianEditorPlugin::_on_import_dialog_watch));
     add_child(import_settings_dialog);
+
+    // Advanced import settings dialog (opened by double-clicking .ply/.spz in filesystem).
+    gaussian_import_settings_dialog = memnew(GaussianImportSettingsDialog);
+    add_child(gaussian_import_settings_dialog);
 
     editor_integration->setup(this, import_dialog);
 }

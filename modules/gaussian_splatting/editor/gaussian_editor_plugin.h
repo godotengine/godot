@@ -21,6 +21,7 @@ class Label;
 class GaussianSplatNode3D;
 class GaussianThumbnailGenerator;
 class GaussianSplatAssetPreviewGenerator;
+class GaussianImportSettingsDialog;
 class SceneTreeTimer;
 
 // Custom editor plugin for Gaussian Splatting
@@ -30,6 +31,7 @@ class GaussianEditorPlugin : public EditorPlugin {
 private:
     EditorFileDialog *import_dialog = nullptr;
     GaussianImportDialog *import_settings_dialog = nullptr;
+    GaussianImportSettingsDialog *gaussian_import_settings_dialog = nullptr;
 
     // Current selection
     Ref<GaussianSplatRenderer> current_renderer;
