@@ -4366,25 +4366,25 @@ uint32_t GaussianStreamingSystem::get_effective_max_chunks() const {
     return MIN(regulated_max, runtime_capacity_max);
 }
 
-Dictionary GaussianStreamingSystem::BudgetState::get_vram_debug_stats() const {
+Dictionary GaussianStreamingTypes::BudgetState::get_vram_debug_stats() const {
     if (vram_regulator.is_valid()) {
         return vram_regulator->get_debug_stats_dictionary();
     }
     return Dictionary();
 }
 
-bool GaussianStreamingSystem::BudgetState::is_vram_budget_warning_active() const {
+bool GaussianStreamingTypes::BudgetState::is_vram_budget_warning_active() const {
     if (vram_regulator.is_valid()) {
         return vram_regulator->is_budget_warning_active();
     }
     return false;
 }
 
-uint32_t GaussianStreamingSystem::BudgetState::get_effective_max_chunks() const {
+uint32_t GaussianStreamingTypes::BudgetState::get_effective_max_chunks() const {
     if (vram_regulator.is_valid()) {
         return vram_regulator->get_current_max_chunks();
     }
-    return MAX_CHUNKS_IN_VRAM;
+    return GaussianStreamingSystem::MAX_CHUNKS_IN_VRAM;
 }
 
 float GaussianStreamingSystem::get_visible_count_change_ratio() const {

@@ -3,27 +3,20 @@
 
 #include "gaussian_data.h"
 #include "gaussian_splat_manager.h"
-#include "core/math/aabb.h"
 #include "core/math/plane.h"
 #include "core/math/transform_3d.h"
-#include "core/os/mutex.h"
-#include "core/os/semaphore.h"
-#include "core/os/thread.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
-#include "core/templates/safe_refcount.h"
 #include "servers/rendering/rendering_device.h"
-#include <atomic>
-#include "../renderer/gaussian_gpu_layout.h"
-#include "../lod/lod_config.h"
 
 class GaussianMemoryStream;
 class OS;
 class ResidencyBudgetController;
 
 // Extracted subsystem headers (ISSUE-006 split)
+#include "streaming_config_overrides.h"
 #include "streaming_quantization.h"
 #include "streaming_vram_regulator.h"
+#include "streaming_asset_types.h"
+#include "streaming_runtime_state.h"
 #include "streaming_visibility_controller.h"
 #include "streaming_atlas.h"
 #include "streaming_global_atlas_registry.h"
@@ -43,46 +36,8 @@ public:
     static constexpr uint32_t MAX_CHUNKS_IN_VRAM = 32;  // ~2GB @ 64K splats/chunk
     static constexpr uint32_t RING_BUFFER_FRAMES = 3;  // Triple buffering
 
-    struct ConfigOverrides {
-        bool override_chunk_culling = false;
-        bool chunk_frustum_culling_enabled = true;
-        float chunk_frustum_padding = 1.5f;
-
-        bool override_prefetch = false;
-        bool predictive_prefetch_enabled = true;
-        float prefetch_lookahead_distance = 10.0f;
-
-        bool override_vram_budget = false;
-        VRAMBudgetConfig vram_budget_config;
-
-        bool override_lod_config = false;
-        LODConfig lod_config;
-
-        bool override_lod_blend = false;
-        LODBlendConfig lod_blend_config;
-
-        bool override_streaming_tuning = false;
-        uint32_t max_chunk_loads_per_frame = 0;
-
-        bool override_io_source = false;
-        String io_source_path;
-
-        bool has_any_override() const {
-            return override_chunk_culling || override_prefetch || override_vram_budget ||
-                    override_lod_config || override_lod_blend || override_streaming_tuning ||
-                    override_io_source;
-        }
-    };
-
-    struct ChunkLayoutHint {
-        uint32_t start_idx = 0;
-        uint32_t count = 0;
-        uint32_t source_index_offset = 0;
-        bool source_indices_remapped = false;
-        AABB bounds;
-        Vector3 center;
-        float radius = 0.0f;
-    };
+    using ConfigOverrides = GaussianStreamingTypes::ConfigOverrides;
+    using ChunkLayoutHint = GaussianStreamingTypes::ChunkLayoutHint;
 
 private:
     RenderingDevice *primary_device_override = nullptr;
@@ -90,70 +45,10 @@ private:
     static constexpr uint32_t INVALID_ASSET_ID = UINT32_MAX;
     static constexpr uint32_t MAX_REQUESTED_LOD = GS_MAX_ASSET_LODS - 1;
 
-    struct StreamingChunk {
-        uint32_t start_idx = 0;
-        uint32_t count = 0;
-        bool source_index_remapped = false;
-        RID gpu_buffer;
-        Vector3 center;  // Precomputed center position
-        AABB bounds;     // Precomputed axis-aligned bounding box for frustum culling
-        float max_radius = 0.0f;
-        float distance = 0.0f;  // Distance from camera for LOD
-        bool is_loaded = false;
-        bool is_visible = true;  // Set by frustum culling (true = potentially visible)
-        bool upload_pending = false;  // For async upload tracking
-        RenderingDevice *upload_device = nullptr;  // Device handling upload
-        uint64_t last_used_frame = 0;
-        uint64_t last_loaded_frame = 0;
-        uint32_t buffer_slot = UINT32_MAX;  // Slot in persistent buffer
-
-        // LOD blending state (LODGE technique + Octree-GS)
-        float lod_blend_factor = 1.0f;      // Current blend factor (0.0 = fading out, 1.0 = fully visible)
-        float previous_distance = 0.0f;     // Previous frame distance for hysteresis
-        uint32_t current_lod_level = 0;     // Current LOD level (0 = highest quality)
-        uint32_t target_lod_level = 0;      // Target LOD level (for smooth transitions)
-
-        // Octree-GS LOD reduction parameters
-        int sh_band_level = 3;              // Current SH band level (0-3, 3 = full quality)
-        int splat_skip_factor = 1;          // Current splat skip factor (1 = render all)
-        float opacity_multiplier = 1.0f;    // Distance-based opacity multiplier
-        uint32_t effective_count = 0;       // Count after LOD reduction (= count / splat_skip_factor)
-
-        // Per-chunk quantization info (Unity technique for 4x compression)
-        ChunkQuantizationInfo quantization;
-        bool quantization_computed = false;  // True if quantization bounds have been computed
-    };
-
-    struct RequestedChunkState {
-        uint64_t stamp = 0;
-        uint32_t lod_mask = 0;
-    };
-
-    struct AtlasAssetState {
-        uint32_t asset_id = PRIMARY_ASSET_ID;
-        uint32_t dense_id = PRIMARY_ASSET_ID;
-        Ref<GaussianData> data;
-        bool uses_primary_chunks = false;
-        LocalVector<StreamingChunk> asset_chunks;
-        LocalVector<uint32_t> requested_chunks;
-        HashMap<uint32_t, RequestedChunkState> requested_chunk_state;
-        uint32_t lod_count = 1;
-        uint32_t sh_degree = 0;
-        AABB bounds;
-        uint32_t chunk_meta_base = 0;
-        uint32_t chunk_meta_count = 0;
-        uint32_t chunk_index_base = 0;
-        uint32_t chunk_index_count = 0;
-        uint32_t quant_base = 0;
-        uint32_t quant_count = 0;
-        bool metadata_dirty = true;
-        uint32_t generation = 0; // Incremented on re-registration to invalidate queued pack jobs
-    };
-
-    struct FrameData {
-        LocalVector<uint32_t> visible_chunks;
-        uint64_t frame_number = 0;
-    };
+    using StreamingChunk = GaussianStreamingTypes::StreamingChunk;
+    using RequestedChunkState = GaussianStreamingTypes::RequestedChunkState;
+    using AtlasAssetState = GaussianStreamingTypes::AtlasAssetState;
+    using FrameData = GaussianStreamingTypes::FrameData;
 
     using EvictionResult = StreamingEvictionController::EvictionResult;
 
@@ -163,18 +58,7 @@ private:
     using ZeroVisibleRecoveryMode = StreamingVisibilityController::ZeroVisibleRecoveryMode;
     using ZeroVisibleRecoveryState = StreamingVisibilityController::ZeroVisibleRecoveryState;
 
-    struct BudgetState {
-        Ref<VRAMBudgetRegulator> vram_regulator;
-        uint32_t loaded_chunks_count = 0;
-        uint64_t vram_usage = 0;
-        uint64_t evicted_bytes_total = 0;
-        uint32_t chunks_loaded_this_frame = 0;
-        bool vram_chunk_cap_hit_this_frame = false;
-
-        Dictionary get_vram_debug_stats() const;
-        bool is_vram_budget_warning_active() const;
-        uint32_t get_effective_max_chunks() const;
-    };
+    using BudgetState = GaussianStreamingTypes::BudgetState;
 
     // Ring buffer for frame synchronization
     FrameData frame_data[RING_BUFFER_FRAMES];
@@ -188,23 +72,9 @@ private:
     StreamingUploadPipeline upload_pipeline;
     BudgetState budget;
 
-    struct AssetRegistryState {
-        HashMap<uint32_t, AtlasAssetState> atlas_assets;
-        LocalVector<uint32_t> atlas_asset_order;
-        HashMap<uint32_t, uint32_t> asset_id_to_dense;
-        LocalVector<uint32_t> dense_to_asset_id;
-        LocalVector<uint32_t> dense_id_generation;
-        LocalVector<uint32_t> free_dense_ids;
-        HashMap<uint32_t, uint32_t> asset_generation_tracker;
-        uint64_t request_generation = 1;
-        bool request_collection_active = false;
-        bool request_pending = false;
-        Vector<ChunkLayoutHint> io_chunk_layout_hints;
-        uint32_t io_chunk_layout_asset_id = INVALID_ASSET_ID;
-        Vector<ChunkLayoutHint> primary_chunk_layout_hints;
-        LocalVector<uint32_t> primary_chunk_layout_source_indices;
-        LocalVector<uint32_t> primary_chunk_source_indices;
-    } asset_registry;
+    using AssetRegistryState = GaussianStreamingTypes::AssetRegistryState;
+
+    AssetRegistryState asset_registry;
 
     GaussianAtlasAllocator atlas_allocator;
     StreamingGlobalAtlasRegistry global_atlas_registry;
@@ -233,110 +103,13 @@ private:
     bool project_settings_connected = false;
     bool streaming_initialized = false;
 
-    struct SchedulerState {
-        static constexpr uint32_t DEFAULT_PREFETCH_LOADS_PER_FRAME = 6;
-        static constexpr uint32_t MAX_PREFETCH_LOADS_PER_FRAME = 64;
-        static constexpr uint32_t DEFAULT_SYNC_FALLBACK_LOADS_PER_FRAME = 1;
-        static constexpr uint32_t MAX_SYNC_FALLBACK_LOADS_PER_FRAME = 8;
-        static constexpr uint32_t DEFAULT_SYNC_FALLBACK_QUEUE_SIZE = 2048;
-        static constexpr uint32_t SYNC_FALLBACK_QUEUE_COMPACT_MIN_PREFIX = 128;
-        static constexpr bool DEFAULT_QUEUE_PRESSURE_CANDIDATE_SCAN_THROTTLE_ENABLED = false;
-        static constexpr uint32_t DEFAULT_QUEUE_PRESSURE_CANDIDATE_SCAN_THROTTLE_MIN_QUEUE_DEPTH = 1;
-        static constexpr uint32_t DEFAULT_QUEUE_PRESSURE_VISIBLE_SCAN_BUDGET = 1024;
-        static constexpr uint32_t DEFAULT_QUEUE_PRESSURE_PREFETCH_SCAN_BUDGET = 1024;
-        uint32_t max_visible_chunk_scan_per_frame = 4096;
-        uint32_t max_prefetch_chunk_scan_per_frame = 4096;
-        uint32_t max_prefetch_loads_per_frame = DEFAULT_PREFETCH_LOADS_PER_FRAME;
-        uint32_t max_sync_fallback_loads_per_frame = DEFAULT_SYNC_FALLBACK_LOADS_PER_FRAME;
-        uint32_t max_sync_fallback_queue_size = DEFAULT_SYNC_FALLBACK_QUEUE_SIZE;
-        bool queue_pressure_candidate_scan_throttle_enabled =
-                DEFAULT_QUEUE_PRESSURE_CANDIDATE_SCAN_THROTTLE_ENABLED;
-        uint32_t queue_pressure_candidate_scan_throttle_min_queue_depth =
-                DEFAULT_QUEUE_PRESSURE_CANDIDATE_SCAN_THROTTLE_MIN_QUEUE_DEPTH;
-        uint32_t queue_pressure_candidate_scan_throttle_visible_scan_cap =
-                DEFAULT_QUEUE_PRESSURE_VISIBLE_SCAN_BUDGET;
-        uint32_t queue_pressure_candidate_scan_throttle_prefetch_scan_cap =
-                DEFAULT_QUEUE_PRESSURE_PREFETCH_SCAN_BUDGET;
-        uint32_t visible_scan_cursor = 0;
-        uint32_t prefetch_scan_cursor = 0;
-        uint32_t last_visible_scan_count = 0;
-        uint32_t last_visible_scan_budget_effective = 0;
-        uint32_t last_load_candidate_count = 0;
-        uint32_t last_non_primary_scan_count = 0;
-        uint32_t last_prefetch_scan_count = 0;
-        uint32_t last_prefetch_scan_budget_effective = 0;
-        uint32_t last_prefetch_candidate_count = 0;
-        uint32_t last_prefetch_upload_pending_skip_count = 0;
-        uint32_t last_prefetch_enqueued_count = 0;
-        uint32_t last_prefetch_enqueue_headroom_stall_count = 0;
-        uint32_t last_sync_fallback_queue_depth = 0;
-        uint32_t last_sync_fallback_enqueued_count = 0;
-        uint32_t last_sync_fallback_drained_count = 0;
-        uint32_t last_sync_fallback_dropped_count = 0;
-        uint32_t last_sync_fallback_stalled_count = 0;
-        uint32_t prefetch_loads_remaining_this_frame = DEFAULT_PREFETCH_LOADS_PER_FRAME;
-        uint32_t prefetch_scan_budget_remaining_this_frame = 0;
-        bool queue_pressure_candidate_scan_throttle_active = false;
-        uint32_t queue_pressure_candidate_scan_throttle_queue_depth = 0;
-        LocalVector<uint64_t> sync_fallback_chunk_load_queue;
-        HashSet<uint64_t> sync_fallback_chunk_load_set;
-        uint32_t sync_fallback_chunk_load_queue_read_idx = 0;
-        double last_update_cpu_ms = 0.0;
-        double last_visibility_cpu_ms = 0.0;
-        double last_load_cpu_ms = 0.0;
-        double last_build_visible_cpu_ms = 0.0;
-        double last_prefetch_cpu_ms = 0.0;
-        double last_sync_fallback_cpu_ms = 0.0;
-        double last_cpu_total_attributed_ms = 0.0;
-        double last_cpu_unattributed_ms = 0.0;
-    } scheduler;
+    using SchedulerState = GaussianStreamingTypes::SchedulerState;
+    using DiagnosticsState = GaussianStreamingTypes::DiagnosticsState;
+    using PrimaryChunkLayoutMetrics = GaussianStreamingTypes::PrimaryChunkLayoutMetrics;
 
-    struct DiagnosticsState {
-        static constexpr uint32_t STALL_THRESHOLD_FRAMES = 30;
-        static constexpr uint32_t LOG_INTERVAL_FRAMES = 120;
-
-        uint32_t init_invalid_frames = 0;
-        uint32_t culling_empty_frames = 0;
-        uint32_t scheduler_stall_frames = 0;
-        uint32_t upload_stall_frames = 0;
-        uint32_t sync_fallback_stall_frames = 0;
-        uint32_t queue_pressure_frames = 0;
-        uint32_t vram_cap_hit_frames = 0;
-        uint64_t visible_evict_fallback_attempts = 0;
-        uint64_t visible_evict_fallback_successes = 0;
-
-        uint32_t last_total_chunks = 0;
-        uint32_t last_visible_chunks = 0;
-        uint32_t last_loaded_chunks = 0;
-
-        uint64_t invariant_slot_ownership_violations = 0;
-        uint64_t invariant_upload_lifecycle_violations = 0;
-        uint64_t invariant_generation_violations = 0;
-        String last_invariant_context;
-        String last_invariant_message;
-
-        String active_category = "ok";
-        String active_reason = "healthy";
-        String active_fingerprint = "ok";
-        String last_logged_fingerprint;
-        uint64_t last_fingerprint_log_frame = 0;
-    } diagnostics;
-
-    struct PrimaryChunkLayoutMetrics {
-        bool spatial_partition_enabled = false;
-        uint32_t source_index_count = 0;
-        float avg_chunk_radius_ratio = 0.0f;
-        float max_chunk_radius_ratio = 0.0f;
-        float bounds_volume_ratio = 0.0f;
-
-        void reset() {
-            spatial_partition_enabled = false;
-            source_index_count = 0;
-            avg_chunk_radius_ratio = 0.0f;
-            max_chunk_radius_ratio = 0.0f;
-            bounds_volume_ratio = 0.0f;
-        }
-    } primary_chunk_layout_metrics;
+    SchedulerState scheduler;
+    DiagnosticsState diagnostics;
+    PrimaryChunkLayoutMetrics primary_chunk_layout_metrics;
 
     uint64_t last_streaming_update_usec = 0;
     float last_streaming_frame_delta_seconds = ESTIMATED_FRAME_DELTA_60FPS;
