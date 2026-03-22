@@ -4756,6 +4756,7 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 	for (const String &path : files) {
 		Ref<Resource> res = ResourceLoader::load(path);
 		ERR_CONTINUE(res.is_null());
+		const String res_type = res->get_class();
 
 		Ref<PackedScene> scene = res;
 		if (scene.is_valid()) {
@@ -4776,6 +4777,15 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
 			preview_node->add_child(mesh_instance);
+			add_preview = true;
+		}
+
+		if (ClassDB::is_parent_class(res_type, "GaussianSplatAsset")) {
+			Sprite3D *sprite = memnew(Sprite3D);
+			sprite->set_texture(get_editor_theme_icon(SNAME("Resource")));
+			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			sprite->set_pixel_size(0.005);
+			preview_node->add_child(sprite);
 			add_preview = true;
 		}
 
@@ -5000,6 +5010,56 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 	return true;
 }
 
+bool Node3DEditorViewport::_create_gaussian_instance(Node *p_parent, const String &p_path, const Ref<Resource> &p_resource, const Point2 &p_point) {
+	ERR_FAIL_COND_V(p_parent == nullptr, false);
+	ERR_FAIL_COND_V(p_resource.is_null(), false);
+
+	Object *instantiated_object = ClassDB::instantiate("GaussianSplatNode3D");
+	ERR_FAIL_COND_V(instantiated_object == nullptr, false);
+
+	Node *gaussian_node = Object::cast_to<Node>(instantiated_object);
+	Node3D *gaussian_node_3d = Object::cast_to<Node3D>(instantiated_object);
+	if (gaussian_node == nullptr || gaussian_node_3d == nullptr) {
+		memdelete(instantiated_object);
+		return false;
+	}
+
+	gaussian_node->set("splat_asset", p_resource);
+	gaussian_node->set("ply_file_path", p_path);
+
+	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+	if (!node_name.is_empty()) {
+		gaussian_node->set_name(node_name);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(p_parent, "add_child", gaussian_node, true);
+	undo_redo->add_do_method(gaussian_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(gaussian_node);
+	undo_redo->add_undo_method(p_parent, "remove_child", gaussian_node);
+	undo_redo->add_do_method(editor_selection, "add_node", gaussian_node);
+
+	const String new_name = p_parent->validate_child_name(gaussian_node);
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), gaussian_node->get_class(), new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+
+	Transform3D parent_tf;
+	Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
+	if (parent_node3d) {
+		parent_tf = parent_node3d->get_global_gizmo_transform();
+	}
+
+	Transform3D new_tf = gaussian_node_3d->get_transform();
+	new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + gaussian_node_3d->get_position());
+	new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+
+	undo_redo->add_do_method(gaussian_node, "set_transform", new_tf);
+
+	return true;
+}
+
 bool Node3DEditorViewport::_create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	Ref<AudioStream> audio = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_V(audio.is_null(), false);
@@ -5075,10 +5135,17 @@ void Node3DEditorViewport::_perform_drop_data() {
 			continue;
 		}
 
+		const String res_type = res->get_class();
 		Ref<PackedScene> scene = res;
 		Ref<Mesh> mesh = res;
 		if (mesh.is_valid() || scene.is_valid()) {
 			if (!_create_instance(target_node, path, drop_pos)) {
+				error_files.push_back(path.get_file());
+			}
+		}
+
+		if (ClassDB::is_parent_class(res_type, "GaussianSplatAsset")) {
+			if (!_create_gaussian_instance(target_node, path, res, drop_pos)) {
 				error_files.push_back(path.get_file());
 			}
 		}
@@ -5125,8 +5192,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 				bool is_material = ClassDB::is_parent_class(res_type, "Material");
 				bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
 				bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
+				bool is_gaussian = ClassDB::is_parent_class(res_type, "GaussianSplatAsset");
 
-				if (is_mesh || is_scene || is_material || is_texture || is_audio) {
+				if (is_mesh || is_scene || is_material || is_texture || is_audio || is_gaussian) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
@@ -5172,6 +5240,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						is_other_valid = true;
 						continue;
 					} else if (!is_other_valid && audio.is_valid()) {
+						is_other_valid = true;
+					} else if (is_gaussian) {
 						is_other_valid = true;
 					} else {
 						continue;
