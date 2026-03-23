@@ -12,30 +12,99 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/world_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/material.h"
-#include "scene/resources/multimesh.h"
 
 #include "../core/gaussian_splat_asset.h"
 #include "../io/gaussian_import_preset.h"
+#include "../nodes/gaussian_splat_node_3d.h"
+
+// ---------------------------------------------------------------------------
+// GaussianImportSettingsData — Object that feeds properties to EditorInspector
+// (same pattern as SceneImportSettingsData in scene_import_settings.cpp)
+// ---------------------------------------------------------------------------
+
+class GaussianImportSettingsData : public Object {
+	GDCLASS(GaussianImportSettingsData, Object)
+	friend class GaussianImportSettingsDialog;
+
+	HashMap<StringName, Variant> current;
+	HashMap<StringName, Variant> defaults;
+
+	bool _set(const StringName &p_name, const Variant &p_value) {
+		if (defaults.has(p_name)) {
+			current[p_name] = p_value;
+			return true;
+		}
+		return false;
+	}
+
+	bool _get(const StringName &p_name, Variant &r_ret) const {
+		if (current.has(p_name)) {
+			r_ret = current[p_name];
+			return true;
+		}
+		if (defaults.has(p_name)) {
+			r_ret = defaults[p_name];
+			return true;
+		}
+		return false;
+	}
+
+	void _get_property_list(List<PropertyInfo> *r_list) const {
+		// General
+		r_list->push_back(PropertyInfo(Variant::NIL, "General", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		r_list->push_back(PropertyInfo(Variant::INT, "general/asset_type", PROPERTY_HINT_ENUM, "Static,Dynamic"));
+
+		// Quality
+		r_list->push_back(PropertyInfo(Variant::NIL, "Quality", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		r_list->push_back(PropertyInfo(Variant::STRING, "quality/preset", PROPERTY_HINT_ENUM, "mobile,desktop,high,ultra,development,custom"));
+		r_list->push_back(PropertyInfo(Variant::INT, "quality/max_splats", PROPERTY_HINT_RANGE, "0,5000000,1000"));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, "quality/density_multiplier", PROPERTY_HINT_RANGE, "0.1,1.0,0.05"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "quality/enable_lod"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "quality/optimize_for_gpu"));
+
+		// Processing
+		r_list->push_back(PropertyInfo(Variant::NIL, "Processing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "processing/normalize_opacity"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "processing/sort_by_opacity"));
+
+		// Compression
+		r_list->push_back(PropertyInfo(Variant::NIL, "Compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "compression/quantize_positions"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "compression/quantize_colors"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "compression/quantize_scales"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "compression/quantize_rotations"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "compression/pack_opacity"));
+
+		// Metadata
+		r_list->push_back(PropertyInfo(Variant::NIL, "Metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "metadata/include_statistics"));
+		r_list->push_back(PropertyInfo(Variant::BOOL, "metadata/include_memory_estimate"));
+	}
+
+protected:
+	static void _bind_methods() {}
+};
+
+// ---------------------------------------------------------------------------
+// GaussianImportSettingsDialog
+// ---------------------------------------------------------------------------
 
 GaussianImportSettingsDialog *GaussianImportSettingsDialog::singleton = nullptr;
 
@@ -82,6 +151,9 @@ void GaussianImportSettingsDialog::_notification(int p_what) {
 			if (!is_visible()) {
 				_clear_viewport_scene();
 				loaded_asset.unref();
+				if (inspector) {
+					inspector->edit(nullptr);
+				}
 			}
 		} break;
 	}
@@ -106,6 +178,38 @@ void GaussianImportSettingsDialog::_on_light_rotate_switch_pressed() {
 }
 
 // ---------------------------------------------------------------------------
+// Inspector property edited callback
+// ---------------------------------------------------------------------------
+
+void GaussianImportSettingsDialog::_on_inspector_property_edited(const String &p_name) {
+	if (!settings_data) {
+		return;
+	}
+
+	// When the quality preset changes, cascade dependent fields.
+	if (p_name == "quality/preset") {
+		String preset_id;
+		if (settings_data->current.has(StringName("quality/preset"))) {
+			preset_id = String(settings_data->current[StringName("quality/preset")]);
+		}
+		int idx = gaussian_find_import_preset_index(preset_id);
+		if (idx >= 0) {
+			const GaussianImportPresetDefinition &preset = gaussian_get_import_preset_by_index(idx);
+			settings_data->current[StringName("quality/max_splats")] = preset.max_splats;
+			settings_data->current[StringName("quality/density_multiplier")] = preset.density_multiplier;
+			settings_data->current[StringName("quality/enable_lod")] = preset.enable_lod;
+			settings_data->current[StringName("quality/optimize_for_gpu")] = preset.optimize_for_gpu;
+			settings_data->current[StringName("compression/quantize_positions")] = preset.quantize_positions;
+			settings_data->current[StringName("compression/quantize_colors")] = preset.quantize_colors;
+			settings_data->current[StringName("compression/quantize_scales")] = preset.quantize_scales;
+			settings_data->current[StringName("compression/quantize_rotations")] = preset.quantize_rotations;
+			settings_data->current[StringName("compression/pack_opacity")] = preset.pack_opacity;
+			settings_data->notify_property_list_changed();
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------------------------
 
@@ -114,6 +218,9 @@ GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 	set_title(TTR("Advanced Import Settings for Gaussian Splat"));
 	set_ok_button_text(TTR("Reimport"));
 	set_cancel_button_text(TTR("Close"));
+
+	settings_data = memnew(GaussianImportSettingsData);
+
 	_build_ui();
 }
 
@@ -145,6 +252,7 @@ void GaussianImportSettingsDialog::_build_ui() {
 
 	viewport = memnew(SubViewport);
 	viewport->set_use_own_world_3d(true);
+	viewport->set_update_mode(SubViewport::UPDATE_ALWAYS);
 	viewport_container->add_child(viewport);
 
 	// Light toggle buttons overlaid on the viewport (top-right corner).
@@ -220,9 +328,9 @@ void GaussianImportSettingsDialog::_build_ui() {
 	light2->set_color(Color(0.5f, 0.5f, 0.5f));
 	camera->add_child(light2);
 
-	// ---- Right: info + import settings ----
+	// ---- Right: info + import settings inspector ----
 	VBoxContainer *right_vb = memnew(VBoxContainer);
-	right_vb->set_custom_minimum_size(Size2(280 * EDSCALE, 0));
+	right_vb->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	right_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	split->add_child(right_vb);
 
@@ -232,44 +340,66 @@ void GaussianImportSettingsDialog::_build_ui() {
 
 	stats_label = memnew(Label);
 	stats_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	stats_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	right_vb->add_child(stats_label);
 
 	right_vb->add_child(memnew(HSeparator));
 
-	Label *preset_label = memnew(Label);
-	preset_label->set_text(TTR("Quality Preset"));
-	right_vb->add_child(preset_label);
+	inspector = memnew(EditorInspector);
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	inspector->connect(SNAME("property_edited"), callable_mp(this, &GaussianImportSettingsDialog::_on_inspector_property_edited));
+	right_vb->add_child(inspector);
+}
 
-	quality_selector = memnew(OptionButton);
-	const Vector<GaussianImportPresetDefinition> &presets = gaussian_get_import_presets();
-	for (int i = 0; i < presets.size(); i++) {
-		quality_selector->add_item(presets[i].display_name);
+// ---------------------------------------------------------------------------
+// Settings data population
+// ---------------------------------------------------------------------------
+
+void GaussianImportSettingsDialog::_populate_settings_data() {
+	if (!settings_data) {
+		return;
 	}
-	quality_selector->select(gaussian_find_import_preset_index("high"));
-	right_vb->add_child(quality_selector);
 
-	right_vb->add_child(memnew(HSeparator));
+	settings_data->current.clear();
+	settings_data->defaults.clear();
 
-	Label *compression_label = memnew(Label);
-	compression_label->set_text(TTR("Compression"));
-	right_vb->add_child(compression_label);
+	// Set defaults from "high" preset.
+	const GaussianImportPresetDefinition &preset = gaussian_get_import_preset_by_name("high");
 
-	compress_positions = memnew(CheckBox);
-	compress_positions->set_text(TTR("Quantize Positions"));
-	right_vb->add_child(compress_positions);
+	settings_data->defaults[StringName("general/asset_type")] = 0; // Static
+	settings_data->defaults[StringName("quality/preset")] = String(preset.id);
+	settings_data->defaults[StringName("quality/max_splats")] = preset.max_splats;
+	settings_data->defaults[StringName("quality/density_multiplier")] = preset.density_multiplier;
+	settings_data->defaults[StringName("quality/enable_lod")] = preset.enable_lod;
+	settings_data->defaults[StringName("quality/optimize_for_gpu")] = preset.optimize_for_gpu;
+	settings_data->defaults[StringName("processing/normalize_opacity")] = true;
+	settings_data->defaults[StringName("processing/sort_by_opacity")] = false;
+	settings_data->defaults[StringName("compression/quantize_positions")] = preset.quantize_positions;
+	settings_data->defaults[StringName("compression/quantize_colors")] = preset.quantize_colors;
+	settings_data->defaults[StringName("compression/quantize_scales")] = preset.quantize_scales;
+	settings_data->defaults[StringName("compression/quantize_rotations")] = preset.quantize_rotations;
+	settings_data->defaults[StringName("compression/pack_opacity")] = preset.pack_opacity;
+	settings_data->defaults[StringName("metadata/include_statistics")] = preset.include_statistics;
+	settings_data->defaults[StringName("metadata/include_memory_estimate")] = preset.include_memory_estimate;
 
-	compress_colors = memnew(CheckBox);
-	compress_colors->set_text(TTR("Quantize Colors"));
-	right_vb->add_child(compress_colors);
+	// Copy defaults into current.
+	for (const KeyValue<StringName, Variant> &kv : settings_data->defaults) {
+		settings_data->current[kv.key] = kv.value;
+	}
 
-	compress_scales = memnew(CheckBox);
-	compress_scales->set_text(TTR("Quantize Scales"));
-	right_vb->add_child(compress_scales);
+	// Override with values from the .import sidecar.
+	if (!import_options.is_empty()) {
+		Array keys = import_options.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			StringName key = keys[i];
+			if (settings_data->defaults.has(key)) {
+				settings_data->current[key] = import_options[keys[i]];
+			}
+		}
+	}
 
-	compress_rotations = memnew(CheckBox);
-	compress_rotations->set_text(TTR("Quantize Rotations"));
-	right_vb->add_child(compress_rotations);
+	inspector->edit(settings_data);
+	settings_data->notify_property_list_changed();
 }
 
 // ---------------------------------------------------------------------------
@@ -326,12 +456,12 @@ void GaussianImportSettingsDialog::_clear_viewport_scene() {
 		bounds_instance->queue_free();
 		bounds_instance = nullptr;
 	}
-	if (splat_instance) {
-		if (splat_instance->get_parent()) {
-			splat_instance->get_parent()->remove_child(splat_instance);
+	if (splat_node) {
+		if (splat_node->get_parent()) {
+			splat_node->get_parent()->remove_child(splat_node);
 		}
-		splat_instance->queue_free();
-		splat_instance = nullptr;
+		splat_node->queue_free();
+		splat_node = nullptr;
 	}
 }
 
@@ -383,67 +513,17 @@ void GaussianImportSettingsDialog::_build_viewport_scene() {
 		viewport->add_child(bounds_instance);
 	}
 
-	// -- Sampled point cloud --
+	// -- Real Gaussian Splat preview --
 	{
-		const PackedFloat32Array positions = loaded_asset->get_positions();
-		const PackedColorArray colors = loaded_asset->get_colors();
-		const int count = loaded_asset->get_splat_count();
-		if (count <= 0 || positions.size() < 3) {
-			return;
-		}
-
-		const int max_pts = 2048;
-		const int step = MAX(1, count / max_pts);
-		const int instance_count = MAX(1, (count + step - 1) / step);
-
-		Ref<BoxMesh> box;
-		box.instantiate();
-		box->set_size(Vector3(1, 1, 1));
-
-		Ref<StandardMaterial3D> pt_mat;
-		pt_mat.instantiate();
-		pt_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		pt_mat->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		pt_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-		pt_mat->set_albedo(Color(0.9, 0.95, 1.0, 0.8));
-		box->surface_set_material(0, pt_mat);
-
-		Ref<MultiMesh> mm;
-		mm.instantiate();
-		mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-		mm->set_mesh(box);
-		mm->set_use_colors(true);
-		mm->set_instance_count(instance_count);
-
-		const float *pos_ptr = positions.ptr();
-		const Color *col_ptr = colors.size() > 0 ? colors.ptr() : nullptr;
-		const float span = MAX(0.001f, asset_bounds.size.length());
-		const float pt_size = CLAMP(span * 0.005f, 0.005f, 0.1f);
-
-		int dst = 0;
-		for (int src = 0; src < count && dst < instance_count; src += step, dst++) {
-			int base = src * 3;
-			if (base + 2 >= positions.size()) {
-				break;
-			}
-			Vector3 pos(pos_ptr[base], pos_ptr[base + 1], pos_ptr[base + 2]);
-			pos -= center;
-
-			Transform3D xf;
-			xf.basis = Basis().scaled(Vector3(pt_size, pt_size, pt_size));
-			xf.origin = pos;
-			mm->set_instance_transform(dst, xf);
-
-			Color c(0.8, 0.9, 1.0, 0.85);
-			if (col_ptr && src < colors.size()) {
-				c = col_ptr[src];
-			}
-			mm->set_instance_color(dst, c);
-		}
-
-		splat_instance = memnew(MultiMeshInstance3D);
-		splat_instance->set_multimesh(mm);
-		viewport->add_child(splat_instance);
+		splat_node = memnew(GaussianSplatNode3D);
+		splat_node->set_name("ImportPreviewSplat");
+		splat_node->set_auto_load(false);
+		splat_node->set_splat_asset(loaded_asset);
+		splat_node->set_quality_preset(GaussianSplatNode3D::QUALITY_BALANCED);
+		splat_node->set_update_mode(GaussianSplatNode3D::UPDATE_MODE_ALWAYS);
+		// Center the splat at origin to match the bounds wireframe.
+		splat_node->set_position(-center);
+		viewport->add_child(splat_node);
 	}
 }
 
@@ -464,12 +544,9 @@ void GaussianImportSettingsDialog::_update_camera() {
 	// Orthogonal projection matching SceneImportSettingsDialog.
 	camera->set_orthogonal(camera_size * cam_zoom, 0.0001, camera_size * 2);
 
-	Vector3 center = asset_bounds.get_center();
-	// Place scene content at origin; the bounds wireframe and point cloud are
-	// already centred, so the camera orbits the origin.
 	Transform3D xf;
 	xf.basis = Basis(Vector3(0, 1, 0), cam_rot_y) * Basis(Vector3(1, 0, 0), cam_rot_x);
-	xf.origin = Vector3(); // content is centred at origin
+	xf.origin = Vector3();
 	xf.translate_local(0, 0, camera_size);
 
 	camera->set_transform(xf);
@@ -532,7 +609,6 @@ void GaussianImportSettingsDialog::_load_source_asset() {
 		return;
 	}
 
-	// Load the imported asset (not the raw source file).
 	loaded_asset = ResourceLoader::load(source_path, "GaussianSplatAsset");
 }
 
@@ -569,7 +645,6 @@ void GaussianImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_inpu
 		_update_camera();
 	}
 
-	// Trackpad magnify gesture (pinch to zoom).
 	Ref<InputEventMagnifyGesture> mg = p_input;
 	if (mg.is_valid()) {
 		real_t mg_factor = mg->get_factor();
@@ -595,7 +670,6 @@ void GaussianImportSettingsDialog::_re_import() {
 		return;
 	}
 
-	// Determine importer name from extension.
 	String ext = source_path.get_extension().to_lower();
 	String importer_name;
 	if (ext == "ply") {
@@ -606,23 +680,15 @@ void GaussianImportSettingsDialog::_re_import() {
 		importer_name = "";
 	}
 
-	// Gather settings from UI.
+	// Gather all settings from the inspector data object.
 	HashMap<StringName, Variant> params;
+	if (settings_data) {
+		for (const KeyValue<StringName, Variant> &kv : settings_data->current) {
+			params[kv.key] = kv.value;
+		}
+	}
 
-	int preset_idx = quality_selector->get_selected();
-	const GaussianImportPresetDefinition &preset = gaussian_get_import_preset_by_index(preset_idx);
-	params[StringName("quality/preset")] = preset.id;
-	params[StringName("quality/max_splats")] = preset.max_splats;
-	params[StringName("quality/density_multiplier")] = preset.density_multiplier;
-	params[StringName("quality/enable_lod")] = preset.enable_lod;
-	params[StringName("quality/optimize_for_gpu")] = preset.optimize_for_gpu;
-
-	params[StringName("compression/quantize_positions")] = compress_positions->is_pressed();
-	params[StringName("compression/quantize_colors")] = compress_colors->is_pressed();
-	params[StringName("compression/quantize_scales")] = compress_scales->is_pressed();
-	params[StringName("compression/quantize_rotations")] = compress_rotations->is_pressed();
-
-	// Carry over existing options from the .import file that we don't expose here.
+	// Carry over existing options from the .import file that we don't expose.
 	if (!import_options.is_empty()) {
 		Array keys = import_options.keys();
 		for (int i = 0; i < keys.size(); i++) {
@@ -669,27 +735,8 @@ void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 	// Load the imported asset for preview.
 	_load_source_asset();
 
-	// Populate UI from existing import options / preset.
-	{
-		String preset_id = "high";
-		if (import_options.has(StringName("quality/preset"))) {
-			preset_id = String(import_options[StringName("quality/preset")]);
-		}
-		int idx = gaussian_find_import_preset_index(preset_id);
-		quality_selector->select(idx >= 0 ? idx : gaussian_find_import_preset_index("high"));
-
-		auto get_bool = [&](const StringName &key, bool def) -> bool {
-			if (import_options.has(key)) {
-				return bool(import_options[key]);
-			}
-			return def;
-		};
-
-		compress_positions->set_pressed(get_bool(StringName("compression/quantize_positions"), false));
-		compress_colors->set_pressed(get_bool(StringName("compression/quantize_colors"), false));
-		compress_scales->set_pressed(get_bool(StringName("compression/quantize_scales"), false));
-		compress_rotations->set_pressed(get_bool(StringName("compression/quantize_rotations"), false));
-	}
+	// Populate the EditorInspector with import settings.
+	_populate_settings_data();
 
 	// Build 3D preview.
 	cam_rot_x = -Math::PI / 4;

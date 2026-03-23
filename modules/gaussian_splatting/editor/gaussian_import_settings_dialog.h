@@ -12,16 +12,15 @@
 class Button;
 class Camera3D;
 class CameraAttributesPractical;
-class CheckBox;
 class DirectionalLight3D;
+class EditorInspector;
 class Environment;
+class GaussianImportSettingsData;
 class GaussianSplatAsset;
+class GaussianSplatNode3D;
 class HSplitContainer;
 class Label;
 class MeshInstance3D;
-class MultiMeshInstance3D;
-class Node3D;
-class OptionButton;
 class Sky;
 class SubViewport;
 class SubViewportContainer;
@@ -56,18 +55,15 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 
 	// Scene nodes inside viewport.
 	MeshInstance3D *bounds_instance = nullptr;
-	MultiMeshInstance3D *splat_instance = nullptr;
+	GaussianSplatNode3D *splat_node = nullptr;
 
 	// Info labels.
 	Label *file_label = nullptr;
 	Label *stats_label = nullptr;
 
-	// Import options.
-	OptionButton *quality_selector = nullptr;
-	CheckBox *compress_positions = nullptr;
-	CheckBox *compress_colors = nullptr;
-	CheckBox *compress_scales = nullptr;
-	CheckBox *compress_rotations = nullptr;
+	// Import settings inspector.
+	EditorInspector *inspector = nullptr;
+	GaussianImportSettingsData *settings_data = nullptr;
 
 	// State.
 	String source_path;
@@ -90,6 +86,8 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
 	void _on_light_rotate_switch_pressed();
+	void _on_inspector_property_edited(const String &p_name);
+	void _populate_settings_data();
 
 	AABB _resolve_bounds() const;
 
