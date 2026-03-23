@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/inspector/editor_inspector.h"
+#include "scene/gui/code_edit.h"
 
 class CheckBox;
 class ColorPickerButton;
@@ -117,6 +118,42 @@ public:
 	EditorPropertyText();
 };
 
+// A CodeEdit subclass with BBCode-aware bracket autoclosing, selection wrapping,
+// and smart caret placement after completion.
+
+struct BBCodeTagDef {
+	const char *name;
+	bool has_value;  // should be followed by '=' before the closing ']'
+	bool standalone; // no closing [/tag]
+};
+
+extern const BBCodeTagDef TAGS[];
+
+class BBCodeEdit : public CodeEdit {
+	GDCLASS(BBCodeEdit, CodeEdit);
+
+	// When the user wraps a selection with '[', we record the line/col of the
+	// auto-inserted "[/" so we can mirror subsequent keystrokes into the closing tag.
+	bool mirror_active = false;
+	bool mirror_frozen = false; // set when '=' typed — stop mirroring until '=' removed
+	bool mirror_updating = false; // guard: suppresses caret_changed re-scan during our own edits
+	int mirror_line = -1;
+	int mirror_col = -1; // column of '[' in the "[/…]" close-tag
+
+	void _end_mirror();
+	void _on_caret_changed();
+	void _try_resume_mirror();
+	void _confirm_mirror_completion(int p_option_idx);
+	void post_completion_reposition();
+
+protected:
+	static void _bind_methods() {}
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+public:
+	BBCodeEdit();
+};
+
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
 
@@ -126,7 +163,6 @@ class EditorPropertyMultilineText : public EditorProperty {
 	TextEdit *big_text = nullptr;
 	Button *open_big_text = nullptr;
 
-	bool expression = false;
 	bool monospaced = false;
 	bool wrap_lines = true;
 
@@ -134,12 +170,22 @@ class EditorPropertyMultilineText : public EditorProperty {
 	void _text_changed();
 	void _open_big_text();
 	void _update_theme();
+	void _on_code_completion_requested();
+	void _on_code_completion_requested_big();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 
 public:
+	enum Mode {
+		MODE_TEXT,
+		MODE_EXPRESSION,
+		MODE_BBCODE,
+	};
+
+	Mode mode = MODE_TEXT;
+
 	virtual void update_property() override;
 
 	void set_monospaced(bool p_monospaced);
@@ -148,7 +194,7 @@ public:
 	void set_wrap_lines(bool p_wrap_lines);
 	bool get_wrap_lines();
 
-	EditorPropertyMultilineText(bool p_expression = false);
+	EditorPropertyMultilineText(Mode p_mode = MODE_TEXT);
 };
 
 class EditorPropertyTextEnum : public EditorProperty {

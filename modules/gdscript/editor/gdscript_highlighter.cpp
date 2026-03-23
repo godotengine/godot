@@ -1,4 +1,4 @@
-/**************************************************************************/
+﻿/**************************************************************************/
 /*  gdscript_highlighter.cpp                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
@@ -249,7 +249,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						for (; from < line_length; from++) {
 							if (line_length - from < end_key_length) {
 								// Don't break if '\' to highlight escape sequences,
-								// and '%' and '{' to highlight placeholders.
+								// '%' and '{' to highlight placeholders.
 								if (str.find_char('\\', from) == -1 && str.find_char('%', from) == -1 && str.find_char('{', from) == -1) {
 									break;
 								}
@@ -815,7 +815,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
-	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 	for (const String &keyword : gdscript->get_reserved_words()) {
 		if (gdscript->is_control_flow_keyword(keyword)) {

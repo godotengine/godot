@@ -293,6 +293,543 @@ EditorPropertyText::EditorPropertyText() {
 	text->connect(SceneStringName(text_submitted), callable_mp(this, &EditorPropertyText::_text_submitted));
 }
 
+///////////////////// BBCODE EDIT /////////////////////////
+
+BBCodeEdit::BBCodeEdit() {}
+
+void BBCodeEdit::_end_mirror() {
+	mirror_active = false;
+	mirror_frozen = false;
+	mirror_line = -1;
+	mirror_col = -1;
+}
+
+void BBCodeEdit::_confirm_mirror_completion(int p_option_idx) {
+	Dictionary option = get_code_completion_option(p_option_idx);
+	String insert_text = option.get("insert_text", "");
+
+	// Extract tag name (everything before '=' or ']').
+	String tag_name;
+	int end_pos = 0;
+	while (end_pos < insert_text.length() && insert_text[end_pos] != ']' && insert_text[end_pos] != '=') {
+		end_pos++;
+	}
+	tag_name = insert_text.substr(0, end_pos);
+	bool has_value = (end_pos < insert_text.length() && insert_text[end_pos] == '=');
+	bool standalone = !insert_text.contains("][/");
+
+	cancel_code_completion();
+
+	int cur_line = get_caret_line();
+	int cur_col = get_caret_column();
+	String line = get_line(cur_line);
+
+	// Find the opening '[' and remove any already-typed base chars.
+	int open_pos = cur_col - 1;
+	while (open_pos >= 0 && line[open_pos] != '[') {
+		open_pos--;
+	}
+	if (open_pos < 0) {
+		_end_mirror();
+		return;
+	}
+	mirror_updating = true;
+	begin_complex_operation();
+	int base_len = cur_col - open_pos - 1;
+	if (base_len > 0) {
+		remove_text(cur_line, open_pos + 1, cur_line, cur_col);
+		cur_col = open_pos + 1;
+		set_caret_column(cur_col);
+		line = get_line(cur_line);
+	}
+
+	// Check whether ']' is already at caret position (pre-inserted when wrapping selection).
+	bool has_preinserted_close = (cur_col < line.length() && line[cur_col] == ']');
+
+	// Insert tag name into the opening bracket.
+	String open_suffix = tag_name + (has_value ? "=" : "");
+	if (!has_preinserted_close) {
+		open_suffix += "]";
+	}
+	insert_text_at_caret(open_suffix);
+	cur_col = get_caret_column();
+	// Skip past the pre-inserted ']'.
+	if (has_preinserted_close) {
+		set_caret_column(cur_col + 1);
+		cur_col = get_caret_column();
+	}
+	int caret_after_open = cur_col;
+
+	// Find mirror "[/" scanning forward from caret.
+	String updated_line = get_line(cur_line);
+	int mirror_pos = -1;
+	for (int i = caret_after_open; i + 1 < updated_line.length(); i++) {
+		if (updated_line[i] == '[' && updated_line[i + 1] == '/') {
+			mirror_pos = i;
+			break;
+		}
+	}
+
+	if (mirror_pos == -1) {
+		set_caret_line(cur_line);
+		set_caret_column(caret_after_open);
+		end_complex_operation();
+		mirror_updating = false;
+		_end_mirror();
+		return;
+	}
+
+	if (standalone) {
+		// Standalone tags have no closing counterpart — remove the entire "[/...]" group.
+		int close_end = mirror_pos + 2;
+		while (close_end < updated_line.length() && updated_line[close_end] != ']' && updated_line[close_end] != '\n') {
+			close_end++;
+		}
+		if (close_end < updated_line.length() && updated_line[close_end] == ']') {
+			close_end++; // include the ']'
+		}
+		remove_text(cur_line, mirror_pos, cur_line, close_end);
+	} else {
+		// Replace mirror tag content with tag_name; reuse pre-inserted ']' if present.
+		int mc_start = mirror_pos + 2;
+		int mc_end = mc_start;
+		while (mc_end < updated_line.length() && updated_line[mc_end] != ']' && updated_line[mc_end] != '\n') {
+			mc_end++;
+		}
+		bool mirror_has_close = (mc_end < updated_line.length() && updated_line[mc_end] == ']');
+		String mirror_insert = tag_name + (mirror_has_close ? "" : "]");
+		remove_text(cur_line, mc_start, cur_line, mc_end);
+		set_caret_line(cur_line);
+		set_caret_column(mc_start);
+		insert_text_at_caret(mirror_insert);
+	}
+
+	set_caret_line(cur_line);
+	set_caret_column(caret_after_open);
+	end_complex_operation();
+	mirror_updating = false;
+	_end_mirror();
+}
+
+void BBCodeEdit::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		const Key kcode = k->get_keycode();
+
+		// Before any key handling: ensure mirror state is up-to-date for the current
+		// caret position. This makes the FIRST keypress on an existing saved tag work
+		// correctly without needing a prior click/caret-change event.
+		if (!mirror_active && !mirror_updating) {
+			_try_resume_mirror();
+		}
+
+		// Cancel mirroring on navigation keys (caret_changed will re-evaluate).
+		if (mirror_active) {
+			if (kcode == Key::ESCAPE) {
+				_end_mirror();
+			}
+		}
+
+		// Backspace in mirror mode.
+		if (mirror_active && kcode == Key::BACKSPACE) {
+			int cur_line = get_caret_line();
+			int cur_col = get_caret_column();
+			String cur_line_str = get_line(cur_line);
+
+			if (mirror_frozen) {
+				// Frozen by '=' — fall through, CodeEdit removes char normally.
+				// _on_caret_changed will update mirror_frozen via _try_resume_mirror.
+			} else {
+				int open_pos = cur_col - 1;
+				while (open_pos >= 0 && cur_line_str[open_pos] != '[') {
+					open_pos--;
+				}
+				if (open_pos >= 0 && cur_col > open_pos + 1) {
+					// Paired delete: remove the char at the matching offset in the closer.
+					mirror_updating = true;
+					begin_complex_operation();
+					String ml = get_line(mirror_line);
+					int close_end = mirror_col + 2;
+					while (close_end < ml.length() && ml[close_end] != ']' && ml[close_end] != '\n') {
+						close_end++;
+					}
+					int mirror_del = mirror_col + cur_col - open_pos;
+					if (mirror_del >= mirror_col + 2 && mirror_del < close_end) {
+						remove_text(mirror_line, mirror_del, mirror_line, mirror_del + 1);
+					}
+					remove_text(cur_line, cur_col - 1, cur_line, cur_col);
+					set_caret_line(cur_line);
+					set_caret_column(cur_col - 1);
+					if (mirror_line == cur_line && mirror_col >= cur_col) {
+						mirror_col -= 1;
+					}
+					end_complex_operation();
+					mirror_updating = false;
+					_try_resume_mirror();
+					accept_event();
+					return;
+				} else if (open_pos >= 0 && cur_col == open_pos + 1) {
+					// Caret is right after '[' — remove both bracket pairs atomically.
+					mirror_updating = true;
+					begin_complex_operation();
+					String ml = get_line(mirror_line);
+					int close_end = mirror_col + 2;
+					while (close_end < ml.length() && ml[close_end] != ']' && ml[close_end] != '\n') {
+						close_end++;
+					}
+					if (close_end < ml.length() && ml[close_end] == ']') {
+						close_end++;
+					}
+					remove_text(mirror_line, mirror_col, mirror_line, close_end);
+					remove_text(cur_line, open_pos, cur_line, open_pos + 2);
+					set_caret_line(cur_line);
+					set_caret_column(open_pos);
+					end_complex_operation();
+					mirror_updating = false;
+					_end_mirror();
+					accept_event();
+					return;
+				} else {
+					_end_mirror();
+				}
+			}
+		}
+
+		// Delete key in mirror mode: remove char AT caret from both sides.
+		if (mirror_active && kcode == Key::KEY_DELETE) {
+			int cur_line = get_caret_line();
+			int cur_col = get_caret_column();
+			String cur_line_str = get_line(cur_line);
+
+			if (mirror_frozen) {
+				// Frozen — fall through normally.
+			} else {
+				// Validate caret is inside opener tag name.
+				int open_pos = cur_col;
+				while (open_pos > 0 && cur_line_str[open_pos] != '[') {
+					open_pos--;
+				}
+				// tag_end: position of ']' closing the opener.
+				int tag_end = cur_col;
+				while (tag_end < cur_line_str.length() && cur_line_str[tag_end] != ']' && cur_line_str[tag_end] != '[' && cur_line_str[tag_end] != '\n') {
+					tag_end++;
+				}
+				const bool caret_in_tag = (cur_line_str[open_pos] == '[' && cur_col > open_pos &&
+						tag_end < cur_line_str.length() && cur_line_str[tag_end] == ']' &&
+						cur_col < tag_end);
+				if (caret_in_tag) {
+					mirror_updating = true;
+					begin_complex_operation();
+					String ml = get_line(mirror_line);
+					int close_end = mirror_col + 2;
+					while (close_end < ml.length() && ml[close_end] != ']' && ml[close_end] != '\n') {
+						close_end++;
+					}
+					// Delete char AT cur_col in opener; matching pos in closer:
+					// offset = cur_col - (open_pos + 1)
+					// mirror target = mirror_col + 2 + offset = mirror_col + cur_col - open_pos + 1
+					int mirror_del = mirror_col + cur_col - open_pos + 1;
+					if (mirror_del >= mirror_col + 2 && mirror_del < close_end) {
+						remove_text(mirror_line, mirror_del, mirror_line, mirror_del + 1);
+					}
+					remove_text(cur_line, cur_col, cur_line, cur_col + 1);
+					set_caret_line(cur_line);
+					set_caret_column(cur_col);
+					end_complex_operation();
+					mirror_updating = false;
+					_try_resume_mirror();
+					accept_event();
+					return;
+				} else {
+					_end_mirror();
+				}
+			}
+		}
+
+		// Handle '[' — auto-close or selection-wrap.
+		if (kcode == Key::BRACKETLEFT && !k->is_ctrl_pressed() && !k->is_alt_pressed() && !k->is_meta_pressed()) {
+			if (has_selection()) {
+				int sel_from_line = get_selection_from_line();
+				int sel_from_col = get_selection_from_column();
+				int sel_to_line = get_selection_to_line();
+				int sel_to_col = get_selection_to_column();
+				deselect();
+
+				mirror_updating = true;
+				begin_complex_operation();
+				// Insert "[/]" at the END first so start offsets stay valid.
+				set_caret_line(sel_to_line);
+				set_caret_column(sel_to_col);
+				insert_text_at_caret("[/]");
+
+				// Insert "[]" at the start, place caret between the brackets.
+				set_caret_line(sel_from_line);
+				set_caret_column(sel_from_col);
+				insert_text_at_caret("[]");
+				set_caret_column(get_caret_column() - 1);
+				end_complex_operation();
+				mirror_updating = false;
+
+				// "[]" added 2 chars before the selection on the same line.
+				mirror_line = sel_to_line;
+				mirror_col = sel_to_col + (sel_to_line == sel_from_line ? 2 : 0);
+				mirror_active = true;
+				mirror_frozen = false;
+
+				accept_event();
+				return;
+			} else {
+				// Auto-close: insert "[]" with caret between.
+				insert_text_at_caret("[]");
+				set_caret_column(get_caret_column() - 1);
+				accept_event();
+				return;
+			}
+		}
+
+		// When mirror is active and the user confirms a completion, handle it ourselves
+		// BEFORE CodeEdit::gui_input so confirm_code_completion never runs in mirror mode.
+		const bool is_confirm_key = (kcode == Key::TAB || kcode == Key::ENTER || kcode == Key::KP_ENTER);
+		if (mirror_active && !mirror_frozen && is_confirm_key) {
+			int selected = get_code_completion_selected_index();
+			if (selected >= 0) {
+				_confirm_mirror_completion(selected);
+				accept_event();
+				return;
+			}
+		}
+
+		// Mirror typing: replicate printable chars into the closing tag.
+		if (mirror_active && k->get_unicode() >= 32) {
+			const char32_t ch = (char32_t)k->get_unicode();
+
+			if (mirror_frozen) {
+				// Frozen by '=' — fall through, CodeEdit inserts normally.
+			} else if (ch == ']') {
+				int cur_line = get_caret_line();
+				int cur_col = get_caret_column();
+				String cur_line_str = get_line(cur_line);
+
+				if (cur_col < cur_line_str.length() && cur_line_str[cur_col] == ']') {
+					// Pre-inserted ']' already exists — skip past it, end mirror.
+					set_caret_column(cur_col + 1);
+					_end_mirror();
+					accept_event();
+					return;
+				}
+
+				// No pre-inserted ']': insert into mirror, fall through for opener.
+				String ml = get_line(mirror_line);
+				int insert_at = mirror_col + 1;
+				while (insert_at < ml.length() && ml[insert_at] != ']' && ml[insert_at] != '\n') {
+					insert_at++;
+				}
+				if (insert_at >= ml.length() || ml[insert_at] != ']') {
+					set_caret_line(mirror_line);
+					set_caret_column(insert_at);
+					insert_text_at_caret("]");
+					set_caret_line(cur_line);
+					set_caret_column(cur_col);
+				}
+				_end_mirror();
+				// Fall through — let CodeEdit insert ']' into the opening tag.
+			} else if (ch == '=') {
+				mirror_frozen = true;
+				// Fall through — CodeEdit inserts '='.
+			} else {
+				// Printable char: insert into opening tag AND mirror side (atomic undo).
+				int cur_line = get_caret_line();
+				int cur_col = get_caret_column();
+
+				// Find '[' to the left to know the offset within the tag name.
+				String cur_line_str = get_line(cur_line);
+				int open_pos = cur_col - 1;
+				while (open_pos >= 0 && cur_line_str[open_pos] != '[') {
+					open_pos--;
+				}
+
+				mirror_updating = true;
+				begin_complex_operation();
+				insert_text_at_caret(String::chr(ch));
+
+				if (mirror_line == cur_line && mirror_col >= cur_col) {
+					mirror_col += 1;
+				}
+
+				// Insert at the matching offset in the closer, not always at the end.
+				// opener content starts at open_pos+1; insert is at cur_col.
+				// After inserting (and possible mirror_col shift), formula derives to:
+				//   insert_at = mirror_col + cur_col - open_pos + 1
+				String ml = get_line(mirror_line);
+				int insert_at;
+				if (open_pos >= 0) {
+					insert_at = mirror_col + cur_col - open_pos + 1;
+					// Clamp to the valid content range inside the closer.
+					int close_end = mirror_col + 2;
+					while (close_end < ml.length() && ml[close_end] != ']' && ml[close_end] != '\n') {
+						close_end++;
+					}
+					insert_at = CLAMP(insert_at, mirror_col + 2, close_end);
+				} else {
+					// Fallback: append at end of closer content.
+					insert_at = mirror_col + 2;
+					while (insert_at < ml.length() && ml[insert_at] != ']' && ml[insert_at] != '\n') {
+						insert_at++;
+					}
+				}
+				set_caret_line(mirror_line);
+				set_caret_column(insert_at);
+				insert_text_at_caret(String::chr(ch));
+
+				set_caret_line(cur_line);
+				set_caret_column(cur_col + 1);
+				end_complex_operation();
+				mirror_updating = false;
+				_try_resume_mirror();
+
+				accept_event();
+				return;
+			}
+		}
+	}
+
+	// Track completion state before forwarding to parent.
+	int selected_before = get_code_completion_selected_index();
+
+	CodeEdit::gui_input(p_event);
+
+	// Re-scan mirror state after every event that passes through to CodeEdit
+	// (navigation, mouse clicks, undo/redo, etc.). The guard inside
+	// _on_caret_changed() skips re-scanning during our own multi-step ops.
+	_on_caret_changed();
+
+	if (k.is_valid() && k->is_pressed()) {
+		const Key kcode2 = k->get_keycode();
+		// After CodeEdit processed the event: for non-mirror completion confirms,
+		// reposition the caret between the paired tags.
+		if (!mirror_active && selected_before >= 0) {
+			if (kcode2 == Key::TAB || kcode2 == Key::ENTER || kcode2 == Key::KP_ENTER) {
+				post_completion_reposition();
+			}
+		}
+	}
+}
+
+void BBCodeEdit::_try_resume_mirror() {
+	int cur_line = get_caret_line();
+	int cur_col = get_caret_column();
+
+	// For multi-line wraps, the closer lives on a different line.
+	// Just verify the '[/' marker is still there; don't re-scan across lines.
+	if (mirror_active && mirror_line != cur_line) {
+		String ml = get_line(mirror_line);
+		if (mirror_col >= 0 && mirror_col + 1 < ml.length() &&
+				ml[mirror_col] == '[' && ml[mirror_col + 1] == '/') {
+			return; // Still valid.
+		}
+		_end_mirror();
+		return;
+	}
+
+	String line = get_line(cur_line);
+
+	// Find '[' to the left of caret on the same line.
+	int open_pos = cur_col - 1;
+	while (open_pos >= 0 && line[open_pos] != '[') {
+		open_pos--;
+	}
+	if (open_pos < 0) {
+		_end_mirror();
+		return;
+	}
+
+	// Find the ']' closing this opening tag to the right of caret.
+	int tag_close = cur_col;
+	while (tag_close < line.length() && line[tag_close] != ']' && line[tag_close] != '[' && line[tag_close] != '\n') {
+		tag_close++;
+	}
+	if (tag_close >= line.length() || line[tag_close] != ']') {
+		_end_mirror();
+		return;
+	}
+
+	// Find "[/" somewhere after the ']' on the same line.
+	int new_mirror_pos = -1;
+	for (int i = tag_close + 1; i + 1 < line.length(); i++) {
+		if (line[i] == '[' && line[i + 1] == '/') {
+			new_mirror_pos = i;
+			break;
+		}
+	}
+	if (new_mirror_pos < 0) {
+		_end_mirror();
+		return;
+	}
+
+	// Determine frozen state: freeze if tag contains '=' (value tags like [color=...]).
+	bool has_eq = false;
+	for (int i = open_pos + 1; i < tag_close; i++) {
+		if (line[i] == '=') { has_eq = true; break; }
+	}
+
+	mirror_line = cur_line;
+	mirror_col = new_mirror_pos;
+	mirror_active = true;
+	mirror_frozen = has_eq;
+}
+
+void BBCodeEdit::_on_caret_changed() {
+	if (mirror_updating) {
+		return;
+	}
+	_try_resume_mirror();
+}
+
+void BBCodeEdit::post_completion_reposition() {
+	// Move caret between paired tags, e.g. "[b]|[/b]".
+	const int caret_line = get_caret_line();
+	const int caret_col = get_caret_column();
+	const String line = get_line(caret_line);
+
+	for (int i = caret_col - 1; i >= 1; i--) {
+		if (line[i] == '/' && line[i - 1] == '[') {
+			set_caret_column(i - 1);
+			return;
+		}
+	}
+}
+
+// Shared BBCode tag definitions for code completion.
+const BBCodeTagDef TAGS[] = {
+	// Simple paired formatting
+	{ "b", false, false }, { "i", false, false }, { "u", false, false },
+	{ "s", false, false }, { "code", false, false },
+	// Layout
+	{ "center", false, false }, { "fill", false, false },
+	{ "left", false, false }, { "right", false, false },
+	{ "indent", false, false }, { "p", false, false },
+	// Lists
+	{ "ol", false, false }, { "ul", false, false }, { "li", false, false },
+	// Table
+	{ "table", true, false }, { "cell", false, false },
+	// Media / links
+	{ "img", false, false }, { "url", true, false }, { "hint", true, false },
+	// Misc paired
+	{ "spoiler", false, false }, { "dropcap", false, false },
+	{ "opentype_features", true, false },
+	// Effects
+	{ "wave", false, false }, { "shake", false, false },
+	{ "tornado", false, false }, { "rainbow", false, false },
+	{ "pulse", false, false }, { "fade", false, false },
+	// Color / style
+	{ "color", true, false }, { "bgcolor", true, false }, { "fgcolor", true, false },
+	{ "font", true, false }, { "font_size", true, false },
+	{ "outline_color", true, false }, { "outline_size", true, false },
+	// Standalone (no closing tag)
+	{ "br", false, true }, { "lb", false, true }, { "rb", false, true },
+	{ nullptr, false, false },
+};
+
 ///////////////////// MULTILINE TEXT /////////////////////////
 
 void EditorPropertyMultilineText::_set_read_only(bool p_read_only) {
@@ -302,22 +839,80 @@ void EditorPropertyMultilineText::_set_read_only(bool p_read_only) {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	// Set tooltip so that the full text is displayed in a tooltip if hovered.
-	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
 	text->set_tooltip_text(get_tooltip_string(big_text->get_text()));
 	emit_changed(get_edited_property(), big_text->get_text(), "", true);
+
+	if (mode == MODE_BBCODE) {
+		CodeEdit *code_edit = Object::cast_to<CodeEdit>(big_text);
+		if (code_edit) {
+			const int caret_col = code_edit->get_caret_column();
+			const String line_str = code_edit->get_line(code_edit->get_caret_line());
+			bool inside_bracket = false;
+			for (int i = caret_col - 1; i >= 0; i--) {
+				if (line_str[i] == ']') {
+					break;
+				}
+				if (line_str[i] == '[') {
+					inside_bracket = true;
+					break;
+				}
+			}
+			if (inside_bracket) {
+				code_edit->request_code_completion(false);
+			} else {
+				code_edit->cancel_code_completion();
+			}
+		}
+	}
 }
 
 void EditorPropertyMultilineText::_text_changed() {
 	text->set_tooltip_text(get_tooltip_string(text->get_text()));
 	emit_changed(get_edited_property(), text->get_text(), "", true);
+
+	if (mode == MODE_BBCODE) {
+		CodeEdit *code_edit = Object::cast_to<CodeEdit>(text);
+		if (code_edit) {
+			const int caret_col = code_edit->get_caret_column();
+			const String line_str = code_edit->get_line(code_edit->get_caret_line());
+			bool inside_bracket = false;
+			for (int i = caret_col - 1; i >= 0; i--) {
+				if (line_str[i] == ']') {
+					break;
+				}
+				if (line_str[i] == '[') {
+					inside_bracket = true;
+					break;
+				}
+			}
+			if (inside_bracket) {
+				code_edit->request_code_completion(false);
+			} else {
+				code_edit->cancel_code_completion();
+			}
+		}
+	}
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
 	if (!big_text_dialog) {
-		big_text = memnew(TextEdit);
-		if (expression) {
-			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
+		if (mode == MODE_BBCODE) {
+			BBCodeEdit *bbcode_edit = memnew(BBCodeEdit);
+			bbcode_edit->set_code_completion_enabled(true);
+			bbcode_edit->add_theme_constant_override("completion_lines", 7);
+			TypedArray<String> prefixes;
+			prefixes.push_back("[");
+			bbcode_edit->set_code_completion_prefixes(prefixes);
+			bbcode_edit->connect("code_completion_requested", callable_mp(this, &EditorPropertyMultilineText::_on_code_completion_requested_big));
+			Ref<EditorBBCodeSyntaxHighlighter> highlighter;
+			highlighter.instantiate();
+			bbcode_edit->set_syntax_highlighter(highlighter);
+			big_text = bbcode_edit;
+		} else {
+			big_text = memnew(TextEdit);
+			if (mode != MODE_TEXT) {
+				big_text->set_syntax_highlighter(text->get_syntax_highlighter());
+			}
 		}
 		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
 		big_text->set_line_wrapping_mode(wrap_lines
@@ -353,7 +948,7 @@ void EditorPropertyMultilineText::_update_theme() {
 
 	Ref<Font> font;
 	int font_size;
-	if (expression) {
+	if (mode == MODE_EXPRESSION) {
 		font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 		font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
 	} else {
@@ -390,7 +985,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyMultilineText::EditorPropertyMultilineText::set_monospaced(bool p_monospaced) {
+void EditorPropertyMultilineText::set_monospaced(bool p_monospaced) {
 	if (p_monospaced == monospaced) {
 		return;
 	}
@@ -398,11 +993,11 @@ void EditorPropertyMultilineText::EditorPropertyMultilineText::set_monospaced(bo
 	_update_theme();
 }
 
-bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_monospaced() {
+bool EditorPropertyMultilineText::get_monospaced() {
 	return monospaced;
 }
 
-void EditorPropertyMultilineText::EditorPropertyMultilineText::set_wrap_lines(bool p_wrap_lines) {
+void EditorPropertyMultilineText::set_wrap_lines(bool p_wrap_lines) {
 	if (p_wrap_lines == wrap_lines) {
 		return;
 	}
@@ -410,17 +1005,155 @@ void EditorPropertyMultilineText::EditorPropertyMultilineText::set_wrap_lines(bo
 	_update_theme();
 }
 
-bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_wrap_lines() {
+bool EditorPropertyMultilineText::get_wrap_lines() {
 	return wrap_lines;
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
-		expression(p_expression) {
+void EditorPropertyMultilineText::_on_code_completion_requested_big() {
+	if (!big_text) {
+		return;
+	}
+	CodeEdit *code_edit = Object::cast_to<CodeEdit>(big_text);
+	if (!code_edit) {
+		return;
+	}
+
+	const int caret_line = code_edit->get_caret_line();
+	const int caret_col = code_edit->get_caret_column();
+	const String line = code_edit->get_line(caret_line);
+
+	int bracket_pos = -1;
+	for (int i = caret_col - 1; i >= 0; i--) {
+		if (line[i] == ']') {
+			break;
+		}
+		if (line[i] == '[') {
+			bracket_pos = i;
+			break;
+		}
+	}
+	if (bracket_pos == -1) {
+		code_edit->cancel_code_completion();
+		return;
+	}
+
+	const bool is_end_tag = (bracket_pos + 1 < line.length()) && line[bracket_pos + 1] == '/';
+
+	const Color tag_color = EDITOR_GET("text_editor/theme/highlighting/bbcode/tag_color");
+
+	for (int i = 0; TAGS[i].name; i++) {
+		const BBCodeTagDef &tag = TAGS[i];
+		String display_text;
+		String insert_text;
+
+		if (is_end_tag) {
+			if (tag.standalone) {
+				continue;
+			}
+			display_text = String("/") + tag.name;
+			insert_text = String("/") + tag.name + "]";
+		} else {
+			display_text = tag.name;
+			if (tag.standalone) {
+				insert_text = String(tag.name) + "]";
+			} else if (tag.has_value) {
+				insert_text = String(tag.name) + "=][/" + tag.name + "]";
+			} else {
+				insert_text = String(tag.name) + "][/" + tag.name + "]";
+			}
+		}
+
+		code_edit->add_code_completion_option(CodeEdit::KIND_PLAIN_TEXT, display_text, insert_text, tag_color);
+	}
+
+	code_edit->update_code_completion_options(true);
+}
+
+void EditorPropertyMultilineText::_on_code_completion_requested() {
+	CodeEdit *code_edit = Object::cast_to<CodeEdit>(text);
+	if (!code_edit) {
+		return;
+	}
+
+	const int caret_line = code_edit->get_caret_line();
+	const int caret_col = code_edit->get_caret_column();
+	const String line = code_edit->get_line(caret_line);
+
+	// Find the last unclosed '[' before the caret.
+	int bracket_pos = -1;
+	for (int i = caret_col - 1; i >= 0; i--) {
+		if (line[i] == ']') {
+			break;
+		}
+		if (line[i] == '[') {
+			bracket_pos = i;
+			break;
+		}
+	}
+	if (bracket_pos == -1) {
+		code_edit->cancel_code_completion();
+		return;
+	}
+
+	// Determine if this is an end-tag (first char after '[' is '/').
+	const bool is_end_tag = (bracket_pos + 1 < line.length()) && line[bracket_pos + 1] == '/';
+
+	const Color tag_color = EDITOR_GET("text_editor/theme/highlighting/bbcode/tag_color");
+
+	for (int i = 0; TAGS[i].name; i++) {
+		const BBCodeTagDef &tag = TAGS[i];
+		String display_text;
+		String insert_text;
+
+		if (is_end_tag) {
+			if (tag.standalone) {
+				continue; // Standalone tags have no closing counterpart.
+			}
+			display_text = String("/") + tag.name;
+			insert_text = String("/") + tag.name + "]";
+		} else {
+			display_text = tag.name;
+			if (tag.standalone) {
+				insert_text = String(tag.name) + "]";
+			} else if (tag.has_value) {
+				insert_text = String(tag.name) + "=][/" + tag.name + "]";
+			} else {
+				insert_text = String(tag.name) + "][/" + tag.name + "]";
+			}
+		}
+
+		code_edit->add_code_completion_option(CodeEdit::KIND_PLAIN_TEXT, display_text, insert_text, tag_color);
+	}
+
+	code_edit->update_code_completion_options(true);
+}
+
+EditorPropertyMultilineText::EditorPropertyMultilineText(Mode p_mode) :
+		mode(p_mode) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
 	set_bottom_editor(hb);
-	text = memnew(TextEdit);
+	if (mode == MODE_BBCODE) {
+		BBCodeEdit *code_edit = memnew(BBCodeEdit);
+		code_edit->set_code_completion_enabled(true);
+		code_edit->add_theme_constant_override("completion_lines", 7);
+		TypedArray<String> prefixes;
+		prefixes.push_back("[");
+		code_edit->set_code_completion_prefixes(prefixes);
+		code_edit->connect("code_completion_requested", callable_mp(this, &EditorPropertyMultilineText::_on_code_completion_requested));
+		Ref<EditorBBCodeSyntaxHighlighter> highlighter;
+		highlighter.instantiate();
+		code_edit->set_syntax_highlighter(highlighter);
+		text = code_edit;
+	} else {
+		text = memnew(TextEdit);
+		if (mode == MODE_EXPRESSION) {
+			Ref<EditorStandardSyntaxHighlighter> highlighter;
+			highlighter.instantiate();
+			text->set_syntax_highlighter(highlighter);
+		}
+	}
 	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_text_changed));
 	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	add_focusable(text);
@@ -434,12 +1167,6 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
-
-	if (expression) {
-		Ref<EditorStandardSyntaxHighlighter> highlighter;
-		highlighter.instantiate();
-		text->set_syntax_highlighter(highlighter);
-	}
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -4018,7 +4745,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return get_input_action_editor(p_hint_text, false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				Vector<String> options = p_hint_text.split(",", false);
-				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(false));
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(EditorPropertyMultilineText::MODE_TEXT));
 				if (options.has("monospace")) {
 					editor->set_monospaced(true);
 				}
@@ -4027,7 +4754,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				}
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
-				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(EditorPropertyMultilineText::MODE_EXPRESSION));
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_BBCODE) {
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(EditorPropertyMultilineText::MODE_BBCODE));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);

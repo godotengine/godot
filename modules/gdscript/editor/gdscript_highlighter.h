@@ -82,7 +82,9 @@ private:
 	// Colors.
 	Color font_color;
 	Color symbol_color;
+	Color keyword_color;
 	Color function_color;
+
 	Color global_function_color;
 	Color function_definition_color;
 	Color built_in_type_color;

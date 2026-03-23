@@ -7761,6 +7761,16 @@ bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 }
 #endif
 
+void RichTextLabel::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "text") {
+		if (use_bbcode) {
+			p_property.hint = PROPERTY_HINT_BBCODE;
+		} else {
+			p_property.hint = PROPERTY_HINT_MULTILINE_TEXT;
+		}
+	}
+}
+
 void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);

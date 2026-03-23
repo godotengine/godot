@@ -273,7 +273,7 @@ void CodeEdit::_notification(int p_what) {
 					if (scroll_width) {
 						Color scroll_color = is_code_completion_scroll_hovered || is_code_completion_scroll_pressed ? theme_cache.code_completion_scroll_hovered_color : theme_cache.code_completion_scroll_color;
 
-						float r = (float)theme_cache.code_completion_max_lines / code_completion_options_count;
+						float r = (float)lines / code_completion_options_count;
 						float o = (float)code_completion_line_ofs / code_completion_options_count;
 						RS::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), scroll_color);
 					}
