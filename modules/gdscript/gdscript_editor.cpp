@@ -150,7 +150,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 	if (err == OK) {
 		err = analyzer.analyze();
 	}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (r_warnings) {
 		for (const GDScriptWarning &E : parser.get_warnings()) {
 			const GDScriptWarning &warn = E;
@@ -199,7 +199,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 		}
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (r_safe_lines) {
 		const HashSet<int> &unsafe_lines = parser.get_unsafe_lines();
 		for (int i = 1; i <= parser.get_last_line_number(); i++) {

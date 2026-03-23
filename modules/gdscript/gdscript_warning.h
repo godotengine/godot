@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 #include "core/templates/vector.h"
 
@@ -174,4 +174,4 @@ public:
 	static Code get_code_from_name(const String &p_name);
 };
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED

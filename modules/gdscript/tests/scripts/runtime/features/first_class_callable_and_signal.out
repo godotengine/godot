@@ -1,5 +1,5 @@
 GDTEST_OK
-Node::f
-Node::[signal]s
-Node::get_child
-Node::[signal]ready
+Node(first_class_callable_and_signal.gd)::f
+Node(first_class_callable_and_signal.gd)::[signal]s
+Node(first_class_callable_and_signal.gd)::get_child
+Node(first_class_callable_and_signal.gd)::[signal]ready
