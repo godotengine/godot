@@ -492,6 +492,62 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="with_alpha" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="a" type="float" />
+			<description>
+				Returns a new color resulting from setting the existing [member a] value to [param a].
+			</description>
+		</method>
+		<method name="with_alpha8" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="a8" type="int" />
+			<description>
+				Returns a new color resulting from setting the existing [member a] value to [param a8] divided by [code]255.0[/code].
+			</description>
+		</method>
+		<method name="with_blue" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="b" type="float" />
+			<description>
+				Returns a new color resulting from setting the existing [member b] value to [param b].
+			</description>
+		</method>
+		<method name="with_blue8" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="b8" type="int" />
+			<description>
+				Returns a new color resulting from setting the existing [member b] value to [param b8] divided by [code]255.0[/code].
+			</description>
+		</method>
+		<method name="with_green" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="g" type="float" />
+			<description>
+				Returns a new color resulting from setting the existing [member g] value to [param g].
+			</description>
+		</method>
+		<method name="with_green8" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="g8" type="int" />
+			<description>
+				Returns a new color resulting from setting the existing [member g] value to [param g8] divided by [code]255.0[/code].
+			</description>
+		</method>
+		<method name="with_red" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="r" type="float" />
+			<description>
+				Returns a new color resulting from setting the existing [member r] value to [param r].
+			</description>
+		</method>
+		<method name="with_red8" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="r8" type="int" />
+			<description>
+				Returns a new color resulting from setting the existing [member r] value to [param r8] divided by [code]255.0[/code].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="a" type="float" setter="" getter="" default="1.0">
