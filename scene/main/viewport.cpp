@@ -1675,7 +1675,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		gui.tooltip_label = memnew(Label);
 		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
 		gui.tooltip_label->set_text(gui.tooltip_text);
-		gui.tooltip_label->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode());
+		gui.tooltip_label->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode_at(tooltip_owner->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos)));
 		base_tooltip = gui.tooltip_label;
 		panel->connect(SceneStringName(mouse_entered), callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
