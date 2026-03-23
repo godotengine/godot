@@ -62,6 +62,7 @@ public:
 
 private:
 	bool requesting = false;
+	bool download_complete = false;
 
 	String request_string;
 	String url;
