@@ -168,6 +168,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_color_no_alpha"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_COLOR_NO_ALPHA, Variant::COLOR>);
 		register_annotation(MethodInfo("@export_node_path", PropertyInfo(Variant::STRING, "type")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, varray(""), true);
 		register_annotation(MethodInfo("@export_flags", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, Variant::INT>, varray(), true);
+		register_annotation(MethodInfo("@export_flags_grid", PropertyInfo(Variant::INT, "count")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS_GRID, Variant::INT>);
+		register_annotation(MethodInfo("@export_flags_grid_named", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS_GRID_NAMED, Variant::INT>, varray(), true);
 		register_annotation(MethodInfo("@export_flags_2d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_RENDER, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_2d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_PHYSICS, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_2d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_NAVIGATION, Variant::INT>);
@@ -4676,29 +4678,35 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		}
 
 		// WARNING: Do not merge with the previous `if` because there `!=`, not `==`!
-		if (p_annotation->name == SNAME("@export_flags")) {
-			const int64_t max_flags = 32;
+		const int64_t max_flags = 32;
+		if (p_annotation->name == SNAME("@export_flags_grid")) {
+			int64_t count = p_annotation->resolved_arguments[0].operator int64_t();
+			if (count < 1 || count > max_flags) {
+				push_error(vformat(R"(Invalid argument 1 of annotation "@export_flags_grid": Flag count must be between 1 and %d, got %d.)", max_flags, count), p_annotation->arguments[0]);
+				return false;
+			}
+		} else if (p_annotation->name == SNAME("@export_flags") || p_annotation->name == SNAME("@export_flags_grid_named")) {
 			Vector<String> t = arg_string.split(":", true, 1);
 			if (t[0].is_empty()) {
-				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag name.)", i + 1), p_annotation->arguments[i]);
+				push_error(vformat(R"(Invalid argument %d of annotation "%s": Expected flag name.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
 				return false;
 			}
 			if (t.size() == 2) {
 				if (t[1].is_empty()) {
-					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag value.)", i + 1), p_annotation->arguments[i]);
+					push_error(vformat(R"(Invalid argument %d of annotation "%s": Expected flag value.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
 					return false;
 				}
 				if (!t[1].is_valid_int()) {
-					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be a valid integer.)", i + 1), p_annotation->arguments[i]);
+					push_error(vformat(R"(Invalid argument %d of annotation "%s": The flag value must be a valid integer.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
 					return false;
 				}
 				int64_t value = t[1].to_int();
 				if (value < 1 || value >= (1LL << max_flags)) {
-					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be at least 1 and at most 2 ** %d - 1.)", i + 1, max_flags), p_annotation->arguments[i]);
+					push_error(vformat(R"(Invalid argument %d of annotation "%s": The flag value must be at least 1 and at most 2 ** %d - 1.)", i + 1, p_annotation->name, max_flags), p_annotation->arguments[i]);
 					return false;
 				}
 			} else if (i >= max_flags) {
-				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, max_flags + 1), p_annotation->arguments[i]);
+				push_error(vformat(R"(Invalid argument %d of annotation "%s": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, p_annotation->name, max_flags + 1), p_annotation->arguments[i]);
 				return false;
 			}
 		} else if (p_annotation->name == SNAME("@export_node_path")) {

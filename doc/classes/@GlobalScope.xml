@@ -2997,7 +2997,18 @@
 		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
 			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS_GRID" value="45" enum="PropertyHint">
+			Hints that an [int] property is a bitmask with numbered bit flags, displayed in a compact grid.
+			The hint string contains the number of flags to display, such as [code]"8"[/code] or [code]"16"[/code]. The first flag in the grid has value 1, the next 2, then 4, 8, 16, and so on.
+			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+		</constant>
+		<constant name="PROPERTY_HINT_FLAGS_GRID_NAMED" value="46" enum="PropertyHint">
+			Hints that an [int] property is a bitmask with named bit flags, displayed in a compact grid.
+			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespace is [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
+			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

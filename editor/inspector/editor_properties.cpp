@@ -1123,6 +1123,10 @@ void EditorPropertyLayersGrid::set_read_only(bool p_read_only) {
 	read_only = p_read_only;
 }
 
+void EditorPropertyLayersGrid::set_renamable(bool p_renamable) {
+	renamable = p_renamable;
+}
+
 Size2 EditorPropertyLayersGrid::get_minimum_size() const {
 	Size2 min_size = get_grid_size();
 
@@ -1241,7 +1245,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		dragging = false;
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		if (hovered_index != HOVERED_INDEX_NONE) {
+		if (renamable && hovered_index != HOVERED_INDEX_NONE) {
 			renamed_layer_index = hovered_index;
 			layer_rename->set_position(get_screen_position() + mb->get_position());
 			layer_rename->reset_size();
@@ -1285,6 +1289,9 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < layer_group_size; j++) {
+						if (layer_index >= layer_count) {
+							break;
+						}
 						const bool on = value & (1u << layer_index);
 						Rect2 rect2 = Rect2(ofs, Size2(bsize, bsize));
 
@@ -1413,6 +1420,13 @@ void EditorPropertyLayers::update_property() {
 	grid->set_flag(value);
 }
 
+void EditorPropertyLayers::_setup_grid(const Vector<String> &p_names, const Vector<String> &p_tooltips, int p_layer_group_size, int p_layer_count) {
+	grid->names = p_names;
+	grid->tooltips = p_tooltips;
+	grid->layer_group_size = p_layer_group_size;
+	grid->layer_count = p_layer_count;
+}
+
 void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	layer_type = p_layer_type;
 	int layer_group_size = 0;
@@ -1478,13 +1492,39 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1u << i));
 	}
 
-	grid->names = names;
-	grid->tooltips = tooltips;
-	grid->layer_group_size = layer_group_size;
-	grid->layer_count = layer_count;
+	_setup_grid(names, tooltips, layer_group_size, layer_count);
+}
+
+void EditorPropertyLayers::setup(const Vector<String> &p_flag_names) {
+	uses_project_settings = false;
+
+	Vector<String> names;
+	Vector<String> tooltips;
+	for (int i = 0; i < p_flag_names.size(); i++) {
+		String name = p_flag_names[i].strip_edges();
+		if (name.is_empty()) {
+			name = vformat(TTR("Flag %d"), i + 1);
+		}
+		names.push_back(name);
+		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1u << i));
+	}
+
+	grid->set_renamable(false);
+	button->set_visible(false);
+
+	_setup_grid(names, tooltips, 4, p_flag_names.size());
+}
+
+void EditorPropertyLayers::setup(int p_count) {
+	Vector<String> empty_names;
+	empty_names.resize(p_count);
+	setup(empty_names);
 }
 
 void EditorPropertyLayers::set_layer_name(int p_index, const String &p_name) {
+	if (!uses_project_settings) {
+		return;
+	}
 	const String property_name = basename + vformat("/layer_%d", p_index + 1);
 	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
 		ProjectSettings::get_singleton()->set(property_name, p_name);
@@ -1540,6 +1580,9 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 }
 
 void EditorPropertyLayers::_refresh_names() {
+	if (!uses_project_settings) {
+		return;
+	}
 	setup(layer_type);
 }
 
@@ -3925,7 +3968,16 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",");
 				editor->setup(options);
 				return editor;
-
+			} else if (p_hint == PROPERTY_HINT_FLAGS_GRID) {
+				EditorPropertyLayers *editor = memnew(EditorPropertyLayers);
+				int count = p_hint_text.strip_edges().to_int();
+				editor->setup(count);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_FLAGS_GRID_NAMED) {
+				EditorPropertyLayers *editor = memnew(EditorPropertyLayers);
+				Vector<String> options = p_hint_text.split(",");
+				editor->setup(options);
+				return editor;
 			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
 					p_hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
 					p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
