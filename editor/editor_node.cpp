@@ -1153,6 +1153,7 @@ void EditorNode::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/appearance")) {
 				_update_update_spinner();
 				_update_main_menu_type();
+				renderer->set_visible(EDITOR_GET("interface/editor/appearance/show_renderer_selector"));
 			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/display")) {
 				_update_vsync_mode();
@@ -8990,7 +8991,6 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
-	renderer->set_visible(true);
 	renderer->set_flat(true);
 	renderer->set_theme_type_variation("TopBarOptionButton");
 	renderer->set_fit_to_longest_item(false);
@@ -9035,6 +9035,8 @@ EditorNode::EditorNode() {
 		renderer->set_item_metadata(-1, current_renderer_os);
 	}
 	_update_renderer_color();
+
+	renderer->set_visible(EDITOR_GET("interface/editor/appearance/show_renderer_selector"));
 
 	progress_hb = memnew(BackgroundProgress);
 
