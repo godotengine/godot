@@ -35,13 +35,11 @@
 #include "core/templates/list.h"
 #include "core/variant/array.h"
 
+#include <windows.h>
+
 #include <objbase.h>
 #include <sapi.h>
 #include <winnls.h>
-#include <cwchar>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 struct TTSUtterance;
 

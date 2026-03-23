@@ -33,7 +33,6 @@
 TEST_FORCE_LINK(test_packed_scene)
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "scene/resources/packed_scene.h"
 
 namespace TestPackedScene {
@@ -268,14 +267,15 @@ TEST_CASE("[PackedScene] Recreate State") {
 	scene->set_name("TestScene");
 
 	// Pack the scene.
-	PackedScene packed_scene;
-	packed_scene.pack(scene);
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
 
 	// Recreate the state.
-	packed_scene.recreate_state();
+	packed_scene->recreate_state();
 
 	// Check if the state has been recreated.
-	Ref<SceneState> state = packed_scene.get_state();
+	Ref<SceneState> state = packed_scene->get_state();
 	CHECK(state.is_valid());
 	CHECK(state->get_node_count() == 0); // Since the state was recreated, it should be empty.
 

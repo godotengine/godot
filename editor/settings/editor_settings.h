@@ -146,6 +146,7 @@ public:
 	static String get_newest_settings_path();
 
 	static void create();
+	void init_shortcuts();
 	void setup_language(bool p_initial_setup);
 	void setup_network();
 	static void save();
@@ -213,7 +214,9 @@ public:
 
 	void notify_changes();
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	EditorSettings();
 };

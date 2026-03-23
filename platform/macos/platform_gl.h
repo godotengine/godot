@@ -38,12 +38,14 @@
 #define GLES_API_ENABLED // Allow using GLES (ANGLE).
 #endif
 
+// IWYU pragma: begin_exports.
 #ifdef EGL_STATIC
 #define KHRONOS_STATIC 1
-#include "thirdparty/angle/include/EGL/egl.h"
-#include "thirdparty/angle/include/EGL/eglext.h"
+#include <thirdparty/angle/include/EGL/egl.h>
+#include <thirdparty/angle/include/EGL/eglext.h>
 #undef KHRONOS_STATIC
 #else
-#include "thirdparty/glad/glad/egl.h"
+#include <thirdparty/glad/glad/egl.h>
 #endif
-#include "thirdparty/glad/glad/gl.h"
+#include <thirdparty/glad/glad/gl.h>
+// IWYU pragma: end_exports.

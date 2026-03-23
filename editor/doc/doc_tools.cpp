@@ -37,6 +37,7 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
+#include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
@@ -44,9 +45,6 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-
-// Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h" // For mono.
 
 static String _get_indent(const String &p_text) {
 	String indent;

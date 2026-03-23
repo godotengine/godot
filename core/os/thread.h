@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "platform_config.h"
+#include "platform_config.h" // IWYU pragma: keep. Can override the implementation.
 
 // Define PLATFORM_THREAD_OVERRIDE in your platform's `platform_config.h`
 // to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`.
@@ -52,7 +52,7 @@
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>

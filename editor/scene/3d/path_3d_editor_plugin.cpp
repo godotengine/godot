@@ -40,6 +40,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/main/scene_tree.h"
@@ -604,6 +605,13 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == View3DController::NAV_SCHEME_MAYA || nav_scheme == View3DController::NAV_SCHEME_MODO) && mb->is_alt_pressed()) {
+				return EditorPlugin::AFTER_GUI_INPUT_PASS;
+			}
+		}
+
 		Point2 mbpos(mb->get_position().x, mb->get_position().y);
 
 		Node3DEditorViewport *viewport = nullptr;

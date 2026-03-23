@@ -30,6 +30,8 @@
 
 #include "gdscript_language_server.h"
 
+#include "gdscript_language_protocol.h"
+
 #include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"

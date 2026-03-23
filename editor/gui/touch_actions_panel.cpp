@@ -32,7 +32,6 @@
 
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
-#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

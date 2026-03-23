@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "metal_device_profile.h"
-#include "sha256_digest.h"
-
+#include "drivers/metal/metal_device_profile.h"
+#include "drivers/metal/sha256_digest.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_shader_container.h"
 

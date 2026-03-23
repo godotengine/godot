@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "variant.h"
-
-#include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
-#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_internal.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);

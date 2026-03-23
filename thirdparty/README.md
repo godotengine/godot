@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.21.1 (39dd05f65d070e86cecb5799652986db9edfdd81, 2026)
+- Version: 0.21.2 (72460cd52d1b24492393cdf54a6f19d2fd63e258, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -468,7 +468,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 12.3.2 (b42511e071162fe76102f613a6ccc009726c99af, 2026)
+- Version: 13.1.1 (70b812d8d2fb4a2b6386c04bfd8565a0fcc05f9b, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -606,7 +606,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.54 (02f2b4f4699f0ef9111a6534f093b53732df4452, 2026)
+- Version: 1.6.55 (c3e304954a9cfd154bc0dfbfea2b01cd61d6546d, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -1210,7 +1210,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.46 (6141e1154303dadd5c3e480bc4a16e26f1dcb2af, 2025)
+- Version: 1.47 (88223018d1b578d0d8869866da66d9608e05f928, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1221,6 +1221,8 @@ Files extracted from upstream source:
 - `stable/viewporter/viewporter.xml`
 - `stable/xdg-shell/README`
 - `stable/xdg-shell/xdg-shell.xml`
+- `staging/color-management/README.md`
+- `staging/color-management/color-management-v1.xml`
 - `staging/fractional-scale/README`
 - `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`

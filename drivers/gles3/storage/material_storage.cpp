@@ -832,7 +832,6 @@ MaterialData::~MaterialData() {
 }
 
 void MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_is_3d_shader_type) {
-	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 #ifdef TOOLS_ENABLED
@@ -926,91 +925,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			}
 		}
 
-		RID gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_WHITE);
-
 		if (textures.is_empty()) {
 			//check default usage
-			switch (p_texture_uniforms[i].type) {
-				case ShaderLanguage::TYPE_ISAMPLER2D:
-				case ShaderLanguage::TYPE_USAMPLER2D:
-				case ShaderLanguage::TYPE_SAMPLER2D: {
-					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_BLACK);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_TRANSPARENT);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_ANISO);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_NORMAL);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_NORMAL);
-						} break;
-						default: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_WHITE);
-						} break;
-					}
-				} break;
-
-				case ShaderLanguage::TYPE_SAMPLERCUBE: {
-					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT);
-						} break;
-						default: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_WHITE);
-						} break;
-					}
-				} break;
-				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-					ERR_PRINT_ONCE("Type: SamplerCubeArray is not supported in the Compatibility renderer, please use another type.");
-				} break;
-				case ShaderLanguage::TYPE_SAMPLEREXT: {
-					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
-				} break;
-
-				case ShaderLanguage::TYPE_ISAMPLER3D:
-				case ShaderLanguage::TYPE_USAMPLER3D:
-				case ShaderLanguage::TYPE_SAMPLER3D: {
-					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_TRANSPARENT);
-						} break;
-						default: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_WHITE);
-						} break;
-					}
-				} break;
-
-				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
-				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
-				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					switch (p_texture_uniforms[i].hint) {
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK);
-						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT);
-						} break;
-						default: {
-							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
-						} break;
-					}
-				} break;
-
-				default: {
-				}
-			}
+			RID gl_texture = get_default_texture_id(p_texture_uniforms[i].type, p_texture_uniforms[i].hint);
 #ifdef TOOLS_ENABLED
 			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
 				roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
@@ -1024,8 +941,11 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				p_textures[k++] = gl_texture;
 			}
 		} else {
+			RID gl_default;
+
 			for (int j = 0; j < textures.size(); j++) {
 				Texture *tex = TextureStorage::get_singleton()->get_texture(textures[j]);
+				RID gl_texture;
 
 				if (tex) {
 					gl_texture = textures[j];
@@ -1051,6 +971,12 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 					roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 				}
 #endif
+				if (gl_texture.is_null()) {
+					if (gl_default.is_null()) {
+						gl_default = get_default_texture_id(p_texture_uniforms[i].type, p_texture_uniforms[i].hint);
+					}
+					gl_texture = gl_default;
+				}
 				p_textures[k++] = gl_texture;
 			}
 		}
@@ -1083,6 +1009,95 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			}
 		}
 	}
+}
+
+RID MaterialData::get_default_texture_id(ShaderLanguage::DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	RID gl_texture;
+
+	switch (p_type) {
+		case ShaderLanguage::TYPE_ISAMPLER2D:
+		case ShaderLanguage::TYPE_USAMPLER2D:
+		case ShaderLanguage::TYPE_SAMPLER2D: {
+			switch (p_hint) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_BLACK);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_TRANSPARENT);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_ANISO);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_NORMAL);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_NORMAL);
+				} break;
+				default: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_WHITE);
+				} break;
+			}
+		} break;
+
+		case ShaderLanguage::TYPE_SAMPLERCUBE: {
+			switch (p_hint) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT);
+				} break;
+				default: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_WHITE);
+				} break;
+			}
+		} break;
+		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
+			ERR_PRINT_ONCE("Type: SamplerCubeArray is not supported in the Compatibility renderer, please use another type.");
+		} break;
+		case ShaderLanguage::TYPE_SAMPLEREXT: {
+			gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
+		} break;
+
+		case ShaderLanguage::TYPE_ISAMPLER3D:
+		case ShaderLanguage::TYPE_USAMPLER3D:
+		case ShaderLanguage::TYPE_SAMPLER3D: {
+			switch (p_hint) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_TRANSPARENT);
+				} break;
+				default: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_WHITE);
+				} break;
+			}
+		} break;
+
+		case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+			switch (p_hint) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT);
+				} break;
+				default: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+				} break;
+			}
+		} break;
+
+		default: {
+		}
+	}
+
+	return gl_texture;
 }
 
 void MaterialData::update_parameters_internal(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, bool p_is_3d_shader_type) {

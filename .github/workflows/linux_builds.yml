@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       changed-files:
-        description: A list of changed files.
+        description: A list of changed files, pre-filtered for parsing by clangd-tidy.
         required: true
         type: string
   workflow_dispatch:
@@ -13,7 +13,6 @@ env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.21.1/"
   GODOT_CPP_BRANCH: 4.5
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -45,7 +44,7 @@ jobs:
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
-            clang-tidy: true
+            clangd-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -166,15 +165,15 @@ jobs:
           dotnet-version: 8.0.100
 
       - name: Download pre-built AccessKit
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: godotengine/godot-accesskit-c-static
-          version: tags/0.21.1
-          file: accesskit-c-0.21.1.zip
-          target: accesskit-c-0.21.1/accesskit_c.zip
-
-      - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.21.1/accesskit_c.zip
+        shell: sh
+        id: accesskit-sdk
+        run: |
+          if python ./misc/scripts/install_accesskit.py; then
+            echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
+            echo "ACCESSKIT_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Install mold linker
         if: matrix.proj-test
@@ -183,15 +182,15 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }}
           platform: linuxbsd
           target: ${{ matrix.target }}
 
-      - name: Style checks via pre-commit
-        if: matrix.clang-tidy
-        uses: pre-commit/action@v3.0.1
+      - name: Style checks via clangd-tidy
+        if: matrix.clangd-tidy
+        uses: ./.github/actions/clangd-tidy
         with:
-          extra_args: --files ${{ inputs.changed-files }} --hook-stage manual clang-tidy
+          changed-files: ${{ inputs.changed-files }}
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
@@ -221,6 +220,7 @@ jobs:
       - name: Prepare artifact
         if: matrix.artifact
         run: |
+          rm -rf ./bin/build_deps
           strip bin/godot.*
           chmod +x bin/godot.*
 

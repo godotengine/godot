@@ -1687,8 +1687,9 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	include_files = memnew(Tree);
 	include_files->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
-	include_margin->add_child(include_files);
 	include_files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	include_files->set_theme_type_variation("TreeSecondary");
+	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
 	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));
@@ -1793,8 +1794,10 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patches = memnew(Tree);
 	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patches->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
 	patches->set_hide_root(true);
 	patches->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	patches->set_theme_type_variation("TreeSecondary");
 	patches->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_patch_tree_button_clicked));
 	patches->connect("item_edited", callable_mp(this, &ProjectExportDialog::_patch_tree_item_edited));
 	SET_DRAG_FORWARDING_GCD(patches, ProjectExportDialog);

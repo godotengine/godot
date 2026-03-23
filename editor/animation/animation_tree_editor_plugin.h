@@ -33,11 +33,13 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/gui/graph_edit.h"
+#include "scene/gui/box_container.h"
 
 class Button;
 class EditorFileDialog;
+class PanelContainer;
 class ScrollContainer;
+class RichTextLabel;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
@@ -45,6 +47,16 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+
+protected:
+	RichTextLabel *create_error_label_node();
+
+	void _meta_clicked(Variant p_meta);
+
+	void update_error_message(const AnimationTree *p_tree, PanelContainer *p_error_panel, RichTextLabel *p_error_label, const String *p_other_errors = nullptr);
+
+private:
+	String last_error_key;
 };
 
 class AnimationTreeEditor : public EditorDock {
@@ -100,7 +112,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "AnimationTree"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

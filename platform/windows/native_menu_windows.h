@@ -35,7 +35,6 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display/native_menu.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class NativeMenuWindows : public NativeMenu {
@@ -55,11 +54,11 @@ class NativeMenuWindows : public NativeMenu {
 		int max_states = 0;
 		int state = 0;
 		Ref<Image> img;
-		HBITMAP bmp = 0;
+		HBITMAP bmp = nullptr;
 	};
 
 	struct MenuData {
-		HMENU menu = 0;
+		HMENU menu = nullptr;
 
 		Callable close_cb;
 		bool is_rtl = false;

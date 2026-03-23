@@ -35,16 +35,13 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Collision/ContactListener.h"
-#include "Jolt/Physics/SoftBody/SoftBodyContactListener.h"
-
-#include <new>
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/SoftBody/SoftBodyContactListener.h>
 
 class JoltArea3D;
 class JoltBody3D;

@@ -46,10 +46,6 @@ String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";
 }
 
-bool SceneExporterGLTFPlugin::has_main_screen() const {
-	return false;
-}
-
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	_gltf_document.instantiate();
 	// Set up the file dialog.

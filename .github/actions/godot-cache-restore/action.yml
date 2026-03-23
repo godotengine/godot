@@ -12,7 +12,7 @@ runs:
   using: composite
   steps:
     - name: Restore default cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       id: cache-ping
       with:
         path: ${{ inputs.scons-cache }}
@@ -27,7 +27,7 @@ runs:
     # This is done after pulling the default cache so that PRs can integrate any potential changes
     # from the default branch without conflicting with whatever local changes were already made.
     - name: Restore local cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       if: github.ref_name != github.event.repository.default_branch
       with:
         path: ${{ inputs.scons-cache }}

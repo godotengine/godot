@@ -40,7 +40,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/style_box_texture.h" // IWYU pragma: keep. Used by `EditorThemeManager::make_stylebox`.
 
 void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, EditorThemeManager::ThemeConfiguration &p_config) {
 	// Colors.
@@ -1130,6 +1130,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 			int v_sep = (p_config.enable_touch_optimizations ? 12 : p_config.forced_even_separation) * EDSCALE;
 			p_theme->set_constant("v_separation", "PopupMenu", v_sep);
+			p_theme->set_constant("search_bar_separation", "PopupMenu", v_sep);
 			p_theme->set_constant("outline_size", "PopupMenu", 0);
 			p_theme->set_constant("item_start_padding", "PopupMenu", p_config.separation_margin);
 			p_theme->set_constant("item_end_padding", "PopupMenu", p_config.separation_margin);
@@ -2057,6 +2058,10 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		// Secondary trees and item lists.
 		p_theme->set_type_variation("TreeSecondary", "Tree");
 		p_theme->set_type_variation("ItemListSecondary", "ItemList");
+
+		// EditorAudioBusEffectsTree
+		p_theme->set_type_variation("EditorAudioBusEffectsTree", "Tree");
+		p_theme->set_constant("h_separation", "EditorAudioBusEffectsTree", 0);
 
 		// ForegroundPanel.
 		p_theme->set_type_variation("PanelForeground", "Panel");

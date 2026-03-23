@@ -35,7 +35,6 @@
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/dpi_texture.h"
-#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 

@@ -99,6 +99,7 @@ if env["builtin_harfbuzz"]:
         # "src/hb-subset-cff-common.cc",
         # "src/hb-subset-cff1.cc",
         # "src/hb-subset-cff2.cc",
+        # "src/hb-subset-cff2-to-cff1.cc",
         # "src/hb-subset-input.cc",
         # "src/hb-subset-instancer-iup.cc",
         # "src/hb-subset-instancer-solver.cc",
@@ -109,9 +110,30 @@ if env["builtin_harfbuzz"]:
         # "src/hb-subset-table-layout.cc",
         # "src/hb-subset-table-other.cc",
         # "src/hb-subset-table-var.cc",
+        "src/hb-raster.cc",
+        "src/hb-raster-draw.cc",
+        "src/hb-raster-image.cc",
+        "src/hb-raster-paint.cc",
+        "src/hb-raster-svg-base.cc",
+        "src/hb-raster-svg-bbox.cc",
+        "src/hb-raster-svg-color.cc",
+        "src/hb-raster-svg-clip.cc",
+        "src/hb-raster-svg-defs.cc",
+        "src/hb-raster-svg-defs-scan.cc",
+        "src/hb-raster-svg-gradient.cc",
+        "src/hb-raster-svg-fill.cc",
+        "src/hb-raster-svg-render.cc",
+        "src/hb-raster-svg-parse.cc",
+        "src/hb-raster-svg-use.cc",
+        "src/hb-vector-svg-draw.cc",
+        "src/hb-vector-svg-paint.cc",
+        "src/hb-vector-svg-path.cc",
+        "src/hb-vector-svg-subset.cc",
+        "src/hb-vector-svg-utils.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
+        "src/hb-zlib.cc",
         # "src/hb-uniscribe.cc",
         "src/OT/Var/VARC/VARC.cc",
     ]
@@ -128,7 +150,7 @@ if env["builtin_harfbuzz"]:
 
     env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
-    env_harfbuzz.Append(CPPDEFINES=["HAVE_ICU"])
+    env_harfbuzz.Append(CPPDEFINES=["HAVE_ICU", "HAVE_ZLIB", "HAVE_PNG"])
     if env["builtin_icu4c"]:
         env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
         env_harfbuzz.Append(

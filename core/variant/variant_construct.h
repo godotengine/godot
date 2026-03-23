@@ -30,15 +30,9 @@
 
 #pragma once
 
-#include "variant.h"
-
-#include "core/crypto/crypto_core.h"
-#include "core/debugger/engine_debugger.h"
-#include "core/io/compression.h"
 #include "core/templates/a_hash_map.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/binder_common.h"
-#include "core/variant/native_ptr.h"
+#include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 template <typename T>

@@ -611,9 +611,9 @@
 #define XkbApplyVirtualModChanges XkbApplyVirtualModChanges_dylibloader_orig_xlib
 #define XkbUpdateActionVirtualMods XkbUpdateActionVirtualMods_dylibloader_orig_xlib
 #define XkbUpdateKeyTypeVirtualMods XkbUpdateKeyTypeVirtualMods_dylibloader_orig_xlib
-#include "thirdparty/linuxbsd_headers/X11/Xlib.h"
-#include "thirdparty/linuxbsd_headers/X11/Xutil.h"
-#include "thirdparty/linuxbsd_headers/X11/XKBlib.h"
+#include <thirdparty/linuxbsd_headers/X11/Xlib.h> // IWYU pragma: export.
+#include <thirdparty/linuxbsd_headers/X11/Xutil.h> // IWYU pragma: export.
+#include <thirdparty/linuxbsd_headers/X11/XKBlib.h> // IWYU pragma: export.
 #undef _Xmblen
 #undef XLoadQueryFont
 #undef XQueryFont

@@ -38,7 +38,6 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "core/templates/sort_array.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -175,6 +174,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_global_name"), &Script::get_global_name);
 
+	ClassDB::bind_method(D_METHOD("has_script_method", "method_name"), &Script::has_method);
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);

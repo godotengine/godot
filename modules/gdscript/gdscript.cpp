@@ -30,8 +30,6 @@
 
 #include "gdscript.h"
 
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
@@ -39,6 +37,9 @@
 #include "gdscript_rpc_callable.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -52,7 +53,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 
@@ -226,15 +226,16 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instantiate();
+
+		RefCounted *r = Object::cast_to<RefCounted>(owner);
+		if (r) {
+			ref = Ref<RefCounted>(r);
+		}
 	} else {
-		owner = memnew(RefCounted); //by default, no base means use reference
+		ref = memnew(RefCounted); // By default, no base means use reference.
+		owner = ref.ptr();
 	}
 	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
-
-	RefCounted *r = Object::cast_to<RefCounted>(owner);
-	if (r) {
-		ref = Ref<RefCounted>(r);
-	}
 
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r_error);
 	if (!instance) {

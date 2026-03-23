@@ -65,7 +65,7 @@ private:
 	_FORCE_INLINE_ void _set_close_exec_enabled(bool p_enabled);
 
 protected:
-	static NetSocket *_create_func();
+	static Ref<NetSocket> _create_func();
 
 	bool _can_use_ip(const IPAddress &p_ip, const bool p_for_bind) const;
 	bool _can_use_path(const CharString &p_path) const;

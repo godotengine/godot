@@ -31,9 +31,6 @@
 #include "rendering_device.h"
 #include "rendering_device.compat.inc"
 
-#include "rendering_device_binds.h"
-#include "shader_include_db.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -42,8 +39,11 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/templates/fixed_vector.h"
-#include "modules/modules_enabled.gen.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_shader_container.h"
+#include "servers/rendering/shader_include_db.h"
+
+#include "modules/modules_enabled.gen.h"
 
 #ifdef MODULE_GLSLANG_ENABLED
 #include "modules/glslang/shader_compile.h"
@@ -7394,7 +7394,7 @@ void RenderingDevice::_end_frame() {
 	_submit_transfer_barriers(command_buffer);
 
 	GodotProfileZoneGrouped(_profile_zone, "draw_graph.end");
-	draw_graph.end(RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
+	draw_graph.end(RENDER_GRAPH_REORDER == 1, RENDER_GRAPH_FULL_BARRIERS == 1, command_buffer, frames[frame].command_buffer_pool);
 	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_end");
 	driver->command_buffer_end(command_buffer);
 	GodotProfileZoneGrouped(_profile_zone, "driver->end_segment");

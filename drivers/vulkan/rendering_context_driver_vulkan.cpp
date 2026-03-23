@@ -32,15 +32,17 @@
 
 #include "rendering_context_driver_vulkan.h"
 
-#include "vk_enum_string_helper.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
 #include "core/version.h"
+#include "drivers/vulkan/rendering_device_driver_vulkan.h"
+#include "drivers/vulkan/vulkan_hooks.h"
 
-#include "rendering_device_driver_vulkan.h"
-#include "vulkan_hooks.h"
+#ifndef DEV_ENABLED
+#include "core/os/os.h"
+#endif
+
+#include <vk_enum_string_helper.h>
 
 #if defined(VK_TRACK_DRIVER_MEMORY)
 /*************************************************/

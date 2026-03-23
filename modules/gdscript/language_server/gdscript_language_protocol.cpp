@@ -30,6 +30,8 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "godot_lsp.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -39,7 +41,6 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
-#include "modules/gdscript/language_server/godot_lsp.h"
 
 #define LSP_CLIENT_V(m_ret_val) \
 	ERR_FAIL_COND_V(latest_client_id == LSP_NO_CLIENT, m_ret_val); \

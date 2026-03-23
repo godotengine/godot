@@ -31,13 +31,14 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/docks/filesystem_dock.h"
-#include "editor/editor_string_names.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
+
+#ifndef DISABLE_DEPRECATED
+#include "core/object/class_db.h"
+#endif
 
 void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 	// Use dependency dialog to delete the entry in the editor, but only for project files.

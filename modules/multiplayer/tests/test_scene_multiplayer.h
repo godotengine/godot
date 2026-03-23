@@ -30,13 +30,15 @@
 
 #pragma once
 
+#include "../scene_multiplayer.h"
+
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/scene_tree.h"
+#include "tests/signal_watcher.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
-
-#include "../scene_multiplayer.h"
 
 namespace TestSceneMultiplayer {
 TEST_CASE("[Multiplayer][SceneMultiplayer] Defaults") {

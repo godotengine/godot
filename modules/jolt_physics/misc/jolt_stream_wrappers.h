@@ -34,10 +34,10 @@
 
 #include "core/io/file_access.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/StreamIn.h"
-#include "Jolt/Core/StreamOut.h"
+#include <Jolt/Core/StreamIn.h>
+#include <Jolt/Core/StreamOut.h>
 
 class JoltStreamOutputWrapper final : public JPH::StreamOut {
 	Ref<FileAccess> file_access;

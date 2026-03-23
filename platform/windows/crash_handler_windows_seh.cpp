@@ -36,19 +36,18 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
+
+#include <psapi.h>
 
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
-
-#include <psapi.h>
 
 // Some versions of imagehlp.dll lack the proper packing directives themselves
 // so we need to do it.
