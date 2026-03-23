@@ -69,6 +69,8 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override {}
 
 	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) override {}
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) override {}
+	virtual void particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) override {}
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override {}
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override {}

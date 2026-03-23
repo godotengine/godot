@@ -321,6 +321,15 @@
 		<member name="rotation_3d_min" type="Vector3" setter="set_rotation_3d_min" getter="get_rotation_3d_min">
 			The minimum 3D orientation, in degrees. Works only in 3D and if [member use_rotation_3d] is enabled.
 		</member>
+		<member name="rotation_velocity_3d_curve" type="Texture2D" setter="set_rotation_velocity_3d_curve" getter="get_rotation_velocity_3d_curve">
+			Rotation velocity curve over lifetime, per-axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_max" type="Vector3" setter="set_rotation_velocity_3d_max" getter="get_rotation_velocity_3d_max">
+			Maximum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_min" type="Vector3" setter="set_rotation_velocity_3d_min" getter="get_rotation_velocity_3d_min">
+			Minimum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
 		<member name="scale_3d_max" type="Vector3" setter="set_scale_3d_max" getter="get_scale_3d_max">
 			The maximum value of the random scale vector for each particle.
 			Works only if [member use_scale_3d] is enabled.
@@ -423,6 +432,9 @@
 		</member>
 		<member name="use_rotation_3d" type="bool" setter="set_use_rotation_3d" getter="is_using_rotation_3d" default="false">
 			Enable the usage of [member rotation_3d_min] and [member rotation_3d_max].
+		</member>
+		<member name="use_rotation_velocity_3d" type="bool" setter="set_using_rotation_velocity_3d" getter="is_using_rotation_velocity_3d" default="false">
+			Enable 3D rotation velocity.
 		</member>
 		<member name="use_scale_3d" type="bool" setter="set_use_scale_3d" getter="is_using_scale_3d" default="false">
 			Enable the usage of [member scale_3d_min] and [member scale_3d_max].
