@@ -7,10 +7,14 @@
 
 #include "core/math/aabb.h"
 #include "core/variant/dictionary.h"
+#include "scene/resources/3d/sky_material.h"
 
+class Button;
 class Camera3D;
+class CameraAttributesPractical;
 class CheckBox;
 class DirectionalLight3D;
+class Environment;
 class GaussianSplatAsset;
 class HSplitContainer;
 class Label;
@@ -18,6 +22,7 @@ class MeshInstance3D;
 class MultiMeshInstance3D;
 class Node3D;
 class OptionButton;
+class Sky;
 class SubViewport;
 class SubViewportContainer;
 
@@ -29,12 +34,27 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 	// 3D viewport preview.
 	SubViewportContainer *viewport_container = nullptr;
 	SubViewport *viewport = nullptr;
-	Node3D *viewport_root = nullptr;
-	Node3D *orbit_root = nullptr;
-	Node3D *preview_root = nullptr;
 	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
+	Ref<Environment> environment;
+	Ref<Sky> sky;
+	Ref<ProceduralSkyMaterial> procedural_sky_material;
+
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
+
+	// Light toggle buttons (overlaid on viewport).
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
+	Button *light_rotate_switch = nullptr;
+
+	struct ThemeCache {
+		Ref<Texture2D> light_1_icon;
+		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> rotate_icon;
+	} theme_cache;
+
+	// Scene nodes inside viewport.
 	MeshInstance3D *bounds_instance = nullptr;
 	MultiMeshInstance3D *splat_instance = nullptr;
 
@@ -55,9 +75,9 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 	AABB asset_bounds;
 	Dictionary import_options;
 
-	float cam_rot_x = -0.35f;
-	float cam_rot_y = 0.7f;
-	float cam_zoom = 1.0f;
+	float cam_rot_x = 0.0f;
+	float cam_rot_y = 0.0f;
+	float cam_zoom = 0.0f;
 
 	void _build_ui();
 	void _build_viewport_scene();
@@ -67,10 +87,15 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 	void _load_source_asset();
 	void _viewport_input(const Ref<InputEvent> &p_input);
 	void _re_import();
+	void _on_light_1_switch_pressed();
+	void _on_light_2_switch_pressed();
+	void _on_light_rotate_switch_pressed();
 
 	AABB _resolve_bounds() const;
 
 protected:
+	virtual void _update_theme_item_cache() override;
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

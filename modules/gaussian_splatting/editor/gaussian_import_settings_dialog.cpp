@@ -10,6 +10,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
@@ -17,6 +18,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
@@ -26,6 +28,8 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/world_3d.h"
+#include "scene/resources/camera_attributes.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/material.h"
 #include "scene/resources/multimesh.h"
@@ -41,6 +45,70 @@ GaussianImportSettingsDialog *GaussianImportSettingsDialog::get_singleton() {
 
 void GaussianImportSettingsDialog::_bind_methods() {}
 
+// ---------------------------------------------------------------------------
+// Theme
+// ---------------------------------------------------------------------------
+
+void GaussianImportSettingsDialog::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+	theme_cache.rotate_icon = get_editor_theme_icon(SNAME("PreviewRotate"));
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+void GaussianImportSettingsDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect(SceneStringName(confirmed), callable_mp(this, &GaussianImportSettingsDialog::_re_import));
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			if (light_1_switch) {
+				light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			}
+			if (light_2_switch) {
+				light_2_switch->set_button_icon(theme_cache.light_2_icon);
+			}
+			if (light_rotate_switch) {
+				light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				_clear_viewport_scene();
+				loaded_asset.unref();
+			}
+		} break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Light toggle callbacks
+// ---------------------------------------------------------------------------
+
+void GaussianImportSettingsDialog::_on_light_1_switch_pressed() {
+	light1->set_visible(light_1_switch->is_pressed());
+}
+
+void GaussianImportSettingsDialog::_on_light_2_switch_pressed() {
+	light2->set_visible(light_2_switch->is_pressed());
+}
+
+void GaussianImportSettingsDialog::_on_light_rotate_switch_pressed() {
+	bool light_top_level = !light_rotate_switch->is_pressed();
+	light1->set_as_top_level_keep_local(light_top_level);
+	light2->set_as_top_level_keep_local(light_top_level);
+}
+
+// ---------------------------------------------------------------------------
+// Constructor
+// ---------------------------------------------------------------------------
+
 GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 	singleton = this;
 	set_title(TTR("Advanced Import Settings for Gaussian Splat"));
@@ -48,6 +116,10 @@ GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 	set_cancel_button_text(TTR("Close"));
 	_build_ui();
 }
+
+// ---------------------------------------------------------------------------
+// UI construction
+// ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::_build_ui() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -61,11 +133,12 @@ void GaussianImportSettingsDialog::_build_ui() {
 	VBoxContainer *vp_vb = memnew(VBoxContainer);
 	vp_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_vb->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
 	split->add_child(vp_vb);
 
 	viewport_container = memnew(SubViewportContainer);
 	viewport_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	viewport_container->set_custom_minimum_size(Size2(400 * EDSCALE, 300 * EDSCALE));
+	viewport_container->set_custom_minimum_size(Size2(10, 10));
 	viewport_container->set_stretch(true);
 	viewport_container->connect(SceneStringName(gui_input), callable_mp(this, &GaussianImportSettingsDialog::_viewport_input));
 	vp_vb->add_child(viewport_container);
@@ -74,22 +147,69 @@ void GaussianImportSettingsDialog::_build_ui() {
 	viewport->set_use_own_world_3d(true);
 	viewport_container->add_child(viewport);
 
-	viewport_root = memnew(Node3D);
-	viewport->add_child(viewport_root);
+	// Light toggle buttons overlaid on the viewport (top-right corner).
+	HBoxContainer *viewport_hbox = memnew(HBoxContainer);
+	viewport_container->add_child(viewport_hbox);
+	viewport_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
-	orbit_root = memnew(Node3D);
-	viewport_root->add_child(orbit_root);
+	viewport_hbox->add_spacer();
 
-	preview_root = memnew(Node3D);
-	orbit_root->add_child(preview_root);
+	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	viewport_hbox->add_child(vb_light);
 
+	light_rotate_switch = memnew(Button);
+	light_rotate_switch->set_theme_type_variation("PreviewLightButton");
+	light_rotate_switch->set_toggle_mode(true);
+	light_rotate_switch->set_pressed(true);
+	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
+	light_rotate_switch->connect(SceneStringName(pressed), callable_mp(this, &GaussianImportSettingsDialog::_on_light_rotate_switch_pressed));
+	vb_light->add_child(light_rotate_switch);
+
+	light_1_switch = memnew(Button);
+	light_1_switch->set_theme_type_variation("PreviewLightButton");
+	light_1_switch->set_toggle_mode(true);
+	light_1_switch->set_pressed(true);
+	light_1_switch->set_tooltip_text(TTR("Primary Light"));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &GaussianImportSettingsDialog::_on_light_1_switch_pressed));
+	vb_light->add_child(light_1_switch);
+
+	light_2_switch = memnew(Button);
+	light_2_switch->set_theme_type_variation("PreviewLightButton");
+	light_2_switch->set_toggle_mode(true);
+	light_2_switch->set_pressed(true);
+	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &GaussianImportSettingsDialog::_on_light_2_switch_pressed));
+	vb_light->add_child(light_2_switch);
+
+	// Camera (orthogonal, matching FBX dialog).
 	camera = memnew(Camera3D);
+	viewport->add_child(camera);
 	camera->make_current();
-	camera->set_near(0.01);
-	camera->set_far(1000.0);
-	camera->set_perspective(45.0, 0.01, 1000.0);
-	orbit_root->add_child(camera);
 
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes.instantiate();
+		camera->set_attributes(camera_attributes);
+	}
+
+	// Grayscale gradient sky matching the FBX SceneImportSettingsDialog.
+	procedural_sky_material.instantiate();
+	procedural_sky_material->set_sky_top_color(Color(1, 1, 1));
+	procedural_sky_material->set_sky_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_bottom_color(Color(0, 0, 0));
+	procedural_sky_material->set_sky_curve(2.0);
+	procedural_sky_material->set_ground_curve(0.5);
+	procedural_sky_material->set_sun_angle_max(0.0);
+	sky.instantiate();
+	sky->set_material(procedural_sky_material);
+	environment.instantiate();
+	environment->set_background(Environment::BG_SKY);
+	environment->set_sky(sky);
+	environment->set_sky_custom_fov(50.0);
+	camera->set_environment(environment);
+
+	// Directional lights (identical to FBX dialog).
 	light1 = memnew(DirectionalLight3D);
 	light1->set_transform(Transform3D(Basis::looking_at(Vector3(-1, -1, -1))));
 	light1->set_shadow(true);
@@ -97,7 +217,7 @@ void GaussianImportSettingsDialog::_build_ui() {
 
 	light2 = memnew(DirectionalLight3D);
 	light2->set_transform(Transform3D(Basis::looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1))));
-	light2->set_color(Color(0.5, 0.5, 0.5));
+	light2->set_color(Color(0.5f, 0.5f, 0.5f));
 	camera->add_child(light2);
 
 	// ---- Right: info + import settings ----
@@ -152,6 +272,10 @@ void GaussianImportSettingsDialog::_build_ui() {
 	right_vb->add_child(compress_rotations);
 }
 
+// ---------------------------------------------------------------------------
+// Bounds resolution
+// ---------------------------------------------------------------------------
+
 AABB GaussianImportSettingsDialog::_resolve_bounds() const {
 	if (loaded_asset.is_null()) {
 		return AABB(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
@@ -189,6 +313,10 @@ AABB GaussianImportSettingsDialog::_resolve_bounds() const {
 	}
 	return AABB(min_pos, max_pos - min_pos);
 }
+
+// ---------------------------------------------------------------------------
+// Viewport scene management
+// ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::_clear_viewport_scene() {
 	if (bounds_instance) {
@@ -252,7 +380,7 @@ void GaussianImportSettingsDialog::_build_viewport_scene() {
 
 		bounds_instance = memnew(MeshInstance3D);
 		bounds_instance->set_mesh(mesh);
-		preview_root->add_child(bounds_instance);
+		viewport->add_child(bounds_instance);
 	}
 
 	// -- Sampled point cloud --
@@ -315,24 +443,41 @@ void GaussianImportSettingsDialog::_build_viewport_scene() {
 
 		splat_instance = memnew(MultiMeshInstance3D);
 		splat_instance->set_multimesh(mm);
-		preview_root->add_child(splat_instance);
+		viewport->add_child(splat_instance);
 	}
 }
 
+// ---------------------------------------------------------------------------
+// Camera (orthogonal, matching FBX dialog)
+// ---------------------------------------------------------------------------
+
 void GaussianImportSettingsDialog::_update_camera() {
-	if (!orbit_root || !camera) {
+	if (!camera) {
 		return;
 	}
 
-	float bounds_size = asset_bounds.get_longest_axis_size();
-	if (bounds_size < CMP_EPSILON) {
-		bounds_size = 2.0f;
+	float camera_size = asset_bounds.get_longest_axis_size();
+	if (camera_size < CMP_EPSILON) {
+		camera_size = 2.0f;
 	}
 
-	orbit_root->set_rotation(Vector3(cam_rot_x, cam_rot_y, 0));
-	camera->set_position(Vector3(0, 0, bounds_size * 1.8f * cam_zoom));
-	camera->set_current(true);
+	// Orthogonal projection matching SceneImportSettingsDialog.
+	camera->set_orthogonal(camera_size * cam_zoom, 0.0001, camera_size * 2);
+
+	Vector3 center = asset_bounds.get_center();
+	// Place scene content at origin; the bounds wireframe and point cloud are
+	// already centred, so the camera orbits the origin.
+	Transform3D xf;
+	xf.basis = Basis(Vector3(0, 1, 0), cam_rot_y) * Basis(Vector3(1, 0, 0), cam_rot_x);
+	xf.origin = Vector3(); // content is centred at origin
+	xf.translate_local(0, 0, camera_size);
+
+	camera->set_transform(xf);
 }
+
+// ---------------------------------------------------------------------------
+// Stats display
+// ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::_update_stats() {
 	if (!loaded_asset.is_valid()) {
@@ -375,6 +520,10 @@ void GaussianImportSettingsDialog::_update_stats() {
 	stats_label->set_text(text.strip_edges());
 }
 
+// ---------------------------------------------------------------------------
+// Asset loading
+// ---------------------------------------------------------------------------
+
 void GaussianImportSettingsDialog::_load_source_asset() {
 	loaded_asset.unref();
 	asset_bounds = AABB(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
@@ -387,25 +536,59 @@ void GaussianImportSettingsDialog::_load_source_asset() {
 	loaded_asset = ResourceLoader::load(source_path, "GaussianSplatAsset");
 }
 
+// ---------------------------------------------------------------------------
+// Input handling (orbit + zoom + magnify gesture)
+// ---------------------------------------------------------------------------
+
 void GaussianImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
-		cam_rot_x -= mm->get_relative().y * 0.01f * EDSCALE;
-		cam_rot_y -= mm->get_relative().x * 0.01f * EDSCALE;
-		cam_rot_x = CLAMP(cam_rot_x, float(-Math::PI) * 0.49f, float(Math::PI) * 0.49f);
+		cam_rot_x -= mm->get_relative().y * 0.01 * EDSCALE;
+		cam_rot_y -= mm->get_relative().x * 0.01 * EDSCALE;
+		cam_rot_x = CLAMP(cam_rot_x, -Math::PI / 2, Math::PI / 2);
 		_update_camera();
+	}
+
+	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
 	}
 
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		cam_zoom = MIN(cam_zoom * 1.1f, 10.0f);
+		cam_zoom *= 1.1;
+		if (cam_zoom > 10.0) {
+			cam_zoom = 10.0;
+		}
 		_update_camera();
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		cam_zoom = MAX(cam_zoom / 1.1f, 0.1f);
+		cam_zoom /= 1.1;
+		if (cam_zoom < 0.1) {
+			cam_zoom = 0.1;
+		}
+		_update_camera();
+	}
+
+	// Trackpad magnify gesture (pinch to zoom).
+	Ref<InputEventMagnifyGesture> mg = p_input;
+	if (mg.is_valid()) {
+		real_t mg_factor = mg->get_factor();
+		if (mg_factor == 0.0) {
+			mg_factor = 1.0;
+		}
+		cam_zoom /= mg_factor;
+		if (cam_zoom < 0.1) {
+			cam_zoom = 0.1;
+		} else if (cam_zoom > 10.0) {
+			cam_zoom = 10.0;
+		}
 		_update_camera();
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Reimport
+// ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::_re_import() {
 	if (source_path.is_empty()) {
@@ -420,7 +603,6 @@ void GaussianImportSettingsDialog::_re_import() {
 	} else if (ext == "spz") {
 		importer_name = "gaussian_splat_spz";
 	} else {
-		// Unknown format, try the existing importer.
 		importer_name = "";
 	}
 
@@ -458,6 +640,10 @@ void GaussianImportSettingsDialog::_re_import() {
 		EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(source_path, importer_name, params);
 	}
 }
+
+// ---------------------------------------------------------------------------
+// open_settings — entry point
+// ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 	source_path = p_path;
@@ -506,8 +692,8 @@ void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 	}
 
 	// Build 3D preview.
-	cam_rot_x = -Math::PI / 6.0f;
-	cam_rot_y = -Math::PI / 6.0f;
+	cam_rot_x = -Math::PI / 4;
+	cam_rot_y = -Math::PI / 4;
 	cam_zoom = 1.0f;
 	_build_viewport_scene();
 	_update_camera();
@@ -515,8 +701,6 @@ void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 
 	set_title(vformat(TTR("Advanced Import Settings for '%s'"), source_path.get_file()));
 	popup_centered_ratio(0.7f);
-
-	connect(SceneStringName(confirmed), callable_mp(this, &GaussianImportSettingsDialog::_re_import), CONNECT_ONE_SHOT);
 }
 
 #endif // TOOLS_ENABLED
