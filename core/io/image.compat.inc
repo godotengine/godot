@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_saver_tinyexr.h                                                 */
+/*  image.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,9 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
+#include "core/object/class_db.h"
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
-Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
+Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
+	return save_exr_to_buffer(p_grayscale);
+}
+
+Error Image::_save_exr_bind_compat_117800(const String &p_path, bool p_grayscale) const {
+	return save_exr(p_path, p_grayscale);
+}
+
+void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_bind_compat_117800, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::_save_exr_to_buffer_bind_compat_117800, DEFVAL(false));
+}
+
+#endif // DISABLE_DEPRECATED
