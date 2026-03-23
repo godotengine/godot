@@ -56,15 +56,27 @@ public:
 
 	};
 
+	enum CSGWarning {
+		NO_WARNING,
+		NON_MANIFOLD,
+		CSG_SET_NON_MANIFOLD,
+		CSG_MESH_NOT_ASSIGNED,
+		CSG_MESH_NON_MANIFOLD,
+	};
+
 private:
 	Operation operation = OPERATION_UNION;
 	CSGShape3D *parent_shape = nullptr;
 
 	CSGBrush *brush = nullptr;
+	CSGBrush *combined_brush = nullptr;
+
+	CSGWarning brush_warning = NO_WARNING;
 
 	AABB node_aabb;
 
 	bool dirty = false;
+	bool painted = false;
 	bool last_visible = false;
 	float snap = 0.001;
 
@@ -122,16 +134,54 @@ protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
 	void _make_dirty(bool p_parent_removing = false);
+	void _make_painted(bool p_paint = false, bool p_parent_removing = false);
 	PackedStringArray get_configuration_warnings() const override;
 
 	static void _bind_methods();
 
 	friend class CSGCombiner3D;
+	CSGBrush *_get_combined_brush();
 	CSGBrush *_get_brush();
 
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	void csg_push_warning(CSGWarning p_warning = NO_WARNING);
+	void rebuild_brush();
+	void brush_modified();
+	Dictionary get_csg_brush();
+	void set_csg_brush(const Dictionary &p_brush_data);
+	// These work on selected faces.
+	void set_uv_offsets(const Vector<int> &p_faces, const Vector2 &p_prev_offset, const Vector2 &p_offset);
+	Vector2 get_uv_offsets(int p_face);
+	void set_uv_scale(const Vector<int> &p_faces, const Vector2 &p_prev_scale, const Vector2 &p_scale);
+	Vector2 get_uv_scale(int p_face);
+	void rotate_uv(const Vector<int> &p_faces, float p_angle);
+	void flip_x(const Vector<int> &p_faces);
+	void flip_y(const Vector<int> &p_faces);
+	void calculate_cube_map(const Vector<int> &p_faces, const Vector3 &uv_scale, bool p_use_global = false);
+	void calculate_cylinder_map(const Vector<int> &p_faces, const Vector3 &uv_scale, bool p_use_global = false);
+	void set_csg_face_smooth_group(const Vector<int> &p_faces, int p_smooth);
+	int get_csg_face_smooth_group(int p_face);
+	// These change material.
+	void set_face_material(const Vector<int> &p_faces, const Ref<Material> &p_material);
+	Ref<Material> get_face_material(int p_face);
+	// These affect the entire brush.
+	bool resize_brush(const Vector3 &p_prev_size, const Vector3 &p_size);
+	void resize_brush_rework();
+	void set_csg_invert(bool p_inv_val);
+	void set_csg_flat(bool p_mode);
+	// These affect vertices.
+	Vector<Vector3> get_vertices();
+	void set_vertex_position(const Vector3 &p_curr_pos, const Vector3 &p_pos);
+	// These are helper methods for UX.
+	Vector<Vector3> get_selected_faces(const Vector<int> &p_faces);
+	int get_csg_num_faces();
+	Vector<int> get_all_csg_faces();
+	Vector<int> get_faces_from_ngon(int p_ngon);
+	TypedArray<Vector<Vector3>> get_csg_ngon_colliders();
+	bool is_painted() const;
+
 	Array get_meshes() const;
 	void update_shape();
 
@@ -216,7 +266,7 @@ class CSGPrimitive3D : public CSGShape3D {
 
 protected:
 	bool flip_faces;
-	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
+	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<int> &p_ngons);
 	static void _bind_methods();
 
 public:

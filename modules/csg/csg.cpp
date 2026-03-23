@@ -115,3 +115,30 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
 
 	_regen_face_aabbs();
 }
+
+void CSGBrush::add_ngons(const Vector<int> &p_ngons) {
+	ERR_FAIL_COND_MSG(p_ngons.size() > faces.size(), "Wrong number of elements in p_ngons.");
+	ngons = p_ngons;
+	for (int i = 0; i < ngons.size(); i++) {
+		if (ngons[i] > num_ngons) {
+			num_ngons++;
+		}
+	}
+
+	if (ngons.size() > 0) {
+		num_ngons++;
+	}
+}
+
+Vector<int> CSGBrush::get_ngon_faces(int p_ngon) {
+	Vector<int> ret;
+	ERR_FAIL_COND_V_MSG(p_ngon >= num_ngons, ret, "Invalid ngon ID.");
+	ERR_FAIL_COND_V_MSG(num_ngons == 0, ret, "Ngons not set in CSGBrush.");
+
+	for (int i = 0; i < ngons.size(); i++) {
+		if (ngons[i] == p_ngon) {
+			ret.push_back(i);
+		}
+	}
+	return ret;
+}

@@ -50,6 +50,8 @@ struct CSGBrush {
 
 	Vector<Face> faces;
 	Vector<Ref<Material>> materials;
+	Vector<int> ngons;
+	int num_ngons = 0;
 
 	inline void _regen_face_aabbs() {
 		for (int i = 0; i < faces.size(); i++) {
@@ -63,4 +65,6 @@ struct CSGBrush {
 	// Create a brush from faces.
 	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
 	void copy_from(const CSGBrush &p_brush, const Transform3D &p_xform);
+	void add_ngons(const Vector<int> &p_ngons);
+	Vector<int> get_ngon_faces(int p_ngon);
 };
