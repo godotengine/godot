@@ -92,6 +92,13 @@
 				Clears tile proxies pointing to invalid tiles.
 			</description>
 		</method>
+		<method name="clear_terrains">
+			<return type="void" />
+			<param index="0" name="terrain_set" type="int" />
+			<description>
+				Clears all terrain properties for the given terrain set.
+			</description>
+		</method>
 		<method name="clear_tile_proxies">
 			<return type="void" />
 			<description>

@@ -475,6 +475,7 @@ public:
 	void add_terrain(int p_terrain_set, int p_index = -1);
 	void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos);
 	void remove_terrain(int p_terrain_set, int p_index);
+	void clear_terrains(int p_terrain_set);
 	void set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name);
 	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
 	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
