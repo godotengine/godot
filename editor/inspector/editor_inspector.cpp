@@ -2239,8 +2239,8 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Texture2D> key = theme_cache.icon_gui_animation_key;
 				if (keying && key.is_valid()) {
 					Point2 key_position;
-					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.key_padding_size / 2;
-					keying_rect = Rect2(key_position.x - theme_cache.key_padding_size / 2, 0, key->get_width() + theme_cache.key_padding_size, header_height);
+					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					keying_rect = Rect2(key_position.x - theme_cache.padding_size / 2, 0, key->get_width() + theme_cache.padding_size, header_height);
 
 					Color key_color(1, 1, 1);
 					if (keying_hover) {
@@ -2248,8 +2248,7 @@ void EditorInspectorSection::_notification(int p_what) {
 						key_color.g *= 1.2;
 						key_color.b *= 1.2;
 
-						Ref<StyleBox> sb_hover = theme_cache.key_hover;
-						draw_style_box(sb_hover, keying_rect);
+						draw_style_box(theme_cache.icon_hover, keying_rect);
 					}
 					key_position.y = (header_height - key->get_height()) / 2;
 
@@ -2294,6 +2293,30 @@ void EditorInspectorSection::_notification(int p_what) {
 					margin_end += label_size.width + checkbox->get_width() + 6 * EDSCALE;
 				} else {
 					check_rect = Rect2();
+				}
+
+				// - Revert.
+				const Ref<Texture2D> &revert = theme_cache.icon_gui_revert;
+				if (can_revert && revert.is_valid()) {
+					Point2 revert_position;
+					revert_position.x = (rtl ? margin_end : (get_size().width - revert->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					revert_rect = Rect2(revert_position.x - theme_cache.padding_size / 2, 0, revert->get_width() + theme_cache.padding_size, header_height);
+
+					Color revert_color(1, 1, 1);
+					if (revert_hover) {
+						revert_color.r *= 1.2;
+						revert_color.g *= 1.2;
+						revert_color.b *= 1.2;
+
+						draw_style_box(theme_cache.icon_hover, revert_rect);
+					}
+
+					revert_position.y = (header_height - revert->get_height()) / 2;
+
+					draw_texture(revert, revert_position, revert_color);
+					margin_end += revert_rect.size.width + theme_cache.horizontal_separation;
+				} else {
+					revert_rect = Rect2();
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -2372,8 +2395,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				dropping_unfold_timer->stop();
 			}
 
-			if (header_hover || check_hover || keying_hover) {
+			if (header_hover || revert_hover || check_hover || keying_hover) {
 				header_hover = false;
+				revert_hover = false;
 				check_hover = false;
 				keying_hover = false;
 				queue_redraw();
@@ -2490,6 +2514,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		Vector2 mpos = mm->get_position();
 
+		bool new_revert_hover = revert_rect.has_point(mpos);
+		if (new_revert_hover != revert_hover) {
+			revert_hover = new_revert_hover;
+			queue_redraw();
+		}
+
 		bool new_check_hover = check_rect.has_point(mpos);
 		if (new_check_hover != check_hover) {
 			check_hover = new_check_hover;
@@ -2537,7 +2567,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		accept_event();
 
-		if (checkable && check_rect.has_point(pos)) {
+		bool is_valid_revert = false;
+		if (can_revert && revert_rect.has_point(pos)) {
+			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			ERR_FAIL_COND(!is_valid_revert);
+		}
+		if (is_valid_revert || (checkable && check_rect.has_point(pos))) {
 			checked = !checked;
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
 			if (checked) {
@@ -2701,6 +2736,12 @@ void EditorInspectorSection::update_property() {
 
 	if (valid) {
 		set_checked(value_checked.operator bool());
+
+		bool new_can_revert = EditorPropertyRevert::can_property_revert(object, related_enable_property, &value_checked);
+		if (new_can_revert != can_revert) {
+			can_revert = new_can_revert;
+			queue_redraw();
+		}
 	}
 }
 
@@ -3845,7 +3886,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("separation"), SNAME("EditorPropertyContainer"));
 	p_cache.inspector_margin = p_control->get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 	p_cache.indent_size = p_control->get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
-	p_cache.key_padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
+	p_cache.padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 
 	p_cache.warning_color = p_control->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	p_cache.prop_subsection = p_control->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
@@ -3866,6 +3907,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.arrow = p_control->get_theme_icon(SNAME("arrow"), SNAME("Tree"));
 	p_cache.arrow_collapsed = p_control->get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 	p_cache.arrow_collapsed_mirrored = p_control->get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
+	p_cache.icon_gui_revert = p_control->get_editor_theme_icon(SNAME("ReloadSmall"));
 	p_cache.icon_gui_checked = p_control->get_editor_theme_icon(SNAME("GuiChecked"));
 	p_cache.icon_gui_unchecked = p_control->get_editor_theme_icon(SNAME("GuiUnchecked"));
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
@@ -3873,7 +3915,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
-	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.icon_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 }
 
 void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control) {
