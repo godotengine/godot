@@ -121,6 +121,10 @@ class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
 public:
+	enum {
+		NOTIFICATION_PROJECT_SETTINGS_RELOADED = 10001,
+	};
+	
 	enum SceneNameCasing {
 		SCENE_NAME_CASING_AUTO,
 		SCENE_NAME_CASING_PASCAL_CASE,

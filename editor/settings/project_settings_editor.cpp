@@ -679,6 +679,14 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			_update_theme();
 		} break;
 
+		case EditorNode::NOTIFICATION_PROJECT_SETTINGS_RELOADED: {
+			general_settings_inspector->update_category_list();
+			_update_action_map_editor();
+			localization_editor->update_translations();
+			autoload_settings->update_autoload();
+			plugin_settings->update_plugins();
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
 				general_settings_inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
