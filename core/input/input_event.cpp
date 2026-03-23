@@ -1348,6 +1348,104 @@ void InputEventJoypadButton::_bind_methods() {
 
 ///////////////////////////////////
 
+void InputEventJoypadButtonEcho::set_button_index(JoyButton p_index) {
+	button_index = p_index;
+	emit_changed();
+}
+
+JoyButton InputEventJoypadButtonEcho::get_button_index() const {
+	return button_index;
+}
+
+void InputEventJoypadButtonEcho::set_pressed(bool p_pressed) {
+	pressed = p_pressed;
+}
+
+void InputEventJoypadButtonEcho::set_pressure(float p_pressure) {
+	pressure = p_pressure;
+}
+
+float InputEventJoypadButtonEcho::get_pressure() const {
+	return pressure;
+}
+
+bool InputEventJoypadButtonEcho::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
+	Ref<InputEventJoypadButtonEcho> jb = p_event;
+	if (jb.is_null()) {
+		return false;
+	}
+
+	bool match = button_index == jb->button_index;
+	if (match) {
+		bool jb_pressed = jb->is_pressed();
+		if (r_pressed != nullptr) {
+			*r_pressed = jb_pressed;
+		}
+		float strength = jb_pressed ? 1.0f : 0.0f;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
+		}
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
+		}
+	}
+
+	return match;
+}
+
+bool InputEventJoypadButtonEcho::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventJoypadButtonEcho> button = p_event;
+	if (button.is_null()) {
+		return false;
+	}
+
+	return button_index == button->button_index;
+}
+
+String InputEventJoypadButtonEcho::as_text() const {
+	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
+
+	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
+		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
+	}
+
+	if (pressure != 0) {
+		text += ", " + RTR("Pressure:") + " " + String(Variant(pressure));
+	}
+
+	return text;
+}
+
+String InputEventJoypadButtonEcho::_to_string() {
+	String p = is_pressed() ? "true" : "false";
+	return vformat("InputEventJoypadButtonEcho: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
+}
+
+Ref<InputEventJoypadButtonEcho> InputEventJoypadButtonEcho::create_reference(JoyButton p_btn_index, int p_device) {
+	Ref<InputEventJoypadButtonEcho> ie;
+	ie.instantiate();
+	ie->set_button_index(p_btn_index);
+	ie->set_device(p_device);
+
+	return ie;
+}
+
+void InputEventJoypadButtonEcho::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_button_index", "button_index"), &InputEventJoypadButtonEcho::set_button_index);
+	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventJoypadButtonEcho::get_button_index);
+
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventJoypadButtonEcho::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventJoypadButtonEcho::get_pressure);
+
+	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButtonEcho::set_pressed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+}
+
+///////////////////////////////////
+
 void InputEventScreenTouch::set_index(int p_index) {
 	index = p_index;
 }

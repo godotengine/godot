@@ -84,6 +84,11 @@ static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
 	"righttrigger",
 };
 
+static void _uncombine_device(JoyButton p_value, JoyButton &r_button, int &r_device) {
+	r_device = (int)p_value >> 20;
+	r_button = JoyButton((int)p_value & ((1 << 20) - 1));
+}
+
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
 void (*Input::set_mouse_mode_override_func)(Input::MouseMode) = nullptr;
@@ -237,6 +242,30 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
+}
+
+void Input::_process(double delta) {
+	HashMap<JoyButton, JoyButtonEchoInfo>::Iterator iter = joy_buttons_echo.begin();
+	while (iter != joy_buttons_echo.end()) {
+		JoyButtonEchoInfo &echo = iter->value;
+		JoyButton button;
+		int device;
+		_uncombine_device(iter->key, button, device);
+
+		echo.time += delta;
+		if (echo.waiting) {
+			if (echo.time > 1) {
+				echo.waiting = false;
+				echo.time = 0.0;
+				_button_event(device, button, true, true);
+			}
+		} else if (echo.time > 1.0 / 20) {
+			echo.time = 0.0;
+			_button_event(device, button, true, true);
+		}
+
+		++iter;
+	}
 }
 
 #ifdef TOOLS_ENABLED
@@ -734,6 +763,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
 			JoyButton c = _combine_device((JoyButton)i, p_idx);
 			joy_buttons_pressed.erase(c);
+			joy_buttons_echo.erase(c);
 		}
 		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
@@ -981,8 +1011,10 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (jb->is_pressed()) {
 			joy_buttons_pressed.insert(c);
+			joy_buttons_echo.insert(c, JoyButtonEchoInfo());
 		} else {
 			joy_buttons_pressed.erase(c);
+			joy_buttons_echo.erase(c);
 		}
 	}
 
@@ -1823,14 +1855,24 @@ void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, con
 	motion->gamepad_motion->ProcessMotion(gyro_degrees.x, gyro_degrees.y, gyro_degrees.z, accel_g.x, accel_g.y, accel_g.z, delta_time);
 }
 
-void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
-	Ref<InputEventJoypadButton> ievent;
-	ievent.instantiate();
-	ievent->set_device(p_device);
-	ievent->set_button_index(p_index);
-	ievent->set_pressed(p_pressed);
+void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed, bool p_echo) {
+	if (!p_echo) {
+		Ref<InputEventJoypadButton> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_button_index(p_index);
+		ievent->set_pressed(p_pressed);
 
-	parse_input_event(ievent);
+		parse_input_event(ievent);
+	} else {
+		Ref<InputEventJoypadButtonEcho> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_button_index(p_index);
+		ievent->set_pressed(p_pressed);
+
+		parse_input_event(ievent);
+	}
 }
 
 void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {

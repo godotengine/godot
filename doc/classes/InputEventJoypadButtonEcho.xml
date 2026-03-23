@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventJoypadButton" inherits="InputEvent" keywords="gamepad, controller" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEventJoypadButtonEcho" inherits="InputEvent" keywords="gamepad, controller" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Represents a gamepad button being pressed or released.
+		Represents a gamepad button echo event.
 	</brief_description>
 	<description>
-		Input event type for gamepad buttons. For gamepad analog sticks and joysticks, see [InputEventJoypadMotion].
-		For gamepad button echo events, see [InputEventJoypadButtonEcho].
+		Input event type for gamepad button echo events. See also [InputEventJoypadButton].
 	</description>
 	<tutorials>
 		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>

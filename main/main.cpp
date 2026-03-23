@@ -4917,6 +4917,7 @@ bool Main::iteration() {
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		GodotProfileZone("Physics Step");
 		GodotProfileZoneGroupedFirst(_physics_zone, "setup");
+		Input::get_singleton()->_process(physics_step * time_scale);
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}

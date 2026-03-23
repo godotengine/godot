@@ -192,6 +192,13 @@ private:
 
 	HashMap<int, MotionInfo> joy_motion;
 
+	struct JoyButtonEchoInfo {
+		bool waiting = true;
+		double time = 0.0;
+	};
+
+	HashMap<JoyButton, JoyButtonEchoInfo> joy_buttons_echo;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -297,7 +304,7 @@ private:
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(const String &output);
 	JoyAxis _get_output_axis(const String &output);
-	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
+	void _button_event(int p_device, JoyButton p_index, bool p_pressed, bool p_echo = false);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 	void _update_joypad_features(int p_device);
@@ -348,6 +355,8 @@ public:
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	void _process(double delta);
 
 	static Input *get_singleton();
 
