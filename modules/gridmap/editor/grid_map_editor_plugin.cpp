@@ -976,7 +976,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			if (valid_mb_press && mb->get_button_index() == MouseButton::LEFT) {
 				valid_mb_press = false;
 
-				if (input_action == INPUT_SELECT) {
+				if (input_action == INPUT_SELECT && selection.active && (selection.begin != last_selection.begin || selection.end != last_selection.end)) {
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 					undo_redo->create_action(TTR("GridMap Selection"));
 					undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
