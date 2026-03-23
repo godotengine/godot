@@ -2580,6 +2580,8 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			if (!is_type_compatible(result, expected_type)) {
 				push_error(vformat(R"(Cannot return value of type "%s" because the function return type is "%s".)", result.to_string(), expected_type.to_string()), p_return);
 			}
+		} else if (expected_type == result && ((expected_type.has_container_element_type(0) && !result.has_container_element_type(0)) || (expected_type.has_container_element_type(1) && !result.has_container_element_type(1)))) {
+			mark_node_unsafe(p_return);
 #ifdef DEBUG_ENABLED
 		} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
 			parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
