@@ -1,4 +1,10 @@
 GDTEST_OK
+~~ WARNING at line 2: (NUMBER_TO_BOOL_IMPLICIT_CAST) Implicit cast from number (int/float) to bool. If this is intended, cast the number to the bool type using "bool()".
+~~ WARNING at line 3: (NUMBER_TO_BOOL_IMPLICIT_CAST) Implicit cast from number (int/float) to bool. If this is intended, cast the number to the bool type using "bool()".
+~~ WARNING at line 3: (UNUSED_VARIABLE) The local variable "some_bools" is declared but never used in the block. If this is intended, prefix it with an underscore: "_some_bools".
+~~ WARNING at line 4: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 4: (UNUSED_VARIABLE) The local variable "some_boolss" is declared but never used in the block. If this is intended, prefix it with an underscore: "_some_boolss".
+~~ WARNING at line 13: (NUMBER_TO_BOOL_IMPLICIT_CAST) Implicit cast from number (int/float) to bool. If this is intended, cast the number to the bool type using "bool()".
 1
 2
 3
