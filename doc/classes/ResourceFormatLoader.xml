@@ -7,6 +7,44 @@
 		Godot loads resources in the editor or in exported games using ResourceFormatLoaders. They are queried automatically via the [ResourceLoader] singleton, or when a resource with internal dependencies is loaded. Each file type may load as a different resource type, so multiple ResourceFormatLoaders are registered in the engine.
 		Extending this class allows you to define your own loader. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatLoaders, it will be called automatically when loading resources of its handled type(s). You may also implement a [ResourceFormatSaver].
 		[b]Note:[/b] You can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends on if the format is suitable or not for the final exported game. For example, it's better to import [code].png[/code] textures as [code].ctex[/code] ([CompressedTexture2D]) first, so they can be loaded with better efficiency on the graphics card.
+		[b]Example:[/b] A minimal [ResourceFormatLoader] that loads a custom resource called [code]GameSave[/code] from a [code].save[/code] file. For the matching saver, see [ResourceFormatSaver].
+		[codeblock]
+		@tool
+		class_name GameSaveLoader
+		extends ResourceFormatLoader
+
+		func _get_recognized_extensions() -> PackedStringArray:
+			return PackedStringArray(["save"])
+
+		func _get_resource_type(path: String) -> String:
+			if path.get_extension() == "save":
+				return "Resource" # Use the ClassDB recognized class here.
+			return ""
+
+		func _get_resource_script_class(path: String) -> String:
+			if path.get_extension() == "save":
+				return "GameSave"
+			return ""
+
+		func _load(path: String, original_path: String, use_sub_threads: bool, cache_mode: int) -> Variant:
+			var file = FileAccess.open(path, FileAccess.READ)
+
+			if not file:
+				var err = FileAccess.get_open_error()
+				if err != OK:
+					push_error("Can't open save file ", path)
+					return
+
+			var file_data = file.get_as_text()
+			var read_err = file.get_error()
+			if read_err != OK and read_err != ERR_FILE_EOF:
+				return ERR_FILE_CANT_READ
+
+			return from_json(file_data)
+
+		func from_json(file_data: String) -> GameSave:
+			# ... Convert to GameSave from json text here
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,12 +53,17 @@
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Tells whether this loader recognizes a resource exists for the given [param path].
+				If it is not implemented, [param path] is checked for whether the file exists.
 			</description>
 		</method>
 		<method name="_get_classes_used" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Gets a list of all [ClassDB] recognized classes that are used by this loader at the given [param path]. 
+				If it is not implemented, returns the class given by [method _get_resource_type].
+				[b]NOTE:[/b] This is used to trim unused features by the [url=$DOCS_URL//tutorials/editor/using_engine_compilation_configuration_editor.html]Compilation Configuration Editor[/url].
 			</description>
 		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
