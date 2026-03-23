@@ -1869,7 +1869,20 @@ def format_text_block(
 
     pos = 0
     tag_depth = 0
+    debug_tag_stack: list[str] = []
     while True:
+        if tag_depth > 2 or (
+            tag_depth == 2
+            and not (
+                debug_tag_stack[0] == "codeblocks"
+                and (debug_tag_stack[1] == "gdscript" or debug_tag_stack[1] == "csharp")
+            )
+        ):
+            print_warning(
+                f"{state.current_class}.xml: Found nested tags [{']['.join(debug_tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
+                state,
+            )
+
         pos = text.find("[", pos)
         if pos == -1:
             break
@@ -1908,6 +1921,7 @@ def format_text_block(
                     if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
                         tag_depth -= 1
+                        debug_tag_stack.pop()
                         inside_code = False
                         ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
@@ -1917,6 +1931,7 @@ def format_text_block(
                     elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
                         tag_depth -= 1
+                        debug_tag_stack.pop()
                         inside_code = False
                         ignore_code_warnings = False
                         escape_post = True
@@ -1946,15 +1961,18 @@ def format_text_block(
                     has_codeblocks_csharp = False
 
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     tag_text = ""
                     inside_code_tabs = False
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     tag_text = "\n.. tabs::"
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                 tag_depth += 1
+                debug_tag_stack.append(tag_state.name)
 
                 if tag_state.name == "gdscript":
                     if not inside_code_tabs:
@@ -1994,6 +2012,7 @@ def format_text_block(
             elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
                 tag_depth += 1
+                debug_tag_stack.append(tag_state.name)
 
                 inside_code = True
                 inside_code_tag = "code"
@@ -2280,6 +2299,12 @@ def format_text_block(
                         )
                         break
                     link_title = text[endq_pos + 1 : endurl_pos]
+                    for rft in RESERVED_FORMATTING_TAGS:
+                        if link_title.find(f"[{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
                     tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
@@ -2304,34 +2329,42 @@ def format_text_block(
             elif tag_state.name == "center":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                 tag_text = ""
 
             elif tag_state.name == "i":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = "*"
 
             elif tag_state.name == "b":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = "**"
 
             elif tag_state.name == "u":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = ""
 
@@ -2345,10 +2378,12 @@ def format_text_block(
                 tag_text = "`"
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_text = ":kbd:" + tag_text
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
 
             # Invalid syntax.

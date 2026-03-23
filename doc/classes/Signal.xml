@@ -69,7 +69,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
+		[code skip-lint]Object.connect()[/code] [b]or[/b] [code skip-lint]Signal.connect()[/code][b]?[/b]
 		As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
 		[codeblocks]
 		[gdscript]
