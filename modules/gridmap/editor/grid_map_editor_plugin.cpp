@@ -141,6 +141,7 @@ void GridMapEditor::_menu_option(int p_option) {
 				}
 
 				undo_redo->commit_action();
+				_emit_cells_modified(cells, "GridMap Rotate");
 
 			} else {
 				r = node->get_basis_with_orthogonal_index(cursor_rot);
@@ -576,10 +577,12 @@ void GridMapEditor::_delete_selection_with_undo() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
+	TypedArray<Vector3i> modified_cells;
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
+				modified_cells.push_back(selected);
 				undo_redo->add_do_method(node, "set_cell_item", selected, GridMap::INVALID_CELL_ITEM);
 				undo_redo->add_undo_method(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
 			}
@@ -588,6 +591,7 @@ void GridMapEditor::_delete_selection_with_undo() {
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
+	_emit_cells_modified(modified_cells, "GridMap Delete Selection");
 }
 
 void GridMapEditor::_clear_selection_with_undo() {
@@ -609,10 +613,12 @@ void GridMapEditor::_fill_selection() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("GridMap Fill Selection"));
+	TypedArray<Vector3i> modified_cells;
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
+				modified_cells.push_back(selected);
 				undo_redo->add_do_method(node, "set_cell_item", selected, selected_palette, cursor_rot);
 				undo_redo->add_undo_method(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
 			}
@@ -621,6 +627,7 @@ void GridMapEditor::_fill_selection() {
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
+	_emit_cells_modified(modified_cells, "GridMap Fill Selection");
 }
 
 void GridMapEditor::_setup_paste_mode() {
@@ -739,11 +746,13 @@ void GridMapEditor::_do_paste() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
+	TypedArray<Vector3i> modified_cells;
 	if (clipboard_is_move) {
 		undo_redo->create_action(TTR("GridMap Move Selection"));
 
 		for (const ClipboardItem &item : clipboard_items) {
 			Vector3 original_position = paste_indicator.begin + item.grid_offset;
+			modified_cells.push_back(original_position);
 			undo_redo->add_undo_method(node, "set_cell_item", original_position, item.cell_item, item.orientation);
 			undo_redo->add_do_method(node, "set_cell_item", original_position, GridMap::INVALID_CELL_ITEM);
 		}
@@ -758,6 +767,9 @@ void GridMapEditor::_do_paste() {
 		orm = node->get_basis_with_orthogonal_index(item.orientation);
 		orm = rot * orm;
 
+		if (!clipboard_is_move || !modified_cells.has(position)) {
+			modified_cells.push_back(position); // TODO: Consider something more performant.
+		}
 		undo_redo->add_do_method(node, "set_cell_item", position, item.cell_item, node->get_orthogonal_index_from_basis(orm));
 
 		int prev_idx = node->get_cell_item(position);
@@ -798,7 +810,7 @@ void GridMapEditor::_do_paste() {
 	}
 
 	undo_redo->commit_action();
-
+	_emit_cells_modified(modified_cells, clipboard_is_move ? "GridMap Move Selection" : "GridMap Paste Selection");
 	_clear_clipboard_data();
 }
 
@@ -953,8 +965,10 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				if (set_items.size()) {
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 					undo_redo->create_action(TTR("GridMap Paint"));
+					TypedArray<Vector3i> modified_cells;
 					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
+						modified_cells.push_back(si.position);
 					}
 					for (uint32_t i = set_items.size(); i > 0; i--) {
 						const SetItem &si = set_items[i - 1];
@@ -962,6 +976,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					}
 
 					undo_redo->commit_action();
+					_emit_cells_modified(modified_cells, "GridMap Paint");
 				}
 				set_items.clear();
 				input_action = INPUT_NONE;
@@ -1484,6 +1499,11 @@ void GridMapEditor::_floor_mouse_exited() {
 	floor->get_line_edit()->release_focus();
 }
 
+void GridMapEditor::_emit_cells_modified(const TypedArray<Vector3i> &cells, const String &undo_redo_action_name) const {
+	EditorPlugin *grid_map_editor_plugin = EditorNode::get_editor_data().get_editor_by_name("GridMap");
+	grid_map_editor_plugin->emit_signal("cells_modified", cells, undo_redo_action_name);
+}
+
 void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
@@ -1990,6 +2010,8 @@ void GridMapEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_cells"), &GridMapEditorPlugin::get_selected_cells);
 	ClassDB::bind_method(D_METHOD("set_selected_palette_item", "item"), &GridMapEditorPlugin::set_selected_palette_item);
 	ClassDB::bind_method(D_METHOD("get_selected_palette_item"), &GridMapEditorPlugin::get_selected_palette_item);
+
+	ADD_SIGNAL(MethodInfo("cells_modified", PropertyInfo(Variant::ARRAY, "cells", PROPERTY_HINT_ARRAY_TYPE, "Vector3i"), PropertyInfo(Variant::STRING, "undo_redo_action_name")));
 }
 
 void GridMapEditorPlugin::forward_3d_draw_over_viewport(Control *p_overlay) {
