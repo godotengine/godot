@@ -766,6 +766,11 @@ void ExportTemplateManager::popup_manager() {
 	popup_centered(Size2(720, 280) * EDSCALE);
 }
 
+void ExportTemplateManager::stop_download() {
+	download_templates->cancel_request();
+	is_downloading_templates = false;
+}
+
 void ExportTemplateManager::ok_pressed() {
 	if (!is_downloading_templates) {
 		hide();

@@ -3699,6 +3699,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				p_confirmed = false;
 			}
 
+			if (p_confirmed && stop_download_confirmation && export_template_manager->is_downloading()) {
+				export_template_manager->stop_download();
+				stop_download_confirmation = false;
+				p_confirmed = false;
+			}
+
 			if (!p_confirmed) {
 				if (!stop_project_confirmation && project_run_bar->is_playing()) {
 					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
@@ -3708,10 +3714,24 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						confirmation->set_text(TTR("Stop running project before exiting the editor?"));
 						confirmation->set_ok_button_text(TTR("Stop & Quit"));
 					}
+					confirmation_button->hide();
 					confirmation->reset_size();
 					confirmation->popup_centered();
-					confirmation_button->hide();
 					stop_project_confirmation = true;
+					break;
+				}
+
+				if (!stop_download_confirmation && export_template_manager->is_downloading()) {
+					confirmation->set_text(TTR("The export templates are still being downloaded."));
+					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+						confirmation->set_ok_button_text(TTR("Stop & Reload"));
+					} else {
+						confirmation->set_ok_button_text(TTR("Stop & Quit"));
+					}
+					confirmation_button->hide();
+					confirmation->reset_size();
+					confirmation->popup_centered();
+					stop_download_confirmation = true;
 					break;
 				}
 
@@ -6735,6 +6755,7 @@ void EditorNode::_cancel_close_scene_tab() {
 
 void EditorNode::_cancel_confirmation() {
 	stop_project_confirmation = false;
+	stop_download_confirmation = false;
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
