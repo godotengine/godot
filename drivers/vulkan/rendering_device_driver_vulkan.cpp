@@ -566,6 +566,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_FRAGMENT_DENSITY_MAP_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
@@ -2191,6 +2192,11 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		create_info.flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	}*/
 
+	bool use_subsampled_images = VulkanHooks::get_singleton() && VulkanHooks::get_singleton()->use_subsampled_images();
+	if (fdm_capabilities.attachment_supported && use_subsampled_images && p_format.is_subsampled && (p_format.usage_bits & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
+		create_info.flags |= VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
+	}
+
 	if (fdm_capabilities.offset_supported && (p_format.usage_bits & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT))) {
 		create_info.flags |= VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
 	}
@@ -2350,6 +2356,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	tex_info->vk_create_info = create_info;
 	tex_info->vk_view_create_info = image_view_create_info;
 	tex_info->allocation.handle = allocation;
+	tex_info->is_subsampled = (create_info.flags & VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT) != 0;
 #ifdef DEBUG_ENABLED
 	tex_info->transient = (p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) != 0;
 #endif
@@ -5114,6 +5121,11 @@ void RenderingDeviceDriverVulkan::command_clear_depth_stencil_texture(CommandBuf
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
+
+	if (tex_info->is_subsampled) {
+		// Subsampled images can't be copied into, only used as attachments to a framebuffer.
+		return;
+	}
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_info->rd_format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_info->rd_format);
