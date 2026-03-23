@@ -6549,6 +6549,7 @@ bool Animation::inform_variant_array(int &r_min, int &r_max) {
 }
 
 Animation::Animation() {
+	set_use_shared_copy(false);
 }
 
 Animation::~Animation() {
