@@ -1385,9 +1385,9 @@ void TextEdit::_notification(int p_what) {
 
 					int ofs_y = style->get_margin(SIDE_TOP);
 
-					ofs_y += i * row_height + theme_cache.line_spacing / 2;
+					ofs_y += i * row_height;
 					ofs_y -= first_visible_line_wrap_ofs * row_height;
-					ofs_y -= _get_v_scroll_offset() * row_height;
+					ofs_y -= (int)Math::round(_get_v_scroll_offset() * row_height);
 
 					bool clipped = false;
 					if (ofs_y + row_height < top_limit_y) {
@@ -1464,12 +1464,16 @@ void TextEdit::_notification(int p_what) {
 									gutter_rect.size -= Point2(horizontal_padding, vertical_padding) * 2;
 
 									// Correct icon aspect ratio.
-									float icon_ratio = icon->get_width() / icon->get_height();
+									float icon_ratio = (float)icon->get_width() / (float)icon->get_height();
 									float gutter_ratio = gutter_rect.size.x / gutter_rect.size.y;
 									if (gutter_ratio > icon_ratio) {
-										gutter_rect.size.x = std::floor(icon->get_width() * (gutter_rect.size.y / icon->get_height()));
+										float ratio_width = Math::floor(gutter_rect.size.y * icon_ratio);
+										gutter_rect.position.x += (gutter_rect.size.x - ratio_width) / 2;
+										gutter_rect.size.x = ratio_width;
 									} else {
-										gutter_rect.size.y = std::floor(icon->get_height() * (gutter_rect.size.x / icon->get_width()));
+										float ratio_height = Math::floor(gutter_rect.size.x / icon_ratio);
+										gutter_rect.position.y += (gutter_rect.size.y - ratio_height) / 2;
+										gutter_rect.size.y = ratio_height;
 									}
 									if (rtl) {
 										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
@@ -5014,7 +5018,7 @@ String TextEdit::get_word(int p_line, int p_column) const {
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {
 	Ref<StyleBox> style = _get_current_stylebox();
-	float rows = p_pos.y - (style->get_margin(SIDE_TOP) + (theme_cache.line_spacing / 2));
+	float rows = p_pos.y - style->get_margin(SIDE_TOP);
 	rows /= get_line_height();
 	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
