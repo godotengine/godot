@@ -1191,6 +1191,8 @@ public:
 
 	String get_custom_word_separators() const;
 
+	_FORCE_INLINE_ bool is_window_has_focus() const { return window_has_focus; }
+
 	/* Deprecated. */
 #ifndef DISABLE_DEPRECATED
 	Vector<int> get_caret_index_edit_order();

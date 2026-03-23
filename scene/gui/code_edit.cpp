@@ -840,7 +840,9 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 	}
 
-	TextEdit::gui_input(p_gui_input);
+	if (is_window_has_focus()) {
+		TextEdit::gui_input(p_gui_input);
+	}
 
 	if (update_code_completion) {
 		_filter_code_completion_candidates_impl();

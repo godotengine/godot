@@ -2056,7 +2056,7 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		// Handle Unicode (with modifiers active, process after shortcuts).
-		if (has_focus() && editable && (k->get_unicode() >= 32)) {
+		if (has_focus() && window_has_focus && editable && (k->get_unicode() >= 32)) {
 			handle_unicode_input(k->get_unicode());
 			accept_event();
 		}
