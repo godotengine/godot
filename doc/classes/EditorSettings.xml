@@ -962,6 +962,9 @@
 		<member name="interface/editor/appearance/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>
+		<member name="interface/editor/appearance/show_renderer_selector" type="bool" setter="" getter="">
+			If [code]true[/code], a renderer selector that can be used to change the [member ProjectSettings.rendering/renderer/rendering_method] project setting will be shown in the top right of the main editor window.
+		</member>
 		<member name="interface/editor/appearance/show_update_spinner" type="int" setter="" getter="">
 			If enabled, displays an icon in the top-right corner of the editor that spins when the editor redraws a frame. This can be used to diagnose situations where the engine is constantly redrawing, which should be avoided as this increases CPU and GPU utilization for no good reason. To further troubleshoot these situations, start the editor with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.
