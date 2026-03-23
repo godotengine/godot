@@ -2612,7 +2612,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if ((!checkable || checked) && !inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	} else if (!inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -2726,6 +2726,10 @@ void EditorInspectorSection::set_checked(bool p_checked) {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_doc_path(const String &p_doc_path) {
+	doc_path = p_doc_path;
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -2768,20 +2772,62 @@ void EditorInspectorSection::update_property() {
 }
 
 void EditorInspectorSection::_update_popup() {
-	if (!menu) {
+	if (menu) {
+		menu->clear();
+	} else {
 		menu = memnew(PopupMenu);
 		add_child(menu);
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
-
-		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
-		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	}
-	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+
+	if (checkable) {
+		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Value"), MENU_COPY_VALUE);
+		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Value"), MENU_PASTE_VALUE);
+		menu->set_item_disabled(-1, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
+		menu->add_icon_item(theme_cache.icon_copy_path, TTRC("Copy Property Path"), MENU_COPY_PROPERTY_PATH);
+		menu->set_item_disabled(-1, related_enable_property.is_empty());
+		menu->add_separator();
+	}
+
+	menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_SECTION);
+	menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_SECTION);
+	menu->set_item_disabled(-1, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+
+	if (can_revert) {
+		menu->add_separator();
+		menu->add_icon_item(theme_cache.icon_gui_revert, TTRC("Revert Value"), MENU_REVERT_VALUE);
+	}
+	if (!doc_path.is_empty() && ScriptEditor::get_singleton() && EditorNode::get_singleton()) {
+		menu->add_separator();
+		menu->add_icon_item(theme_cache.help_icon, TTRC("Open Documentation"), MENU_OPEN_DOCUMENTATION);
+	}
 }
 
-void EditorInspectorSection::menu_option(int p_option) const {
+void EditorInspectorSection::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(related_enable_property));
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
+				return;
+			}
+
+			checked = EditorInspector::get_property_clipboard_value();
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+			if (checked) {
+				unfold();
+			} else if (!checkbox_only) {
+				vbox->hide();
+			}
+		} break;
+
+		case MENU_COPY_PROPERTY_PATH: {
+			DisplayServer::get_singleton()->clipboard_set(related_enable_property);
+		} break;
+
+		case MENU_COPY_SECTION: {
 			Dictionary clipboard;
 			for (const EditorProperty *property : section_properties) {
 				clipboard[property->get_edited_property()] = property->get_edited_property_value();
@@ -2789,7 +2835,7 @@ void EditorInspectorSection::menu_option(int p_option) const {
 			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::SECTION, clipboard);
 		} break;
 
-		case MENU_PASTE_VALUE: {
+		case MENU_PASTE_SECTION: {
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION) {
 				break;
 			}
@@ -2808,6 +2854,24 @@ void EditorInspectorSection::menu_option(int p_option) const {
 				}
 			}
 			ur->commit_action();
+		} break;
+
+		case MENU_REVERT_VALUE: {
+			bool is_valid_revert = false;
+			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			ERR_FAIL_COND(!is_valid_revert);
+			checked = revert_value;
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, revert_value);
+			if (checked) {
+				unfold();
+			} else if (!checkbox_only) {
+				vbox->hide();
+			}
+		} break;
+
+		case MENU_OPEN_DOCUMENTATION: {
+			ScriptEditor::get_singleton()->goto_help(doc_path);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
 	}
 }
@@ -3868,6 +3932,8 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
 	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
 	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
+	p_cache.icon_copy_path = p_control->get_editor_theme_icon(SNAME("CopyNodePath"));
+	p_cache.help_icon = p_control->get_editor_theme_icon(SNAME("Help"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
 	p_cache.icon_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
@@ -4829,6 +4895,7 @@ void EditorInspector::update_tree() {
 						}
 
 						if (use_doc_hints) {
+							last_created_section->set_doc_path(doc_path);
 							last_created_section->set_tooltip_text(doc_tooltip_text);
 						}
 						continue;
@@ -5034,9 +5101,12 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 					if (valid) {
 						section->section = corresponding_section->section;
+						section->label = corresponding_section->label;
+						section->inspector_path = corresponding_section->inspector_path;
 						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
 						section->set_keying(keying);
 						if (use_doc_hints) {
+							section->set_doc_path(corresponding_section->doc_path);
 							section->set_tooltip_text(corresponding_section->get_tooltip_text());
 						}
 
@@ -5073,9 +5143,12 @@ void EditorInspector::update_tree() {
 						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 						if (valid) {
 							section->section = corresponding_section->section;
+							section->label = corresponding_section->label;
+							section->inspector_path = corresponding_section->inspector_path;
 							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
 							section->set_keying(keying);
 							if (use_doc_hints) {
+								section->set_doc_path(corresponding_section->doc_path);
 								section->set_tooltip_text(corresponding_section->get_tooltip_text());
 							}
 
