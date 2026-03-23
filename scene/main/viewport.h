@@ -286,6 +286,8 @@ private:
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
+	bool propagate_shortcuts_to_parent = false;
+	bool shortcut_use_focus_owner = true;
 
 	Ref<World2D> world_2d;
 
@@ -441,6 +443,7 @@ private:
 	void _perform_drop(Control *p_control = nullptr);
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
+	void _push_shortcut_input_internal(const Ref<InputEvent> &p_event);
 	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
@@ -683,6 +686,9 @@ public:
 
 	void set_handle_input_locally(bool p_enable);
 	bool is_handling_input_locally() const;
+
+	void set_propagate_shortcuts_to_parent(bool p_enable);
+	bool gui_shortcut_use_focus_owner() const;
 
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
