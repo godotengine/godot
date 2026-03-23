@@ -7,17 +7,6 @@
 
 GaussianSplattingPerformanceMonitors *GaussianSplattingPerformanceMonitors::singleton = nullptr;
 
-static bool _renderer_has_streaming_data(const GaussianSplatRenderer *p_renderer) {
-    if (!p_renderer) {
-        return false;
-    }
-    const GaussianSplatRenderer::SceneState &scene_state = p_renderer->get_scene_state();
-    if (scene_state.gaussian_data.is_valid() && scene_state.gaussian_data->get_count() > 0) {
-        return true;
-    }
-    return scene_state.active_asset.is_valid();
-}
-
 static float _sanitize_ms(float p_value) {
     if (p_value < 0.0f) {
         return 0.0f;
@@ -34,6 +23,57 @@ static float _prefer_direct_or_fallback(float p_direct_ms, float p_fallback_ms) 
         return direct;
     }
     return _sanitize_ms(p_fallback_ms);
+}
+
+static uint64_t _combine_monitor_cache_key(uint64_t p_seed, uint64_t p_value) {
+    return p_seed ^ (p_value + 0x9e3779b97f4a7c15ULL + (p_seed << 6) + (p_seed >> 2));
+}
+
+static uint64_t _monitor_snapshot_cache_key(const GaussianSplatRenderer *p_renderer) {
+    const GaussianSplatRenderer::FrameState &frame_state = p_renderer->get_frame_state();
+    const GaussianSplatRenderer::DebugState &debug_state = p_renderer->get_debug_state();
+    const GaussianSplatRenderer::PerformanceMetrics &metrics = p_renderer->get_performance_state().metrics;
+
+    uint64_t key = frame_state.frame_counter;
+    key = _combine_monitor_cache_key(key, static_cast<uint64_t>(debug_state.route_uid.hash()));
+    key = _combine_monitor_cache_key(key, static_cast<uint64_t>(debug_state.sort_route_uid.hash()));
+    key = _combine_monitor_cache_key(key, debug_state.last_stage_metrics_valid ? 1ULL : 0ULL);
+    if (debug_state.last_stage_metrics_valid) {
+        const float stage_cull_ms = _sanitize_ms(debug_state.last_stage_metrics.cull.cull_time_ms);
+        const float stage_sort_ms = _sanitize_ms(debug_state.last_stage_metrics.sort.sort_time_ms);
+        key = _combine_monitor_cache_key(key,
+                static_cast<uint64_t>(Math::round(stage_cull_ms * 1000.0f)));
+        key = _combine_monitor_cache_key(key,
+                static_cast<uint64_t>(Math::round(stage_sort_ms * 1000.0f)));
+    }
+    key = _combine_monitor_cache_key(key, metrics.gpu_timing_frame_serial);
+    key = _combine_monitor_cache_key(key, metrics.visible_after_culling);
+    key = _combine_monitor_cache_key(key, metrics.rendered_splat_count);
+    key = _combine_monitor_cache_key(key,
+            static_cast<uint64_t>(frame_state.visible_splat_count.load(std::memory_order_acquire)));
+    return key;
+}
+
+static GaussianSplatRenderer::MonitorStreamingSnapshot _streaming_snapshot_for_monitors(const GaussianSplatRenderer *p_renderer) {
+    // Monitor callbacks are expected on the main thread, but keep cache state
+    // thread-local to avoid cross-thread mutation if callback threading changes.
+    thread_local const GaussianSplatRenderer *cached_renderer = nullptr;
+    thread_local uint64_t cached_key = uint64_t(-1);
+    thread_local GaussianSplatRenderer::MonitorStreamingSnapshot cached_snapshot;
+
+    if (!p_renderer) {
+        return GaussianSplatRenderer::MonitorStreamingSnapshot();
+    }
+
+    const uint64_t cache_key = _monitor_snapshot_cache_key(p_renderer);
+    if (cached_renderer == p_renderer && cached_key == cache_key) {
+        return cached_snapshot;
+    }
+
+    cached_snapshot = p_renderer->get_monitor_streaming_snapshot();
+    cached_renderer = p_renderer;
+    cached_key = cache_key;
+    return cached_snapshot;
 }
 
 GaussianSplattingPerformanceMonitors::GaussianSplattingPerformanceMonitors() {
@@ -118,8 +158,9 @@ GaussianSplatRenderer *GaussianSplattingPerformanceMonitors::_get_active_splat_r
         if (!p_require_streaming) {
             return active_splat_renderer;
         }
-        if (active_splat_renderer->get_streaming_state().current_streaming_system.is_valid() &&
-                _renderer_has_streaming_data(active_splat_renderer)) {
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(active_splat_renderer);
+        if (snapshot.has_streaming_system && snapshot.has_streaming_data) {
             return active_splat_renderer;
         }
     }
@@ -130,10 +171,12 @@ GaussianSplatRenderer *GaussianSplattingPerformanceMonitors::_get_active_splat_r
 
     GaussianSplatRenderer *fallback = nullptr;
     for (GaussianSplatRenderer *renderer : registered_splat_renderers) {
-        if (!renderer || !renderer->get_streaming_state().current_streaming_system.is_valid()) {
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(renderer);
+        if (!renderer || !snapshot.has_streaming_system) {
             continue;
         }
-        if (_renderer_has_streaming_data(renderer)) {
+        if (snapshot.has_streaming_data) {
             return renderer;
         }
         if (!fallback) {
@@ -154,10 +197,12 @@ Dictionary GaussianSplattingPerformanceMonitors::_get_streaming_analytics() cons
     if (!renderer) {
         return Dictionary();
     }
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) {
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) {
         return Dictionary();
     }
-    return renderer->get_streaming_state().current_streaming_system->get_streaming_analytics();
+    return snapshot.streaming_analytics;
 }
 
 void GaussianSplattingPerformanceMonitors::_register_monitor_definitions(Performance *p_perf) {
@@ -467,7 +512,9 @@ void GaussianSplattingPerformanceMonitors::cleanup_monitors() {
 float GaussianSplattingPerformanceMonitors::_get_gpu_frame_time_ms() const {
     const float direct = active_renderer ? active_renderer->get_last_gpu_frame_time_ms() : 0.0f;
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(false);
-    const float fallback = renderer ? renderer->get_performance_state().metrics.gpu_frame_time_ms : 0.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const float fallback = renderer ? snapshot.metrics_gpu_frame_time_ms : 0.0f;
     return _prefer_direct_or_fallback(direct, fallback);
 }
 
@@ -477,12 +524,13 @@ float GaussianSplattingPerformanceMonitors::_get_gpu_cull_time_ms() const {
         return 0.0f;
     }
 
-    const GaussianSplatRenderer::DebugState &debug_state = renderer->get_debug_state();
-    if (debug_state.last_stage_metrics_valid) {
-        return _sanitize_ms(debug_state.last_stage_metrics.cull.cull_time_ms);
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (snapshot.stage_metrics_valid) {
+        return _sanitize_ms(snapshot.stage_cull_time_ms);
     }
 
-    return _sanitize_ms(renderer->get_performance_state().metrics.culling_time_ms);
+    return _sanitize_ms(snapshot.metrics_culling_time_ms);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_gpu_sort_time_ms() const {
@@ -491,39 +539,48 @@ float GaussianSplattingPerformanceMonitors::_get_gpu_sort_time_ms() const {
         return 0.0f;
     }
 
-    const GaussianSplatRenderer::DebugState &debug_state = renderer->get_debug_state();
-    if (debug_state.last_stage_metrics_valid) {
-        return _sanitize_ms(debug_state.last_stage_metrics.sort.sort_time_ms);
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (snapshot.stage_metrics_valid) {
+        return _sanitize_ms(snapshot.stage_sort_time_ms);
     }
 
-    return _sanitize_ms(renderer->get_frame_state().sort_time_ms);
+    return _sanitize_ms(snapshot.frame_sort_time_ms);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_gpu_binning_time_ms() const {
     const float direct = active_renderer ? active_renderer->get_last_gpu_binning_time_ms() : 0.0f;
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(false);
-    const float fallback = renderer ? renderer->get_performance_state().metrics.gpu_tile_binning_time_ms : 0.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const float fallback = renderer ? snapshot.metrics_gpu_tile_binning_time_ms : 0.0f;
     return _prefer_direct_or_fallback(direct, fallback);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_gpu_prefix_time_ms() const {
     const float direct = active_renderer ? active_renderer->get_last_gpu_prefix_time_ms() : 0.0f;
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(false);
-    const float fallback = renderer ? renderer->get_performance_state().metrics.gpu_tile_prefix_time_ms : 0.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const float fallback = renderer ? snapshot.metrics_gpu_tile_prefix_time_ms : 0.0f;
     return _prefer_direct_or_fallback(direct, fallback);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_gpu_raster_time_ms() const {
     const float direct = active_renderer ? active_renderer->get_last_gpu_raster_time_ms() : 0.0f;
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(false);
-    const float fallback = renderer ? renderer->get_performance_state().metrics.gpu_tile_raster_time_ms : 0.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const float fallback = renderer ? snapshot.metrics_gpu_tile_raster_time_ms : 0.0f;
     return _prefer_direct_or_fallback(direct, fallback);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_gpu_resolve_time_ms() const {
     const float direct = active_renderer ? active_renderer->get_last_gpu_resolve_time_ms() : 0.0f;
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(false);
-    const float fallback = renderer ? renderer->get_performance_state().metrics.gpu_tile_resolve_time_ms : 0.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const float fallback = renderer ? snapshot.metrics_gpu_tile_resolve_time_ms : 0.0f;
     return _prefer_direct_or_fallback(direct, fallback);
 }
 
@@ -544,7 +601,7 @@ String GaussianSplattingPerformanceMonitors::_get_route_uid() const {
     if (!renderer) {
         return String();
     }
-    return renderer->get_debug_state().route_uid;
+    return _streaming_snapshot_for_monitors(renderer).route_uid;
 }
 
 String GaussianSplattingPerformanceMonitors::_get_sort_route_uid() const {
@@ -552,7 +609,7 @@ String GaussianSplattingPerformanceMonitors::_get_sort_route_uid() const {
     if (!renderer) {
         return String();
     }
-    return renderer->get_debug_state().sort_route_uid;
+    return _streaming_snapshot_for_monitors(renderer).sort_route_uid;
 }
 
 // ============================================================================
@@ -570,7 +627,9 @@ int GaussianSplattingPerformanceMonitors::_get_visible_splat_count() const {
     // Fall back to GaussianSplatRenderer (streaming/sorting pipeline count)
     // This is essential for streaming mode where TileRenderer counters may not update
     if (active_splat_renderer) {
-        return static_cast<int>(active_splat_renderer->get_visible_splat_count());
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(active_splat_renderer);
+        return static_cast<int>(snapshot.frame_visible_splat_count);
     }
     return 0;
 }
@@ -586,15 +645,16 @@ int GaussianSplattingPerformanceMonitors::_get_total_processed() const {
     // Fall back to GaussianSplatRenderer frame-scoped metrics.
     // Do not use asset cardinality here because it is not a per-frame processed workload.
     if (active_splat_renderer) {
-        const GaussianSplatRenderer::PerformanceMetrics &metrics = active_splat_renderer->get_performance_state().metrics;
-        uint32_t total_processed = metrics.visible_after_culling;
-        if (metrics.rendered_splat_count > total_processed) {
-            total_processed = metrics.rendered_splat_count;
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(active_splat_renderer);
+        uint32_t total_processed = snapshot.metrics_visible_after_culling;
+        if (snapshot.metrics_rendered_splat_count > total_processed) {
+            total_processed = snapshot.metrics_rendered_splat_count;
         }
         if (total_processed > 0u) {
             return static_cast<int>(total_processed);
         }
-        const uint32_t visible_count = active_splat_renderer->get_visible_splat_count();
+        const uint32_t visible_count = snapshot.frame_visible_splat_count;
         if (visible_count > 0u) {
             return static_cast<int>(visible_count);
         }
@@ -612,11 +672,12 @@ int GaussianSplattingPerformanceMonitors::_get_projection_success_count() const 
     }
     // Fall back to GaussianSplatRenderer visible count (projection success = visible after projection)
     if (active_splat_renderer) {
-        const GaussianSplatRenderer::PerformanceMetrics &metrics = active_splat_renderer->get_performance_state().metrics;
-        if (metrics.rendered_splat_count > 0u) {
-            return static_cast<int>(metrics.rendered_splat_count);
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(active_splat_renderer);
+        if (snapshot.metrics_rendered_splat_count > 0u) {
+            return static_cast<int>(snapshot.metrics_rendered_splat_count);
         }
-        return static_cast<int>(active_splat_renderer->get_visible_splat_count());
+        return static_cast<int>(snapshot.frame_visible_splat_count);
     }
     return 0;
 }
@@ -637,15 +698,16 @@ float GaussianSplattingPerformanceMonitors::_get_projection_success_rate_pct() c
     }
 
     if (active_splat_renderer) {
-        const GaussianSplatRenderer::PerformanceMetrics &metrics = active_splat_renderer->get_performance_state().metrics;
-        uint32_t success_count = metrics.rendered_splat_count;
+        const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+                _streaming_snapshot_for_monitors(active_splat_renderer);
+        uint32_t success_count = snapshot.metrics_rendered_splat_count;
         if (success_count == 0u) {
-            success_count = active_splat_renderer->get_visible_splat_count();
+            success_count = snapshot.frame_visible_splat_count;
         }
 
-        uint32_t total_processed = metrics.visible_after_culling;
-        if (metrics.rendered_splat_count > total_processed) {
-            total_processed = metrics.rendered_splat_count;
+        uint32_t total_processed = snapshot.metrics_visible_after_culling;
+        if (snapshot.metrics_rendered_splat_count > total_processed) {
+            total_processed = snapshot.metrics_rendered_splat_count;
         }
 
         if (total_processed > 0u) {
@@ -728,70 +790,100 @@ int GaussianSplattingPerformanceMonitors::_get_tile_count() const {
 float GaussianSplattingPerformanceMonitors::_get_vram_current_usage_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("current_usage_bytes") ? (float)stats["current_usage_bytes"] / (1024.0f * 1024.0f) : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_vram_budget_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("budget_bytes") ? (float)stats["budget_bytes"] / (1024.0f * 1024.0f) : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_vram_usage_percent() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("usage_percent") ? (float)stats["usage_percent"] : 0.0f;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_current_max_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("current_max_chunks") ? (int)stats["current_max_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_loaded_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("loaded_chunks") ? (int)stats["loaded_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_evicted_this_frame() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("evicted_this_frame") ? (int)stats["evicted_this_frame"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_loaded_this_frame() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("loaded_this_frame") ? (int)stats["loaded_this_frame"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_budget_warning_active() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("budget_warning_active") ? ((bool)stats["budget_warning_active"] ? 1 : 0) : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_regulation_adjustments() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("regulation_adjustments") ? (int)stats["regulation_adjustments"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_vram_thrashing_events() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_vram_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.vram_debug_stats;
     return stats.has("thrashing_events") ? (int)stats["thrashing_events"] : 0;
 }
 
@@ -804,10 +896,12 @@ int GaussianSplattingPerformanceMonitors::_get_streaming_monitor_ready() const {
     if (!renderer) {
         return 0;
     }
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) {
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) {
         return 0;
     }
-    return renderer->get_streaming_state().current_streaming_system->is_runtime_ready() ? 1 : 0;
+    return snapshot.runtime_ready ? 1 : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_runtime_capacity_zero() const {
@@ -831,7 +925,12 @@ int GaussianSplattingPerformanceMonitors::_get_streaming_invalid_camera_inputs()
     if (!renderer) {
         return 0;
     }
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_chunk_culling_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) {
+        return 0;
+    }
+    const Dictionary &stats = snapshot.chunk_culling_stats;
     if (!stats.has("invalid_camera_input_events")) {
         return 0;
     }
@@ -841,99 +940,141 @@ int GaussianSplattingPerformanceMonitors::_get_streaming_invalid_camera_inputs()
 int GaussianSplattingPerformanceMonitors::_get_streaming_total_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_chunk_culling_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
     return stats.has("total_chunks") ? (int)stats["total_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_visible_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_chunk_culling_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
     return stats.has("visible_chunks") ? (int)stats["visible_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_loaded_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_chunk_culling_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
     return stats.has("loaded_chunks") ? (int)stats["loaded_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_frustum_culled_chunks() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_chunk_culling_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
     return stats.has("frustum_culled_chunks") ? (int)stats["frustum_culled_chunks"] : 0;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_streaming_vram_usage_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    uint64_t vram_bytes = renderer->get_streaming_state().current_streaming_system->get_vram_usage();
-    return (float)vram_bytes / (1024.0f * 1024.0f);
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return (float)snapshot.vram_usage_bytes / (1024.0f * 1024.0f);
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_chunks_loaded_this_frame() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_chunks_loaded_this_frame();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.chunks_loaded_this_frame;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_chunks_evicted_this_frame() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_chunks_evicted_this_frame();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.chunks_evicted_this_frame;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_visible_count() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_visible_count();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.visible_splat_count;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_buffer_capacity_splats() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_buffer_capacity_splats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.buffer_capacity_splats;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_effective_splat_count() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_effective_splat_count();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.effective_splat_count;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_streaming_visible_change_ratio() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    return renderer->get_streaming_state().current_streaming_system->get_visible_chunk_change_ratio();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.visible_chunk_change_ratio;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_streaming_lod_blend_factor() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    return renderer->get_streaming_state().current_streaming_system->get_global_lod_blend_factor();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.global_lod_blend_factor;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_sh_band_level() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return renderer->get_streaming_state().current_streaming_system->get_global_sh_band_level();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return snapshot.global_sh_band_level;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_streaming_bytes_uploaded_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0.0f;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0.0f;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (float)stats.total_bytes_uploaded / (1024.0f * 1024.0f);
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_buffer_switches() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.buffer_switches;
 }
 
@@ -1019,82 +1160,115 @@ int GaussianSplattingPerformanceMonitors::_get_streaming_queue_pressure_active()
 int GaussianSplattingPerformanceMonitors::_get_lod_current_level() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("current_lod_level") ? (int)stats["current_lod_level"] : 0;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_distance_multiplier() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Ref<VRAMBudgetRegulator> regulator = renderer->get_streaming_state().current_streaming_system->get_vram_regulator();
-    return regulator.is_valid() ? regulator->get_lod_distance_multiplier() : 1.0f;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.lod_distance_multiplier;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_target_distance() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("lod_target_distance") ? (float)stats["lod_target_distance"] : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_hysteresis_zone() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    return renderer->get_streaming_state().current_streaming_system->get_lod_hysteresis_zone();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.lod_hysteresis_zone;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_blend_distance() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    return renderer->get_streaming_state().current_streaming_system->get_lod_blend_distance();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.lod_blend_distance;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_lod_transitions_this_frame() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("transitions_this_frame") ? (int)stats["transitions_this_frame"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_lod_splat_skip_factor() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 1;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 1;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("max_splat_skip_factor") ? (int)stats["max_splat_skip_factor"] : 1;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_opacity_multiplier() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 1.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 1.0f;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("min_opacity_multiplier") ? (float)stats["min_opacity_multiplier"] : 1.0f;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_lod_effective_count_after_skip() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    return (int)renderer->get_streaming_state().current_streaming_system->get_effective_splat_count();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (int)snapshot.effective_splat_count;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_chunk_blend_factors_avg() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    return renderer->get_streaming_state().current_streaming_system->get_global_lod_blend_factor();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    return snapshot.global_lod_blend_factor;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_lod_chunks_in_transition() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("chunks_in_transition") ? (int)stats["chunks_in_transition"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_lod_quality_degradation_active() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Ref<VRAMBudgetRegulator> regulator = renderer->get_streaming_state().current_streaming_system->get_vram_regulator();
-    if (!regulator.is_valid()) return 0;
-    return (regulator->get_lod_distance_multiplier() > 1.0f) ? 1 : 0;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    return (snapshot.lod_distance_multiplier > 1.0f) ? 1 : 0;
 }
 
 // ============================================================================
@@ -1104,19 +1278,20 @@ int GaussianSplattingPerformanceMonitors::_get_lod_quality_degradation_active() 
 float GaussianSplattingPerformanceMonitors::_get_memory_stream_total_bytes_uploaded_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0.0f;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0.0f;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (float)stats.total_bytes_uploaded / (1024.0f * 1024.0f);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_memory_stream_total_bytes_downloaded_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (renderer->get_streaming_state().memory_stream.is_valid()) {
-        StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
-        if (stats.total_bytes_downloaded > 0) {
-            return (float)stats.total_bytes_downloaded / (1024.0f * 1024.0f);
-        }
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (snapshot.memory_stream_valid && snapshot.memory_stream_stats.total_bytes_downloaded > 0) {
+        return (float)snapshot.memory_stream_stats.total_bytes_downloaded / (1024.0f * 1024.0f);
     }
 
     Dictionary analytics = _get_streaming_analytics();
@@ -1129,24 +1304,30 @@ float GaussianSplattingPerformanceMonitors::_get_memory_stream_total_bytes_downl
 int GaussianSplattingPerformanceMonitors::_get_memory_stream_buffer_switches() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.buffer_switches;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_memory_stream_stalls() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.stalls;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_memory_stream_stall_percent() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0.0f;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0.0f;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     if (stats.total_frames == 0) return 0.0f;
     return 100.0f * (float)stats.stalls / (float)stats.total_frames;
 }
@@ -1154,24 +1335,30 @@ float GaussianSplattingPerformanceMonitors::_get_memory_stream_stall_percent() c
 int GaussianSplattingPerformanceMonitors::_get_memory_stream_pool_hits() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.pool_hits;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_memory_stream_pool_misses() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.pool_misses;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_memory_stream_pool_hit_rate_pct() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0.0f;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0.0f;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     uint32_t total = stats.pool_hits + stats.pool_misses;
     if (total == 0) return 0.0f;
     return 100.0f * (float)stats.pool_hits / (float)total;
@@ -1180,16 +1367,20 @@ float GaussianSplattingPerformanceMonitors::_get_memory_stream_pool_hit_rate_pct
 float GaussianSplattingPerformanceMonitors::_get_memory_stream_peak_memory_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0.0f;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0.0f;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return stats.peak_memory_mb;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_memory_stream_defrag_count() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    if (!renderer->get_streaming_state().memory_stream.is_valid()) return 0;
-    StreamingStats stats = renderer->get_streaming_state().memory_stream->get_stats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.memory_stream_valid) return 0;
+    const StreamingStats &stats = snapshot.memory_stream_stats;
     return (int)stats.defrag_count;
 }
 
@@ -1259,8 +1450,10 @@ int GaussianSplattingPerformanceMonitors::_get_chunk_pack_jobs_in_flight() const
 float GaussianSplattingPerformanceMonitors::_get_chunk_total_capacity_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) return 0.0f;
-    uint32_t capacity = renderer->get_streaming_state().current_streaming_system->get_buffer_capacity_splats();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0.0f;
+    uint32_t capacity = snapshot.buffer_capacity_splats;
     return (float)(capacity * sizeof(PackedGaussian)) / (1024.0f * 1024.0f);
 }
 
@@ -1294,36 +1487,36 @@ int GaussianSplattingPerformanceMonitors::_get_upload_chunks_this_frame() const 
 float GaussianSplattingPerformanceMonitors::_get_lod_min_chunk_distance() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("min_distance") ? (float)stats["min_distance"] : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_max_chunk_distance() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("max_distance") ? (float)stats["max_distance"] : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_avg_chunk_distance() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     return stats.has("avg_distance") ? (float)stats["avg_distance"] : 0.0f;
 }
 
 float GaussianSplattingPerformanceMonitors::_get_lod_reduction_ratio_pct() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     if (stats.has("reduction_ratio")) {
         return 100.0f * (float)stats["reduction_ratio"];
     }
@@ -1333,9 +1526,9 @@ float GaussianSplattingPerformanceMonitors::_get_lod_reduction_ratio_pct() const
 int GaussianSplattingPerformanceMonitors::_get_lod_level_0_chunk_count() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     if (stats.has("lod_distribution")) {
         Array lod_dist = stats["lod_distribution"];
         return lod_dist.size() > 0 ? (int)lod_dist[0] : 0;
@@ -1346,9 +1539,9 @@ int GaussianSplattingPerformanceMonitors::_get_lod_level_0_chunk_count() const {
 int GaussianSplattingPerformanceMonitors::_get_lod_sh_band_3_chunk_count() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0;
-    Dictionary stats = renderer->get_streaming_state().current_streaming_system.is_valid() ?
-            renderer->get_streaming_state().current_streaming_system->get_lod_debug_stats() :
-            Dictionary();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    const Dictionary &stats = snapshot.lod_debug_stats;
     if (stats.has("sh_band_distribution")) {
         Array sh_dist = stats["sh_band_distribution"];
         return sh_dist.size() > 3 ? (int)sh_dist[3] : 0;
@@ -1360,24 +1553,30 @@ int GaussianSplattingPerformanceMonitors::_get_lod_sh_band_3_chunk_count() const
 float GaussianSplattingPerformanceMonitors::_get_sh_compression_raw_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) return 0.0f;
-    SHCompressionMetrics metrics = renderer->get_streaming_state().current_streaming_system->get_total_sh_metrics();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.sh_compression_metrics_valid) return 0.0f;
+    const SHCompressionMetrics &metrics = snapshot.sh_compression_metrics;
     return (float)metrics.raw_bytes / (1024.0f * 1024.0f);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_sh_compression_compressed_mb() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) return 0.0f;
-    SHCompressionMetrics metrics = renderer->get_streaming_state().current_streaming_system->get_total_sh_metrics();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.sh_compression_metrics_valid) return 0.0f;
+    const SHCompressionMetrics &metrics = snapshot.sh_compression_metrics;
     return (float)metrics.compressed_bytes / (1024.0f * 1024.0f);
 }
 
 float GaussianSplattingPerformanceMonitors::_get_sh_compression_ratio_pct() const {
     GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
     if (!renderer) return 0.0f;
-    if (!renderer->get_streaming_state().current_streaming_system.is_valid()) return 0.0f;
-    SHCompressionMetrics metrics = renderer->get_streaming_state().current_streaming_system->get_total_sh_metrics();
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.sh_compression_metrics_valid) return 0.0f;
+    const SHCompressionMetrics &metrics = snapshot.sh_compression_metrics;
     if (metrics.raw_bytes > 0) {
         return 100.0f * (float)metrics.compressed_bytes / (float)metrics.raw_bytes;
     }

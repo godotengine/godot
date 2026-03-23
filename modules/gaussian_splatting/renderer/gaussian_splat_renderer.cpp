@@ -1813,14 +1813,15 @@ void GaussianSplatRenderer::render_sorted_splats(RenderDataRD *p_render_data,
 	frame_context.metrics = &stage_metrics;
 	FrameStateProvider frame_provider(this, &frame_context.deps);
 	frame_context.state_provider = &frame_provider;
-	RenderFramePlan frame_plan = build_frame_plan(get_scene_state(), get_streaming_state(), get_sorting_state(),
-			get_resource_state(), get_subsystem_state(), frame_provider.get_pipeline_features(),
+	const IFrameStateView &state_view = frame_provider;
+	RenderFramePlan frame_plan = build_frame_plan(state_view.get_scene_state(), state_view.get_streaming_state(), state_view.get_sorting_state_view(),
+			state_view.get_resource_state_view(), state_view.get_subsystem_state_view(), state_view.get_pipeline_features(),
 			true, String(), String(), RenderFallbackReason::NONE, RenderFallbackReason::NONE, false, false);
     frame_context.deps.frame_plan = &frame_plan;
     DEV_ASSERT(frame_context.deps.frame_plan);
 	ERR_FAIL_COND(!frame_context.deps.validate());
-	FrameState &frame_state = frame_provider.get_frame_state();
-	SortingState &sorting_state = frame_provider.get_sorting_state();
+	const FrameState &frame_state = state_view.get_frame_state_view();
+	const SortingState &sorting_state = state_view.get_sorting_state_view();
 	frame_context.snapshot.valid = true;
 	frame_context.snapshot.visible_splats = frame_state.visible_splat_count.load(std::memory_order_acquire);
 	frame_context.snapshot.sorted_splats = sorting_state.sorted_splat_count;

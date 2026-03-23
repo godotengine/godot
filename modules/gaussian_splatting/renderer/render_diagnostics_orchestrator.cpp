@@ -1298,3 +1298,69 @@ void GaussianSplatRenderer::record_sort_sample(const SortFrameMetrics &p_sample)
 Dictionary GaussianSplatRenderer::get_runtime_diagnostic_snapshot() const {
 	return diagnostics_orchestrator->get_runtime_diagnostic_snapshot();
 }
+
+GaussianSplatRenderer::MonitorStreamingSnapshot GaussianSplatRenderer::get_monitor_streaming_snapshot() const {
+	MonitorStreamingSnapshot snapshot;
+	const DebugState &debug_state = get_debug_state();
+	const SceneState &scene_state = get_scene_state();
+	const FrameState &frame_state = get_frame_state();
+	const PerformanceMetrics &metrics = get_performance_state().metrics;
+
+	snapshot.route_uid = debug_state.route_uid;
+	snapshot.sort_route_uid = debug_state.sort_route_uid;
+	snapshot.stage_metrics_valid = debug_state.last_stage_metrics_valid;
+	if (debug_state.last_stage_metrics_valid) {
+		snapshot.stage_cull_time_ms = debug_state.last_stage_metrics.cull.cull_time_ms;
+		snapshot.stage_sort_time_ms = debug_state.last_stage_metrics.sort.sort_time_ms;
+	}
+	snapshot.frame_sort_time_ms = frame_state.sort_time_ms;
+	snapshot.metrics_gpu_frame_time_ms = metrics.gpu_frame_time_ms;
+	snapshot.metrics_culling_time_ms = metrics.culling_time_ms;
+	snapshot.metrics_gpu_tile_binning_time_ms = metrics.gpu_tile_binning_time_ms;
+	snapshot.metrics_gpu_tile_prefix_time_ms = metrics.gpu_tile_prefix_time_ms;
+	snapshot.metrics_gpu_tile_raster_time_ms = metrics.gpu_tile_raster_time_ms;
+	snapshot.metrics_gpu_tile_resolve_time_ms = metrics.gpu_tile_resolve_time_ms;
+	snapshot.metrics_visible_after_culling = metrics.visible_after_culling;
+	snapshot.metrics_rendered_splat_count = metrics.rendered_splat_count;
+	snapshot.frame_visible_splat_count = frame_state.visible_splat_count.load(std::memory_order_acquire);
+	snapshot.has_streaming_data = (scene_state.gaussian_data.is_valid() && scene_state.gaussian_data->get_count() > 0) ||
+			scene_state.active_asset.is_valid();
+
+	const StreamingState &streaming_state = get_streaming_state();
+	if (!streaming_state.current_streaming_system.is_valid()) {
+		return snapshot;
+	}
+
+	Ref<GaussianStreamingSystem> streaming_system = streaming_state.current_streaming_system;
+	snapshot.has_streaming_system = true;
+	snapshot.runtime_ready = streaming_system->is_runtime_ready();
+	snapshot.streaming_analytics = streaming_system->get_streaming_analytics();
+	snapshot.vram_debug_stats = streaming_system->get_vram_debug_stats();
+	snapshot.chunk_culling_stats = streaming_system->get_chunk_culling_stats();
+	snapshot.lod_debug_stats = streaming_system->get_lod_debug_stats();
+	snapshot.vram_usage_bytes = streaming_system->get_vram_usage();
+	snapshot.chunks_loaded_this_frame = streaming_system->get_chunks_loaded_this_frame();
+	snapshot.chunks_evicted_this_frame = streaming_system->get_chunks_evicted_this_frame();
+	snapshot.visible_splat_count = streaming_system->get_visible_count();
+	snapshot.buffer_capacity_splats = streaming_system->get_buffer_capacity_splats();
+	snapshot.effective_splat_count = streaming_system->get_effective_splat_count();
+	snapshot.visible_chunk_change_ratio = streaming_system->get_visible_chunk_change_ratio();
+	snapshot.global_lod_blend_factor = streaming_system->get_global_lod_blend_factor();
+	snapshot.global_sh_band_level = streaming_system->get_global_sh_band_level();
+	snapshot.lod_hysteresis_zone = streaming_system->get_lod_hysteresis_zone();
+	snapshot.lod_blend_distance = streaming_system->get_lod_blend_distance();
+	snapshot.sh_compression_metrics_valid = true;
+	snapshot.sh_compression_metrics = streaming_system->get_total_sh_metrics();
+
+	Ref<VRAMBudgetRegulator> regulator = streaming_system->get_vram_regulator();
+	if (regulator.is_valid()) {
+		snapshot.lod_distance_multiplier = regulator->get_lod_distance_multiplier();
+	}
+
+	if (streaming_state.memory_stream.is_valid()) {
+		snapshot.memory_stream_valid = true;
+		snapshot.memory_stream_stats = streaming_state.memory_stream->get_stats();
+	}
+
+	return snapshot;
+}

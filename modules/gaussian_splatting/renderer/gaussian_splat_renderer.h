@@ -253,6 +253,8 @@ public:
     using ShadowBlitState = GaussianRenderFacadeState::ShadowBlitState;
 
     // Stage types exposed for RenderPipelineStages and orchestrators
+    class IFrameStateView;
+    class IFrameMutationAccess;
     class IFrameStateProvider;
 
     struct RenderFrameContext {
@@ -319,9 +321,9 @@ public:
         } deps;
     };
 
-    class IFrameStateProvider {
+    class IFrameStateView {
     public:
-        virtual ~IFrameStateProvider() = default;
+        virtual ~IFrameStateView() = default;
 
         virtual OutputCompositor *get_output_compositor() const = 0;
         virtual GPUCuller *get_gpu_culler() const = 0;
@@ -331,6 +333,36 @@ public:
 
         virtual const SceneState &get_scene_state() const = 0;
         virtual const StreamingState &get_streaming_state() const = 0;
+        virtual const SortingState &get_sorting_state_view() const = 0;
+        virtual const RenderConfig &get_render_config_view() const = 0;
+        virtual const JacobianDebugConfig &get_jacobian_debug_view() const = 0;
+        virtual const ResourceState &get_resource_state_view() const = 0;
+        virtual const FrameState &get_frame_state_view() const = 0;
+        virtual const PerformanceState &get_performance_state_view() const = 0;
+        virtual const SubsystemState &get_subsystem_state_view() const = 0;
+        virtual const PipelineFeatureSet *get_pipeline_features() const = 0;
+        virtual const RenderFramePlan *get_frame_plan() const = 0;
+    };
+
+    class IFrameMutationAccess {
+    public:
+        virtual ~IFrameMutationAccess() = default;
+
+        virtual SortingState &get_sorting_state_mut() = 0;
+        virtual RenderConfig &get_render_config_mut() = 0;
+        virtual ResourceState &get_resource_state_mut() = 0;
+        virtual FrameState &get_frame_state_mut() = 0;
+        virtual PerformanceState &get_performance_state_mut() = 0;
+        virtual SubsystemState &get_subsystem_state_mut() = 0;
+    };
+
+    // Legacy compatibility provider.
+    // Existing callsites stay on this surface in Phase 1b.0 while new view/mutation
+    // seams are scaffolded for migration in later slices.
+    class IFrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
+    public:
+        virtual ~IFrameStateProvider() = default;
+
         virtual SortingState &get_sorting_state() const = 0;
         virtual RenderConfig &get_render_config() const = 0;
         virtual JacobianDebugConfig &get_jacobian_debug() const = 0;
@@ -338,8 +370,21 @@ public:
         virtual FrameState &get_frame_state() const = 0;
         virtual PerformanceState &get_performance_state() const = 0;
         virtual SubsystemState &get_subsystem_state() const = 0;
-        virtual const PipelineFeatureSet *get_pipeline_features() const = 0;
-        virtual const RenderFramePlan *get_frame_plan() const = 0;
+
+        const SortingState &get_sorting_state_view() const override { return get_sorting_state(); }
+        const RenderConfig &get_render_config_view() const override { return get_render_config(); }
+        const JacobianDebugConfig &get_jacobian_debug_view() const override { return get_jacobian_debug(); }
+        const ResourceState &get_resource_state_view() const override { return get_resource_state(); }
+        const FrameState &get_frame_state_view() const override { return get_frame_state(); }
+        const PerformanceState &get_performance_state_view() const override { return get_performance_state(); }
+        const SubsystemState &get_subsystem_state_view() const override { return get_subsystem_state(); }
+
+        SortingState &get_sorting_state_mut() override { return get_sorting_state(); }
+        RenderConfig &get_render_config_mut() override { return get_render_config(); }
+        ResourceState &get_resource_state_mut() override { return get_resource_state(); }
+        FrameState &get_frame_state_mut() override { return get_frame_state(); }
+        PerformanceState &get_performance_state_mut() override { return get_performance_state(); }
+        SubsystemState &get_subsystem_state_mut() override { return get_subsystem_state(); }
     };
 
     class FrameStateProvider : public IFrameStateProvider {
@@ -600,6 +645,7 @@ public:
     FrameState &get_frame_state() { return frame_context_manager.get_frame_state(); }
     const FrameState &get_frame_state() const { return frame_context_manager.get_frame_state(); }
     PerformanceState &get_performance_state() { return performance_state; }
+    const PerformanceState &get_performance_state() const { return performance_state; }
     DeviceState &get_device_state();
     const DeviceState &get_device_state() const;
     RenderConfig &get_render_config();
@@ -1168,6 +1214,58 @@ public:
 
     /// @name Performance Monitoring
     /// @{
+
+    /**
+     * @brief Read-only snapshot consumed by performance monitor callbacks.
+     *
+     * The snapshot intentionally flattens streaming-system query data so
+     * monitor consumers avoid broad direct access to renderer mutable state.
+     */
+    struct MonitorStreamingSnapshot {
+        bool has_streaming_system = false;
+        bool has_streaming_data = false;
+        bool runtime_ready = false;
+        Dictionary streaming_analytics;
+        Dictionary vram_debug_stats;
+        Dictionary chunk_culling_stats;
+        Dictionary lod_debug_stats;
+        String route_uid;
+        String sort_route_uid;
+        bool stage_metrics_valid = false;
+        float stage_cull_time_ms = 0.0f;
+        float stage_sort_time_ms = 0.0f;
+        float frame_sort_time_ms = 0.0f;
+        float metrics_gpu_frame_time_ms = 0.0f;
+        float metrics_culling_time_ms = 0.0f;
+        float metrics_gpu_tile_binning_time_ms = 0.0f;
+        float metrics_gpu_tile_prefix_time_ms = 0.0f;
+        float metrics_gpu_tile_raster_time_ms = 0.0f;
+        float metrics_gpu_tile_resolve_time_ms = 0.0f;
+        uint32_t metrics_visible_after_culling = 0;
+        uint32_t metrics_rendered_splat_count = 0;
+        uint32_t frame_visible_splat_count = 0;
+        uint64_t vram_usage_bytes = 0;
+        uint32_t chunks_loaded_this_frame = 0;
+        uint32_t chunks_evicted_this_frame = 0;
+        uint32_t visible_splat_count = 0;
+        uint32_t buffer_capacity_splats = 0;
+        uint32_t effective_splat_count = 0;
+        float visible_chunk_change_ratio = 0.0f;
+        float global_lod_blend_factor = 0.0f;
+        int global_sh_band_level = 0;
+        float lod_hysteresis_zone = 0.0f;
+        float lod_blend_distance = 0.0f;
+        float lod_distance_multiplier = 1.0f;
+        bool memory_stream_valid = false;
+        StreamingStats memory_stream_stats;
+        bool sh_compression_metrics_valid = false;
+        SHCompressionMetrics sh_compression_metrics;
+    };
+
+    /**
+     * @brief Builds a read-only streaming/LOD monitor snapshot for tooling.
+     */
+    MonitorStreamingSnapshot get_monitor_streaming_snapshot() const;
 
     /**
      * @brief Returns comprehensive rendering statistics.
