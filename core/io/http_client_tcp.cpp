@@ -246,14 +246,18 @@ Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
 	return OK;
 }
 
-void HTTPClientTCP::close() {
+void HTTPClientTCP::disconnect_from_host() {
+	status = STATUS_DISCONNECTED;
 	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE) {
 		tcp_connection->disconnect_from_host();
 	}
+}
+
+void HTTPClientTCP::close() {
+	disconnect_from_host();
 
 	connection.unref();
 	proxy_client.unref();
-	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
 		IP::get_singleton()->erase_resolve_item(resolving);
@@ -744,6 +748,14 @@ Error HTTPClientTCP::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_recei
 		int left = p_bytes;
 		r_received = 0;
 		while (left > 0) {
+			if (connection->get_available_bytes() == 0) {
+				tcp_connection->wait(NetSocket::POLL_TYPE_IN, -1);
+				if (status == STATUS_DISCONNECTED) {
+					// Connection socket closed.
+					err = ERR_FILE_EOF;
+					break;
+				}
+			}
 			err = connection->get_partial_data(p_buffer + r_received, left, read);
 			if (err == OK) {
 				r_received += read;
