@@ -656,6 +656,10 @@ public:
 		NOTIFICATION_EXTENSION_RELOADED = 2,
 		// Internal notification to send after NOTIFICATION_PREDELETE, not bound to scripting.
 		NOTIFICATION_PREDELETE_CLEANUP = 3,
+		// Notification sent before the current script instance gets unloded.
+		NOTIFICATION_BEFORE_UNLOAD_SCRIPT = 5,
+		// Notification sent after the current script instance gets loaded.
+		NOTIFICATION_AFTER_LOAD_SCRIPT = 6,
 	};
 
 	/* TYPE API */

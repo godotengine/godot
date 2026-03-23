@@ -810,6 +810,12 @@ Error GDScript::reload(bool p_keep_state) {
 #ifdef TOOLS_ENABLED
 	if (p_keep_state && can_run && is_valid()) {
 		_save_old_static_data();
+
+		for (Object *&E : instances) {
+			if (E && E->get_script_instance()) {
+				E->notification(Object::NOTIFICATION_BEFORE_UNLOAD_SCRIPT);
+			}
+		}
 	}
 #endif
 
@@ -899,6 +905,12 @@ Error GDScript::reload(bool p_keep_state) {
 	if (p_keep_state) {
 		// Update the properties in the inspector.
 		update_exports();
+	}
+
+	for (Object *&E : instances) {
+		if (E && E->get_script_instance()) {
+			E->notification(Object::NOTIFICATION_AFTER_LOAD_SCRIPT);
+		}
 	}
 #endif
 
@@ -2452,6 +2464,24 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
+	// We first sends unload messages to every affected scripts *BEFORE* we start removing anything,
+	// as it's possible for scripts to call to each other when performing cleaning
+	for (Ref<GDScript> &scr : scripts) {
+		bool reload = p_scripts.has(scr) || to_reload.has(scr->get_base());
+
+		if (!reload) {
+			continue;
+		}
+
+		if (!p_soft_reload) {
+			for (Object *&E : scr->instances) {
+				if (E && E->get_script_instance()) {
+					E->notification(Object::NOTIFICATION_BEFORE_UNLOAD_SCRIPT);
+				}
+			}
+		}
+	}
+
 	for (Ref<GDScript> &scr : scripts) {
 		bool reload = p_scripts.has(scr) || to_reload.has(scr->get_base());
 
@@ -2560,6 +2590,17 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		}
 
 		//if instance states were saved, set them!
+	}
+
+	// Sends reload message after all affected scripts have been properly restored.
+	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
+		for (KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : E.value) {
+			Object *obj = ObjectDB::get_instance(F.key);
+			if (!obj) {
+				continue;
+			}
+			obj->notification(Object::NOTIFICATION_AFTER_LOAD_SCRIPT);
+		}
 	}
 
 #endif // DEBUG_ENABLED

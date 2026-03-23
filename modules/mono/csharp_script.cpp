@@ -670,6 +670,18 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 	scripts.sort_custom<CSharpScriptDepSort>(); // Update in inheritance dependency order
 
+	// Send unload messages to scripts
+	{
+		for (Ref<CSharpScript> &scr : scripts) {
+			if (scr->get_path().is_empty() && !scr->valid) {
+				continue;
+			}
+			for (Object *obj : scr->instances) {
+				obj->notification(Object::NOTIFICATION_BEFORE_UNLOAD_SCRIPT);
+			}
+		}
+	}
+
 	// Serialize managed callables
 	{
 		MutexLock lock(ManagedCallable::instances_mutex);
@@ -1025,6 +1037,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		scr->pending_reload_instances.clear();
 		scr->pending_reload_state.clear();
+	}
+
+	for (Ref<CSharpScript> &scr : to_reload_state) {
+		for (Object *obj : scr->instances) {
+			obj->notification(Object::NOTIFICATION_AFTER_LOAD_SCRIPT);
+		}
 	}
 
 #ifdef TOOLS_ENABLED
