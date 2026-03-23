@@ -3155,16 +3155,8 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (method == SNAME("get_node") || method == SNAME("has_node"))) {
 					// Get autoloads
-					List<PropertyInfo> props;
-					ProjectSettings::get_singleton()->get_property_list(&props);
-
-					for (const PropertyInfo &E : props) {
-						String s = E.name;
-						if (!s.begins_with("autoload/")) {
-							continue;
-						}
-						String name = s.get_slicec('/', 1);
-						String path = ("/root/" + name).quote(quote_style);
+					for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+						String path = ("/root/" + E.value.name).quote(quote_style);
 						if (use_node_paths) {
 							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
 								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
