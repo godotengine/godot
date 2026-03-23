@@ -744,6 +744,9 @@ Error HTTPClientTCP::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_recei
 		int left = p_bytes;
 		r_received = 0;
 		while (left > 0) {
+			if (connection->get_available_bytes() == 0) {
+				tcp_connection->wait(NetSocket::POLL_TYPE_IN, -1);
+			}
 			err = connection->get_partial_data(p_buffer + r_received, left, read);
 			if (err == OK) {
 				r_received += read;
