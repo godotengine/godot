@@ -9,6 +9,7 @@ class A extends Node:
 class B extends A:
 	@onready var b := get_value("b")
 
+	@override
 	func _ready():
 		pass
 
