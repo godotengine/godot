@@ -221,6 +221,13 @@ opts.Add(
         False,
     )
 )
+opts.Add(
+    BoolVariable(
+        "profiler_record_on_demand",
+        "Record only when the profiler is connected, if the profiler supports it. In Tracy, this configures TRACY_ON_DEMAND, which has a performance impact if enabled.",
+        True,
+    )
+)
 
 
 # Advanced options
