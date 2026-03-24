@@ -702,7 +702,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_stop_icon();
 
 			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
-			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+			_update_anim_loop_button();
 			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
 			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
@@ -1366,18 +1366,35 @@ void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
 	_update_library();
 }
 
-void SpriteFramesEditor::_animation_loop_changed() {
+void SpriteFramesEditor::_animation_loop_pressed() {
 	if (updating) {
 		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	SpriteFrames::LoopMode to_loop = SpriteFrames::LOOP_NONE;
+	SpriteFrames::LoopMode from_loop = frames->get_animation_loop_mode(edited_anim);
+
+	switch (from_loop) {
+		case SpriteFrames::LOOP_NONE: {
+			to_loop = SpriteFrames::LOOP_LINEAR;
+		} break;
+		case SpriteFrames::LOOP_LINEAR: {
+			to_loop = SpriteFrames::LOOP_PINGPONG;
+		} break;
+		case SpriteFrames::LOOP_PINGPONG: {
+			to_loop = SpriteFrames::LOOP_NONE;
+		} break;
+	}
+
 	undo_redo->create_action(TTR("Change Animation Loop"), UndoRedo::MERGE_DISABLE, frames.ptr());
-	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", edited_anim, anim_loop->is_pressed());
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(frames.ptr(), "set_animation_loop_mode", edited_anim, to_loop);
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop_mode", edited_anim, from_loop);
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
+	_update_anim_loop_button();
 }
 
 void SpriteFramesEditor::_animation_speed_resized() {
@@ -1601,6 +1618,25 @@ void SpriteFramesEditor::_zoom_reset() {
 	frame_list->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
 
+void SpriteFramesEditor::_update_anim_loop_button() {
+	if (frames.is_null()) {
+		anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+		return;
+	}
+
+	SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(edited_anim);
+	anim_loop->set_pressed_no_signal(loop != SpriteFrames::LOOP_NONE);
+
+	switch (loop) {
+		case SpriteFrames::LOOP_NONE:
+		case SpriteFrames::LOOP_LINEAR: {
+			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+		} break;
+		case SpriteFrames::LOOP_PINGPONG: {
+			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
+		} break;
+	}
+}
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (!p_skip_selector) {
 		animations_dirty = true;
@@ -1755,8 +1791,7 @@ void SpriteFramesEditor::_update_library_impl() {
 	}
 
 	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
-	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
-
+	_update_anim_loop_button();
 	updating = false;
 }
 
@@ -2199,7 +2234,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop->set_toggle_mode(true);
 	anim_loop->set_theme_type_variation(SceneStringName(FlatButton));
 	anim_loop->set_tooltip_text(TTRC("Animation Looping"));
-	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_pressed));
 	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
@@ -2804,7 +2839,7 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 	clipboard_anim.instantiate();
 	clipboard_anim->name = p_anim;
 	clipboard_anim->speed = p_frames->get_animation_speed(p_anim);
-	clipboard_anim->loop = p_frames->get_animation_loop(p_anim);
+	clipboard_anim->loop = p_frames->get_animation_loop_mode(p_anim);
 
 	int frame_count = p_frames->get_frame_count(p_anim);
 	for (int i = 0; i < frame_count; ++i) {
