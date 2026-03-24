@@ -919,6 +919,32 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
     - Large-scene benchmark gate: pass.
     - Eviction-churn benchmark gate: pass.
 
+### Phase 2 + Phase 3 implementation status (composition-root batch 2, slice 20)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_streaming_orchestrator.h` / `.cpp`:
+    - Added `RenderStreamingOrchestratorDependencies` with a narrow `RuntimePorts` bundle for the renderer callbacks this orchestrator still needs during streaming bootstrap and frame execution.
+    - Replaced direct renderer method dispatch for device bootstrap, cull-projection construction/validation, instance-buffer clearing/upload, cull/sort pipeline dispatch, and cull radius/slack lookups with explicit runtime-port calls.
+    - Stored and validated the runtime-port bundle in the orchestrator constructor so the seam is explicit and constructor-time failures are surfaced early.
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
+    - Switched streaming orchestrator construction to the dependency bundle form instead of the old raw constructor argument mesh.
+- Explicitly preserved for this batch:
+  - No streaming logic redesign.
+  - No service-pointer narrowing beyond the selected runtime-port calls above.
+  - No sorting-seam, debug/tooling, painterly, or test-hook work.
+  - No public `GaussianSplatRenderer` facade entrypoint changes.
+- Remaining caveat:
+  - `RenderStreamingOrchestrator` still retains many direct renderer/state interactions outside the new runtime-port bundle. This batch only extracts the constructor/runtime-callback seam; broader orchestrator dependency narrowing remains later-phase work.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_streaming_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_streaming_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+- Verification status:
+  - `git diff --check` passed.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 2-3 --no-regen-architecture`.
+  - Native Windows verification: pending external workflow run.
+
 ### Phase 4: Orchestrator Dependency Narrowing
 - Purpose:
   - Remove remaining broad renderer pointer dependencies from orchestrator internals.

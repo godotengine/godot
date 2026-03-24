@@ -516,15 +516,22 @@ static void _collect_instance_pipeline_residency_requests(const LocalVector<Inst
 	}
 }
 
-RenderStreamingOrchestrator::RenderStreamingOrchestrator(GaussianSplatRenderer *p_renderer,
-		RenderDataOrchestrator *p_data_orchestrator,
-		RenderDeviceOrchestrator *p_device_orchestrator) :
-		renderer(p_renderer),
-		data_orchestrator(p_data_orchestrator),
-		device_orchestrator(p_device_orchestrator) {
+RenderStreamingOrchestrator::RenderStreamingOrchestrator(const RenderStreamingOrchestratorDependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		data_orchestrator(p_dependencies.data_orchestrator),
+		device_orchestrator(p_dependencies.device_orchestrator),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(data_orchestrator);
 	ERR_FAIL_NULL(device_orchestrator);
+	ERR_FAIL_COND_MSG(runtime_ports.ensure_rendering_device == nullptr, "RenderStreamingOrchestrator requires ensure_rendering_device runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.build_cull_projection == nullptr, "RenderStreamingOrchestrator requires build_cull_projection runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.validate_cull_projection_contract == nullptr, "RenderStreamingOrchestrator requires validate_cull_projection_contract runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.clear_instance_pipeline_buffers == nullptr, "RenderStreamingOrchestrator requires clear_instance_pipeline_buffers runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.update_instance_buffer == nullptr, "RenderStreamingOrchestrator requires update_instance_buffer runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.run_cull_sort_pipeline_frame == nullptr, "RenderStreamingOrchestrator requires run_cull_sort_pipeline_frame runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.get_cull_radius_multiplier == nullptr, "RenderStreamingOrchestrator requires get_cull_radius_multiplier runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.get_cull_frustum_plane_slack == nullptr, "RenderStreamingOrchestrator requires get_cull_frustum_plane_slack runtime port.");
 }
 
 const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestrator::produce_visible_lod_selection(
@@ -633,7 +640,7 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	if (streaming_state.current_streaming_system.is_valid()) {
 		return true;
 	}
-	if (!renderer->ensure_rendering_device("instance_pipeline_streaming")) {
+	if (!(renderer->*runtime_ports.ensure_rendering_device)("instance_pipeline_streaming")) {
 		return false;
 	}
 	RenderingDevice *rd = renderer->get_device_state().rd;
@@ -659,7 +666,8 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	overrides.vram_budget_config = instance_budget;
 	streaming_system->set_config_overrides(overrides);
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
 	const Ref<GaussianData> primary_data = state_view.get_scene_state().gaussian_data;
 	if (primary_data.is_valid() && primary_data->get_count() > 0) {
 		// Recover world/static-only renderers that populated gaussian_data before
@@ -1256,8 +1264,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 
 	streaming_state.current_streaming_system->begin_frame();
 
-	Projection cull_projection = renderer->build_cull_projection(p_render_data, p_projection);
-	renderer->validate_cull_projection_contract(p_render_data, p_projection, cull_projection,
+	Projection cull_projection = (renderer->*runtime_ports.build_cull_projection)(p_render_data, p_projection);
+	(renderer->*runtime_ports.validate_cull_projection_contract)(p_render_data, p_projection, cull_projection,
 			"render_streaming_orchestrator::render_streaming_frame");
 
 	// Update streaming based on camera transform and projection.
@@ -1271,7 +1279,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("null_system_ptr");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
 	String bootstrap_error;
@@ -1282,7 +1290,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("runtime_not_ready");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
 	instance_pipeline_instance_cache.clear();
@@ -1340,13 +1348,14 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("instances_without_registered_assets");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
-	renderer->update_instance_buffer(instance_pipeline_instance_cache);
+	(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache);
 
 	streaming_state.current_streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
 
 	streaming_state.current_streaming_system->update_streaming(streaming_camera_transform, cull_projection);
 
@@ -1851,7 +1860,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		return false;
 	}
 
-	renderer->run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
+	(renderer->*runtime_ports.run_cull_sort_pipeline_frame)(p_render_data, effective_view_transform, p_projection, p_render_projection,
 			p_render_buffers, stream_ready,
 			"Cull skipped: streaming data unavailable",
 			"Sort skipped: streaming data unavailable",
@@ -1889,7 +1898,7 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 		ERR_PRINT(vformat("[GaussianSplatRenderer] Streaming system reset (tick_runtime_not_ready), previous_system=%s",
 				String::num_uint64(system_id)));
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return;
 	}
 
@@ -1913,7 +1922,7 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 			ERR_PRINT(vformat("[GaussianSplatRenderer] Streaming system reset (tick_instances_without_registered_assets), previous_system=%s",
 					String::num_uint64(system_id)));
 			streaming_state.current_streaming_system.unref();
-			renderer->clear_instance_pipeline_buffers();
+			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 			return;
 		}
 
@@ -1921,9 +1930,10 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 	}
 
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
-	const Projection cull_projection = renderer->build_cull_projection(nullptr, p_projection);
-	renderer->validate_cull_projection_contract(nullptr, p_projection, cull_projection,
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
+	const Projection cull_projection = (renderer->*runtime_ports.build_cull_projection)(nullptr, p_projection);
+	(renderer->*runtime_ports.validate_cull_projection_contract)(nullptr, p_projection, cull_projection,
 			"render_streaming_orchestrator::tick_streaming_only");
 	streaming_system->update_streaming(p_camera_to_world_transform, cull_projection);
 	frame_state_mut.visible_splat_count.store(streaming_system->get_visible_count(), std::memory_order_release);

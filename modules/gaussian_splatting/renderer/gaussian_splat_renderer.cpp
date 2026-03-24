@@ -736,7 +736,7 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
             [this]() { return _acquire_rendering_device(); },
             [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); });
     streaming_orchestrator = std::make_unique<RenderStreamingOrchestrator>(
-            this, data_orchestrator.get(), device_orchestrator.get());
+            RenderStreamingOrchestratorDependencies{this, data_orchestrator.get(), device_orchestrator.get()});
     output_orchestrator = std::make_unique<RenderOutputOrchestrator>(
             this, subsystem_state.output_compositor.ptr(), subsystem_state.painterly_renderer.ptr(),
             subsystem_state.gpu_culler.ptr(),
