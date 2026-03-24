@@ -928,6 +928,8 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
     - Stored and validated the runtime-port bundle in the orchestrator constructor so the seam is explicit and constructor-time failures are surfaced early.
   - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
     - Switched streaming orchestrator construction to the dependency bundle form instead of the old raw constructor argument mesh.
+- Fixes required before accepting this batch:
+  - Corrected `RuntimePorts` function-pointer signatures for `validate_cull_projection_contract(...)` and `run_cull_sort_pipeline_frame(...)`, including the qualified `GaussianSplatRenderer::RenderFallbackReason` type, after the first Windows build exposed the mismatch.
 - Explicitly preserved for this batch:
   - No streaming logic redesign.
   - No service-pointer narrowing beyond the selected runtime-port calls above.
@@ -943,7 +945,14 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Verification status:
   - `git diff --check` passed.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 2-3 --no-regen-architecture`.
-  - Native Windows verification: pending external workflow run.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23484521277` on commit `458951d24c`:
+    - Build: pass.
+    - Smoke tests: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime harness: pass.
+    - World-streaming gate: pass.
+    - Large-scene benchmark gate: pass.
+    - Eviction-churn benchmark gate: pass.
 
 ### Phase 4: Orchestrator Dependency Narrowing
 - Purpose:
