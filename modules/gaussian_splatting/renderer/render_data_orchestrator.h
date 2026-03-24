@@ -12,15 +12,23 @@ class RenderingDevice;
 
 class RenderDataOrchestrator {
 public:
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*invalidate_cached_render)() = &GaussianSplatRenderer::invalidate_cached_render;
+	};
+
 	using ReleaseSharedDynamicAssetFn = std::function<void()>;
 	using AcquireRenderingDeviceFn = std::function<RenderingDevice *()>;
 	using InvalidateStaticChunkCachesFn = std::function<void(bool)>;
 
 	struct Dependencies {
 		GaussianSplatRenderer *renderer = nullptr;
+		const GaussianSplatRenderer::DebugConfig *debug_config = nullptr;
+		const GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+		const GPUCuller::CullingConfig *culling_config = nullptr;
 		ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
 		AcquireRenderingDeviceFn acquire_rendering_device;
 		InvalidateStaticChunkCachesFn invalidate_static_chunk_caches;
+		RuntimePorts runtime_ports;
 	};
 
 	explicit RenderDataOrchestrator(const Dependencies &p_dependencies);
@@ -39,12 +47,16 @@ public:
 
 private:
 	GaussianSplatRenderer *renderer = nullptr;
+	const GaussianSplatRenderer::DebugConfig *debug_config = nullptr;
+	const GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+	const GPUCuller::CullingConfig *culling_config = nullptr;
 	GaussianRenderState::SceneState scene_state;
 	GaussianRenderState::StreamingState streaming_state;
 	GaussianStreamingSystem::ConfigOverrides streaming_config_overrides;
 	ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
 	AcquireRenderingDeviceFn acquire_rendering_device;
 	InvalidateStaticChunkCachesFn invalidate_static_chunk_caches;
+	RuntimePorts runtime_ports;
 };
 
 #endif

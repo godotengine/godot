@@ -1595,3 +1595,35 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23497924273` on commit `3110e29fdd` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 5.2 Implementation Status (data/bootstrap narrowing, slice 33)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_data_orchestrator.h` / `.cpp`
+  - Added explicit data/bootstrap dependencies for `debug_config`, `performance_settings`, and the streaming chunk-radius cull config.
+  - Added a narrow runtime port for `invalidate_cached_render()`.
+  - Rewired `_is_data_orchestrator_log_enabled(...)`, `set_gaussian_data(...)`, and `update_gpu_buffers_with_real_data()` to use those explicit dependencies instead of direct renderer getter reach-through for log gating, cache invalidation, max-streamed budgeting, and streaming radius setup.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated data orchestrator construction to supply the narrowed dependency bundle and runtime port.
+
+### Explicitly preserved
+- Reset ordering in `set_gaussian_data(...)`.
+- Dynamic asset register/unregister behavior.
+- Streaming bootstrap and `visible_splat_count` reset semantics.
+- Existing acquire/release callbacks and renderer facade behavior.
+- No sorting-seam, painterly, or debug-overlay redesign.
+
+### Caveat
+- `update_gpu_buffers_with_real_data()` still uses the local frame/provider seam for scene and subsystem access where that remains the right contract; this batch intentionally narrows the bootstrap/config fan-in without changing ownership boundaries more broadly.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_data_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_data_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed.
+- Native Windows verification is pending for this slice.

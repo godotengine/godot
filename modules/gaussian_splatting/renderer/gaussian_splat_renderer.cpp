@@ -815,9 +815,13 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(resource_dependencies);
     RenderDataOrchestrator::Dependencies data_dependencies;
     data_dependencies.renderer = this;
+    data_dependencies.debug_config = &get_debug_config();
+    data_dependencies.performance_settings = &get_performance_settings();
+    data_dependencies.culling_config = &get_subsystem_state().gpu_culler->get_config();
     data_dependencies.release_shared_dynamic_asset = [this]() { _release_shared_dynamic_asset(); };
     data_dependencies.acquire_rendering_device = [this]() { return _acquire_rendering_device(); };
     data_dependencies.invalidate_static_chunk_caches = [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); };
+    data_dependencies.runtime_ports.invalidate_cached_render = &GaussianSplatRenderer::invalidate_cached_render;
     data_orchestrator = std::make_unique<RenderDataOrchestrator>(data_dependencies);
     streaming_orchestrator = std::make_unique<RenderStreamingOrchestrator>(
             RenderStreamingOrchestratorDependencies{this, data_orchestrator.get(), device_orchestrator.get()});

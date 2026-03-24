@@ -6,25 +6,32 @@
 #include "../interfaces/gpu_sorting_pipeline.h"
 #include "../logger/gs_logger.h"
 
-static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer *p_renderer) {
-	if (!p_renderer) {
+static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer::DebugConfig *p_debug_config) {
+	if (!p_debug_config) {
 		return false;
 	}
-	const auto &debug_config = p_renderer->get_debug_config();
-	return debug_config.enable_data_logging ||
-			debug_config.enable_frame_logging ||
-			debug_config.enable_all_debug;
+	return p_debug_config->enable_data_logging ||
+			p_debug_config->enable_frame_logging ||
+			p_debug_config->enable_all_debug;
 }
 
 RenderDataOrchestrator::RenderDataOrchestrator(const Dependencies &p_dependencies) :
 		renderer(p_dependencies.renderer),
+		debug_config(p_dependencies.debug_config),
+		performance_settings(p_dependencies.performance_settings),
+		culling_config(p_dependencies.culling_config),
 		release_shared_dynamic_asset(p_dependencies.release_shared_dynamic_asset),
 		acquire_rendering_device(p_dependencies.acquire_rendering_device),
-		invalidate_static_chunk_caches(p_dependencies.invalidate_static_chunk_caches) {
+		invalidate_static_chunk_caches(p_dependencies.invalidate_static_chunk_caches),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
+	ERR_FAIL_NULL(debug_config);
+	ERR_FAIL_NULL(performance_settings);
+	ERR_FAIL_NULL(culling_config);
 	ERR_FAIL_COND_MSG(!release_shared_dynamic_asset, "RenderDataOrchestrator requires release callback.");
 	ERR_FAIL_COND_MSG(!acquire_rendering_device, "RenderDataOrchestrator requires device acquisition callback.");
 	ERR_FAIL_COND_MSG(!invalidate_static_chunk_caches, "RenderDataOrchestrator requires cache invalidation callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.invalidate_cached_render, "RenderDataOrchestrator requires invalidate_cached_render runtime port.");
 
 	GaussianSplatRenderer::FrameStateProvider init_state_provider(renderer);
 	const GaussianSplatRenderer::IFrameStateView &init_state_view = init_state_provider;
@@ -61,7 +68,7 @@ void RenderDataOrchestrator::set_gaussian_asset(const Ref<GaussianSplatAsset> &p
 }
 
 Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_data) {
-	const bool log_enabled = _is_data_orchestrator_log_enabled(renderer);
+	const bool log_enabled = _is_data_orchestrator_log_enabled(debug_config);
 	if (log_enabled) {
 		GS_LOG_RENDERER_DEBUG(vformat("[RDO-SET-DATA] ENTER count=%d", p_data.is_valid() ? p_data->get_count() : -1));
 	}
@@ -92,7 +99,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 
 	scene_state.gaussian_data = p_data;
 	// Scene data identity changed: never reuse last-frame color/depth outputs.
-	renderer->invalidate_cached_render();
+	(renderer->*runtime_ports.invalidate_cached_render)();
 
 	subsystem_state.gpu_culler->get_state().hierarchical_structure_dirty = true;
 
@@ -225,7 +232,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 }
 
 Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
-	const bool log_enabled = _is_data_orchestrator_log_enabled(renderer);
+	const bool log_enabled = _is_data_orchestrator_log_enabled(debug_config);
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	GaussianSplatRenderer::FrameState &frame_state = state_mut.get_frame_state_mut();
@@ -303,7 +310,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 	streaming_state.cached_streamed_indices_valid = false;
 	sorting_state.sorted_splat_count = 0;
 
-	const uint32_t max_streamed = MIN<uint32_t>(real_count, (uint32_t)renderer->get_performance_settings().max_splats);
+	const uint32_t max_streamed = MIN<uint32_t>(real_count, (uint32_t)performance_settings->max_splats);
 	if (max_streamed == 0) {
 		GS_LOG_WARN_DEFAULT("[GPU Streaming] Max splat budget is zero; skipping real data upload");
 		return ERR_PARAMETER_RANGE_ERROR;
@@ -319,7 +326,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 	streaming_system.instantiate();
 	streaming_system->set_config_overrides(streaming_config_overrides);
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
+			culling_config->cull_radius_multiplier * culling_config->cull_frustum_plane_slack);
 	streaming_system->initialize_with_device(scene_state.gaussian_data, rd_ptr);
 	if (log_enabled) {
 		GS_LOG_STREAMING_DEBUG(vformat("[RenderDataOrch] streaming_system after initialize: chunks=%d",
