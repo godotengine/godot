@@ -808,11 +808,15 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     output_dependencies.output_compositor = subsystem_state.output_compositor.ptr();
     output_dependencies.painterly_renderer = subsystem_state.painterly_renderer.ptr();
     output_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    output_dependencies.view_state = &get_view_state();
+    output_dependencies.test_data_state = &get_test_data_state();
     output_dependencies.runtime_ports.create_gpu_resources = [this]() { _create_gpu_resources_safe(); };
     output_dependencies.runtime_ports.ensure_rendering_device = &GaussianSplatRenderer::ensure_rendering_device;
     output_dependencies.runtime_ports.get_texture_format = &GaussianSplatRenderer::get_texture_format;
     output_dependencies.runtime_ports.set_active_viewport_format = &GaussianSplatRenderer::set_active_viewport_format;
     output_dependencies.runtime_ports.set_manual_viewport_format = &GaussianSplatRenderer::set_manual_viewport_format;
+    output_dependencies.runtime_ports.get_resource_owner = &GaussianSplatRenderer::get_resource_owner;
+    output_dependencies.runtime_ports.render_gaussians = &GaussianSplatRenderer::render_gaussians;
     output_orchestrator = std::make_unique<RenderOutputOrchestrator>(output_dependencies);
 
     GaussianRenderingDiagnostics::ensure_singleton();

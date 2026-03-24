@@ -13,6 +13,8 @@ public:
 		RD::TextureFormat (GaussianSplatRenderer::*get_texture_format)(RenderingDevice *p_device, RID p_texture) const = &GaussianSplatRenderer::get_texture_format;
 		void (GaussianSplatRenderer::*set_active_viewport_format)(RD::DataFormat p_format, const char *p_context) = &GaussianSplatRenderer::set_active_viewport_format;
 		void (GaussianSplatRenderer::*set_manual_viewport_format)(RD::DataFormat p_format, const char *p_context) = &GaussianSplatRenderer::set_manual_viewport_format;
+		RenderingDevice *(GaussianSplatRenderer::*get_resource_owner)(const RID &p_rid, RenderingDevice *p_fallback) const = &GaussianSplatRenderer::get_resource_owner;
+		void (GaussianSplatRenderer::*render_gaussians)(RenderDataRD *p_render_data, const PagedArray<RID> &p_instances) = &GaussianSplatRenderer::render_gaussians;
 	};
 
 	struct Dependencies {
@@ -20,6 +22,8 @@ public:
 		OutputCompositor *output_compositor = nullptr;
 		PainterlyRenderer *painterly_renderer = nullptr;
 		GPUCuller *gpu_culler = nullptr;
+		GaussianSplatRenderer::ViewState *view_state = nullptr;
+		const GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
 		RuntimePorts runtime_ports;
 	};
 
@@ -41,6 +45,8 @@ private:
 	OutputCompositor *output_compositor = nullptr;
 	PainterlyRenderer *painterly_renderer = nullptr;
 	GPUCuller *gpu_culler = nullptr;
+	GaussianSplatRenderer::ViewState *view_state = nullptr;
+	const GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
 	RuntimePorts runtime_ports;
 };
 

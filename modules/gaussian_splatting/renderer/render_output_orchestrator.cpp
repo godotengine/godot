@@ -12,15 +12,21 @@ RenderOutputOrchestrator::RenderOutputOrchestrator(const Dependencies &p_depende
 		output_compositor(p_dependencies.output_compositor),
 		painterly_renderer(p_dependencies.painterly_renderer),
 		gpu_culler(p_dependencies.gpu_culler),
+		view_state(p_dependencies.view_state),
+		test_data_state(p_dependencies.test_data_state),
 		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(output_compositor);
 	ERR_FAIL_NULL(gpu_culler);
+	ERR_FAIL_NULL(view_state);
+	ERR_FAIL_NULL(test_data_state);
 	ERR_FAIL_COND_MSG(!runtime_ports.create_gpu_resources, "RenderOutputOrchestrator requires resource init callback.");
 	ERR_FAIL_COND_MSG(runtime_ports.ensure_rendering_device == nullptr, "RenderOutputOrchestrator requires ensure_rendering_device runtime port.");
 	ERR_FAIL_COND_MSG(runtime_ports.get_texture_format == nullptr, "RenderOutputOrchestrator requires get_texture_format runtime port.");
 	ERR_FAIL_COND_MSG(runtime_ports.set_active_viewport_format == nullptr, "RenderOutputOrchestrator requires set_active_viewport_format runtime port.");
 	ERR_FAIL_COND_MSG(runtime_ports.set_manual_viewport_format == nullptr, "RenderOutputOrchestrator requires set_manual_viewport_format runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.get_resource_owner == nullptr, "RenderOutputOrchestrator requires get_resource_owner runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.render_gaussians == nullptr, "RenderOutputOrchestrator requires render_gaussians runtime port.");
 }
 
 bool RenderOutputOrchestrator::copy_final_texture_to_target(RID p_render_target, const Size2i &p_viewport_size) {
@@ -42,8 +48,9 @@ bool RenderOutputOrchestrator::copy_final_texture_to_target(RID p_render_target,
 		return false;
 	}
 
-	if (!local_output_compositor->is_initialized() && renderer->get_device_state().rd) {
-		local_output_compositor->initialize(renderer->get_device_state().rd);
+	RenderingDevice *render_device = state_view.get_rendering_device();
+	if (!local_output_compositor->is_initialized() && render_device) {
+		local_output_compositor->initialize(render_device);
 	}
 
 	Size2i internal_size;
@@ -108,15 +115,15 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 
 	// Derive camera_to_world from the world_to_camera (view) matrix
 	Transform3D camera_to_world = p_world_to_camera_transform.affine_inverse();
-	renderer->get_view_state().last_camera_to_world_transform = camera_to_world;
-	renderer->get_view_state().last_camera_projection = p_cam_projection;
-	renderer->get_view_state().last_camera_position = camera_to_world.origin;
+	view_state->last_camera_to_world_transform = camera_to_world;
+	view_state->last_camera_projection = p_cam_projection;
+	view_state->last_camera_position = camera_to_world.origin;
 
 	if (!resource_state.gpu_resources_initialized || resource_state.gpu_initialization_pending) {
 		runtime_ports.create_gpu_resources();
 	}
 
-	if (!state_view.get_scene_state().gaussian_data.is_valid() && renderer->get_test_data_state().positions.is_empty()) {
+	if (!state_view.get_scene_state().gaussian_data.is_valid() && test_data_state->positions.is_empty()) {
 		frame_state.visible_splat_count.store(0, std::memory_order_release);
 		return false;
 	}
@@ -130,7 +137,7 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 		viewport_size = Size2i(1, 1);
 	}
 
-	renderer->get_view_state().manual_viewport_override = viewport_size;
+	view_state->manual_viewport_override = viewport_size;
 	if (local_gpu_culler) {
 		local_gpu_culler->get_config().last_cull_viewport_size = viewport_size;
 	}
@@ -139,6 +146,7 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 	RID destination_texture = p_render_target;
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *render_device = state_view.get_rendering_device();
 	if (texture_storage && p_render_target.is_valid()) {
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_target);
 		if (rd_texture.is_valid()) {
@@ -146,7 +154,7 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 		}
 
 		RD::TextureFormat detected_format = (renderer->*runtime_ports.get_texture_format)(
-			renderer->get_resource_owner(destination_texture, renderer->get_device_state().rd), destination_texture);
+			(renderer->*runtime_ports.get_resource_owner)(destination_texture, render_device), destination_texture);
 		if (detected_format.format != RD::DATA_FORMAT_MAX) {
 			target_format = detected_format.format;
 		} else if (texture_storage->render_target_is_using_hdr(p_render_target)) {
@@ -154,14 +162,14 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 		}
 	} else if (destination_texture.is_valid()) {
 		RD::TextureFormat detected_format = (renderer->*runtime_ports.get_texture_format)(
-			renderer->get_resource_owner(destination_texture, renderer->get_device_state().rd), destination_texture);
+			(renderer->*runtime_ports.get_resource_owner)(destination_texture, render_device), destination_texture);
 		if (detected_format.format != RD::DATA_FORMAT_MAX) {
 			target_format = detected_format.format;
 		}
 	}
 
-	if (target_format == RD::DATA_FORMAT_MAX && renderer->get_view_state().active_viewport_color_format != RD::DATA_FORMAT_MAX) {
-		target_format = renderer->get_view_state().active_viewport_color_format;
+	if (target_format == RD::DATA_FORMAT_MAX && view_state->active_viewport_color_format != RD::DATA_FORMAT_MAX) {
+		target_format = view_state->active_viewport_color_format;
 	}
 	if (target_format == RD::DATA_FORMAT_MAX) {
 		target_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -171,9 +179,9 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 	(renderer->*runtime_ports.set_manual_viewport_format)(target_format, "render_for_view");
 
 	PagedArray<RID> dummy_instances;
-	renderer->render_gaussians(nullptr, dummy_instances);
+	(renderer->*runtime_ports.render_gaussians)(nullptr, dummy_instances);
 
-	renderer->get_view_state().manual_viewport_override = Size2i();
+	view_state->manual_viewport_override = Size2i();
 	(renderer->*runtime_ports.set_manual_viewport_format)(RD::DATA_FORMAT_MAX, "render_for_view_cleanup");
 
 	if (!local_output_compositor) {
@@ -189,8 +197,8 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 		return true;
 	}
 
-	if (!local_output_compositor->is_initialized() && renderer->get_device_state().rd) {
-		local_output_compositor->initialize(renderer->get_device_state().rd);
+	if (!local_output_compositor->is_initialized() && render_device) {
+		local_output_compositor->initialize(render_device);
 	}
 
 	Size2i internal_size;
@@ -262,8 +270,9 @@ bool RenderOutputOrchestrator::test_copy_final_output(RID p_source, RID p_destin
 		return false;
 	}
 
-	if (!local_output_compositor->is_initialized() && renderer->get_device_state().rd) {
-		local_output_compositor->initialize(renderer->get_device_state().rd);
+	RenderingDevice *render_device = state_view.get_rendering_device();
+	if (!local_output_compositor->is_initialized() && render_device) {
+		local_output_compositor->initialize(render_device);
 	}
 
 	Size2i internal_size;

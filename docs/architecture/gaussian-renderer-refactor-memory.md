@@ -1471,3 +1471,35 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23495754350` on commit `72d89b1884` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 4.5 Implementation Status (output residual dependency narrowing, slice 30)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_output_orchestrator.h` / `.cpp`
+  - Added explicit `view_state` and `test_data_state` dependencies so output-path camera/viewport bookkeeping and test-data emptiness checks no longer reach through broad renderer getters.
+  - Added output-specific runtime ports for `get_resource_owner(...)` and `render_gaussians(...)` so `render_for_view(...)` narrows resource-owner lookup and dispatch through explicit behavior seams instead of direct renderer helper calls.
+  - Switched `copy_final_texture_to_target(...)`, `render_for_view(...)`, and `test_copy_final_output(...)` to use the explicit state pointers and provider-backed rendering-device lookup for compositor initialization.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated output orchestrator construction to supply the narrowed output-state pointers and runtime ports.
+
+### Explicitly preserved
+- No sorting-seam work.
+- No resource-orchestrator changes.
+- No painterly redesign.
+- No public `GaussianSplatRenderer` facade entrypoint changes.
+- No Phase 5 mutable-access lockdown work.
+
+### Caveat
+- This batch narrows the residual output seam, but it intentionally leaves painterly pass-graph use, GPU culler interaction, and renderer-owned viewport-format behavior on their current contracts.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_output_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_output_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
+- Native Windows verification pending for this slice.
