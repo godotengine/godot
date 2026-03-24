@@ -26,7 +26,6 @@ Why not contribute to Godot itself? Well, I WANT to. But I have a few issues wit
 - Do not inherit from a generic class, that behaviour is currently UNDEFINED because I haven't added it in yet lol sorry about that
 - Nested types can ALSO lie to you because the runtime is genuinely unaware of what goes inside a nested type. MAKE SURE TO USE STATIC TYPING EVERYWHERE, because at least STATIC ANALYSIS is aware of types!! (i added that in, heh)
 - I'm not fucking omniscient bro. There might be bugs, and I ask you to REPORT THEM!! catch my ass on discord at monarch_zero or open an issue here.
-- I really want to blame Godot for this one mishap, but it seems I might be at fault here. **It is possible for Godot to erroneously perform inheritance resolution on unresolved Parser trees.** The Godot source code has several guards against this, and I also attempted to copy the same guards, and they mostly work! Except addons are somehow treated differently and can result in inheritance errors. In which case, reload the project. If it still persists, try deleting the addon and adding it back in again, and then reloading the project. Still doesn't work? Well fuck me, that's a known issue and my fault, and I haven't found the cause for it yet.
 
 
 ## call for help
