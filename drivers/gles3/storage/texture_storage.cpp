@@ -1393,7 +1393,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	TightLocalVector<GLenum> draw_buffers;
 
 	Texture *tar_textures[4];
-	int convert_to_srgb_mask = 0;
+	uint32_t convert_to_srgb_mask = 0;
 	Texture *src_textures[4];
 
 	int i = 0;
@@ -1412,7 +1412,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 			draw_buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
 			ERR_FAIL_COND_MSG(p_to_mipmap >= tar_textures[i]->mipmaps, vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tar_textures[i]->tex_id, p_to_mipmap);
-			convert_to_srgb_mask += tar_textures[i]->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
+			convert_to_srgb_mask |= tar_textures[i]->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 		}
 
 		// Bind Sources to buffer. Use placeholder Black Texture if source is bad.
