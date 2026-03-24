@@ -1101,6 +1101,43 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
     - Large-scene benchmark gate: pass.
     - Eviction-churn benchmark gate: pass.
 
+### Phase 4 implementation status (diagnostics/debug control-plane batch 4, slice 24)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.h` / `.cpp`:
+    - Replaced the raw constructor argument mesh with an explicit `Dependencies` bundle plus `RuntimePorts` for anomaly-dump operations that still need renderer-owned behavior (`dump_pipeline_trace_to_file`, `get_resource_owner`).
+    - Preserved existing overlay query/command-sink usage while narrowing direct control-plane reach-through to local dependency access.
+  - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.h` / `.cpp`:
+    - Replaced the raw constructor argument list with an explicit `Dependencies` bundle plus a narrow `RuntimePorts` callback for GPU pass metric refresh.
+    - Kept frame-finalize ordering intact while routing the tile-renderer GPU metric refresh through the explicit runtime port instead of a direct renderer call.
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
+    - Updated diagnostics/debug orchestrator construction to the dependency-bundle form and wired the explicit runtime ports.
+- Explicitly preserved for this batch:
+  - No sorting-seam redesign.
+  - No painterly redesign.
+  - No debug overlay redesign.
+  - No public `GaussianSplatRenderer` facade break.
+- Remaining caveat:
+  - The diagnostics/debug orchestrators still legitimately reach renderer-owned live state and services where that remains the real ownership boundary; this batch narrows constructor/control-plane fan-in, it does not relocate those ownership responsibilities.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23489071182` on commit `67f3018406`:
+    - Build: pass.
+    - Smoke tests: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime harness: pass.
+    - World-streaming gate: pass.
+    - Large-scene benchmark gate: pass.
+    - Eviction-churn benchmark gate: pass.
+
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
   - remove/deny broad mutable `get_*_state()` usage outside sanctioned mutator surfaces.
