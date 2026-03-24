@@ -11,14 +11,11 @@
 #include "../shaders/gaussian_splat.glsl.gen.h"
 #include <cstring>
 
-RenderResourceOrchestrator::RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer,
-		GaussianSplatRenderer::DeviceState *p_device_state,
-		PipelineFeatureSet *p_pipeline_features_effective,
-		String *p_pipeline_features_warning_cache) :
-		renderer(p_renderer),
-		device_state(p_device_state),
-		pipeline_features_effective(p_pipeline_features_effective),
-		pipeline_features_warning_cache(p_pipeline_features_warning_cache) {
+RenderResourceOrchestrator::RenderResourceOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		device_state(p_dependencies.device_state),
+		pipeline_features_effective(p_dependencies.pipeline_features_effective),
+		pipeline_features_warning_cache(p_dependencies.pipeline_features_warning_cache) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(device_state);
 	ERR_FAIL_NULL(pipeline_features_effective);
@@ -36,6 +33,10 @@ void RenderResourceOrchestrator::initialize_shaders() {
 		return;
 	}
 
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::SubsystemState &subsystem_state_view = state_view.get_subsystem_state_view();
+
 	if (pipeline_state.gaussian_shader_source == nullptr) {
 		pipeline_state.gaussian_shader_source = memnew(GaussianSplatShaderRD);
 	}
@@ -43,16 +44,16 @@ void RenderResourceOrchestrator::initialize_shaders() {
 
 	PackedStringArray painterly_defines;
 	Ref<PainterlyMaterial> painterly_material;
-	if (renderer->get_subsystem_state().painterly_renderer.is_valid()) {
-		painterly_material = renderer->get_subsystem_state().painterly_renderer->get_material();
+	if (subsystem_state_view.painterly_renderer.is_valid()) {
+		painterly_material = subsystem_state_view.painterly_renderer->get_material();
 	}
 	if (painterly_material.is_valid()) {
 		painterly_defines = painterly_material->get_shader_define_strings();
 	}
 
 	// Initialize state shaders for interactive system
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid()) {
-		renderer->get_subsystem_state().interactive_state_manager->initialize_renderer_state_shaders(renderer);
+	if (subsystem_state_view.interactive_state_manager.is_valid()) {
+		subsystem_state_view.interactive_state_manager->initialize_renderer_state_shaders(renderer);
 	}
 
 	// Always build a baseline variant along with an optional painterly override so we can
@@ -96,13 +97,17 @@ void RenderResourceOrchestrator::initialize_shaders() {
 		return;
 	}
 
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid()) {
-		renderer->get_subsystem_state().interactive_state_manager->ensure_renderer_state_shader_cache(renderer);
+	if (subsystem_state_view.interactive_state_manager.is_valid()) {
+		subsystem_state_view.interactive_state_manager->ensure_renderer_state_shader_cache(renderer);
 	}
 }
 
 void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	// Safe GPU resource creation - called during first process frame
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::SubsystemState &subsystem_state_view = state_view.get_subsystem_state_view();
+
 	bool needs_buffer_resize = false;
 	if (resource_state.gpu_resources_initialized && !resource_state.gpu_initialization_pending) {
 		if (resource_state.buffer_manager.is_valid() && resource_state.buffer_manager_initialized) {
@@ -158,8 +163,8 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	}
 
 	RenderingDevice *painterly_device = renderer->get_main_rendering_device();
-	if (renderer->get_subsystem_state().painterly_renderer.is_valid()) {
-		PainterlyPassGraph *pass_graph = renderer->get_subsystem_state().painterly_renderer->get_pass_graph();
+	if (subsystem_state_view.painterly_renderer.is_valid()) {
+		PainterlyPassGraph *pass_graph = subsystem_state_view.painterly_renderer->get_pass_graph();
 		if (pass_graph) {
 			pass_graph->setup(painterly_device);
 		}
@@ -172,7 +177,7 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		}
 
 		if (painterly_device) {
-			Error err = renderer->get_subsystem_state().painterly_renderer->initialize(painterly_device, Size2i(1280, 720));
+			Error err = subsystem_state_view.painterly_renderer->initialize(painterly_device, Size2i(1280, 720));
 			if (err == OK) {
 				// Configure with current settings
 				::PainterlyConfig config;
@@ -186,10 +191,10 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 				config.stroke_length = renderer->get_painterly_config().stroke_length;
 				config.stroke_opacity = renderer->get_painterly_config().stroke_opacity;
 				config.gamma = renderer->get_painterly_config().gamma;
-				renderer->get_subsystem_state().painterly_renderer->configure(config);
+				subsystem_state_view.painterly_renderer->configure(config);
 
 				// Compile shaders
-				err = renderer->get_subsystem_state().painterly_renderer->compile_shaders();
+				err = subsystem_state_view.painterly_renderer->compile_shaders();
 				if (err != OK) {
 					GS_LOG_WARN_DEFAULT("[Painterly] Failed to compile PainterlyRenderer shaders");
 				}
@@ -420,10 +425,10 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 				GS_LOG_RENDERER_DEBUG(vformat("[GPU-RESOURCES] TileRenderer is_initialized after init: %s", is_init ? "yes" : "no"));
 			}
 #endif
-			if (!renderer->get_subsystem_state().rasterizer.is_valid()) {
+			if (!subsystem_state_view.rasterizer.is_valid()) {
 				renderer->get_subsystem_state().rasterizer.instantiate();
 			}
-			renderer->get_subsystem_state().rasterizer->set_device_manager(renderer->get_subsystem_state().device_manager);
+			renderer->get_subsystem_state().rasterizer->set_device_manager(subsystem_state_view.device_manager);
 			renderer->get_subsystem_state().rasterizer->set_tile_renderer(renderer->get_tile_renderer_state().renderer);
 			GS_LOG_INFO_DEFAULT("[TileRenderer] Initialized during GPU resource setup");
 		} else {
@@ -440,9 +445,9 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	}
 
 	// Initialize InteractiveStateManager now that we have a RenderingDevice
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid() &&
-			!renderer->get_subsystem_state().interactive_state_manager->is_initialized()) {
-		Error state_err = renderer->get_subsystem_state().interactive_state_manager->initialize(device_state->rd);
+	if (subsystem_state_view.interactive_state_manager.is_valid() &&
+			!subsystem_state_view.interactive_state_manager->is_initialized()) {
+		Error state_err = subsystem_state_view.interactive_state_manager->initialize(device_state->rd);
 		if (state_err != OK) {
 			GS_LOG_WARN_DEFAULT(vformat("[InteractiveStateManager] Failed to initialize: %d", state_err));
 		}
@@ -484,47 +489,52 @@ void RenderResourceOrchestrator::update_pipeline_features(RenderingDevice *p_dev
 }
 
 void RenderResourceOrchestrator::update_gpu_pass_metrics_from_tile_renderer() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::PerformanceMetrics &metrics = state_mut.get_performance_state_mut().metrics;
+
 	if (!renderer->get_tile_renderer_state().renderer.is_valid()) {
-		renderer->get_performance_state().metrics.gpu_tile_binning_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_raster_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_prefix_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_resolve_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_frame_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_utilization = 0.0f;
-		renderer->get_performance_state().metrics.gpu_timing_frame_serial = 0;
-		renderer->get_performance_state().metrics.gpu_timing_frames_behind = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_inflight_frames = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_completed_frames = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_stall_count = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_stall_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_timeline_last_value = 0;
-		renderer->get_performance_state().metrics.tile_sort_sync_fallback_count = 0;
+		metrics.gpu_tile_binning_time_ms = 0.0f;
+		metrics.gpu_tile_raster_time_ms = 0.0f;
+		metrics.gpu_tile_prefix_time_ms = 0.0f;
+		metrics.gpu_tile_resolve_time_ms = 0.0f;
+		metrics.gpu_frame_time_ms = 0.0f;
+		metrics.gpu_utilization = 0.0f;
+		metrics.gpu_timing_frame_serial = 0;
+		metrics.gpu_timing_frames_behind = 0;
+		metrics.gpu_timeline_inflight_frames = 0;
+		metrics.gpu_timeline_completed_frames = 0;
+		metrics.gpu_timeline_stall_count = 0;
+		metrics.gpu_timeline_stall_ms = 0.0f;
+		metrics.gpu_timeline_last_value = 0;
+		metrics.tile_sort_sync_fallback_count = 0;
 		return;
 	}
 
 	// Use subsystem_state.rasterizer interface for GPU timing (Phase 8 migration)
-	renderer->get_subsystem_state().rasterizer->resolve_gpu_timestamps_async();
-	RasterPerformance perf = renderer->get_subsystem_state().rasterizer->get_performance();
+	state_view.get_subsystem_state_view().rasterizer->resolve_gpu_timestamps_async();
+	RasterPerformance perf = state_view.get_subsystem_state_view().rasterizer->get_performance();
 
-	renderer->get_performance_state().metrics.gpu_tile_binning_time_ms = perf.binning_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_raster_time_ms = perf.raster_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_prefix_time_ms = perf.prefix_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_resolve_time_ms = perf.resolve_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_frame_time_ms = perf.frame_gpu_ms;
-	renderer->get_performance_state().metrics.tile_sort_sync_fallback_count = perf.sort_sync_fallback_count;
-	renderer->get_performance_state().metrics.gpu_timing_frame_serial = perf.timing_frame_serial;
-	renderer->get_performance_state().metrics.gpu_timing_frames_behind = perf.timing_frames_behind;
+	metrics.gpu_tile_binning_time_ms = perf.binning_gpu_ms;
+	metrics.gpu_tile_raster_time_ms = perf.raster_gpu_ms;
+	metrics.gpu_tile_prefix_time_ms = perf.prefix_gpu_ms;
+	metrics.gpu_tile_resolve_time_ms = perf.resolve_gpu_ms;
+	metrics.gpu_frame_time_ms = perf.frame_gpu_ms;
+	metrics.tile_sort_sync_fallback_count = perf.sort_sync_fallback_count;
+	metrics.gpu_timing_frame_serial = perf.timing_frame_serial;
+	metrics.gpu_timing_frames_behind = perf.timing_frames_behind;
 
 	GPUPerformanceMonitor::SummaryMetrics timeline_summary =
-			renderer->get_tile_renderer_state().gpu_performance_monitor.get_summary_metrics();
-	renderer->get_performance_state().metrics.gpu_timeline_inflight_frames = timeline_summary.inflight_frames;
-	renderer->get_performance_state().metrics.gpu_timeline_completed_frames = timeline_summary.completed_frames;
-	renderer->get_performance_state().metrics.gpu_timeline_stall_count = timeline_summary.stall_count;
-	renderer->get_performance_state().metrics.gpu_timeline_stall_ms = float(timeline_summary.total_stall_ns) / 1000000.0f;
-	renderer->get_performance_state().metrics.gpu_timeline_last_value = timeline_summary.last_frame_index;
+		renderer->get_tile_renderer_state().gpu_performance_monitor.get_summary_metrics();
+	metrics.gpu_timeline_inflight_frames = timeline_summary.inflight_frames;
+	metrics.gpu_timeline_completed_frames = timeline_summary.completed_frames;
+	metrics.gpu_timeline_stall_count = timeline_summary.stall_count;
+	metrics.gpu_timeline_stall_ms = float(timeline_summary.total_stall_ns) / 1000000.0f;
+	metrics.gpu_timeline_last_value = timeline_summary.last_frame_index;
 
 	float utilization = renderer->get_tile_renderer_state().gpu_performance_monitor.get_gpu_utilization_async();
-	renderer->get_performance_state().metrics.gpu_utilization = utilization * 100.0f;
+	metrics.gpu_utilization = utilization * 100.0f;
 }
 
 RID RenderResourceOrchestrator::load_graphics_shader(const Vector<String> &p_vertex_paths,

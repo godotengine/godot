@@ -742,8 +742,12 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
                         p_render_projection, p_defer_render_buffers_commit);
             };
     instancing_orchestrator = std::make_unique<RenderInstancingOrchestrator>(instancing_dependencies);
-    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(
-            this, &get_device_state(), &pipeline_features_effective, &pipeline_features_warning_cache);
+    RenderResourceOrchestrator::Dependencies resource_dependencies;
+    resource_dependencies.renderer = this;
+    resource_dependencies.device_state = &get_device_state();
+    resource_dependencies.pipeline_features_effective = &pipeline_features_effective;
+    resource_dependencies.pipeline_features_warning_cache = &pipeline_features_warning_cache;
+    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(resource_dependencies);
     RenderDataOrchestrator::Dependencies data_dependencies;
     data_dependencies.renderer = this;
     data_dependencies.release_shared_dynamic_asset = [this]() { _release_shared_dynamic_asset(); };

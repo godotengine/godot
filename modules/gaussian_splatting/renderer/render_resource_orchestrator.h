@@ -5,8 +5,14 @@
 
 class RenderResourceOrchestrator {
 public:
-	RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer, GaussianSplatRenderer::DeviceState *p_device_state,
-			PipelineFeatureSet *p_pipeline_features_effective, String *p_pipeline_features_warning_cache);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		GaussianSplatRenderer::DeviceState *device_state = nullptr;
+		PipelineFeatureSet *pipeline_features_effective = nullptr;
+		String *pipeline_features_warning_cache = nullptr;
+	};
+
+	explicit RenderResourceOrchestrator(const Dependencies &p_dependencies);
 
 	GaussianSplatRenderer::PipelineState &get_pipeline_state() { return pipeline_state; }
 	const GaussianSplatRenderer::PipelineState &get_pipeline_state() const { return pipeline_state; }
