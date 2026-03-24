@@ -1,6 +1,7 @@
 #ifndef GAUSSIAN_RENDER_SORTING_ORCHESTRATOR_H
 #define GAUSSIAN_RENDER_SORTING_ORCHESTRATOR_H
 
+#include "gaussian_splat_renderer.h"
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
@@ -9,7 +10,6 @@
 
 #include <functional>
 
-class GaussianSplatRenderer;
 class GPUCuller;
 class GPUSortingPipeline;
 

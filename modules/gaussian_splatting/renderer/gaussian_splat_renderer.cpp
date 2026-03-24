@@ -741,9 +741,9 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     sorting_dependencies.renderer = this;
     sorting_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
     sorting_dependencies.sorting_pipeline = subsystem_state.sorting_pipeline.ptr();
-    sorting_dependencies.performance_settings = &performance_settings;
-    sorting_dependencies.test_data_state = &test_data_state;
-    sorting_dependencies.device_state = &device_state;
+    sorting_dependencies.performance_settings = &get_performance_settings();
+    sorting_dependencies.test_data_state = &get_test_data_state();
+    sorting_dependencies.device_state = &get_device_state();
     sorting_dependencies.cull_for_view =
             [this](const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
                     const Size2i &p_viewport_size) {
