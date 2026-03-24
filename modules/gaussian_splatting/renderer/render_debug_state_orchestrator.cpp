@@ -298,17 +298,20 @@ static Dictionary _splat_audit_to_dict(const GaussianSplatRenderer::SplatAuditSu
 
 } // namespace
 
-RenderDebugStateOrchestrator::RenderDebugStateOrchestrator(GaussianSplatRenderer *p_renderer,
-		Ref<TileRenderer> *p_tile_renderer, Ref<DebugOverlaySystem> *p_debug_overlay_system,
-		GaussianSplatRenderer::JacobianDebugConfig *p_jacobian_debug) :
-		renderer(p_renderer),
-		tile_renderer(p_tile_renderer),
-		debug_overlay_system(p_debug_overlay_system),
-		jacobian_debug(p_jacobian_debug) {
+RenderDebugStateOrchestrator::RenderDebugStateOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		tile_renderer(p_dependencies.tile_renderer),
+		debug_overlay_system(p_dependencies.debug_overlay_system),
+		jacobian_debug(p_dependencies.jacobian_debug),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(tile_renderer);
 	ERR_FAIL_NULL(debug_overlay_system);
 	ERR_FAIL_NULL(jacobian_debug);
+	ERR_FAIL_COND_MSG(!runtime_ports.dump_pipeline_trace_to_file,
+			"RenderDebugStateOrchestrator requires a pipeline trace dump callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.resolve_resource_owner,
+			"RenderDebugStateOrchestrator requires a resource-owner callback.");
 
 	const bool default_trace = _default_pipeline_trace_enabled();
 	if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
@@ -716,13 +719,14 @@ void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance
 		const bool artifact_writes_enabled = debug_config.enable_data_logging || debug_config.enable_all_debug;
 		if (dump_ready && artifact_writes_enabled) {
 			const String trace_path = "user://gs_pipeline_trace_" + String::num_uint64(frame_id) + ".json";
-			renderer->dump_pipeline_trace_to_file(trace_path);
+			(renderer->*runtime_ports.dump_pipeline_trace_to_file)(trace_path);
 
 			OutputCompositor *output_compositor = renderer->get_subsystem_state().output_compositor.ptr();
 			if (output_compositor) {
 				RID final_texture = output_compositor->get_final_render_texture();
 				if (final_texture.is_valid()) {
-					RenderingDevice *device = renderer->get_resource_owner(final_texture, renderer->get_device_state().rd);
+					RenderingDevice *device = (renderer->*runtime_ports.resolve_resource_owner)(
+							final_texture, renderer->get_device_state().rd);
 					const String image_path = "user://gs_anomaly_frame_" + String::num_uint64(frame_id) + ".png";
 					_save_texture_snapshot(device, final_texture, image_path);
 				}

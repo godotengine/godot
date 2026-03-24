@@ -667,16 +667,26 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     float position_threshold = 0.05f;
     subsystem_state.gpu_culler->get_state().sort_cache_position_threshold_sq = position_threshold * position_threshold;
 
-    // Initialize orchestrators.
-    pipeline_stages = std::make_unique<RenderPipelineStages>(this);
-    debug_state_orchestrator = std::make_unique<RenderDebugStateOrchestrator>(
-            this, &tile_renderer_state.renderer, &subsystem_state.debug_overlay_system, &jacobian_debug);
-    diagnostics_orchestrator = std::make_unique<RenderDiagnosticsOrchestrator>(
-            this,
-            debug_state_orchestrator.get(),
-            [this]() { return _build_device_capability_report(); });
-    pipeline_stages->set_debug_state_orchestrator(debug_state_orchestrator.get());
-    pipeline_stages->set_diagnostics_orchestrator(diagnostics_orchestrator.get());
+	// Initialize orchestrators.
+	pipeline_stages = std::make_unique<RenderPipelineStages>(this);
+	RenderDebugStateOrchestrator::Dependencies debug_state_dependencies;
+	debug_state_dependencies.renderer = this;
+	debug_state_dependencies.tile_renderer = &tile_renderer_state.renderer;
+	debug_state_dependencies.debug_overlay_system = &subsystem_state.debug_overlay_system;
+	debug_state_dependencies.jacobian_debug = &jacobian_debug;
+	debug_state_dependencies.runtime_ports.dump_pipeline_trace_to_file = &GaussianSplatRenderer::dump_pipeline_trace_to_file;
+	debug_state_dependencies.runtime_ports.resolve_resource_owner = &GaussianSplatRenderer::get_resource_owner;
+	debug_state_orchestrator = std::make_unique<RenderDebugStateOrchestrator>(debug_state_dependencies);
+
+	RenderDiagnosticsOrchestrator::Dependencies diagnostics_dependencies;
+	diagnostics_dependencies.renderer = this;
+	diagnostics_dependencies.debug_state_orchestrator = debug_state_orchestrator.get();
+	diagnostics_dependencies.build_device_capability_report = [this]() { return _build_device_capability_report(); };
+	diagnostics_dependencies.runtime_ports.update_gpu_pass_metrics_from_tile_renderer =
+			&GaussianSplatRenderer::update_gpu_pass_metrics_from_tile_renderer;
+	diagnostics_orchestrator = std::make_unique<RenderDiagnosticsOrchestrator>(diagnostics_dependencies);
+	pipeline_stages->set_debug_state_orchestrator(debug_state_orchestrator.get());
+	pipeline_stages->set_diagnostics_orchestrator(diagnostics_orchestrator.get());
     device_orchestrator = std::make_unique<RenderDeviceOrchestrator>(
             this, subsystem_state.device_manager.ptr(), subsystem_state.sorting_pipeline.ptr(),
             [this](const CrossDeviceOperation &p_operation) {

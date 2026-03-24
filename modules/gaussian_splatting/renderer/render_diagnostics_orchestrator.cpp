@@ -689,15 +689,16 @@ static void _update_production_summary(GaussianSplatRenderer::DiagnosticsState &
 }
 } // namespace
 
-RenderDiagnosticsOrchestrator::RenderDiagnosticsOrchestrator(GaussianSplatRenderer *p_renderer,
-		RenderDebugStateOrchestrator *p_debug_state_orchestrator,
-		BuildDeviceCapabilityReportFn p_build_device_capability_report) :
-		renderer(p_renderer),
-		debug_state_orchestrator(p_debug_state_orchestrator),
-		build_device_capability_report(p_build_device_capability_report) {
+RenderDiagnosticsOrchestrator::RenderDiagnosticsOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		debug_state_orchestrator(p_dependencies.debug_state_orchestrator),
+		build_device_capability_report(p_dependencies.build_device_capability_report),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(debug_state_orchestrator);
 	ERR_FAIL_COND_MSG(!build_device_capability_report, "RenderDiagnosticsOrchestrator requires device capability callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.update_gpu_pass_metrics_from_tile_renderer,
+			"RenderDiagnosticsOrchestrator requires GPU pass metric refresh callback.");
 }
 
 void RenderDiagnosticsOrchestrator::record_rendering_error(const RenderingError &p_error) {
@@ -1185,7 +1186,7 @@ void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_star
 			MAX(renderer->get_performance_state().metrics.peak_frame_time_ms, renderer->get_performance_state().metrics.frame_to_frame_time_ms);
 
 	// Ensure GPU metrics are up to date before logging
-	renderer->update_gpu_pass_metrics_from_tile_renderer();
+	(renderer->*runtime_ports.update_gpu_pass_metrics_from_tile_renderer)();
 
 	ProductionMetricsConfig metrics_config = _load_production_metrics_config();
 	const bool stage_metrics_valid = renderer->get_debug_state().last_stage_metrics_valid;
