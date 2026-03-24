@@ -217,13 +217,11 @@ void OutputCompositor::update_render_cache_signature(const Transform3D &p_world_
     output_cache.cached_render_lighting_signature = p_lighting_signature;
 }
 
-#ifdef TESTS_ENABLED
 void OutputCompositor::test_reset_last_viewport_copy_state() {
     output_cache.last_viewport_copy_success = false;
     output_cache.last_viewport_copy_source_size = Size2i();
     output_cache.last_viewport_copy_dest_size = Size2i();
 }
-#endif
 
 void OutputCompositor::set_device_manager(Ref<RenderDeviceManager> p_device_manager) {
     device_manager = p_device_manager;
