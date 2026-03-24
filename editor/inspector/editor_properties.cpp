@@ -380,7 +380,7 @@ void BBCodeEdit::_confirm_mirror_completion(int p_option_idx) {
 	}
 
 	if (standalone) {
-		// Standalone tags have no closing counterpart — remove the entire "[/...]" group.
+		// Standalone tags don't have closing tags, so we can skip this part.
 		int close_end = mirror_pos + 2;
 		while (close_end < updated_line.length() && updated_line[close_end] != ']' && updated_line[close_end] != '\n') {
 			close_end++;
@@ -698,15 +698,14 @@ void BBCodeEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	CodeEdit::gui_input(p_event);
 
-	// Re-scan mirror state after every event that passes through to CodeEdit
-	// (navigation, mouse clicks, undo/redo, etc.). The guard inside
-	// _on_caret_changed() skips re-scanning during our own multi-step ops.
+	// Re-scan mirror state after every caret change.
+	// The guard in _on_caret_changed() skips during our own edits.
 	_on_caret_changed();
 
 	if (k.is_valid() && k->is_pressed()) {
 		const Key kcode2 = k->get_keycode();
-		// After CodeEdit processed the event: for non-mirror completion confirms,
-		// reposition the caret between the paired tags.
+		// After CodeEdit handles the event: for non-mirror completions,
+		// move caret between the paired tags (example: "[b]|[/b]").
 		if (!mirror_active && selected_before >= 0) {
 			if (kcode2 == Key::TAB || kcode2 == Key::ENTER || kcode2 == Key::KP_ENTER) {
 				post_completion_reposition();
@@ -719,8 +718,8 @@ void BBCodeEdit::_try_resume_mirror() {
 	int cur_line = get_caret_line();
 	int cur_col = get_caret_column();
 
-	// For multi-line wraps, the closer lives on a different line.
-	// Just verify the '[/' marker is still there; don't re-scan across lines.
+	// Multi-line wraps: the closer is on a different line.
+	// Just check if "[/" still exists, do not re-scan across lines.
 	if (mirror_active && mirror_line != cur_line) {
 		String ml = get_line(mirror_line);
 		if (mirror_col >= 0 && mirror_col + 1 < ml.length() &&
@@ -799,7 +798,7 @@ void BBCodeEdit::post_completion_reposition() {
 	}
 }
 
-// Shared BBCode tag definitions for code completion.
+// BBCode tag list used for code completion.
 const BBCodeTagDef TAGS[] = {
 	// Simple paired formatting
 	{ "b", false, false }, { "i", false, false }, { "u", false, false },

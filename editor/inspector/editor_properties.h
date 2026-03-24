@@ -118,13 +118,12 @@ public:
 	EditorPropertyText();
 };
 
-// A CodeEdit subclass with BBCode-aware bracket autoclosing, selection wrapping,
-// and smart caret placement after completion.
+// BBCode editor with bracket autoclosing, selection wrapping, and smart caret placement.
 
 struct BBCodeTagDef {
 	const char *name;
-	bool has_value;  // should be followed by '=' before the closing ']'
-	bool standalone; // no closing [/tag]
+	bool has_value;  // requires '=' before the closing ']'
+	bool standalone; // no closing tag
 };
 
 extern const BBCodeTagDef TAGS[];
@@ -132,13 +131,13 @@ extern const BBCodeTagDef TAGS[];
 class BBCodeEdit : public CodeEdit {
 	GDCLASS(BBCodeEdit, CodeEdit);
 
-	// When the user wraps a selection with '[', we record the line/col of the
-	// auto-inserted "[/" so we can mirror subsequent keystrokes into the closing tag.
+	// When the user wraps selection with '[', we store the "[/" position so we
+	// can mirror keystrokes into the closing tag.
 	bool mirror_active = false;
-	bool mirror_frozen = false; // set when '=' typed — stop mirroring until '=' removed
-	bool mirror_updating = false; // guard: suppresses caret_changed re-scan during our own edits
+	bool mirror_frozen = false; // stops mirroring after '=' is typed
+	bool mirror_updating = false; // prevents re-entry during our own edits
 	int mirror_line = -1;
-	int mirror_col = -1; // column of '[' in the "[/…]" close-tag
+	int mirror_col = -1; // column of '[' in the "[/...]" close tag
 
 	void _end_mirror();
 	void _on_caret_changed();
