@@ -975,6 +975,32 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Rollback point:
   - restore previous constructor signatures while preserving internal refactors that are behavior-neutral
 
+### Phase 4 implementation status (output orchestrator batch 1, slice 21)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_output_orchestrator.h` / `.cpp`:
+    - Replaced the old constructor callback/raw-pointer mesh with an explicit `Dependencies` bundle and nested `RuntimePorts` contract.
+    - Routed output-path runtime callbacks through explicit ports for device bootstrap, texture-format lookup, viewport-format updates, and GPU-resource creation.
+    - Switched practical frame/resource bucket access to local `FrameStateProvider` view/mutation aliases inside `render_for_view(...)`, `copy_final_texture_to_target(...)`, `commit_to_render_buffers(...)`, and `test_copy_final_output(...)`.
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
+    - Updated output orchestrator construction to use the dependency bundle form.
+- Explicitly preserved for this batch:
+  - No sorting-seam work.
+  - No debug/tooling or painterly redesign.
+  - No public `GaussianSplatRenderer` facade entrypoint changes.
+  - No attempt to force `view_state`, `device_state`, or render submission paths through speculative new interfaces.
+- Remaining caveat:
+  - `RenderOutputOrchestrator` still reaches through `renderer` directly for `view_state`, `device_state`, test-data presence checks, resource-owner lookup, and `render_gaussians(...)`. This batch narrows the orchestrator’s constructor/runtime seam and selected state-bucket access; it is not a full ownership inversion.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_output_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_output_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+- Verification status:
+  - `git diff --check` passed.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
+  - Native Windows verification: pending external workflow run.
+
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
   - remove/deny broad mutable `get_*_state()` usage outside sanctioned mutator surfaces.

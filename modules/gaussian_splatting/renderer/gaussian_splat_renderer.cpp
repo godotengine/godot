@@ -737,13 +737,17 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
             [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); });
     streaming_orchestrator = std::make_unique<RenderStreamingOrchestrator>(
             RenderStreamingOrchestratorDependencies{this, data_orchestrator.get(), device_orchestrator.get()});
-    output_orchestrator = std::make_unique<RenderOutputOrchestrator>(
-            this, subsystem_state.output_compositor.ptr(), subsystem_state.painterly_renderer.ptr(),
-            subsystem_state.gpu_culler.ptr(),
-            [this]() { _create_gpu_resources_safe(); },
-            [this](RD::DataFormat p_format, const char *p_context) { _set_active_viewport_format(p_format, p_context); },
-            [this](RD::DataFormat p_format, const char *p_context) { _set_manual_viewport_format(p_format, p_context); },
-            [this](RenderingDevice *p_device, RID p_texture) { return _get_texture_format(p_device, p_texture); });
+    RenderOutputOrchestrator::Dependencies output_dependencies;
+    output_dependencies.renderer = this;
+    output_dependencies.output_compositor = subsystem_state.output_compositor.ptr();
+    output_dependencies.painterly_renderer = subsystem_state.painterly_renderer.ptr();
+    output_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    output_dependencies.runtime_ports.create_gpu_resources = [this]() { _create_gpu_resources_safe(); };
+    output_dependencies.runtime_ports.ensure_rendering_device = &GaussianSplatRenderer::ensure_rendering_device;
+    output_dependencies.runtime_ports.get_texture_format = &GaussianSplatRenderer::get_texture_format;
+    output_dependencies.runtime_ports.set_active_viewport_format = &GaussianSplatRenderer::set_active_viewport_format;
+    output_dependencies.runtime_ports.set_manual_viewport_format = &GaussianSplatRenderer::set_manual_viewport_format;
+    output_orchestrator = std::make_unique<RenderOutputOrchestrator>(output_dependencies);
 
     GaussianRenderingDiagnostics::ensure_singleton();
     if (GaussianRenderingDiagnostics::get_singleton()) {

@@ -7,14 +7,23 @@
 
 class RenderOutputOrchestrator {
 public:
-	using CreateGpuResourcesFn = std::function<void()>;
-	using SetViewportFormatFn = std::function<void(RD::DataFormat, const char *)>;
-	using TextureFormatFn = std::function<RD::TextureFormat(RenderingDevice *, RID)>;
+	struct RuntimePorts {
+		std::function<void()> create_gpu_resources;
+		bool (GaussianSplatRenderer::*ensure_rendering_device)(const char *p_context) = &GaussianSplatRenderer::ensure_rendering_device;
+		RD::TextureFormat (GaussianSplatRenderer::*get_texture_format)(RenderingDevice *p_device, RID p_texture) const = &GaussianSplatRenderer::get_texture_format;
+		void (GaussianSplatRenderer::*set_active_viewport_format)(RD::DataFormat p_format, const char *p_context) = &GaussianSplatRenderer::set_active_viewport_format;
+		void (GaussianSplatRenderer::*set_manual_viewport_format)(RD::DataFormat p_format, const char *p_context) = &GaussianSplatRenderer::set_manual_viewport_format;
+	};
 
-	RenderOutputOrchestrator(GaussianSplatRenderer *p_renderer, OutputCompositor *p_output_compositor,
-			PainterlyRenderer *p_painterly_renderer, GPUCuller *p_gpu_culler,
-			CreateGpuResourcesFn p_create_gpu_resources, SetViewportFormatFn p_set_active_viewport_format,
-			SetViewportFormatFn p_set_manual_viewport_format, TextureFormatFn p_get_texture_format);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		OutputCompositor *output_compositor = nullptr;
+		PainterlyRenderer *painterly_renderer = nullptr;
+		GPUCuller *gpu_culler = nullptr;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderOutputOrchestrator(const Dependencies &p_dependencies);
 
 	bool copy_final_texture_to_target(RID p_render_target, const Size2i &p_viewport_size);
 	void commit_to_render_buffers(RenderDataRD *p_render_data);
@@ -32,10 +41,7 @@ private:
 	OutputCompositor *output_compositor = nullptr;
 	PainterlyRenderer *painterly_renderer = nullptr;
 	GPUCuller *gpu_culler = nullptr;
-	CreateGpuResourcesFn create_gpu_resources;
-	SetViewportFormatFn set_active_viewport_format;
-	SetViewportFormatFn set_manual_viewport_format;
-	TextureFormatFn get_texture_format;
+	RuntimePorts runtime_ports;
 };
 
 #endif
