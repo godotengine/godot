@@ -592,7 +592,8 @@ void RenderStreamingOrchestrator::consume_visible_lod_selection_for_residency(
 bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_chunks_loaded, uint32_t p_chunks_evicted,
 		uint32_t p_visible_evicted, uint64_t p_current_frame) {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
-	const StreamingState &streaming_state = state_provider.get_streaming_state();
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 
 	uint32_t total_chunks_changed = p_chunks_loaded + p_chunks_evicted;
 

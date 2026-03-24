@@ -280,6 +280,7 @@ public:
             ResourceState *resource_state = nullptr;
             FrameState *frame_state = nullptr;
             PerformanceState *performance_state = nullptr;
+            DebugState *debug_state = nullptr;
             SubsystemState *subsystem_state = nullptr;
             RenderConfig *render_config = nullptr;
             const PipelineFeatureSet *pipeline_features = nullptr;
@@ -305,6 +306,7 @@ public:
                 ERR_FAIL_NULL_V_MSG(resource_state, false, "FrameDeps: resource_state is null");
                 ERR_FAIL_NULL_V_MSG(frame_state, false, "FrameDeps: frame_state is null");
                 ERR_FAIL_NULL_V_MSG(performance_state, false, "FrameDeps: performance_state is null");
+                ERR_FAIL_NULL_V_MSG(debug_state, false, "FrameDeps: debug_state is null");
                 ERR_FAIL_NULL_V_MSG(subsystem_state, false, "FrameDeps: subsystem_state is null");
                 ERR_FAIL_NULL_V_MSG(render_config, false, "FrameDeps: render_config is null");
                 ERR_FAIL_NULL_V_MSG(pipeline_features, false, "FrameDeps: pipeline_features is null");

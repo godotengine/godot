@@ -690,6 +690,7 @@ void RenderPipelineStages::prepare_frame_context(RenderDataRD *p_render_data,
 	r_context.deps.resource_state = &state_mut.get_resource_state_mut();
 	r_context.deps.frame_state = &state_mut.get_frame_state_mut();
 	r_context.deps.performance_state = &state_mut.get_performance_state_mut();
+	r_context.deps.debug_state = &state_mut.get_debug_state_mut();
 	r_context.deps.subsystem_state = &state_mut.get_subsystem_state_mut();
 	r_context.deps.pipeline_features = state_view.get_pipeline_features();
 	DEV_ASSERT(r_context.deps.validate());
