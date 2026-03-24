@@ -3142,7 +3142,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		Error err = OK;
 		Ref<Resource> res = ResourceCache::get_ref(p_from);
 		if (res.is_null()) {
-			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			res = ResourceLoader::load(p_from, "", ResourceLoaderConstants::CACHE_MODE_REUSE, &err);
 		} else {
 			bool edited = false;
 			List<Ref<Resource>> cached;
@@ -3443,7 +3443,7 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
-Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
+Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode) {
 	ERR_FAIL_NULL_V(p_importer, Ref<Resource>());
 
 	if (!FileAccess::exists(p_path)) {
