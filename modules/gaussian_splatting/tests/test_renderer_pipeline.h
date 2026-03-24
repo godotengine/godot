@@ -357,14 +357,20 @@ TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness p
     bool prepare_called = false;
     bool render_called = false;
 
-    RenderInstancingOrchestrator orchestrator(renderer.ptr(), output_compositor.ptr(), &pipeline_stages,
+    RenderInstancingOrchestrator::Dependencies instancing_dependencies;
+    instancing_dependencies.renderer = renderer.ptr();
+    instancing_dependencies.output_compositor = output_compositor.ptr();
+    instancing_dependencies.pipeline_stages = &pipeline_stages;
+    instancing_dependencies.prepare_render_frame_context =
             [&prepare_called](RenderDataRD *, const Transform3D &, const Projection &, const Projection &, bool,
                     GaussianSplatRenderer::RenderFrameContext &) {
                 prepare_called = true;
-            },
+            };
+    instancing_dependencies.render_sorted_splats =
             [&render_called](RenderDataRD *, const Transform3D &, const Projection &, const Projection &, bool) {
                 render_called = true;
-            });
+            };
+    RenderInstancingOrchestrator orchestrator(instancing_dependencies);
 
     GaussianRenderPipeline::InstancePipelineBuffers ready_buffers = make_ready_instance_pipeline_buffers(false);
     RenderInstancingOrchestrator::InstanceReadinessResult missing_streaming =
