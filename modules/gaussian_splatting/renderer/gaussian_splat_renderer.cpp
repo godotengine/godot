@@ -761,7 +761,13 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     RenderQualityOrchestrator::Dependencies quality_dependencies;
     quality_dependencies.renderer = this;
     quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    quality_dependencies.test_data_state = &get_test_data_state();
     quality_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
+    quality_dependencies.runtime_ports.track_resource_owner = &GaussianSplatRenderer::track_resource_owner;
+    quality_dependencies.runtime_ports.get_streaming_state_mut =
+            static_cast<StreamingState &(GaussianSplatRenderer::*)()>(&GaussianSplatRenderer::get_streaming_state);
+    quality_dependencies.runtime_ports.get_streaming_state_view =
+            static_cast<const StreamingState &(GaussianSplatRenderer::*)() const>(&GaussianSplatRenderer::get_streaming_state);
     quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(quality_dependencies);
 
     RenderConfigOrchestrator::Dependencies config_dependencies;

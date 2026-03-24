@@ -1537,3 +1537,41 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23497309698` on commit `74aa214511` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 5.1 Implementation Status (quality-path mutable-access lockdown, slice 32)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_quality_orchestrator.h` / `.cpp`
+  - Added explicit quality-path dependencies for `test_data_state` and runtime ports for `track_resource_owner(...)`, `get_streaming_state_mut()`, and `get_streaming_state_view()`.
+  - Rewired `cull_for_view(...)` so test-data input and GPU-buffer ownership tracking no longer reach through direct renderer getters/helpers.
+  - Moved quality/streaming control behavior into the orchestrator for:
+    - `set_cull_radius_multiplier(...)`
+    - `set_cull_frustum_plane_slack(...)`
+    - `set_async_upload_enabled(...)`
+    - `get_async_upload_enabled()`
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated quality orchestrator construction to supply the new explicit dependencies/runtime ports.
+  - Simplified the corresponding renderer wrapper methods so they delegate to the orchestrator instead of mutating streaming internals through `IFrameStateView`.
+
+### Explicitly preserved
+- No painterly changes.
+- No diagnostics/debug-state changes.
+- No sorting-seam changes.
+- No public `GaussianSplatRenderer` facade API changes.
+- No whole-phase renderer/provider lock-down yet.
+
+### Caveat
+- This is the first bounded Phase 5 enforcement slice, not the final lock-down. It removes the quality-path mutation-through-view pattern and direct quality-path test-data/resource-owner reach-through, but other consumers still retain their own residual mutable access and will need later Phase 5 slices.
+- Streaming operations still route through explicit runtime ports backed by the renderer facade; that is intentional for this batch so behavior stays stable while ownership hardening proceeds incrementally.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_quality_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_quality_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed.
+- Native Windows verification pending.
