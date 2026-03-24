@@ -202,28 +202,18 @@ static RID _get_sort_indices_buffer(const GaussianSplatRenderer::IFrameStateView
 
 static const GaussianSplatRenderer::IFrameStateView &_resolve_state_view(
 		const GaussianSplatRenderer::IFrameStateView *p_state_view,
-		const GaussianSplatRenderer::IFrameStateProvider *p_state_provider,
 		GaussianSplatRenderer::FrameStateProvider &p_fallback_provider) {
 	if (p_state_view) {
 		return *p_state_view;
-	}
-	if (p_state_provider) {
-		return *p_state_provider;
 	}
 	return p_fallback_provider;
 }
 
 static GaussianSplatRenderer::IFrameMutationAccess &_resolve_mutation_access(
 		GaussianSplatRenderer::IFrameMutationAccess *p_mutation_access,
-		const GaussianSplatRenderer::IFrameStateProvider *p_state_provider,
 		GaussianSplatRenderer::FrameStateProvider &p_fallback_provider) {
 	if (p_mutation_access) {
 		return *p_mutation_access;
-	}
-	if (p_state_provider) {
-		// Transitional compatibility bridge for older callers that still only
-		// populate the legacy provider pointer.
-		return *const_cast<GaussianSplatRenderer::IFrameStateProvider *>(p_state_provider);
 	}
 	return p_fallback_provider;
 }
@@ -682,7 +672,6 @@ void RenderPipelineStages::prepare_frame_context(RenderDataRD *p_render_data,
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
 	r_context.frame_id = state_view.get_frame_state_view().frame_counter;
 	r_context.painterly_enabled = renderer->get_painterly_config().enabled;
-	r_context.state_provider = nullptr;
 	r_context.state_view = nullptr;
 	r_context.mutation_access = nullptr;
 	renderer->validate_cull_projection_contract(p_render_data, p_projection, r_context.cull_projection,
@@ -697,7 +686,7 @@ void RenderPipelineStages::prepare_frame_context(RenderDataRD *p_render_data,
 	r_context.deps.streaming_state = &renderer->get_streaming_state();
 	r_context.deps.sorting_state = &state_mut.get_sorting_state_mut();
 	r_context.deps.render_config = &state_mut.get_render_config_mut();
-	r_context.deps.jacobian_debug = &frame_provider.get_jacobian_debug();
+	r_context.deps.jacobian_debug = &renderer->get_jacobian_debug();
 	r_context.deps.resource_state = &state_mut.get_resource_state_mut();
 	r_context.deps.frame_state = &state_mut.get_frame_state_mut();
 	r_context.deps.performance_state = &state_mut.get_performance_state_mut();
@@ -750,16 +739,12 @@ void RenderPipelineStages::execute_frame_entry(const RenderFrameContext &p_frame
 	// Update deps with the frame_plan BEFORE constructing provider.
 	frame_context.deps.frame_plan = &frame_plan;
 
-	// Now construct the provider from the updated frame_context.deps.
-	const GaussianSplatRenderer::IFrameStateProvider *context_provider = frame_context.state_provider;
-	const GaussianSplatRenderer::IFrameStateView *context_state_view = frame_context.state_view;
-	GaussianSplatRenderer::IFrameMutationAccess *context_mutation_access = frame_context.mutation_access;
+	// Rebind the context through explicit view/mutation seams after deps are finalized.
 	GaussianSplatRenderer::FrameStateProvider fallback_provider(renderer, &frame_context.deps);
 	const GaussianSplatRenderer::IFrameStateView &state_view =
-			_resolve_state_view(context_state_view, context_provider, fallback_provider);
+			_resolve_state_view(frame_context.state_view, fallback_provider);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut =
-			_resolve_mutation_access(context_mutation_access, context_provider, fallback_provider);
-	frame_context.state_provider = context_provider ? context_provider : &fallback_provider;
+			_resolve_mutation_access(frame_context.mutation_access, fallback_provider);
 	frame_context.state_view = &state_view;
 	frame_context.mutation_access = &state_mut;
 	DEV_ASSERT(frame_context.deps.frame_plan);
@@ -1286,14 +1271,11 @@ struct RenderPipelineStages::RasterCompositeStage {
 	bool execute(const GaussianSplatRenderer::RenderFrameContext &p_context, uint64_t p_frame_start_usec,
 			GaussianSplatRenderer::RasterStageOutput &r_raster_output, StageResult &r_raster_result,
 			StageResult &r_composite_result, float &r_composite_time_ms, bool &r_composite_executed) {
-		const GaussianSplatRenderer::IFrameStateProvider *context_provider = p_context.state_provider;
-		const GaussianSplatRenderer::IFrameStateView *context_state_view = p_context.state_view;
-		GaussianSplatRenderer::IFrameMutationAccess *context_mutation_access = p_context.mutation_access;
 		GaussianSplatRenderer::FrameStateProvider fallback_provider(renderer, &p_context.deps);
 		const GaussianSplatRenderer::IFrameStateView &state_view =
-				_resolve_state_view(context_state_view, context_provider, fallback_provider);
+				_resolve_state_view(p_context.state_view, fallback_provider);
 		GaussianSplatRenderer::IFrameMutationAccess &state_mut =
-				_resolve_mutation_access(context_mutation_access, context_provider, fallback_provider);
+				_resolve_mutation_access(p_context.mutation_access, fallback_provider);
 		OutputCompositor *output_compositor = state_view.get_output_compositor();
 		ERR_FAIL_NULL_V(raster_stage, false);
 		ERR_FAIL_NULL_V(composite_stage, false);
@@ -2269,14 +2251,11 @@ bool RenderPipelineStages::execute_raster_composite_pipeline(const GaussianSplat
 
 void RenderPipelineStages::render_sorted_splats_with_context(const GaussianSplatRenderer::RenderFrameContext &p_context) {
 	ERR_FAIL_COND(!p_context.deps.validate());
-	const GaussianSplatRenderer::IFrameStateProvider *context_provider = p_context.state_provider;
-	const GaussianSplatRenderer::IFrameStateView *context_state_view = p_context.state_view;
-	GaussianSplatRenderer::IFrameMutationAccess *context_mutation_access = p_context.mutation_access;
 	GaussianSplatRenderer::FrameStateProvider fallback_provider(renderer, &p_context.deps);
 	const GaussianSplatRenderer::IFrameStateView &state_view =
-			_resolve_state_view(context_state_view, context_provider, fallback_provider);
+			_resolve_state_view(p_context.state_view, fallback_provider);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut =
-			_resolve_mutation_access(context_mutation_access, context_provider, fallback_provider);
+			_resolve_mutation_access(p_context.mutation_access, fallback_provider);
 	OutputCompositor *output_compositor = state_view.get_output_compositor();
 	ERR_FAIL_COND_MSG(!output_compositor, "OutputCompositor not initialized");
 	auto &output_cache = output_compositor->get_cache_state();

@@ -156,8 +156,10 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 				instance_defer_commit, frame_context);
 		frame_context.metrics = &stage_metrics;
 		GaussianSplatRenderer::FrameStateProvider frame_provider(renderer, &frame_context.deps);
-		frame_context.state_provider = &frame_provider;
 		const GaussianSplatRenderer::IFrameStateView &frame_state_view = frame_provider;
+		GaussianSplatRenderer::IFrameMutationAccess &frame_mutation_access = frame_provider;
+		frame_context.state_view = &frame_state_view;
+		frame_context.mutation_access = &frame_mutation_access;
 		GaussianSplatRenderer::RenderFramePlan frame_plan = GaussianSplatRenderer::build_frame_plan(
 				frame_state_view.get_scene_state(), frame_state_view.get_streaming_state(), frame_state_view.get_sorting_state_view(),
 				frame_state_view.get_resource_state_view(), frame_state_view.get_subsystem_state_view(), frame_state_view.get_pipeline_features(),

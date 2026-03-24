@@ -255,7 +255,6 @@ public:
     // Stage types exposed for RenderPipelineStages and orchestrators
     class IFrameStateView;
     class IFrameMutationAccess;
-    class IFrameStateProvider;
 
     struct RenderFrameContext {
         uint64_t frame_id = 0;
@@ -271,11 +270,9 @@ public:
         bool defer_commit = false;
         bool painterly_enabled = false;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
         const IFrameStateView *state_view = nullptr;
         IFrameMutationAccess *mutation_access = nullptr;
         RenderFrameSnapshot snapshot;
-        // Deprecated: use IFrameStateProvider for state queries.
         struct FrameDeps {
             // -- Required: must be non-null for any render path ---------------
             RenderingDevice *rendering_device = nullptr;
@@ -358,38 +355,7 @@ public:
         virtual SubsystemState &get_subsystem_state_mut() = 0;
     };
 
-    // Legacy compatibility provider.
-    // Existing callsites stay on this surface in Phase 1b.0 while new view/mutation
-    // seams are scaffolded for migration in later slices.
-    class IFrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
-    public:
-        virtual ~IFrameStateProvider() = default;
-
-        virtual SortingState &get_sorting_state() const = 0;
-        virtual RenderConfig &get_render_config() const = 0;
-        virtual JacobianDebugConfig &get_jacobian_debug() const = 0;
-        virtual ResourceState &get_resource_state() const = 0;
-        virtual FrameState &get_frame_state() const = 0;
-        virtual PerformanceState &get_performance_state() const = 0;
-        virtual SubsystemState &get_subsystem_state() const = 0;
-
-        const SortingState &get_sorting_state_view() const override { return get_sorting_state(); }
-        const RenderConfig &get_render_config_view() const override { return get_render_config(); }
-        const JacobianDebugConfig &get_jacobian_debug_view() const override { return get_jacobian_debug(); }
-        const ResourceState &get_resource_state_view() const override { return get_resource_state(); }
-        const FrameState &get_frame_state_view() const override { return get_frame_state(); }
-        const PerformanceState &get_performance_state_view() const override { return get_performance_state(); }
-        const SubsystemState &get_subsystem_state_view() const override { return get_subsystem_state(); }
-
-        SortingState &get_sorting_state_mut() override { return get_sorting_state(); }
-        RenderConfig &get_render_config_mut() override { return get_render_config(); }
-        ResourceState &get_resource_state_mut() override { return get_resource_state(); }
-        FrameState &get_frame_state_mut() override { return get_frame_state(); }
-        PerformanceState &get_performance_state_mut() override { return get_performance_state(); }
-        SubsystemState &get_subsystem_state_mut() override { return get_subsystem_state(); }
-    };
-
-    class FrameStateProvider : public IFrameStateProvider {
+    class FrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
         GaussianSplatRenderer *renderer = nullptr;
         const RenderFrameContext::FrameDeps *deps = nullptr;
 
@@ -404,13 +370,19 @@ public:
 
         const SceneState &get_scene_state() const override;
         const StreamingState &get_streaming_state() const override;
-        SortingState &get_sorting_state() const override;
-        RenderConfig &get_render_config() const override;
-        JacobianDebugConfig &get_jacobian_debug() const override;
-        ResourceState &get_resource_state() const override;
-        FrameState &get_frame_state() const override;
-        PerformanceState &get_performance_state() const override;
-        SubsystemState &get_subsystem_state() const override;
+        const SortingState &get_sorting_state_view() const override;
+        const RenderConfig &get_render_config_view() const override;
+        const JacobianDebugConfig &get_jacobian_debug_view() const override;
+        const ResourceState &get_resource_state_view() const override;
+        const FrameState &get_frame_state_view() const override;
+        const PerformanceState &get_performance_state_view() const override;
+        const SubsystemState &get_subsystem_state_view() const override;
+        SortingState &get_sorting_state_mut() override;
+        RenderConfig &get_render_config_mut() override;
+        ResourceState &get_resource_state_mut() override;
+        FrameState &get_frame_state_mut() override;
+        PerformanceState &get_performance_state_mut() override;
+        SubsystemState &get_subsystem_state_mut() override;
         const PipelineFeatureSet *get_pipeline_features() const override;
         const RenderFramePlan *get_frame_plan() const override;
     };

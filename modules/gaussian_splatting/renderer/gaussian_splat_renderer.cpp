@@ -464,7 +464,7 @@ const GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStatePr
     return renderer->get_streaming_state();
 }
 
-GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state() const {
+const GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_view() const {
     static SortingState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->sorting_state) {
@@ -473,7 +473,7 @@ GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::
     return renderer->get_sorting_state();
 }
 
-GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config() const {
+const GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_view() const {
     static RenderConfig fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->render_config) {
@@ -482,7 +482,7 @@ GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::
     return renderer->get_render_config();
 }
 
-GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStateProvider::get_jacobian_debug() const {
+const GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStateProvider::get_jacobian_debug_view() const {
     static JacobianDebugConfig fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->jacobian_debug) {
@@ -491,7 +491,7 @@ GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStatePro
     return renderer->get_jacobian_debug();
 }
 
-GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state() const {
+const GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_view() const {
     static ResourceState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->resource_state) {
@@ -500,7 +500,7 @@ GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider:
     return renderer->get_resource_state();
 }
 
-GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state() const {
+const GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_view() const {
     static FrameState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->frame_state) {
@@ -509,7 +509,7 @@ GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::ge
     return renderer->get_frame_state();
 }
 
-GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state() const {
+const GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_view() const {
     static PerformanceState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->performance_state) {
@@ -518,7 +518,61 @@ GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvid
     return renderer->get_performance_state();
 }
 
-GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state() const {
+const GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_view() const {
+    static SubsystemState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->subsystem_state) {
+        return *deps->subsystem_state;
+    }
+    return renderer->get_subsystem_state();
+}
+
+GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_mut() {
+    static SortingState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->sorting_state) {
+        return *deps->sorting_state;
+    }
+    return renderer->get_sorting_state();
+}
+
+GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_mut() {
+    static RenderConfig fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->render_config) {
+        return *deps->render_config;
+    }
+    return renderer->get_render_config();
+}
+
+GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_mut() {
+    static ResourceState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->resource_state) {
+        return *deps->resource_state;
+    }
+    return renderer->get_resource_state();
+}
+
+GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_mut() {
+    static FrameState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->frame_state) {
+        return *deps->frame_state;
+    }
+    return renderer->get_frame_state();
+}
+
+GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_mut() {
+    static PerformanceState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->performance_state) {
+        return *deps->performance_state;
+    }
+    return renderer->get_performance_state();
+}
+
+GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_mut() {
     static SubsystemState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->subsystem_state) {
@@ -1473,6 +1527,11 @@ void GaussianSplatRenderer::_run_cull_sort_pipeline_frame(RenderDataRD *p_render
     _prepare_render_frame_context(p_render_data, p_world_to_camera_transform, p_projection, p_render_projection,
             p_render_buffers != nullptr, frame_context);
     frame_context.metrics = &stage_metrics;
+    FrameStateProvider frame_provider(this, &frame_context.deps);
+    const IFrameStateView &state_view = frame_provider;
+    IFrameMutationAccess &state_mut = frame_provider;
+    frame_context.state_view = &state_view;
+    frame_context.mutation_access = &state_mut;
     _run_pipeline_entry(frame_context, p_has_render_data, p_cull_skip_reason, p_sort_skip_reason,
             p_cull_skip_reason_code, p_sort_skip_reason_code, p_set_skip_metrics, p_clear_cull_state_on_skip);
 }
@@ -1812,8 +1871,10 @@ void GaussianSplatRenderer::render_sorted_splats(RenderDataRD *p_render_data,
 			p_defer_render_buffers_commit, frame_context);
 	frame_context.metrics = &stage_metrics;
 	FrameStateProvider frame_provider(this, &frame_context.deps);
-	frame_context.state_provider = &frame_provider;
 	const IFrameStateView &state_view = frame_provider;
+	IFrameMutationAccess &state_mut = frame_provider;
+	frame_context.state_view = &state_view;
+	frame_context.mutation_access = &state_mut;
 	RenderFramePlan frame_plan = build_frame_plan(state_view.get_scene_state(), state_view.get_streaming_state(), state_view.get_sorting_state_view(),
 			state_view.get_resource_state_view(), state_view.get_subsystem_state_view(), state_view.get_pipeline_features(),
 			true, String(), String(), RenderFallbackReason::NONE, RenderFallbackReason::NONE, false, false);
