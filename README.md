@@ -1,4 +1,4 @@
-# Godot Gaussian Splatting
+# Godot Gaussian Splatting (Alpha)
 
 <video src="https://github.com/user-attachments/assets/71542f8d-ccf6-433c-b920-66fdf9ae8c84" autoplay loop muted playsinline></video>
 
