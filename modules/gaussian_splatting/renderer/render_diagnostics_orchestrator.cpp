@@ -865,7 +865,8 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
 	GaussianSplatRenderer *mutable_renderer = const_cast<GaussianSplatRenderer *>(renderer);
-	DebugOverlaySystem *overlay_system = mutable_renderer->get_subsystem_state().debug_overlay_system;
+	const Ref<DebugOverlaySystem> &overlay_system_ref = mutable_renderer->get_subsystem_state().debug_overlay_system;
+	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayQueryView overlay_query = overlay_system
 			? overlay_system->build_query_view(mutable_renderer)
 			: DebugOverlayQueryView();
@@ -1139,7 +1140,8 @@ void RenderDiagnosticsOrchestrator::record_sort_sample(const GaussianSplatRender
 
 void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_start_usec) {
 	debug_state_orchestrator->update_frame_times(renderer->get_frame_state().render_time_ms, renderer->get_frame_state().sort_time_ms);
-	DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system;
+	const Ref<DebugOverlaySystem> &overlay_system_ref = renderer->get_subsystem_state().debug_overlay_system;
+	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayOptions overlay_options = overlay_system
 			? overlay_system->build_query_view(renderer).get_options()
 			: DebugOverlayOptions();
@@ -1241,8 +1243,9 @@ Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() cons
 
 	// Read debug modes from DebugOverlaySystem (1b.3 debug seam)
 	Dictionary debug_modes;
-	if (renderer->get_subsystem_state().debug_overlay_system) {
-		const DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system;
+	const Ref<DebugOverlaySystem> &overlay_system_ref = renderer->get_subsystem_state().debug_overlay_system;
+	if (overlay_system_ref.is_valid()) {
+		const DebugOverlaySystem *overlay_system = overlay_system_ref.ptr();
 		const DebugOverlayOptions overlay_options = overlay_system->build_query_view(renderer).get_options();
 		debug_modes["tile_bounds"] = overlay_options.show_tile_bounds;
 		debug_modes["splat_coverage"] = overlay_options.show_splat_coverage;
