@@ -35,6 +35,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
 #include "scene/main/game_object.h"
 
 class Button;
@@ -44,10 +45,13 @@ class GameObjectComponentList : public VBoxContainer {
 
 	Node *game_object = nullptr;
 	VBoxContainer *component_container = nullptr;
+	Label *warning_label = nullptr;
 	CreateDialog *create_dialog = nullptr;
 	EditorFileDialog *script_file_dialog = nullptr;
+	Vector<Node *> displayed_nodes; // Maps entry index to scene node.
 
 	void _rebuild_list();
+	void _rebuild_list_recursive(Node *p_node, int p_depth);
 	void _on_add_component_pressed();
 	void _on_add_script_pressed();
 	void _on_create_confirmed();
@@ -56,6 +60,10 @@ class GameObjectComponentList : public VBoxContainer {
 
 	void _toggle_component(int p_index);
 	void _delete_component(int p_index);
+
+	Node *_find_target_parent(Node *p_child);
+	void _reparent_existing_children(Node *p_new_body);
+	void _update_warnings();
 
 public:
 	void set_game_object(Node *p_game_object);
