@@ -32,7 +32,7 @@
 
 #include "export_plugin.h"
 
-#include "core/os/os.h"
+#include "core/object/class_db.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 

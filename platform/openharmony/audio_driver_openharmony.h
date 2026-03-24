@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <ohaudio/native_audiocapturer.h>
 #include <ohaudio/native_audiorenderer.h>

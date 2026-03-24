@@ -35,7 +35,7 @@
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "drivers/vulkan/godot_vulkan.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 struct OH_Drawing_FontDescriptor;
 

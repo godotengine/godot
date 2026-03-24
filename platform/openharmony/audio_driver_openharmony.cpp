@@ -30,9 +30,10 @@
 
 #include "audio_driver_openharmony.h"
 
+#include "core/os/os.h"
+
 AudioDriverOpenHarmony::AudioDriverOpenHarmony() {
 }
-
 OH_AudioData_Callback_Result AudioDriverOpenHarmony::_buffer_callback(OH_AudioRenderer *renderer, void *userData, void *audioData, int32_t audioDataSize) {
 	bool mix = true;
 

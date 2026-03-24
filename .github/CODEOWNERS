@@ -215,6 +215,8 @@
 /platform/linuxbsd/doc_classes/               @godotengine/linux-bsd @godotengine/documentation
 /platform/macos/                              @godotengine/macos
 /platform/macos/doc_classes/                  @godotengine/macos @godotengine/documentation
+/platform/openharmony/                        @godotengine/linux-bsd
+/platform/openharmony/doc_classes/            @godotengine/linux-bsd @godotengine/documentation
 /platform/visionos/                           @godotengine/xr
 /platform/visionos/doc_classes/               @godotengine/xr @godotengine/documentation
 /platform/web/                                @godotengine/web

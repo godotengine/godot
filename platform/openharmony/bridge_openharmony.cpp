@@ -31,11 +31,12 @@
 #include "bridge_openharmony.h"
 
 #include "dir_access_openharmony.h"
+#include "display_server_openharmony.h"
 #include "file_access_openharmony.h"
 #include "os_openharmony.h"
 
 #include "core/config/project_settings.h"
-#include "display_server_openharmony.h"
+#include "core/input/input.h"
 #include "main/main.h"
 
 #include <native_vsync/native_vsync.h>
