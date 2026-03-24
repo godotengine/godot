@@ -63,6 +63,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/main/game_object.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -1533,6 +1534,39 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 				undo_redo->commit_action();
 			}
+		} break;
+		case TOOL_CREATE_GAME_OBJECT:
+		case TOOL_CREATE_GAME_OBJECT_2D: {
+			Node *new_node = nullptr;
+			if (p_tool == TOOL_CREATE_GAME_OBJECT) {
+				new_node = memnew(GameObject);
+			} else {
+				new_node = memnew(GameObject2D);
+			}
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				new_node->set_name(Node::adjust_name_casing(new_node->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				// Add as child of selected node.
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Add GameObject"));
+				undo_redo->add_do_method(selected, "add_child", new_node, true);
+				undo_redo->add_do_method(new_node, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(new_node);
+				undo_redo->add_undo_method(selected, "remove_child", new_node);
+				undo_redo->commit_action();
+			} else {
+				// No scene root — make this the root.
+				add_root_node(new_node);
+			}
+
+			EditorNode::get_singleton()->edit_node(new_node);
+			editor_selection->clear();
+			editor_selection->add_node(new_node);
+			scene_tree->get_scene_tree()->grab_focus(true);
 		} break;
 		case TOOL_CREATE_2D_SCENE:
 		case TOOL_CREATE_3D_SCENE:
@@ -3844,6 +3878,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+		menu->add_separator();
+		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Add GameObject"), TOOL_CREATE_GAME_OBJECT);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Add GameObject2D"), TOOL_CREATE_GAME_OBJECT_2D);
 
 		menu->reset_size();
 		menu->set_position(p_menu_pos);
@@ -3890,6 +3927,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Add GameObject"), TOOL_CREATE_GAME_OBJECT);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Add GameObject2D"), TOOL_CREATE_GAME_OBJECT_2D);
 		}
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Collapse")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 
