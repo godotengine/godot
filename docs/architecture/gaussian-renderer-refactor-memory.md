@@ -1010,6 +1010,62 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
     - Large-scene benchmark gate: pass.
     - Eviction-churn benchmark gate: pass.
 
+### Phase 4 implementation status (state/control orchestrator batch 2, slice 22)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_quality_orchestrator.h` / `.cpp`:
+    - Replaced the raw constructor parameter list with an explicit `Dependencies` bundle and narrow `RuntimePorts` contract for sorter refresh.
+    - Routed mutable sorting/frame/performance bucket access in `set_max_splats(...)`, `set_quality_preset(...)`, and `cull_for_view(...)` through local `FrameStateProvider` view/mutation aliases instead of direct broad renderer state getters.
+    - Kept `set_quality_preset(...)` lazy by only marking sorter rebuild needed; no eager sorter refresh is triggered from that setter.
+  - `modules/gaussian_splatting/renderer/render_config_orchestrator.h` / `.cpp`:
+    - Replaced the raw constructor parameter list with a `Dependencies` bundle for renderer, interactive state manager, and painterly renderer wiring.
+  - `modules/gaussian_splatting/renderer/render_data_orchestrator.h` / `.cpp`:
+    - Replaced the callback-heavy constructor signature with a `Dependencies` bundle.
+    - Routed selected state/control reads and writes in `set_gaussian_data(...)`, `update_gpu_buffers_with_real_data(...)`, and static-chunk culler updates through local provider-backed view/mutation access.
+  - `modules/gaussian_splatting/renderer/render_instancing_orchestrator.h` / `.cpp`:
+    - Replaced the raw constructor parameter list with a `Dependencies` bundle.
+    - Rebound readiness checks, per-instance frame-plan reads, and aggregate frame/sorting/performance writes through explicit provider-backed view/mutation access.
+    - Resolved the output compositor live from provider-backed state at execution time instead of relying solely on the ctor-captured pointer.
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
+    - Updated constructor wiring for quality, config, data, and instancing orchestrators to the new dependency-bundle forms.
+  - `modules/gaussian_splatting/tests/test_renderer_pipeline.h`:
+    - Updated the instancing orchestrator test helper to construct the orchestrator via the new `Dependencies` bundle after the constructor surface changed.
+- Explicitly preserved for this batch:
+  - No sorting-seam work.
+  - No debug/tooling redesign.
+  - No painterly redesign beyond constructor wiring already owned by the config batch surface.
+  - No broad service-pointer narrowing or composition-root rewrite outside these orchestrator constructor/runtime seams.
+  - No public `GaussianSplatRenderer` facade break.
+- Remaining caveat:
+  - This batch narrows selected constructor/runtime state-control dependencies, but it does not fully invert ownership. These orchestrators still rely on renderer-facing services and direct renderer helpers for some device, test-data, and submission paths.
+- Follow-up fix after initial attempt:
+  - Removed an unsafe `const_cast`-backed `FrameStateProvider` use from `GaussianSplatRenderer::get_async_upload_enabled() const` and reverted `set_quality_preset(...)` to lazy sorter rebuild semantics.
+  - Initial Windows workflow run `23487001647` on commit `3e183a65dc` failed only at build time because `modules/gaussian_splatting/tests/test_renderer_pipeline.h` still constructed `RenderInstancingOrchestrator` with the old five-argument constructor form.
+  - The batch was fixed by updating that stale test helper to the new `Dependencies` construction form in commit `1627e30a02`.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_quality_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_quality_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/render_config_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_config_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/render_data_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_data_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/render_instancing_orchestrator.h`
+    - `modules/gaussian_splatting/renderer/render_instancing_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+    - `modules/gaussian_splatting/tests/test_renderer_pipeline.h`
+- Verification status:
+  - `git diff --check` passed for the batch and its follow-up fix.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23487132952` on commit `1627e30a02`:
+    - Build: pass.
+    - Smoke tests: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime harness: pass.
+    - World-streaming gate: pass.
+    - Large-scene benchmark gate: pass.
+    - Eviction-churn benchmark gate: pass.
+
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
   - remove/deny broad mutable `get_*_state()` usage outside sanctioned mutator surfaces.
