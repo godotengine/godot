@@ -1204,7 +1204,7 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Rollback point:
   - temporarily re-enable adapter methods with deprecation guards if migration gaps remain
 
-### Phase 5 debug-state slice (pending native Windows verification)
+### Phase 5 debug-state slice
 - Date: 2026-03-24
 - Scope applied:
   - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`:
@@ -1222,7 +1222,7 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Verification status:
   - `git diff --check` passed for touched files.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture`.
-  - Native Windows verification pending.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23499067202` on commit `8ec35e4a79` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
 ### Phase 6: Optional Cleanup Of Thin Config-Style Wrappers
 - Purpose:
