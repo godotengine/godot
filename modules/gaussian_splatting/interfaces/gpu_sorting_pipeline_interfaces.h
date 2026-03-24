@@ -9,9 +9,9 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/vector.h"
-#include "render_frame_context_manager.h"
 #include "render_types/render_performance_types.h"
 #include "render_types/render_state_types.h"
+#include "../renderer/render_frame_context_manager.h"
 #include "servers/rendering/rendering_device.h"
 #include "../renderer/gpu_sorter.h"  // For SortKeyConfig and SortingMetrics
 
