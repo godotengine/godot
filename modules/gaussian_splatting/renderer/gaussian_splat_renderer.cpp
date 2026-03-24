@@ -964,7 +964,9 @@ void GaussianSplatRenderer::_teardown_resources() {
         subsystem_state.debug_overlay_system.unref();
     }
     if (subsystem_state.sorting_pipeline.is_valid()) {
-        subsystem_state.sorting_pipeline->release_sort_buffers(this);
+        subsystem_state.sorting_pipeline->set_sort_result_sink(this);
+        subsystem_state.sorting_pipeline->set_sort_buffer_host_context(this);
+        subsystem_state.sorting_pipeline->release_sort_buffers();
         subsystem_state.sorting_pipeline->shutdown();
         subsystem_state.sorting_pipeline.unref();
     }
