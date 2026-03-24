@@ -2,10 +2,71 @@
 #define GS_DEBUG_OVERLAY_SYSTEM_H
 
 #include "debug_overlay_interfaces.h"
-
-class GaussianSplatRenderer;
+#include "../renderer/gaussian_splat_renderer.h"
 #include "core/object/ref_counted.h"
 #include "servers/rendering/rendering_device.h"
+
+class DebugOverlaySystem;
+
+class DebugOverlayQueryView {
+public:
+    explicit DebugOverlayQueryView(const DebugOverlaySystem *p_system = nullptr) :
+            system(p_system) {}
+
+    DebugOverlayOptions get_options() const;
+    DebugCounterSnapshot get_debug_counters() const;
+    Dictionary get_binning_debug_counters() const;
+    bool is_dirty() const;
+    uint64_t get_version() const;
+    bool has_active_overlays() const;
+    const Vector<String> &get_hud_lines() const;
+    uint32_t get_tile_density_peak() const;
+    float get_tile_density_average() const;
+    const Vector<uint32_t> &get_tile_density_cache() const;
+    int get_tile_density_width() const;
+    int get_tile_density_height() const;
+
+private:
+    const DebugOverlaySystem *system = nullptr;
+
+    const GaussianSplatRenderer::DebugState *debug_state = nullptr;
+    const GaussianSplatRenderer::FrameState *frame_state = nullptr;
+    const GaussianSplatRenderer::SortingState *sorting_state = nullptr;
+    const GaussianSplatRenderer::PerformanceState *performance_state = nullptr;
+    const GaussianSplatRenderer::DeviceState *device_state = nullptr;
+    const GaussianSplatRenderer::SubsystemState *subsystem_state = nullptr;
+    RenderingDevice *submission_device = nullptr;
+    RenderingDevice *main_rendering_device = nullptr;
+
+    friend class DebugOverlaySystem;
+};
+
+class DebugOverlayCommandSink {
+public:
+    explicit DebugOverlayCommandSink(DebugOverlaySystem *p_system = nullptr) :
+            system(p_system) {}
+
+    void set_show_tile_grid(bool p_enabled) const;
+    void set_show_density_heatmap(bool p_enabled) const;
+    void set_show_performance_hud(bool p_enabled) const;
+    void set_show_residency_hud(bool p_enabled) const;
+    void set_show_device_boundaries(bool p_enabled) const;
+    void set_show_texture_states(bool p_enabled) const;
+    void set_show_shadow_opacity(bool p_enabled) const;
+    void set_overlay_opacity(float p_opacity) const;
+    void set_dump_gpu_counters(bool p_enabled) const;
+    void invalidate_overlay(bool p_increment_version = true) const;
+    void invalidate_hud(bool p_increment_version = true) const;
+    void rebuild_overlay_statistics_from_cache() const;
+    void rebuild_performance_hud_lines() const;
+
+private:
+    DebugOverlaySystem *system = nullptr;
+    GaussianSplatRenderer::DebugState *debug_state = nullptr;
+    GaussianSplatRenderer::DebugConfig *debug_config = nullptr;
+
+    friend class DebugOverlaySystem;
+};
 
 // Concrete implementation of IDebugOverlaySystem
 class DebugOverlaySystem : public RefCounted, public IDebugOverlaySystem {
@@ -84,6 +145,26 @@ public:
     void update_tile_density_cache(const Vector<uint32_t> &p_tile_counts, const Vector2i &p_tile_grid,
             uint32_t p_peak, float p_average);
     void clear_tile_density_cache();
+
+    DebugOverlayQueryView build_query_view(const GaussianSplatRenderer *p_renderer = nullptr) const;
+    DebugOverlayCommandSink build_command_sink(GaussianSplatRenderer *p_renderer);
+    DebugOverlayQueryView get_query_view(const GaussianSplatRenderer *p_renderer = nullptr) const { return build_query_view(p_renderer); }
+    DebugOverlayCommandSink get_command_sink(GaussianSplatRenderer *p_renderer) { return build_command_sink(p_renderer); }
+
+    // Explicit debug/tooling seams.
+    void set_renderer_show_tile_grid(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_show_density_heatmap(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_show_performance_hud(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_show_residency_hud(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_show_device_boundaries(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_show_texture_states(const DebugOverlayCommandSink &p_sink, bool p_enabled);
+    void set_renderer_overlay_opacity(const DebugOverlayCommandSink &p_sink, float p_opacity);
+    void invalidate_renderer_overlay(const DebugOverlayCommandSink &p_sink, bool p_increment_version);
+    void invalidate_renderer_hud(const DebugOverlayCommandSink &p_sink, bool p_increment_version);
+    void rebuild_renderer_overlay_statistics_from_cache(const DebugOverlayQueryView &p_query_view,
+            const DebugOverlayCommandSink &p_sink);
+    void rebuild_renderer_performance_hud_lines(const DebugOverlayQueryView &p_query_view,
+            const DebugOverlayCommandSink &p_sink);
 
     // Legacy renderer helpers (god class extraction)
     void set_renderer_show_tile_grid(GaussianSplatRenderer *p_renderer, bool p_enabled);

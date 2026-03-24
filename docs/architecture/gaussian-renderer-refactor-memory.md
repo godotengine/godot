@@ -931,6 +931,36 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Rollback point:
   - restore removed wrappers if any downstream consumer still relies on them
 
+### Phase 1b.3 implementation status (debug query/command seam batch, slice 17)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/interfaces/debug_overlay_system.h` / `.cpp`:
+    - Introduced explicit `DebugOverlayQueryView` and `DebugOverlayCommandSink` seam structs with builder helpers on `DebugOverlaySystem`.
+    - Kept legacy `get_*` / `set_*` renderer helpers as compatibility delegates.
+    - Query view exposes overlay options and HUD/tile-density snapshot access used by the debug-facing orchestrators.
+    - Command sink forwards overlay/HUD invalidation and flag/opacity mutations through the existing compatibility helpers.
+  - `modules/gaussian_splatting/interfaces/debug_overlay_macros.h`:
+    - Debug orchestrator setter macro now uses `build_command_sink(renderer)` instead of direct legacy renderer helper calls.
+  - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`:
+    - Debug option application now reads from `build_query_view(renderer)` / `DebugOverlayOptions` rather than direct `debug_overlay_system` getters.
+    - Direct debug-overlay setter paths now use `build_command_sink(renderer)` for overlay/HUD mutation.
+  - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.cpp`:
+    - Render-stat aggregation now sources debug overlay options, HUD lines, and tile-density values from the new query view.
+    - HUD invalidation / rebuild paths now use the new command sink overloads.
+- Explicitly preserved for this slice:
+  - No sorting-seam work.
+  - No composition-root work.
+  - No painterly redesign.
+  - No broad service narrowing beyond the explicit debug overlay seam.
+- Remaining caveat:
+  - The legacy renderer helpers remain available as compatibility delegates for holdout callsites outside this batch.
+- Rollback boundary:
+  - Revert only the `debug_overlay_system` seam wrapper additions and the orchestrator callsite rewiring in the files above.
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.3 --no-regen-architecture`.
+  - Native Windows verification is pending for this batch.
+
 ## Tests That Currently Mutate Internals And Replacement Hooks
 Current direct-mutation examples:
 - `test_renderer_pipeline.h` mutates streaming internals (`get_streaming_state().current_streaming_system.unref()`).

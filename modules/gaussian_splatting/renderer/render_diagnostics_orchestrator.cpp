@@ -865,15 +865,21 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
 	GaussianSplatRenderer *mutable_renderer = const_cast<GaussianSplatRenderer *>(renderer);
+	DebugOverlaySystem *overlay_system = mutable_renderer->get_subsystem_state().debug_overlay_system.is_valid()
+			? mutable_renderer->get_subsystem_state().debug_overlay_system->ptr()
+			: nullptr;
+	const DebugOverlayQueryView overlay_query = overlay_system
+			? overlay_system->build_query_view(mutable_renderer)
+			: DebugOverlayQueryView();
+	const DebugOverlayOptions overlay_options = overlay_query.get_options();
+	const DebugOverlayCommandSink overlay_command = overlay_system
+			? overlay_system->build_command_sink(mutable_renderer)
+			: DebugOverlayCommandSink();
 	if (mutable_renderer->get_debug_state().overlay_dirty) {
-		if (mutable_renderer->get_subsystem_state().debug_overlay_system.is_valid()) {
-			mutable_renderer->get_subsystem_state().debug_overlay_system->rebuild_renderer_overlay_statistics_from_cache(mutable_renderer);
-		}
+		overlay_command.rebuild_overlay_statistics_from_cache();
 	}
 	if (mutable_renderer->get_debug_state().hud_dirty) {
-		if (mutable_renderer->get_subsystem_state().debug_overlay_system.is_valid()) {
-			mutable_renderer->get_subsystem_state().debug_overlay_system->rebuild_renderer_performance_hud_lines(mutable_renderer);
-		}
+		overlay_command.rebuild_performance_hud_lines();
 	}
 	if (!diagnostics_state.last_telemetry_snapshot.is_empty()) {
 		_merge_dictionary(stats, diagnostics_state.last_telemetry_snapshot);
@@ -1007,10 +1013,10 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 		stats["culled_ratio"] = 0.0;
 	}
 
-	stats["debug_show_tile_grid"] = renderer->get_debug_state().show_tile_grid;
-	stats["debug_show_density_heatmap"] = renderer->get_debug_state().show_density_heatmap;
-	stats["debug_show_performance_hud"] = renderer->get_debug_state().show_performance_hud;
-	stats["debug_show_residency_hud"] = renderer->get_debug_state().show_residency_hud;
+	stats["debug_show_tile_grid"] = overlay_system ? overlay_options.show_tile_grid : renderer->get_debug_state().show_tile_grid;
+	stats["debug_show_density_heatmap"] = overlay_system ? overlay_options.show_density_heatmap : renderer->get_debug_state().show_density_heatmap;
+	stats["debug_show_performance_hud"] = overlay_system ? overlay_options.show_performance_hud : renderer->get_debug_state().show_performance_hud;
+	stats["debug_show_residency_hud"] = overlay_system ? overlay_options.show_residency_hud : renderer->get_debug_state().show_residency_hud;
 	const String normalized_route_uid = _normalize_route_uid_for_stats(renderer->get_debug_state().route_uid);
 	const String normalized_sort_route_uid = _normalize_sort_route_uid_for_stats(renderer->get_debug_state().sort_route_uid);
 	stats["route_uid"] = normalized_route_uid;
@@ -1036,13 +1042,16 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	}
 	stats["debug_overlay_version"] = renderer->get_debug_state().overlay_version;
 	stats["debug_hud_version"] = renderer->get_debug_state().hud_version;
-	stats["debug_tile_density_peak"] = (int)renderer->get_debug_state().tile_density_peak;
-	stats["debug_tile_density_average"] = renderer->get_debug_state().tile_density_average;
+	stats["debug_tile_density_peak"] = (int)(overlay_system ? overlay_query.get_tile_density_peak() : renderer->get_debug_state().tile_density_peak);
+	stats["debug_tile_density_average"] = overlay_system ? overlay_query.get_tile_density_average() : renderer->get_debug_state().tile_density_average;
 	stats["debug_tile_density_size"] =
-			Vector2i(renderer->get_debug_state().tile_density_width, renderer->get_debug_state().tile_density_height);
+			overlay_system
+					? Vector2i(overlay_query.get_tile_density_width(), overlay_query.get_tile_density_height())
+					: Vector2i(renderer->get_debug_state().tile_density_width, renderer->get_debug_state().tile_density_height);
 
 	Array hud_lines_array;
-	for (const String &line : renderer->get_debug_state().hud_lines) {
+	const Vector<String> &hud_lines = overlay_system ? overlay_query.get_hud_lines() : renderer->get_debug_state().hud_lines;
+	for (const String &line : hud_lines) {
 		hud_lines_array.push_back(line);
 	}
 	stats["performance_hud_lines"] = hud_lines_array;
@@ -1132,9 +1141,16 @@ void RenderDiagnosticsOrchestrator::record_sort_sample(const GaussianSplatRender
 
 void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_start_usec) {
 	debug_state_orchestrator->update_frame_times(renderer->get_frame_state().render_time_ms, renderer->get_frame_state().sort_time_ms);
-	if (renderer->get_debug_state().show_performance_hud || renderer->get_debug_state().show_residency_hud) {
-		if (renderer->get_subsystem_state().debug_overlay_system.is_valid()) {
-			renderer->get_subsystem_state().debug_overlay_system->invalidate_renderer_hud(renderer, false);
+	DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system.is_valid()
+			? renderer->get_subsystem_state().debug_overlay_system->ptr()
+			: nullptr;
+	const DebugOverlayOptions overlay_options = overlay_system
+			? overlay_system->build_query_view(renderer).get_options()
+			: DebugOverlayOptions();
+	if ((overlay_system ? (overlay_options.show_performance_hud || overlay_options.show_residency_hud)
+			: (renderer->get_debug_state().show_performance_hud || renderer->get_debug_state().show_residency_hud))) {
+		if (overlay_system) {
+			overlay_system->build_command_sink(renderer).invalidate_hud(false);
 		}
 	}
 
@@ -1230,18 +1246,22 @@ Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() cons
 	// Read debug modes from DebugOverlaySystem (Phase 8 migration)
 	Dictionary debug_modes;
 	if (renderer->get_subsystem_state().debug_overlay_system.is_valid()) {
-		debug_modes["tile_bounds"] = renderer->get_subsystem_state().debug_overlay_system->get_show_tile_bounds();
-		debug_modes["splat_coverage"] = renderer->get_subsystem_state().debug_overlay_system->get_show_splat_coverage();
-		debug_modes["overflow_tiles"] = renderer->get_subsystem_state().debug_overlay_system->get_show_overflow_tiles();
-		debug_modes["projection_issues"] = renderer->get_subsystem_state().debug_overlay_system->get_show_projection_issues();
-		debug_modes["tile_grid"] = renderer->get_subsystem_state().debug_overlay_system->get_show_tile_grid();
-		debug_modes["density_heatmap"] = renderer->get_subsystem_state().debug_overlay_system->get_show_density_heatmap();
-		debug_modes["performance_hud"] = renderer->get_subsystem_state().debug_overlay_system->get_show_performance_hud();
-		debug_modes["residency_hud"] = renderer->get_subsystem_state().debug_overlay_system->get_show_residency_hud();
-		debug_modes["device_boundaries"] = renderer->get_subsystem_state().debug_overlay_system->get_show_device_boundaries();
-		debug_modes["texture_states"] = renderer->get_subsystem_state().debug_overlay_system->get_show_texture_states();
-		debug_modes["resolve_input"] = renderer->get_subsystem_state().debug_overlay_system->get_show_resolve_input();
-		debug_modes["resolve_output"] = renderer->get_subsystem_state().debug_overlay_system->get_show_resolve_output();
+		const DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system->ptr();
+		const DebugOverlayOptions overlay_options = overlay_system->build_query_view(renderer).get_options();
+		debug_modes["tile_bounds"] = overlay_options.show_tile_bounds;
+		debug_modes["splat_coverage"] = overlay_options.show_splat_coverage;
+		debug_modes["overflow_tiles"] = overlay_options.show_overflow_tiles;
+		debug_modes["projection_issues"] = overlay_options.show_projection_issues;
+		debug_modes["tile_grid"] = overlay_options.show_tile_grid;
+		debug_modes["density_heatmap"] = overlay_options.show_density_heatmap;
+		debug_modes["shadow_opacity"] = overlay_options.show_shadow_opacity;
+		debug_modes["performance_hud"] = overlay_options.show_performance_hud;
+		debug_modes["residency_hud"] = overlay_options.show_residency_hud;
+		debug_modes["device_boundaries"] = overlay_options.show_device_boundaries;
+		debug_modes["texture_states"] = overlay_options.show_texture_states;
+		debug_modes["resolve_input"] = overlay_options.show_resolve_input;
+		debug_modes["resolve_output"] = overlay_options.show_resolve_output;
+		debug_modes["dump_gpu_counters"] = overlay_options.dump_gpu_counters;
 	}
 	snapshot["debug_modes"] = debug_modes;
 

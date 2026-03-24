@@ -757,18 +757,20 @@ void RenderDebugStateOrchestrator::apply_debug_options_to_render_params(TileRend
 	const bool depth_visualization = (debug_state.preview_mode == GaussianSplatRenderer::DEBUG_PREVIEW_DEPTH);
 	if (debug_overlay_system->is_valid()) {
 		DebugOverlaySystem *overlay = debug_overlay_system->ptr();
-		r_params.debug_show_tile_bounds = overlay->get_show_tile_bounds();
-		r_params.debug_show_splat_coverage = overlay->get_show_splat_coverage();
-		r_params.debug_show_overflow_tiles = overlay->get_show_overflow_tiles();
-		r_params.debug_show_projection_issues = overlay->get_show_projection_issues();
-		r_params.debug_show_white_albedo = overlay->get_show_white_albedo();
-		r_params.debug_show_shadow_opacity = overlay->get_show_shadow_opacity();
-		r_params.debug_show_tile_grid = overlay->get_show_tile_grid();
-		r_params.debug_show_density_heatmap = overlay->get_show_density_heatmap();
-		r_params.debug_show_performance_hud = overlay->get_show_performance_hud();
+		const DebugOverlayQueryView overlay_view = overlay->build_query_view(renderer);
+		const DebugOverlayOptions overlay_options = overlay_view.get_options();
+		r_params.debug_show_tile_bounds = overlay_options.show_tile_bounds;
+		r_params.debug_show_splat_coverage = overlay_options.show_splat_coverage;
+		r_params.debug_show_overflow_tiles = overlay_options.show_overflow_tiles;
+		r_params.debug_show_projection_issues = overlay_options.show_projection_issues;
+		r_params.debug_show_white_albedo = overlay_options.show_white_albedo;
+		r_params.debug_show_shadow_opacity = overlay_options.show_shadow_opacity;
+		r_params.debug_show_tile_grid = overlay_options.show_tile_grid;
+		r_params.debug_show_density_heatmap = overlay_options.show_density_heatmap;
+		r_params.debug_show_performance_hud = overlay_options.show_performance_hud;
 		r_params.debug_show_depth_visualization = depth_visualization;
-		r_params.debug_overlay_opacity = overlay->get_overlay_opacity();
-		r_params.debug_dump_gpu_counters = overlay->get_dump_gpu_counters() || debug_config.enable_gpu_counter_logs;
+		r_params.debug_overlay_opacity = overlay_options.overlay_opacity;
+		r_params.debug_dump_gpu_counters = overlay_options.dump_gpu_counters || debug_config.enable_gpu_counter_logs;
 		r_params.debug_enable_tile_logs = debug_config.enable_tile_logs;
 		r_params.debug_enable_tile_pipeline_logs = debug_config.enable_tile_pipeline_logs;
 		r_params.debug_enable_tile_dispatch_logs = debug_config.enable_tile_dispatch_logs;
@@ -806,7 +808,7 @@ void RenderDebugStateOrchestrator::apply_debug_options_to_render_params(TileRend
 // Orchestrator setters - delegate to DebugOverlaySystem if available, otherwise update debug state directly.
 void RenderDebugStateOrchestrator::set_debug_show_tile_grid(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_tile_grid(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_tile_grid(p_enabled);
 		return;
 	}
 	if (debug_state.show_tile_grid == p_enabled) {
@@ -817,7 +819,7 @@ void RenderDebugStateOrchestrator::set_debug_show_tile_grid(bool p_enabled) {
 
 void RenderDebugStateOrchestrator::set_debug_show_density_heatmap(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_density_heatmap(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_density_heatmap(p_enabled);
 		return;
 	}
 	if (debug_state.show_density_heatmap == p_enabled) {
@@ -828,7 +830,7 @@ void RenderDebugStateOrchestrator::set_debug_show_density_heatmap(bool p_enabled
 
 void RenderDebugStateOrchestrator::set_debug_show_shadow_opacity(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_show_shadow_opacity(p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_shadow_opacity(p_enabled);
 		return;
 	}
 	if (debug_state.show_shadow_opacity == p_enabled) {
@@ -839,7 +841,7 @@ void RenderDebugStateOrchestrator::set_debug_show_shadow_opacity(bool p_enabled)
 
 void RenderDebugStateOrchestrator::set_debug_show_performance_hud(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_performance_hud(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_performance_hud(p_enabled);
 		return;
 	}
 	if (debug_state.show_performance_hud == p_enabled) {
@@ -850,7 +852,7 @@ void RenderDebugStateOrchestrator::set_debug_show_performance_hud(bool p_enabled
 
 void RenderDebugStateOrchestrator::set_debug_show_residency_hud(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_residency_hud(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_residency_hud(p_enabled);
 		return;
 	}
 	if (debug_state.show_residency_hud == p_enabled) {
@@ -861,7 +863,7 @@ void RenderDebugStateOrchestrator::set_debug_show_residency_hud(bool p_enabled) 
 
 void RenderDebugStateOrchestrator::set_debug_show_device_boundaries(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_device_boundaries(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_device_boundaries(p_enabled);
 		return;
 	}
 	if (debug_state.show_device_boundaries == p_enabled) {
@@ -872,7 +874,7 @@ void RenderDebugStateOrchestrator::set_debug_show_device_boundaries(bool p_enabl
 
 void RenderDebugStateOrchestrator::set_debug_show_texture_states(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_texture_states(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_texture_states(p_enabled);
 		return;
 	}
 	if (debug_state.show_texture_states == p_enabled) {
@@ -884,7 +886,7 @@ void RenderDebugStateOrchestrator::set_debug_show_texture_states(bool p_enabled)
 void RenderDebugStateOrchestrator::set_debug_overlay_opacity(float p_opacity) {
 	float clamped = CLAMP(p_opacity, 0.0f, 1.0f);
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_overlay_opacity(renderer, clamped);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_overlay_opacity(clamped);
 		return;
 	}
 
@@ -908,13 +910,13 @@ int RenderDebugStateOrchestrator::get_debug_compute_raster_policy() const {
 void RenderDebugStateOrchestrator::set_debug_dump_gpu_counters(bool p_enabled) {
 	debug_config.dump_gpu_counters = p_enabled;
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_dump_gpu_counters(p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_dump_gpu_counters(p_enabled);
 	}
 }
 
 bool RenderDebugStateOrchestrator::get_debug_dump_gpu_counters() const {
 	if (debug_overlay_system->is_valid()) {
-		return debug_overlay_system->ptr()->get_dump_gpu_counters();
+		return debug_overlay_system->ptr()->build_query_view(renderer).get_options().dump_gpu_counters;
 	}
 	return debug_config.dump_gpu_counters;
 }
