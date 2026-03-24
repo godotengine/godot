@@ -48,7 +48,6 @@
 #include "modules/gdscript/gdscript_cache.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "scene/main/node.h"
-#include <cstddef>
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -452,6 +451,23 @@ static bool is_class_type_fully_resolved(const GDScriptParser::DataType& p_type)
 	return base->base_type.kind != GDScriptParser::DataType::UNRESOLVED &&
 		   base->base_type.kind != GDScriptParser::DataType::RESOLVING;
 }
+
+static bool is_object_type_fully_resolved(const GDScriptParser::DataType &p_type) {
+	switch (p_type.kind) {
+		case GDScriptParser::DataType::NATIVE:
+			return !p_type.native_type.is_empty();
+		case GDScriptParser::DataType::SCRIPT:
+			/// Monarch: instance-side script types must point to an actual script resource, and
+			/// during partial project loads these can be temporarily null
+			return p_type.is_meta_type || p_type.script_type.is_valid();
+		case GDScriptParser::DataType::CLASS:
+			return is_class_type_fully_resolved(p_type);
+		default:
+			/// non-object kinds don't participate in object hierarchy checks...
+			return true;
+	}
+}
+
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
@@ -4067,18 +4083,27 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				!param_type_still_has_open_generics(param_type) &&
 				!arg_type.is_variant() &&
 				arg_type.is_hard_type() &&
-				is_class_type_fully_resolved(arg_type)
+				is_object_type_fully_resolved(param_type) &&
+				is_object_type_fully_resolved(arg_type)
 			) {
 				if (!is_type_compatible(param_type, arg_type, true, p_call->arguments[i])) {
-					push_error(vformat(
-							R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
-							i + 1,
-							p_call->function_name,
-							arg_type.to_string(),
-							param_type.to_string()),
-							p_call->arguments[i]);
-					p_call->set_datatype(call_type);
-					return;
+					if (!is_type_compatible(arg_type, param_type)) {
+						push_error(vformat(
+								R"([Reginleif] Invalid argument %d for '%s()': cannot convert from '%s' to '%s'.)",
+								i + 1,
+								p_call->function_name,
+								arg_type.to_string(),
+								param_type.to_string()),
+								p_call->arguments[i]);
+						p_call->set_datatype(call_type);
+						return;
+#ifdef DEBUG_ENABLED
+					} else {
+						///Supertypes are FINE for dynamic compliance, but mark unsafe
+						mark_node_unsafe(p_call);
+						parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "function", p_call->function_name, param_type.to_string(), arg_type.to_string_strict());
+#endif // DEBUG_ENABLED
+					}
 				}
 			}
 		}
