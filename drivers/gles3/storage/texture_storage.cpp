@@ -1395,7 +1395,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	TightLocalVector<GLenum> draw_buffers;
 
 	Texture *tar_textures[4];
-	int convert_to_srgb_mask = 0;
+	uint32_t convert_to_srgb_mask = 0;
 	Texture *src_textures[4];
 
 	int i = 0;
