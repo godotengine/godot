@@ -39,11 +39,7 @@
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
-<<<<<<< ours
-#include "core/io/file_access_pack.h"
-=======
 #include "core/io/file_access.h"
->>>>>>> theirs
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"

@@ -30,11 +30,6 @@
 
 #include "gdscript.h"
 
-<<<<<<< ours
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-=======
->>>>>>> theirs
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
