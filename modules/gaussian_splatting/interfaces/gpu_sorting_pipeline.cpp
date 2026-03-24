@@ -9,7 +9,6 @@
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../renderer/gaussian_gpu_layout.h"
-#include "../renderer/gaussian_splat_renderer.h"
 #include "../renderer/quantization_config.h"
 #include "../renderer/gpu_sorting_config.h"
 #include "../renderer/sorting_contract.h"
@@ -399,6 +398,7 @@ void GPUSortingPipeline::shutdown() {
     rd = nullptr;
     sort_result_sink = nullptr;
     sort_buffer_host_context = nullptr;
+    clear_sort_frame_context();
     sort_readback_state.pending = false;
     sort_readback_state.generation++;
     instance_count_readback_state.pending = false;
@@ -417,6 +417,14 @@ void GPUSortingPipeline::set_sort_result_sink(ISortResultSink *p_sink) {
 
 void GPUSortingPipeline::set_sort_buffer_host_context(ISortBufferHostContext *p_context) {
     sort_buffer_host_context = p_context;
+}
+
+void GPUSortingPipeline::set_sort_frame_context(const SortFrameContext &p_context) {
+    sort_frame_context = p_context;
+}
+
+void GPUSortingPipeline::clear_sort_frame_context() {
+    sort_frame_context = SortFrameContext();
 }
 
 void GPUSortingPipeline::set_device_manager(Ref<RenderDeviceManager> p_device_manager) {
@@ -922,15 +930,6 @@ void GPUSortingPipeline::release_sort_buffers() {
     sort_buffer_host_context->clear_sort_buffer_binding_state();
 }
 
-void GPUSortingPipeline::release_sort_buffers(GaussianSplatRenderer *p_renderer) {
-    if (!p_renderer) {
-        return;
-    }
-    set_sort_result_sink(p_renderer);
-    set_sort_buffer_host_context(p_renderer);
-    release_sort_buffers();
-}
-
 void GPUSortingPipeline::set_external_sort_indices(RID p_buffer, RenderingDevice *p_device) {
     RenderingDevice *new_owner = p_device;
     if (p_buffer.is_valid()) {
@@ -1123,15 +1122,6 @@ void GPUSortingPipeline::ensure_sort_buffers(uint32_t p_required_elements) {
 		release_sort_buffers();
 		return;
 	}
-}
-
-void GPUSortingPipeline::ensure_sort_buffers(GaussianSplatRenderer *p_renderer, uint32_t p_required_elements) {
-    if (!p_renderer) {
-        return;
-    }
-    set_sort_result_sink(p_renderer);
-    set_sort_buffer_host_context(p_renderer);
-    ensure_sort_buffers(p_required_elements);
 }
 
 void GPUSortingPipeline::ensure_depth_resources(RenderingDevice *p_device) {
@@ -2004,7 +1994,7 @@ bool GPUSortingPipeline::populate_gpu_positions(RID p_buffer, uint32_t p_total_g
     return true;
 }
 
-bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer, const Transform3D &p_cam_transform) {
+bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transform) {
     const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
     if (trace_enabled) {
         GaussianSplatting::debug_trace_record_event("sort",
@@ -2020,6 +2010,11 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
         return false;
     }
 
+    const SortFrameContext &sort_ctx = sort_frame_context;
+    ERR_FAIL_COND_V_MSG(!sort_ctx.sorting_state || !sort_ctx.frame_state || !sort_ctx.performance_state ||
+                    !sort_ctx.view_state || !sort_ctx.gpu_culler,
+            false, "[GPU Sort] Missing sort frame context");
+
     InstancePipelineInputs inputs = instance_inputs;
     if (trace_enabled) {
         GaussianSplatting::debug_trace_record_event("sort",
@@ -2028,25 +2023,18 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
                 false);
     }
     const bool quantized_storage = g_quantization_config.per_chunk_quantization;
-    RenderingDevice *compute_rd = inputs.device ? inputs.device : renderer.get_device_state().rd;
+    RenderingDevice *compute_rd = inputs.device ? inputs.device : sort_ctx.render_device;
     if (!compute_rd) {
         return false;
     }
-
-    if (!renderer.ensure_rendering_device("_sort_instance_pipeline")) {
-        return false;
-    }
-
-    auto &sorting_state = renderer.get_sorting_state();
-    auto &frame_state = renderer.get_frame_state();
-    auto &performance_state = renderer.get_performance_state();
-    Ref<GPUCuller> gpu_culler = renderer.get_subsystem_state().gpu_culler;
-    if (gpu_culler.is_valid()) {
+    GaussianRenderState::SortingState &sorting_state = *sort_ctx.sorting_state;
+    GaussianRenderState::FrameState &frame_state = *sort_ctx.frame_state;
+    GaussianRenderState::PerformanceState &performance_state = *sort_ctx.performance_state;
+    GaussianRenderState::ViewState &view_state = *sort_ctx.view_state;
+    GPUCuller *gpu_culler = sort_ctx.gpu_culler;
+    if (gpu_culler) {
         gpu_culler->update_culling_settings();
         gpu_culler->update_lod_cache();
-    }
-    if (sorting_state.sorter_needs_rebuild) {
-        renderer.refresh_gpu_sorter("_sort_instance_pipeline");
     }
     // Instance pipeline uses the GPUSortingPipeline's own gpu_sorter (rebuilt
     // to full multi-instance capacity), NOT sorting_state.gpu_sorter (which is
@@ -2258,7 +2246,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
         params.wind_dir_strength[1] = _get_float_setting(ps, wind_direction_y_path, 0.0f);
         params.wind_dir_strength[2] = _get_float_setting(ps, wind_direction_z_path, 0.0f);
         params.wind_dir_strength[3] = MAX(_get_float_setting(ps, wind_strength_path, 0.0f), 0.0f);
-        params.wind_time_config[0] = float(double(renderer.get_frame_state().frame_counter) * (1.0 / 60.0) *
+        params.wind_time_config[0] = float(double(frame_state.frame_counter) * (1.0 / 60.0) *
                 double(wind_time_scale));
         params.wind_time_config[1] = MAX(_get_float_setting(ps, wind_frequency_path, 1.0f), 0.0f);
         params.wind_time_config[2] = _get_float_setting(ps, wind_spatial_frequency_path, 0.1f);
@@ -2277,7 +2265,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
         params.effector_config[3] = MAX(_get_float_setting(ps, sphere_effector_frequency_path, 2.0f), 0.1f);
     }
 
-    Projection projection = renderer.get_view_state().last_camera_projection;
+    Projection projection = view_state.last_camera_projection;
     if (projection.get_z_far() <= projection.get_z_near()) {
         projection.set_perspective(60.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     }
@@ -2292,7 +2280,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
     float enable_frustum = 0.0f;
     Size2i viewport_size = Size2i(1280, 720);
     Vector<Plane> frustum_planes;
-    if (gpu_culler.is_valid()) {
+    if (gpu_culler) {
         const GPUCuller::CullingConfig &cull_config = gpu_culler->get_config();
         const GPUCuller::CullingState &cull_state = gpu_culler->get_state();
         viewport_size = cull_config.last_cull_viewport_size;
@@ -2307,7 +2295,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
         }
     }
     if (viewport_size.x <= 0 || viewport_size.y <= 0) {
-        const Size2i manual_override = renderer.get_view_state().manual_viewport_override;
+        const Size2i manual_override = view_state.manual_viewport_override;
         if (manual_override.x > 0 && manual_override.y > 0) {
             viewport_size = manual_override;
         } else {
@@ -2754,14 +2742,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(GaussianSplatRenderer &renderer
     return true;
 }
 
-bool GPUSortingPipeline::sort_gaussians_gpu(GaussianSplatRenderer *p_renderer, const Transform3D &p_cam_transform) {
-    if (!p_renderer) {
-        return false;
-    }
-
-    GaussianSplatRenderer &renderer = *p_renderer;
-    set_sort_result_sink(&renderer);
-    set_sort_buffer_host_context(&renderer);
+bool GPUSortingPipeline::sort_gaussians_gpu(const Transform3D &p_cam_transform) {
     if (GaussianSplatting::debug_trace_is_enabled()) {
         GaussianSplatting::debug_trace_record_event("sort",
                 vformat("SortGaussiansGPU ENTER: inst_pipe=YES inst_inputs_valid=%s",
@@ -2769,7 +2750,7 @@ bool GPUSortingPipeline::sort_gaussians_gpu(GaussianSplatRenderer *p_renderer, c
                 false);
     }
     if (instance_inputs_valid) {
-        if (_sort_instance_pipeline(renderer, p_cam_transform)) {
+        if (_sort_instance_pipeline(p_cam_transform)) {
             return true;
         }
     }

@@ -9,12 +9,14 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/vector.h"
+#include "render_types/render_state_types.h"
 #include "servers/rendering/rendering_device.h"
 #include "../renderer/gpu_sorter.h"  // For SortKeyConfig and SortingMetrics
 
 class GaussianData;
 struct Gaussian;
 struct PackedGaussian;
+class GPUCuller;
 
 // Sort buffer handles returned by the pipeline
 struct SortBufferHandles {
@@ -36,6 +38,15 @@ struct SortPublicationPayload {
     Vector<uint32_t> sorted_indices;
     RID sort_indices_buffer;
     RenderingDevice *default_device = nullptr;
+};
+
+struct SortFrameContext {
+    GaussianRenderState::SortingState *sorting_state = nullptr;
+    GaussianRenderState::FrameState *frame_state = nullptr;
+    GaussianRenderState::PerformanceState *performance_state = nullptr;
+    GaussianRenderState::ViewState *view_state = nullptr;
+    GPUCuller *gpu_culler = nullptr;
+    RenderingDevice *render_device = nullptr;
 };
 
 struct SortPositionInputs {

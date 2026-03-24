@@ -115,6 +115,28 @@ static void _set_instance_sort_inputs(GaussianSplatRenderer *p_renderer, GPUSort
 	p_sorting_pipeline->set_instance_pipeline_inputs(instance_inputs);
 }
 
+static void _bind_sort_pipeline_host_context(GPUSortingPipeline *p_sorting_pipeline, GaussianSplatRenderer *p_renderer) {
+	if (!p_sorting_pipeline || !p_renderer) {
+		return;
+	}
+	p_sorting_pipeline->set_sort_result_sink(p_renderer);
+	p_sorting_pipeline->set_sort_buffer_host_context(p_renderer);
+}
+
+static SortFrameContext _build_sort_frame_context(GaussianSplatRenderer *p_renderer) {
+	SortFrameContext frame_context;
+	if (!p_renderer) {
+		return frame_context;
+	}
+	frame_context.sorting_state = &p_renderer->get_sorting_state();
+	frame_context.frame_state = &p_renderer->get_frame_state();
+	frame_context.performance_state = &p_renderer->get_performance_state();
+	frame_context.view_state = &p_renderer->get_view_state();
+	frame_context.gpu_culler = p_renderer->get_subsystem_state().gpu_culler.ptr();
+	frame_context.render_device = p_renderer->get_device_state().rd;
+	return frame_context;
+}
+
 static bool _sync_instance_sort_inputs(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler,
 		GPUSortingPipeline *p_sorting_pipeline, uint32_t *r_visible_chunk_count) {
 	if (r_visible_chunk_count) {
@@ -251,11 +273,12 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 	bool pipeline_manages_buffers = sorting_pipeline &&
 			sorting_pipeline->is_managing_buffers();
 	if (!pipeline_manages_buffers && sorting_pipeline) {
-		sorting_pipeline->release_sort_buffers(renderer);
+		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+		sorting_pipeline->release_sort_buffers();
 	}
 	if (sorting_pipeline) {
-		sorting_pipeline->ensure_sort_buffers(
-				renderer, sorting_state.gpu_sorter->get_max_elements());
+		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+		sorting_pipeline->ensure_sort_buffers(sorting_state.gpu_sorter->get_max_elements());
 	}
 }
 
@@ -292,7 +315,8 @@ void RenderSortingOrchestrator::initialize_sorting() {
 			sorting_state.gpu_sorter.unref();
 		}
 		if (sorting_pipeline) {
-			sorting_pipeline->release_sort_buffers(renderer);
+			_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+			sorting_pipeline->release_sort_buffers();
 		}
 		return;
 	}
@@ -800,7 +824,11 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	}
 
 	if (!force_cpu_sort && instance_pipeline_active && instance_sort_inputs_ready) {
-		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(renderer, p_world_to_camera_transform)) {
+		if (sorting_pipeline) {
+			_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+			sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(renderer));
+		}
+		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
 			renderer->get_debug_state().sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 			sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 			sorting_state.last_sort_transform_valid = true;
@@ -927,7 +955,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		for (uint32_t i = 0; i < instance_visible_splats; i++) {
 			indices_ptr[i] = i;
 		}
-		sorting_pipeline->ensure_sort_buffers(renderer, instance_visible_splats);
+		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+		sorting_pipeline->ensure_sort_buffers(instance_visible_splats);
 		RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
 		if (!sort_indices_buffer.is_valid()) {
 			return false;
@@ -983,7 +1012,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 				for (uint32_t i = 0; i < copy_count; i++) {
 					indices_ptr[i] = cull_state.culled_indices[i];
 				}
-				sorting_pipeline->ensure_sort_buffers(renderer, copy_count);
+				_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+				sorting_pipeline->ensure_sort_buffers(copy_count);
 				RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
 				if (sort_indices_buffer.is_valid()) {
 					RenderingDevice *target_device = renderer->get_resource_owner(sort_indices_buffer, renderer->get_device_state().rd);
@@ -1023,7 +1053,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		if (!sorting_pipeline) {
 			return;
 		}
-		sorting_pipeline->ensure_sort_buffers(renderer, p_count);
+		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+		sorting_pipeline->ensure_sort_buffers(p_count);
 		RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
 		if (!sort_indices_buffer.is_valid() || sorting_state.sort_index_bytes.is_empty()) {
 			return;
@@ -1267,8 +1298,12 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		return build_summary();
 	}
 
+	if (sorting_pipeline) {
+		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+		sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(renderer));
+	}
 	if (sorting_pipeline &&
-			sorting_pipeline->sort_gaussians_gpu(renderer, p_world_to_camera_transform)) {
+			sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
 		renderer->get_debug_state().sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 		sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 		sorting_state.last_sort_transform_valid = true;
