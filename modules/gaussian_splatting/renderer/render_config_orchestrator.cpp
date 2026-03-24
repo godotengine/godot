@@ -14,10 +14,13 @@
 RenderConfigOrchestrator::RenderConfigOrchestrator(const Dependencies &p_dependencies) :
 		renderer(p_dependencies.renderer),
 		interactive_state_manager(p_dependencies.interactive_state_manager),
-		painterly_renderer(p_dependencies.painterly_renderer) {
+		painterly_renderer(p_dependencies.painterly_renderer),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(interactive_state_manager);
 	ERR_FAIL_NULL(painterly_renderer);
+	ERR_FAIL_COND_MSG(!runtime_ports.invalidate_cached_render,
+			"RenderConfigOrchestrator requires invalidate_cached_render runtime port.");
 }
 
 void RenderConfigOrchestrator::set_render_mode(GaussianSplatRenderer::RenderMode p_mode) {
@@ -31,7 +34,7 @@ void RenderConfigOrchestrator::set_opacity_multiplier(float p_opacity) {
 	}
 	render_config.opacity_multiplier = clamped;
 	if (renderer) {
-		renderer->invalidate_cached_render();
+		(renderer->*runtime_ports.invalidate_cached_render)();
 	}
 }
 
@@ -41,7 +44,7 @@ void RenderConfigOrchestrator::set_color_grading(const Ref<ColorGradingResource>
 	}
 	render_config.color_grading = p_grading;
 	if (renderer) {
-		renderer->invalidate_cached_render();
+		(renderer->*runtime_ports.invalidate_cached_render)();
 	}
 }
 

@@ -774,6 +774,7 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     config_dependencies.renderer = this;
     config_dependencies.interactive_state_manager = &subsystem_state.interactive_state_manager;
     config_dependencies.painterly_renderer = &subsystem_state.painterly_renderer;
+    config_dependencies.runtime_ports.invalidate_cached_render = &GaussianSplatRenderer::invalidate_cached_render;
     config_orchestrator = std::make_unique<RenderConfigOrchestrator>(config_dependencies);
 
     RenderInstancingOrchestrator::Dependencies instancing_dependencies;
