@@ -1188,7 +1188,9 @@ Error PainterlyRenderer::render_painterly_frame(GaussianSplatRenderer *p_rendere
         }
     };
 
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    const auto &subsystem_state = state_view.get_subsystem_state_view();
     if (subsystem_state.rasterizer.is_valid()) {
         RID tile_color = subsystem_state.rasterizer->get_output_texture();
         RID tile_depth = subsystem_state.rasterizer->has_depth_output()
@@ -1470,8 +1472,10 @@ void PainterlyRenderer::clear_painterly_gpu_resources(GaussianSplatRenderer *p_r
     if (!p_renderer) {
         return;
     }
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
     // Phase 15: Fully delegated to PainterlyMaterialManager
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
     if (subsystem_state.painterly_material_manager.is_valid()) {
         subsystem_state.painterly_material_manager->clear_resources();
     }
@@ -1489,8 +1493,10 @@ void PainterlyRenderer::update_painterly_gpu_resources(GaussianSplatRenderer *p_
         return;
     }
 
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
     // Phase 15: Delegate resource management to PainterlyMaterialManager
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
     auto &device_state = p_renderer->get_device_state();
     if (subsystem_state.painterly_material_manager.is_valid()) {
         // Initialize manager if needed (requires RenderingDevice)
@@ -1546,18 +1552,22 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
         return ERR_UNCONFIGURED;
     }
 
-    auto &scene_state = p_renderer->get_scene_state();
-    auto &resource_state = p_renderer->get_resource_state();
-    auto &streaming_state = p_renderer->get_streaming_state();
-    auto &sorting_state = p_renderer->get_sorting_state();
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
+
+    const auto &scene_state = state_view.get_scene_state();
+    const auto &resource_state = state_view.get_resource_state_view();
+    const auto &streaming_state = state_view.get_streaming_state();
+    const auto &sorting_state = state_view.get_sorting_state_view();
     auto &culling_config = p_renderer->get_culling_config();
     auto &view_state = p_renderer->get_view_state();
     auto &tile_renderer_state = p_renderer->get_tile_renderer_state();
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
     auto &debug_state = p_renderer->get_debug_state();
-    auto &jacobian_debug = p_renderer->get_jacobian_debug();
-    auto &frame_state = p_renderer->get_frame_state();
-    auto &performance_state = p_renderer->get_performance_state();
+    const auto &jacobian_debug = state_view.get_jacobian_debug_view();
+    const auto &frame_state = state_view.get_frame_state_view();
+    auto &performance_state = state_mut.get_performance_state_mut();
     auto &device_state = p_renderer->get_device_state();
 
     RID color_texture = pass_graph->get_texture(PainterlyPassGraph::TEXTURE_COLOR);

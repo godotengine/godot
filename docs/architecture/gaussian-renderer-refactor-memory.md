@@ -677,6 +677,27 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
     - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
     - Runtime/benchmark gates: pass (runtime harness, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
+### Phase 1b.2b implementation status (painterly provider-backed bucket reads, slice 16)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/interfaces/painterly_renderer.cpp`:
+    - Introduced local `GaussianSplatRenderer::FrameStateProvider` instances in painterly production helpers that already sit on provider-backed buckets.
+    - Rewired `clear_painterly_gpu_resources(...)` and `update_painterly_gpu_resources(...)` to mutate `SubsystemState` through `IFrameMutationAccess` instead of direct renderer getters.
+    - Rewired `render_painterly_frame(...)` to query `SubsystemState` through `IFrameStateView` for tile-raster output access.
+    - Rewired `populate_painterly_gbuffer(...)` to source `scene_state`, `resource_state`, `streaming_state`, `sorting_state`, `subsystem_state`, `frame_state`, `performance_state`, and `jacobian_debug` through `IFrameStateView` / `IFrameMutationAccess` aliases instead of direct renderer getters.
+    - Kept direct access for surfaces that still lack a provider seam in this slice, including `device_state`, `view_state`, `tile_renderer_state`, `debug_state`, `culling_config`, and `painterly_config`.
+- Explicitly preserved for this slice:
+  - No painterly public API redesign.
+  - No service-pointer narrowing.
+  - No debug overlay, sorting-seam, or composition-root work.
+  - No attempt to force non-provider surfaces through the new aliases.
+- Remaining caveat:
+  - `device_state`, `view_state`, `tile_renderer_state`, `debug_state`, `culling_config`, and `painterly_config` remain renderer-direct by design until matching seams exist.
+- Rollback boundary:
+  - Revert only slice-16 provider-alias rewiring in `modules/gaussian_splatting/interfaces/painterly_renderer.cpp`.
+- Verification status:
+  - `git diff --check` passed for the slice.
+
 ### Phase 1b.1 implementation status (query-only callsite migration, slice 2)
 - Date: 2026-03-23
 - Scope applied:
