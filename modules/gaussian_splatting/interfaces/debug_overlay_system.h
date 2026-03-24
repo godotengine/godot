@@ -57,8 +57,6 @@ public:
     void set_dump_gpu_counters(bool p_enabled) const;
     void invalidate_overlay(bool p_increment_version = true) const;
     void invalidate_hud(bool p_increment_version = true) const;
-    void rebuild_overlay_statistics_from_cache() const;
-    void rebuild_performance_hud_lines() const;
 
 private:
     DebugOverlaySystem *system = nullptr;

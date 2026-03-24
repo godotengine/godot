@@ -865,9 +865,7 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
 	GaussianSplatRenderer *mutable_renderer = const_cast<GaussianSplatRenderer *>(renderer);
-	DebugOverlaySystem *overlay_system = mutable_renderer->get_subsystem_state().debug_overlay_system.is_valid()
-			? mutable_renderer->get_subsystem_state().debug_overlay_system->ptr()
-			: nullptr;
+	DebugOverlaySystem *overlay_system = mutable_renderer->get_subsystem_state().debug_overlay_system;
 	const DebugOverlayQueryView overlay_query = overlay_system
 			? overlay_system->build_query_view(mutable_renderer)
 			: DebugOverlayQueryView();
@@ -875,11 +873,11 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	const DebugOverlayCommandSink overlay_command = overlay_system
 			? overlay_system->build_command_sink(mutable_renderer)
 			: DebugOverlayCommandSink();
-	if (mutable_renderer->get_debug_state().overlay_dirty) {
-		overlay_command.rebuild_overlay_statistics_from_cache();
+	if (overlay_system && mutable_renderer->get_debug_state().overlay_dirty) {
+		overlay_system->rebuild_renderer_overlay_statistics_from_cache(overlay_query, overlay_command);
 	}
-	if (mutable_renderer->get_debug_state().hud_dirty) {
-		overlay_command.rebuild_performance_hud_lines();
+	if (overlay_system && mutable_renderer->get_debug_state().hud_dirty) {
+		overlay_system->rebuild_renderer_performance_hud_lines(overlay_query, overlay_command);
 	}
 	if (!diagnostics_state.last_telemetry_snapshot.is_empty()) {
 		_merge_dictionary(stats, diagnostics_state.last_telemetry_snapshot);
@@ -1141,9 +1139,7 @@ void RenderDiagnosticsOrchestrator::record_sort_sample(const GaussianSplatRender
 
 void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_start_usec) {
 	debug_state_orchestrator->update_frame_times(renderer->get_frame_state().render_time_ms, renderer->get_frame_state().sort_time_ms);
-	DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system.is_valid()
-			? renderer->get_subsystem_state().debug_overlay_system->ptr()
-			: nullptr;
+	DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system;
 	const DebugOverlayOptions overlay_options = overlay_system
 			? overlay_system->build_query_view(renderer).get_options()
 			: DebugOverlayOptions();
@@ -1243,10 +1239,10 @@ Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() cons
 	}
 	snapshot["production_metrics_summaries"] = summaries;
 
-	// Read debug modes from DebugOverlaySystem (Phase 8 migration)
+	// Read debug modes from DebugOverlaySystem (1b.3 debug seam)
 	Dictionary debug_modes;
-	if (renderer->get_subsystem_state().debug_overlay_system.is_valid()) {
-		const DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system->ptr();
+	if (renderer->get_subsystem_state().debug_overlay_system) {
+		const DebugOverlaySystem *overlay_system = renderer->get_subsystem_state().debug_overlay_system;
 		const DebugOverlayOptions overlay_options = overlay_system->build_query_view(renderer).get_options();
 		debug_modes["tile_bounds"] = overlay_options.show_tile_bounds;
 		debug_modes["splat_coverage"] = overlay_options.show_splat_coverage;

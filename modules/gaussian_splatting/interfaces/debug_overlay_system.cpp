@@ -141,22 +141,6 @@ void DebugOverlayCommandSink::invalidate_hud(bool p_increment_version) const {
     }
 }
 
-void DebugOverlayCommandSink::rebuild_overlay_statistics_from_cache() const {
-    if (system && debug_state) {
-        DebugOverlayQueryView query_view = system->build_query_view();
-        query_view.debug_state = debug_state;
-        system->rebuild_renderer_overlay_statistics_from_cache(query_view, *this);
-    }
-}
-
-void DebugOverlayCommandSink::rebuild_performance_hud_lines() const {
-    if (system && debug_state) {
-        DebugOverlayQueryView query_view = system->build_query_view();
-        query_view.debug_state = debug_state;
-        system->rebuild_renderer_performance_hud_lines(query_view, *this);
-    }
-}
-
 DebugOverlayQueryView DebugOverlaySystem::build_query_view(const GaussianSplatRenderer *p_renderer) const {
     DebugOverlayQueryView query_view(this);
     if (!p_renderer) {
