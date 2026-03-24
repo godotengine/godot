@@ -219,22 +219,31 @@ bool RenderOutputOrchestrator::render_for_view(const Transform3D &p_world_to_cam
 }
 
 bool RenderOutputOrchestrator::was_last_viewport_copy_successful() const {
-	if (output_compositor) {
-		return output_compositor->get_last_copy_success();
+	GaussianSplatRenderer::FrameStateProvider frame_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+	OutputCompositor *local_output_compositor = state_view.get_output_compositor();
+	if (local_output_compositor) {
+		return local_output_compositor->get_last_copy_success();
 	}
 	return false;
 }
 
 Size2i RenderOutputOrchestrator::get_last_viewport_copy_source_size() const {
-	if (output_compositor) {
-		return output_compositor->get_last_copy_source_size();
+	GaussianSplatRenderer::FrameStateProvider frame_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+	OutputCompositor *local_output_compositor = state_view.get_output_compositor();
+	if (local_output_compositor) {
+		return local_output_compositor->get_last_copy_source_size();
 	}
 	return Size2i();
 }
 
 Size2i RenderOutputOrchestrator::get_last_viewport_copy_dest_size() const {
-	if (output_compositor) {
-		return output_compositor->get_last_copy_dest_size();
+	GaussianSplatRenderer::FrameStateProvider frame_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+	OutputCompositor *local_output_compositor = state_view.get_output_compositor();
+	if (local_output_compositor) {
+		return local_output_compositor->get_last_copy_dest_size();
 	}
 	return Size2i();
 }
