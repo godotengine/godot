@@ -876,6 +876,49 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
   - RP2: after orchestrator migration, before deleting renderer overloads
   - RP3: before removing singleton fallback paths
 
+### Phase 2 + Phase 3 implementation status (sorting seam batch 1, slice 19)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/interfaces/gpu_sorting_pipeline.h` / `.cpp` / `_interfaces.h`:
+    - Removed public/legacy sorting entrypoints that took `GaussianSplatRenderer *` or `GaussianSplatRenderer &`.
+    - Added `SortFrameContext` plus explicit `set_sort_frame_context(...)` / `clear_sort_frame_context()` so instance sorting reads only the state buckets and execution dependencies it actually needs.
+    - `_sort_instance_pipeline(...)` now executes from `SortFrameContext` instead of reaching through the renderer facade.
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`:
+    - Added explicit host/sink binding helpers and `SortFrameContext` construction from the renderer-owned buckets.
+    - Replaced removed `ensure_sort_buffers(renderer, ...)`, `release_sort_buffers(renderer)`, and `sort_gaussians_gpu(renderer, ...)` callsites with explicit host/context wiring plus the new context-less pipeline entrypoints.
+    - Both the instance-only fast path and the common GPU-sort path now populate `SortFrameContext` before dispatch.
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`:
+    - Sorting-pipeline shutdown now binds sink/host explicitly before releasing sort buffers, instead of using the deleted renderer-taking overload.
+- Fixes required before accepting this batch:
+  - Corrected `SortFrameContext` bucket types to the renderer-owned types used in the current branch.
+  - Corrected interface include paths in `gpu_sorting_pipeline_interfaces.h` (`render_frame_context_manager.h`, `render_performance_types.h`, `render_state_types.h`) so Windows build graph resolution matched the new interface location.
+  - Blocked instance-cache and instance-GPU fast paths while `sorting_state.sorter_needs_rebuild` is set, so forced algorithm/capacity changes cannot be bypassed by early returns.
+- Explicitly preserved for this batch:
+  - No composition-root callback cleanup yet.
+  - No debug overlay, painterly, or test-hook redesign.
+  - No public `GaussianSplatRenderer` facade entrypoint changes.
+- Remaining caveat:
+  - This closes the renderer-taking sorting API seam, but the broader composition-root cleanup is still pending for the next `2+3` batch.
+  - Sorting still uses explicit host/sink/context wiring rather than the final bundled composition-root contract.
+- Rollback boundary:
+  - Revert only the sorting seam batch in:
+    - `modules/gaussian_splatting/interfaces/gpu_sorting_pipeline.h`
+    - `modules/gaussian_splatting/interfaces/gpu_sorting_pipeline.cpp`
+    - `modules/gaussian_splatting/interfaces/gpu_sorting_pipeline_interfaces.h`
+    - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+- Verification status:
+  - `git diff --check` passed for each landed fixup.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 2-3 --no-regen-architecture`.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23482731572` on commit `9bc9032b54`:
+    - Build: pass.
+    - Smoke tests: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime harness: pass.
+    - World-streaming gate: pass.
+    - Large-scene benchmark gate: pass.
+    - Eviction-churn benchmark gate: pass.
+
 ### Phase 4: Orchestrator Dependency Narrowing
 - Purpose:
   - Remove remaining broad renderer pointer dependencies from orchestrator internals.
