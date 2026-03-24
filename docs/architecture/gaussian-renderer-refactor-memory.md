@@ -961,22 +961,45 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.3 --no-regen-architecture`.
   - Native Windows verification passed via `Gaussian Production Gates` run `23479912351` on commit `349347af77` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
-## Tests That Currently Mutate Internals And Replacement Hooks
-Current direct-mutation examples:
-- `test_renderer_pipeline.h` mutates streaming internals (`get_streaming_state().current_streaming_system.unref()`).
-- `test_renderer_pipeline.h` mutates compositor cache internals (`output_compositor->get_cache_state()`).
+### Phase 1b.4 implementation status (test-hook migration batch, slice 18)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.h` / `.cpp`:
+    - Added explicit test-only seams for streaming-system reset/readiness and output-compositor access (`test_release_current_streaming_system()`, `test_has_current_streaming_system()`, `test_get_output_compositor()`).
+  - `modules/gaussian_splatting/interfaces/output_compositor.h` / `.cpp`:
+    - Added a narrow test-only hook to reset viewport-copy bookkeeping without mutating `get_cache_state()` directly.
+  - `modules/gaussian_splatting/tests/test_renderer_pipeline.h`:
+    - Replaced direct streaming-system mutation with the explicit renderer test hooks.
+    - Replaced direct `get_subsystem_state().output_compositor` access with the explicit test-named renderer seam.
+    - Replaced direct output-cache mutation with the compositor test hook.
+  - `modules/gaussian_splatting/tests/test_gaussian_splat_node.cpp`:
+    - Replaced `get_scene_state().gaussian_data` assertions with the stable public `get_gaussian_data()` facade accessor.
+- Explicitly preserved for this slice:
+  - No production behavior changes.
+  - No sorting-seam work.
+  - No composition-root work.
+  - No provider lock-down yet.
+- Remaining caveat:
+  - Tests still exercise `OutputCompositor` directly through an explicit test seam; this is intentional for `1b.4` and narrower than the previous subsystem-state reach-through.
+- Rollback boundary:
+  - Revert only the explicit test-seam additions in renderer/output compositor and the matching test callsite rewrites.
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.4 --no-regen-architecture`.
+  - Native Windows verification is pending for this batch.
 
-Proposed replacement hooks:
-1. `test_set_streaming_system_for_test(Ref<GaussianStreamingSystem>)`
-2. `test_clear_streaming_system_for_test()`
-3. `test_get_output_cache_snapshot() const` (read-only)
-4. `test_override_output_cache_for_test(const OutputCacheOverride &)`
-5. Optional `friend` test harness type for strictly-scoped mutation where unavoidable
+## Tests That Mutated Internals And The Current Replacement Hooks
+Replaced in `1b.4`:
+- Streaming-system teardown in `test_renderer_pipeline.h` now uses `GaussianSplatRenderer::test_release_current_streaming_system()` and `test_has_current_streaming_system()`.
+- Output-compositor reach-through in `test_renderer_pipeline.h` now uses `GaussianSplatRenderer::test_get_output_compositor()`.
+- Viewport-copy cache resets in `test_renderer_pipeline.h` now use `OutputCompositor::test_reset_last_viewport_copy_state()`.
+- Scene-data assertions in `test_gaussian_splat_node.cpp` now use the stable public `GaussianSplatRenderer::get_gaussian_data()` facade.
 
-Rules for replacement hooks:
-- keep hooks test-only (guarded naming and location)
+Rules for remaining test seams:
+- keep hooks test-only and explicitly named
 - do not expose broad mutable production state
 - preserve existing test intent and assertions
+- prefer read-only snapshots over additional subsystem reach-through if more output-compositor coverage is needed later
 
 ## Non-Negotiables During Implementation
 - `GaussianSplatRenderer` remains the stable public facade.

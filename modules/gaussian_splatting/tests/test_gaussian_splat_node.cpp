@@ -743,19 +743,19 @@ TEST_CASE("[GaussianSplatting][World] Shared renderer ownership blocks foreign c
     }
 
     node_a->apply_world();
-    CHECK(renderer_a->get_scene_state().gaussian_data == data_a);
+    CHECK(renderer_a->get_gaussian_data() == data_a);
 
     node_b->clear_world();
-    CHECK(renderer_a->get_scene_state().gaussian_data == data_a);
+    CHECK(renderer_a->get_gaussian_data() == data_a);
 
     node_b->apply_world();
-    CHECK(renderer_a->get_scene_state().gaussian_data == data_a);
+    CHECK(renderer_a->get_gaussian_data() == data_a);
 
     node_a->clear_world();
-    CHECK_FALSE(renderer_a->get_scene_state().gaussian_data.is_valid());
+    CHECK_FALSE(renderer_a->get_gaussian_data().is_valid());
 
     node_b->apply_world();
-    CHECK(renderer_a->get_scene_state().gaussian_data == data_b);
+    CHECK(renderer_a->get_gaussian_data() == data_b);
 
     root->remove_child(node_b);
     root->remove_child(node_a);

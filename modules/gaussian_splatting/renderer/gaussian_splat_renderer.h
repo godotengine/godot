@@ -1530,6 +1530,9 @@ public:
     void test_disable_rasterizer();
     bool test_copy_final_output(RID p_source, RID p_destination, const Size2i &p_viewport_size);
     void test_force_disable_streaming();
+    void test_release_current_streaming_system();
+    bool test_has_current_streaming_system() const;
+    Ref<OutputCompositor> test_get_output_compositor() const;
     void test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales = Vector<Vector3>());
     int test_cull_visible_count(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size);
     void test_set_render_thread_dispatch_timeout_usec(uint64_t p_timeout_usec);

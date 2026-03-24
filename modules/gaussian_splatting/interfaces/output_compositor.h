@@ -142,6 +142,10 @@ public:
     uint32_t get_cached_framebuffer_count() const { return output_cache.cached_framebuffers.size(); }
     uint32_t get_blit_variant_count() const { return viewport_blit_variants.size(); }
 
+#ifdef TESTS_ENABLED
+    void test_reset_last_viewport_copy_state();
+#endif
+
 protected:
     static void _bind_methods();
 

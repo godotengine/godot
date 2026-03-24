@@ -2101,6 +2101,22 @@ void GaussianSplatRenderer::test_force_disable_streaming() {
     }
 }
 
+void GaussianSplatRenderer::test_release_current_streaming_system() {
+    StreamingState &streaming_state = get_streaming_state();
+    if (streaming_state.current_streaming_system.is_valid()) {
+        streaming_state.current_streaming_system->end_frame();
+        streaming_state.current_streaming_system.unref();
+    }
+}
+
+bool GaussianSplatRenderer::test_has_current_streaming_system() const {
+    return get_streaming_state().current_streaming_system.is_valid();
+}
+
+Ref<OutputCompositor> GaussianSplatRenderer::test_get_output_compositor() const {
+    return get_subsystem_state().output_compositor;
+}
+
 void GaussianSplatRenderer::test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales) {
     const int count = p_positions.size();
     get_test_data_state().positions.resize(count);

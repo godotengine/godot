@@ -534,8 +534,8 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
 
     // Simulate a world/static setup where gaussian data is present but the
     // streaming system was not bootstrapped yet (e.g. data set before RD ready).
-    renderer->get_streaming_state().current_streaming_system.unref();
-    CHECK_MESSAGE(!renderer->get_streaming_state().current_streaming_system.is_valid(),
+    renderer->test_release_current_streaming_system();
+    CHECK_MESSAGE(!renderer->test_has_current_streaming_system(),
             "Expected precondition: streaming system starts invalid before render bootstrap");
 
     RenderSceneDataRD scene_data;
@@ -550,8 +550,7 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
     bool instance_buffers_ready = false;
     for (int i = 0; i < 8; i++) {
         renderer->render_scene_instance(&render_data);
-        streaming_system_ready = streaming_system_ready ||
-                renderer->get_streaming_state().current_streaming_system.is_valid();
+        streaming_system_ready = streaming_system_ready || renderer->test_has_current_streaming_system();
         instance_buffers_ready = instance_buffers_ready || renderer->has_instance_pipeline_buffers();
         if (streaming_system_ready && instance_buffers_ready) {
             break;
@@ -635,7 +634,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
 
     renderer->set_static_chunks(make_overlapping_static_chunks(chunk_size, data->get_aabb()));
 
-    renderer->get_streaming_state().current_streaming_system.unref();
+    renderer->test_release_current_streaming_system();
 
     RenderSceneDataRD scene_data;
     scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
@@ -648,8 +647,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
     bool streaming_system_ready = false;
     for (int i = 0; i < 8; i++) {
         renderer->render_scene_instance(&render_data);
-        streaming_system_ready = streaming_system_ready ||
-                renderer->get_streaming_state().current_streaming_system.is_valid();
+        streaming_system_ready = streaming_system_ready || renderer->test_has_current_streaming_system();
         if (streaming_system_ready) {
             break;
         }
@@ -1698,7 +1696,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
     for (int frame = 0; frame < 2; frame++) {
         renderer->render_scene_instance(&render_data);
     }
-    Ref<OutputCompositor> output_compositor = renderer->get_subsystem_state().output_compositor;
+    Ref<OutputCompositor> output_compositor = renderer->test_get_output_compositor();
     CHECK(output_compositor.is_valid());
     if (!output_compositor.is_valid()) {
         renderer.unref();
@@ -1829,7 +1827,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
         renderer->render_scene_instance(&render_data);
     }
 
-    Ref<OutputCompositor> output_compositor = renderer->get_subsystem_state().output_compositor;
+    Ref<OutputCompositor> output_compositor = renderer->test_get_output_compositor();
     CHECK(output_compositor.is_valid());
     if (!output_compositor.is_valid()) {
         renderer.unref();
@@ -1853,10 +1851,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
     }
 
     output_compositor->clear_viewport_blit_resources();
-    auto &cache_state = output_compositor->get_cache_state();
-    cache_state.last_viewport_copy_success = false;
-    cache_state.last_viewport_copy_source_size = Size2i();
-    cache_state.last_viewport_copy_dest_size = Size2i();
+    output_compositor->test_reset_last_viewport_copy_state();
 
     RID resolved_render_target;
     output_compositor->integrate_final_output(renderer.ptr(), &render_data, render_buffers.ptr(),
